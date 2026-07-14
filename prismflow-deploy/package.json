@@ -11,8 +11,9 @@
     },
     "scripts": {
         "start": "react-scripts start",
-        "build": "react-scripts build && node postbuild.js",
-        "test": "react-scripts test"
+        "build": "react-scripts build && node postbuild.js && node ../build.js --copy-student-shell",
+        "test": "react-scripts test",
+        "test:firestore-rules": "firebase emulators:exec --only firestore --project demo-alloflow --config firebase.live-sessions.json \"node ../tests/firebase_rules_security.test.cjs\""
     },
     "eslintConfig": {
         "extends": [
@@ -38,6 +39,7 @@
         "@babel/plugin-transform-optional-chaining": "^7.28.6",
         "@babel/preset-env": "^7.29.0",
         "@babel/preset-react": "^7.28.5",
+        "@firebase/rules-unit-testing": "^3.0.4",
         "@swc/cli": "^0.8.0",
         "@swc/core": "^1.15.13",
         "autoprefixer": "^10.4.24",

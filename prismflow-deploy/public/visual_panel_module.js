@@ -8,7 +8,7 @@
  */
 (function() {
   'use strict';
-  // WCAG 2.1 AA: Accessibility CSS
+  // WCAG 2.2 AA: Accessibility CSS
   if (!document.getElementById("visual-panel-a11y")) { var _s = document.createElement("style"); _s.id = "visual-panel-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
 
   // ── Duplicate-load guard ──
@@ -67,6 +67,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
   const [refiningPanelIdx, setRefiningPanelIdx] = React.useState(null);
   const [userLabels, setUserLabels] = React.useState(initialAnnotations?.userLabels || {});
   const [draggingLabel, setDraggingLabel] = React.useState(null);
+  const [labelMoveStatus, setLabelMoveStatus] = React.useState("");
   const [aiLabelPositions, setAiLabelPositions] = React.useState(initialAnnotations?.aiLabelPositions || {});
   const [aiLabelAnchors, setAiLabelAnchors] = React.useState(() => {
     const saved = initialAnnotations?.aiLabelAnchors || {};
@@ -442,6 +443,62 @@ Return ONLY valid JSON:
     };
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
+  };
+  const getKeyboardMovement = (e) => ({
+    ArrowLeft: { x: -1, y: 0, label: "left" },
+    ArrowRight: { x: 1, y: 0, label: "right" },
+    ArrowUp: { x: 0, y: -1, label: "up" },
+    ArrowDown: { x: 0, y: 1, label: "down" }
+  })[e.key];
+  const announceLabelMove = (movement, isLarge, target) => {
+    setLabelMoveStatus(target + " moved " + movement.label + (isLarge ? " by a larger step" : "") + ".");
+  };
+  const handleUserLabelKeyDown = (panelIdx, labelId, e) => {
+    const movement = getKeyboardMovement(e);
+    if (!movement) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const step = e.shiftKey ? 5 : 1;
+    pushVisualSnapshot();
+    setUserLabels((prev) => ({ ...prev, [panelIdx]: (prev[panelIdx] || []).map((label) => label.id === labelId ? {
+      ...label,
+      x: Math.max(0, Math.min(90, label.x + movement.x * step)),
+      y: Math.max(0, Math.min(90, label.y + movement.y * step))
+    } : label) }));
+    announceLabelMove(movement, e.shiftKey, "Label");
+  };
+  const handleAiLabelKeyDown = (panelIdx, labelIdx, e) => {
+    const movement = getKeyboardMovement(e);
+    if (!movement) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const container = e.currentTarget.parentElement;
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const key = panelIdx + "-" + labelIdx;
+    const current = aiLabelPositions[key];
+    const left = current ? parseFloat(current.left) : (rect.left - containerRect.left) / containerRect.width * 100;
+    const top = current ? parseFloat(current.top) : (rect.top - containerRect.top) / containerRect.height * 100;
+    const step = e.shiftKey ? 5 : 1;
+    pushVisualSnapshot();
+    setAiLabelPositions((prev) => ({ ...prev, [key]: {
+      left: Math.max(0, Math.min(90, left + movement.x * step)) + "%",
+      top: Math.max(0, Math.min(90, top + movement.y * step)) + "%"
+    } }));
+    announceLabelMove(movement, e.shiftKey, "Label");
+  };
+  const handleAnchorKeyDown = (panelIdx, labelKey, labelType, currentX, currentY, e) => {
+    const movement = getKeyboardMovement(e);
+    if (!movement) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const step = e.shiftKey ? 5 : 1;
+    const x = Math.max(0, Math.min(100, currentX + movement.x * step));
+    const y = Math.max(0, Math.min(100, currentY + movement.y * step));
+    if (labelType === "ai") setAiLabelAnchors((prev) => ({ ...prev, [panelIdx + "-" + labelKey]: { x, y } }));
+    else setUserLabels((prev) => ({ ...prev, [panelIdx]: (prev[panelIdx] || []).map((label) => label.id === labelKey ? { ...label, anchorX: x, anchorY: y } : label) }));
+    announceLabelMove(movement, e.shiftKey, "Leader line anchor");
   };
   const handleCaptionTTS = (panelIdx) => {
     const panels = visualPlan.panels || [];
@@ -879,7 +936,7 @@ Return ONLY valid JSON:
     }));
     const allPoints = [...aiLabels, ...teacherLabels];
     if (allPoints.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("svg", { className: "visual-leader-line", viewBox: "0 0 100 100", preserveAspectRatio: "none", "aria-hidden": "true", style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 2 } }, allPoints.map((pt, idx) => {
+    return /* @__PURE__ */ React.createElement("svg", { className: "visual-leader-line", viewBox: "0 0 100 100", preserveAspectRatio: "none", role: "group", "aria-label": "Movable label leader-line anchors", style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 2 } }, allPoints.map((pt, idx) => {
       const tx = pt.anchorX !== null && pt.anchorX !== void 0 ? pt.anchorX : 50;
       const ty = pt.anchorY !== null && pt.anchorY !== void 0 ? pt.anchorY : 50;
       const dist = Math.sqrt((pt.x - tx) ** 2 + (pt.y - ty) ** 2);
@@ -909,6 +966,10 @@ Return ONLY valid JSON:
           opacity: "0",
           style: { cursor: "grab", pointerEvents: "all", transition: "opacity 0.2s, r 0.15s" },
           onMouseDown: (e) => handleAnchorMouseDown(panelIdx, pt.key, pt.type, e),
+          onKeyDown: (e) => handleAnchorKeyDown(panelIdx, pt.key, pt.type, tx, ty, e),
+          tabIndex: "0",
+          role: "button",
+          "aria-label": "Move leader-line anchor with arrow keys; hold Shift for a larger step",
           onMouseEnter: (e) => {
             e.target.setAttribute("opacity", "0.9");
             e.target.setAttribute("r", "2.2");
@@ -965,7 +1026,7 @@ Return ONLY valid JSON:
     if (!panelOrder) return visualPlan.panels;
     return panelOrder.map((idx) => visualPlan.panels[idx]).filter(Boolean);
   }, [panelOrder, visualPlan.panels]);
-  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "visual-grid-controls", style: { display: "flex", flexWrap: "wrap", gap: "6px", padding: "8px 12px", background: "linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%)", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "8px", alignItems: "center" } }, !isStudentChallenge && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { id: "visual-label-move-instructions", className: "sr-only" }, "Use arrow keys to move labels and leader-line anchors. Hold Shift for a larger step."), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, labelMoveStatus), /* @__PURE__ */ React.createElement("div", { className: "visual-grid-controls", style: { display: "flex", flexWrap: "wrap", gap: "6px", padding: "8px 12px", background: "linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%)", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "8px", alignItems: "center" } }, !isStudentChallenge && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.toggle_labels"),
@@ -998,7 +1059,7 @@ Return ONLY valid JSON:
         "aria-label": `${colorName} drawing color`,
         tabIndex: 0,
         title: colorName,
-        style: { width: 16, height: 16, borderRadius: "50%", background: c, border: drawingColor === c ? "2px solid #1e293b" : "2px solid transparent", cursor: "pointer", transition: "transform 0.15s", transform: drawingColor === c ? "scale(1.2)" : "scale(1)" }
+        style: { width: 24, height: 24, borderRadius: "50%", background: c, border: drawingColor === c ? "2px solid #1e293b" : "2px solid transparent", cursor: "pointer", transition: "transform 0.15s", transform: drawingColor === c ? "scale(1.2)" : "scale(1)" }
       }
     );
   })), /* @__PURE__ */ React.createElement("button", { onClick: () => {
@@ -1093,13 +1154,13 @@ Return ONLY valid JSON:
       ), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", bottom: 6, left: 6, display: "flex", gap: 2, background: "rgba(15,23,42,0.65)", color: "white", borderRadius: 12, padding: "2px 4px", alignItems: "center", fontSize: 10, fontWeight: 600, zIndex: 5 } }, paused ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
         e.stopPropagation();
         stepFrame(panelIdx, panel, -1);
-      }, "aria-label": t("common.previous_frame") || "Previous frame", title: t("common.previous_frame") || "Previous frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", padding: "2px 6px", fontSize: 12 } }, "\u25C0"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, frameIdx + 1, "/", panel.frames.length), /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+      }, "aria-label": t("common.previous_frame") || "Previous frame", title: t("common.previous_frame") || "Previous frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", minWidth: 24, minHeight: 24, padding: "2px 6px", fontSize: 12 } }, "\u25C0"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, frameIdx + 1, "/", panel.frames.length), /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
         e.stopPropagation();
         stepFrame(panelIdx, panel, 1);
-      }, "aria-label": t("common.next_frame") || "Next frame", title: t("common.next_frame") || "Next frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", padding: "2px 6px", fontSize: 12 } }, "\u25B6")) : /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+      }, "aria-label": t("common.next_frame") || "Next frame", title: t("common.next_frame") || "Next frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", minWidth: 24, minHeight: 24, padding: "2px 6px", fontSize: 12 } }, "\u25B6")) : /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
         e.stopPropagation();
         togglePlayPause(panelIdx, panel);
-      }, "aria-label": t("common.pause_animation") || "Pause animation", title: t("common.pause_animation") || "Pause animation", style: { background: "none", border: "none", color: "white", cursor: "pointer", padding: "2px 8px", fontSize: 12 } }, "\u23F8 ", panel.frames.length, "f")));
+      }, "aria-label": t("common.pause_animation") || "Pause animation", title: t("common.pause_animation") || "Pause animation", style: { background: "none", border: "none", color: "white", cursor: "pointer", minHeight: 24, padding: "2px 8px", fontSize: 12 } }, "\u23F8 ", panel.frames.length, "f")));
     }
     return /* @__PURE__ */ React.createElement("img", { src: overrideUrl || panel.imageUrl, alt: panel.caption || `Panel ${panelIdx + 1}`, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } });
   })() : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && panel.labels.map((label, labelIdx) => {
@@ -1119,14 +1180,22 @@ Return ONLY valid JSON:
           if (e.target.tagName === "INPUT") return;
           if (!(isStudentChallenge && isFillBlank)) handleAiLabelMouseDown(panelIdx, labelIdx, e);
         },
+        onKeyDown: (e) => {
+          if (isStudentChallenge && isFillBlank || e.target.tagName === "INPUT") return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleLabelClick(panelIdx, labelIdx);
+          } else handleAiLabelKeyDown(panelIdx, labelIdx, e);
+        },
         onDoubleClick: () => {
           if (!(isStudentChallenge && isFillBlank)) handleLabelClick(panelIdx, labelIdx);
         },
         onMouseEnter: () => setHoveredLabelKey(labelKey),
         onMouseLeave: () => setHoveredLabelKey(null),
         title: isStudentChallenge && isFillBlank ? "Type the correct label" : "Drag to move \u2022 Double-click to edit",
-        role: "note",
+        role: isStudentChallenge && isFillBlank ? "note" : "button",
         tabIndex: 0,
+        "aria-describedby": "visual-label-move-instructions",
         "aria-label": isStudentChallenge && isFillBlank ? `Blank label ${labelIdx + 1} \u2014 type your answer` : `Label: ${label.text || label}`
       },
       isStudentChallenge && isFillBlank ? /* @__PURE__ */ React.createElement(
@@ -1178,15 +1247,23 @@ Return ONLY valid JSON:
           if (e.target.tagName === "INPUT") return;
           if (!isUserFillBlank) handleLabelMouseDown(panelIdx, uLabel.id, e);
         },
+        onKeyDown: (e) => {
+          if (isUserFillBlank || e.target.tagName === "INPUT") return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setEditingLabel({ panelIdx, labelIdx: `user-${uLabel.id}` });
+          } else handleUserLabelKeyDown(panelIdx, uLabel.id, e);
+        },
         onDoubleClick: () => {
           if (!isUserFillBlank) setEditingLabel({ panelIdx, labelIdx: `user-${uLabel.id}` });
         },
         onMouseEnter: () => setHoveredLabelKey("user-" + panelIdx + "-" + uLabel.id),
         onMouseLeave: () => setHoveredLabelKey(null),
         style: { position: "absolute", display: labelsHidden || isStudentChallenge && !isFillBlank ? "none" : "flex", alignItems: "center", gap: "4px", left: `${uLabel.x}%`, top: `${uLabel.y}%`, borderColor: isUserFillBlank ? "#86efac" : "#8b5cf6", background: isUserFillBlank ? "rgba(255,255,255,0.95)" : "rgba(245,243,255,0.95)", zIndex: 4, padding: "4px 10px", borderRadius: "8px", border: isUserFillBlank ? "2px solid #86efac" : "2px solid rgba(139,92,246,0.5)", boxShadow: isUserFillBlank ? "0 2px 12px rgba(22,163,74,0.2)" : "0 2px 8px rgba(139,92,246,0.15)", fontSize: "13px", fontWeight: 700, color: "#1e1b4b", cursor: isUserFillBlank ? "text" : "grab", userSelect: "none", touchAction: "none" },
-        role: "note",
+        role: isUserFillBlank ? "note" : "button",
         tabIndex: 0,
-        "aria-label": isUserFillBlank ? "Fill in this label" : uLabel.text,
+        "aria-describedby": "visual-label-move-instructions",
+        "aria-label": isUserFillBlank ? "Fill in this label" : uLabel.text + ". Use arrow keys to move; hold Shift for a larger step.",
         title: isUserFillBlank ? "Type the correct label" : "Drag to move \u2022 Double-click to edit"
       },
       isUserFillBlank ? /* @__PURE__ */ React.createElement(
@@ -1462,16 +1539,16 @@ Return ONLY valid JSON:
         onClick: () => onDeleteFrame(panelIdx, fIdx),
         "aria-label": t("common.frame_delete_aria") || `Delete frame ${fIdx + 1}`,
         title: t("common.frame_delete_title") || "Delete this frame",
-        style: { position: "absolute", top: -4, right: -4, width: 16, height: 16, borderRadius: "50%", background: "#ef4444", color: "white", border: "none", fontSize: 10, lineHeight: 1, cursor: "pointer", padding: 0 }
+        style: { position: "absolute", top: -8, right: -8, width: 24, height: 24, borderRadius: "50%", background: "#ef4444", color: "white", border: "none", fontSize: 12, lineHeight: 1, cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }
       },
       "\u2715"
-    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 1, marginTop: 2, justifyContent: "center" } }, onReorderFrame && fIdx > 0 && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 2, marginTop: 2, justifyContent: "center" } }, onReorderFrame && fIdx > 0 && /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => onReorderFrame(panelIdx, fIdx, fIdx - 1),
         "aria-label": t("common.frame_move_left_aria") || `Move frame ${fIdx + 1} earlier`,
         title: t("common.frame_move_left_title") || "Move earlier",
-        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 9, lineHeight: 1, padding: "1px 4px", borderRadius: 3 }
+        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: "2px 4px", borderRadius: 3 }
       },
       "\u25C0"
     ), onDuplicateFrame && /* @__PURE__ */ React.createElement(
@@ -1480,7 +1557,7 @@ Return ONLY valid JSON:
         onClick: () => onDuplicateFrame(panelIdx, fIdx),
         "aria-label": t("common.frame_duplicate_aria") || `Duplicate frame ${fIdx + 1}`,
         title: t("common.frame_duplicate_title") || "Duplicate this frame",
-        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 9, lineHeight: 1, padding: "1px 4px", borderRadius: 3 }
+        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: "2px 4px", borderRadius: 3 }
       },
       "+"
     ), onReorderFrame && fIdx < panel.frames.length - 1 && /* @__PURE__ */ React.createElement(
@@ -1489,7 +1566,7 @@ Return ONLY valid JSON:
         onClick: () => onReorderFrame(panelIdx, fIdx, fIdx + 1),
         "aria-label": t("common.frame_move_right_aria") || `Move frame ${fIdx + 1} later`,
         title: t("common.frame_move_right_title") || "Move later",
-        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 9, lineHeight: 1, padding: "1px 4px", borderRadius: 3 }
+        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: "2px 4px", borderRadius: 3 }
       },
       "\u25B6"
     )));

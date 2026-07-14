@@ -47,7 +47,7 @@ function ExportPreviewView(props) {
     setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
     setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt,
     setExportTheme, setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview, showExportPreview,
-    t,
+    t, theme,
     toggleA11yInspect, updateExportPreview,
     exportPreviewSource,
   } = props;
@@ -58,6 +58,202 @@ function ExportPreviewView(props) {
   // Writing-check panel state: null | {status:'loading'} | {status:'error',error}
   // | {status:'done', items:[{blockIndex,message,start,end,bad,snippet,suggestions}], capped}
   const [writingCheck, setWritingCheck] = React.useState(null);
+  const [wordGoalProgress, setWordGoalProgress] = React.useState({ count: 0, goal: 0, percent: 0 });
+  const [pendingImageFile, setPendingImageFile] = React.useState(null);
+  const [imageAltText, setImageAltText] = React.useState('');
+  const [imageDecorative, setImageDecorative] = React.useState(false);
+  const [imageAltError, setImageAltError] = React.useState('');
+  const [imageInsertBusy, setImageInsertBusy] = React.useState(false);
+  const [exportActionBusy, setExportActionBusy] = React.useState(false);
+  const imageFileInputRef = React.useRef(null);
+  const imageAddButtonRef = React.useRef(null);
+  const imageAltInputRef = React.useRef(null);
+  const imageInsertionRangeRef = React.useRef(null);
+  const exportDialogRef = React.useRef(null);
+  const imageDialogRef = React.useRef(null);
+  const imageInsertRunRef = React.useRef(0);
+  const writingCheckRunRef = React.useRef(0);
+  const auditRunRef = React.useRef(0);
+  const expertRunRef = React.useRef(0);
+  const exportActionLockRef = React.useRef(false);
+  const mountedRef = React.useRef(true);
+  const openerRef = React.useRef(null);
+
+  React.useEffect(() => () => {
+    mountedRef.current = false;
+    imageInsertRunRef.current += 1;
+    writingCheckRunRef.current += 1;
+    auditRunRef.current += 1;
+    expertRunRef.current += 1;
+  }, []);
+
+  // Capture the launch control before the following focus-trap effect moves
+  // focus into the dialog. Effects run in declaration order.
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    openerRef.current = document.activeElement;
+    return () => {
+      const opener = openerRef.current;
+      if (opener && opener.isConnected && typeof opener.focus === 'function') {
+        window.setTimeout(() => opener.focus(), 0);
+      }
+    };
+  }, [showExportPreview]);
+
+  const closeImageDialog = React.useCallback(() => {
+    imageInsertRunRef.current += 1;
+    setImageInsertBusy(false);
+    setPendingImageFile(null);
+    setImageAltText('');
+    setImageDecorative(false);
+    setImageAltError('');
+    window.setTimeout(() => imageAddButtonRef.current?.focus(), 0);
+  }, []);
+
+  React.useEffect(() => {
+    if (!showExportPreview || pendingImageFile) return undefined;
+    const dialog = exportDialogRef.current;
+    if (!dialog) return undefined;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])'));
+    if (!dialog.contains(document.activeElement)) (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); setShowExportPreview(false); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => dialog.removeEventListener('keydown', onKeyDown);
+  }, [showExportPreview, pendingImageFile, setShowExportPreview]);
+
+  React.useEffect(() => {
+    if (!pendingImageFile) return undefined;
+    const dialog = imageDialogRef.current;
+    if (!dialog) return undefined;
+    const timer = window.setTimeout(() => imageAltInputRef.current?.focus(), 0);
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeImageDialog(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => { window.clearTimeout(timer); dialog.removeEventListener('keydown', onKeyDown); };
+  }, [pendingImageFile, closeImageDialog]);
+
+  const insertPendingImage = React.useCallback(() => {
+    if (!pendingImageFile || imageInsertBusy) return;
+    const file = pendingImageFile;
+    const decorative = imageDecorative;
+    const alt = decorative ? '' : imageAltText.trim();
+    if (!decorative && !alt) {
+      setImageAltError('Describe the image, or mark it as decorative.');
+      imageAltInputRef.current?.focus();
+      return;
+    }
+    const runId = ++imageInsertRunRef.current;
+    setImageInsertBusy(true);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (!mountedRef.current || runId !== imageInsertRunRef.current) return;
+      const iframe = exportPreviewRef.current;
+      const doc = iframe?.contentDocument;
+      const dataUrl = ev?.target?.result;
+      if (!doc || typeof dataUrl !== 'string') {
+        setImageInsertBusy(false);
+        addToast && addToast('Preview not ready yet.', 'error');
+        return;
+      }
+      if (!/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(dataUrl)) {
+        setImageInsertBusy(false);
+        addToast && addToast('That image format is not supported. Choose PNG, JPEG, GIF, or WebP.', 'error');
+        return;
+      }
+      const img = doc.createElement('img');
+      img.style.cssText = 'max-width:100%;height:auto;border-radius:8px;margin:12px 0;cursor:move;';
+      img.alt = alt;
+      img.setAttribute('tabindex', '0');
+      img.setAttribute('data-allo-crop-tabindex-added', 'added');
+      img.onload = () => {
+        if (!mountedRef.current || runId !== imageInsertRunRef.current) return;
+        const pixels = (img.naturalWidth || 0) * (img.naturalHeight || 0);
+        if (!img.naturalWidth || img.naturalWidth > 10000 || img.naturalHeight > 10000 || pixels > 25000000) {
+          img.onload = null;
+          setImageInsertBusy(false);
+          addToast && addToast('That image is too large to edit safely. Choose an image under 10,000 pixels per side and 25 megapixels.', 'error');
+          return;
+        }
+        img.onload = null;
+        const savedRange = imageInsertionRangeRef.current;
+        if (savedRange && savedRange.startContainer?.ownerDocument === doc && savedRange.startContainer?.isConnected) {
+          try {
+            savedRange.collapse(false);
+            savedRange.insertNode(img);
+          } catch (_) {
+            (doc.querySelector('main') || doc.body).appendChild(img);
+          }
+        } else {
+          (doc.querySelector('main') || doc.body).appendChild(img);
+        }
+        try {
+          if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
+          const InputEventCtor = doc.defaultView?.Event || Event;
+          doc.body?.dispatchEvent(new InputEventCtor('input', { bubbles: true }));
+        } catch (_) {}
+        imageInsertionRangeRef.current = null;
+        closeImageDialog();
+        addToast && addToast(decorative ? 'Decorative image inserted.' : 'Image inserted with alternative text.', 'success');
+      };
+      img.onerror = () => {
+        if (!mountedRef.current || runId !== imageInsertRunRef.current) return;
+        setImageInsertBusy(false);
+        addToast && addToast('Could not decode that image.', 'error');
+      };
+      img.src = dataUrl;
+    };
+    reader.onerror = () => {
+      if (!mountedRef.current || runId !== imageInsertRunRef.current) return;
+      setImageInsertBusy(false);
+      addToast && addToast('Could not read that image.', 'error');
+    };
+    reader.readAsDataURL(file);
+  }, [pendingImageFile, imageInsertBusy, imageDecorative, imageAltText, exportPreviewRef, addToast, closeImageDialog]);
+
+  const runExportFromPreview = React.useCallback(async () => {
+    if (exportActionLockRef.current) return;
+    exportActionLockRef.current = true;
+    setExportActionBusy(true);
+    try {
+      await executeExportFromPreview();
+    } catch (error) {
+      if (mountedRef.current) addToast && addToast('Export failed. The builder is still open so you can try again.', 'error');
+    } finally {
+      exportActionLockRef.current = false;
+      if (mountedRef.current) setExportActionBusy(false);
+    }
+  }, [executeExportFromPreview, addToast]);
+
+  const handleRadioGroupKeyDown = React.useCallback((e) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
+    const radios = Array.from(e.currentTarget.querySelectorAll('[role="radio"]:not([disabled])'));
+    if (!radios.length) return;
+    e.preventDefault();
+    const current = Math.max(0, radios.indexOf(document.activeElement));
+    let next = current;
+    if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = radios.length - 1;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (current - 1 + radios.length) % radios.length;
+    else next = (current + 1) % radios.length;
+    radios[next].focus();
+    radios[next].click();
+  }, []);
   const brandProfiles = React.useMemo(() => {
     try {
       const bp = window.AlloModules && window.AlloModules.BrandProfile;
@@ -78,37 +274,46 @@ function ExportPreviewView(props) {
   if (!showExportPreview) return null;
 
   return (
-          <div className="fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-label={t("a11y.doc_builder")}
-            onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}
-            onKeyDown={(e) => { if (e.key === 'Escape') setShowExportPreview(false); }}
-            ref={(el) => {
-              if (!el) return;
-              // iframe included: the WYSIWYG editing surface was previously
-              // unreachable by Tab inside the trap — a WCAG 2.1.1 failure on
-              // the builder's main feature.
-              const focusables = el.querySelectorAll('button, [href], input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])');
-              if (focusables.length > 0 && !el.contains(document.activeElement)) focusables[0].focus();
-              el.__focusTrap = el.__focusTrap || ((ev) => {
-                if (ev.key !== 'Tab') return;
-                const fl = el.querySelectorAll('button, [href], input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])');
-                if (fl.length === 0) return;
-                const first = fl[0], last = fl[fl.length - 1];
-                if (ev.shiftKey) { if (document.activeElement === first) { ev.preventDefault(); last.focus(); } }
-                else { if (document.activeElement === last) { ev.preventDefault(); first.focus(); } }
-              });
-              el.removeEventListener('keydown', el.__focusTrap);
-              el.addEventListener('keydown', el.__focusTrap);
-            }}>
-            <div className="bg-white rounded-2xl shadow-2xl flex w-full max-w-[95vw] max-h-[95vh] overflow-hidden">
+          <div className="allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="presentation"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}>
+            {pendingImageFile && (
+              <div className="allo-docsuite fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="presentation"
+                onClick={(e) => { if (e.target === e.currentTarget) closeImageDialog(); }}
+                >
+                <div ref={imageDialogRef} tabIndex={-1} className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="image-description-title" aria-describedby="image-description-help">
+                  <h3 id="image-description-title" className="text-lg font-black text-slate-900">Describe this image</h3>
+                  <p id="image-description-help" className="mt-1 text-sm text-slate-700">Alternative text should communicate the image’s purpose to someone who cannot see it.</p>
+                  <p className="mt-2 text-xs font-medium text-slate-600 truncate" title={pendingImageFile.name}>{pendingImageFile.name}</p>
+                  <label htmlFor="builder-image-alt" className="mt-4 block text-sm font-bold text-slate-800">Alternative text</label>
+                  <textarea id="builder-image-alt" ref={imageAltInputRef} value={imageAltText} disabled={imageDecorative} rows={3}
+                    onChange={(e) => { setImageAltText(e.target.value); setImageAltError(''); }}
+                    aria-describedby="builder-image-alt-help builder-image-alt-error" aria-invalid={imageAltError ? 'true' : undefined}
+                    className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:bg-slate-100" />
+                  <p id="builder-image-alt-help" className="mt-1 text-xs text-slate-600">Describe what matters in this document, not every visual detail.</p>
+                  <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 hover:bg-slate-50">
+                    <input type="checkbox" checked={imageDecorative} onChange={(e) => { setImageDecorative(e.target.checked); setImageAltError(''); }} />
+                    <span><strong>Decorative image</strong> — it adds no information and should be skipped by screen readers.</span>
+                  </label>
+                  <p id="builder-image-alt-error" className="mt-2 min-h-5 text-sm font-bold text-red-700" role="alert">{imageAltError}</p>
+                  <div className="mt-4 flex justify-end gap-3">
+                    <button type="button" onClick={closeImageDialog} className="min-h-11 rounded-lg border border-slate-400 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Cancel</button>
+                    <button type="button" onClick={insertPendingImage} disabled={imageInsertBusy} aria-busy={imageInsertBusy} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60">{imageInsertBusy ? 'Inserting image...' : 'Insert image'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className="bg-white rounded-2xl shadow-2xl flex flex-col lg:flex-row w-full max-w-[95vw] max-h-[95vh] overflow-y-auto lg:overflow-hidden focus:outline-none" inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
               {/* Left Panel — Settings */}
-              <div className="w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 overflow-y-auto p-4 space-y-3">
+              <div className="w-full lg:w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3">
                 <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
+                  <h2 id="document-builder-title" className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
                   <div className="flex items-center gap-1">
+                    <button onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }} className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm" aria-label={t('a11y.toggle_theme') || 'Toggle color theme'} title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}><span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span></button>
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
                     <button onClick={() => setShowExportPreview(false)} className="p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors" data-help-key="doc_builder_close_btn" aria-label={t("a11y.close_doc_builder")}><X size={20} /></button>
                   </div>
                 </div>
+                <button type="button" aria-controls="document-builder-preview" onClick={() => exportPreviewRef.current?.focus()} className="sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white">Skip to editable preview</button>
                 {exportPreviewSource === 'remediation' && (
                   <div className="bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800" role="status">
                     <span className="font-bold">♿ {t('export_preview.remediation_banner_title') || 'Editing the remediated document.'}</span>{' '}
@@ -117,7 +322,7 @@ function ExportPreviewView(props) {
                 )}
 
                 {/* ── SECTION: Quick Start ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {/* Presets */}
                 <div>
@@ -136,7 +341,7 @@ function ExportPreviewView(props) {
                           title={`Apply "${preset.name}" preset`}
                         >{preset.emoji} {preset.name}</button>
                         <button onClick={() => deleteExportPreset(key)}
-                          className="px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-600 hover:text-red-700 hover:bg-red-50 transition-all"
+                          className="min-w-6 min-h-6 px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-700 hover:text-red-800 hover:bg-red-50 transition-all" aria-label={`Delete "${preset.name}" preset`}
                           title={`Delete "${preset.name}" preset`}
                         ><X size={10} /></button>
                       </div>
@@ -153,15 +358,15 @@ function ExportPreviewView(props) {
                 {/* Export Mode */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Format</div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1" role="radiogroup" aria-label="Export format" onKeyDown={handleRadioGroupKeyDown}>
                     {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].map(([m, label]) => (
-                      <button key={m} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
+                      <button key={m} role="radio" aria-checked={exportPreviewMode === m} tabIndex={exportPreviewMode === m ? 0 : -1} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
                     ))}
                   </div>
                 </div>
 
                 {/* ── SECTION: Appearance ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {/* Style */}
                 <div>
@@ -185,16 +390,16 @@ function ExportPreviewView(props) {
                       className="w-full mb-1.5 text-left text-[11px] px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 text-rose-800 hover:border-rose-400 hover:from-rose-100 hover:to-orange-100 transition-colors"
                     >🏷️ <strong>First time?</strong> Set up your school brand → colors, fonts, logo for branded exports</button>
                   )}
-                  <div className="grid grid-cols-2 gap-1">
+                  <div className="grid grid-cols-2 gap-1" role="radiogroup" aria-label="Document style" onKeyDown={handleRadioGroupKeyDown}>
                     {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => (
-                      <button key={key} onClick={() => { setExportTheme(key); setTimeout(updateExportPreview, 50); }}
+                      <button key={key} role="radio" aria-checked={exportTheme === key} tabIndex={exportTheme === key ? 0 : -1} onClick={() => setExportTheme(key)}
                         className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}
                       >{s.emoji} {s.name}</button>
                     ))}
                     {/* User brand profiles as selectable themes — clicking one applies its
                         CSS vars via doc_pipeline_source.jsx:16325 BrandProfile fallback. */}
                     {brandProfiles.map(p => (
-                      <button key={p.id} onClick={() => { setExportTheme(p.id); setTimeout(updateExportPreview, 50); }}
+                      <button key={p.id} role="radio" aria-checked={exportTheme === p.id} tabIndex={exportTheme === p.id ? 0 : -1} onClick={() => setExportTheme(p.id)}
                         className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? 'bg-rose-600 text-white ring-2 ring-rose-300' : 'bg-white border border-rose-400 text-rose-700 hover:bg-rose-50'}`}
                         title="School brand profile"
                       >🏷️ {p.name || 'Brand'}</button>
@@ -227,7 +432,7 @@ function ExportPreviewView(props) {
                       ))}
                     </select>
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Size:</span>
                     <input type="range" min={12} max={24} value={exportConfig.fontSize} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, fontSize: parseInt(e.target.value) }))}
                       className="flex-1 accent-indigo-600" data-help-key="doc_builder_font_size_slider" aria-label={t("a11y.font_size")} />
@@ -269,7 +474,7 @@ function ExportPreviewView(props) {
                       })()} words
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <label className="text-[11px] text-slate-600 shrink-0" htmlFor="word-goal-input">Goal:</label>
                     <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
                       className="flex-1 text-[11px] border border-slate-400 rounded px-2 py-1 bg-white"
@@ -283,13 +488,18 @@ function ExportPreviewView(props) {
                         const lbl = document.getElementById('word-goal-label');
                         if (bar && goal > 0) {
                           const pct = Math.min(100, Math.round((count / goal) * 100));
+                          setWordGoalProgress({ count, goal, percent: pct });
                           bar.style.width = pct + '%';
                           bar.style.background = pct >= 100 ? '#16a34a' : pct >= 75 ? '#2563eb' : '#d97706';
                           if (lbl) lbl.textContent = count + ' / ' + goal + ' (' + pct + '%)';
+                        } else {
+                          setWordGoalProgress({ count, goal: 0, percent: 0 });
+                          if (bar) bar.style.width = '0%';
+                          if (lbl) lbl.textContent = '';
                         }
                       }} />
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label={t("a11y.word_count_progress")}>
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label={t("a11y.word_count_progress")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={wordGoalProgress.percent} aria-valuetext={wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words (${wordGoalProgress.percent}%)` : 'No word-count goal set'}>
                     <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
                   </div>
                   <div id="word-goal-label" className="text-[11px] text-slate-600 mt-0.5"></div>
@@ -297,22 +507,23 @@ function ExportPreviewView(props) {
                 </div>
 
                 {/* ── SECTION: Word Art ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Word Art<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Word Art<span className="flex-1 h-px bg-indigo-100"></span></h3>
                 <div className="bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2">
                   <input type="text" id="wordart-text-input" placeholder={t("placeholders.word_art_text_input")} defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label={t("a11y.word_art_text")} />
                   <div>
                     <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Style</div>
-                    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label={t("a11y.word_art_style")}>
+                    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label={t("a11y.word_art_style")} onKeyDown={handleRadioGroupKeyDown}>
                       {[['goldFoil','✨','Gold'],['neonGlow','💡','Neon'],['retroArcade','🕹️','Retro'],['chalkboard','🖍️','Chalk'],['embossed','🏛️','3D'],['rainbow','🌈','Rainbow']].map(([key, emoji, label], i) => (
-                        <button key={key} type="button" role="radio" aria-checked={i === 0} data-wa-preset={key}
+                        <button key={key} type="button" role="radio" aria-checked={i === 0} tabIndex={i === 0 ? 0 : -1} data-wa-preset={key}
                           className="wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all"
-                          style={i === 0 ? { background: '#f59e0b', color: 'white', borderColor: '#f59e0b' } : { background: 'white', borderColor: '#fcd34d' }}
+                          style={i === 0 ? { background: '#b45309', color: 'white', borderColor: '#b45309' } : { background: 'white', borderColor: '#fcd34d' }}
                           onClick={(e) => {
                             const parent = e.currentTarget.parentElement;
                             if (!parent) return;
-                            parent.querySelectorAll('.wordart-preset-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = ''; b.style.borderColor = '#fcd34d'; });
+                            parent.querySelectorAll('.wordart-preset-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.tabIndex = -1; b.style.background = 'white'; b.style.color = ''; b.style.borderColor = '#fcd34d'; });
                             e.currentTarget.setAttribute('aria-checked', 'true');
-                            e.currentTarget.style.background = '#f59e0b';
+                            e.currentTarget.tabIndex = 0;
+                            e.currentTarget.style.background = '#b45309';
                             e.currentTarget.style.color = 'white';
                             e.currentTarget.style.borderColor = '#f59e0b';
                           }}
@@ -323,16 +534,17 @@ function ExportPreviewView(props) {
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Size</div>
-                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_size")}>
+                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_size")} onKeyDown={handleRadioGroupKeyDown}>
                         {['S','M','L','XL'].map((s) => (
-                          <button key={s} type="button" role="radio" aria-checked={s === 'L'} data-wa-size={s}
+                          <button key={s} type="button" role="radio" aria-checked={s === 'L'} tabIndex={s === 'L' ? 0 : -1} data-wa-size={s}
                             className="wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             style={s === 'L' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
                             onClick={(e) => {
                               const parent = e.currentTarget.parentElement;
                               if (!parent) return;
-                              parent.querySelectorAll('.wordart-size-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
+                              parent.querySelectorAll('.wordart-size-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.tabIndex = -1; b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
                               e.currentTarget.setAttribute('aria-checked', 'true');
+                              e.currentTarget.tabIndex = 0;
                               e.currentTarget.style.background = '#4f46e5';
                               e.currentTarget.style.color = 'white';
                               e.currentTarget.style.borderColor = '#4f46e5';
@@ -343,16 +555,17 @@ function ExportPreviewView(props) {
                     </div>
                     <div className="flex-1">
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Align</div>
-                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_alignment")}>
+                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_alignment")} onKeyDown={handleRadioGroupKeyDown}>
                         {[['left','⇤'],['center','⇔'],['right','⇥']].map(([a, icon]) => (
-                          <button key={a} type="button" role="radio" aria-checked={a === 'center'} data-wa-align={a}
+                          <button key={a} type="button" role="radio" aria-checked={a === 'center'} tabIndex={a === 'center' ? 0 : -1} data-wa-align={a} aria-label={`Align ${a}`}
                             className="wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             style={a === 'center' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
                             onClick={(e) => {
                               const parent = e.currentTarget.parentElement;
                               if (!parent) return;
-                              parent.querySelectorAll('.wordart-align-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
+                              parent.querySelectorAll('.wordart-align-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.tabIndex = -1; b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
                               e.currentTarget.setAttribute('aria-checked', 'true');
+                              e.currentTarget.tabIndex = 0;
                               e.currentTarget.style.background = '#4f46e5';
                               e.currentTarget.style.color = 'white';
                               e.currentTarget.style.borderColor = '#4f46e5';
@@ -410,15 +623,16 @@ function ExportPreviewView(props) {
                         const node = wrap.firstChild;
                         if (node) doc.body.appendChild(node);
                       }
+                      try { if (doc.body) { doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } } catch (_) {}
                       if (textInput) textInput.value = '';
                       addToast('✨ Word art inserted', 'success');
                     }}
-                    className="w-full px-3 py-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
+                    className="w-full px-3 py-2 bg-gradient-to-r from-amber-700 to-rose-700 hover:from-amber-800 hover:to-rose-800 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
                   >✨ Insert Word Art</button>
                 </div>
 
                 {/* ── SECTION: Content ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {/* Resource Toggles */}
                 <div>
@@ -432,7 +646,7 @@ function ExportPreviewView(props) {
                           const update = {};
                           resourceKeys.forEach(k => { update[k] = !allOn; });
                           setExportConfigAndRefresh(p => ({ ...p, ...update }));
-                        }} className="text-[11px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors">
+                        }} className="text-[11px] font-bold text-indigo-700 hover:text-indigo-800 transition-colors">
                           {allOn ? 'Deselect All' : 'Select All'}
                         </button>
                       );
@@ -467,7 +681,7 @@ function ExportPreviewView(props) {
                         return (
                           <label key={key} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
                             <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
-                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-400 font-bold">(also in student copy)</span>}</span>
+                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-700 font-bold">(also in student copy)</span>}</span>
                           </label>
                         );
                       });
@@ -483,13 +697,13 @@ function ExportPreviewView(props) {
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
                       <p className="text-[11px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
                       <p className="text-[11px] text-amber-600">{skipped.join(', ')}</p>
-                      <p className="text-[11px] text-amber-500 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
+                      <p className="text-[11px] text-amber-700 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
                     </div>
                   );
                 })()}
 
                 {/* ── SECTION: Export ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {/* Additional Options */}
                 <div>
@@ -502,6 +716,18 @@ function ExportPreviewView(props) {
                     <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                       <input type="checkbox" checked={exportConfig.includeStudentResponses} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeStudentResponses: e.target.checked }))} className="rounded" />
                       📝 Student Responses
+                    </label>
+                    {/* Assessment mode (Aaron 2026-07-01): interactive quizzes self-grade via a hidden
+                        data-correct marker per question — anyone can read it in view-source. Fine for
+                        practice; not for a graded test. This strips the markers + self-check button and
+                        suppresses the teacher key, while answers still save/submit normally. */}
+                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title="For graded work: removes the hidden self-check answers and the 'Check my answers' button from the exported file, and leaves the teacher key out even if it's checked above. Students can still fill in and save/submit their answers — they just can't look up or self-grade against the key.">
+                      <input type="checkbox" checked={exportConfig.assessmentMode === true} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, assessmentMode: e.target.checked }))} className="rounded" />
+                      🔒 Assessment mode (no embedded answers)
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                      <input type="checkbox" checked={exportConfig.singleFileHtml} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, singleFileHtml: e.target.checked }))} className="rounded" />
+                      📄 Single file (.html, no zip)
                     </label>
                   </div>
                 </div>
@@ -670,25 +896,7 @@ function ExportPreviewView(props) {
                   </div>
                 )}
 
-                {/* Audio Embedding */}
-                <div className={exportPreviewMode !== 'html' ? 'opacity-50' : ''}>
-                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">🔊 Audio</div>
-                  <div className="space-y-1">
-                    <label className={`flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === 'html' ? 'cursor-pointer hover:bg-white' : 'cursor-not-allowed'}`}>
-                      <input type="checkbox" checked={exportConfig.includeAudioSource} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeAudioSource: e.target.checked }))} className="rounded" disabled={exportPreviewMode !== 'html'} />
-                      Read-aloud: Source text
-                    </label>
-                    <label className={`flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === 'html' ? 'cursor-pointer hover:bg-white' : 'cursor-not-allowed'}`}>
-                      <input type="checkbox" checked={exportConfig.includeAudioLeveled} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeAudioLeveled: e.target.checked }))} className="rounded" disabled={exportPreviewMode !== 'html'} />
-                      Read-aloud: Leveled text
-                    </label>
-                    {exportPreviewMode !== 'html' ? (
-                      <p className="text-[11px] text-amber-500 font-medium px-1">Switch to HTML format to enable audio embedding</p>
-                    ) : (
-                      <p className="text-[11px] text-slate-600 italic px-1">Audio embeds as inline players in HTML exports.</p>
-                    )}
-                  </div>
-                </div>
+                {/* Audio embedding moved to the read-aloud modal shown on Download HTML */}
 
                 {/* AI Custom Style */}
                 <div>
@@ -716,13 +924,14 @@ function ExportPreviewView(props) {
                       className="flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
                       aria-label={t("a11y.custom_export_style")} />
                     <button onClick={generateCustomExportStyle}
+                      aria-label={isGeneratingStyle ? 'Generating custom style' : 'Generate custom style'}
                       disabled={!exportStylePrompt.trim() || isGeneratingStyle}
                       className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40"
                     >{isGeneratingStyle ? '...' : '✨'}</button>
                   </div>
-                  {customExportCSS && <div className="flex items-center gap-2 mt-1">
-                    <div className="text-[11px] text-green-600 font-medium">✓ Custom style active</div>
-                    <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[11px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
+                  {customExportCSS && <div role="status" aria-live="polite" className="flex items-center gap-2 mt-1">
+                    <div className="text-[11px] text-green-700 font-medium">✓ Custom style active</div>
+                    <button onClick={() => setCustomExportCSS('')} className="text-[11px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
                   </div>}
                 </div>
 
@@ -738,35 +947,51 @@ function ExportPreviewView(props) {
                       .filter((el) => (el.textContent || '').trim().length >= 3);
                   };
                   const runWritingCheck = async () => {
+                    const runId = ++writingCheckRunRef.current;
+                    const sourceDoc = exportPreviewRef.current?.contentDocument;
+                    const sourceHtml = sourceDoc?.documentElement?.outerHTML || '';
                     setWritingCheck({ status: 'loading' });
+                    if (!sourceDoc || !sourceHtml) {
+                      setWritingCheck({ status: 'error', error: t('export_preview.writing.no_preview') || 'Preview not ready - wait for it to render.' });
+                      return;
+                    }
                     try {
                       const linter = await _ensureHarper();
+                      if (!mountedRef.current || runId !== writingCheckRunRef.current) return;
                       const blocks = _leafBlocks();
-                      if (!blocks) { setWritingCheck({ status: 'error', error: t('export_preview.writing.no_preview') || 'Preview not ready — wait for it to render.' }); return; }
+                      if (!blocks) { setWritingCheck({ status: 'error', error: t('export_preview.writing.no_preview') || 'Preview not ready - wait for it to render.' }); return; }
                       const items = [];
                       let capped = false;
                       for (let bi = 0; bi < blocks.length; bi++) {
                         if (items.length >= 150) { capped = true; break; }
-                        const text = blocks[bi].textContent || '';
+                        const blockText = blocks[bi].textContent || '';
                         let lints = [];
-                        try { lints = await linter.lint(text); } catch (_) { continue; }
+                        try { lints = await linter.lint(blockText); } catch (_) { continue; }
+                        if (!mountedRef.current || runId !== writingCheckRunRef.current) return;
                         for (const l of lints) {
                           try {
                             const span = l.span();
                             const sugg = (l.suggestions ? l.suggestions() : []).map((s) => (s.get_replacement_text ? s.get_replacement_text() : '')).filter(Boolean).slice(0, 3);
-                            items.push({ blockIndex: bi, message: l.message ? l.message() : 'Possible issue', start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? '…' : '') + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? '…' : ''), suggestions: sugg });
+                            items.push({ blockIndex: bi, message: l.message ? l.message() : 'Possible issue', start: span.start, end: span.end, bad: blockText.slice(span.start, span.end), snippet: (span.start > 20 ? '...' : '') + blockText.slice(Math.max(0, span.start - 20), Math.min(blockText.length, span.end + 24)) + (span.end + 24 < blockText.length ? '...' : ''), suggestions: sugg });
                           } catch (_) {}
                           if (items.length >= 150) { capped = true; break; }
                         }
                       }
+                      const currentDoc = exportPreviewRef.current?.contentDocument;
+                      if (currentDoc !== sourceDoc || currentDoc?.documentElement?.outerHTML !== sourceHtml) {
+                        if (mountedRef.current && runId === writingCheckRunRef.current) setWritingCheck({ status: 'error', error: 'The document changed while it was being checked. Run the writing check again for current results.' });
+                        return;
+                      }
                       setWritingCheck({ status: 'done', items, capped });
-                    } catch (e) { setWritingCheck({ status: 'error', error: ((e && e.message) || 'The checker failed to load — check the network and try again.').slice(0, 180) }); }
+                    } catch (e) {
+                      if (mountedRef.current && runId === writingCheckRunRef.current) setWritingCheck({ status: 'error', error: ((e && e.message) || 'The checker failed to load - check the network and try again.').slice(0, 180) });
+                    }
                   };
                   const _locate = (item, outline) => {
                     const blocks = _leafBlocks();
                     const el = blocks && blocks[item.blockIndex];
                     if (!el) return null;
-                    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (outline) { el.style.outline = '3px solid #f59e0b'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (_) {} }, 2200); } } catch (_) {}
+                    try { el.scrollIntoView({ block: 'center', behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth' }); if (outline) { el.style.outline = '3px solid #f59e0b'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (_) {} }, 2200); } } catch (_) {}
                     return el;
                   };
                   const _apply = (item, replacement) => {
@@ -787,13 +1012,39 @@ function ExportPreviewView(props) {
                         off += len;
                       }
                       if (!hit) { _locate(item, true); addToast(t('toasts.writing_spans_markup') || 'This suggestion spans formatting (a link or bold text) — fix it by hand at the highlighted spot.', 'info'); return; }
-                      const raw = hit.node.textContent;
-                      hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + (item.end - item.start));
+                      const _badLen = item.end - item.start;
+                      // Apply via the editable doc's insertText so the browser's NATIVE undo stack (and
+                      // the toolbar Undo) can reverse it — a raw textContent assignment is not recorded,
+                      // which is why Undo didn't work. Fall back to a direct write if execCommand can't run.
+                      let _ok = false;
+                      try {
+                        const _range = doc.createRange();
+                        _range.setStart(hit.node, hit.local);
+                        _range.setEnd(hit.node, hit.local + _badLen);
+                        const _sel = (doc.defaultView || window).getSelection();
+                        _sel.removeAllRanges(); _sel.addRange(_range);
+                        _ok = doc.execCommand('insertText', false, replacement);
+                      } catch (_) { _ok = false; }
+                      if (!_ok) { const raw = hit.node.textContent; hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + _badLen); }
                       try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
-                      setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
+                      // Drop the applied card AND keep the OTHER suggestions valid: the edit shifts later
+                      // offsets in the SAME block by (replacement − bad) length and invalidates overlaps —
+                      // without this, sibling cards' frozen offsets drifted and every later Apply false-
+                      // tripped the "text changed" guard (the reported bug).
+                      const _delta = replacement.length - _badLen;
+                      setWritingCheck((p) => {
+                        if (!p || !p.items) return p;
+                        const items = p.items.filter((x) => x !== item).map((x) => {
+                          if (x.blockIndex !== item.blockIndex || x.end <= item.start) return x;
+                          if (x.start >= item.end) return { ...x, start: x.start + _delta, end: x.end + _delta };
+                          return null; // overlaps the edit → offsets no longer valid
+                        }).filter(Boolean);
+                        return { ...p, items };
+                      });
                       addToast('✓ "' + item.bad + '" → "' + replacement + '"', 'success');
                     } catch (e) { addToast('Apply failed: ' + ((e && e.message) || 'error'), 'error'); }
                   };
+                  const _dismiss = (item) => { setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p); };
                   return (
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">📝 {t('export_preview.writing.heading') || 'Writing Check'}</div>
@@ -801,27 +1052,27 @@ function ExportPreviewView(props) {
                     {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check grammar (English)')}
                   </button>
                   <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the checker is a ~10 MB download on first use (checks are instant once loaded; the download may repeat in a fresh session). Spelling is underlined by your browser as you type.'}</p>
+                  <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.spell_hint') || '💡 To fix a spelling underline, right-click the word in the preview — your browser lists corrections.'}</p>
                   {exportPreviewSource === 'remediation' && wc && (
                     <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This is a remediated document — its wording comes from the source PDF. Apply grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
                   )}
-                  {wc && wc.status === 'error' && <div className="mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5">{wc.error}</div>}
-                  {wc && wc.status === 'done' && wc.items.length === 0 && <div className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No grammar suggestions found.'}</div>}
+                  {wc && wc.status === 'error' && <div role="alert" aria-live="assertive" className="mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5">{wc.error}</div>}
+                  {wc && wc.status === 'done' && wc.items.length === 0 && <div role="status" aria-live="polite" className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No grammar suggestions found.'}</div>}
                   {wc && wc.status === 'done' && wc.items.length > 0 && (
                     <div className="mt-1.5 space-y-1.5 max-h-64 overflow-y-auto">
-                      <div className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>
+                      <div role="status" aria-live="polite" className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>
                       {wc.items.map((item, ii) => (
                         <div key={ii} className="bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]">
                           <button onClick={() => _locate(item, true)} className="text-left w-full hover:underline" title={t('export_preview.writing.locate_title') || 'Scroll the preview to this spot'}>
                             <span className="text-slate-700">{item.message}</span>
                             <span className="block text-slate-500 italic mt-0.5">{item.snippet}</span>
                           </button>
-                          {item.suggestions.length > 0 && (
-                            <div className="flex gap-1 mt-1 flex-wrap">
-                              {item.suggestions.map((s, si) => (
-                                <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || '(remove)'}</button>
-                              ))}
-                            </div>
-                          )}
+                          <div className="flex gap-1 mt-1 flex-wrap items-center">
+                            {item.suggestions.map((s, si) => (
+                              <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || '(remove)'}</button>
+                            ))}
+                            <button onClick={() => _dismiss(item)} className="px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto" title={t('export_preview.writing.keep_title') || 'Keep the original wording and dismiss this suggestion'}>✓ {t('export_preview.writing.keep') || 'Keep as-is'}</button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -835,25 +1086,53 @@ function ExportPreviewView(props) {
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">♿ Accessibility Audit</div>
                   <button
                     onClick={async () => {
+                      const runId = ++auditRunRef.current;
                       setExportAuditLoading(true); setExportAuditResult(null);
                       try {
                         const iframe = exportPreviewRef.current;
-                        const doc = iframe?.contentDocument;
-                        const html = doc ? doc.documentElement.outerHTML : getExportPreviewHTML();
-                        const [aiResult, axeResult] = await Promise.all([
+                        const sourceDoc = iframe?.contentDocument;
+                        const html = sourceDoc ? sourceDoc.documentElement.outerHTML : getExportPreviewHTML();
+                        let _runEA = null;
+                        try {
+                          const _mk = window.AlloModules && window.AlloModules.createDocPipeline;
+                          if (_mk) {
+                            const _inst = window.__alloAuditPipeline || (window.__alloAuditPipeline = _mk({
+                              callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+                              addToast: () => {}, t: (k) => k, isRtlLang: () => false, updateExportPreview: () => {}, getDefaultTitle: () => '',
+                            }));
+                            if (_inst && typeof _inst.runEqualAccessAudit === 'function') _runEA = _inst.runEqualAccessAudit;
+                          }
+                        } catch (_) {}
+                        const [aiResult, axeResult, eaResult] = await Promise.all([
                           auditOutputAccessibility(html),
-                          runAxeAudit(html).catch(() => null)
+                          runAxeAudit(html).catch(() => null),
+                          _runEA ? _runEA(html).catch(() => null) : Promise.resolve(null)
                         ]);
-                        const combined = aiResult || { score: 0, summary: '', issues: [], passes: [] };
+                        if (!mountedRef.current || runId !== auditRunRef.current) return;
+                        const currentDoc = exportPreviewRef.current?.contentDocument;
+                        if (sourceDoc && (currentDoc !== sourceDoc || currentDoc?.documentElement?.outerHTML !== html)) {
+                          setExportAuditResult({ score: -2, summary: 'The document changed during the audit. Run the audit again for results bound to the current document.', issues: [], passes: [] });
+                          return;
+                        }
+                        const combined = { ...(aiResult || { score: 0, summary: '', issues: [], passes: [] }) };
                         if (axeResult) {
                           combined.axeViolations = axeResult.totalViolations;
                           combined.axePasses = axeResult.totalPasses;
                           combined.axeDetails = axeResult.critical.concat(axeResult.serious).concat(axeResult.moderate);
                           combined.summary = (combined.summary || '') + ` | axe-core: ${axeResult.totalViolations} violations, ${axeResult.totalPasses} passed`;
                         }
+                        if (eaResult) {
+                          combined.eaViolations = eaResult.failViolations;
+                          combined.eaPotential = eaResult.potentialViolations;
+                          combined.summary = (combined.summary || '') + ` | IBM Equal Access: ${eaResult.failViolations} violations`;
+                        }
+                        if (axeResult && eaResult) combined.deterministicConsensus = (axeResult.totalViolations === 0 && eaResult.failViolations === 0) ? 'clean' : 'issues';
                         setExportAuditResult(combined);
-                      } catch (e) { setExportAuditResult({ score: -1, summary: 'Audit failed', issues: [], passes: [] }); }
-                      setExportAuditLoading(false);
+                      } catch (e) {
+                        if (mountedRef.current && runId === auditRunRef.current) setExportAuditResult({ score: -1, summary: 'Audit failed. Check your connection and try again.', issues: [], passes: [] });
+                      } finally {
+                        if (mountedRef.current && runId === auditRunRef.current) setExportAuditLoading(false);
+                      }
                     }}
                     disabled={exportAuditLoading}
                     data-help-key="doc_builder_wcag_audit_btn"
@@ -862,13 +1141,27 @@ function ExportPreviewView(props) {
                   >
                     {exportAuditLoading ? <><RefreshCw size={12} className="animate-spin" aria-hidden="true" /> Auditing...</> : <><span aria-hidden="true">♿</span> Run WCAG Audit</>}
                   </button>
+                  {exportAuditResult && exportAuditResult.score < 0 && (
+                    <div role="alert" aria-live="assertive" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] font-bold text-amber-900">{exportAuditResult.summary}</div>
+                  )}
                   {exportAuditResult && exportAuditResult.score >= 0 && (
-                    <div className="mt-2 space-y-2">
+                    <div role="status" aria-live="polite" aria-atomic="true" className="mt-2 space-y-2">
                       <div className={`text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? 'bg-green-50 border border-green-200' : exportAuditResult.score >= 60 ? 'bg-amber-50 border border-amber-200' : 'bg-red-50 border border-red-200'}`}>
                         <div className={`text-2xl font-black ${exportAuditResult.score >= 80 ? 'text-green-700' : exportAuditResult.score >= 60 ? 'text-amber-700' : 'text-red-700'}`}>{exportAuditResult.score}/100</div>
-                        <div className="text-[11px] font-bold text-slate-600 uppercase">WCAG 2.1 AA Score</div>
+                        <div className="text-[11px] font-bold text-slate-600 uppercase">Accessibility Automated Score</div>
                       </div>
                       <p className="text-[11px] text-slate-600">{exportAuditResult.summary}</p>
+                      {(exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null) && (
+                        <div className={`rounded-lg border p-2 text-[11px] ${exportAuditResult.deterministicConsensus === 'clean' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+                          {exportAuditResult.deterministicConsensus === 'clean'
+                            ? '✓ Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations.'
+                            : `Rule engines — axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`}
+                          {exportAuditResult.eaPotential > 0 && <span className="block mt-1 text-slate-500">IBM Equal Access also flags {exportAuditResult.eaPotential} item(s) for human review.</span>}
+                        </div>
+                      )}
+                      {(exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null) && (
+                        <div className="text-[10px] text-slate-500 italic">Second deterministic engine (IBM Equal Access) unavailable — showing axe-core only.</div>
+                      )}
                       {exportAuditResult.issues?.length > 0 && (
                         <div>
                           <div className="text-[11px] font-bold text-red-600 uppercase mb-1">Issues ({exportAuditResult.issues.length})</div>
@@ -883,13 +1176,14 @@ function ExportPreviewView(props) {
                       )}
                       {exportAuditResult.passes?.length > 0 && (
                         <div>
-                          <div className="text-[11px] font-bold text-green-600 uppercase mb-1">Passes ({exportAuditResult.passes.length})</div>
+                          <div className="text-[11px] font-bold text-green-700 uppercase mb-1">Passes ({exportAuditResult.passes.length})</div>
                           {exportAuditResult.passes.slice(0, 3).map((pass, i) => (
                             <div key={i} className="text-[11px] text-green-700 mb-0.5 flex items-start gap-1"><span className="text-green-500">✓</span> {pass}</div>
                           ))}
                         </div>
                       )}
-                      <p className="text-[11px] text-indigo-500 italic">Use the A11y Inspect toggle above to see and fix issues visually, then re-audit.</p>
+                      <p className="text-[11px] text-indigo-700 italic">Use the A11y Inspect toggle above to see and fix issues visually, then re-audit.</p>
+                      <p className="text-[11px] text-slate-600 italic">Automated checks (axe-core + IBM Equal Access) find many problems but can’t confirm full WCAG 2.2 AA conformance — a manual screen-reader, keyboard, zoom/reflow, and forced-colors pass is still needed. The score above includes an AI review and is a guide, not a certification.</p>
                     </div>
                   )}
                 </div>
@@ -897,50 +1191,47 @@ function ExportPreviewView(props) {
               </div>
 
               {/* Right Panel — Live Preview with Editing */}
-              <div className="flex-1 flex flex-col min-w-0">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white shrink-0">
-                  <div className="flex items-center gap-3">
+              <div className="flex-1 flex flex-col min-w-0 min-h-[60vh] lg:min-h-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-slate-200 bg-white shrink-0">
+                  <div className="flex flex-wrap items-center gap-3">
                     <h3 className="text-sm font-bold text-slate-700">Live Preview</h3>
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
-                    <span className="text-[11px] text-indigo-500 font-medium">Click text to edit directly</span>
+                    <span className="text-[11px] text-indigo-700 font-medium">Focus the preview and edit text directly</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {/* Editing toolbar */}
-                    <button onClick={() => {
-                      const input = document.createElement('input');
-                      input.type = 'file'; input.accept = 'image/*';
-                      input.onchange = (e) => {
-                        const file = e.target.files?.[0]; if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                          const iframe = exportPreviewRef.current;
-                          const doc = iframe?.contentDocument;
-                          if (!doc) return;
-                          const img = doc.createElement('img');
-                          img.src = ev.target.result;
-                          img.style.cssText = 'max-width:100%;height:auto;border-radius:8px;margin:12px 0;cursor:move;';
-                          img.alt = 'User-inserted image';
-                          const sel = doc.getSelection();
-                          if (sel && sel.rangeCount > 0) {
-                            const range = sel.getRangeAt(0);
-                            range.collapse(false);
-                            range.insertNode(img);
-                          } else {
-                            const main = doc.querySelector('main') || doc.body;
-                            main.appendChild(img);
-                          }
-                          addToast && addToast('Image inserted! Drag to reposition.');
-                        };
-                        reader.readAsDataURL(file);
-                      };
-                      input.click();
-                    }} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" title="Insert image into document">
-                      <ImageIcon size={12} /> Add Image
+                    <input ref={imageFileInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" className="sr-only" tabIndex={-1} aria-hidden="true"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = '';
+                        if (!file) return;
+                        const allowedTypes = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
+                        if (!allowedTypes.has(String(file.type || '').toLowerCase())) {
+                          addToast && addToast('Choose a PNG, JPEG, GIF, or WebP image. SVG and other active formats are not supported.', 'error');
+                          return;
+                        }
+                        if (file.size > 8 * 1024 * 1024) {
+                          addToast && addToast('That image is larger than 8 MB. Resize or compress it before inserting.', 'error');
+                          return;
+                        }
+                        setImageAltText('');
+                        setImageDecorative(false);
+                        setImageAltError('');
+                        setPendingImageFile(file);
+                      }} />
+                    <button ref={imageAddButtonRef} type="button" onClick={() => {
+                      const doc = exportPreviewRef.current?.contentDocument;
+                      const selection = doc?.getSelection();
+                      imageInsertionRangeRef.current = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
+                      imageFileInputRef.current?.click();
+                    }} className="min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" aria-label="Add an image and provide alternative text" title="Insert image into document">
+                      <ImageIcon size={12} aria-hidden="true" /> Add Image
                     </button>
                     <div className="w-px h-5 bg-slate-200"></div>
                     <button onClick={toggleA11yInspect}
+                      aria-pressed={a11yInspectMode}
                       className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded transition-all ${a11yInspectMode ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300' : 'text-slate-600 hover:text-violet-600 hover:bg-slate-100'}`}
-                      title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Click any badge to edit.">
+                      title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Editable badges support Enter, Space, and click.">
                       ♿ A11y Inspect
                     </button>
                     {/* Diff view entry point for the remediated-PDF pathway of Document Builder.
@@ -968,8 +1259,10 @@ function ExportPreviewView(props) {
                     <div className="w-px h-5 bg-slate-200"></div>
                                         {exportAuditResult && exportAuditResult.score >= 0 && <span className={`text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 ${exportAuditResult.score >= 90 ? 'bg-green-100 text-green-700 ring-1 ring-green-300' : exportAuditResult.score >= 70 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' : 'bg-red-100 text-red-700 ring-1 ring-red-300'}`} title={exportAuditResult.summary || ''}>{"♿"} {exportAuditResult.score}/100</span>}
 <button onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
-                    <button onClick={executeExportFromPreview}
-                      disabled={exportPreviewMode === 'slides' && !pptxLoaded}
+                    <button onClick={runExportFromPreview}
+                      disabled={exportActionBusy || (exportPreviewMode === 'slides' && !pptxLoaded)}
+                      aria-busy={exportActionBusy}
+                      aria-label={exportActionBusy ? 'Export in progress' : undefined}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       title={exportPreviewMode === 'slides' && !pptxLoaded ? 'Slides library still loading...' : ''}
                     ><Download size={14} /> {exportPreviewMode === 'worksheet' ? 'Print Worksheet' : exportPreviewMode === 'html' ? 'Download HTML' : exportPreviewMode === 'slides' ? (pptxLoaded ? 'Export Slides' : 'Loading...') : 'Download PDF'}</button>
@@ -982,16 +1275,64 @@ function ExportPreviewView(props) {
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
-                          const html = doc.documentElement.outerHTML;
-                          const text = html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+                          // #7/#14 (export-format review): the old export tag-stripped the RAW
+                          // outerHTML — <style>/<script> BODIES and editor-chrome labels landed in
+                          // the .txt as garbage lines. Flatten a CLEANED body clone instead, with a
+                          // newline per block element so the text keeps its reading structure.
+                          let text = '';
+                          try {
+                            const _tClone = doc.body.cloneNode(true);
+                            _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
+                            _tClone.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
+                            text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+                          } catch (_) { text = (doc.body.innerText || doc.body.textContent || '').trim(); }
                           const blob = new Blob([text], { type: 'text/plain' });
                           const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.txt'; a.click(); URL.revokeObjectURL(a.href);
                           addToast('Plain text downloaded', 'success');
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📄 Plain Text (.txt)</button>
-                        <button onClick={() => {
+                        <button onClick={async () => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
-                          const html = doc.documentElement.outerHTML;
+                          // #14: strip editor chrome + style/script bodies before the regex conversion.
+                          let html = '';
+                          try {
+                            const _mClone = doc.documentElement.cloneNode(true);
+                            _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
+                            html = _mClone.outerHTML;
+                          } catch (_) { html = doc.documentElement.outerHTML; }
+                          // Spoken-math captions (2026-07-05): the ```mathml fence below is
+                          // opaque to anyone reading the .md without a MathML renderer. When
+                          // SRE (sre_loader.js) can produce a spoken form for a block, emit
+                          // it as a "Spoken:" line above the fence. Fail-soft: any failure
+                          // leaves the fence exactly as before.
+                          const _mathBlocks = html.match(/<math\b[\s\S]*?<\/math>/gi) || [];
+                          let _spokenByBlock = null;
+                          if (_mathBlocks.length) {
+                            try {
+                              if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin('sre_loader.js');
+                              if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') {
+                                _spokenByBlock = await Promise.all(_mathBlocks.map(m => window.AlloMathSpeech.toSpeech(m, { timeoutMs: 8000 })));
+                              }
+                            } catch (_) { _spokenByBlock = null; }
+                          }
+                          let _mathIdx = 0;
+                          // #6 (export-format review): tables/images/math vanished under the final
+                          // tag-strip. Convert tables to GitHub pipe tables, images to md images
+                          // (alt preserved), and MathML to a fenced block BEFORE the strip runs.
+                          const _cellTxt = (s) => String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim();
+                          html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (tbl) => {
+                            const rows = (tbl.match(/<tr\b[\s\S]*?<\/tr>/gi) || []).map(tr => (tr.match(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi) || []).map(_cellTxt));
+                            if (!rows.length) return '\n';
+                            const w = Math.max(...rows.map(r => r.length));
+                            const line = (r) => '| ' + Array.from({ length: w }, (_, i) => r[i] || '').join(' | ') + ' |';
+                            return '\n\n' + line(rows[0]) + '\n|' + Array.from({ length: w }, () => ' --- |').join('') + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
+                          });
+                          html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => '\n\n![' + String(alt).replace(/\]/g, ')') + '](image)\n\n');
+                          html = html.replace(/<math\b[\s\S]*?<\/math>/gi, (m) => {
+                            const _spoken = (_spokenByBlock && _spokenByBlock[_mathIdx]) ? String(_spokenByBlock[_mathIdx]).trim().replace(/\*/g, '') : '';
+                            _mathIdx++;
+                            return '\n\n' + (_spoken ? ('*Spoken: ' + _spoken + '*\n\n') : '') + '```mathml\n' + m + '\n```\n\n';
+                          });
                           let md = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
                             .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
                             .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
@@ -1011,11 +1352,12 @@ function ExportPreviewView(props) {
                           try {
                             const doc = exportPreviewRef.current?.contentDocument;
                             const items = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
+                            const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1');
                             const today = new Date().toISOString().split('T')[0];
                             const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || 'AlloFlow Lesson';
                             const esc = (v) => (v == null ? '' : String(v));
                             const out = ['---', 'title: ' + esc(title), 'source: AlloFlow (Universal Design for Learning toolkit)', 'date_exported: ' + today, '---', '', '# ' + esc(title), ''];
-                            if (items.length) {
+                            if (items.length && !hasLiveEdits) {
                               items.forEach(it => {
                                 const ty = it.type, d = it.data;
                                 out.push('## ' + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, ' ') : 'Resource')), '');
@@ -1029,11 +1371,25 @@ function ExportPreviewView(props) {
                                 else if (ty === 'quiz' && d && Array.isArray(d.questions)) {
                                   d.questions.forEach((q, i) => { out.push('**Q' + (i + 1) + '. ' + esc(q.question) + '**', '');
                                     (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o))); out.push(''); });
-                                  out.push('### Answer Key', '');
-                                  d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
-                                    out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
-                                    if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
-                                  out.push('');
+                                  // Answer-key gating (export-format review #13, 2026-07-01): this export
+                                  // travels — students, shared drives, NotebookLM — and it EMBEDDED the
+                                  // full answer key unconditionally, while the HTML pack gates keys behind
+                                  // an explicit teacher opt-in (default OFF). Same rule here: include only
+                                  // when exportConfig.includeAnswerKey is explicitly true; otherwise say
+                                  // where the key lives so teachers aren't surprised.
+                                  // 2026-07-01 (Aaron decision): the visible "📎 Teacher Answer Key"
+                                  // checkbox in Export Options now controls this too (default OFF), so
+                                  // the toggle is discoverable without a config file. Assessment mode
+                                  // wins if both are set.
+                                  if (exportConfig && exportConfig.assessmentMode !== true && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true)) {
+                                    out.push('### Answer Key', '');
+                                    d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
+                                      out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
+                                      if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
+                                    out.push('');
+                                  } else {
+                                    out.push('*Answer key omitted from this export (assessment integrity — anyone with this file can read it). Check "Teacher Answer Key" in Export Options to include it.*', '');
+                                  }
                                 }
                                 else if (ty === 'outline' && d && Array.isArray(d.branches)) {
                                   if (d.main) out.push('**' + esc(d.main) + '**', '');
@@ -1053,7 +1409,24 @@ function ExportPreviewView(props) {
                                 else { const tx = (d && (d.text || d.content || d.summary)) || ''; if (tx) out.push(esc(tx).trim(), ''); }
                               });
                             } else if (doc) {
-                              const html = doc.documentElement.outerHTML;
+                              // #14: strip editor chrome before the regex conversion (button labels
+                              // and editor CSS were leaking into the markdown).
+                              let html = '';
+                              try {
+                                const _mdClone = doc.documentElement.cloneNode(true);
+                                _mdClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
+                                html = _mdClone.outerHTML;
+                              } catch (_) { html = doc.documentElement.outerHTML; }
+                              // #6: preserve tables (pipe tables) + image alts before the tag-strip.
+                              const _cellTxt2 = (s) => String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim();
+                              html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (tbl) => {
+                                const rows = (tbl.match(/<tr\b[\s\S]*?<\/tr>/gi) || []).map(tr => (tr.match(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi) || []).map(_cellTxt2));
+                                if (!rows.length) return '\n';
+                                const w = Math.max(...rows.map(r => r.length));
+                                const line = (r) => '| ' + Array.from({ length: w }, (_, i) => r[i] || '').join(' | ') + ' |';
+                                return '\n\n' + line(rows[0]) + '\n|' + Array.from({ length: w }, () => ' --- |').join('') + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
+                              });
+                              html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => '\n\n![' + String(alt).replace(/\]/g, ')') + '](image)\n\n');
                               const body = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n').replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n').replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*').replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
                               out.push(body);
                             } else { addToast('Nothing to export yet — generate a lesson first', 'error'); return; }
@@ -1070,41 +1443,135 @@ function ExportPreviewView(props) {
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc || !window.JSZip) { addToast('ePub library loading...', 'info'); return; }
-                          const html = doc.documentElement.outerHTML;
-                          const title = 'AlloFlow Document';
-                          const xmlTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+                          // Export-format review #1/#5/#14 (2026-07-01): the old ePub shipped the RAW
+                          // editor DOM (chrome + contenteditable), a hard-coded single-entry nav (no
+                          // TOC — the thing low-vision readers navigate by), title always "AlloFlow
+                          // Document" and language always "en". Now: strip editor chrome, build a real
+                          // EPUB3 toc nav from the content headings (ids assigned so targets resolve),
+                          // and carry the document's actual title + language into the OPF metadata.
+                          const _clone = doc.documentElement.cloneNode(true);
+                          try {
+                            _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script').forEach(el => el.remove());
+                            _clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach(el => { const added = el.getAttribute('data-allo-crop-tabindex-added') === 'added'; el.removeAttribute('data-allo-crop-tabindex-added'); if (added) el.removeAttribute('tabindex'); el.removeAttribute('aria-keyshortcuts'); });
+                            _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+                          } catch (_) {}
+                          const _escXml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                          const title = ((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc.title || '').trim() || 'AlloFlow Document').substring(0, 120);
+                          const lang = (doc.documentElement.getAttribute('lang') || 'en').split(/[_ ]/)[0];
+                          const xmlTitle = _escXml(title);
+                          // Real TOC: every h1-h3 in content order, anchored by generated ids.
+                          const _navItems = [];
+                          try {
+                            const _hs = _clone.querySelectorAll('h1, h2, h3');
+                            for (let _hi = 0; _hi < _hs.length; _hi++) {
+                              const _h = _hs[_hi];
+                              const _txt = (_h.textContent || '').replace(/\s+/g, ' ').trim().substring(0, 120);
+                              if (!_txt) continue;
+                              if (!_h.id) _h.id = 'allo-toc-' + _hi;
+                              _navItems.push('<li><a href="content.xhtml#' + _escXml(_h.id) + '">' + _escXml(_txt) + '</a></li>');
+                            }
+                          } catch (_) {}
+                          const _navList = _navItems.length ? _navItems.join('') : '<li><a href="content.xhtml">' + xmlTitle + '</a></li>';
                           const zip = new window.JSZip();
                           zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
                           zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
-                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>en</dc:language></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
-                          let xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+                          const _uid = 'alloflow-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
+                          let xhtml = _clone.outerHTML.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
                           if (!xhtml.includes('xmlns')) xhtml = xhtml.replace('<html', '<html xmlns="http://www.w3.org/1999/xhtml"');
                           zip.file('OEBPS/content.xhtml', xhtml);
-                          zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">Document</a></li></ol></nav></body></html>`);
+                          zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} — Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
                           zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' }).then(blob => {
-                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '.epub'; a.click(); URL.revokeObjectURL(a.href);
+                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                            a.download = (title.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').substring(0, 40) || 'document') + '.epub';
+                            a.click(); URL.revokeObjectURL(a.href);
                             addToast('ePub downloaded', 'success');
                           });
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📚 ePub (e-readers)</button>
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
-                          const text = doc.body.innerText || doc.body.textContent || '';
-                          const brailleMap = {'a':'1','b':'12','c':'14','d':'145','e':'15','f':'124','g':'1245','h':'125','i':'24','j':'245','k':'13','l':'123','m':'134','n':'1345','o':'135','p':'1234','q':'12345','r':'1235','s':'234','t':'2345','u':'136','v':'1236','w':'2456','x':'1346','y':'13456','z':'1356',' ':' ','1':'1','2':'12','3':'14','4':'145','5':'15','6':'124','7':'1245','8':'125','9':'24','0':'245','.':'256',',':'2','?':'236','!':'235',':':'25',';':'23','-':'36',"'":"3"};
-                          const dotToAscii = (dots) => String.fromCharCode(0x2800 + dots.split('').reduce((s, d) => s + (1 << (parseInt(d) - 1)), 0));
-                          let brf = '';
-                          text.split('\n').forEach(line => {
-                            let bl = ''; const lower = line.toLowerCase();
-                            for (let i = 0; i < lower.length; i++) {
-                              if (line[i] !== lower[i]) bl += dotToAscii('6');
-                              if (/[0-9]/.test(lower[i]) && (i === 0 || !/[0-9]/.test(lower[i-1]))) bl += dotToAscii('3456');
-                              bl += brailleMap[lower[i]] ? dotToAscii(brailleMap[lower[i]]) : lower[i];
+                          // #14: strip editor chrome before flattening — button labels ("×", "+ Row")
+                          // were being embossed into the braille output.
+                          // #8 (structured sourcing): flatten per BLOCK (a braille line per logical
+                          // unit) with a blank line before each heading — braille convention for a
+                          // new section — instead of the layout-driven innerText soup. Footnote refs
+                          // and emphasis remain future work; structure is the big win.
+                          let text = '';
+                          try {
+                            const _bClone = doc.body.cloneNode(true);
+                            _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
+                            _bClone.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
+                            _bClone.querySelectorAll('p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
+                            text = (_bClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+                          } catch (_) { text = doc.body.innerText || doc.body.textContent || ''; }
+                          // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit 2026-06-13):
+                          // a .brf must be ASCII braille (the 0x20–0x5F North-American Braille
+                          // Computer Code), NOT Unicode braille patterns — embossers and braille
+                          // displays read the ASCII bytes. Capital sign (,) before each capital;
+                          // number sign (#) before a digit run with 1-0 → A-J; standard BRF
+                          // punctuation. Pages separated by form feed.
+                          const _brfDigit = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
+                          const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '7', ')': '7', '"': '7', "'": "'", '-': '-', '/': '/', '*': '9', '&': '&', '@': '@', '#': '#' };
+                          const _toBRF = (src) => {
+                            // Preserve non-ASCII Latin text (é, ñ, ü…): NFD-normalize and drop
+                            // combining marks so accented letters transliterate to their base
+                            // letter instead of vanishing (the old code silently dropped any
+                            // char > 0x7e — Spanish/Somali/accented handouts lost content).
+                            let norm = src;
+                            try { norm = src.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (_) {}
+                            const lines = norm.replace(/\r\n?/g, '\n').split('\n');
+                            const out = [];
+                            for (const line of lines) {
+                              let bl = ''; let numMode = false;
+                              for (let i = 0; i < line.length; i++) {
+                                const ch = line[i];
+                                if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _brfDigit[ch]; continue; }
+                                numMode = false;
+                                if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
+                                if (ch >= 'A' && ch <= 'Z') { bl += ',' + ch; continue; }
+                                if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
+                                bl += (_brfPunct[ch] !== undefined ? _brfPunct[ch] : (ch.charCodeAt(0) >= 0x20 && ch.charCodeAt(0) <= 0x7e ? ch.toUpperCase() : ''));
+                              }
+                              out.push(bl.slice(0, 40)); // 40-cell line wrap (embosser default); long lines truncate-wrap below
+                              if (bl.length > 40) { let rest = bl.slice(40); while (rest.length) { out.push(rest.slice(0, 40)); rest = rest.slice(40); } }
                             }
-                            brf += bl + '\n';
+                            return out.join('\r\n');
+                          };
+                          const _downloadBRF = (brf) => {
+                            const blob = new Blob([brf], { type: 'application/x-brf' });
+                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.brf'; a.click(); URL.revokeObjectURL(a.href);
+                          };
+                          const _grade1 = _toBRF(text);
+                          // Prefer UEB Grade 2 (contracted) via liblouis when it's available;
+                          // fall back to the Grade-1 converter on ANY failure so the export
+                          // is never worse than before (offline, load error, empty result).
+                          // 2026-07-05: nothing ever INJECTED liblouis_braille_loader.js, so
+                          // window.AlloBraille could not exist and the UEB path was dead code.
+                          // Lazy-load it on demand via the __alloLoadPlugin injector first.
+                          const _ensureBrailleLoader = (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function')
+                            ? Promise.resolve(true)
+                            : (window.__alloLoadPlugin ? window.__alloLoadPlugin('liblouis_braille_loader.js') : Promise.resolve(false));
+                          Promise.resolve(_ensureBrailleLoader).catch(() => false).then(() => {
+                            if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
+                              addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
+                              Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
+                                if (ueb && ueb.replace(/\s/g, '').length) {
+                                  _downloadBRF(ueb);
+                                  addToast('Electronic Braille (UEB Grade 2) downloaded', 'success');
+                                } else {
+                                  _downloadBRF(_grade1);
+                                  addToast('Electronic Braille (Grade 1) downloaded', 'success');
+                                }
+                              }).catch(() => {
+                                _downloadBRF(_grade1);
+                                addToast('Electronic Braille (Grade 1) downloaded', 'success');
+                              });
+                            } else {
+                              _downloadBRF(_grade1);
+                              addToast('Electronic Braille (BRF) downloaded', 'success');
+                            }
                           });
-                          const blob = new Blob([brf], { type: 'text/plain' });
-                          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.brf'; a.click(); URL.revokeObjectURL(a.href);
-                          addToast('Electronic Braille (BRF) downloaded', 'success');
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">⠿ Electronic Braille (.brf)</button>
                       </div>
                     </details>
@@ -1118,7 +1585,7 @@ function ExportPreviewView(props) {
                     { cmd: 'underline', icon: 'U', label: 'Underline', style: 'underline' },
                   ].map(btn => (
                     <button key={btn.cmd} onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, null); }}
-                      className={`w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`}
+                      className={`w-8 h-8 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`}
                       aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                   ))}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
@@ -1128,25 +1595,80 @@ function ExportPreviewView(props) {
                     { cmd: 'formatBlock', val: '<p>', icon: '¶', label: 'Paragraph' },
                   ].map(btn => (
                     <button key={btn.icon} onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, btn.val); }}
-                      className="px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
+                      className="min-w-8 h-8 px-1.5 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
                       aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                   ))}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertUnorderedList', false, null); }}
-                    className="w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors" aria-label={t("a11y.bullet_list")} title="Bullet list">•</button>
+                    className="w-8 h-8 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors" aria-label={t("a11y.bullet_list")} title="Bullet list">•</button>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertOrderedList', false, null); }}
-                    className="w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Numbered list" title="Numbered list">1.</button>
+                    className="w-8 h-8 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Numbered list" title="Numbered list">1.</button>
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
-                  <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (!doc) return; const url = prompt('Link URL:'); if (url) doc.execCommand('createLink', false, url); }}
-                    className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Insert link" title="Insert link">🔗</button>
+                  <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (!doc) return; const url = prompt('Link URL:'); if (!url) return;
+                    // Scheme allowlist (builder-review A4, 2026-07-01): createLink accepted ANY URI —
+                    // "javascript:alert(1)" became a live link inside the allow-scripts editor iframe
+                    // AND survived into the exported/distributed HTML. Allow web/mail/tel/anchor/
+                    // relative links only; anything else is refused with a message, never inserted.
+                    const _u = url.trim();
+                    const _schemeMatch = _u.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+                    const _okScheme = !_schemeMatch || ['http', 'https', 'mailto', 'tel'].includes(_schemeMatch[1].toLowerCase());
+                    if (!_okScheme) { alert('Only web (http/https), mailto:, tel:, and internal links are allowed.'); return; }
+                    doc.execCommand('createLink', false, _u); }}
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Insert link" title="Insert link">🔗</button>
+                  <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
+                  <button onClick={async () => {
+                    // Insert accessible math authored in MathLive (mathlive_loader.js →
+                    // window.AlloMathInput). The equation goes in as a native <math> MathML
+                    // element carrying data-allo-latex (round-trip) + an aria-label spoken
+                    // form — the SAME shape the doc pipeline's temml path makes, so it flows
+                    // through the accessibility chain (SRE reads it, the .md/.brf exports
+                    // already special-case <math>). Fail-soft: loader missing / cancel = no-op.
+                    const doc = exportPreviewRef.current?.contentDocument;
+                    if (!doc) return;
+                    try {
+                      if (!(window.AlloMathInput && window.AlloMathInput.ready && window.AlloMathInput.ready()) && window.__alloLoadPlugin) {
+                        addToast('Opening the equation editor…', 'info');
+                        await window.__alloLoadPlugin('mathlive_loader.js');
+                      }
+                      if (!(window.AlloMathInput && typeof window.AlloMathInput.promptEquation === 'function')) {
+                        addToast('The equation editor could not load. Check your connection and try again.', 'error');
+                        return;
+                      }
+                      const eq = await window.AlloMathInput.promptEquation({ title: '∑  Insert an equation' });
+                      if (!eq || !eq.mathml) return;
+                      // Prefer SRE's spoken form for the alt when it's available (one spoken-
+                      // math voice across the app); fall back to MathLive's own.
+                      let spoken = eq.spoken || '';
+                      try {
+                        if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') {
+                          const s = await window.AlloMathSpeech.toSpeech(eq.mathml, { timeoutMs: 4000 });
+                          if (s && s.trim()) spoken = s.trim();
+                        }
+                      } catch (_) { /* keep MathLive's spoken */ }
+                      // Stamp data-allo-latex + aria-label onto the <math> root, wrap so the
+                      // caret lands after it. execCommand keeps it in the editor's undo stack.
+                      const escAttr = (s) => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                      let mathHtml = String(eq.mathml).trim();
+                      const attrs = ' data-allo-latex="' + escAttr(eq.latex) + '"'
+                        + (spoken ? ' aria-label="' + escAttr(spoken) + '"' : '')
+                        + ' class="allo-math-authored"';
+                      mathHtml = /^<math[\s>]/i.test(mathHtml) ? mathHtml.replace(/^<math\b/i, '<math' + attrs) : ('<math' + attrs + '>' + mathHtml + '</math>');
+                      doc.execCommand('insertHTML', false, mathHtml + '\u200B'); // trailing ZWSP so the caret lands after the equation
+                      addToast('Equation inserted', 'success');
+                    } catch (e) {
+                      addToast('Could not insert the equation.', 'error');
+                    }
+                  }}
+                    className="min-w-8 h-8 px-1.5 rounded text-[13px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600" aria-label="Insert an equation (accessible math)" title="Insert an equation (accessible math)">∑</button>
+                  <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('removeFormat', false, null); }}
-                    className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Clear formatting" title="Clear formatting">✕</button>
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Clear formatting" title="Clear formatting">✕</button>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('undo', false, null); }}
-                    className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Undo" title="Undo">↩</button>
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Undo" title="Undo">↩</button>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('redo', false, null); }}
-                    className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Redo" title="Redo">↪</button>
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Redo" title="Redo">↪</button>
                   <select onChange={(e) => { const doc = exportPreviewRef.current?.contentDocument; if (doc && e.target.value) doc.execCommand('foreColor', false, e.target.value); e.target.value = ''; }}
-                    className="h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600 ml-0.5" aria-label="Text color" defaultValue="">
+                    className="h-8 text-[11px] border border-slate-400 rounded px-1 text-slate-600 ml-0.5" aria-label="Text color" defaultValue="">
                     <option value="" disabled>Color</option>
                     <option value="#000000">⬛ Black</option>
                     <option value="#1e3a5f">🟦 Navy</option>
@@ -1158,16 +1680,17 @@ function ExportPreviewView(props) {
                 {/* ── Expert Workbench: Command Bar + Agent Activity (collapsible) ── */}
                 <details open className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group">
                   <summary className="cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50">
-                    <span className="inline-block transition-transform group-open:rotate-90 text-slate-600 text-[10px]">▸</span>
-                    <span className="text-[11px] text-purple-700 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
-                    {isAgentRunning && <span className="text-[11px] text-amber-700 animate-pulse">Running...</span>}
-                    <span className="ml-auto text-[10px] text-slate-500">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
+                    <span className="inline-block transition-transform group-open:rotate-90 text-slate-300 text-[10px]">▸</span>
+                    <span className="text-[11px] text-purple-200 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
+                    {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse">Running...</span>}
+                    <span className="ml-auto text-[10px] text-slate-300">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
                   </summary>
                   <div className="px-2 pb-1.5">
                   <form className="flex-1 flex gap-1" onSubmit={async (e) => {
                     e.preventDefault();
                     if (!expertCommandInput.trim() || isAgentRunning) return;
                     const cmd = expertCommandInput.trim();
+                    const expertRunId = ++expertRunRef.current;
                     setExpertCommandInput('');
                     setIsAgentRunning(true);
                     console.info('[ExpertWorkbench] start command=' + JSON.stringify(cmd) + ' context=export-preview');
@@ -1181,12 +1704,27 @@ function ExportPreviewView(props) {
                         onProgress: (msg) => { /* could update UI */ },
                         onActivity: (entry) => {
                           console.info('[ExpertWorkbench] activity type=' + entry.type + ' text=' + entry.text);
-                          setAgentActivityLog(prev => [...prev, entry]);
+                          if (mountedRef.current && expertRunId === expertRunRef.current) setAgentActivityLog(prev => [...prev, entry]);
                         }
                       });
-                      if (result && result.html && result.html !== currentHtml && doc) {
+                      const liveDoc = exportPreviewRef.current?.contentDocument;
+                      const liveHtml = liveDoc ? ('<!DOCTYPE html>\n' + liveDoc.documentElement.outerHTML) : '';
+                      const resultIsCurrent = mountedRef.current && expertRunId === expertRunRef.current && liveDoc === doc && liveHtml === currentHtml;
+                      if (!resultIsCurrent) {
+                        setAgentActivityLog(prev => [...prev, { text: 'Result not applied because the document changed while the command was running.', type: 'info', time: new Date().toLocaleTimeString() }]);
+                        addToast('The document changed while the Workbench was running, so its older result was not applied.', 'info');
+                      } else if (result && result.html && result.html !== currentHtml && doc) {
                         doc.open(); doc.write(result.html); doc.close();
                         doc.designMode = 'on';
+                        try {
+                          if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
+                          window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + doc.documentElement.outerHTML, at: Date.now() };
+                        } catch (_) {}
+                        auditRunRef.current += 1;
+                        writingCheckRunRef.current += 1;
+                        setExportAuditResult(null);
+                        setExportAuditLoading(false);
+                        setWritingCheck(null);
                         if (result.score !== undefined) {
                           setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
                         }
@@ -1202,7 +1740,7 @@ function ExportPreviewView(props) {
                       setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err && (err.message || err)), type: 'error', time: new Date().toLocaleTimeString() }]);
                       addToast('❌ Workbench failed: ' + (err && (err.message || err) || 'unknown error'), 'error');
                     }
-                    setIsAgentRunning(false);
+                    if (mountedRef.current) setIsAgentRunning(false);
                   }}>
                     <input
                       type="text"
@@ -1226,7 +1764,7 @@ function ExportPreviewView(props) {
                     <div className={(agentLogFullView ? 'max-h-64' : 'max-h-24') + ' overflow-y-auto px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-label="Agent activity log">
                       {(agentLogFullView ? agentActivityLog : agentActivityLog.slice(-8)).map((entry, i) => (
                         <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-400')}>
-                          <span className="text-slate-600 shrink-0">{entry.time}</span>
+                          <span className="text-slate-400 shrink-0">{entry.time}</span>
                           <span>{entry.text}</span>
                         </div>
                       ))}
@@ -1236,18 +1774,89 @@ function ExportPreviewView(props) {
                       <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
                         {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
                       </button>
-                      <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>
+                      <button type="button" onClick={async () => {
+                        const text = agentActivityLog.map(e => ((e && e.time ? e.time + ' ' : '') + ((e && e.text) || ''))).join('\n');
+                        let ok = false;
+                        try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); ok = true; } } catch (_) { ok = false; }
+                        if (!ok) { try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.focus(); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (_) { ok = false; } }
+                        addToast(ok ? ('📋 Log copied (' + agentActivityLog.length + ' events)') : 'Could not copy — select the log text manually.', ok ? 'success' : 'error');
+                      }} className="text-[10px] text-cyan-300 hover:text-cyan-200 underline" title="Copy the full agent/pipeline log to the clipboard">📋 Copy log</button>
+                      <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-300 hover:text-white underline ml-auto">Clear</button>
                     </div>
                   </div>
                 )}
                 <div className="flex-1 overflow-hidden bg-slate-100 p-4">
                   <iframe
+                    id="document-builder-preview"
                     ref={exportPreviewRef}
-                    title="Export Preview — click any text to edit"
+                    title="Editable document preview"
                     className="w-full h-full bg-white rounded-lg shadow-inner border border-slate-400"
                     sandbox="allow-same-origin allow-scripts allow-forms"
                     onLoad={() => {
                       console.info('[ExportPreview] iframe loaded');
+                      // Paste/drop sanitizer (builder-review A4, 2026-07-01). The editor is an
+                      // allow-scripts designMode iframe: a pasted rich-text payload carrying
+                      // <script>, on* handlers, or javascript: URLs executed HERE and shipped in
+                      // the exported/distributed HTML. Rich-HTML paste/drop is now routed through
+                      // a DOMParser scrub (scripts/embeds/forms out; on* attributes off;
+                      // javascript:/vbscript:/data: URLs off — data:image/png|jpeg|gif|webp kept
+                      // for pasted pictures). Plain-text paste is untouched. onLoad refires after
+                      // every doc.write, so each fresh document gets its own listeners.
+                      try {
+                        const doc = exportPreviewRef.current?.contentDocument;
+                        if (!doc || doc.__alloPasteGuard) return;
+                        doc.__alloPasteGuard = true;
+                        const _sanitizeFragment = (html) => {
+                          try {
+                            const p = new DOMParser().parseFromString('<body>' + String(html || '') + '</body>', 'text/html');
+                            p.querySelectorAll('script,style,iframe,object,embed,link,meta,base,form').forEach(el => el.remove());
+                            p.querySelectorAll('*').forEach(el => {
+                              for (const a of Array.from(el.attributes)) {
+                                const n = a.name.toLowerCase(), v = String(a.value || '');
+                                if (n.startsWith('on')) el.removeAttribute(a.name);
+                                else if ((n === 'href' || n === 'src' || n === 'xlink:href' || n === 'formaction' || n === 'action')
+                                  && /^\s*(javascript|vbscript|data)\s*:/i.test(v)
+                                  && !/^\s*data:image\/(png|jpe?g|gif|webp)/i.test(v)) el.removeAttribute(a.name);
+                              }
+                            });
+                            return p.body.innerHTML;
+                          } catch (_) { return String(html || '').replace(/</g, '&lt;'); }
+                        };
+                        const _insertSanitized = (e, dt) => {
+                          const html = dt && dt.getData && dt.getData('text/html');
+                          if (!html) return; // plain-text paste/drop is safe — native handling
+                          e.preventDefault();
+                          try { doc.execCommand('insertHTML', false, _sanitizeFragment(html)); } catch (_) {}
+                        };
+                        doc.addEventListener('paste', (e) => { try { _insertSanitized(e, e.clipboardData); } catch (_) {} }, true);
+                        doc.addEventListener('drop', (e) => { try { _insertSanitized(e, e.dataTransfer); } catch (_) {} }, true);
+                        // WYSIWYG edit capture (builder-review A1, capture half, 2026-07-01).
+                        // designMode edits previously lived ONLY in this iframe's DOM — Save
+                        // Project / export-from-history regenerated from history and silently
+                        // discarded them. Capture the edited pack (debounced) into a session
+                        // global with a timestamp; the persist/restore wiring (project save +
+                        // preview re-hydration, with a history-newer invalidation check) is the
+                        // follow-up half — design in memory: project_comprehensive_review.
+                        let _capT = null;
+                        const _captureEdits = () => {
+                          try { window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + doc.documentElement.outerHTML, at: Date.now() }; } catch (_) {}
+                        };
+                        doc.addEventListener('input', () => {
+                          try {
+                            if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
+                            writingCheckRunRef.current += 1;
+                            auditRunRef.current += 1;
+                            expertRunRef.current += 1;
+                            if (mountedRef.current) {
+                              setWritingCheck(null);
+                              setExportAuditResult(null);
+                              setExportAuditLoading(false);
+                            }
+                            if (_capT) clearTimeout(_capT);
+                            _capT = setTimeout(_captureEdits, 800);
+                          } catch (_) {}
+                        }, true);
+                      } catch (_) {}
                     }}
                   />
                 </div>

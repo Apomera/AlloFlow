@@ -40,7 +40,7 @@ These secrets are obtained from your LMS admin when they register AlloFlow as an
 firebase functions:secrets:set LTI_CLIENT_ID
 # Prompt: Enter the Client ID from your LMS (e.g., "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 
-firebase functions:secrets:set LTI_DEPLOYMENT_ID  
+firebase functions:secrets:set LTI_DEPLOYMENT_ID
 # Prompt: Enter the Deployment ID from your LMS (e.g., "1")
 
 firebase functions:secrets:set LTI_PLATFORM_URL
@@ -80,7 +80,7 @@ firebase functions:secrets:set LTI_PLATFORM_URL
 - In a course: **Content → Add Existing Activity → External Learning Tools → AlloFlow**
 - Faculty see AlloFlow as a tool in their course navigation
 
-#### Canvas  
+#### Canvas
 - In a course: **Settings → Apps → + App → By Client ID**
 
 ### What Faculty See
@@ -185,8 +185,8 @@ After any remediation, the accessible version can be stored and shared:
 │  Students see   │     │    ltiLogin               │────>│  Remediation│
 │  alt-format     │<────│    ltiLaunch              │     │  Pipeline   │
 │  links in       │     │    ltiSession             │     │             │
-│  course content │     │    lmsAuth (OAuth2)       │     │  80+ UDL    │
-│                 │     │                           │     │  Tools      │
+│  course content │     │    lmsAuth (OAuth2)       │     │  UDL Tool   │
+│                 │     │                           │     │  Suite      │
 │                 │     │  Dashboard:               │     │             │
 │                 │     │    logRemediation          │     │             │
 │                 │     │    dashboardData           │     │             │
@@ -206,7 +206,7 @@ After any remediation, the accessible version can be stored and shared:
                         (per-institution)  (compliance data)
 ```
 
-Each institution deploys their own Firebase project. No shared infrastructure. All data stays within the institution's own Google Cloud project. FERPA-compliant by design.
+Each institution deploys its own Firebase project. There is no shared AlloFlow-operated student database, and data stays within the institution's own Google Cloud project. This can support a FERPA-aligned deployment, but the final posture depends on the institution's Google agreement, access controls, retention settings, and actual use.
 
 ---
 

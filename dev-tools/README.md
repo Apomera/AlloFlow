@@ -2,6 +2,8 @@
 
 Verifiers, audits, and analyzers used during development. **None of these run in production** — they're guards against the bug classes that have surfaced during the project's growth.
 
+> **Snapshot note (2026-07-09):** This is a curated developer-tool catalog, not the complete source of truth for every script. `package.json` and the scripts themselves are authoritative for current command names, pack counts, and runtime behavior; older "first run" counts below are historical triage notes unless re-run.
+
 If you're looking for the WCAG/VPAT compliance documentation (the *results* of accessibility audits, not the audit *tools*), see the markdown files at the repo root: `tool_conformance_ledger.md`, `AXE_AUDIT.md`, `VPAT-2.5-WCAG-AlloFlow.md`, `alloflow_wcag_aa_audit_report.md`.
 
 If you're looking for *unit tests* that run via Vitest, those live in [`tests/`](../tests/) at the repo root (`npm test`).
@@ -94,7 +96,7 @@ Slice-level free-variable analyzer using Babel AST. Takes `(file, startLine, end
 Verifies every identifier a JSX block uses still has a definition. Supports `--moving`/`--deleting` flags to simulate post-extraction state and predict orphan-ref errors before making the deletes. Use before any JSX-block extraction.
 
 ### `phase2_diff_audit.js`
-For each JSX `*_source.jsx` ↔ `*_module.js` pair listed in its `MODULES` array, compiles source via Babel, auto-detects the IIFE wrapper, and reports byte-level diff. Shows which modules can be safely auto-compiled today vs which need manual drift back-port first. Currently 1/13 modules are byte-perfect; the rest have drift (informational, not always blocking).
+For each JSX `*_source.jsx` ↔ `*_module.js` pair listed in its `MODULES` array, compiles source via Babel, auto-detects the IIFE wrapper, and reports byte-level diff. Shows which modules can be safely auto-compiled today vs which need manual drift back-port first. At the original audit snapshot, 1/13 modules were byte-perfect; re-run the tool for the current drift count before using it to plan extraction work.
 
 ### `scope_aware_dep_check.js`
 Same scope-walk logic as `enumerate_block_scope_aware.js` but for a whole file rather than a slice. Less common; primarily for understanding what an entire CDN module pulls from outer scope.
@@ -123,6 +125,14 @@ Caught the Immersive Reader bug on first smoke test.
 ### `verify_view_props.cjs`
 Pre-deploy gate for the JSX-view extraction pattern (DBQ / Glossary / Timeline / etc.). Locates `React.createElement(window.AlloModules.<ViewName>, { ... })` in the host, parses the props block, and flags shorthand props (`{X}`) where X isn't declared in any enclosing host scope.
 
+### Render-crash gate (`check_render_refs` / `check_keyless_map` / `check_stem_render` / `check_sel_render` / `check_module_render` / `check_aria_handler`)
+The six blocking checks that `deploy.sh` Step 0.6 and `npm run verify:gate` run before any deploy — they statically render-smoke the monolith + STEM/SEL plugins to catch undefined-ref / keyless-map / setState-in-render crash classes before they ship. The highest-value gate in this folder.
+
+### i18n checks (`check_lang_json.cjs` + `dev-tools/i18n/`)
+`check_lang_json.cjs` (`verify:lang-json`) validates all 63 mirrored `lang/*.js` pack files parse as JSON. The `dev-tools/i18n/` subtree holds the translation toolchain — see [`dev-tools/i18n/README.md`](i18n/README.md) (gap reports, key merging, `check_safety_string_spanglish.cjs` = `verify:spanglish`, `ingest_translation_feedback.cjs`).
+
+> **This catalog is a curated subset.** The repo has ~50 `dev-tools/*` scripts and 40+ `verify:*` npm scripts. `npm run verify:gate` / `npm run verify:all` chain the blocking ones; run `npm run` or grep `package.json` for the complete, authoritative list.
+
 ---
 
 ## Architecture notes
@@ -141,13 +151,11 @@ V2 is slower (4s, needs chromium) and runs on demand. It catches the remaining ~
 
 ### What still ISN'T here (genuinely missing — not "I forgot to look")
 
-- **No build pipeline smoke** — `node build.js --mode=dev` produces App.jsx; nothing verifies the output is loadable JS.
-- **No deploy mirror sync verification** — `check_source_pair_drift` covers source.jsx duplicates but not `prismflow-deploy/public/*_module.js` mirror staleness.
-- **No sample-lesson smoke** — load each `examples/*.json` and confirm it renders without errors.
+*(Several items formerly listed here have since been built: build-pipeline smoke = `check_build_smoke.cjs` / `verify:build`; deploy-mirror sync = `check_deploy_mirror.cjs` / `verify:mirror`; sample-lesson smoke = `check_sample_lessons.cjs` / `verify:lessons`; firebase-function checks = `check_firebase_functions.cjs` / `verify:functions`.)*
+
 - **Cross-browser** — V2 + a11y-audit are chromium-only. Firefox/WebKit untested.
 - **Visual regression** — no screenshot diffs across deploys.
-- **LTI integration test** — no end-to-end LMS handshake test.
-- **Firebase function unit tests** — the 12 firebase functions have no test coverage from this folder.
+- **LTI end-to-end** — `verify:lti` checks the static surface, but there's no full live LMS handshake test.
 
 ### Bug classes caught — May 2026 audit reference
 

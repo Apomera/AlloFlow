@@ -885,6 +885,7 @@ function MathPanel(props) {
     cubeRotation, cubeScale, cubeShape, cubeShowLayers,
     expandedTools, exploreDifficulty, getAdaptiveDifficulty, gradeLevel,
     handleGenerateMath, handleScoreUpdate, hasSourceOrAnalysis, isMathGraphEnabled,
+    autoAttachManipulatives, setAutoAttachManipulatives,
     isProcessing, mathInput, mathMode, mathQuantity,
     mathSubject, setActiveView, setCubeAnswer, setCubeChallenge,
     setCubeDims, setCubeFeedback, setCubeNotch, setCubeRotation,
@@ -1062,6 +1063,19 @@ function MathPanel(props) {
                             />
                             <label htmlFor="mathGraph" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
                                 <ImageIcon size={12} className="text-blue-500"/> {t('math.graph_label')}
+                            </label>
+                        </div>
+                        {/* Manipulatives off-switch — default ON (the bridge was silently always-on with no control). English-hardcoded pending i18n. */}
+                        <div className="flex items-center gap-2" data-help-key="math_manipulatives">
+                            <input aria-label="Attach STEM Lab manipulatives to generated problems"
+                                id="mathManipulatives"
+                                type="checkbox"
+                                checked={autoAttachManipulatives !== false}
+                                onChange={(e) => setAutoAttachManipulatives && setAutoAttachManipulatives(e.target.checked)}
+                                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                            />
+                            <label htmlFor="mathManipulatives" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
+                                🧩 Attach manipulatives
                             </label>
                         </div>
                         <div className="flex items-center gap-2" data-help-key="math_context">
@@ -1431,6 +1445,7 @@ function SourceInputPanel(props) {
                 })}
                 <div className="p-4 relative">
                   <textarea
+                    data-allo-textundo="input"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onPaste={async (e) => {
@@ -2426,6 +2441,8 @@ function OutlinePanel(props) {
                             <option value="Claim-Evidence-Reasoning">{t('outline.cer') || 'Claim, Evidence, Reasoning (CER)'}</option>
                             <option value="Story Map">{t('outline.story_map') || 'Story Map (Plot Diagram)'}</option>
                             <option value="See-Think-Wonder">{t('outline.see_think_wonder') || 'See, Think, Wonder'}</option>
+                            <option value="3D Concept Space">{t('outline.concept_space_3d') || '3D Concept Space (strands in depth)'}</option>
+                            <option value="Memory Palace">{t('outline.memory_palace') || 'Memory Palace (method of loci)'}</option>
                         </select>
                     </div>
                     <div>
@@ -2479,6 +2496,9 @@ function NoteTakingPanel(props) {
             <option value="cornell-notes">{t('note_taking.cornell') || 'Cornell Notes (2-column + summary)'}</option>
             <option value="lab-report">{t('note_taking.lab_report') || 'Lab Report (Q / Hypothesis / Method / Data / CER / Conclusion)'}</option>
             <option value="reading-response">{t('note_taking.reading_response') || 'Reading Response Journal Entry'}</option>
+            <option value="double-entry">{t('note_taking.double_entry') || 'Double-Entry Journal (quote ↔ response)'}</option>
+            <option value="guided-notes">{t('note_taking.guided_notes') || 'Guided Notes (fill-in-the-blank)'}</option>
+            <option value="q-and-a">{t('note_taking.q_and_a') || 'Q&A Study Notes (self-quiz)'}</option>
           </select>
         </div>
         <p className="text-[11px] text-slate-500 italic leading-snug">
@@ -2500,11 +2520,11 @@ function NoteTakingPanel(props) {
   );
 }
 
-// ── AnchorChartPanel: EL-style class anchor chart generator ──
+// ── AnchorChartPanel: classroom anchor chart generator ──
 // Renders inside expandedTools.includes('anchor-chart'). Teacher picks a chart
-// type (Process / Concept Map / Reference / Comparison); AI scaffolds the
+// type; AI scaffolds the
 // initial structure; renderer (anchor_charts_module.js) handles edits + icons
-// + critique overlay.
+// + export.
 function AnchorChartPanel(props) {
   const {
     expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
@@ -2519,18 +2539,26 @@ function AnchorChartPanel(props) {
           <select
             aria-label={t('common.selection') || 'Selection'}
             data-help-key="anchor_chart_type"
-            value={anchorChartType || 'reference'}
+            value={anchorChartType || 'auto'}
             onChange={(e) => setAnchorChartType(e.target.value)}
             className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-200 p-1"
           >
+            <option value="auto">{t('anchor_chart.auto') || 'Auto-pick best fit'}</option>
             <option value="reference">{t('anchor_chart.reference') || 'Reference (features / norms / conventions)'}</option>
             <option value="process">{t('anchor_chart.process') || 'Process (sequential steps)'}</option>
             <option value="concept-map">{t('anchor_chart.concept_map') || 'Concept Map (parts of a whole)'}</option>
             <option value="comparison">{t('anchor_chart.comparison') || 'Comparison (across categories)'}</option>
+            <option value="strategy">{t('anchor_chart.strategy') || 'Strategy (reusable learning moves)'}</option>
+            <option value="vocabulary">{t('anchor_chart.vocabulary') || 'Vocabulary (terms + examples)'}</option>
+            <option value="routine">{t('anchor_chart.routine') || 'Routine (repeatable class procedure)'}</option>
+            <option value="worked-example">{t('anchor_chart.worked_example') || 'Worked Example (model + reasoning)'}</option>
+            <option value="criteria-success">{t('anchor_chart.criteria_success') || 'Success Criteria (what strong work includes)'}</option>
+            <option value="misconception">{t('anchor_chart.misconception') || 'Misconceptions (mix-ups + fixes)'}</option>
+            <option value="question-guide">{t('anchor_chart.question_guide') || 'Question Guide (discussion / analysis prompts)'}</option>
           </select>
         </div>
         <p className="text-[11px] text-slate-500 italic leading-snug">
-          {t('anchor_chart.help') || "EL-style class anchor chart. AI drafts the structure + hand-drawn icons; edit anytime; open critique mode for peers to leave I notice / I wonder notes."}
+          {t('anchor_chart.help') || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it."}
         </p>
       </div>
       <button

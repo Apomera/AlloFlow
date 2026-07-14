@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-25930-the-philippine-islands-1493-1898-volume-28-of-55-1637-38-explora",
+  "title": "The Philippine Islands, 1493-1898 — Volume 28 of 55: 1637-38; Explorations by Early Navigators, Descriptions of the Islands and Their Peoples, Their History and Records of the Catholic Missions, as Related in Contemporaneous Books and Manuscripts, Showing the Political, Economic, Commercial and Religious Conditions of Those Islands from Their Earliest Relations with European Nations to the Close of the Nineteenth Century",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Demarcation line of Alexander VI",
+    "Missions -- Philippines",
+    "Philippines -- Discovery and exploration",
+    "Philippines -- History -- Sources"
+  ],
+  "authors": [
+    "Project Gutenberg"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/25930"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/25930/pg25930.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Philippine Islands, 1493-1898 — Volume 28 of 55: 1637-38; Explorations by Early Navigators, Descriptions of the Islands and Their Peoples, Their History and Records of the Catholic Missions, as Related in Contemporaneous Books and Manuscripts, Showing the Political, Economic, Commercial and Religious Conditions of Those Islands from Their Earliest Relations with European Nations to the Close of the Nineteenth Century\". Metadata tags include: Demarcation line of Alexander VI; Missions -- Philippines; Philippines -- Discovery and exploration; Philippines -- History -- Sources."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 132
+  }
+}

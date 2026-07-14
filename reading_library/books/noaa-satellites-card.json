@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-satellites-card",
+  "title": "NOAA Satellites",
+  "description": "A NOAA source card about satellite observations, weather forecasting, climate monitoring, and Earth data.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": [
+    "Satellites",
+    "Remote sensing",
+    "Weather",
+    "Data literacy"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education/resource-collections/satellites",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Education",
+    "url": "https://www.noaa.gov/education/resource-collections/satellites"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA satellite resources show how observations from space support weather forecasts, storm tracking, climate monitoring, ocean data, and hazard response."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for data-literacy lessons where students ask how instruments collect evidence that humans cannot see directly from the ground."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NOAA materials are generally U.S. government work, but resource collections may link to partners or offsite materials. Check item-level rights before mirroring linked resources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 65
+  }
+}

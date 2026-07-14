@@ -68,12 +68,17 @@ window.StemLab = window.StemLab || {
       '@keyframes circuitBadgePop { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }',
       '@keyframes neonPulse { 0%, 100% { border-color: rgba(234, 179, 8, 0.4); box-shadow: 0 0 8px rgba(234, 179, 8, 0.2); } 50% { border-color: rgba(234, 179, 8, 0.8); box-shadow: 0 0 16px rgba(234, 179, 8, 0.4); } }',
       '@keyframes shortRedFlash { 0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 8px rgba(239, 68, 68, 0.2); } 50% { border-color: rgba(239, 68, 68, 1); box-shadow: 0 0 16px rgba(239, 68, 68, 0.5); } }',
+      // Drift-vs-field paradox: the signal RACES (fast sweep), electrons CRAWL (slow drift).
+      '@keyframes circSignalRace { 0% { transform: translateX(-14px); opacity: 0; } 8% { opacity: 1; } 78% { opacity: 1; } 100% { transform: translateX(360px); opacity: 0; } }',
+      '@keyframes circElectronDrift { 0% { transform: translateX(0); } 100% { transform: translateX(52px); } }',
+      '.circ-signal-pulse { animation: circSignalRace 0.9s linear infinite; }',
+      '.circ-electron-drift { animation: circElectronDrift 6s linear infinite; }',
       '.circuit-card { animation: circuitSlideIn 0.3s ease-out; }',
       '.circuit-badge { animation: circuitBadgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }',
       '.circuit-active { animation: circuitPulse 2s ease-in-out infinite; }',
       '.circuit-short { animation: circuitShortSpark 0.8s ease-out; }',
       '*:focus-visible { outline: 2px solid #eab308 !important; outline-offset: 2px !important; box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.4) !important; }',
-      '.glass-panel { background: rgba(15, 23, 42, 0.6) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; }',
+      '.glass-panel { background: var(--allo-stem-deeper, rgba(15, 23, 42, 0.6)) !important; backdrop-filter: blur(12px) !important; border: 1px solid var(--allo-stem-border, rgba(255, 255, 255, 0.08)) !important; }',
       '.short-active-flash { animation: shortRedFlash 1s ease-in-out infinite !important; }',
       '.glow-button { transition: all 0.2s ease; }',
       '.glow-button:hover { transform: translateY(-1px); box-shadow: 0 0 10px currentColor; }'
@@ -330,6 +335,21 @@ window.StemLab = window.StemLab || {
     var wrong2 = parseFloat((gen.a * (0.2 + Math.random() * 0.5)).toFixed(decimals));
     var wrong3 = parseFloat((gen.a + (Math.random() > 0.5 ? 1 : -1) * (gen.a * 0.3 + 5)).toFixed(decimals));
     if (wrong2 <= 0) wrong2 = parseFloat((gen.a * 2.5).toFixed(decimals));
+    // Distractors must be positive and distinct from the correct answer AND each other, else a negative
+    // option could appear (~21% of questions) or a distractor within tolerance would score as correct
+    // (inflating XP). Repair any bad option with deterministic fallback multipliers.
+    var _qTol = 0.01;
+    var _qFallback = [2.5, 0.4, 1.7, 3.3, 0.6, 1.25];
+    var _qSeen = {}; _qSeen[gen.a.toFixed(decimals)] = true;
+    var _fixOpt = function (w) {
+      var fi = 0;
+      while ((!(w > 0) || Math.abs(w - gen.a) < _qTol || _qSeen[w.toFixed(decimals)]) && fi < _qFallback.length) {
+        w = parseFloat((gen.a * _qFallback[fi]).toFixed(decimals)); fi++;
+      }
+      _qSeen[w.toFixed(decimals)] = true;
+      return w;
+    };
+    wrong1 = _fixOpt(wrong1); wrong2 = _fixOpt(wrong2); wrong3 = _fixOpt(wrong3);
     var opts = [gen.a, wrong1, wrong2, wrong3].sort(function() { return Math.random() - 0.5; });
     return { text: gen.q, answer: gen.a, unit: gen.unit, formula: gen.formula, opts: opts, answered: false };
   }
@@ -431,6 +451,7 @@ window.StemLab = window.StemLab || {
       { id: 'complete_3_challenges', label: 'Complete 3 circuit challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.challengesDone || 0) >= 3; }, progress: function(d) { return (d.challengesDone || 0) + '/3'; } }
     ],
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
 
@@ -448,6 +469,7 @@ window.StemLab = window.StemLab || {
           var callTTS = ctx.callTTS;
           var setToolSnapshots = ctx.setToolSnapshots;
           var setStemLabTool = ctx.setStemLabTool;
+          var setStemLabTab = ctx.setStemLabTab;
 
           var band = getGradeBand(ctx);
 
@@ -494,6 +516,7 @@ window.StemLab = window.StemLab || {
           var ohmScore = d.ohmScore || 0;
           var ohmStreak = d.ohmStreak || 0;
           var shortTriggered = d.shortTriggered || false;
+          var _prefersReducedMotion = (typeof window !== 'undefined' && window.matchMedia) ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
           var presetsLoaded = d.presetsLoaded || 0;
           var presetsLoadedSet = d.presetsLoadedSet || {};
           var challengesDoneSet = d.challengesDoneSet || {};
@@ -544,7 +567,7 @@ window.StemLab = window.StemLab || {
             if (c.type === 'switch') return c.closed ? 0.001 : 1e9;
             if (c.type === 'ammeter') return 0.001;
             if (c.type === 'voltmeter') return 1e9;
-            if (c.type === 'capacitor') return 1 / (2 * Math.PI * 60 * (c.value || 1) * 1e-6);
+            if (c.type === 'capacitor') return 1e9; // DC steady state: a capacitor blocks DC (acts as an open branch)
             return c.value || 1;
           };
 
@@ -576,24 +599,45 @@ window.StemLab = window.StemLab || {
           var hasOpenSwitch = mode === 'series' && components.some(function(c) { return c.type === 'switch' && !c.closed; });
 
           var totalR;
-          if (hasOpenSwitch) {
+          // Ideal meters are part of the network: an ammeter has nearly zero
+          // resistance and belongs in series; a voltmeter has extremely high
+          // resistance and belongs in parallel. Wrong placement must change the
+          // circuit so learners can observe the open/short consequence.
+          var networkComps = components.slice();
+          var noLoadPath = networkComps.length === 0;
+          if (noLoadPath) {
             totalR = 1e9;
           } else if (mode === 'series') {
-            totalR = components.reduce(function(s, c) { return s + getCompR(c); }, 0) || 0.001;
+            totalR = networkComps.reduce(function(sum, comp) {
+              return sum + getCompR(comp);
+            }, 0) || 0.001;
           } else {
-            if (components.length > 0) {
-              var invSum = components.reduce(function(s, c) { return s + 1 / (getCompR(c) || 1); }, 0);
-              totalR = invSum > 0 ? 1 / invSum : 0.001;
-            } else {
-              totalR = 0.001;
-            }
+            var invSum = networkComps.reduce(function(sum, comp) {
+              return sum + 1 / getCompR(comp);
+            }, 0);
+            totalR = invSum > 0 ? 1 / invSum : 1e9;
           }
 
-          var current = hasOpenSwitch ? 0 : voltage / totalR;
+          var current = noLoadPath ? 0 : voltage / totalR;
           var power = voltage * current;
-          var isShort = components.length > 0 && totalR < 1 && !hasOpenSwitch;
-          var isOpen = hasOpenSwitch;
-
+          var isShort = !noLoadPath && totalR < 1;
+          var isOpen = noLoadPath || totalR >= 1e8;
+          var hasAmmeter = components.some(function(comp) { return comp.type === 'ammeter'; });
+          var hasVoltmeter = components.some(function(comp) { return comp.type === 'voltmeter'; });
+          var meterIssue = mode === 'parallel' && hasAmmeter ? 'ammeter-short' :
+            mode === 'series' && hasVoltmeter ? 'voltmeter-open' : '';
+          var meterStatus = meterIssue === 'ammeter-short' ? 'Unsafe placement: short-circuit path' :
+            meterIssue === 'voltmeter-open' ? 'Incorrect placement: circuit is nearly open' :
+            hasAmmeter || hasVoltmeter ? 'Measurement placement is correct' : '';
+          var meterGuidance = meterIssue === 'ammeter-short'
+            ? 'An ammeter has nearly zero resistance. Across parallel nodes it bypasses the load and draws extremely high current. Move it into the series path.'
+            : meterIssue === 'voltmeter-open'
+            ? 'A voltmeter has extremely high resistance. In series it nearly stops current. Connect it across the component whose voltage difference you want.'
+            : hasAmmeter
+            ? 'The ammeter is in series, so circuit current passes through it.'
+            : hasVoltmeter
+            ? 'The voltmeter is in parallel, so it compares electric potential across the branch while drawing negligible current.'
+            : '';
           // Check short circuit badge
           if (isShort && !shortTriggered) {
             updMulti({ shortTriggered: true });
@@ -612,7 +656,7 @@ window.StemLab = window.StemLab || {
           // ── Electron animation (managed without useEffect) ──
           var W = 440, H = 200;
 
-          if (current > 0.001 && !isShort) {
+          if (current > 0.001 && !isShort && !_prefersReducedMotion) {
             if (window._circuitAnimTimer) clearTimeout(window._circuitAnimTimer);
             window._circuitAnimTimer = setTimeout(function() {
               upd('tick', (tick + 1) % 400);
@@ -711,6 +755,7 @@ window.StemLab = window.StemLab || {
 
           // ── AI Tutor ──
           var askAI = function() {
+            if (aiLoading) return;
             if (!aiQuestion || !aiQuestion.trim()) return;
             updMulti({ _aiLoading: true, _aiResponse: '' });
             var prompt = 'You are a friendly electronics tutor. ' +
@@ -772,51 +817,146 @@ window.StemLab = window.StemLab || {
             'Explore Ohm\'s Law (V=IR) by building circuits. Compare series vs parallel. Measure with ammeter and voltmeter.',
             'Analyze DC circuits using Ohm\'s Law, Kirchhoff\'s Laws, and power dissipation. Series, parallel, and mixed configurations.'
           )(band);
+          var earnedBadgeCount = Object.keys(badges).length;
+          var challengeProgress = Object.keys(challengesDoneSet || {}).length;
+          var circuitState = isShort ? {
+            label: 'Short risk',
+            tone: '#f87171',
+            soft: 'rgba(127,29,29,0.38)',
+            note: 'Add resistance before current spikes.'
+          } : (components.length === 0 || noLoadPath || hasOpenSwitch) ? {
+            label: components.length === 0 ? 'Ready to build' : 'Open path',
+            tone: '#fbbf24',
+            soft: 'rgba(120,53,15,0.34)',
+            note: components.length === 0 ? 'Start with a load, then close the loop.' : 'Close switches or add a real load.'
+          } : {
+            label: 'Current flowing',
+            tone: '#22d3ee',
+            soft: 'rgba(8,145,178,0.20)',
+            note: 'Use the meters and readouts to test the model.'
+          };
+          var benchStats = [
+            { label: 'Parts', value: String(components.length), hint: mode + ' circuit' },
+            { label: 'Voltage', value: voltage + 'V', hint: 'battery source' },
+            { label: 'Current', value: current.toFixed(3) + 'A', hint: isShort ? 'too high' : 'live flow' },
+            { label: 'Badges', value: earnedBadgeCount + '/' + BADGES.length, hint: challengeProgress + ' challenges' }
+          ];
+          var benchRoutes = [
+            { title: 'Load Starter Circuit', icon: '\uD83D\uDD34', note: 'LED + resistor baseline', action: function() { loadPreset(CIRCUIT_PRESETS[0]); }, tone: '#f97316' },
+            { title: 'Open Presets', icon: '\uD83D\uDCCB', note: 'Voltage dividers, meters, short demo', action: function() { upd('showPresets', true); }, tone: '#facc15' },
+            { title: 'Advanced Simulator', icon: '\uD83D\uDD0C', note: 'CircuitJS meters and real-world challenges', action: function() { if (typeof ctx.setToolData === 'function') ctx.setToolData(function(prev) { var cur = Object.assign({}, (prev && prev._circuitShelf) || {}); cur.returnTool = 'circuit'; var next = Object.assign({}, prev); next._circuitShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('circuitShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Circuit Shelf advanced simulator.'); } else if (typeof addToast === 'function') addToast('Advanced simulator is not available right now.', 'info'); }, tone: '#fb923c' },
+            { title: 'Try a Target', icon: '\uD83C\uDFAF', note: challengeProgress + '/' + CHALLENGES.length + ' solved', action: function() { upd('challenge', CHALLENGES[0]); if (typeof addToast === 'function') addToast('Target ready: ' + CHALLENGES[0].label, 'info'); }, tone: '#34d399' },
+            { title: band === 'g68' || band === 'g912' ? 'Show Laws' : 'Ask Tutor', icon: band === 'g68' || band === 'g912' ? '\u2696' : '\uD83E\uDD16', note: band === 'g68' || band === 'g912' ? 'Kirchhoff support' : 'Get a circuit hint', action: function() { if (band === 'g68' || band === 'g912') upd('showKirchhoff', true); else upd('showAI', true); }, tone: '#a78bfa' }
+          ];
+          var renderCircuitBench = function() {
+            return h('section', {
+              'data-circuit-bench': 'true',
+              'aria-labelledby': 'circuit-bench-title',
+              className: 'mb-4 rounded-2xl border border-cyan-500/25 bg-slate-900/70 p-4 shadow-xl shadow-cyan-950/20',
+              style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14 }
+            },
+              h('div', { style: { minWidth: 0 } },
+                h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-300 mb-2' }, 'Electronics bench'),
+                h('h2', { id: 'circuit-bench-title', className: 'text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight mb-2' }, 'Build the loop, then prove the numbers'),
+                h('p', { className: 'text-sm text-slate-300 leading-relaxed mb-3' }, introText),
+                h('div', { className: 'rounded-xl border p-3', style: { borderColor: circuitState.tone + '66', background: circuitState.soft } },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-lg' }, isShort ? '\u26A0\uFE0F' : current > 0.001 ? '\u26A1' : '\uD83D\uDD0C'),
+                    h('span', { className: 'text-sm font-black uppercase tracking-wide', style: { color: circuitState.tone } }, circuitState.label)
+                  ),
+                  h('p', { className: 'text-xs text-slate-300 leading-snug' }, circuitState.note)
+                ),
+                h('div', { className: 'mt-3 grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))' } },
+                  benchStats.map(function(stat) {
+                    return h('div', { key: stat.label, className: 'rounded-xl border border-slate-700/70 bg-slate-950/55 p-2.5' },
+                      h('div', { className: 'text-base font-black text-white font-mono leading-none' }, stat.value),
+                      h('div', { className: 'mt-1 text-[10px] font-bold uppercase tracking-wide text-slate-400' }, stat.label),
+                      h('div', { className: 'mt-0.5 text-[10px] text-slate-500' }, stat.hint)
+                    );
+                  })
+                )
+              ),
+              h('div', { style: { minWidth: 0 } },
+                h('div', { className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-3 mb-3' },
+                  h('svg', { viewBox: '0 0 330 164', width: '100%', role: 'img', 'aria-label': 'Circuit bench visual showing battery, wire loop, load, and live meter readouts' },
+                    h('rect', { x: 0, y: 0, width: 330, height: 164, rx: 18, fill: '#0f172a' }),
+                    h('path', { d: 'M46 48 H112 V34 H232 V48 H284 V122 H46 Z', fill: 'none', stroke: current > 0.001 && !isShort ? '#22d3ee' : '#64748b', strokeWidth: 5, strokeLinejoin: 'round' }),
+                    h('rect', { x: 28, y: 58, width: 36, height: 52, rx: 6, fill: '#ca8a04', stroke: '#facc15', strokeWidth: 2 }),
+                    h('text', { x: 46, y: 88, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 900 }, voltage + 'V'),
+                    h('rect', { x: 128, y: 22, width: 88, height: 30, rx: 8, fill: '#1e293b', stroke: isShort ? '#f87171' : '#facc15', strokeWidth: 2 }),
+                    h('path', { d: 'M140 37 h9 l5 -8 l8 16 l7 -16 l8 16 l5 -8 h20', fill: 'none', stroke: isShort ? '#f87171' : '#facc15', strokeWidth: 2.5, strokeLinecap: 'round' }),
+                    h('circle', { cx: 246, cy: 122, r: 25, fill: '#082f49', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('text', { x: 246, y: 118, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10, fontWeight: 900 }, 'I'),
+                    h('text', { x: 246, y: 132, textAnchor: 'middle', fill: '#e0f2fe', fontSize: 11, fontWeight: 900 }, current.toFixed(2) + 'A'),
+                    current > 0.001 && !isShort && [0, 1, 2, 3].map(function(i) {
+                      return h('circle', { key: i, cx: 84 + i * 42, cy: i % 2 ? 122 : 48, r: 4, fill: '#67e8f9', opacity: 0.85 });
+                    }),
+                    isShort && h('g', null,
+                      h('path', { d: 'M154 74 l18 18 l-10 2 l16 22 l-32 -26 l12 -2 z', fill: '#f87171', opacity: 0.85 }),
+                      h('text', { x: 166, y: 134, textAnchor: 'middle', fill: '#fecaca', fontSize: 11, fontWeight: 900 }, 'Add resistance')
+                    ),
+                    h('text', { x: 22, y: 146, fill: '#94a3b8', fontSize: 10, fontWeight: 700 }, mode === 'series' ? 'Series: same current through every part' : 'Parallel: branches share voltage')
+                  )
+                ),
+                h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))' } },
+                  benchRoutes.map(function(route) {
+                    return h('button', { key: route.title, type: 'button', onClick: route.action, className: 'text-left rounded-xl border bg-slate-950/55 p-3 transition-all hover:-translate-y-0.5 hover:bg-slate-900 active:scale-[0.98]', style: { borderColor: route.tone + '66' } },
+                      h('div', { className: 'flex items-center gap-2 mb-1' },
+                        h('span', { 'aria-hidden': 'true', className: 'text-lg' }, route.icon),
+                        h('span', { className: 'text-xs font-black text-white' }, route.title)
+                      ),
+                      h('div', { className: 'text-[11px] text-slate-400 leading-snug' }, route.note)
+                    );
+                  })
+                )
+              )
+            );
+          };
 
           // ──────────────────────────────────────────
           // RENDER
           // ──────────────────────────────────────────
-          return h('div', { className: 'max-w-3xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200' },
+          return h('div', { className: 'max-w-4xl mx-auto p-5 rounded-2xl border bg-slate-950/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-xl animate-in fade-in duration-200' },
 
             // ── Header ──
             h('div', { className: 'flex items-center gap-3 mb-3 flex-wrap' },
               h('button', {
                 onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
-                className: 'p-1.5 hover:bg-slate-800 rounded-lg transition-all',
+                className: 'p-1.5 hover:bg-slate-800 rounded-lg transition-all active:scale-[0.97]',
                 'aria-label': 'Back to tools'
               }, h(ArrowLeft, { size: 18, className: 'text-slate-400' })),
 
-              h('h3', { className: 'text-lg font-bold text-white' }, '\\uD83D\\uDD0C Circuit Builder'),
+              h('h3', { className: 'text-lg font-bold text-white tracking-tight' }, '\uD83D\uDD0C Circuit Builder'),
 
               h('span', { className: 'px-2 py-0.5 bg-yellow-950/60 text-yellow-400 text-[10px] font-black rounded-full border border-yellow-500/20' }, 'INTERACTIVE'),
 
-              isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[10px] font-black rounded-full border border-red-500/30 animate-pulse' }, '\\u26A0 SHORT CIRCUIT!'),
+              isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[10px] font-black rounded-full border border-red-500/30 animate-pulse' }, '\u26A0 SHORT CIRCUIT!'),
 
               // Badge toggle
               h('button', { 'aria-label': 'Badges',
                 onClick: function() { upd('showBadges', !showBadges); },
-                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white')
-              }, '\\uD83C\\uDFC5 Badges'),
+                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
+              }, '\uD83C\uDFC5 Badges'),
 
               // AI toggle
               h('button', { 'aria-label': 'AI Tutor',
                 onClick: function() { upd('showAI', !showAI); },
-                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white')
-              }, '\\uD83E\\uDD16 AI Tutor'),
+                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
+              }, '\uD83E\uDD16 AI Tutor'),
 
               // Mode buttons
               h('div', { className: 'flex gap-1 ml-auto' },
                 ['series', 'parallel'].map(function(m) {
-                  return h('button', { key: m,
+                  return h('button', { key: m, 'aria-pressed': mode === m,
                     onClick: function() { upd('mode', m); },
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-500 text-slate-950 shadow-md shadow-yellow-500/25' : 'bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200')
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-500 text-slate-950 shadow-md shadow-yellow-500/25' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200 active:scale-[0.97]')
                   }, m);
                 })
               )
             ),
 
             // ── Grade-band intro ──
-            h('p', { className: 'text-xs text-slate-400 font-medium italic -mt-1 mb-4' }, introText),
+            renderCircuitBench(),
 
             // ══════════════════════════════════════
             // SVG Schematic
@@ -825,12 +965,31 @@ window.StemLab = window.StemLab || {
               h('svg', {
                 viewBox: '0 0 ' + W + ' ' + H,
                 className: 'w-full rounded-xl border transition-all ' + (isShort ? 'bg-red-950/20 border-red-500/50 shadow-lg shadow-red-500/10' : 'bg-slate-900 border-slate-800 shadow-inner'),
+                role: 'img',
+                'aria-label': 'Interactive ' + mode + ' circuit schematic. Battery ' + voltage + ' volts, ' + components.length + ' components, current ' + current.toFixed(3) + ' amps, source power ' + power.toFixed(2) + ' watts. ' + (isShort ? 'Warning: short circuit.' : (current > 0.001 ? 'Circuit energized; animated charge carriers show current flow.' : 'No current is flowing.')),
                 style: { maxHeight: '220px' }
               },
                 // Definitions for gradients & patterns
                 h('defs', null,
                   h('pattern', { id: 'grid', width: 20, height: 20, patternUnits: 'userSpaceOnUse' },
                     h('path', { d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: 'rgba(255,255,255,0.03)', strokeWidth: 1 })
+                  ),
+                  h('radialGradient', { id: 'circuit-ambient', cx: '42%', cy: '48%', r: '72%' },
+                    h('stop', { offset: '0%', stopColor: isShort ? '#ef4444' : '#0891b2', stopOpacity: current > 0.001 ? 0.18 : 0.04 }),
+                    h('stop', { offset: '62%', stopColor: isShort ? '#7f1d1d' : '#172554', stopOpacity: current > 0.001 ? 0.12 : 0.03 }),
+                    h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0 })
+                  ),
+                  h('linearGradient', { id: 'circuit-battery', x1: '0', y1: '0', x2: '1', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: isShort ? '#f87171' : '#fde047' }),
+                    h('stop', { offset: '48%', stopColor: isShort ? '#991b1b' : '#ca8a04' }),
+                    h('stop', { offset: '100%', stopColor: isShort ? '#450a0a' : '#713f12' })
+                  ),
+                  h('filter', { id: 'circuit-wire-glow', x: '-30%', y: '-80%', width: '160%', height: '260%' },
+                    h('feGaussianBlur', { stdDeviation: isShort ? '2.8' : '1.8', result: 'wireBlur' }),
+                    h('feMerge', null,
+                      h('feMergeNode', { in: 'wireBlur' }),
+                      h('feMergeNode', { in: 'SourceGraphic' })
+                    )
                   ),
                   // LED Gradients
                   components.map(function(c) {
@@ -844,20 +1003,22 @@ window.StemLab = window.StemLab || {
                 
                 // Grid Background
                 h('rect', { width: W, height: H, fill: 'url(#grid)', rx: 12 }),
+                h('rect', { width: W, height: H, fill: 'url(#circuit-ambient)', rx: 12, pointerEvents: 'none' }),
                 
                 // Battery
-                h('rect', { x: 15, y: 40, width: 40, height: 60, fill: isShort ? '#7f1d1d' : '#ca8a04', stroke: isShort ? '#ef4444' : '#eab308', strokeWidth: 2, rx: 6 }),
+                h('rect', { x: 11, y: 36, width: 48, height: 68, fill: isShort ? '#ef4444' : '#eab308', opacity: current > 0.001 ? 0.18 : 0.08, rx: 10, filter: 'url(#circuit-wire-glow)' }),
+                h('rect', { x: 15, y: 40, width: 40, height: 60, fill: 'url(#circuit-battery)', stroke: isShort ? '#fca5a5' : '#fde047', strokeWidth: 2, rx: 6 }),
                 // Highlight on battery
                 h('rect', { x: 17, y: 42, width: 12, height: 56, fill: 'rgba(255,255,255,0.08)', rx: 3 }),
                 h('text', { x: 35, y: 74, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: '900', fontFamily: 'system-ui' }, fill: '#ffffff' }, voltage + 'V'),
-                h('text', { x: 35, y: 30, textAnchor: 'middle', style: { fontSize: '12px' } }, '\\uD83D\\uDD0B'),
+                h('text', { x: 35, y: 30, textAnchor: 'middle', style: { fontSize: '12px' } }, '\uD83D\uDD0B'),
                 h('text', { x: 20, y: 38, fill: '#ef4444', style: { fontSize: '12px', fontWeight: 'bold' } }, '+'),
-                h('text', { x: 20, y: 110, fill: '#3b82f6', style: { fontSize: '12px', fontWeight: 'bold' } }, '\\u2212'),
+                h('text', { x: 20, y: 110, fill: '#3b82f6', style: { fontSize: '12px', fontWeight: 'bold' } }, '\u2212'),
 
                 // Dynamic Wires
                 (function() {
                   var wires = [];
-                  var wireColor = isShort ? '#ef4444' : '#475569';
+                  var wireColor = isShort ? '#fb7185' : (current > 0.001 ? '#22d3ee' : '#64748b');
                   var wWidth = isShort ? 2.5 : 2;
                   
                   if (components.length === 0) {
@@ -904,13 +1065,23 @@ window.StemLab = window.StemLab || {
                     wires.push(h('line', { key: 'w2', x1: 260, y1: maxCy, x2: 260, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
                     wires.push(h('line', { key: 'w3', x1: 260, y1: 140, x2: 35, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
                   }
-                  return wires;
+                  return h('g', { filter: current > 0.001 || isShort ? 'url(#circuit-wire-glow)' : null, opacity: current > 0.001 ? 0.95 : 1 }, wires);
                 })(),
 
                 // Battery connections
                 h('line', { x1: 35, y1: 40, x2: 35, y2: 20, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
                 h('line', { x1: 35, y1: 100, x2: 35, y2: 140, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
 
+                // Electric-field signal pulse: it races around the conductor while
+                // individual charge carriers below remain discrete and visibly slower.
+                !isShort && current > 0.001 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none' },
+                  h('g', { className: 'circ-signal-pulse' },
+                    h('rect', { x: 45, y: 16, width: 24, height: 8, rx: 4, fill: '#67e8f9', opacity: 0.24, filter: 'url(#circuit-wire-glow)' }),
+                    h('circle', { cx: 57, cy: 20, r: 3.2, fill: '#ecfeff', stroke: '#22d3ee', strokeWidth: 1 }),
+                    h('path', { d: 'M51 20 H63', stroke: '#ffffff', strokeWidth: 1.2, opacity: 0.9 })
+                  ),
+                  h('text', { x: 302, y: 15, fill: '#a5f3fc', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, 'field signal ≈ light speed')
+                ),
                 // Current direction arrow
                 !isShort && current > 0.01 && h('g', null,
                   h('polygon', { points: '210,12 220,8 220,16', fill: '#06b6d4', filter: 'drop-shadow(0 0 2px #06b6d4)' }),
@@ -931,6 +1102,12 @@ window.StemLab = window.StemLab || {
                       var chargeLvl = Math.min(tick / 120, 1);
 
                       return h('g', { key: comp.id },
+                        // Power aura scales with P = VI, revealing where energy becomes heat or light.
+                        compP > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('ellipse', {
+                          cx: cx, cy: 78, rx: 18 + Math.min(compP, 20) * 0.7, ry: 25 + Math.min(compP, 20) * 0.8,
+                          fill: comp.type === 'bulb' ? '#fde047' : (comp.type === 'led' ? (comp.ledColor || '#ef4444') : '#fb923c'),
+                          opacity: Math.min(0.08 + compP / 55, 0.34), filter: 'blur(6px)', 'aria-hidden': 'true'
+                        }),
                         // Component body
                         comp.type === 'resistor'
                           ? h('g', null,
@@ -986,8 +1163,8 @@ window.StemLab = window.StemLab || {
                               current > 0.001 && h('g', { opacity: chargeLvl },
                                 h('text', { x: cx - 10, y: 70, fill: '#ef4444', style: { fontSize: '8px', fontWeight: 'bold' } }, '+'),
                                 h('text', { x: cx + 5, y: 70, fill: '#ef4444', style: { fontSize: '8px', fontWeight: 'bold' } }, '+'),
-                                h('text', { x: cx - 10, y: 88, fill: '#3b82f6', style: { fontSize: '8px', fontWeight: 'bold' } }, '\\u2212'),
-                                h('text', { x: cx + 5, y: 88, fill: '#3b82f6', style: { fontSize: '8px', fontWeight: 'bold' } }, '\\u2212')
+                                h('text', { x: cx - 10, y: 88, fill: '#3b82f6', style: { fontSize: '8px', fontWeight: 'bold' } }, '\u2212'),
+                                h('text', { x: cx + 5, y: 88, fill: '#3b82f6', style: { fontSize: '8px', fontWeight: 'bold' } }, '\u2212')
                               )
                             )
 
@@ -1007,7 +1184,7 @@ window.StemLab = window.StemLab || {
                             textAnchor: 'middle',
                             style: { fontSize: '8px', fontWeight: 'bold', fontFamily: 'monospace' },
                             fill: '#cbd5e1'
-                          }, comp.type === 'led' ? '~2V drop' : (comp.type === 'capacitor' ? comp.value + '\\u00B5F' : comp.value + '\\u03A9')),
+                          }, comp.type === 'led' ? '~40\u03A9' : (comp.type === 'capacitor' ? comp.value + '\u00B5F' : comp.value + '\u03A9')),
 
                         // Voltage drop label
                         current > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter'
@@ -1027,12 +1204,26 @@ window.StemLab = window.StemLab || {
                       var compR2 = getCompR(comp);
                       var compI2 = voltage / compR2;
                       var compP2 = voltage * compI2;
+                      var branchStrength = Math.min(1, Math.log10(1 + Math.max(0, compI2)) / 1.4);
+                      var isIdealParallelBranch2 = mode === 'parallel' && compR2 < 0.01;
                       var bulbBright2 = comp.type === 'bulb' ? Math.min(compP2 / 12, 1) : 0;
                       var ledGlow2 = comp.type === 'led' && compI2 > 0.005 ? Math.min(compI2 * 20, 1) : 0;
                       var chargeLvl = Math.min(tick / 120, 1);
 
                       return h('g', { key: comp.id },
-                        // Leads connecting to bus lines
+                        // Each branch gets its own P = VI aura, making parallel power sharing visible.
+                        compP2 > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('ellipse', {
+                          cx: 220, cy: cy, rx: 28 + Math.min(compP2, 20) * 0.55, ry: 13 + Math.min(compP2, 20) * 0.35,
+                          fill: comp.type === 'bulb' ? '#fde047' : (comp.type === 'led' ? (comp.ledColor || '#ef4444') : '#fb923c'),
+                          opacity: Math.min(0.08 + compP2 / 55, 0.34), filter: 'blur(5px)', 'aria-hidden': 'true'
+                        }),
+                        // Branch glow and junction nodes encode how total current divides.
+                        !isShort && compI2 > 0.001 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none', filter: 'url(#circuit-wire-glow)' },
+                          h('line', { x1: 180, y1: cy, x2: 202, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
+                          h('line', { x1: 238, y1: cy, x2: 260, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
+                          h('circle', { cx: 180, cy: cy, r: 2.5 + branchStrength * 1.8, fill: '#a5f3fc', stroke: '#0891b2', strokeWidth: 1 }),
+                          h('circle', { cx: 260, cy: cy, r: 2.5 + branchStrength * 1.8, fill: '#a5f3fc', stroke: '#0891b2', strokeWidth: 1 })
+                        ),                        // Leads connecting to bus lines
                         h('line', { x1: 180, y1: cy, x2: 200, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
                         h('line', { x1: 240, y1: cy, x2: 260, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
 
@@ -1088,33 +1279,93 @@ window.StemLab = window.StemLab || {
 
                         // Value/reading labels (parallel)
                         comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter'
-                          && h('text', { x: 220, y: cy - 10, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#cbd5e1' }, comp.type === 'led' ? '~2V' : (comp.type === 'capacitor' ? comp.value + '\\u00B5F' : comp.value + '\\u03A9')),
+                          && h('text', { x: 220, y: cy - 10, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#cbd5e1' }, comp.type === 'led' ? '~40\u03A9' : (comp.type === 'capacitor' ? comp.value + '\u00B5F' : comp.value + '\u03A9')),
 
-                        comp.type === 'ammeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, compI2.toFixed(3) + 'A'),
+                        comp.type === 'ammeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, isIdealParallelBranch2 ? 'short' : compI2.toFixed(3) + 'A'),
                         comp.type === 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#fbbf24' }, voltage.toFixed(1) + 'V'),
-                        comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontFamily: 'monospace' }, fill: '#38bdf8' }, compI2.toFixed(2) + 'A')
+                        comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontFamily: 'monospace' }, fill: '#38bdf8' }, isIdealParallelBranch2 ? 'short' : compI2.toFixed(2) + 'A')
                       );
                     }),
 
+                // Persistent schematic fault marker: visible even without canvas animation.
+                isShort && h('g', { 'aria-hidden': 'true', pointerEvents: 'none', className: 'circuit-short' },
+                  h('circle', { cx: 70, cy: 69, r: 30, fill: '#ef4444', opacity: 0.12, filter: 'url(#circuit-wire-glow)' }),
+                  h('path', { d: 'M55 43 L68 58 L61 65 L78 82 L72 64 L81 58 L67 43 Z', fill: '#fef2f2', stroke: '#fb7185', strokeWidth: 1.4, filter: 'url(#circuit-wire-glow)' }),
+                  h('path', { d: 'M91 48 L85 55 L92 61 L84 69', fill: 'none', stroke: '#fda4af', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('path', { d: 'M48 83 L42 89 L49 95', fill: 'none', stroke: '#fda4af', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('rect', { x: 105, y: 50, width: 130, height: 34, rx: 8, fill: '#450a0a', stroke: '#fb7185', strokeWidth: 1.2, opacity: 0.96 }),
+                  h('text', { x: 170, y: 64, textAnchor: 'middle', fill: '#fecaca', style: { fontSize: '9px', fontWeight: '900', fontFamily: 'system-ui' } }, 'SHORT CIRCUIT'),
+                  h('text', { x: 170, y: 76, textAnchor: 'middle', fill: '#fda4af', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, 'near-zero resistance • current surge')
+                ),
                 // Electron dots
                 electronDots.map(function(dot, i) {
-                  return h('circle', { key: 'e' + i, cx: dot.x, cy: dot.y, r: 3, fill: '#06b6d4', opacity: 0.8, filter: 'drop-shadow(0 0 2px #06b6d4)' });
+                  return h('circle', { key: 'e' + i, cx: dot.x, cy: dot.y, r: 3, fill: '#06b6d4', opacity: 0.8, filter: 'drop-shadow(0 0 2px #06b6d4)', 'aria-hidden': 'true' });
                 }),
 
                 // Empty state
-                components.length === 0 && h('text', { x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '12px', fontFamily: 'monospace', fontWeight: 'bold' } }, 'Add components below')
+                components.length === 0 && h('text', { x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '12px', fontFamily: 'monospace', fontWeight: 'bold' } }, 'Add components below')
               ),
 
               // Transparent HTML5 canvas overlay for short circuit particles
               isShort && h('canvas', {
                 ref: function(canvas) {
                   if (!canvas) {
-                    if (window._circuitCanvasCleanup) window._circuitCanvasCleanup();
+                    if (typeof window !== 'undefined' && window._circuitCanvasCleanup) window._circuitCanvasCleanup();
                     return;
                   }
+                  if (canvas._circuitSparkInit) {
+                    if (canvas._circuitSparkResize) canvas._circuitSparkResize();
+                    if (canvas._circuitSparkSchedule) canvas._circuitSparkSchedule();
+                    return;
+                  }
+                  if (typeof window !== 'undefined' && window._circuitCanvasCleanup) window._circuitCanvasCleanup();
                   var ctx2d = canvas.getContext('2d');
-                  var w = canvas.width = canvas.offsetWidth || W;
-                  var h = canvas.height = canvas.offsetHeight || H;
+                  if (!ctx2d) return;
+                  canvas._circuitSparkInit = true;
+                  var w = 0;
+                  var h = 0;
+                  var sparkActive = true;
+                  var sparkRaf = null;
+
+                  function resizeCircuitSparkCanvas() {
+                    w = canvas.width = canvas.offsetWidth || W;
+                    h = canvas.height = canvas.offsetHeight || H;
+                  }
+
+                  function isCircuitSparkHidden() {
+                    return typeof document !== 'undefined' && !!document.hidden;
+                  }
+
+                  function cancelCircuitSparkFrame() {
+                    if (sparkRaf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(sparkRaf);
+                    sparkRaf = null;
+                  }
+
+                  function scheduleCircuitSparkFrame() {
+                    if (!sparkActive || sparkRaf || _prefersReducedMotion || isCircuitSparkHidden()) return;
+                    if (typeof requestAnimationFrame !== 'function') return;
+                    sparkRaf = requestAnimationFrame(loop);
+                  }
+
+                  function cleanupCircuitSparkCanvas() {
+                    sparkActive = false;
+                    cancelCircuitSparkFrame();
+                    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onCircuitSparkVisibilityChange);
+                    canvas._circuitSparkInit = false;
+                    canvas._circuitSparkCleanup = null;
+                    canvas._circuitSparkResize = null;
+                    canvas._circuitSparkSchedule = null;
+                    if (typeof window !== 'undefined' && window._circuitCanvasCleanup === cleanupCircuitSparkCanvas) window._circuitCanvasCleanup = null;
+                  }
+
+                  function onCircuitSparkVisibilityChange() {
+                    if (!sparkActive) return;
+                    if (!canvas.isConnected) { cleanupCircuitSparkCanvas(); return; }
+                    if (isCircuitSparkHidden()) cancelCircuitSparkFrame();
+                    else { cancelCircuitSparkFrame(); loop(); }
+                  }
+
+                  resizeCircuitSparkCanvas();
                   
                   if (!canvas.particles) {
                     canvas.particles = [];
@@ -1132,9 +1383,11 @@ window.StemLab = window.StemLab || {
                     }
                   }
                   
-                  var active = true;
                   function loop() {
-                    if (!active) return;
+                    if (!sparkActive) return;
+                    sparkRaf = null;
+                    if (!canvas.isConnected) { cleanupCircuitSparkCanvas(); return; }
+                    if (isCircuitSparkHidden()) { cancelCircuitSparkFrame(); return; }
                     ctx2d.clearRect(0, 0, w, h);
                     
                     // Spawn sparks near battery / short components
@@ -1170,6 +1423,8 @@ window.StemLab = window.StemLab || {
                       pt.life--;
                       
                       if (pt.type === 'spark') {
+                        ctx2d.save();
+                        ctx2d.shadowColor = 'rgba(251,146,60,0.9)'; ctx2d.shadowBlur = 6;
                         ctx2d.fillStyle = 'rgba(251, 146, 60, ' + (pt.life / pt.maxLife).toFixed(2) + ')';
                         ctx2d.beginPath();
                         ctx2d.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
@@ -1177,6 +1432,7 @@ window.StemLab = window.StemLab || {
                         ctx2d.strokeStyle = 'rgba(239, 68, 68, ' + (pt.life / pt.maxLife * 0.4).toFixed(2) + ')';
                         ctx2d.lineWidth = 1;
                         ctx2d.stroke();
+                        ctx2d.restore();
                       } else {
                         // smoke
                         ctx2d.fillStyle = 'rgba(148, 163, 184, ' + (pt.life / pt.maxLife * 0.15).toFixed(2) + ')';
@@ -1187,11 +1443,15 @@ window.StemLab = window.StemLab || {
                     }
                     
                     canvas.particles = canvas.particles.filter(function(pt) { return pt.life > 0; });
-                    requestAnimationFrame(loop);
+                    scheduleCircuitSparkFrame();
                   }
                   
-                  requestAnimationFrame(loop);
-                  window._circuitCanvasCleanup = function() { active = false; };
+                  canvas._circuitSparkCleanup = cleanupCircuitSparkCanvas;
+                  canvas._circuitSparkResize = resizeCircuitSparkCanvas;
+                  canvas._circuitSparkSchedule = scheduleCircuitSparkFrame;
+                  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onCircuitSparkVisibilityChange);
+                  if (typeof window !== 'undefined') window._circuitCanvasCleanup = cleanupCircuitSparkCanvas;
+                  loop();
                 },
                 className: 'absolute inset-0 w-full h-full pointer-events-none'
               })
@@ -1203,43 +1463,43 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-wrap gap-2 mt-4 mb-4 justify-center sm:justify-start' },
               h('button', { 'aria-label': 'Resistor',
                 onClick: function() { addComponent('resistor', 100); },
-                className: 'px-3 py-1.5 bg-yellow-950/20 hover:bg-yellow-500/20 text-yellow-400 font-bold rounded-lg text-xs border border-yellow-500/30 hover:border-yellow-400 transition-all glow-button'
-              }, '\\u2795 Resistor'),
+                className: 'px-3 py-1.5 bg-yellow-950/20 hover:bg-yellow-500/20 text-yellow-400 font-bold rounded-lg text-xs border border-yellow-500/30 hover:border-yellow-400 transition-all glow-button active:scale-[0.97]'
+              }, '\u2795 Resistor'),
 
               h('button', { 'aria-label': 'Bulb',
                 onClick: function() { addComponent('bulb', 50); },
-                className: 'px-3 py-1.5 bg-amber-950/20 hover:bg-amber-500/20 text-amber-400 font-bold rounded-lg text-xs border border-amber-500/30 hover:border-amber-400 transition-all glow-button'
-              }, '\\uD83D\\uDCA1 Bulb'),
+                className: 'px-3 py-1.5 bg-amber-950/20 hover:bg-amber-500/20 text-amber-400 font-bold rounded-lg text-xs border border-amber-500/30 hover:border-amber-400 transition-all glow-button active:scale-[0.97]'
+              }, '\uD83D\uDCA1 Bulb'),
 
               h('button', { 'aria-label': 'Switch',
                 onClick: function() { addComponent('switch', 0, { closed: true }); },
-                className: 'px-3 py-1.5 bg-emerald-950/20 hover:bg-emerald-500/20 text-emerald-400 font-bold rounded-lg text-xs border border-emerald-500/30 hover:border-emerald-400 transition-all glow-button'
-              }, '\\uD83D\\uDD18 Switch'),
+                className: 'px-3 py-1.5 bg-emerald-950/20 hover:bg-emerald-500/20 text-emerald-400 font-bold rounded-lg text-xs border border-emerald-500/30 hover:border-emerald-400 transition-all glow-button active:scale-[0.97]'
+              }, '\uD83D\uDD18 Switch'),
 
               h('button', { 'aria-label': 'LED',
                 onClick: function() { addComponent('led', 40, { ledColor: '#ef4444' }); },
-                className: 'px-3 py-1.5 bg-rose-950/20 hover:bg-rose-500/20 text-rose-400 font-bold rounded-lg text-xs border border-rose-500/30 hover:border-rose-400 transition-all glow-button'
-              }, '\\uD83D\\uDD34 LED'),
+                className: 'px-3 py-1.5 bg-rose-950/20 hover:bg-rose-500/20 text-rose-400 font-bold rounded-lg text-xs border border-rose-500/30 hover:border-rose-400 transition-all glow-button active:scale-[0.97]'
+              }, '\uD83D\uDD34 LED'),
 
               h('button', { 'aria-label': 'Ammeter',
                 onClick: function() { addComponent('ammeter', 0); },
-                className: 'px-3 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/20 text-cyan-400 font-bold rounded-lg text-xs border border-cyan-500/30 hover:border-cyan-400 transition-all glow-button'
-              }, '\\u26A1 Ammeter'),
+                className: 'px-3 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/20 text-cyan-400 font-bold rounded-lg text-xs border border-cyan-500/30 hover:border-cyan-400 transition-all glow-button active:scale-[0.97]'
+              }, '\u26A1 Ammeter'),
 
               h('button', { 'aria-label': 'Voltmeter',
                 onClick: function() { addComponent('voltmeter', 0); },
-                className: 'px-3 py-1.5 bg-orange-950/20 hover:bg-orange-500/20 text-orange-400 font-bold rounded-lg text-xs border border-orange-500/30 hover:border-orange-400 transition-all glow-button'
-              }, '\\uD83D\\uDD0B Voltmeter'),
+                className: 'px-3 py-1.5 bg-orange-950/20 hover:bg-orange-500/20 text-orange-400 font-bold rounded-lg text-xs border border-orange-500/30 hover:border-orange-400 transition-all glow-button active:scale-[0.97]'
+              }, '\uD83D\uDD0B Voltmeter'),
 
               h('button', { 'aria-label': 'Capacitor',
                 onClick: function() { addComponent('capacitor', 100); },
-                className: 'px-3 py-1.5 bg-sky-950/20 hover:bg-sky-500/20 text-sky-400 font-bold rounded-lg text-xs border border-sky-500/30 hover:border-sky-400 transition-all glow-button'
-              }, '\\u2E28 Capacitor'),
+                className: 'px-3 py-1.5 bg-sky-950/20 hover:bg-sky-500/20 text-sky-400 font-bold rounded-lg text-xs border border-sky-500/30 hover:border-sky-400 transition-all glow-button active:scale-[0.97]'
+              }, '\u2E28 Capacitor'),
 
               h('button', { 'aria-label': 'Clear',
                 onClick: clearComponents,
-                className: 'px-3 py-1.5 bg-red-950/30 hover:bg-red-500/30 text-red-400 font-bold rounded-lg text-xs border border-red-500/30 hover:border-red-400 transition-all'
-              }, '\\uD83D\\uDDD1 Clear'),
+                className: 'px-3 py-1.5 bg-red-950/30 hover:bg-red-500/30 text-red-400 font-bold rounded-lg text-xs border border-red-500/30 hover:border-red-400 transition-all active:scale-[0.97]'
+              }, '\uD83D\uDDD1 Clear'),
 
               components.length > 0 && h('span', { className: 'self-center text-xs text-slate-400 ml-auto font-mono' }, components.length + ' component' + (components.length > 1 ? 's' : ''))
             ),
@@ -1250,10 +1510,11 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'bg-slate-900/60 border border-slate-800 p-4 rounded-xl backdrop-blur-md mt-4' },
               // Voltage slider row
               h('div', { className: 'flex items-center gap-3 mb-4' },
-                h('span', { className: 'text-xl' }, '\\uD83D\\uDD0B'),
+                h('span', { className: 'text-xl' }, '\uD83D\uDD0B'),
                 h('input', {
                   type: 'range', 'aria-label': 'Voltage slider', min: 1, max: 24, step: 0.5,
                   value: voltage,
+                  'aria-valuetext': voltage + ' volts. ' + (current === 0 ? 'Open circuit, no current flows.' : ((isShort ? 'Short circuit! ' : '') + 'Total resistance ' + totalR.toFixed(1) + ' ohms, current ' + current.toFixed(3) + ' amps.')),
                   onChange: function(e) { upd('voltage', parseFloat(e.target.value)); },
                   className: 'flex-1 accent-yellow-500 bg-slate-800 rounded-lg h-1.5 appearance-none cursor-pointer'
                 }),
@@ -1273,6 +1534,7 @@ window.StemLab = window.StemLab || {
                     // Resistor/Bulb value input
                     (comp.type === 'resistor' || comp.type === 'bulb') && h('input', {
                       type: 'number', min: 1, max: 10000, value: comp.value,
+                      'aria-label': compLabel + ' resistance in ohms',
                       onChange: function(e) {
                         var val = parseInt(e.target.value) || 1;
                         var newComps = components.map(function(c, j) {
@@ -1298,11 +1560,12 @@ window.StemLab = window.StemLab || {
                       },
                       className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono bg-slate-900 border-slate-800 text-slate-100 focus:ring-1 focus:ring-yellow-500 focus:outline-none'
                     }),
-                    (comp.type === 'resistor' || comp.type === 'bulb') && h('span', { className: 'text-xs text-slate-400' }, '\\u03A9'),
+                    (comp.type === 'resistor' || comp.type === 'bulb') && h('span', { className: 'text-xs text-slate-400' }, '\u03A9'),
 
                     // Capacitor value input (in uF)
                     comp.type === 'capacitor' && h('input', {
                       type: 'number', min: 1, max: 10000, value: comp.value,
+                      'aria-label': compLabel + ' capacitance in microfarads',
                       onChange: function(e) {
                         var val = parseInt(e.target.value) || 1;
                         var newComps = components.map(function(c, j) {
@@ -1328,12 +1591,12 @@ window.StemLab = window.StemLab || {
                       },
                       className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono bg-slate-900 border-slate-800 text-slate-100 focus:ring-1 focus:ring-yellow-500 focus:outline-none'
                     }),
-                    comp.type === 'capacitor' && h('span', { className: 'text-xs text-slate-400' }, '\\u00B5F'),
+                    comp.type === 'capacitor' && h('span', { className: 'text-xs text-slate-400' }, '\u00B5F'),
 
                     // Switch toggle button
                     comp.type === 'switch' && h('button', { 'aria-label': 'Toggle Switch',
                       onClick: function() { toggleSwitch(comp.id); },
-                      className: 'px-2 py-1 text-xs font-bold rounded border transition-all ' + (comp.closed ? 'bg-emerald-950/30 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40' : 'bg-red-950/30 text-red-400 border-red-800 hover:bg-red-900/40')
+                      className: 'px-2 py-1 text-xs font-bold rounded border transition-all ' + (comp.closed ? 'transition-colors bg-emerald-950/30 text-emerald-400 border-emerald-800 hover:bg-emerald-900/40 active:scale-[0.97]' : 'transition-colors bg-red-950/30 text-red-400 border-red-800 hover:bg-red-900/40 active:scale-[0.97]')
                     }, comp.closed ? 'Close' : 'Open'),
 
                     // LED color cycle button
@@ -1346,8 +1609,8 @@ window.StemLab = window.StemLab || {
                     // Remove button
                     h('button', { 'aria-label': 'Remove Component',
                       onClick: function() { removeComponent(i); },
-                      className: 'text-slate-500 hover:text-red-400 ml-auto font-bold text-lg px-1'
-                    }, '\\u00D7')
+                      className: 'transition-colors text-slate-500 hover:text-red-400 ml-auto font-bold text-lg px-1 tracking-tight'
+                    }, '\u00D7')
                   );
                 })
               )
@@ -1356,12 +1619,12 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             // Readout cards (4 metrics)
             // ══════════════════════════════════════
-            h('div', { className: 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2' },
+            h('div', { className: 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'status', 'aria-live': 'polite' },
               [
-                { label: 'Mode', val: mode, color: 'slate', icon: mode === 'series' ? '\\u2192' : '\\u2261', textCls: 'text-slate-400', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
-                { label: 'Resistance', val: totalR >= 1e8 ? '\\u221E' : totalR.toFixed(1) + '\\u03A9', color: 'yellow', icon: '\\u2AE8', textCls: 'text-yellow-500/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
-                { label: 'Current', val: current.toFixed(3) + 'A', color: 'blue', icon: '\\u26A1', textCls: 'text-blue-500/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
-                { label: 'Power', val: power.toFixed(2) + 'W', color: 'red', icon: '\\uD83D\\uDD25', textCls: 'text-rose-500/80', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
+                { label: 'Mode', val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261', textCls: 'text-slate-400', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
+                { label: 'Resistance', val: totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
+                { label: 'Current', val: current.toFixed(3) + 'A', color: 'blue', icon: '\u26A1', textCls: 'text-blue-400/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
+                { label: 'Power', val: power.toFixed(2) + 'W', color: 'red', icon: '\uD83D\uDD25', textCls: 'text-rose-400/80', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
               ].map(function(m) {
                 var isSh = isShort && m.label !== 'Mode';
                 return h('div', {
@@ -1374,65 +1637,278 @@ window.StemLab = window.StemLab || {
               })
             ),
 
+            (hasAmmeter || hasVoltmeter) && h('section', {
+              className: 'mt-3 rounded-xl border p-3 ' + (meterIssue ? 'bg-red-950/20 border-red-500/40' : 'bg-emerald-950/20 border-emerald-500/30'),
+              'aria-labelledby': 'circuitMeterCoachTitle',
+              'data-circuit-meter-coach': meterIssue || 'correct'
+            },
+              h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase tracking-wider ' + (meterIssue ? 'text-red-400' : 'text-emerald-400') }, 'Meter Safety Coach'),
+                  h('h4', { id: 'circuitMeterCoachTitle', className: 'text-sm font-black ' + (meterIssue ? 'text-red-200' : 'text-emerald-200') }, meterStatus)
+                ),
+                h('span', {
+                  className: 'px-2 py-1 rounded text-[10px] font-bold border ' + (meterIssue ? 'text-red-200 border-red-500/40' : 'text-emerald-200 border-emerald-500/40'),
+                  role: 'status',
+                  'aria-live': 'polite'
+                }, meterIssue ? 'Fix placement' : 'Connected correctly')
+              ),
+              h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, meterGuidance),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-[10px]' },
+                h('div', { className: 'border-l-2 border-cyan-500 pl-2' },
+                  h('strong', { className: 'block text-cyan-300' }, 'Ammeter rule'),
+                  h('span', { className: 'text-slate-400' }, 'Series connection; very low internal resistance.')
+                ),
+                h('div', { className: 'border-l-2 border-yellow-500 pl-2' },
+                  h('strong', { className: 'block text-yellow-300' }, 'Voltmeter rule'),
+                  h('span', { className: 'text-slate-400' }, 'Parallel connection; very high internal resistance.')
+                )
+              )
+            ),
+
+            // Ohm's-law I-V characteristic — current vs voltage is a line through the origin (slope 1/R).
+            current > 0 && totalR < 1e8 && (function() {
+              var Vmax = Math.max(voltage * 1.5, voltage + 1), Imax = Vmax / totalR;
+              var W = 300, H = 130, pl = 38, pb = 22, pt = 10, pr = 10;
+              var sx = function(v) { return pl + (v / Vmax) * (W - pl - pr); };
+              var sy = function(i) { return pt + (1 - i / Imax) * (H - pt - pb); };
+              return h('div', { className: 'mt-3 bg-slate-900/40 border border-blue-500/20 rounded-xl p-3' },
+                h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-1' }, "⚡ Ohm's law: I–V characteristic"),
+                h('p', { className: 'text-[10px] text-slate-400 mb-2' }, 'For a fixed resistance, current rises in a straight line with voltage (slope = 1/R). Steeper = lower resistance.'),
+                h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Current versus voltage is a straight line through the origin; at ' + voltage + ' volts the current is ' + current.toFixed(3) + ' amps.' },
+                  h('line', { x1: pl, y1: pt, x2: pl, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
+                  h('line', { x1: pl, y1: H - pb, x2: W - pr, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
+                  h('line', { x1: sx(0), y1: sy(0), x2: sx(Vmax), y2: sy(Imax), stroke: '#3b82f6', strokeWidth: 2 }),
+                  h('line', { x1: sx(voltage), y1: sy(0), x2: sx(voltage), y2: sy(current), stroke: '#475569', strokeWidth: 1, strokeDasharray: '2 2' }),
+                  h('line', { x1: sx(0), y1: sy(current), x2: sx(voltage), y2: sy(current), stroke: '#475569', strokeWidth: 1, strokeDasharray: '2 2' }),
+                  h('circle', { cx: sx(voltage), cy: sy(current), r: 4, fill: '#60a5fa', stroke: '#0f172a', strokeWidth: 1 }),
+                  h('text', { x: sx(voltage) - 4, y: sy(current) - 4, textAnchor: 'end', fontSize: 8, fill: '#93c5fd', fontWeight: 'bold' }, voltage + 'V, ' + current.toFixed(2) + 'A'),
+                  h('text', { x: (pl + W - pr) / 2, y: H - 4, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' }, 'Voltage (V) →'),
+                  h('text', { x: 8, y: pt + 6, fontSize: 8, fill: '#94a3b8' }, 'I (A)')
+                )
+              );
+            })(),
             // ══════════════════════════════════════
             // Per-component analysis table
             // ══════════════════════════════════════
+            components.length > 0 && !noLoadPath && h('div', { className: 'mt-3 bg-slate-900/40 border border-cyan-500/20 rounded-xl p-3 backdrop-blur-md' },
+              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1.5' }, '\uD83E\uDDE0 Mental-model checks'),
+              h('ul', { className: 'space-y-1 text-[11px] text-slate-300 leading-snug list-disc list-inside marker:text-cyan-500' },
+                h('li', null, h('b', { className: 'text-cyan-300' }, 'Electrons crawl; the signal races. '), 'The glowing dots move fast for visibility, but real electrons drift at only about 0.1 mm/s. The electric field that pushes them travels near light speed, so every bulb lights essentially the instant you connect the battery.'),
+                mode === 'series'
+                  ? h('li', null, h('b', { className: 'text-cyan-300' }, 'Current is not used up. '), 'The very same ' + current.toFixed(3) + ' A flows through every component in series \u2014 an ammeter reads the same value before AND after each bulb. Energy gets spent along the way; charge does not.')
+                  : h('li', null, h('b', { className: 'text-cyan-300' }, 'A parallel branch LOWERS total resistance. '), 'Adding paths gives charge more ways to flow, so total current rises. Total R (' + (totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9') + ') is always smaller than the smallest single branch \u2014 counter-intuitive but true.'),
+                h('li', null, h('b', { className: 'text-cyan-300' }, 'The battery sets voltage, not current. '), 'It holds ' + voltage + ' V steady; the ' + current.toFixed(3) + ' A you read is whatever Ohm\'s law gives for the resistance you built. Lower the resistance and the current climbs \u2014 the battery does not "decide" the current.')
+              )
+            ),
+
+            // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+            // Per-component analysis table
+            // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
             components.length > 0 && h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\\u26A1 Per-Component Analysis'),
+              h('p', { className: 'text-[11px] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\u26A1 Per-Component Analysis'),
               h('div', { className: 'space-y-1.5' },
                 components.map(function(comp, i) {
                   var compR = getCompR(comp);
                   var compI = mode === 'series' ? current : voltage / compR;
                   var compV = mode === 'series' ? current * compR : voltage;
                   var compP = compV * compI;
-                  var typeIcon = comp.type === 'resistor' ? '\\u2AE8 R' : comp.type === 'bulb' ? '\\uD83D\\uDCA1 B' : comp.type === 'switch' ? '\\uD83D\\uDD18 S' : comp.type === 'led' ? '\\uD83D\\uDD34 L' : comp.type === 'ammeter' ? '\\u26A1 A' : comp.type === 'voltmeter' ? '\\uD83D\\uDD0B V' : '\\u2E28 C';
-                  var rDisplay = comp.type === 'switch' ? (comp.closed ? '~0\\u03A9' : '\\u221E') : comp.type === 'ammeter' ? '~0\\u03A9' : comp.type === 'voltmeter' ? '\\u221E' : comp.type === 'led' ? '~40\\u03A9' : comp.type === 'capacitor' ? Math.round(getCompR(comp)) + '\\u03A9 Xc' : comp.value + '\\u03A9';
+                  var isIdealParallelBranch = mode === 'parallel' && compR < 0.01; // ammeter / closed switch as its own branch reads a meaningless ~V/0 current
+                  var typeIcon = comp.type === 'resistor' ? '\u2AE8 R' : comp.type === 'bulb' ? '\uD83D\uDCA1 B' : comp.type === 'switch' ? '\uD83D\uDD18 S' : comp.type === 'led' ? '\uD83D\uDD34 L' : comp.type === 'ammeter' ? '\u26A1 A' : comp.type === 'voltmeter' ? '\uD83D\uDD0B V' : '\u2E28 C';
+                  var rDisplay = comp.type === 'switch' ? (comp.closed ? '~0\u03A9' : '\u221E') : comp.type === 'ammeter' ? '~0\u03A9' : comp.type === 'voltmeter' ? '\u221E' : comp.type === 'led' ? '~40\u03A9' : comp.type === 'capacitor' ? '\u221E' : comp.value + '\u03A9';
 
                   return h('div', { key: comp.id, className: 'flex items-center gap-2 text-xs bg-slate-950/40 rounded-lg px-3 py-2 border border-slate-800/60' },
                     h('span', { className: 'font-bold text-yellow-500 w-16' }, typeIcon + (i + 1)),
                     h('span', { className: 'text-slate-400 w-20 font-mono' }, rDisplay),
 
                     comp.type === 'ammeter'
-                      ? h('span', { className: 'text-cyan-400 w-40 font-mono font-bold' }, '\\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
+                      ? h('span', { className: 'text-cyan-400 w-40 font-mono font-bold' }, isIdealParallelBranch ? '\u26A0 connect ammeters in series' : '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
                       : comp.type === 'voltmeter'
-                      ? h('span', { className: 'text-yellow-400 w-40 font-mono font-bold' }, '\\u27A1 ' + voltage.toFixed(1) + 'V (reads voltage)')
-                      : h(React.Fragment, null,
+                      ? h('span', { className: 'text-yellow-400 w-40 font-mono font-bold' }, mode === 'series' ? '\u26A0 connect voltmeters in parallel' : '\u27A1 ' + voltage.toFixed(1) + 'V (reads voltage)')
+                      : isIdealParallelBranch ? h('span', { className: 'text-red-400 w-40 font-mono font-bold' }, '\u26A0 short branch (~0 \u03A9)') : h(React.Fragment, null,
                           h('span', { className: 'text-cyan-400 w-20 font-mono' }, compV.toFixed(2) + 'V'),
                           h('span', { className: 'text-emerald-400 w-20 font-mono' }, compI.toFixed(3) + 'A'),
                           h('span', { className: 'text-rose-400 w-20 font-mono font-bold' }, compP.toFixed(2) + 'W')
                         ),
 
-                    comp.type === 'bulb' && h('span', { className: 'text-yellow-400 ml-auto' }, compP > 10 ? '\\uD83D\\uDD06' : compP > 3 ? '\\uD83D\\uDCA1' : '\\uD83D\\uDD05'),
-                    comp.type === 'switch' && h('span', { className: 'ml-auto ' + (comp.closed ? 'text-emerald-400' : 'text-red-400') }, comp.closed ? '\\u2705 Closed' : '\\u274C Open'),
-                    comp.type === 'led' && h('span', { className: 'ml-auto', style: { color: comp.ledColor || '#ef4444' } }, compI > 0.005 ? '\\u2B50 Lit' : '\\u26AB Off'),
-                    comp.type === 'capacitor' && h('span', { className: 'text-sky-400 ml-auto font-mono text-[10px]' }, comp.value + '\\u00B5F @ 60Hz')
+                    comp.type === 'bulb' && h('span', { className: 'text-yellow-400 ml-auto' }, compP > 10 ? '\uD83D\uDD06' : compP > 3 ? '\uD83D\uDCA1' : '\uD83D\uDD05'),
+                    comp.type === 'switch' && h('span', { className: 'ml-auto ' + (comp.closed ? 'text-emerald-400' : 'text-red-400') }, comp.closed ? '\u2705 Closed' : '\u274C Open'),
+                    comp.type === 'led' && h('span', { className: 'ml-auto', style: { color: comp.ledColor || '#ef4444' } }, compI > 0.005 ? '\u2B50 Lit' : '\u26AB Off'),
+                    comp.type === 'capacitor' && h('span', { className: 'text-sky-400 ml-auto font-mono text-[10px]' }, comp.value + '\u00B5F (blocks DC)')
                   );
                 })
               ),
 
               // Formula reminder
               h('div', { className: 'mt-3 flex items-center gap-2 text-[10px] text-slate-400 font-medium' },
-                h('span', null, '\\u2696 V = IR'),
-                h('span', null, '\\u2022'),
+                h('span', null, '\u2696 V = IR'),
+                h('span', null, '\u2022'),
                 h('span', null, 'P = IV'),
-                h('span', null, '\\u2022'),
+                h('span', null, '\u2022'),
                 h('span', null, mode === 'series' ? 'Series: same current through all' : 'Parallel: same voltage across all')
               )
             ),
 
             // ══════════════════════════════════════
+            // Energy budget — where the battery's power goes (P = ΣI²R)
+            // ══════════════════════════════════════
+            current > 0.001 && !isShort && !noLoadPath && (function() {
+              // Power delivered by the battery is shared out among the loads. In series each
+              // dissipates I²R; in parallel each dissipates V²/R. They must sum to VI — energy
+              // is conserved, which is the whole point of the panel.
+              var loads = components.filter(function(c) { return c.type !== 'ammeter' && c.type !== 'voltmeter' && c.type !== 'capacitor'; });
+              var segs = loads.map(function(c) {
+                var r = getCompR(c);
+                var p = mode === 'series' ? (current * current * r) : (voltage * voltage / (r || 1));
+                var name = c.type === 'resistor' ? 'Resistor ' + c.value + 'Ω' : c.type === 'bulb' ? 'Bulb ' + c.value + 'Ω' : c.type === 'led' ? 'LED' : c.type;
+                var col = c.type === 'bulb' ? '#f59e0b' : c.type === 'led' ? (c.ledColor || '#ef4444') : c.type === 'switch' ? '#10b981' : '#eab308';
+                return { name: name, p: p, col: col, type: c.type };
+              }).filter(function(s) { return s.p > 1e-6; });
+              var totP = segs.reduce(function(a, s) { return a + s.p; }, 0) || power || 1e-6;
+              // Real-world equivalence for the delivered power
+              var eq = power < 0.05 ? 'about a digital watch (' + (power * 1000).toFixed(0) + ' mW)'
+                : power < 0.5 ? 'a hearing-aid battery load'
+                : power < 3 ? 'a small LED night-light'
+                : power < 10 ? 'a phone fast-charger'
+                : power < 40 ? 'a bright desk lamp'
+                : power < 100 ? 'a laptop under load'
+                : 'a household appliance';
+              return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-rose-500/25 rounded-xl p-4 backdrop-blur-md' },
+                h('p', { className: 'text-[11px] font-bold text-rose-400 uppercase tracking-wider mb-1' }, '🔥 Energy budget — where the power goes'),
+                h('p', { className: 'text-[11px] text-slate-400 mb-2 leading-snug' },
+                  'The battery pours out ', h('b', { className: 'text-rose-300' }, 'P = V×I = ' + power.toFixed(2) + ' W'),
+                  ' (like ' + eq + '). Every load turns its share into heat or light — and the shares must add back up to the total. Energy is never destroyed, only spent.'),
+                // Segmented power bar
+                h('div', { className: 'flex w-full h-7 rounded-lg overflow-hidden border border-slate-700', role: 'img', 'aria-label': 'Power split: ' + segs.map(function(s){ return s.name + ' ' + (s.p/totP*100).toFixed(0) + ' percent'; }).join(', ') },
+                  segs.length === 0 ? h('div', { className: 'flex-1 flex items-center justify-center text-[10px] text-slate-500' }, 'no dissipating load')
+                  : segs.map(function(s, i) {
+                      var pct = s.p / totP * 100;
+                      return h('div', { key: i, style: { width: pct + '%', background: s.col + '33', borderRight: i < segs.length - 1 ? '1px solid rgba(15,23,42,0.6)' : 'none' }, className: 'flex flex-col items-center justify-center overflow-hidden' },
+                        pct > 12 && h('span', { className: 'text-[10px] font-black leading-none', style: { color: s.col } }, s.p.toFixed(2) + 'W'),
+                        pct > 20 && h('span', { className: 'text-[8px] text-slate-400 leading-none mt-0.5 truncate px-1', style: { maxWidth: '100%' } }, s.name)
+                      );
+                    })
+                ),
+                h('div', { className: 'flex justify-between mt-1.5 text-[10px]' },
+                  h('span', { className: 'text-slate-500' }, mode === 'series' ? 'Biggest resistor dissipates the most (P = I²R, same I)' : 'Smallest resistor dissipates the most (P = V²/R, same V)'),
+                  h('span', { className: 'font-mono font-bold text-rose-300' }, 'Σ = ' + totP.toFixed(2) + ' W')
+                )
+              );
+            })(),
+
+            // ══════════════════════════════════════
+            // Drift vs. field — the great circuit paradox (made visible)
+            // ══════════════════════════════════════
+            current > 0.001 && !isShort && !noLoadPath && (function() {
+              // Honest physics: v_drift = I / (n·A·e) for copper, assuming a 1 mm² wire.
+              // n = 8.5e28 free electrons/m³, e = 1.602e-19 C, A = 1e-6 m².
+              var vDrift = current / (8.5e28 * 1e-6 * 1.602e-19); // m/s
+              var vDriftMm = vDrift * 1000; // mm/s
+              // Time for ONE electron to drift 1 m:
+              var driftSecs = 1 / vDrift;
+              var driftTime = driftSecs > 3600 ? (driftSecs / 3600).toFixed(1) + ' hours'
+                : driftSecs > 60 ? (driftSecs / 60).toFixed(0) + ' minutes'
+                : driftSecs.toFixed(0) + ' seconds';
+              // Field/signal in copper ≈ 2/3 c → time to cross 1 m:
+              var signalSecs = 1 / (2e8);
+              var reduced = _prefersReducedMotion;
+              function lane(y, label, sub) {
+                return h('g', null,
+                  h('text', { x: 4, y: y - 12, fontSize: 9, fontWeight: 700, fill: '#cbd5e1' }, label),
+                  h('text', { x: 356, y: y - 12, fontSize: 8, fill: '#64748b', textAnchor: 'end' }, sub),
+                  h('rect', { x: 4, y: y - 8, width: 352, height: 16, rx: 8, fill: 'rgba(15,23,42,0.7)', stroke: 'rgba(100,116,139,0.4)' })
+                );
+              }
+              return h('div', { className: 'circuit-card mt-4 bg-gradient-to-br from-slate-900 to-blue-950/40 border border-cyan-500/25 rounded-xl p-4 backdrop-blur-md' },
+                h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1' }, '🐌⚡ The paradox: electrons crawl, the signal races'),
+                h('p', { className: 'text-[11px] text-slate-400 mb-2 leading-snug' }, 'The blue dots in the schematic move fast so you can see them — but real electrons barely creep. So why does the bulb light instantly? Because flipping the switch launches an electric field down the wire at nearly light speed, nudging every electron at once.'),
+                h('svg', { viewBox: '0 0 360 120', width: '100%', role: 'img', 'aria-label': 'Two wires. In the top wire the electric field pulse races across almost instantly. In the bottom wire individual electrons drift very slowly.' },
+                  lane(32, '⚡ Electric field / signal', '≈ 200,000 km/s'),
+                  // fast signal pulse
+                  h('g', { className: reduced ? '' : 'circ-signal-pulse' },
+                    h('rect', { x: 4, y: 24, width: 16, height: 16, rx: 8, fill: '#22d3ee', opacity: 0.9, filter: 'drop-shadow(0 0 5px #22d3ee)' })
+                  ),
+                  lane(84, '🔵 Actual electrons', '≈ ' + (vDriftMm < 0.1 ? vDriftMm.toFixed(3) : vDriftMm.toFixed(2)) + ' mm/s'),
+                  // slow drifting electrons
+                  [0, 1, 2, 3, 4, 5].map(function(k) {
+                    return h('g', { key: k, className: reduced ? '' : 'circ-electron-drift', style: reduced ? {} : { animationDelay: (-k * 1.0) + 's' } },
+                      h('circle', { cx: 12 + k * 52, cy: 84, r: 3.5, fill: '#60a5fa', opacity: 0.9 })
+                    );
+                  })
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-2 mt-1' },
+                  h('div', { className: 'bg-cyan-950/30 border border-cyan-500/20 rounded-lg p-2 text-center' },
+                    h('p', { className: 'text-[10px] uppercase tracking-wider text-cyan-500/80 font-bold' }, 'Signal crosses 1 m in'),
+                    h('p', { className: 'text-sm font-black font-mono text-cyan-300' }, '~5 nanoseconds')
+                  ),
+                  h('div', { className: 'bg-blue-950/30 border border-blue-500/20 rounded-lg p-2 text-center' },
+                    h('p', { className: 'text-[10px] uppercase tracking-wider text-blue-400/80 font-bold' }, 'One electron crosses 1 m in'),
+                    h('p', { className: 'text-sm font-black font-mono text-blue-300' }, '~' + driftTime)
+                  )
+                ),
+                h('p', { className: 'text-[10px] text-slate-500 italic mt-1.5 leading-snug' }, 'Drift speed computed from your ' + current.toFixed(3) + ' A through an assumed 1 mm² copper wire (v = I ÷ n·A·e). Turn up the voltage and the electrons speed up — but they never come close to the signal.')
+              );
+            })(),
+
+            // ══════════════════════════════════════
+            // How big is your current? — log-scale real-world ladder
+            // ══════════════════════════════════════
+            current > 0.0005 && !isShort && (function() {
+              // Log10 scale from 1 µA (1e-6 A) to 100 kA (1e5 A).
+              var lo = -6, hi = 5;
+              var frac = function(amps) { return Math.max(0, Math.min(1, (Math.log(Math.max(amps, 1e-7)) / Math.LN10 - lo) / (hi - lo))); };
+              var marks = [
+                { a: 0.00002, label: 'nerve impulse' },
+                { a: 0.02, label: 'LED' },
+                { a: 2, label: 'phone charger' },
+                { a: 15, label: 'wall outlet trips' },
+                { a: 200, label: 'car starter' },
+                { a: 30000, label: 'lightning bolt' }
+              ];
+              return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-amber-500/25 rounded-xl p-4 backdrop-blur-md' },
+                h('p', { className: 'text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1' }, '📏 How big is ' + current.toFixed(3) + ' A, really?'),
+                h('p', { className: 'text-[11px] text-slate-400 mb-3 leading-snug' }, 'Current spans an enormous range — this ladder is logarithmic (each step is 10× bigger). Your circuit sits here compared with things you know.'),
+                h('svg', { viewBox: '0 0 360 78', width: '100%', role: 'img', 'aria-label': 'Logarithmic current ladder from a microamp to 100 kiloamps. Your circuit draws ' + current.toFixed(3) + ' amps, between ' + (function(){ var below=marks[0].label; marks.forEach(function(m){ if (m.a <= current) below = m.label; }); return below; })() + ' and larger loads.' },
+                  h('defs', null,
+                    h('linearGradient', { id: 'circAmpGrad', x1: 0, y1: 0, x2: 1, y2: 0 },
+                      h('stop', { offset: '0%', stopColor: '#0891b2' }),
+                      h('stop', { offset: '50%', stopColor: '#eab308' }),
+                      h('stop', { offset: '100%', stopColor: '#ef4444' }))),
+                  h('rect', { x: 6, y: 30, width: 348, height: 8, rx: 4, fill: 'url(#circAmpGrad)', opacity: 0.65 }),
+                  marks.map(function(m, i) {
+                    var x = 6 + frac(m.a) * 348;
+                    return h('g', { key: i },
+                      h('line', { x1: x, y1: 27, x2: x, y2: 41, stroke: '#475569', strokeWidth: 1 }),
+                      h('text', { x: x, y: 54, fontSize: 7.5, fill: '#94a3b8', textAnchor: i === 0 ? 'start' : i === marks.length - 1 ? 'end' : 'middle' }, m.label),
+                      h('text', { x: x, y: 64, fontSize: 6.5, fill: '#64748b', textAnchor: i === 0 ? 'start' : i === marks.length - 1 ? 'end' : 'middle' }, m.a >= 1000 ? (m.a / 1000) + 'kA' : m.a >= 1 ? m.a + 'A' : (m.a * 1000) + 'mA')
+                    );
+                  }),
+                  // "you are here" pointer
+                  (function() {
+                    var x = 6 + frac(current) * 348;
+                    return h('g', null,
+                      h('polygon', { points: (x - 5) + ',18 ' + (x + 5) + ',18 ' + x + ',27', fill: '#f43f5e' }),
+                      h('circle', { cx: x, cy: 34, r: 5, fill: '#f43f5e', stroke: '#fff', strokeWidth: 1.2 }),
+                      h('text', { x: x, y: 13, fontSize: 8, fontWeight: 800, fill: '#fb7185', textAnchor: 'middle' }, 'your circuit')
+                    );
+                  })()
+                )
+              );
+            })(),
+
+            // ══════════════════════════════════════
             // KVL Verification (g68 / g912)
             // ══════════════════════════════════════
             (band === 'g68' || band === 'g912') && components.length > 0 && mode === 'series' && current > 0.001 && h('div', { className: 'mt-4 bg-indigo-950/20 border border-indigo-500/30 rounded-xl p-4 backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\\u2696 Kirchhoff\'s Voltage Law (KVL) Verification'),
-              h('p', { className: 'text-xs text-slate-300 mb-2' }, 'The sum of voltage drops around any closed loop equals the source voltage.'),
+              h('p', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\u2696 Kirchhoff\'s Voltage Law (KVL) Verification'),
+              h('p', { className: 'text-xs text-slate-300 mb-2' }, 'The sum of voltage drops around any closed loop equals the source voltage. The same current flows through every series component, so this isn\'t a lucky coincidence — Ohm\'s law forces it to balance.'),
               h('div', { className: 'space-y-1' },
                 components.map(function(comp, i) {
                   var compR = getCompR(comp);
                   var compV = current * compR;
                   if (comp.type === 'ammeter' || comp.type === 'voltmeter') return null;
                   return h('div', { key: comp.id, className: 'flex items-center gap-2 text-xs font-mono text-slate-400' },
-                    h('span', null, 'V' + (i + 1) + ' = I \\u00D7 R = ' + current.toFixed(3) + ' \\u00D7 ' + compR.toFixed(1) + ' = ' + compV.toFixed(2) + 'V')
+                    h('span', null, 'V' + (i + 1) + ' = I \u00D7 R = ' + current.toFixed(3) + ' \u00D7 ' + compR.toFixed(1) + ' = ' + compV.toFixed(2) + 'V')
                   );
                 }),
                 h('div', { className: 'border-t border-indigo-500/20 mt-2 pt-2' },
@@ -1444,10 +1920,10 @@ window.StemLab = window.StemLab || {
                       }
                     });
                     return h('div', { className: 'flex items-center gap-2 text-xs font-bold' },
-                      h('span', { className: 'text-indigo-300' }, '\\u2211 V_drops = ' + vSum.toFixed(2) + 'V'),
-                      h('span', { className: 'text-indigo-400' }, '\\u2248'),
+                      h('span', { className: 'text-indigo-300' }, '\u2211 V_drops = ' + vSum.toFixed(2) + 'V'),
+                      h('span', { className: 'text-indigo-400' }, '\u2248'),
                       h('span', { className: 'text-indigo-300' }, 'V_source = ' + voltage + 'V'),
-                      h('span', { className: Math.abs(vSum - voltage) < 0.1 ? 'text-emerald-400' : 'text-rose-400' }, Math.abs(vSum - voltage) < 0.1 ? '\\u2705 Validated' : '\\u26A0\\uFE0F')
+                      h('span', { className: Math.abs(vSum - voltage) < 0.1 ? 'text-emerald-400' : 'text-rose-400' }, Math.abs(vSum - voltage) < 0.1 ? '\u2713 must balance: \u03A3V = I\u00D7\u03A3R = V' : '\u26A0\uFE0F')
                     );
                   })()
                 )
@@ -1457,37 +1933,37 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             // Open/Short circuit warnings
             // ══════════════════════════════════════
-            isOpen && h('div', { className: 'mt-4 bg-amber-950/20 rounded-xl border border-amber-500/40 p-4 text-center' },
-              h('p', { className: 'text-base font-black text-amber-400' }, '\\uD83D\\uDD13 CIRCUIT OPEN'),
+            isOpen && h('div', { role: 'alert', className: 'mt-4 bg-amber-950/20 rounded-xl border border-amber-500/40 p-4 text-center' },
+              h('p', { className: 'text-base font-black text-amber-400' }, '\uD83D\uDD13 CIRCUIT OPEN'),
               h('p', { className: 'text-xs text-amber-500/90 mt-1' }, 'A switch is open - no current flows. Close all switches to complete the circuit.')
             ),
 
-            isShort && h('div', { className: 'mt-4 bg-red-950/30 rounded-xl border border-red-500/40 p-4 text-center short-active-flash' },
-              h('p', { className: 'text-base font-black text-red-400' }, '\\u26A0\\uFE0F SHORT CIRCUIT DETECTED'),
-              h('p', { className: 'text-xs text-red-400/90 mt-1' }, 'Total resistance is below 1\\u03A9! In real life, this could damage components or cause a fire. Add more resistance.')
+            isShort && h('div', { role: 'alert', className: 'mt-4 bg-red-950/30 rounded-xl border border-red-500/40 p-4 text-center short-active-flash' },
+              h('p', { className: 'text-base font-black text-red-400' }, '\u26A0\uFE0F SHORT CIRCUIT DETECTED'),
+              h('p', { className: 'text-xs text-red-400/90 mt-1' }, 'Total resistance is below 1\u03A9! In real life, this could damage components or cause a fire. Add more resistance.')
             ),
 
             // ══════════════════════════════════════
             // Circuit Presets
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('button', { 'aria-label': 'Circuit Presets',
+              h('button', { 'aria-label': 'Circuit Presets', 'aria-expanded': showPresets,
                 onClick: function() { upd('showPresets', !showPresets); },
                 className: 'flex items-center gap-2 w-full text-left'
               },
-                h('p', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider' }, '\\uD83D\\uDCCB Circuit Presets'),
-                h('span', { className: 'ml-auto text-slate-400 text-xs' }, showPresets ? '\\u25B2' : '\\u25BC')
+                h('p', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider' }, '\uD83D\uDCCB Circuit Presets'),
+                h('span', { className: 'ml-auto text-slate-400 text-xs' }, showPresets ? '\u25B2' : '\u25BC')
               ),
               showPresets && h('div', { className: 'flex flex-wrap gap-2 mt-3' },
                 CIRCUIT_PRESETS.map(function(preset) {
                   return h('button', { 'aria-label': 'Load Preset',
                     key: preset.id,
                     onClick: function() { loadPreset(preset); },
-                    className: 'px-3 py-2 rounded-lg text-xs border border-slate-800 bg-slate-950/60 hover:bg-slate-800 transition-all text-left w-full sm:w-auto',
+                    className: 'px-3 py-2 rounded-lg text-xs border border-slate-800 bg-slate-950/60 hover:bg-slate-800 transition-all text-left w-full sm:w-auto active:scale-[0.97]',
                     title: preset.desc
                   },
                     h('span', { className: 'font-bold text-slate-200 block' }, preset.label),
-                    h('span', { className: 'text-[10px] text-slate-400 mt-0.5 block' }, preset.desc)
+                    h('span', { className: 'text-[10px] text-slate-400 mt-0.5 block' }, __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc))
                   );
                 })
               )
@@ -1497,7 +1973,7 @@ window.StemLab = window.StemLab || {
             // Circuit Challenges (10)
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-amber-500 uppercase tracking-wider mb-2' }, '\\uD83C\\uDFAF Circuit Challenges'),
+              h('p', { className: 'text-[11px] font-bold text-amber-500 uppercase tracking-wider mb-2' }, '\uD83C\uDFAF Circuit Challenges'),
               h('div', { className: 'flex flex-wrap gap-2' },
                 CHALLENGES.map(function(ch, ci) {
                   var actual = ch.type === 'current' ? current : ch.type === 'resistance' ? totalR : power;
@@ -1512,19 +1988,19 @@ window.StemLab = window.StemLab || {
                           var newDone = Object.keys(newDoneSet).length;
                           updMulti({ challengesDone: newDone, challengesDoneSet: newDoneSet, challenge: ch });
                           circuitSound('challengeComplete');
-                          if (typeof addToast === 'function') addToast('\\u2705 Challenge complete! You hit ' + actual.toFixed(3) + ch.unit + ' (target: ' + ch.target + ch.unit + ')', 'success');
+                          if (typeof addToast === 'function') addToast('\u2705 Challenge complete! You hit ' + actual.toFixed(3) + ch.unit + ' (target: ' + ch.target + ch.unit + ')', 'success');
                           if (typeof awardXP === 'function') awardXP('circuitChallenge', 10, ch.label);
                           checkBadges(getBadgeUpdates({ challengesDone: newDone }));
                         } else {
-                          if (typeof addToast === 'function') addToast('\\u2705 Already completed! ' + actual.toFixed(3) + ch.unit, 'info');
+                          if (typeof addToast === 'function') addToast('\u2705 Already completed! ' + actual.toFixed(3) + ch.unit, 'info');
                         }
                       } else {
-                        if (typeof addToast === 'function') addToast('\\uD83C\\uDFAF Target: ' + ch.target + ch.unit + ' | Current: ' + actual.toFixed(3) + ch.unit + '. Adjust components!', 'info');
+                        if (typeof addToast === 'function') addToast('\uD83C\uDFAF Target: ' + ch.target + ch.unit + ' | Current: ' + actual.toFixed(3) + ch.unit + '. Adjust components!', 'info');
                         upd('challenge', ch);
                       }
                     },
-                    className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ' + (close ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/40 shadow-sm' : challengesDoneSet[ci] ? 'bg-emerald-950/20 text-emerald-500/60 border-emerald-800' : 'bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800')
-                  }, (close || challengesDoneSet[ci] ? '\\u2705 ' : '\\uD83C\\uDFAF ') + ch.label);
+                    className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ' + (close ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/40 shadow-sm' : challengesDoneSet[ci] ? 'bg-emerald-950/20 text-emerald-400/80 border-emerald-700' : 'transition-colors bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800 active:scale-[0.97]')
+                  }, (close || challengesDoneSet[ci] ? '\u2705 ' : '\uD83C\uDFAF ') + ch.label);
                 })
               )
             ),
@@ -1536,10 +2012,10 @@ window.StemLab = window.StemLab || {
               return h('div', { className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
                 h('div', { className: 'flex items-center gap-2 mb-3' },
                   h('button', { onClick: function() { var q = makeOhmQuestion(); upd('ohmQuiz', q); },
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (ohmQuiz ? 'bg-blue-900/40 text-blue-300 border border-blue-800' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20')
-                  }, ohmQuiz ? '\\uD83D\\uDD04 Next Question' : '\\u26A1 Ohm\'s Law Quiz'),
-                  ohmScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-400' }, '\\u2B50 ' + ohmScore + ' correct'),
-                  ohmStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-400 animate-pulse' }, '\\uD83D\\uDD25 ' + ohmStreak + ' streak')
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (ohmQuiz ? 'bg-blue-900/40 text-blue-300 border border-blue-800' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.97]')
+                  }, ohmQuiz ? '\uD83D\uDD04 Next Question' : '\u26A1 Ohm\'s Law Quiz'),
+                  ohmScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2B50 ' + ohmScore + ' correct'),
+                  ohmStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-400 animate-pulse' }, '\uD83D\uDD25 ' + ohmStreak + ' streak')
                 ),
 
                 // Unanswered question
@@ -1559,15 +2035,15 @@ window.StemLab = window.StemLab || {
                           });
                           if (correct) {
                             circuitSound('correct');
-                            if (typeof addToast === 'function') addToast('\\u26A1 Correct! ' + ohmQuiz.formula, 'success');
+                            if (typeof addToast === 'function') addToast('\u26A1 Correct! ' + ohmQuiz.formula, 'success');
                             if (typeof awardXP === 'function') awardXP('circuit', 10, 'Ohm\'s Law Quiz');
                           } else {
                             circuitSound('wrong');
-                            if (typeof addToast === 'function') addToast('\\u274C ' + ohmQuiz.formula, 'error');
+                            if (typeof addToast === 'function') addToast('\u274C ' + ohmQuiz.formula, 'error');
                           }
                           checkBadges(getBadgeUpdates({ quizScore: newScore, quizStreak: newStreak }));
                         },
-                        className: 'px-3 py-2 rounded-lg text-xs font-bold border border-slate-800 bg-slate-900 text-slate-200 hover:border-blue-500 hover:bg-blue-950/30 transition-all'
+                        className: 'px-3 py-2 rounded-lg text-xs font-bold border border-slate-800 bg-slate-900 text-slate-200 hover:border-blue-500 hover:bg-blue-950/30 transition-all active:scale-[0.97]'
                       }, opt + ohmQuiz.unit);
                     })
                   )
@@ -1577,10 +2053,10 @@ window.StemLab = window.StemLab || {
                 ohmQuiz && ohmQuiz.answered && h('div', {
                   className: 'p-3 rounded-lg text-sm font-bold ' + (Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/30' : 'bg-red-950/20 text-red-400 border border-red-900/30')
                 },
-                  Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? '\\u2705 Correct!' : '\\u274C Answer: ' + ohmQuiz.answer + ohmQuiz.unit,
+                  Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? '\u2705 Correct!' : '\u274C Answer: ' + ohmQuiz.answer + ohmQuiz.unit,
                   h('p', {
                     className: 'text-xs font-normal mt-1 ' + (Math.abs(ohmQuiz.chosen - ohmQuiz.answer) < 0.01 ? 'text-emerald-500' : 'text-red-500')
-                  }, '\\uD83D\\uDD0D ' + ohmQuiz.formula)
+                  }, '\uD83D\uDD0D ' + ohmQuiz.formula)
                 )
               );
             })(),
@@ -1589,7 +2065,7 @@ window.StemLab = window.StemLab || {
             // Badge panel (collapsible)
             // ══════════════════════════════════════
             showBadges && h('div', { className: 'mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-2' }, '\\uD83C\\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGES.length + ')'),
+              h('p', { className: 'text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGES.length + ')'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 BADGES.map(function(b) {
                   var earned = badges[b.id];
@@ -1597,10 +2073,10 @@ window.StemLab = window.StemLab || {
                     key: b.id,
                     className: 'flex items-center gap-2.5 p-2 rounded-lg border text-xs ' + (earned ? 'bg-slate-950/60 border-amber-500/30 text-amber-300' : 'bg-slate-900/20 border-slate-900 opacity-40')
                   },
-                    h('span', { className: 'text-base' }, earned ? b.icon : '\\uD83D\\uDD12'),
+                    h('span', { className: 'text-base' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', null,
                       h('p', { className: 'font-bold ' + (earned ? 'text-amber-300' : 'text-slate-500') }, b.name),
-                      h('p', { className: 'text-[10px] ' + (earned ? 'text-amber-400/80' : 'text-slate-600') }, b.desc)
+                      h('p', { className: 'text-[10px] ' + (earned ? 'text-amber-400/80' : 'text-slate-600') }, __alloT('stem.circuit.' + (b.id) + '_desc', b.desc))
                     )
                   );
                 })
@@ -1611,7 +2087,7 @@ window.StemLab = window.StemLab || {
             // AI Tutor panel (collapsible)
             // ══════════════════════════════════════
             showAI && h('div', { className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-2' }, '\\uD83E\\uDD16 AI Circuit Tutor'),
+              h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 AI Circuit Tutor'),
               h('div', { className: 'flex gap-2' },
                 h('input', {
                   type: 'text',
@@ -1621,21 +2097,21 @@ window.StemLab = window.StemLab || {
                   onKeyDown: function(e) { if (e.key === 'Enter') askAI(); },
                   className: 'flex-1 px-3 py-2 text-xs border border-blue-800 bg-slate-950/80 text-slate-100 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500'
                 }),
-                h('button', { 'aria-label': 'AI is thinking...',
+                h('button', { 'aria-label': aiLoading ? 'AI is thinking' : 'Ask the AI tutor', 'aria-busy': aiLoading,
                   onClick: askAI,
                   disabled: aiLoading,
-                  className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-600' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10')
+                  className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-600' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10 active:scale-[0.97]')
                 }, aiLoading ? 'Thinking...' : 'Ask')
               ),
               aiLoading && h('div', { className: 'mt-2 text-xs text-blue-400 animate-pulse' }, 'AI is thinking...'),
-              aiResponse && h('div', { className: 'mt-2 bg-slate-950/80 rounded-lg p-3 border border-blue-900/50 text-xs text-blue-200 whitespace-pre-wrap leading-relaxed' }, aiResponse),
+              aiResponse && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 bg-slate-950/80 rounded-lg p-3 border border-blue-900/50 text-xs text-blue-200 whitespace-pre-wrap leading-relaxed' }, aiResponse),
               // Quick-ask suggestions
               h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
                 ["What is Ohm's Law?", 'Series vs parallel?', 'What is a short circuit?', 'How do capacitors work?', 'What does an ammeter measure?'].map(function(q) {
                   return h('button', { 'aria-label': 'Ask question',
                     key: q,
                     onClick: function() { updMulti({ aiQuestion: q }); },
-                    className: 'px-2.5 py-1 text-[10px] bg-slate-950/60 text-blue-400 border border-blue-900/50 rounded-full hover:bg-blue-950/30 hover:text-blue-300 transition-all'
+                    className: 'px-2.5 py-1 text-[10px] bg-slate-950/60 text-blue-400 border border-blue-900/50 rounded-full hover:bg-blue-950/30 hover:text-blue-300 transition-all active:scale-[0.97]'
                   }, q);
                 })
               )
@@ -1645,18 +2121,18 @@ window.StemLab = window.StemLab || {
             // Kirchhoff's Laws educational panel (g68/g912)
             // ══════════════════════════════════════
             (band === 'g68' || band === 'g912') && h('div', { className: 'mt-4 bg-violet-950/10 border border-violet-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('button', { onClick: function() { upd('showKirchhoff', !showKirchhoff); },
+              h('button', { 'aria-label': 'Kirchhoff Laws', 'aria-expanded': showKirchhoff, onClick: function() { upd('showKirchhoff', !showKirchhoff); },
                 className: 'flex items-center gap-2 w-full text-left'
               },
-                h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase tracking-wider' }, '\\u2696 Kirchhoff\'s Laws'),
-                h('span', { className: 'ml-auto text-violet-400 text-xs' }, showKirchhoff ? '\\u25B2' : '\\u25BC')
+                h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase tracking-wider' }, '\u2696 Kirchhoff\'s Laws'),
+                h('span', { className: 'ml-auto text-violet-400 text-xs' }, showKirchhoff ? '\u25B2' : '\u25BC')
               ),
               showKirchhoff && h('div', { className: 'mt-3 space-y-3' },
                 // KCL
                 h('div', { className: 'bg-slate-950/40 rounded-lg p-3 border border-violet-900/40' },
                   h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, 'Kirchhoff\'s Current Law (KCL)'),
                   h('p', { className: 'text-xs text-slate-400' }, 'The total current entering a junction equals the total current leaving that junction.'),
-                  h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\\u2211 I_in = \\u2211 I_out'),
+                  h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\u2211 I_in = \u2211 I_out'),
                   mode === 'parallel' && components.length > 0 && h('div', { className: 'mt-2 bg-violet-950/20 rounded p-2 border border-violet-900/30' },
                     h('p', { className: 'text-[10px] font-bold text-violet-300 mb-1' }, 'Your circuit:'),
                     h('p', { className: 'text-[10px] text-slate-400 font-mono' }, 'Total current from source: ' + current.toFixed(3) + 'A'),
@@ -1668,7 +2144,7 @@ window.StemLab = window.StemLab || {
                     (function() {
                       var branchSum = 0;
                       components.forEach(function(c) { branchSum += voltage / getCompR(c); });
-                      return h('p', { className: 'text-[10px] font-bold text-violet-300 font-mono mt-1' }, 'Sum of branch currents: ' + branchSum.toFixed(3) + 'A ' + (Math.abs(branchSum - current) < 0.001 ? '\\u2705' : ''));
+                      return h('p', { className: 'text-[10px] font-bold text-violet-300 font-mono mt-1' }, 'Sum of branch currents: ' + branchSum.toFixed(3) + 'A ' + (Math.abs(branchSum - current) < 0.001 ? '\u2705' : ''));
                     })()
                   )
                 ),
@@ -1677,14 +2153,14 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'bg-slate-950/40 rounded-lg p-3 border border-violet-900/40' },
                   h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, 'Kirchhoff\'s Voltage Law (KVL)'),
                   h('p', { className: 'text-xs text-slate-400' }, 'The sum of all voltage drops around any closed loop equals the source voltage (EMF).'),
-                  h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\\u2211 V_drops = V_source'),
+                  h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\u2211 V_drops = V_source'),
                   mode === 'series' && components.length > 0 && current > 0.001 && h('div', { className: 'mt-2 bg-violet-950/20 rounded p-2 border border-violet-900/30' },
                     h('p', { className: 'text-[10px] font-bold text-violet-300 mb-1' }, 'Your circuit:'),
                     components.map(function(c, i) {
                       if (c.type === 'ammeter' || c.type === 'voltmeter') return null;
                       var cR = getCompR(c);
                       var cV = current * cR;
-                      return h('p', { key: c.id, className: 'text-[10px] text-slate-400 font-mono' }, 'V' + (i + 1) + ' = ' + current.toFixed(3) + ' \\u00D7 ' + cR.toFixed(1) + ' = ' + cV.toFixed(2) + 'V');
+                      return h('p', { key: c.id, className: 'text-[10px] text-slate-400 font-mono' }, 'V' + (i + 1) + ' = ' + current.toFixed(3) + ' \u00D7 ' + cR.toFixed(1) + ' = ' + cV.toFixed(2) + 'V');
                     }),
                     (function() {
                       var vSum = 0;
@@ -1693,7 +2169,7 @@ window.StemLab = window.StemLab || {
                           vSum += current * getCompR(c);
                         }
                       });
-                      return h('p', { className: 'text-[10px] font-bold text-violet-300 font-mono mt-1' }, '\\u2211 = ' + vSum.toFixed(2) + 'V \\u2248 ' + voltage + 'V ' + (Math.abs(vSum - voltage) < 0.1 ? '\\u2705' : '\\u26A0\\uFE0F'));
+                      return h('p', { className: 'text-[10px] font-bold text-violet-300 font-mono mt-1' }, '\u2211 = ' + vSum.toFixed(2) + 'V \u2248 ' + voltage + 'V ' + (Math.abs(vSum - voltage) < 0.1 ? '\u2705' : '\u26A0\uFE0F'));
                     })()
                   )
                 ),
@@ -1703,11 +2179,11 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, 'Key Relationships'),
                   h('div', { className: 'grid grid-cols-2 gap-2 text-[10px] text-slate-400 font-mono' },
                     h('p', null, 'V = IR (Ohm\'s Law)'),
-                    h('p', null, 'P = IV = I\\u00B2R = V\\u00B2/R'),
+                    h('p', null, 'P = IV = I\u00B2R = V\u00B2/R'),
                     h('p', null, 'R_series = R1 + R2 + ...'),
                     h('p', null, '1/R_par = 1/R1 + 1/R2 + ...'),
-                    h('p', null, 'Xc = 1/(2\\u03C0fC)'),
-                    h('p', null, 'Energy = P \\u00D7 t (Joules)')
+                    h('p', null, 'Xc = 1/(2\u03C0fC)'),
+                    h('p', null, 'Energy = P \u00D7 t (Joules)')
                   )
                 )
               )
@@ -1721,9 +2197,9 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse' }),
                 h('span', { className: 'text-[10px] font-bold text-emerald-400 uppercase tracking-wider font-mono' }, 'Oscilloscope'),
                 h('span', { className: 'ml-auto text-[10px] text-slate-500 font-mono' },
-                  voltage.toFixed(1) + 'V  ' + current.toFixed(3) + 'A  ' + totalR.toFixed(1) + '\\u03A9')
+                  voltage.toFixed(1) + 'V  ' + current.toFixed(3) + 'A  ' + totalR.toFixed(1) + '\u03A9')
               ),
-              h('canvas', { 'aria-label': 'Circuit visualization', 
+              h('canvas', { role: 'img', tabIndex: 0, 'aria-label': 'Circuit oscilloscope visualization showing voltage, current, and capacitor charge traces',
                 ref: function(canvas) {
                   if (!canvas) return;
                   var oc = canvas.getContext('2d');
@@ -1814,17 +2290,17 @@ window.StemLab = window.StemLab || {
 
                   // Legend
                   oc.font = '9px monospace'; oc.textAlign = 'left';
-                  oc.fillStyle = '#10b981'; oc.fillText('\\u2588 Voltage', 10, oh - 8);
-                  oc.fillStyle = '#06b6d4'; oc.fillText('\\u2588 Current', 80, oh - 8);
+                  oc.fillStyle = '#10b981'; oc.fillText('\u2588 Voltage', 10, oh - 8);
+                  oc.fillStyle = '#06b6d4'; oc.fillText('\u2588 Current', 80, oh - 8);
                   if (components.some(function(c) { return c.type === 'capacitor'; })) {
-                    oc.fillStyle = '#38bdf8'; oc.fillText('\\u2588 Cap-Charge', 150, oh - 8);
+                    oc.fillStyle = '#38bdf8'; oc.fillText('\u2588 Cap-Charge', 150, oh - 8);
                   }
 
                   // Short circuit warning overlay
                   if (isShort) {
                     oc.fillStyle = 'rgba(127, 29, 29, 0.4)'; oc.fillRect(0, 0, ow, oh);
                     oc.fillStyle = '#f87171'; oc.font = 'bold 13px monospace'; oc.textAlign = 'center';
-                    oc.fillText('\\u26A0 CRITICAL SHORT DETECTED', ow / 2, oh / 2 + 4);
+                    oc.fillText('\u26A0 CRITICAL SHORT DETECTED', ow / 2, oh / 2 + 4);
                   }
                 },
                 className: 'w-full block', style: { height: '120px' }
@@ -1837,45 +2313,45 @@ window.StemLab = window.StemLab || {
             (function() {
               var COMP_PHYSICS = {
                 resistor: {
-                  icon: '\\u2AE8', name: 'Resistor', color: '#eab308',
+                  icon: '\u2AE8', name: 'Resistor', color: '#eab308',
                   how: 'Electrons collide with atoms in the resistive material, converting electrical energy into heat. The more collisions (higher resistance), the less current flows.',
-                  equation: 'V = I \\u00D7 R (Ohm\'s Law)',
+                  equation: 'V = I \u00D7 R (Ohm\'s Law)',
                   analogy: 'Like a narrow section of pipe - it restricts water flow and creates pressure difference.'
                 },
                 bulb: {
-                  icon: '\\uD83D\\uDCA1', name: 'Light Bulb', color: '#fbbf24',
-                  how: 'Current heats a thin wire (filament) to ~2,500\\u00B0C until it glows white-hot. The filament\'s resistance increases with temperature.',
-                  equation: 'Brightness \\u221D Power = I\\u00B2 \\u00D7 R',
+                  icon: '\uD83D\uDCA1', name: 'Light Bulb', color: '#fbbf24',
+                  how: 'Current heats a thin wire (filament) to ~2,500\u00B0C until it glows white-hot. The filament\'s resistance increases with temperature.',
+                  equation: 'Brightness \u221D Power = I\u00B2 \u00D7 R',
                   analogy: 'Like rubbing your hands together fast - friction (resistance) creates heat and light.'
                 },
                 switch: {
-                  icon: '\\uD83D\\uDD18', name: 'Switch', color: '#10b981',
+                  icon: '\uD83D\uDD18', name: 'Switch', color: '#10b981',
                   how: 'A physical gap in the conductor. When closed, electrons flow freely. When open, the air gap has near-infinite resistance, stopping current completely.',
-                  equation: 'R_open \\u2248 \\u221E, R_closed \\u2248 0\\u03A9',
+                  equation: 'R_open \u2248 \u221E, R_closed \u2248 0\u03A9',
                   analogy: 'Like a drawbridge - when up, nothing crosses. When down, traffic flows.'
                 },
                 led: {
-                  icon: '\\uD83D\\uDD34', name: 'LED', color: '#f43f5e',
+                  icon: '\uD83D\uDD34', name: 'LED', color: '#f43f5e',
                   how: 'A semiconductor diode that emits photons when electrons drop from a high energy band to a low one. Different materials produce different colors.',
-                  equation: 'V_forward \\u2248 1.8-3.3V (varies by color)',
+                  equation: 'V_forward \u2248 1.8-3.3V (varies by color)',
                   analogy: 'Like a one-way door with a light - electrons can only go one direction, and they release light as they pass.'
                 },
                 ammeter: {
-                  icon: '\\u26A1', name: 'Ammeter', color: '#06b6d4',
+                  icon: '\u26A1', name: 'Ammeter', color: '#06b6d4',
                   how: 'Measures current by detecting the magnetic field created by flowing electrons. Connected in series so all current passes through it. Has very low internal resistance.',
                   equation: 'I = reading in Amperes (A)',
                   analogy: 'Like a turnstile counting how many people pass per second.'
                 },
                 voltmeter: {
-                  icon: '\\uD83D\\uDD0B', name: 'Voltmeter', color: '#f59e0b',
+                  icon: '\uD83D\uDD0B', name: 'Voltmeter', color: '#f59e0b',
                   how: 'Measures potential difference (voltage) between two points. Connected in parallel with very high internal resistance so it doesn\'t affect the circuit.',
                   equation: 'V = reading in Volts (V)',
                   analogy: 'Like a pressure gauge on a water pipe - measures the push without blocking flow.'
                 },
                 capacitor: {
-                  icon: '\\u2E28', name: 'Capacitor', color: '#38bdf8',
+                  icon: '\u2E28', name: 'Capacitor', color: '#38bdf8',
                   how: 'Two metal plates separated by an insulator. Electrons accumulate on one plate and leave the other, storing energy in an electric field. Releases energy quickly when discharged.',
-                  equation: 'Q = C \\u00D7 V, Energy = \\u00BDCV\\u00B2',
+                  equation: 'Q = C \u00D7 V, Energy = \u00BDCV\u00B2',
                   analogy: 'Like a water tank - it fills up slowly and can release all its stored water at once.'
                 }
               };
@@ -1886,7 +2362,7 @@ window.StemLab = window.StemLab || {
               if (components.length === 0) return null;
 
               return h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-                h('p', { className: 'text-[11px] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\\u269B How Components Work'),
+                h('p', { className: 'text-[11px] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\u269B How Components Work'),
                 h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
                   ['resistor', 'bulb', 'switch', 'led', 'ammeter', 'voltmeter', 'capacitor'].map(function(type) {
                     var info = COMP_PHYSICS[type];
@@ -1894,7 +2370,7 @@ window.StemLab = window.StemLab || {
                     return h('button', { key: type,
                       onClick: function() { upd('_selectedComp', active ? null : type); },
                       className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ' +
-                        (active ? 'text-slate-950 font-extrabold shadow-sm' : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-300'),
+                        (active ? 'text-slate-950 font-extrabold shadow-sm' : 'transition-colors bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-300'),
                       style: active ? { background: info.color, borderColor: info.color } : {}
                     }, info.icon + ' ' + info.name);
                   })
@@ -1903,17 +2379,17 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
                     h('span', { className: 'text-xl' }, physics.icon),
                     h('h4', { className: 'font-bold text-slate-200 text-sm' }, physics.name),
-                    h('span', { className: 'ml-auto px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-slate-900 text-yellow-500 border border-slate-800' }, physics.equation)
+                    h('span', { className: 'ml-auto px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-900 text-yellow-500 border border-slate-800' }, physics.equation)
                   ),
                   h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-3' }, physics.how),
                   h('div', { className: 'bg-cyan-950/20 rounded-lg p-2.5 border border-cyan-900/30' },
-                    h('span', { className: 'text-[10px] font-bold text-cyan-400' }, '\\uD83D\\uDCA1 Analogy: '),
+                    h('span', { className: 'text-[10px] font-bold text-cyan-400' }, '\uD83D\uDCA1 Analogy: '),
                     h('span', { className: 'text-[10px] text-cyan-300 leading-normal' }, physics.analogy)
                   ),
                   typeof callTTS === 'function' ? h('button', { 'aria-label': 'Read aloud',
                     onClick: function() { callTTS(physics.name + '. ' + physics.how + ' ' + physics.analogy); },
-                    className: 'mt-2 text-[10px] text-yellow-500 hover:text-yellow-400 font-bold'
-                  }, '\\uD83D\\uDD0A Read aloud') : null
+                    className: 'transition-colors mt-2 text-[10px] text-yellow-500 hover:text-yellow-400 font-bold'
+                  }, '\uD83D\uDD0A Read aloud') : null
                 ) : h('p', { className: 'text-[10px] text-slate-500 italic' }, 'Tap a component above to learn how it works inside!')
               );
             })(),
@@ -1922,32 +2398,32 @@ window.StemLab = window.StemLab || {
             // Real-World Circuit Applications
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-2' }, '\\uD83C\\uDF0D Real-World Circuits'),
+              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-2' }, '\uD83C\uDF0D Real-World Circuits'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                 [
-                  { emoji: '\\uD83D\\uDD26', name: 'Flashlight', circuit: 'Series', desc: 'Battery + switch + bulb in series. Switch breaks circuit to turn off.', comps: 'Switch, Bulb' },
-                  { emoji: '\\uD83D\\uDCF1', name: 'Phone Charger', circuit: 'Series + Parallel', desc: 'Transformer reduces 120V to 5V. Capacitors smooth the current for steady charging.', comps: 'Resistor, Capacitor' },
-                  { emoji: '\\uD83D\\uDE97', name: 'Car Headlights', circuit: 'Parallel', desc: 'Headlights wired in parallel so if one burns out, the other stays on.', comps: 'Bulb, Switch' },
-                  { emoji: '\\uD83C\\uDFB5', name: 'Guitar Pedal', circuit: 'Series + Parallel', desc: 'Resistors and capacitors filter frequencies to create distortion or reverb effects.', comps: 'Resistor, Capacitor' },
-                  { emoji: '\\uD83D\\uDEA6', name: 'Traffic Light', circuit: 'Parallel', desc: 'Three LED groups in parallel, controlled by a timer circuit switching between them.', comps: 'LED, Switch' },
-                  { emoji: '\\u2764\\uFE0F', name: 'Heart Monitor', circuit: 'Series', desc: 'Amplifies tiny electrical signals from heart muscle. Resistors set gain, capacitors filter noise.', comps: 'Resistor, Ammeter' }
+                  { emoji: '\uD83D\uDD26', name: 'Flashlight', circuit: 'Series', desc: 'Battery + switch + bulb in series. Switch breaks circuit to turn off.', comps: 'Switch, Bulb' },
+                  { emoji: '\uD83D\uDCF1', name: 'Phone Charger', circuit: 'Series + Parallel', desc: 'Transformer reduces 120V to 5V. Capacitors smooth the current for steady charging.', comps: 'Resistor, Capacitor' },
+                  { emoji: '\uD83D\uDE97', name: 'Car Headlights', circuit: 'Parallel', desc: 'Headlights wired in parallel so if one burns out, the other stays on.', comps: 'Bulb, Switch' },
+                  { emoji: '\uD83C\uDFB5', name: 'Guitar Pedal', circuit: 'Series + Parallel', desc: 'Resistors and capacitors filter frequencies to create distortion or reverb effects.', comps: 'Resistor, Capacitor' },
+                  { emoji: '\uD83D\uDEA6', name: 'Traffic Light', circuit: 'Parallel', desc: 'Three LED groups in parallel, controlled by a timer circuit switching between them.', comps: 'LED, Switch' },
+                  { emoji: '\u2764\uFE0F', name: 'Heart Monitor', circuit: 'Series', desc: 'Amplifies tiny electrical signals from heart muscle. Resistors set gain, capacitors filter noise.', comps: 'Resistor, Ammeter' }
                 ].map(function(app) {
                   var expanded = d._expandedApp === app.name;
-                  return h('button', { key: app.name,
+                  return h('button', { key: app.name, 'aria-expanded': expanded,
                     onClick: function() { upd('_expandedApp', expanded ? null : app.name); },
                     className: 'text-left rounded-lg p-2.5 border transition-all ' +
-                      (expanded ? 'bg-slate-950/80 border-cyan-500/40 shadow-md shadow-cyan-500/5' : 'bg-slate-950/40 border-slate-800 hover:border-slate-700')
+                      (expanded ? 'bg-slate-950/80 border-cyan-500/40 shadow-md shadow-cyan-500/5' : 'transition-colors bg-slate-950/40 border-slate-800 hover:border-slate-700')
                   },
                     h('div', { className: 'flex items-center gap-2.5 mb-1.5' },
                       h('span', { className: 'text-base' }, app.emoji),
                       h('div', null,
                         h('span', { className: 'text-xs font-bold text-slate-200 block' }, app.name),
-                        h('span', { className: 'text-[9px] text-cyan-400 font-bold uppercase tracking-wider' }, app.circuit)
+                        h('span', { className: 'text-[10px] text-cyan-400 font-bold uppercase tracking-wider' }, app.circuit)
                       )
                     ),
                     expanded ? h('div', { className: 'animate-in fade-in duration-200 mt-1' },
                       h('p', { className: 'text-[10px] text-slate-400 leading-normal mb-1.5' }, app.desc),
-                      h('span', { className: 'text-[10px] text-slate-300 font-bold block' }, '\\uD83D\\uDD27 Key parts: ' + app.comps)
+                      h('span', { className: 'text-[10px] text-slate-300 font-bold block' }, '\uD83D\uDD27 Key parts: ' + app.comps)
                     ) : null
                   );
                 })
@@ -1966,15 +2442,15 @@ window.StemLab = window.StemLab || {
                         id: 'ci-' + Date.now(),
                         tool: 'circuit',
                         label: components.length + ' parts ' + voltage + 'V ' + mode,
-                        data: Object.assign({}, d, { mode: mode }),
+                        data: (function () { var _s = Object.assign({}, d, { mode: mode }); delete _s.tick; delete _s._aiLoading; delete _s._aiResponse; return _s; })(),
                         timestamp: Date.now()
                       }]);
                     });
                   }
-                  if (typeof addToast === 'function') addToast('\\uD83D\\uDCF8 Snapshot saved!', 'success');
+                  if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
                 },
                 className: 'px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md shadow-indigo-500/10 hover:shadow-lg transition-all'
-              }, '\\uD83D\\uDCF8 Snapshot'),
+              }, '\uD83D\uDCF8 Snapshot'),
 
               // TTS button
               typeof callTTS === 'function' && h('button', { 'aria-label': 'Read Aloud',
@@ -1986,12 +2462,12 @@ window.StemLab = window.StemLab || {
                   if (isOpen) summary += ' Circuit is open, no current flowing.';
                   callTTS(summary);
                 },
-                className: 'px-4 py-2 text-xs font-bold text-slate-300 bg-slate-900/60 rounded-full hover:bg-slate-800 transition-all border border-slate-800'
-              }, '\\uD83D\\uDD0A Read Aloud')
+                className: 'px-4 py-2 text-xs font-bold text-slate-300 bg-slate-900/60 rounded-full hover:bg-slate-800 transition-all border border-slate-800 active:scale-[0.97]'
+              }, '\uD83D\uDD0A Read Aloud')
             ),
 
             // Footer
-            h('p', { className: 'text-[9px] text-center text-slate-500 mt-4 mb-2 font-mono font-bold' }, '\\uD83D\\uDD0C Circuit Builder \\u2022 Ohm\'s Law: V = IR \\u2022 Power: P = IV')
+            h('p', { className: 'text-[10px] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C Circuit Builder \u2022 Ohm\'s Law: V = IR \u2022 Power: P = IV')
           );
         };
       }
@@ -2004,12 +2480,39 @@ window.StemLab = window.StemLab || {
       var setLabToolData = ctx.setToolData;
       var React = ctx.React;
       var d2 = (labToolData && labToolData.circuit) || {};
+      var workspaceTab = d2.workspaceTab || 'build';
       var expSection = d2.expSection || null;
       function setExp(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.circuit) || {};
           return Object.assign({}, prev, { circuit: Object.assign({}, prior, patch) });
         });
+      }
+      function renderWorkspaceSwitch() {
+        var tabs = [
+          { id: 'build', label: 'Build', icon: '\uD83D\uDD0C' },
+          { id: 'reference', label: 'Reference', icon: '\uD83D\uDCD8' }
+        ];
+        return h('div', {
+          className: 'max-w-3xl mx-auto mb-3 flex flex-wrap items-center gap-1 p-1 rounded-xl bg-slate-950/90 border border-slate-800 shadow-lg',
+          role: 'tablist',
+          'aria-label': 'Circuit Builder workspace'
+        }, tabs.map(function(tab) {
+          var active = workspaceTab === tab.id;
+          return h('button', {
+            key: tab.id,
+            type: 'button',
+            role: 'tab',
+            'aria-selected': active,
+            'aria-controls': tab.id === 'reference' ? 'circuit-reference-panel' : 'circuit-build-panel',
+            onClick: function() { setExp({ workspaceTab: tab.id }); },
+            className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
+              (active ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white')
+          },
+            h('span', { 'aria-hidden': 'true' }, tab.icon),
+            h('span', null, tab.label)
+          );
+        }));
       }
 
       var CIRCUIT_LAWS = [
@@ -2119,7 +2622,7 @@ window.StemLab = window.StemLab || {
           ),
           expSection && h('button', {
             onClick: function() { setExp({ expSection: null }); },
-            className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-amber-300 text-amber-700 hover:bg-amber-100'
+            className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-amber-300 text-amber-700 hover:bg-amber-100 active:scale-[0.97]'
           }, '✕ Close section')
         );
       }
@@ -2193,13 +2696,13 @@ window.StemLab = window.StemLab || {
           return h('button', {
             key: s.id,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
+            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);
         }
         return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
           TAB_GROUPS.map(function(g) {
             return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
-              h('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              h('span', { 'aria-hidden': 'true', className: 'text-[10px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
               g.tabs.map(function(s) { return renderBtn(s, g.color); })
             );
           })
@@ -2420,7 +2923,7 @@ window.StemLab = window.StemLab || {
             svgChildren.push(h('text', { x: 100, y: 95, textAnchor: 'middle', fontSize: 9, fill: '#92400e', fontWeight: 'bold' }, bulbs[1].R + 'Ω'));
             // close circuit via battery
           }
-          return h('svg', { viewBox: '0 0 250 130', width: '100%', style: { maxWidth: 280, height: 'auto', background: 'rgba(15,23,42,0.85)', borderRadius: 8, padding: 4 } }, svgChildren);
+          return h('svg', { viewBox: '0 0 250 130', width: '100%', style: { maxWidth: 280, height: 'auto', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', borderRadius: 8, padding: 4 } }, svgChildren);
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '💡 Predict the bulb'),
@@ -2442,7 +2945,7 @@ window.StemLab = window.StemLab || {
                   var correct = scenario.answerIndex === oi;
                   var bg = revealed
                     ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
-                    : (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-200 hover:bg-amber-50');
+                    : (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-amber-50 active:scale-[0.97]');
                   return h('button', {
                     key: oi,
                     disabled: revealed,
@@ -2465,13 +2968,13 @@ window.StemLab = window.StemLab || {
                     var bonus = scenario.answerIndex === stg.picked ? 1 : 0;
                     setPoe({ stage: newStage, score: (state.score || 0) + bonus });
                   },
-                  className: 'px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                  className: 'transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
                 }, stg.revealed ? '✓ Revealed' : 'Show answer'),
                 stg.revealed && h('span', { className: 'text-[11px] ' + (scenario.answerIndex === stg.picked ? 'text-green-700 font-bold' : 'text-rose-700 font-bold') },
                   scenario.answerIndex === stg.picked ? '✓ Correct' : '✗ Try the reasoning')
               ),
               stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[11px] text-slate-700 leading-relaxed' },
-                h('strong', { className: 'text-amber-900' }, 'Why: '), scenario.explanation)
+                h('strong', { className: 'text-amber-900' }, 'Why: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation))
             );
           }),
           h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2' },
@@ -2533,7 +3036,7 @@ window.StemLab = window.StemLab || {
           q0: {
             ask: 'Why is bulb B much dimmer?',
             options: [
-              { id: 'mismatched_resistance', label: 'Bulb B has higher resistance — it gets more voltage but the SAME (lower) current; dim because power = I² × R but current is the limit' },
+              { id: 'mismatched_resistance', label: 'Bulb B has LOWER resistance. In series both bulbs share the same current, and power = I² × R, so the lower-resistance bulb dissipates less power and glows dimmer.' },
               { id: 'farther_from_battery', label: 'Bulb B is farther from the battery — voltage drops over the wire' },
               { id: 'wrong_polarity', label: 'Bulb B is wired backward' },
               { id: 'bulb_dying', label: 'Bulb B is about to burn out' }
@@ -2548,16 +3051,16 @@ window.StemLab = window.StemLab || {
             ]
           },
           q2: {
-            ask: 'Right — V_bulb = I × R_bulb. If bulb B has 4× the resistance of bulb A, what happens to its power dissipation (P = I² × R)?',
+            ask: 'V_bulb = I × R_bulb, and P = I² × R. Bulb B is the dimmer one. Compared with bulb A, what must be true of bulb B?',
             options: [
-              { id: 'B_more_power', label: 'Bulb B dissipates 4× the power of A and should be brighter' },
-              { id: 'B_less_power', label: 'Bulb B dissipates 4× the power — but since light depends on temperature, not just power, mismatched filaments thermalize differently' },
+              { id: 'B_more_power', label: 'Bulb B dissipates more power than A and should be brighter' },
+              { id: 'B_lower_power', label: 'Bulb B has lower resistance, so with the shared current it dissipates less power (P = I² × R) and drops less voltage, which is why it is dimmer' },
               { id: 'same_power', label: 'Same power, same brightness' }
             ]
           },
-          finalExplanation: 'In series, current is identical through both bulbs. Power dissipation P = I²R, so the higher-resistance bulb dissipates MORE power — but a higher-resistance bulb is typically designed for higher-voltage operation, meaning its filament heats less per watt. So at the same current, the high-R bulb is operating well below its design current and stays dim; the low-R bulb (designed for that current) glows normally. Lesson: nominally identical bulbs with slightly different cold resistances will not share light output evenly in series.',
+          finalExplanation: 'In series, the SAME current flows through both bulbs. Power follows P = I²R, so with the current shared, the bulb with the LOWER resistance dissipates LESS power and glows dimmer. Bulb B is dimmer because it has the lower resistance: it also drops less voltage (V = I × R). The higher-resistance bulb (A) drops more voltage AND dissipates more power, so it is brighter. The counterintuitive part of series circuits: with a shared current, the lower-resistance bulb is the dim one, because brightness here tracks power (I²R).',
           q1CorrectId: 'voltage_splits_by_R',
-          q2CorrectId: 'B_less_power'
+          q2CorrectId: 'B_lower_power'
         },
         {
           id: 'd3',
@@ -2656,7 +3159,7 @@ window.StemLab = window.StemLab || {
                     return h('button', {
                       key: opt.id,
                       onClick: function() { handlePick(opt.id); },
-                      className: 'px-2 py-1 rounded text-[11px] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                      className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
                     }, opt.label);
                   })
                 ),
@@ -2840,7 +3343,7 @@ window.StemLab = window.StemLab || {
       ];
 
       var UNITS_CONSTANTS = [
-        { quantity: 'Charge (Q)', unit: 'coulomb (C)', notes: '1 C = 6.24×10¹⁸ electrons. AA battery delivers ~2 C/sec at 0.5 A.' },
+        { quantity: 'Charge (Q)', unit: 'coulomb (C)', notes: '1 C = 6.24×10¹⁸ electrons. AA battery delivers ~0.5 C/sec at 0.5 A.' },
         { quantity: 'Current (I)', unit: 'ampere (A)', notes: '1 A = 1 C/sec. Lethal current threshold: ~100 mA through chest.' },
         { quantity: 'Voltage (V)', unit: 'volt (V)', notes: '1 V = 1 J/C. AA: 1.5 V. Mains: 120/240 V. Tesla coil: kV-MV.' },
         { quantity: 'Resistance (R)', unit: 'ohm (Ω)', notes: '1 Ω = 1 V/A. Human skin (dry): ~100 kΩ. Wet: ~1 kΩ — much more dangerous.' },
@@ -3162,13 +3665,13 @@ window.StemLab = window.StemLab || {
               { label: 'Power', val: power.toFixed(3) + ' W' },
               { label: 'Ohm check', val: (iq.voltage).toFixed(2) + 'V = ' + current.toFixed(3) + 'A × ' + iq.resistance + 'Ω' }
             ].map(function(m) {
-              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px solid ' + sm.border, textAlign: 'center' } },
                 h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
               );
             })
           ),
-          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--allo-stem-deeper, #0a0a1a)', borderRadius: 6, marginBottom: 10 } },
             h('line', { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
             h('line', { x1: 30, y1: 10, x2: 30, y2: 130, stroke: '#1e293b' }),
             [0, 250, 500, 750, 1000].map(function(r, i) { return h('text', { key: 'rx' + i, x: 30 + (r / 1000) * 280, y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, r + 'Ω'); }),
@@ -3181,11 +3684,11 @@ window.StemLab = window.StemLab || {
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 } },
             h('label', null,
               h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Voltage'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.voltage + ' V')),
-              h('input', { type: 'range', min: 1, max: 48, step: 0.5, value: iq.voltage, onChange: function(e) { setKey('voltage', parseFloat(e.target.value)); }, style: { width: '100%' } })
+              h('input', { type: 'range', 'aria-label': 'Voltage', 'aria-valuetext': iq.voltage + ' volts, current ' + current.toFixed(3) + ' amps, power ' + power.toFixed(3) + ' watts', min: 1, max: 48, step: 0.5, value: iq.voltage, onChange: function(e) { setKey('voltage', parseFloat(e.target.value)); }, style: { width: '100%' } })
             ),
             h('label', null,
               h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Resistance'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.resistance + ' Ω')),
-              h('input', { type: 'range', min: 1, max: 1000, step: 1, value: iq.resistance, onChange: function(e) { setKey('resistance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', 'aria-label': 'Resistance', 'aria-valuetext': iq.resistance + ' ohms, current ' + current.toFixed(3) + ' amps, power ' + power.toFixed(3) + ' watts', min: 1, max: 1000, step: 1, value: iq.resistance, onChange: function(e) { setKey('resistance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
@@ -3193,15 +3696,15 @@ window.StemLab = window.StemLab || {
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, V: iq.voltage, R: iq.resistance, I: current.toFixed(3), P: power.toFixed(3), state: sm.label }]) });
             }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this V/R/I/P snapshot'),
-            h('button', { onClick: function() { setIQ({ voltage: 9, resistance: 100 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+            h('button', { onClick: function() { setIQ({ voltage: 9, resistance: 100 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: 'var(--allo-stem-deeper, #0a0a1a)', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
           ),
-          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · V' + e.V + ' R' + e.R + ' I' + e.I + ' P' + e.P); })
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which moves dissipation fastest — voltage or resistance? In which direction?)'),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., doubling voltage quadruples power; halving resistance also quadruples — wait, does it?', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
-          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., doubling voltage quadruples power; halving resistance also quadruples — wait, does it?', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: 'var(--allo-stem-deeper, #0a0a1a)', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: 'var(--allo-stem-deeper, #0a0a1a)', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
               h('li', null, 'P = V²/R and P = I²R both express power. When does each form make intuition easier?'),
@@ -4222,13 +4725,16 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      var __circuitExpansions = h('div', { className: 'mt-4 max-w-3xl mx-auto' },
+      var __circuitExpansions = h('div', { id: 'circuit-reference-panel', role: 'tabpanel', className: 'mt-4 max-w-3xl mx-auto' },
         expHeader(),
         expTabBar(),
         expSection && h('div', { className: 'mt-2' }, renderActiveSection())
       );
 
-      return h(React.Fragment, null, __circuitMainView, __circuitExpansions);
+      return h(React.Fragment, null,
+        renderWorkspaceSwitch(),
+        workspaceTab === 'reference' ? __circuitExpansions : h('div', { id: 'circuit-build-panel', role: 'tabpanel' }, __circuitMainView)
+      );
     }
   });
 

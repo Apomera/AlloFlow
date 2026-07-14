@@ -64,9 +64,9 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 geoQuiz (geoQuiz) ═══
   window.StemLab.registerTool('geoQuiz', {
-    icon: '\uD83D\uDDFA\uFE0F',
-    label: 'geoQuiz',
-    desc: '',
+    icon: "🗺️",
+    label: "Geography Explorer",
+    desc: "Interactive maps and quizzes for countries, capitals, continents, landmarks, distances, a 3D globe, and an AI quiz builder.",
     color: 'slate',
     category: 'geo',
     questHooks: [
@@ -76,6 +76,7 @@ window.StemLab = window.StemLab || {
       { id: 'answer_10', label: 'Answer 10 geography questions', icon: '\uD83D\uDCDA', check: function(d) { return (d.geoAnswered || []).length >= 10; }, progress: function(d) { return (d.geoAnswered || []).length + '/10'; } }
     ],
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
@@ -322,7 +323,7 @@ var d = labToolData || {};
 
             ['IDN','Indonesia','Jakarta','Asia','South-Eastern Asia',-0.8,113.9,1904569],
 
-            ['IRN','Iran','Tehran','Asia','Southern Asia',32.4,53.7,1648195],
+            ['IRN','Iran','Tehran','Asia','Western Asia',32.4,53.7,1648195],
 
             ['IRQ','Iraq','Baghdad','Asia','Western Asia',33.2,43.7,438317],
 
@@ -466,45 +467,45 @@ var d = labToolData || {};
 
           var GEO_LANDMARKS = [
 
-            { name: 'Great Wall of China', lat: 40.4, lng: 116.6, country: 'China', fact: 'Over 13,000 miles long, built over 2,000 years' },
+            { name: __alloT('stem.geo.great_wall_of_china', 'Great Wall of China'), lat: 40.4, lng: 116.6, country: 'China', fact: __alloT('stem.geo.over_13_000_miles_long_built_over_2_00', 'Over 13,000 miles long, built over 2,000 years') },
 
-            { name: 'Eiffel Tower', lat: 48.86, lng: 2.29, country: 'France', fact: 'Built in 1889, 1,083 feet tall' },
+            { name: __alloT('stem.geo.eiffel_tower', 'Eiffel Tower'), lat: 48.86, lng: 2.29, country: 'France', fact: __alloT('stem.geo.built_in_1889_1_083_feet_tall', 'Built in 1889, 1,083 feet tall') },
 
-            { name: 'Taj Mahal', lat: 27.17, lng: 78.04, country: 'India', fact: 'Mughal mausoleum built 1632\u20131653' },
+            { name: __alloT('stem.geo.taj_mahal', 'Taj Mahal'), lat: 27.17, lng: 78.04, country: 'India', fact: __alloT('stem.geo.mughal_mausoleum_built_1632_1653', 'Mughal mausoleum built 1632\u20131653') },
 
-            { name: 'Machu Picchu', lat: -13.16, lng: -72.55, country: 'Peru', fact: '15th-century Inca citadel at 7,970 ft elevation' },
+            { name: __alloT('stem.geo.machu_picchu', 'Machu Picchu'), lat: -13.16, lng: -72.55, country: 'Peru', fact: __alloT('stem.geo.15th_century_inca_citadel_at_7_970_ft_', '15th-century Inca citadel at 7,970 ft elevation') },
 
-            { name: 'Great Pyramid of Giza', lat: 29.98, lng: 31.13, country: 'Egypt', fact: 'Built ~2560 BC, only surviving Ancient Wonder' },
+            { name: __alloT('stem.geo.great_pyramid_of_giza', 'Great Pyramid of Giza'), lat: 29.98, lng: 31.13, country: 'Egypt', fact: __alloT('stem.geo.built_2560_bc_only_surviving_ancient_w', 'Built ~2560 BC, only surviving Ancient Wonder') },
 
-            { name: 'Statue of Liberty', lat: 40.69, lng: -74.04, country: 'United States', fact: 'Gift from France in 1886, 305 feet tall' },
+            { name: __alloT('stem.geo.statue_of_liberty', 'Statue of Liberty'), lat: 40.69, lng: -74.04, country: 'United States', fact: __alloT('stem.geo.gift_from_france_in_1886_305_feet_tall', 'Gift from France in 1886, 305 feet tall') },
 
-            { name: 'Colosseum', lat: 41.89, lng: 12.49, country: 'Italy', fact: 'Roman amphitheater built AD 72\u201380' },
+            { name: __alloT('stem.geo.colosseum', 'Colosseum'), lat: 41.89, lng: 12.49, country: 'Italy', fact: __alloT('stem.geo.roman_amphitheater_built_ad_72_80', 'Roman amphitheater built AD 72\u201380') },
 
-            { name: 'Christ the Redeemer', lat: -22.95, lng: -43.21, country: 'Brazil', fact: '98-foot Art Deco statue atop Corcovado mountain' },
+            { name: __alloT('stem.geo.christ_the_redeemer', 'Christ the Redeemer'), lat: -22.95, lng: -43.21, country: 'Brazil', fact: __alloT('stem.geo.98_foot_art_deco_statue_atop_corcovado', '98-foot Art Deco statue atop Corcovado mountain') },
 
-            { name: 'Sydney Opera House', lat: -33.86, lng: 151.21, country: 'Australia', fact: 'Opened 1973, UNESCO World Heritage Site' },
+            { name: __alloT('stem.geo.sydney_opera_house', 'Sydney Opera House'), lat: -33.86, lng: 151.21, country: 'Australia', fact: __alloT('stem.geo.opened_1973_unesco_world_heritage_site', 'Opened 1973, UNESCO World Heritage Site') },
 
-            { name: 'Petra', lat: 30.33, lng: 35.44, country: 'Jordan', fact: 'Ancient city carved into rose-red sandstone cliffs' },
+            { name: __alloT('stem.geo.petra', 'Petra'), lat: 30.33, lng: 35.44, country: 'Jordan', fact: __alloT('stem.geo.ancient_city_carved_into_rose_red_sand', 'Ancient city carved into rose-red sandstone cliffs') },
 
-            { name: 'Angkor Wat', lat: 13.41, lng: 103.87, country: 'Cambodia', fact: 'Largest religious monument in the world' },
+            { name: __alloT('stem.geo.angkor_wat', 'Angkor Wat'), lat: 13.41, lng: 103.87, country: 'Cambodia', fact: __alloT('stem.geo.largest_religious_monument_in_the_worl', 'Largest religious monument in the world') },
 
-            { name: 'Mount Everest', lat: 27.99, lng: 86.93, country: 'Nepal', fact: 'Earth\'s highest peak at 29,032 feet' },
+            { name: __alloT('stem.geo.mount_everest', 'Mount Everest'), lat: 27.99, lng: 86.93, country: 'Nepal', fact: __alloT('stem.geo.earth_s_highest_peak_at_29_032_feet', 'Earth\'s highest peak at 29,032 feet') },
 
-            { name: 'Stonehenge', lat: 51.18, lng: -1.83, country: 'United Kingdom', fact: 'Neolithic stone circle, ~3000 BC' },
+            { name: __alloT('stem.geo.stonehenge', 'Stonehenge'), lat: 51.18, lng: -1.83, country: 'United Kingdom', fact: __alloT('stem.geo.neolithic_stone_circle_3000_bc', 'Neolithic stone circle, ~3000 BC') },
 
-            { name: 'Mount Fuji', lat: 35.36, lng: 138.73, country: 'Japan', fact: 'Iconic 12,389-foot stratovolcano' },
+            { name: __alloT('stem.geo.mount_fuji', 'Mount Fuji'), lat: 35.36, lng: 138.73, country: 'Japan', fact: __alloT('stem.geo.iconic_12_389_foot_stratovolcano', 'Iconic 12,389-foot stratovolcano') },
 
-            { name: 'Niagara Falls', lat: 43.08, lng: -79.07, country: 'Canada', fact: 'Three waterfalls straddling US-Canada border' },
+            { name: __alloT('stem.geo.niagara_falls', 'Niagara Falls'), lat: 43.08, lng: -79.07, country: 'Canada', fact: __alloT('stem.geo.three_waterfalls_straddling_us_canada_', 'Three waterfalls straddling US-Canada border') },
 
-            { name: 'Victoria Falls', lat: -17.93, lng: 25.86, country: 'Zambia', fact: 'World\'s largest sheet of falling water' },
+            { name: __alloT('stem.geo.victoria_falls', 'Victoria Falls'), lat: -17.93, lng: 25.86, country: 'Zambia', fact: __alloT('stem.geo.world_s_largest_sheet_of_falling_water', 'World\'s largest sheet of falling water') },
 
-            { name: 'Grand Canyon', lat: 36.11, lng: -112.11, country: 'United States', fact: '277 miles long, up to 18 miles wide' },
+            { name: __alloT('stem.geo.grand_canyon', 'Grand Canyon'), lat: 36.11, lng: -112.11, country: 'United States', fact: __alloT('stem.geo.277_miles_long_up_to_18_miles_wide', '277 miles long, up to 18 miles wide') },
 
-            { name: 'Great Barrier Reef', lat: -18.29, lng: 147.70, country: 'Australia', fact: 'World\'s largest coral reef system' },
+            { name: __alloT('stem.geo.great_barrier_reef', 'Great Barrier Reef'), lat: -18.29, lng: 147.70, country: 'Australia', fact: __alloT('stem.geo.world_s_largest_coral_reef_system', 'World\'s largest coral reef system') },
 
-            { name: 'Sahara Desert', lat: 23.42, lng: 25.66, country: 'Algeria', fact: 'Largest hot desert, 3.6 million sq miles' },
+            { name: __alloT('stem.geo.sahara_desert', 'Sahara Desert'), lat: 23.42, lng: 25.66, country: 'Algeria', fact: __alloT('stem.geo.largest_hot_desert_3_6_million_sq_mile', 'Largest hot desert, 3.6 million sq miles') },
 
-            { name: 'Amazon River', lat: -3.47, lng: -60.02, country: 'Brazil', fact: 'Second longest river, largest by water flow' }
+            { name: __alloT('stem.geo.amazon_river', 'Amazon River'), lat: -3.47, lng: -60.02, country: 'Brazil', fact: __alloT('stem.geo.second_longest_river_largest_by_water_', 'Second longest river, largest by water flow') }
 
           ];
 
@@ -591,12 +592,12 @@ var d = labToolData || {};
           // Thresholds chosen so a focused session can reach Navigator; Master
           // Cartographer requires studying most of the 117 countries.
           var GEO_LEVELS = [
-            { idx: 0, icon: '\uD83C\uDF31', name: 'Novice',             min: 0,   next: 5   },
-            { idx: 1, icon: '\uD83E\uDDED', name: 'Explorer',           min: 5,   next: 15  },
-            { idx: 2, icon: '\uD83D\uDDFA\uFE0F', name: 'Navigator',    min: 15,  next: 30  },
-            { idx: 3, icon: '\uD83C\uDF0F', name: 'Geographer',         min: 30,  next: 60  },
-            { idx: 4, icon: '\u2708\uFE0F', name: 'Globetrotter',       min: 60,  next: 100 },
-            { idx: 5, icon: '\uD83C\uDFC6', name: 'Master Cartographer', min: 100, next: null }
+            { idx: 0, icon: '\uD83C\uDF31', name: __alloT('stem.geo.novice', 'Novice'),             min: 0,   next: 5   },
+            { idx: 1, icon: '\uD83E\uDDED', name: __alloT('stem.geo.explorer', 'Explorer'),           min: 5,   next: 15  },
+            { idx: 2, icon: '\uD83D\uDDFA\uFE0F', name: __alloT('stem.geo.navigator', 'Navigator'),    min: 15,  next: 30  },
+            { idx: 3, icon: '\uD83C\uDF0F', name: __alloT('stem.geo.geographer', 'Geographer'),         min: 30,  next: 60  },
+            { idx: 4, icon: '\u2708\uFE0F', name: __alloT('stem.geo.globetrotter', 'Globetrotter'),       min: 60,  next: 100 },
+            { idx: 5, icon: '\uD83C\uDFC6', name: __alloT('stem.geo.master_cartographer', 'Master Cartographer'), min: 100, next: null }
           ];
           function getGeoLevel(count) {
             for (var i = GEO_LEVELS.length - 1; i >= 0; i--) {
@@ -1161,6 +1162,57 @@ var d = labToolData || {};
 
 
 
+            // ── Realism upgrades: night mode, showroom spin, drifting clouds ──
+
+            // Restore night mode if the student had it on (textures are the open-source
+            // three-globe set: Blue Marble day / city-lights night, both NASA-derived)
+            if (d.geoGlobeNight) {
+              globe.globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg');
+            }
+
+            var geoPrefersRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+            // Slow idle spin until the student takes the wheel
+            try {
+              var gControls = globe.controls();
+              if (gControls && !geoPrefersRM) {
+                gControls.autoRotate = true;
+                gControls.autoRotateSpeed = 0.55;
+                container.addEventListener('pointerdown', function() { gControls.autoRotate = false; }, { once: true });
+              }
+            } catch(e) {}
+
+            // Drifting cloud shell — a slightly larger sphere wearing the three-globe
+            // cloud texture. Pure enhancement: ANY failure (no THREE global, texture
+            // 404, API drift) is swallowed and the globe renders exactly as before.
+            function addGlobeClouds() {
+              try {
+                var T = window.THREE;
+                if (!T || typeof globe.scene !== 'function' || typeof globe.getGlobeRadius !== 'function') return;
+                new T.TextureLoader().load('https://unpkg.com/three-globe/example/img/earth-clouds.png', function(cloudTex) {
+                  try {
+                    var cloudMesh = new T.Mesh(
+                      new T.SphereGeometry(globe.getGlobeRadius() * 1.01, 64, 64),
+                      new T.MeshLambertMaterial({ map: cloudTex, transparent: true, opacity: 0.45, depthWrite: false })
+                    );
+                    globe.scene().add(cloudMesh);
+                    (function spinClouds() {
+                      if (!container.isConnected) return;
+                      if (!geoPrefersRM) cloudMesh.rotation.y += 0.00032;
+                      requestAnimationFrame(spinClouds);
+                    })();
+                  } catch(e) {}
+                });
+              } catch(e) {}
+            }
+            if (window.THREE) { addGlobeClouds(); }
+            else {
+              var threeScript = document.createElement('script');
+              threeScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
+              threeScript.onload = addGlobeClouds;
+              document.head.appendChild(threeScript);
+            }
+
             globeRef.current = globe;
 
           }
@@ -1309,12 +1361,12 @@ var d = labToolData || {};
 
           // ── Badge definitions ──
           var GEO_BADGES = [
-            { id: 'explorer', icon: '🧭', name: 'Explorer', desc: 'Answer 10 questions', check: function() { return geoAnswered.length >= 10; } },
-            { id: 'streak5', icon: '🔥', name: 'On Fire', desc: '5x streak', check: function() { return geoStreak >= 5; } },
-            { id: 'century', icon: '💯', name: 'Century', desc: 'Reach 100 points', check: function() { return geoScore >= 100; } },
-            { id: 'distPro', icon: '📍', name: 'Distance Pro', desc: 'Nail 5 distance challenges', check: function() { return geoDistCorrect >= 5; } },
-            { id: 'globetrotter', icon: '✈️', name: 'Globetrotter', desc: 'Answer 25 questions', check: function() { return geoAnswered.length >= 25; } },
-            { id: 'streak10', icon: '⚡', name: 'Lightning', desc: '10x streak', check: function() { return geoStreak >= 10; } }
+            { id: 'explorer', icon: '🧭', name: __alloT('stem.geo.explorer_2', 'Explorer'), desc: __alloT('stem.geo.answer_10_questions', 'Answer 10 questions'), check: function() { return geoAnswered.length >= 10; } },
+            { id: 'streak5', icon: '🔥', name: __alloT('stem.geo.on_fire', 'On Fire'), desc: __alloT('stem.geo.5x_streak', '5x streak'), check: function() { return geoStreak >= 5; } },
+            { id: 'century', icon: '💯', name: __alloT('stem.geo.century', 'Century'), desc: __alloT('stem.geo.reach_100_points', 'Reach 100 points'), check: function() { return geoScore >= 100; } },
+            { id: 'distPro', icon: '📍', name: __alloT('stem.geo.distance_pro', 'Distance Pro'), desc: __alloT('stem.geo.nail_5_distance_challenges', 'Nail 5 distance challenges'), check: function() { return geoDistCorrect >= 5; } },
+            { id: 'globetrotter', icon: '✈️', name: __alloT('stem.geo.globetrotter_2', 'Globetrotter'), desc: __alloT('stem.geo.answer_25_questions', 'Answer 25 questions'), check: function() { return geoAnswered.length >= 25; } },
+            { id: 'streak10', icon: '⚡', name: __alloT('stem.geo.lightning', 'Lightning'), desc: __alloT('stem.geo.10x_streak', '10x streak'), check: function() { return geoStreak >= 10; } }
           ];
 
           // Derive newly-earned badges this render (pure — no side effects)
@@ -1347,23 +1399,23 @@ var d = labToolData || {};
 
           var geoTabs = [
 
-            { id: 'findCountry', icon: '\uD83D\uDDFA\uFE0F', label: 'Find Country' },
+            { id: 'findCountry', icon: '\uD83D\uDDFA\uFE0F', label: __alloT('stem.geo.find_country', 'Find Country') },
 
-            { id: 'capitals', icon: '\uD83C\uDFDB\uFE0F', label: 'Capitals' },
+            { id: 'capitals', icon: '\uD83C\uDFDB\uFE0F', label: __alloT('stem.geo.capitals', 'Capitals') },
 
-            { id: 'continents', icon: '\uD83C\uDF0D', label: 'Continents' },
+            { id: 'continents', icon: '\uD83C\uDF0D', label: __alloT('stem.geo.continents', 'Continents') },
 
-            { id: 'landmarks', icon: '\uD83C\uDFD4\uFE0F', label: 'Landmarks' },
+            { id: 'landmarks', icon: '\uD83C\uDFD4\uFE0F', label: __alloT('stem.geo.landmarks', 'Landmarks') },
 
-            { id: 'sizeCompare', icon: '\uD83D\uDCCF', label: 'Size Compare' },
+            { id: 'sizeCompare', icon: '\uD83D\uDCCF', label: __alloT('stem.geo.size_compare', 'Size Compare') },
 
-            { id: 'globeView', icon: '\uD83C\uDF10', label: 'Globe View' },
+            { id: 'globeView', icon: '\uD83C\uDF10', label: __alloT('stem.geo.globe_view', 'Globe View') },
 
-            { id: 'quizBuilder', icon: '\uD83C\uDFC6', label: 'Quiz Builder' },
+            { id: 'quizBuilder', icon: '\uD83C\uDFC6', label: __alloT('stem.geo.quiz_builder', 'Quiz Builder') },
 
-            { id: 'distance', icon: '\uD83D\uDCCD', label: 'Distance' },
+            { id: 'distance', icon: '\uD83D\uDCCD', label: __alloT('stem.geo.distance', 'Distance') },
 
-            { id: 'distHunt', icon: '\uD83C\uDF9A\uFE0F', label: 'Distance Slider' }
+            { id: 'distHunt', icon: '\uD83C\uDF9A\uFE0F', label: __alloT('stem.geo.distance_slider', 'Distance Slider') }
 
           ];
 
@@ -1383,7 +1435,7 @@ var d = labToolData || {};
 
                 React.createElement('span', { className: 'text-xl' }, '\uD83C\uDF0D'),
 
-                React.createElement('span', { className: 'font-bold text-sm' }, 'Geography Quiz'),
+                React.createElement('span', { className: 'font-bold text-sm' }, __alloT('stem.geo.geography_quiz', 'Geography Quiz')),
 
                 React.createElement('span', { className: 'text-xs bg-white/20 rounded-full px-2 py-0.5' }, filteredCountries.length + ' countries')
 
@@ -1441,7 +1493,7 @@ var d = labToolData || {};
                   value: geoRegion,
                   onChange: function(e) { upd('geoRegionFilter', e.target.value); upd('geoTarget', null); upd('geoAnswered', []); },
                   className: 'text-xs bg-white/20 border border-white/30 rounded px-1 py-0.5 text-white',
-                  title: 'Smaller regions = easier quiz. Start small, expand as you improve.'
+                  title: __alloT('stem.geo.smaller_regions_easier_quiz_start_smal', 'Smaller regions = easier quiz. Start small, expand as you improve.')
                 },
                   [React.createElement('option', { key: 'world', value: 'world' }, '\uD83C\uDF0D World (' + countries.length + ')')]
                     .concat(_regionGroups.map(function(grp) {
@@ -1465,11 +1517,11 @@ var d = labToolData || {};
 
                 },
 
-                  React.createElement('option', { value: 'easy' }, 'Easy'),
+                  React.createElement('option', { value: 'easy' }, __alloT('stem.geo.easy', 'Easy')),
 
-                  React.createElement('option', { value: 'medium' }, 'Medium'),
+                  React.createElement('option', { value: 'medium' }, __alloT('stem.geo.medium', 'Medium')),
 
-                  React.createElement('option', { value: 'hard' }, 'Hard')
+                  React.createElement('option', { value: 'hard' }, __alloT('stem.geo.hard', 'Hard'))
 
                 )
 
@@ -1518,14 +1570,14 @@ var d = labToolData || {};
             // ── Topic-accent hero band per tab ──
             (function() {
               var TAB_META = {
-                findCountry:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDDFA', title: 'Find Country \u2014 the visual atlas',                hint: '195 sovereign nations recognized by the UN. Mercator projection distorts size near the poles \u2014 Greenland looks the size of Africa but is 14\u00d7 smaller. Equal-area projections (Goode, Robinson) trade angle accuracy for honest area.' },
-                capitals:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFDB', title: 'Capitals \u2014 govt seats + cultural anchors',         hint: 'Most capitals also house head-of-state, supreme court, parliament. South Africa has 3 (Pretoria executive, Cape Town legislative, Bloemfontein judicial). Bolivia, Tanzania, Switzerland, Honduras, Eswatini also split.' },
-                continents:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF0D', title: 'Continents \u2014 7 (or 5, depending who you ask)',     hint: '7-continent model (US/UK): Africa, Antarctica, Asia, Australia, Europe, N. America, S. America. Many countries teach 6 (combining N+S America) or 5 (combining Europe+Asia into Eurasia). Russia + Turkey straddle two.' },
-                landmarks:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFD4', title: 'Landmarks \u2014 the visual mnemonics',                hint: 'Eiffel (Paris), Christ the Redeemer (Rio), Sydney Opera House, Petra (Jordan), Burj Khalifa (Dubai). Cultural anchoring: when students learn the building, the country sticks 10\u00d7 better.' },
-                sizeCompare:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCF', title: 'Size Compare \u2014 fight Mercator distortion',          hint: 'Russia is 17M km\u00b2 (largest). USA + China + India fit inside Russia with room to spare. Africa is 30M km\u00b2 \u2014 fits USA + China + India + Mexico + Western Europe combined. Maps lie about scale.' },
-                globeView:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDF10', title: 'Globe View \u2014 honest spherical geometry',           hint: 'Earth is an oblate spheroid \u2014 21 km wider at the equator than pole-to-pole. The shortest path between two cities is a great-circle arc, not a straight line on a flat map. Why flights bend over the Arctic.' },
-                quizBuilder:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFC6', title: 'Quiz Builder \u2014 graded geography practice',         hint: 'Mix country / capital / continent / landmark items at chosen difficulty. Spaced retrieval beats cramming for long-term recall (Karpicke 2008). NCSS curriculum standards aligned through grade 8.' },
-                distance:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83D\uDCCD', title: 'Distance \u2014 great-circle math',                    hint: 'Haversine formula gives the great-circle distance between two lat/lng pairs. NYC to Tokyo \u2248 10,840 km going north over the pole \u2014 shorter than the flat-map straight line. Pilot routes prove it daily.' }
+                findCountry:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDDFA', title: __alloT('stem.geo.find_country_the_visual_atlas', 'Find Country \u2014 the visual atlas'),                hint: __alloT('stem.geo.195_sovereign_nations_recognized_by_th', '195 sovereign nations recognized by the UN. Mercator projection distorts size near the poles \u2014 Greenland looks the size of Africa but is 14\u00d7 smaller. Equal-area projections (Goode, Robinson) trade angle accuracy for honest area.') },
+                capitals:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFDB', title: __alloT('stem.geo.capitals_govt_seats_cultural_anchors', 'Capitals \u2014 govt seats + cultural anchors'),         hint: __alloT('stem.geo.most_capitals_also_house_head_of_state', 'Most capitals also house head-of-state, supreme court, parliament. South Africa has 3 (Pretoria executive, Cape Town legislative, Bloemfontein judicial). Bolivia, Tanzania, Switzerland, Honduras, Eswatini also split.') },
+                continents:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF0D', title: __alloT('stem.geo.continents_7_or_5_depending_who_you_as', 'Continents \u2014 7 (or 5, depending who you ask)'),     hint: __alloT('stem.geo.7_continent_model_us_uk_africa_antarct', '7-continent model (US/UK): Africa, Antarctica, Asia, Australia, Europe, N. America, S. America. Many countries teach 6 (combining N+S America) or 5 (combining Europe+Asia into Eurasia). Russia + Turkey straddle two.') },
+                landmarks:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFD4', title: __alloT('stem.geo.landmarks_the_visual_mnemonics', 'Landmarks \u2014 the visual mnemonics'),                hint: __alloT('stem.geo.eiffel_paris_christ_the_redeemer_rio_s', 'Eiffel (Paris), Christ the Redeemer (Rio), Sydney Opera House, Petra (Jordan), Burj Khalifa (Dubai). Cultural anchoring: when students learn the building, the country sticks 10\u00d7 better.') },
+                sizeCompare:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCF', title: __alloT('stem.geo.size_compare_fight_mercator_distortion', 'Size Compare \u2014 fight Mercator distortion'),          hint: __alloT('stem.geo.russia_is_17m_km_largest_usa_china_ind', 'Russia is 17M km\u00b2 (largest). USA + China + India fit inside Russia with room to spare. Africa is 30M km\u00b2 \u2014 fits USA + China + India + Mexico + Western Europe combined. Maps lie about scale.') },
+                globeView:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDF10', title: __alloT('stem.geo.globe_view_honest_spherical_geometry', 'Globe View \u2014 honest spherical geometry'),           hint: __alloT('stem.geo.earth_is_an_oblate_spheroid_21_km_wide', 'Earth is an oblate spheroid \u2014 21 km wider at the equator than pole-to-pole. The shortest path between two cities is a great-circle arc, not a straight line on a flat map. Why flights bend over the Arctic.') },
+                quizBuilder:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFC6', title: __alloT('stem.geo.quiz_builder_graded_geography_practice', 'Quiz Builder \u2014 graded geography practice'),         hint: __alloT('stem.geo.mix_country_capital_continent_landmark', 'Mix country / capital / continent / landmark items at chosen difficulty. Spaced retrieval beats cramming for long-term recall (Karpicke 2008). NCSS curriculum standards aligned through grade 8.') },
+                distance:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83D\uDCCD', title: __alloT('stem.geo.distance_great_circle_math', 'Distance \u2014 great-circle math'),                    hint: __alloT('stem.geo.haversine_formula_gives_the_great_circ', 'Haversine formula gives the great-circle distance between two lat/lng pairs. NYC to Tokyo \u2248 10,840 km going north over the pole \u2014 shorter than the flat-map straight line. Pilot routes prove it daily.') }
               };
               var meta = TAB_META[geoTab] || TAB_META.findCountry;
               return React.createElement('div', {
@@ -1569,7 +1621,7 @@ var d = labToolData || {};
 
               geoTarget && React.createElement('div', { className: 'text-center py-3 bg-gradient-to-r from-slate-50 to-teal-50 border-b' },
 
-                React.createElement('p', { className: 'text-xs text-slate-600' }, 'Click on the map to find:'),
+                React.createElement('p', { className: 'text-xs text-slate-600' }, __alloT('stem.geo.click_on_the_map_to_find', 'Click on the map to find:')),
 
                 React.createElement('p', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDDFA\uFE0F ' + geoTarget.name),
 
@@ -1603,7 +1655,7 @@ var d = labToolData || {};
 
                   className: 'text-teal-600 hover:text-teal-800 font-bold'
 
-                }, '\u267B Reset')
+                }, __alloT('stem.geo.reset', '\u267B Reset'))
 
               )
 
@@ -1619,7 +1671,7 @@ var d = labToolData || {};
 
                 React.createElement('div', { className: 'text-center mb-3' },
 
-                  React.createElement('p', { className: 'text-xs text-slate-600 mb-1' }, 'What is the capital of:'),
+                  React.createElement('p', { className: 'text-xs text-slate-600 mb-1' }, __alloT('stem.geo.what_is_the_capital_of', 'What is the capital of:')),
 
                   React.createElement('p', { className: 'text-2xl font-bold text-slate-800' }, '\uD83C\uDFDB\uFE0F ' + geoTarget.name),
 
@@ -1665,9 +1717,9 @@ var d = labToolData || {};
 
                     type: 'text',
 
-                    placeholder: 'Type the capital city...',
+                    placeholder: __alloT('stem.geo.type_the_capital_city', 'Type the capital city...'),
 
-                    'aria-label': 'Capital city answer',
+                    'aria-label': __alloT('stem.geo.capital_city_answer', 'Capital city answer'),
 
                     value: d.geoCapitalInput || '',
 
@@ -1689,7 +1741,7 @@ var d = labToolData || {};
 
                     className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold hover:bg-teal-600 disabled:bg-slate-300 disabled:cursor-not-allowed'
 
-                  }, 'Check')
+                  }, __alloT('stem.geo.check', 'Check'))
 
                 ),
 
@@ -1744,12 +1796,12 @@ var d = labToolData || {};
 
             geoTab === 'continents' && React.createElement('div', { className: 'p-4' },
 
-              React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, '\uD83C\uDF0D Sort Countries by Continent'),
+              React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, __alloT('stem.geo.sort_countries_by_continent', '\uD83C\uDF0D Sort Countries by Continent')),
 
               geoTarget && React.createElement('div', { className: 'max-w-lg mx-auto' },
 
                 React.createElement('div', { className: 'text-center mb-3' },
-                  React.createElement('p', { className: 'text-xs text-slate-300 uppercase tracking-wide' }, 'Which continent is'),
+                  React.createElement('p', { className: 'text-xs text-slate-600 uppercase tracking-wide' }, __alloT('stem.geo.which_continent_is', 'Which continent is')),
                   React.createElement('p', { className: 'text-2xl font-bold text-slate-800' }, geoTarget.name + '?')
                 ),
 
@@ -1886,7 +1938,7 @@ var d = labToolData || {};
 
             geoTab === 'landmarks' && React.createElement('div', { className: 'p-4' },
 
-              React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, '\uD83C\uDFD4\uFE0F Famous Landmarks'),
+              React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, __alloT('stem.geo.famous_landmarks', '\uD83C\uDFD4\uFE0F Famous Landmarks')),
 
               // Mode toggle: Browse (passive) vs Quiz (4-choice country ID)
               React.createElement('div', { className: 'flex justify-center gap-2 mb-3' },
@@ -1980,7 +2032,7 @@ var d = labToolData || {};
                     // Country label: always visible in browse; hidden in quiz until answered
                     (!isQuiz || revealed) && React.createElement('p', { className: 'text-xs text-amber-600 mt-2 font-bold' }, '\uD83D\uDCCD ' + lm.country + ' \u2014 ' + lm.lat.toFixed(1) + '\u00b0, ' + lm.lng.toFixed(1) + '\u00b0'),
 
-                    isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-300 italic mt-2' }, 'Which country is this in?')
+                    isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-600 italic mt-2' }, __alloT('stem.geo.which_country_is_this_in', 'Which country is this in?'))
 
                   ),
 
@@ -2063,7 +2115,7 @@ var d = labToolData || {};
                       onClick: function() { upd('geoLandmarkIdx', Math.max(0, geoLandmarkIdx - 1)); },
                       className: 'px-3 py-1 bg-slate-100 rounded text-xs font-bold text-slate-600 hover:bg-slate-200',
                       disabled: geoLandmarkIdx === 0
-                    }, '\u25C0 Previous'),
+                    }, __alloT('stem.geo.previous', '\u25C0 Previous')),
                     React.createElement('span', { className: 'text-[11px] text-slate-600 self-center' }, (geoLandmarkIdx + 1) + '/' + GEO_LANDMARKS.length),
                     React.createElement('button', {
                       onClick: function() {
@@ -2071,7 +2123,7 @@ var d = labToolData || {};
                         if (typeof awardStemXP === 'function' && geoLandmarkIdx % 5 === 4) awardStemXP('geoQuiz', 5, 'Explored 5 landmarks');
                       },
                       className: 'px-3 py-1 bg-teal-700 rounded text-xs font-bold text-white hover:bg-teal-600'
-                    }, 'Next \u25B6')
+                    }, __alloT('stem.geo.next', 'Next \u25B6'))
                   )
 
                 );
@@ -2086,7 +2138,7 @@ var d = labToolData || {};
 
             geoTab === 'sizeCompare' && React.createElement('div', { className: 'p-4' },
 
-              React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, '\uD83D\uDCCF Which Country is Bigger?'),
+              React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, __alloT('stem.geo.which_country_is_bigger', '\uD83D\uDCCF Which Country is Bigger?')),
 
               sizeTarget1 && sizeTarget2 && (function() {
 
@@ -2145,7 +2197,7 @@ var d = labToolData || {};
                         answered
                           ? React.createElement('p', { className: 'text-sm font-bold mt-2 ' + (isBigger ? 'text-green-700' : 'text-slate-300') },
                               c.area.toLocaleString() + ' km\u00b2')
-                          : React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'Click if bigger')
+                          : React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, __alloT('stem.geo.click_if_bigger', 'Click if bigger'))
 
                       );
 
@@ -2169,7 +2221,7 @@ var d = labToolData || {};
 
               })(),
 
-              React.createElement('p', { className: 'text-center text-[11px] text-slate-600 mt-3' }, '\uD83D\uDCA1 Mercator maps distort sizes \u2014 countries near the equator look smaller than they really are!')
+              React.createElement('p', { className: 'text-center text-[11px] text-slate-600 mt-3' }, __alloT('stem.geo.mercator_maps_distort_sizes_countries_', '\uD83D\uDCA1 Mercator maps distort sizes \u2014 countries near the equator look smaller than they really are!'))
 
             ),
 
@@ -2179,13 +2231,30 @@ var d = labToolData || {};
 
             geoTab === 'globeView' && React.createElement('div', null,
 
-              React.createElement('div', { className: 'text-center py-2 bg-slate-900 text-white text-xs' }, '\uD83C\uDF10 Drag to rotate \u2022 Scroll to zoom \u2022 Click countries for info'),
+              React.createElement('div', { className: 'flex items-center justify-center gap-3 py-2 bg-slate-900 text-white text-xs' },
+                React.createElement('span', null, __alloT('stem.geo.drag_to_rotate_scroll_to_zoom_click_co', '\uD83C\uDF10 Drag to rotate \u2022 Scroll to zoom \u2022 Click countries for info')),
+                React.createElement('button', {
+                  onClick: function() {
+                    var night = !d.geoGlobeNight;
+                    upd('geoGlobeNight', night);
+                    if (globeRef.current) {
+                      globeRef.current.globeImageUrl(night
+                        ? '//unpkg.com/three-globe/example/img/earth-night.jpg'
+                        : '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+                    }
+                    if (typeof announceToSR === 'function') announceToSR(night ? 'Night view: city lights show where people live.' : 'Day view: NASA Blue Marble satellite imagery.');
+                  },
+                  'aria-pressed': !!d.geoGlobeNight,
+                  'aria-label': __alloT('stem.geo.toggle_day_night_view', 'Toggle day / night view'),
+                  className: 'px-2 py-0.5 rounded-full text-[11px] font-bold border transition-all ' + (d.geoGlobeNight ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-200 hover:border-slate-400')
+                }, d.geoGlobeNight ? '\uD83C\uDF19 Night' : '\u2600\uFE0F Day')
+              ),
 
               !window._GlobeGLConstructor ? React.createElement('div', { className: 'text-center py-16 text-slate-600' },
 
                 React.createElement('div', { className: 'text-4xl mb-3 animate-spin' }, '\uD83C\uDF10'),
 
-                React.createElement('p', { className: 'text-sm' }, 'Loading 3D Globe...')
+                React.createElement('p', { className: 'text-sm' }, __alloT('stem.geo.loading_3d_globe', 'Loading 3D Globe...'))
 
               ) : React.createElement('div', {
 
@@ -2206,7 +2275,7 @@ var d = labToolData || {};
                       geoGlobeInfo.iso && React.createElement('span', { className: 'text-[10px] text-slate-400 font-mono bg-slate-700 px-1.5 py-0.5 rounded' }, geoGlobeInfo.iso)
                     ),
                     geoGlobeInfo._unknown
-                      ? React.createElement('p', { className: 'text-xs text-slate-400 italic' }, 'Not in the 117-country dataset \u2014 basic info only.')
+                      ? React.createElement('p', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.geo.not_in_the_117_country_dataset_basic_i', 'Not in the 117-country dataset \u2014 basic info only.'))
                       : React.createElement('div', { className: 'grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-200 mt-1' },
                           geoGlobeInfo.capital && React.createElement('div', null, React.createElement('span', { className: 'text-slate-400' }, 'Capital: '), geoGlobeInfo.capital),
                           geoGlobeInfo.continent && React.createElement('div', null, React.createElement('span', { className: 'text-slate-400' }, 'Continent: '), geoGlobeInfo.continent),
@@ -2216,10 +2285,10 @@ var d = labToolData || {};
                   ),
                   React.createElement('button', {
                     onClick: function() { upd('geoGlobeInfo', null); },
-                    'aria-label': 'Close country info',
+                    'aria-label': __alloT('stem.geo.close_country_info', 'Close country info'),
                     className: 'text-slate-400 hover:text-white text-sm leading-none'
                   }, '\u2715')
-                ) : React.createElement('p', { className: 'text-xs text-slate-300 text-center italic' }, 'Click any country on the globe to see its info here.')
+                ) : React.createElement('p', { className: 'text-xs text-slate-300 text-center italic' }, __alloT('stem.geo.click_any_country_on_the_globe_to_see_', 'Click any country on the globe to see its info here.'))
               )
 
             ),
@@ -2230,9 +2299,9 @@ var d = labToolData || {};
 
             geoTab === 'quizBuilder' && React.createElement('div', { className: 'p-4' },
 
-              React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, '\uD83C\uDFC6 AI Quiz Builder'),
+              React.createElement('h3', { className: 'text-sm font-bold text-slate-700 mb-3 text-center' }, __alloT('stem.geo.ai_quiz_builder', '\uD83C\uDFC6 AI Quiz Builder')),
 
-              React.createElement('p', { className: 'text-xs text-slate-600 text-center mb-3' }, 'Describe the quiz you want and AI will generate custom geography questions!'),
+              React.createElement('p', { className: 'text-xs text-slate-600 text-center mb-3' }, __alloT('stem.geo.describe_the_quiz_you_want_and_ai_will', 'Describe the quiz you want and AI will generate custom geography questions!')),
 
               React.createElement('div', { className: 'flex gap-2 max-w-md mx-auto mb-4' },
 
@@ -2240,9 +2309,9 @@ var d = labToolData || {};
 
                   type: 'text',
 
-                  placeholder: 'e.g. "Quiz me on African capitals" or "European rivers"',
+                  placeholder: __alloT('stem.geo.e_g_quiz_me_on_african_capitals_or_eur', 'e.g. "Quiz me on African capitals" or "European rivers"'),
 
-                  'aria-label': 'Geography quiz prompt',
+                  'aria-label': __alloT('stem.geo.geography_quiz_prompt', 'Geography quiz prompt'),
 
                   value: d.geoQuizInput || '',
 
@@ -2354,9 +2423,9 @@ var d = labToolData || {};
                   var medal = pct >= 90 ? '\uD83E\uDD47' : pct >= 70 ? '\uD83E\uDD48' : pct >= 50 ? '\uD83E\uDD49' : '\uD83C\uDFAF';
                   return React.createElement('div', { className: 'max-w-md mx-auto bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-200 text-center' },
                     React.createElement('p', { className: 'text-5xl mb-2' }, medal),
-                    React.createElement('h4', { className: 'text-lg font-bold text-slate-800 mb-1' }, 'Quiz complete!'),
+                    React.createElement('h4', { className: 'text-lg font-bold text-slate-800 mb-1' }, __alloT('stem.geo.quiz_complete', 'Quiz complete!')),
                     React.createElement('p', { className: 'text-sm text-slate-700 mb-4' },
-                      'You got ',
+                      __alloT('stem.geo.you_got', 'You got '),
                       React.createElement('span', { className: 'font-bold text-teal-700' }, quizCorrectCount + ' / ' + total),
                       ' correct (' + pct + '%).'
                     ),
@@ -2369,7 +2438,7 @@ var d = labToolData || {};
                           upd('geoFeedback', null);
                         },
                         className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700 shadow'
-                      }, '\uD83D\uDD01 Retake'),
+                      }, __alloT('stem.geo.retake', '\uD83D\uDD01 Retake')),
                       React.createElement('button', {
                         onClick: function() {
                           upd('geoQuizQuestions', null);
@@ -2379,7 +2448,7 @@ var d = labToolData || {};
                           upd('geoFeedback', null);
                         },
                         className: 'px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300'
-                      }, '\u2728 New Quiz')
+                      }, __alloT('stem.geo.new_quiz', '\u2728 New Quiz'))
                     )
                   );
                 }
@@ -2443,8 +2512,8 @@ var d = labToolData || {};
 
                     React.createElement('input', {
                       type: 'text',
-                      placeholder: 'Your answer...',
-                      'aria-label': 'Quiz answer',
+                      placeholder: __alloT('stem.geo.your_answer', 'Your answer...'),
+                      'aria-label': __alloT('stem.geo.quiz_answer', 'Quiz answer'),
                       value: d.geoQuizAnswer || '',
                       disabled: answered,
                       onChange: function(e) { upd('geoQuizAnswer', e.target.value); },
@@ -2456,7 +2525,7 @@ var d = labToolData || {};
                       onClick: function() { submitAnswer(d.geoQuizAnswer || ''); },
                       disabled: answered,
                       className: 'px-3 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 disabled:bg-slate-300'
-                    }, 'Check'),
+                    }, __alloT('stem.geo.check_2', 'Check')),
 
                     React.createElement('button', {
                       onClick: function() {
@@ -2466,7 +2535,7 @@ var d = labToolData || {};
                       },
                       disabled: answered,
                       className: 'px-3 py-2 bg-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-300 disabled:opacity-50'
-                    }, 'Skip')
+                    }, __alloT('stem.geo.skip', 'Skip'))
 
                   )
 
@@ -2480,8 +2549,8 @@ var d = labToolData || {};
 
             // ── Distance tab content ──
             geoTab === 'distance' && React.createElement('div', { className: 'p-5 space-y-4' },
-              React.createElement('h3', { className: 'text-sm font-bold text-teal-700' }, '\uD83D\uDCCD Distance Challenge'),
-              React.createElement('p', { className: 'text-xs text-slate-600' }, 'Estimate the distance between two countries (within 15% to score!)'),
+              React.createElement('h3', { className: 'text-sm font-bold text-teal-700' }, __alloT('stem.geo.distance_challenge', '\uD83D\uDCCD Distance Challenge')),
+              React.createElement('p', { className: 'text-xs text-slate-600' }, __alloT('stem.geo.estimate_the_distance_between_two_coun', 'Estimate the distance between two countries (within 15% to score!)')),
 
               geoDistA && geoDistB ? React.createElement('div', { className: 'space-y-4' },
                 // Country cards
@@ -2557,19 +2626,19 @@ var d = labToolData || {};
                     value: geoDistGuess,
                     onChange: function(e) { upd('geoDistGuess', e.target.value); },
                     onKeyDown: function(e) { if (e.key === 'Enter') checkDistanceAnswer(); },
-                    placeholder: 'Distance in km...',
-                    'aria-label': 'Distance guess in kilometers',
+                    placeholder: __alloT('stem.geo.distance_in_km', 'Distance in km...'),
+                    'aria-label': __alloT('stem.geo.distance_guess_in_kilometers', 'Distance guess in kilometers'),
                     className: 'w-48 px-3 py-2 rounded-lg border border-teal-600 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-400'
                   }),
                   React.createElement('span', { className: 'text-xs text-slate-600 font-bold' }, 'km'),
                   React.createElement('button', {
                     onClick: checkDistanceAnswer,
                     className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold hover:bg-teal-700 transition-colors'
-                  }, 'Check'),
+                  }, __alloT('stem.geo.check_3', 'Check')),
                   React.createElement('button', {
                     onClick: pickDistancePair,
                     className: 'px-3 py-2 bg-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-300'
-                  }, 'Skip')
+                  }, __alloT('stem.geo.skip_2', 'Skip'))
                 ),
 
                 // Feedback
@@ -2594,10 +2663,10 @@ var d = labToolData || {};
               else if (iq.distance < 12000) category = 'long';
               else category = 'antipodal';
               var cm = {
-                short:     { label: '🟢 Short hop (<1000 km)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Same continent or neighboring countries.' },
-                medium:    { label: '🟡 Medium (1000-5000 km)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Cross-continental, e.g. NY to Moscow.' },
-                long:      { label: '🟠 Long-haul (5000-12000 km)', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Trans-oceanic, e.g. SFO to Tokyo.' },
-                antipodal: { label: '🌍 Antipodal (>12000 km)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Half-globe span. Earth circumference is 40,075 km.' }
+                short:     { label: __alloT('stem.geo.short_hop_1000_km', '🟢 Short hop (<1000 km)'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.geo.same_continent_or_neighboring_countrie', 'Same continent or neighboring countries.') },
+                medium:    { label: __alloT('stem.geo.medium_1000_5000_km', '🟡 Medium (1000-5000 km)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.geo.cross_continental_e_g_ny_to_moscow', 'Cross-continental, e.g. NY to Moscow.') },
+                long:      { label: __alloT('stem.geo.long_haul_5000_12000_km', '🟠 Long-haul (5000-12000 km)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.geo.trans_oceanic_e_g_sfo_to_tokyo', 'Trans-oceanic, e.g. SFO to Tokyo.') },
+                antipodal: { label: __alloT('stem.geo.antipodal_12000_km', '🌍 Antipodal (>12000 km)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.geo.half_globe_span_earth_circumference_is', 'Half-globe span. Earth circumference is 40,075 km.') }
               }[category];
               return h2('div', { className: 'p-5 space-y-4' },
                 h2('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 shadow-sm space-y-3' },
@@ -2615,14 +2684,14 @@ var d = labToolData || {};
                         h2('label', { htmlFor: 'ds-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h2('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
                         h2('input', { id: 'ds-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                           onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                          className: 'w-full', 'aria-label': s.l }));
+                          className: 'w-full', 'aria-valuetext': (s.k === 'confidence' ? (iq[s.k] + ' percent confidence') : (iq[s.k] + ' kilometers')), 'aria-label': s.l }));
                     })
                   ),
                   h2('div', { className: 'flex gap-2 items-center flex-wrap' },
                     h2('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.distance, c: iq.confidence, cat: category }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
                     h2('button', { onClick: function() { setIQ({ distance: 5000, confidence: 70, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
                   ),
-                  h2('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What is the maximum great-circle distance on Earth?',
+                  h2('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.geo.hypothesis_what_is_the_maximum_great_c', 'Hypothesis: What is the maximum great-circle distance on Earth?'),
                     className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                   !iq.stuckRevealed && h2('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
                   iq.stuckRevealed && h2('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -2632,7 +2701,7 @@ var d = labToolData || {};
                   h2('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                     h2('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     'I understand — explain in own words'),
-                  iq.understood && h2('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how distance scales translate to travel time.',
+                  iq.understood && h2('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.geo.explain_how_distance_scales_translate_', 'Explain how distance scales translate to travel time.'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                   h2('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-category distance marker; no accuracy score; no reveal — by design.')
                 )
@@ -2674,7 +2743,7 @@ var d = labToolData || {};
                 ),
 
                 geoStatsOpen && React.createElement('div', { className: 'mt-2 space-y-1.5' },
-                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-300 italic text-center py-2' }, 'Answer some questions to see your progress per continent.'),
+                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-300 italic text-center py-2' }, __alloT('stem.geo.answer_some_questions_to_see_your_prog', 'Answer some questions to see your progress per continent.')),
                   hasStats && ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'].map(function(cont) {
                     var s = geoSessionStats[cont];
                     var hasData = !!s;
@@ -2737,7 +2806,7 @@ var d = labToolData || {};
 
                 className: 'text-teal-600 hover:text-teal-800 font-bold'
 
-              }, '\u267B Reset All')
+              }, __alloT('stem.geo.reset_all', '\u267B Reset All'))
 
             )
 
@@ -3454,7 +3523,7 @@ var d = labToolData || {};
         return React.createElement('div',{className:'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200'},
           // Header
           React.createElement('div',{className:'flex items-center gap-3'},
-            React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-200'})),
+            React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-600'})),
             React.createElement('h3',{className:'text-lg font-bold text-violet-800'},'📐 Geometry Prover'),
             React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
               React.createElement('div',{className:'text-xs font-bold text-emerald-600'},exploreScore.correct+'/'+exploreScore.total),

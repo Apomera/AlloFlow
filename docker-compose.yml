@@ -20,8 +20,8 @@ services:
       context: .
       dockerfile: docker/Dockerfile
       args:
-        REACT_APP_DATA_BACKEND: auto
-        REACT_APP_POCKETBASE_URL: http://localhost:8090
+        REACT_APP_DATA_BACKEND: ${REACT_APP_DATA_BACKEND:-auto}
+        REACT_APP_POCKETBASE_URL: ${REACT_APP_POCKETBASE_URL:-http://localhost:8090}
     container_name: alloflow-frontend
     ports:
       - "${WEB_PORT:-3000}:80"

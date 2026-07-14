@@ -786,6 +786,8 @@ function MathPanel(props) {
     handleScoreUpdate,
     hasSourceOrAnalysis,
     isMathGraphEnabled,
+    autoAttachManipulatives,
+    setAutoAttachManipulatives,
     isProcessing,
     mathInput,
     mathMode,
@@ -944,7 +946,17 @@ function MathPanel(props) {
       onChange: (e) => setIsMathGraphEnabled(e.target.checked),
       className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathGraph", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, className: "text-blue-500" }), " ", t("math.graph_label"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_context" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathGraph", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, className: "text-blue-500" }), " ", t("math.graph_label"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_manipulatives" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      "aria-label": "Attach STEM Lab manipulatives to generated problems",
+      id: "mathManipulatives",
+      type: "checkbox",
+      checked: autoAttachManipulatives !== false,
+      onChange: (e) => setAutoAttachManipulatives && setAutoAttachManipulatives(e.target.checked),
+      className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+    }
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathManipulatives", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, "\u{1F9E9} Attach manipulatives")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_context" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_use_math_source_context"),
@@ -1364,6 +1376,7 @@ function SourceInputPanel(props) {
   }), /* @__PURE__ */ React.createElement("div", { className: "p-4 relative" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
+      "data-allo-textundo": "input",
       value: inputText,
       onChange: (e) => setInputText(e.target.value),
       onPaste: async (e) => {
@@ -2221,7 +2234,9 @@ function OutlinePanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "KWL Chart" }, t("outline.kwl") || "KWL Chart (Know / Want / Learned)"),
     /* @__PURE__ */ React.createElement("option", { value: "Claim-Evidence-Reasoning" }, t("outline.cer") || "Claim, Evidence, Reasoning (CER)"),
     /* @__PURE__ */ React.createElement("option", { value: "Story Map" }, t("outline.story_map") || "Story Map (Plot Diagram)"),
-    /* @__PURE__ */ React.createElement("option", { value: "See-Think-Wonder" }, t("outline.see_think_wonder") || "See, Think, Wonder")
+    /* @__PURE__ */ React.createElement("option", { value: "See-Think-Wonder" }, t("outline.see_think_wonder") || "See, Think, Wonder"),
+    /* @__PURE__ */ React.createElement("option", { value: "3D Concept Space" }, t("outline.concept_space_3d") || "3D Concept Space (strands in depth)"),
+    /* @__PURE__ */ React.createElement("option", { value: "Memory Palace" }, t("outline.memory_palace") || "Memory Palace (method of loci)")
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("outline.instructions_label")), /* @__PURE__ */ React.createElement(
     "textarea",
     {
@@ -2268,7 +2283,10 @@ function NoteTakingPanel(props) {
     },
     /* @__PURE__ */ React.createElement("option", { value: "cornell-notes" }, t("note_taking.cornell") || "Cornell Notes (2-column + summary)"),
     /* @__PURE__ */ React.createElement("option", { value: "lab-report" }, t("note_taking.lab_report") || "Lab Report (Q / Hypothesis / Method / Data / CER / Conclusion)"),
-    /* @__PURE__ */ React.createElement("option", { value: "reading-response" }, t("note_taking.reading_response") || "Reading Response Journal Entry")
+    /* @__PURE__ */ React.createElement("option", { value: "reading-response" }, t("note_taking.reading_response") || "Reading Response Journal Entry"),
+    /* @__PURE__ */ React.createElement("option", { value: "double-entry" }, t("note_taking.double_entry") || "Double-Entry Journal (quote \u2194 response)"),
+    /* @__PURE__ */ React.createElement("option", { value: "guided-notes" }, t("note_taking.guided_notes") || "Guided Notes (fill-in-the-blank)"),
+    /* @__PURE__ */ React.createElement("option", { value: "q-and-a" }, t("note_taking.q_and_a") || "Q&A Study Notes (self-quiz)")
   )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("note_taking.help") || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons.")), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -2299,15 +2317,23 @@ function AnchorChartPanel(props) {
     {
       "aria-label": t("common.selection") || "Selection",
       "data-help-key": "anchor_chart_type",
-      value: anchorChartType || "reference",
+      value: anchorChartType || "auto",
       onChange: (e) => setAnchorChartType(e.target.value),
       className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-200 p-1"
     },
+    /* @__PURE__ */ React.createElement("option", { value: "auto" }, t("anchor_chart.auto") || "Auto-pick best fit"),
     /* @__PURE__ */ React.createElement("option", { value: "reference" }, t("anchor_chart.reference") || "Reference (features / norms / conventions)"),
     /* @__PURE__ */ React.createElement("option", { value: "process" }, t("anchor_chart.process") || "Process (sequential steps)"),
     /* @__PURE__ */ React.createElement("option", { value: "concept-map" }, t("anchor_chart.concept_map") || "Concept Map (parts of a whole)"),
-    /* @__PURE__ */ React.createElement("option", { value: "comparison" }, t("anchor_chart.comparison") || "Comparison (across categories)")
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("anchor_chart.help") || "EL-style class anchor chart. AI drafts the structure + hand-drawn icons; edit anytime; open critique mode for peers to leave I notice / I wonder notes.")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("option", { value: "comparison" }, t("anchor_chart.comparison") || "Comparison (across categories)"),
+    /* @__PURE__ */ React.createElement("option", { value: "strategy" }, t("anchor_chart.strategy") || "Strategy (reusable learning moves)"),
+    /* @__PURE__ */ React.createElement("option", { value: "vocabulary" }, t("anchor_chart.vocabulary") || "Vocabulary (terms + examples)"),
+    /* @__PURE__ */ React.createElement("option", { value: "routine" }, t("anchor_chart.routine") || "Routine (repeatable class procedure)"),
+    /* @__PURE__ */ React.createElement("option", { value: "worked-example" }, t("anchor_chart.worked_example") || "Worked Example (model + reasoning)"),
+    /* @__PURE__ */ React.createElement("option", { value: "criteria-success" }, t("anchor_chart.criteria_success") || "Success Criteria (what strong work includes)"),
+    /* @__PURE__ */ React.createElement("option", { value: "misconception" }, t("anchor_chart.misconception") || "Misconceptions (mix-ups + fixes)"),
+    /* @__PURE__ */ React.createElement("option", { value: "question-guide" }, t("anchor_chart.question_guide") || "Question Guide (discussion / analysis prompts)")
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("anchor_chart.help") || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.generate") || "Generate",

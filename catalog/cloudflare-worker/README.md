@@ -117,3 +117,77 @@ Every 90 days when the token expires:
 - The Worker writes to `catalog/pending/`. The PAT cannot push directly to a branch protection rule; consider adding branch protection on `main` for additional safety.
 - All submitted data ends up in a public GitHub commit, even pending ones. The Worker is NOT a private staging area. Reviewers must promptly delete rejected submissions to keep PII out of git history (and use `git filter-repo` if real PII slips through and needs to be erased).
 - The Worker does not implement spam protection beyond size + schema validation. If submission volume warrants, add Cloudflare Turnstile to the form and verify the token in the Worker.
+
+## Additional submission types (same Worker)
+
+This Worker also serves two other intake routes that reuse the same `GITHUB_PAT` secret / PII
+scanner / CORS. Re-deploy after pulling (`wrangler deploy`).
+
+### `POST /submitTranslation` → GitHub (public)
+Community translation corrections. Validates `{language, suggested, key?, current?, english?, note?}`,
+PII-rescans, commits one record to `translations/pending/<ts>-<lang>-<keyslug>.json`. Low-PII (UI
+string suggestions), so public-repo storage is acceptable — same as lessons. Maintainer applies via
+`node dev-tools/i18n/ingest_translation_feedback.cjs --apply`. No extra setup beyond the existing PAT.
+
+### `POST /submitBug` → Cloudflare KV (PRIVATE)
+Bug reports from the in-app error reporter. Validates `{what|steps, type?, browser?, url?}`, PII-rescans,
+and stores the record in the **private** `BUG_REPORTS` KV namespace — **NOT** GitHub, because error
+logs + free text can contain FERPA-sensitive student data and this repo is public. One-time setup:
+
+```
+wrangler kv namespace create BUG_REPORTS      # paste the printed id into wrangler.toml
+wrangler secret put ADMIN_TOKEN               # optional — enables the GET /bugs reader
+wrangler deploy
+```
+
+Read reports either with the CLI (`wrangler kv key list --binding BUG_REPORTS`,
+`wrangler kv key get --binding BUG_REPORTS <id>`) or, if `ADMIN_TOKEN` is set, via
+`GET /bugs?token=<ADMIN_TOKEN>&limit=50` (returns newest-first JSON). KV reports persist until
+manually purged; periodically delete handled ones (and remember KV is private but still contains PII —
+treat accordingly). Smoke test for all routes: `npm test`.
+
+### `POST /submitPd` → Cloudflare KV (PRIVATE)
+Professional-development module submissions from the in-app PD catalogue (Educator Hub → Community
+Catalog → Professional Development → "Submit a module"). Validates `{pd_module, credit?, affirmations}`
+(shallow: `kind==="pd_module"`, `metadata.title`, ≥1 section, all four affirmations true — the deep
+schema check lives in `pd_core_module.js` client-side and is re-checked at review time), PII-rescans the
+serialized module, and stores the record in the **private** `PD_SUBMISSIONS` KV namespace — **NOT**
+GitHub, since educator-authored content can reference student/classroom detail and this repo is public.
+One-time setup:
+
+```
+wrangler kv namespace create PD_SUBMISSIONS    # paste the printed id into wrangler.toml
+wrangler deploy
+```
+
+Until the namespace id is set, `/submitPd` returns HTTP 500 (fail-closed, never silent data loss).
+Review submissions with `wrangler kv key list --binding PD_SUBMISSIONS` /
+`wrangler kv key get --binding PD_SUBMISSIONS <id>`; to publish an approved one, save its `pd_module`
+to `catalog/pd/approved/<slug>.json`, add an entry to `catalog/pd/index.json`, and push. Smoke test for
+all routes: `npm test`.
+
+### Verified PD credentials (Tier-2, OPTIONAL) — `POST /issuePd`, `GET /pdIssuerKey`, `POST /verifyPd`
+Issues an **Ed25519-signed completion attestation** so a learner's downloaded record is
+tamper-evident and traceable to this issuer. **Honest scope:** the signature proves *issuance +
+integrity + timestamp + issuer identity* — it does **NOT** prove supervised/proctored completion (the
+learner generates the record client-side), and it is **not** accreditation or contact hours.
+
+Disabled by default — the app degrades to the Tier-1 self-paced record. To enable, generate an
+Ed25519 keypair and configure the keys (see `wrangler.toml`):
+
+```
+node -e "(async()=>{const k=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']);\
+console.log('PUBLIC (PD_ISSUER_PUBLIC_KEY var):',Buffer.from(await crypto.subtle.exportKey('spki',k.publicKey)).toString('base64'));\
+console.log('PRIVATE (secret):',Buffer.from(await crypto.subtle.exportKey('pkcs8',k.privateKey)).toString('base64'));})()"
+# put PD_ISSUER_PUBLIC_KEY in [vars]; then:
+wrangler secret put PD_ISSUER_PRIVATE_KEY   # paste the PRIVATE base64
+wrangler deploy
+```
+
+- `POST /issuePd` `{record}` → `{credential:{payload,signature,alg:'Ed25519',key_id,public_key_spki_b64}}`
+  (only for `record.complete===true`; 501 when no key configured).
+- `GET /pdIssuerKey` → the issuer's public key (clients verify with it).
+- `POST /verifyPd` `{credential}` → `{valid}` (verifies against the server's trusted key, never the
+  key embedded in the credential). The in-app verifier prefers client-side WebCrypto and falls back to
+  this route. Canonicalization (`pd_core_module.js` ↔ worker) is kept byte-identical and cross-checked
+  in `tests/pd_worker.test.js`. Smoke test: `npm test`.

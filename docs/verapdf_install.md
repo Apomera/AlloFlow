@@ -2,7 +2,7 @@
 
 [veraPDF](https://verapdf.org/) is the open-source, ISO-grade PDF/UA-1 validator. The AlloFlow CLI wrapper at `dev-tools/demo/verapdf_check.cjs` runs it against any exported tagged PDF and produces a structured conformance report — the kind of artifact UMaine's accessibility team or any institutional reviewer would produce themselves.
 
-This file documents the one-time install for Aaron's local demo workflow. **Canvas users do NOT need this** — Canvas-mode users get an equivalent (lighter-weight) check via the in-app `view_pdf_validator_module.js` that runs on every export automatically. veraPDF is for dev/demo artifacts + independent third-party verification.
+This file documents the one-time install for Aaron's local demo workflow and reviewer-facing QA. Most Canvas users do not need to install veraPDF: AlloFlow includes in-app structural PDF/UA self-checks, and some builds can also expose an optional browser-based veraPDF companion window. The local CLI workflow remains the reproducible path for independent third-party verification because an institutional reviewer can rerun it on the exact exported file.
 
 ---
 

@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-26134-the-last-twelve-verses-of-the-gospel-according-to-s-mark",
+  "title": "The Last Twelve Verses of the Gospel According to S. Mark",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Bible. Mark XVI, 9-20 -- Criticism, Textual"
+  ],
+  "authors": [
+    "Burgon, John William"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/26134"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/26134/pg26134.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Last Twelve Verses of the Gospel According to S. Mark\" by Burgon, John William. Metadata tags include: Bible. Mark XVI, 9-20 -- Criticism, Textual."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 75
+  }
+}

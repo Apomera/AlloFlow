@@ -39,6 +39,9 @@ describe('_entryKind — discriminates type + templateType', () => {
     expect(H._entryKind({ type: 'note-taking', data: { templateType: 'cornell-notes' } })).toBe('cornell-notes');
     expect(H._entryKind({ type: 'note-taking', data: { templateType: 'lab-report' } })).toBe('lab-report');
     expect(H._entryKind({ type: 'note-taking', data: { templateType: 'reading-response' } })).toBe('reading-response');
+    expect(H._entryKind({ type: 'note-taking', data: { templateType: 'double-entry' } })).toBe('double-entry');
+    expect(H._entryKind({ type: 'note-taking', data: { templateType: 'guided-notes' } })).toBe('guided-notes');
+    expect(H._entryKind({ type: 'note-taking', data: { templateType: 'q-and-a' } })).toBe('q-and-a');
   });
 
   it('defaults note-taking entries with missing templateType to cornell-notes', () => {
@@ -53,11 +56,24 @@ describe('_entryKind — discriminates type + templateType', () => {
 });
 
 describe('NOTEBOOK_TEMPLATE_META — kind metadata table', () => {
-  it('has entries for all four kinds', () => {
+  it('has entries for all kinds', () => {
     expect(H.NOTEBOOK_TEMPLATE_META).toHaveProperty('cornell-notes');
     expect(H.NOTEBOOK_TEMPLATE_META).toHaveProperty('lab-report');
     expect(H.NOTEBOOK_TEMPLATE_META).toHaveProperty('reading-response');
+    expect(H.NOTEBOOK_TEMPLATE_META).toHaveProperty('double-entry');
+    expect(H.NOTEBOOK_TEMPLATE_META).toHaveProperty('guided-notes');
+    expect(H.NOTEBOOK_TEMPLATE_META).toHaveProperty('q-and-a');
     expect(H.NOTEBOOK_TEMPLATE_META).toHaveProperty('anchor-chart');
+  });
+
+  it('every note-taking kind has a distinct accent that maps to a real palette', () => {
+    // Accents must resolve in _accentClasses (indigo/sky/violet/amber/rose/emerald/cyan/slate);
+    // a typo'd accent would silently fall back to slate and collide with the All chip.
+    const known = new Set(['indigo', 'sky', 'violet', 'amber', 'rose', 'emerald', 'cyan', 'slate']);
+    const accents = Object.values(H.NOTEBOOK_TEMPLATE_META).map(m => m.accent);
+    accents.forEach(a => expect(known.has(a)).toBe(true));
+    // The six note kinds + anchor-chart should all be visually distinct.
+    expect(new Set(accents).size).toBe(accents.length);
   });
 
   it('each entry has label + accent + short + icon fields', () => {
@@ -143,6 +159,47 @@ describe('_entryPreview — derives a snippet per entry kind', () => {
     })).toBe('connection text');
   });
 
+  it('double-entry: prefers first response, falls back to first quote', () => {
+    expect(H._entryPreview({
+      type: 'note-taking',
+      data: { templateType: 'double-entry', entries: [{ quote: 'a line', response: 'my thinking' }] },
+    })).toBe('my thinking');
+    expect(H._entryPreview({
+      type: 'note-taking',
+      data: { templateType: 'double-entry', entries: [{ quote: 'just a quote', response: '' }] },
+    })).toBe('just a quote');
+    expect(H._entryPreview({
+      type: 'note-taking',
+      data: { templateType: 'double-entry', entries: [] },
+    })).toBe('');
+  });
+
+  it('guided-notes: prefers own notes, else reconstructs the first statement', () => {
+    expect(H._entryPreview({
+      type: 'note-taking',
+      data: { templateType: 'guided-notes', notesExtra: 'my own note', blanks: [{ before: 'The ', answer: 'x', after: '.' }] },
+    })).toBe('my own note');
+    expect(H._entryPreview({
+      type: 'note-taking',
+      data: { templateType: 'guided-notes', blanks: [{ before: 'The powerhouse is the ', answer: 'mitochondria', after: '.', studentAnswer: 'mitochondria' }] },
+    })).toBe('The powerhouse is the mitochondria.');
+    expect(H._entryPreview({
+      type: 'note-taking',
+      data: { templateType: 'guided-notes', blanks: [{ before: 'The capital is ', answer: 'Paris', after: '.' }] },
+    })).toBe('The capital is ___.');
+  });
+
+  it('q-and-a: prefers first question, falls back to first answer', () => {
+    expect(H._entryPreview({
+      type: 'note-taking',
+      data: { templateType: 'q-and-a', pairs: [{ question: 'Why?', answer: 'Because.' }] },
+    })).toBe('Why?');
+    expect(H._entryPreview({
+      type: 'note-taking',
+      data: { templateType: 'q-and-a', pairs: [{ question: '', answer: 'orphan answer' }] },
+    })).toBe('orphan answer');
+  });
+
   it('anchor-chart: joins the first few section labels', () => {
     const entry = {
       type: 'anchor-chart',
@@ -205,6 +262,9 @@ describe('_entryTitle — derives a display title', () => {
     expect(H._entryTitle({ type: 'note-taking', data: { templateType: 'cornell-notes' } })).toBe('Untitled Cornell Notes');
     expect(H._entryTitle({ type: 'note-taking', data: { templateType: 'lab-report' } })).toBe('Untitled Lab Report');
     expect(H._entryTitle({ type: 'note-taking', data: { templateType: 'reading-response' } })).toBe('Untitled Reading Response');
+    expect(H._entryTitle({ type: 'note-taking', data: { templateType: 'double-entry' } })).toBe('Untitled Double-Entry Journal');
+    expect(H._entryTitle({ type: 'note-taking', data: { templateType: 'guided-notes' } })).toBe('Untitled Guided Notes');
+    expect(H._entryTitle({ type: 'note-taking', data: { templateType: 'q-and-a' } })).toBe('Untitled Q&A Study Notes');
     expect(H._entryTitle({ type: 'anchor-chart', data: { sections: [] } })).toBe('Untitled Anchor Chart');
   });
 

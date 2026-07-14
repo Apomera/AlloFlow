@@ -1,6 +1,8 @@
 # Agentic AlloBot — Design Document
 
 **Status:** Design (no code). **Author:** drafted with Claude, 2026-06-11.
+> **Design snapshot note (2026-07-09):** This June 11, 2026 design describes an agentic AlloBot direction before later Desktop/runtime and app-shell work. Verify current AlloBot, Auto-Fill, voice/chat, routing, and safety-guardrail code before treating the inventory or "what exists today" claims below as current.
+
 **Goal:** a visually-impaired (or hands-busy) user can navigate and operate the entire app agentically — by voice or chat — with AlloBot as the embodied interface.
 
 ---

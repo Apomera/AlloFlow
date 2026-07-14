@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8" /><title>veraPDF warm + BIG doc</title>
+<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
+</head><body>
+<pre id="out">starting…</pre>
+<script>
+  const out = document.getElementById('out');
+  function log(m) { out.textContent += '\n' + m; console.log('[wb] ' + m); }
+  (async () => {
+    window.__done = null;
+    try {
+      await cheerpjInit();
+      log('cheerpjInit done');
+      const lib = await cheerpjRunLibrary('/app/verapdf-cli.jar');
+      const Provider = await lib.org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
+      await Provider.initialise();
+      const Foundries = await lib.org.verapdf.pdfa.Foundries;
+      const foundry = await Foundries.defaultInstance();
+      const PDFAFlavour = await lib.org.verapdf.pdfa.flavours.PDFAFlavour;
+      const ua1 = await PDFAFlavour.fromString('ua1');
+      const FileInputStream = await lib.java.io.FileInputStream;
+      log('foundry ready');
+
+      async function validate(path) {
+        const fis = await new FileInputStream(path);
+        const parser = await foundry.createParser(fis, ua1);
+        const validator = await foundry.createValidator(ua1, false);
+        const result = await validator.validate(parser);
+        const compliant = await result.isCompliant();
+        try { await parser.close(); } catch (e) {}
+        return compliant;
+      }
+
+      let t = performance.now();
+      const cw = await validate('/app/small.pdf');
+      const msw = Math.round(performance.now() - t);
+      log('warmup (small.pdf): compliant=' + cw + '  ' + msw + 'ms');
+
+      t = performance.now();
+      const c1 = await validate('/app/big.pdf');
+      const ms1 = Math.round(performance.now() - t);
+      log('BIG #1 (warm code): compliant=' + c1 + '  ' + ms1 + 'ms');
+
+      t = performance.now();
+      const c2 = await validate('/app/big.pdf');
+      const ms2 = Math.round(performance.now() - t);
+      log('BIG #2 (fully warm): compliant=' + c2 + '  ' + ms2 + 'ms');
+
+      window.__done = { ok: true, warmupMs: msw, big1Ms: ms1, big2Ms: ms2 };
+    } catch (e) {
+      log('ERROR: ' + (e && (e.stack || e.message) || e));
+      window.__done = { ok: false, err: String(e && (e.message || e)) };
+    }
+  })();
+</script>
+</body></html>

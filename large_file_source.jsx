@@ -213,6 +213,39 @@ const LargeFileTranscriptionModal = React.memo(({
     isProcessing,
     t
 }) => {
+    const dialogRef = React.useRef(null);
+    const processingRef = React.useRef(isProcessing);
+    const closeRef = React.useRef(onClose);
+    processingRef.current = isProcessing;
+    closeRef.current = onClose;
+
+    React.useEffect(() => {
+        if (!isOpen) return undefined;
+        const dialog = dialogRef.current;
+        if (!dialog) return undefined;
+        const previousFocus = document.activeElement;
+        const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        (getFocusable()[0] || dialog).focus();
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                if (!processingRef.current) { event.preventDefault(); closeRef.current(); }
+                return;
+            }
+            if (event.key !== 'Tab') return;
+            const focusable = getFocusable();
+            if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        };
+        dialog.addEventListener('keydown', onKeyDown);
+        return () => {
+            dialog.removeEventListener('keydown', onKeyDown);
+            if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+        };
+    }, [isOpen]);
+
     if (!isOpen || !file) return null;
     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
     const estimatedChunks = Math.ceil(file.size / (15 * 1024 * 1024));
@@ -221,11 +254,14 @@ const LargeFileTranscriptionModal = React.memo(({
     return (
         <div
             className="fixed inset-0 z-[99999] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
-            onClick={onClose}
+            role="presentation"
+            onClick={() => { if (!isProcessing) onClose(); }}
         >
             <div
-                className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200"
-                role="dialog" aria-modal="true" aria-labelledby="large-file-modal-title" onClick={e => e.stopPropagation()}
+                ref={dialogRef}
+                tabIndex={-1}
+                className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 focus:outline-none"
+                role="dialog" aria-modal="true" aria-labelledby="large-file-modal-title" aria-describedby="large-file-description" onClick={e => e.stopPropagation()}
             >
                 <button
                     aria-label={t('common.close')}
@@ -237,7 +273,7 @@ const LargeFileTranscriptionModal = React.memo(({
                 </button>
                 <div className="flex items-center gap-3 mb-4">
                     <div className="bg-amber-100 p-3 rounded-full">
-                        <span className="text-2xl">{isVideo ? '🎬' : '🎵'}</span>
+                        <span className="text-2xl" aria-hidden="true">{isVideo ? '🎬' : '🎵'}</span>
                     </div>
                     <div>
                         <h3 id="large-file-modal-title" className="text-lg font-black text-slate-800">
@@ -248,7 +284,7 @@ const LargeFileTranscriptionModal = React.memo(({
                         <p className="text-sm text-slate-600 font-medium">{file.name}</p>
                     </div>
                 </div>
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                <div id="large-file-description" className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
                     <p className="text-sm text-amber-800 leading-relaxed">
                         {isVideo
                             ? (t?.('large_file.description_video') ||
@@ -258,7 +294,7 @@ const LargeFileTranscriptionModal = React.memo(({
                     </p>
                 </div>
                 {isProcessing && (
-                    <div className="mb-4">
+                    <div className="mb-4" role="status" aria-live="polite" aria-atomic="true">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                                 {status || 'Processing...'}
@@ -267,7 +303,7 @@ const LargeFileTranscriptionModal = React.memo(({
                                 {progress}/{totalChunks} ({progressPercent}%)
                             </span>
                         </div>
-                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-label={status || 'Transcription progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent} aria-valuetext={`${progress} of ${totalChunks} chunks, ${progressPercent}%`}>
                             <div
                                 className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300 ease-out"
                                 style={{ width: `${progressPercent}%` }}
@@ -297,7 +333,7 @@ const LargeFileTranscriptionModal = React.memo(({
                             </>
                         ) : (
                             <>
-                                <span>✨</span>
+                                <span aria-hidden="true">✨</span>
                                 {t?.('modals.large_file.confirm') || 'Start Chunked Transcription'}
                             </>
                         )}

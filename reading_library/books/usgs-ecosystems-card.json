@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-ecosystems-card",
+  "title": "USGS Ecosystems Science",
+  "description": "A USGS source card about ecosystems, biodiversity, invasive species, wildlife disease, and habitat change.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Ecology",
+    "Biodiversity",
+    "Habitats",
+    "Environmental science"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/mission-areas/ecosystems",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/mission-areas/ecosystems"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS ecosystems resources address wildlife, habitats, invasive species, disease, changing landscapes, and data used to support conservation decisions."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students reading environmental claims and tracing how evidence informs management decisions."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS materials are generally public domain as U.S. government work, but some linked media may have separate credit or rights requirements. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

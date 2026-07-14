@@ -153,6 +153,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       { id: 'score_50', label: 'Reach ATC score of 50', icon: '⭐', check: function(d) { return (d.totalScore || 0) >= 50; }, progress: function(d) { return (d.totalScore || 0) + '/50'; } }
     ],
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -215,15 +218,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
       // ── ATC Achievements ──
       var ATC_BADGES = [
-        { id: 'first_land', name: 'First Landing', icon: '🛬', desc: 'Land your first aircraft', check: function(g) { return g.landed >= 1; } },
-        { id: 'streak_5', name: 'Hot Streak', icon: '🔥', desc: '5 consecutive safe landings', check: function(g) { return g.streak >= 5; } },
-        { id: 'streak_10', name: 'Perfect Sequence', icon: '⭐', desc: '10 consecutive safe landings', check: function(g) { return g.streak >= 10; } },
-        { id: 'land_10', name: 'Busy Controller', icon: '📋', desc: 'Land 10 aircraft in one session', check: function(g) { return g.landed >= 10; } },
-        { id: 'land_25', name: 'Tower Chief', icon: '🗼', desc: 'Land 25 aircraft in one session', check: function(g) { return g.landed >= 25; } },
-        { id: 'math_5', name: 'Quick Calculator', icon: '🧮', desc: 'Solve 5 math challenges correctly', check: function(g) { return g.mathCorrect >= 5; } },
-        { id: 'no_conflict', name: 'Safety First', icon: '🛡️', desc: 'Land 10+ aircraft with zero conflicts', check: function(g) { return g.landed >= 10 && g.conflicts < 1; } },
-        { id: 'heavy_land', name: 'Heavy Metal', icon: '✈️', desc: 'Land a Heavy or Super aircraft', check: function(g) { return g.landedHeavy; } },
-        { id: 'efficiency_90', name: 'Efficient Ops', icon: '📊', desc: 'Maintain 90%+ efficiency with 10+ landings', check: function(g) { return g.landed >= 10 && g.efficiency >= 90; } },
+        { id: 'first_land', name: t('stem.atctower.first_landing', 'First Landing'), icon: '🛬', desc: t('stem.atctower.land_your_first_aircraft', 'Land your first aircraft'), check: function(g) { return g.landed >= 1; } },
+        { id: 'streak_5', name: t('stem.atctower.hot_streak', 'Hot Streak'), icon: '🔥', desc: t('stem.atctower.5_consecutive_safe_landings', '5 consecutive safe landings'), check: function(g) { return g.streak >= 5; } },
+        { id: 'streak_10', name: t('stem.atctower.perfect_sequence', 'Perfect Sequence'), icon: '⭐', desc: t('stem.atctower.10_consecutive_safe_landings', '10 consecutive safe landings'), check: function(g) { return g.streak >= 10; } },
+        { id: 'land_10', name: t('stem.atctower.busy_controller', 'Busy Controller'), icon: '📋', desc: t('stem.atctower.land_10_aircraft_in_one_session', 'Land 10 aircraft in one session'), check: function(g) { return g.landed >= 10; } },
+        { id: 'land_25', name: t('stem.atctower.tower_chief', 'Tower Chief'), icon: '🗼', desc: t('stem.atctower.land_25_aircraft_in_one_session', 'Land 25 aircraft in one session'), check: function(g) { return g.landed >= 25; } },
+        { id: 'math_5', name: t('stem.atctower.quick_calculator', 'Quick Calculator'), icon: '🧮', desc: t('stem.atctower.solve_5_math_challenges_correctly', 'Solve 5 math challenges correctly'), check: function(g) { return g.mathCorrect >= 5; } },
+        { id: 'no_conflict', name: t('stem.atctower.safety_first', 'Safety First'), icon: '🛡️', desc: t('stem.atctower.land_10_aircraft_with_zero_conflicts', 'Land 10+ aircraft with zero conflicts'), check: function(g) { return g.landed >= 10 && g.conflicts < 1; } },
+        { id: 'heavy_land', name: t('stem.atctower.heavy_metal', 'Heavy Metal'), icon: '✈️', desc: t('stem.atctower.land_a_heavy_or_super_aircraft', 'Land a Heavy or Super aircraft'), check: function(g) { return g.landedHeavy; } },
+        { id: 'efficiency_90', name: t('stem.atctower.efficient_ops', 'Efficient Ops'), icon: '📊', desc: t('stem.atctower.maintain_90_efficiency_with_10_landing', 'Maintain 90%+ efficiency with 10+ landings'), check: function(g) { return g.landed >= 10 && g.efficiency >= 90; } },
       ];
       var atcBadgesRef = useRef({});
       var atcBadgePopRef = useRef(null);
@@ -319,10 +322,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         var emergency = null;
         if (game.landed >= 5 && Math.random() < 0.1) {
           var emergTypes = [
-            { type: 'engine', label: 'ENGINE FAILURE', msg: 'has lost an engine! Priority landing required.', priority: true, fuelOverride: 8, lesson: 'Single-engine aircraft must land immediately. Multi-engine can fly on one engine but with reduced performance. Controllers clear the runway and give direct vectors.' },
-            { type: 'medical', label: 'MEDICAL EMERGENCY', msg: 'reports medical emergency on board! Requesting priority.', priority: true, lesson: 'Medical emergencies get priority sequencing. Controllers coordinate with airport emergency services. The aircraft doesn\'t need a special runway — just the fastest path to the gate.' },
-            { type: 'birdstrike', label: 'BIRD STRIKE', msg: 'reports bird strike! Checking aircraft systems.', priority: false, lesson: 'Bird strikes happen ~13,000 times per year in the US. Most are minor, but they can damage engines. The pilot may request to return for inspection.' },
-            { type: 'hydraulic', label: 'HYDRAULIC FAILURE', msg: 'reports partial hydraulic failure. May have difficulty steering on ground.', priority: true, lesson: 'Hydraulic systems control flaps, landing gear, and brakes. Pilots can use backup systems but need extra runway length. Controllers keep other aircraft clear.' },
+            { type: 'engine', label: t('stem.atctower.engine_failure', 'ENGINE FAILURE'), msg: 'has lost an engine! Priority landing required.', priority: true, fuelOverride: 8, lesson: 'Single-engine aircraft must land immediately. Multi-engine can fly on one engine but with reduced performance. Controllers clear the runway and give direct vectors.' },
+            { type: 'medical', label: t('stem.atctower.medical_emergency', 'MEDICAL EMERGENCY'), msg: 'reports medical emergency on board! Requesting priority.', priority: true, lesson: 'Medical emergencies get priority sequencing. Controllers coordinate with airport emergency services. The aircraft doesn\'t need a special runway — just the fastest path to the gate.' },
+            { type: 'birdstrike', label: t('stem.atctower.bird_strike', 'BIRD STRIKE'), msg: 'reports bird strike! Checking aircraft systems.', priority: false, lesson: 'Bird strikes happen ~13,000 times per year in the US. Most are minor, but they can damage engines. The pilot may request to return for inspection.' },
+            { type: 'hydraulic', label: t('stem.atctower.hydraulic_failure', 'HYDRAULIC FAILURE'), msg: 'reports partial hydraulic failure. May have difficulty steering on ground.', priority: true, lesson: 'Hydraulic systems control flaps, landing gear, and brakes. Pilots can use backup systems but need extra runway length. Controllers keep other aircraft clear.' },
           ];
           emergency = emergTypes[Math.floor(Math.random() * emergTypes.length)];
         }
@@ -403,6 +406,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
       useEffect(function() {
         if (view !== 'playing' || !canvasRef.current) return;
+        // Remounting/restoring into a persisted 'playing' view loses the in-ref game state
+        // (gameRef resets to airport:null), so the loop's airport.runways access would throw
+        // and blank the tool. Recover to the menu so the player can start a fresh game.
+        if (!gameRef.current || !gameRef.current.airport) { upd('view', 'menu'); return; }
         var canvas = canvasRef.current;
         var gfx = canvas.getContext('2d');
 
@@ -1287,7 +1294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.font = '11px system-ui'; gfx.fillStyle = '#94a3b8'; helpY += 10;
 
             var helpSections = [
-              { title: '✈️ AIRCRAFT MANAGEMENT', items: [
+              { title: t('stem.atctower.aircraft_management', '✈️ AIRCRAFT MANAGEMENT'), items: [
                 ['Tab / Shift+Tab', 'Cycle through aircraft (keyboard)'],
                 ['Click', 'Select aircraft (mouse)'],
                 ['H', 'Assign heading — aircraft turns to your heading'],
@@ -1298,7 +1305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 ['P', 'Toggle holding pattern'],
                 ['D / U', 'Descend / Climb by 1,000 ft'],
               ]},
-              { title: '🎮 GAME CONTROLS', items: [
+              { title: t('stem.atctower.game_controls', '🎮 GAME CONTROLS'), items: [
                 ['Space', 'Pause / Resume'],
                 ['I', 'Read full status summary (screen reader)'],
                 ['V', 'Toggle high contrast mode'],
@@ -1306,13 +1313,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 ['?', 'Toggle this help screen'],
                 ['ESC', 'Exit to menu'],
               ]},
-              { title: '📏 ATC RULES', items: [
+              { title: t('stem.atctower.atc_rules', '📏 ATC RULES'), items: [
                 ['Separation', '3nm between aircraft, 6nm behind heavy/super'],
                 ['Sequence', 'Closest aircraft should land first'],
                 ['Fuel', 'Aircraft with <10 min fuel need priority'],
                 ['Landing', 'Aircraft must be on correct heading, near runway'],
               ]},
-              { title: '♿ ACCESSIBILITY', items: [
+              { title: t('stem.atctower.accessibility', '♿ ACCESSIBILITY'), items: [
                 ['Tab', 'Full keyboard control — no mouse needed'],
                 ['I key', 'Announces all aircraft info to screen reader'],
                 ['V key', 'High contrast yellow-on-black mode'],
@@ -1504,11 +1511,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
           if (key === 'h') {
             var hdgStr = prompt('Heading for ' + sel.callsign + '? (0-360)');
-            if (hdgStr) { sel.targetHeading = parseInt(hdgStr) % 360; game.messages.unshift({ text: '🧭 ' + sel.callsign + ' turn heading ' + sel.targetHeading + '°', time: game.time, color: '#fbbf24' }); playATCSound('select'); if (tutorialRef.current.active && tutorialRef.current.step === 2) tutorialRef.current.step = 3; }
+            if (hdgStr) { var hVal = parseInt(hdgStr, 10); if (!isNaN(hVal)) { sel.targetHeading = ((hVal % 360) + 360) % 360; game.messages.unshift({ text: '🧭 ' + sel.callsign + ' turn heading ' + sel.targetHeading + '°', time: game.time, color: '#fbbf24' }); playATCSound('select'); if (tutorialRef.current.active && tutorialRef.current.step === 2) tutorialRef.current.step = 3; } }
           }
           if (key === 's') {
             var spdStr = prompt('Speed for ' + sel.callsign + '? (knots)');
-            if (spdStr) { sel.targetSpeed = parseInt(spdStr); game.messages.unshift({ text: '💨 ' + sel.callsign + ' speed ' + sel.targetSpeed + ' kts', time: game.time, color: '#22d3ee' }); }
+            if (spdStr) { var sVal = parseInt(spdStr, 10); if (!isNaN(sVal)) { sel.targetSpeed = Math.max(0, sVal); game.messages.unshift({ text: '💨 ' + sel.callsign + ' speed ' + sel.targetSpeed + ' kts', time: game.time, color: '#22d3ee' }); } }
           }
           if (key === 'c') {
             if (sel.assignedRunway) {
@@ -1519,7 +1526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               playATCSound('clear');
               if (tutorialRef.current.active && tutorialRef.current.step === 3) tutorialRef.current.step = 4;
             } else {
-              game.messages.unshift({ text: '⚠️ Assign runway first (R)', time: game.time, color: '#f97316' });
+              game.messages.unshift({ text: t('stem.atctower.assign_runway_first_r', '⚠️ Assign runway first (R)'), time: game.time, color: '#f97316' });
             }
           }
           if (key === 'r') {
@@ -1561,16 +1568,235 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           cancelAnimationFrame(animRef.current);
           canvas.removeEventListener('click', onClick);
           window.removeEventListener('keydown', onKey);
+          // Close the AudioContext on view-change/unmount — otherwise each game session leaks one
+          // and browsers cap concurrent contexts (~6), after which ATC audio silently dies.
+          try { var _a = atcAudioRef.current; if (_a && _a.ctx && _a.ctx.state !== 'closed') { _a.ctx.close(); _a.ctx = null; } } catch (e) {}
         };
       }, [view]);
 
       // ═══ MENU VIEW ═══
       if (view === 'menu') {
+        var atcMenuPanel = d.atcMenuPanel || 'airports';
+        var earnedCount = Object.keys(earnedATCBadges).length;
+        var selectedAirportId = d.atcSelectedAirport || 'simple';
+        var selectedAirport = AIRPORTS.find(function(a) { return a.id === selectedAirportId; }) || AIRPORTS[0];
+        var difficultyTone = function(level) {
+          if (level === 'Beginner') return { bg: '#06351f', border: '#22c55e', text: '#bbf7d0', soft: '#86efac' };
+          if (level === 'Intermediate') return { bg: '#3a2f05', border: '#eab308', text: '#fef08a', soft: '#fde68a' };
+          if (level === 'Advanced') return { bg: '#3b1f0a', border: '#f97316', text: '#fed7aa', soft: '#fdba74' };
+          return { bg: '#3f1111', border: '#ef4444', text: '#fecaca', soft: '#fca5a5' };
+        };
+        var selectedTone = difficultyTone(selectedAirport.difficulty);
+        var opsDefaults = { wind: 10, spawn: 5, sep: 8, descent: 1.0, timeout: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = Object.assign({}, opsDefaults, d.opsControl || {});
+        function setIQ(patch) { upd('opsControl', Object.assign({}, iq, patch)); }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        var loadIdx = (iq.wind / 30) * 0.25 + (1 - (iq.spawn - 1) / 9) * 0.30 + (1 - (iq.sep - 5) / 15) * 0.25 + ((iq.descent - 0.5) / 1.5) * 0.10 + (1 - (iq.timeout - 10) / 50) * 0.10;
+        var loadState = loadIdx < 0.35 ? 'sandbox' : loadIdx < 0.55 ? 'training' : loadIdx < 0.75 ? 'operational' : loadIdx < 0.9 ? 'stressed' : 'overload';
+        var loadMeta = ({
+          sandbox: { label: t('stem.atctower.sandbox', 'Sandbox'), color: '#86efac', bg: '#06351f', border: '#22c55e', desc: t('stem.atctower.light_traffic_generous_spacing_good_fo', 'Light traffic, generous spacing - good for new controllers.') },
+          training: { label: t('stem.atctower.training', 'Training'), color: '#67e8f9', bg: '#083344', border: '#06b6d4', desc: t('stem.atctower.manageable_load_focus_on_technique_wit', 'Manageable load - focus on technique without time pressure.') },
+          operational: { label: t('stem.atctower.operational', 'Operational'), color: '#fef08a', bg: '#3a2f05', border: '#eab308', desc: t('stem.atctower.realistic_airport_sequencing_required_', 'Realistic airport - sequencing required, conflicts likely.') },
+          stressed: { label: t('stem.atctower.stressed', 'Stressed'), color: '#fdba74', bg: '#3b1f0a', border: '#f97316', desc: t('stem.atctower.high_load_expect_missed_approaches_fue', 'High load - expect missed approaches and fuel pressure.') },
+          overload: { label: t('stem.atctower.overload', 'Overload'), color: '#fecaca', bg: '#3f1111', border: '#ef4444', desc: t('stem.atctower.saturated_staffing_runway_capacity_exc', 'Saturated - staffing and runway capacity exceeded.') }
+        })[loadState];
+        var opsSliders = [
+          { k: 'wind', label: t('stem.atctower.wind_speed', 'Wind speed'), min: 0, max: 30, step: 1, unit: 'kt' },
+          { k: 'spawn', label: t('stem.atctower.spawn_rate', 'Spawn rate'), min: 1, max: 10, step: 1, unit: 's' },
+          { k: 'sep', label: t('stem.atctower.min_separation', 'Min separation'), min: 5, max: 20, step: 1, unit: 'nm' },
+          { k: 'descent', label: t('stem.atctower.descent_multiplier', 'Descent multiplier'), min: 0.5, max: 2.0, step: 0.1, unit: 'x' },
+          { k: 'timeout', label: t('stem.atctower.decision_timeout', 'Decision timeout'), min: 10, max: 60, step: 5, unit: 's' }
+        ];
+        var menuTabs = [
+          { id: 'airports', label: t('stem.atctower.airports', 'Airports'), hint: t('stem.atctower.choose_runway_load', 'Choose runway load') },
+          { id: 'ops', label: t('stem.atctower.ops_lab', 'Ops Lab'), hint: t('stem.atctower.tune_variables', 'Tune variables') },
+          { id: 'lessons', label: t('stem.atctower.lessons', 'Lessons'), hint: t('stem.atctower.learn_the_math', 'Learn the math') },
+          { id: 'badges', label: t('stem.atctower.badges', 'Badges'), hint: earnedCount + '/' + ATC_BADGES.length }
+        ];
+        return h('section', {
+          'data-atctower-command': 'true',
+          'aria-labelledby': 'atctower-command-title',
+          style: { minHeight: '500px', background: 'linear-gradient(135deg, #03170f 0%, #082f2a 48%, #111827 100%)', borderRadius: '16px', overflow: 'hidden', color: '#f8fafc', border: '1px solid rgba(45, 212, 191, 0.26)' }
+        },
+          h('div', { style: { padding: '24px', display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(260px, 0.8fr)', gap: '18px', alignItems: 'stretch' } },
+            h('div', { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: '14px' } },
+              h('div', { style: { color: '#99f6e4', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' } }, t('stem.atctower.tower_briefing', 'Tower Briefing')),
+              h('h2', { id: 'atctower-command-title', style: { margin: 0, color: '#f8fafc', fontSize: 'clamp(24px, 4vw, 36px)', lineHeight: 1.05, fontWeight: 900 } }, t('stem.atctower.command_center_title', 'ATC Tower Command Center')),
+              h('p', { style: { margin: 0, color: '#d1fae5', fontSize: '14px', lineHeight: 1.55, maxWidth: '58ch' } }, t('stem.atctower.command_center_copy', 'Sequence arriving aircraft, protect separation, and use rate math before the radar scope gets busy.')),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' } },
+                [
+                  { label: t('stem.atctower.career_score', 'Career Score'), value: totalScore },
+                  { label: t('stem.atctower.total_landed', 'Total Landed'), value: totalLanded },
+                  { label: t('stem.atctower.best_streak', 'Best Streak'), value: bestStreak },
+                  { label: t('stem.atctower.badges', 'Badges'), value: earnedCount + '/' + ATC_BADGES.length }
+                ].map(function(stat) {
+                  return h('div', { key: stat.label, style: { background: 'rgba(15, 23, 42, 0.62)', border: '1px solid rgba(148, 163, 184, 0.24)', borderRadius: '10px', padding: '10px 12px' } },
+                    h('div', { style: { color: '#99f6e4', fontSize: '18px', fontWeight: 900, lineHeight: 1.1 } }, stat.value),
+                    h('div', { style: { color: '#cbd5e1', fontSize: '11px', fontWeight: 700, marginTop: '3px' } }, stat.label)
+                  );
+                })
+              ),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+                h('button', { onClick: function() { startGame(selectedAirport.id); }, style: { padding: '11px 16px', borderRadius: '10px', border: '1px solid #2dd4bf', background: '#14b8a6', color: '#042f2e', fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, t('stem.atctower.start_shift', 'Start Tower Shift')),
+                h('button', { onClick: function() { upd('atcMenuPanel', 'ops'); }, style: { padding: '11px 14px', borderRadius: '10px', border: '1px solid rgba(125, 211, 252, 0.55)', background: 'rgba(8, 47, 73, 0.72)', color: '#bae6fd', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, t('stem.atctower.open_ops_lab', 'Open Ops Lab')),
+                h('span', { style: { alignSelf: 'center', color: selectedTone.text, background: selectedTone.bg, border: '1px solid ' + selectedTone.border, borderRadius: '16px', padding: '6px 10px', fontSize: '12px', fontWeight: 800 } }, selectedAirport.code + ' - ' + selectedAirport.difficulty)
+              )
+            ),
+            h('div', { style: { position: 'relative', minHeight: '250px', borderRadius: '14px', background: 'radial-gradient(circle at 50% 45%, rgba(20,184,166,0.25), rgba(15,23,42,0.92) 62%)', border: '1px solid rgba(45, 212, 191, 0.35)', overflow: 'hidden', boxShadow: 'inset 0 0 48px rgba(20,184,166,0.14)' } },
+              h('svg', { viewBox: '0 0 320 240', width: '100%', height: '100%', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', minHeight: '250px' } },
+                h('defs', null,
+                  h('linearGradient', { id: 'atcRunwayGlow', x1: '0', x2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#99f6e4', stopOpacity: '0.15' }),
+                    h('stop', { offset: '50%', stopColor: '#fef08a', stopOpacity: '0.85' }),
+                    h('stop', { offset: '100%', stopColor: '#99f6e4', stopOpacity: '0.15' })
+                  )
+                ),
+                [36, 70, 104].map(function(r) { return h('circle', { key: r, cx: 160, cy: 120, r: r, fill: 'none', stroke: '#2dd4bf', strokeOpacity: r === 104 ? 0.34 : 0.2, strokeWidth: 1.3 }); }),
+                [0, 30, 60, 90, 120, 150].map(function(a) {
+                  var rad = a * Math.PI / 180;
+                  return h('line', { key: a, x1: 160 - Math.cos(rad) * 112, y1: 120 - Math.sin(rad) * 112, x2: 160 + Math.cos(rad) * 112, y2: 120 + Math.sin(rad) * 112, stroke: '#2dd4bf', strokeOpacity: 0.12, strokeWidth: 1 });
+                }),
+                selectedAirport.runways.map(function(rwy, idx) {
+                  var x = 160 + (rwy.x - 170) * 0.45;
+                  var y = 120 + (rwy.y - 200) * 0.45 + idx * 8;
+                  var rad = (rwy.hdg - 90) * Math.PI / 180;
+                  var dx = Math.cos(rad) * 34;
+                  var dy = Math.sin(rad) * 34;
+                  return h('g', { key: idx },
+                    h('line', { x1: x - dx, y1: y - dy, x2: x + dx, y2: y + dy, stroke: '#0f172a', strokeWidth: 11, strokeLinecap: 'round' }),
+                    h('line', { x1: x - dx, y1: y - dy, x2: x + dx, y2: y + dy, stroke: 'url(#atcRunwayGlow)', strokeWidth: 4, strokeLinecap: 'round' })
+                  );
+                }),
+                [
+                  { x: 70, y: 62, c: '#60a5fa', id: 'A17' },
+                  { x: 236, y: 74, c: '#fbbf24', id: 'B42' },
+                  { x: 94, y: 182, c: '#4ade80', id: 'C09' },
+                  { x: 244, y: 172, c: '#fb7185', id: 'H77' }
+                ].map(function(ac, idx) {
+                  return h('g', { key: ac.id },
+                    h('path', { d: 'M' + ac.x + ' ' + ac.y + ' L' + (160 + idx * 3) + ' ' + (120 + idx * 4), stroke: ac.c, strokeOpacity: 0.22, strokeDasharray: '4 5', fill: 'none' }),
+                    h('circle', { cx: ac.x, cy: ac.y, r: 5, fill: ac.c }),
+                    h('text', { x: ac.x + 9, y: ac.y + 4, fill: '#e2e8f0', fontSize: 10, fontWeight: 700 }, ac.id)
+                  );
+                }),
+                h('text', { x: 18, y: 28, fill: '#99f6e4', fontSize: 11, fontWeight: 800 }, selectedAirport.code + ' RADAR'),
+                h('text', { x: 18, y: 46, fill: '#cbd5e1', fontSize: 10, fontWeight: 600 }, selectedAirport.runways.length + ' runway(s) / max ' + selectedAirport.maxTraffic + ' aircraft')
+              )
+            )
+          ),
+          h('div', { role: 'tablist', 'aria-label': t('stem.atctower.tower_routes', 'Tower routes'), style: { padding: '0 24px 16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' } },
+            menuTabs.map(function(tab) {
+              var active = atcMenuPanel === tab.id;
+              return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { upd('atcMenuPanel', tab.id); }, style: { padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + (active ? '#2dd4bf' : 'rgba(148, 163, 184, 0.26)'), background: active ? 'rgba(20,184,166,0.18)' : 'rgba(15,23,42,0.58)', color: active ? '#ccfbf1' : '#dbeafe', cursor: 'pointer', textAlign: 'left' } },
+                h('div', { style: { fontSize: '13px', fontWeight: 900 } }, tab.label),
+                h('div', { style: { marginTop: '2px', fontSize: '11px', color: active ? '#99f6e4' : '#cbd5e1', fontWeight: 650 } }, tab.hint)
+              );
+            })
+          ),
+          atcMenuPanel === 'airports' && h('div', { style: { padding: '0 24px 18px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' } },
+              AIRPORTS.map(function(apt) {
+                var tone = difficultyTone(apt.difficulty);
+                var active = apt.id === selectedAirport.id;
+                return h('button', { key: apt.id, onClick: function() { upd('atcSelectedAirport', apt.id); }, style: { padding: '14px', borderRadius: '12px', border: '1px solid ' + (active ? '#2dd4bf' : 'rgba(148, 163, 184, 0.26)'), background: active ? 'rgba(20,184,166,0.16)' : 'rgba(15,23,42,0.58)', color: '#f8fafc', cursor: 'pointer', textAlign: 'left', minHeight: '136px' } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'flex-start' } },
+                    h('div', { style: { minWidth: 0 } },
+                      h('div', { style: { fontSize: '15px', fontWeight: 900, lineHeight: 1.25 } }, apt.name),
+                      h('div', { style: { marginTop: '3px', color: '#cbd5e1', fontSize: '12px', fontWeight: 700 } }, apt.code + ' airspace')
+                    ),
+                    h('span', { style: { flexShrink: 0, borderRadius: '16px', padding: '4px 8px', background: tone.bg, border: '1px solid ' + tone.border, color: tone.text, fontSize: '11px', fontWeight: 900 } }, apt.difficulty)
+                  ),
+                  h('p', { style: { margin: '10px 0 0', color: '#d1fae5', fontSize: '12px', lineHeight: 1.45 } }, __alloT('stem.atctower.' + (apt.id) + '_desc', apt.desc)),
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px' } },
+                    [
+                      apt.runways.length + ' runway(s)',
+                      'Max ' + apt.maxTraffic + ' aircraft',
+                      'Spawn ' + apt.spawnRate + 's'
+                    ].map(function(label) {
+                      return h('span', { key: label, style: { borderRadius: '16px', padding: '4px 7px', background: 'rgba(8, 47, 73, 0.64)', color: '#bae6fd', fontSize: '11px', fontWeight: 800 } }, label);
+                    })
+                  )
+                );
+              })
+            )
+          ),
+          atcMenuPanel === 'ops' && h('div', { style: { padding: '0 24px 18px' } },
+            h('div', { style: { padding: '16px', borderRadius: '14px', background: loadMeta.bg, border: '1px solid ' + loadMeta.border, color: '#f8fafc' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between' } },
+                h('div', null,
+                  h('h3', { style: { margin: 0, color: loadMeta.color, fontSize: '17px', fontWeight: 900 } }, t('stem.atctower.ops_control', 'Ops Control')),
+                  h('p', { style: { margin: '4px 0 0', color: '#e2e8f0', fontSize: '12px', lineHeight: 1.45 } }, loadMeta.desc)
+                ),
+                h('span', { style: { borderRadius: '16px', padding: '6px 10px', background: loadMeta.color, color: '#0f172a', fontSize: '12px', fontWeight: 900 } }, t('stem.atctower.predicted_load', 'Predicted load') + ': ' + loadMeta.label)
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '14px' } },
+                opsSliders.map(function(s) {
+                  return h('label', { key: s.k, style: { display: 'block', color: '#f8fafc', fontSize: '12px', fontWeight: 800 } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '5px' } },
+                      h('span', null, s.label),
+                      h('span', { style: { color: loadMeta.color, fontFamily: 'monospace', fontWeight: 900 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
+                    ),
+                    h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                  );
+                })
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: '10px', marginTop: '14px', alignItems: 'start' } },
+                h('label', { style: { display: 'block', fontSize: '12px', fontWeight: 800, color: '#f8fafc' } },
+                  t('stem.atctower.your_hypothesis_what_combo_do_you_expe', 'Your hypothesis (what combo do you expect to break ops first?)'),
+                  h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, style: { width: '100%', marginTop: '6px', padding: '8px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.66)', color: '#f8fafc', fontSize: '12px', resize: 'vertical' }, placeholder: t('stem.atctower.e_g_low_separation_high_spawn_rate_com', 'Example: low separation plus high spawn rate compounds before wind matters...') })
+                ),
+                h('button', { onClick: function() {
+                  var stamp = new Date().toISOString().slice(11, 19);
+                  setIQ({ log: iq.log.concat([{ t: stamp, wind: iq.wind, spawn: iq.spawn, sep: iq.sep, descent: iq.descent, timeout: iq.timeout, state: loadMeta.label }]) });
+                }, style: { padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.52)', color: loadMeta.color, fontSize: '12px', fontWeight: 900, cursor: 'pointer' } }, t('stem.atctower.log_setup', 'Log setup'))
+              ),
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', color: '#e2e8f0', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } },
+                h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                h('span', null, t('stem.atctower.i_can_explain_in_my_own_words_why_this', 'I can explain in my own words why this slider combo gives this load.'))
+              ),
+              iq.log.length > 0 && h('div', { style: { marginTop: '12px', padding: '8px', borderRadius: '8px', background: 'rgba(2, 6, 23, 0.52)', border: '1px solid rgba(148, 163, 184, 0.22)', color: '#cbd5e1', fontSize: '11px', fontFamily: 'monospace', lineHeight: 1.5 } },
+                iq.log.slice(-4).map(function(e, i) {
+                  return h('div', { key: i }, e.t + '  ' + e.state + '  w' + e.wind + ' sp' + e.spawn + ' sep' + e.sep + ' d' + e.descent.toFixed(1) + ' t' + e.timeout);
+                })
+              )
+            )
+          ),
+          atcMenuPanel === 'lessons' && h('div', { style: { padding: '0 24px 18px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' } },
+              Object.keys(ATC_LESSONS).map(function(key) {
+                var les = ATC_LESSONS[key];
+                return h('button', { key: key, onClick: function() { updMulti({ view: 'lesson', selectedLesson: key }); }, style: { padding: '14px', borderRadius: '12px', border: '1px solid rgba(125, 211, 252, 0.35)', background: 'rgba(8, 47, 73, 0.58)', color: '#f8fafc', cursor: 'pointer', textAlign: 'left', minHeight: '106px' } },
+                  h('div', { style: { color: '#bae6fd', fontSize: '15px', fontWeight: 900, lineHeight: 1.25 } }, les.title),
+                  h('div', { style: { color: '#cbd5e1', fontSize: '12px', lineHeight: 1.4, marginTop: '8px' } }, les.formula)
+                );
+              })
+            )
+          ),
+          atcMenuPanel === 'badges' && h('div', { style: { padding: '0 24px 18px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px' } },
+              ATC_BADGES.map(function(badge) {
+                var earned = !!earnedATCBadges[badge.id];
+                return h('div', { key: badge.id, title: badge.name + ': ' + badge.desc, style: { padding: '12px', borderRadius: '10px', background: earned ? 'rgba(6, 78, 59, 0.78)' : 'rgba(15, 23, 42, 0.62)', color: earned ? '#bbf7d0' : '#cbd5e1', border: '1px solid ' + (earned ? '#22c55e' : 'rgba(148, 163, 184, 0.24)') } },
+                  h('div', { style: { fontSize: '12px', fontWeight: 900, lineHeight: 1.25 } }, earned ? badge.name : t('stem.atctower.locked_mission', 'Locked mission')),
+                  h('div', { style: { fontSize: '11px', lineHeight: 1.35, marginTop: '5px', color: earned ? '#dcfce7' : '#cbd5e1' } }, earned ? badge.desc : t('stem.atctower.keep_controlling_to_reveal', 'Keep controlling safely to reveal this badge.'))
+                );
+              })
+            )
+          ),
+          h('div', { style: { padding: '12px 24px 18px', borderTop: '1px solid rgba(148, 163, 184, 0.18)', display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', background: 'rgba(2, 6, 23, 0.22)' } },
+            [['Click/Tab', 'Select'], ['H', 'Heading'], ['S', 'Speed'], ['R', 'Runway'], ['C', 'Clear ILS'], ['G', 'Go Around'], ['P', 'Hold'], ['Space', 'Pause'], ['ESC', 'Exit']].map(function(item) {
+              return h('div', { key: item[0], style: { textAlign: 'center', minWidth: '58px' } },
+                h('kbd', { style: { display: 'inline-block', fontSize: '11px', fontWeight: 900, color: '#042f2e', background: '#99f6e4', padding: '3px 8px', borderRadius: '6px', fontFamily: 'monospace' } }, item[0]),
+                h('div', { style: { fontSize: '11px', color: '#cbd5e1', marginTop: '4px', fontWeight: 700 } }, item[1])
+              );
+            })
+          )
+        );
         return h('div', { style: { minHeight: '500px', background: 'linear-gradient(135deg, #021a0a 0%, #0a2e1a 50%, #0d3320 100%)', borderRadius: '16px', overflow: 'hidden' } },
           h('div', { style: { textAlign: 'center', padding: '28px 24px 14px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🗼'),
-            h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#4ade80', letterSpacing: '2px' } }, 'ATC TOWER'),
-            h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '4px' } }, 'Guide aircraft safely. Solve rate problems. Master the math of aviation.')
+            h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#4ade80', letterSpacing: '2px' } }, t('stem.atctower.atc_tower', 'ATC TOWER')),
+            h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '4px' } }, t('stem.atctower.guide_aircraft_safely_solve_rate_probl', 'Guide aircraft safely. Solve rate problems. Master the math of aviation.'))
           ),
           // Career stats
           (totalLanded > 0) ? h('div', { style: { padding: '0 24px 12px' } },
@@ -1585,7 +1811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           ) : null,
           // Airport selection
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏢 Select Airport'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, t('stem.atctower.select_airport', '🏢 Select Airport')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               AIRPORTS.map(function(apt) {
                 return h('button', { key: apt.id, onClick: function() { startGame(apt.id); },
@@ -1597,7 +1823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                       h('span', { style: { fontSize: '13px', fontWeight: 800 } }, apt.name + ' (' + apt.code + ')'),
                       h('span', { style: { fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 700, background: apt.difficulty === 'Beginner' ? '#0a2e1a' : apt.difficulty === 'Intermediate' ? '#1a2a0a' : apt.difficulty === 'Advanced' ? '#2a1a0a' : '#2a0a0a', color: apt.difficulty === 'Beginner' ? '#4ade80' : apt.difficulty === 'Intermediate' ? '#fbbf24' : apt.difficulty === 'Advanced' ? '#f97316' : '#ef4444' } }, apt.difficulty)
                     ),
-                    h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, apt.desc),
+                    h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, __alloT('stem.atctower.' + (apt.id) + '_desc', apt.desc)),
                     h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, apt.runways.length + ' runway(s) · Max ' + apt.maxTraffic + ' aircraft')
                   )
                 );
@@ -1615,7 +1841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 }, badge.icon + ' ' + (earned ? badge.name : '???'));
               })
             ),
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 ATC Lessons'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, t('stem.atctower.atc_lessons', '📚 ATC Lessons')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' } },
               Object.keys(ATC_LESSONS).map(function(key) {
                 var les = ATC_LESSONS[key];
@@ -1636,30 +1862,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             var loadIdx = (iq.wind / 30) * 0.25 + (1 - (iq.spawn - 1) / 9) * 0.30 + (1 - (iq.sep - 5) / 15) * 0.25 + ((iq.descent - 0.5) / 1.5) * 0.10 + (1 - (iq.timeout - 10) / 50) * 0.10;
             var state = loadIdx < 0.35 ? 'sandbox' : loadIdx < 0.55 ? 'training' : loadIdx < 0.75 ? 'operational' : loadIdx < 0.9 ? 'stressed' : 'overload';
             var sm = ({
-              sandbox: { label: 'Sandbox', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Light traffic, generous spacing — good for new controllers.' },
-              training: { label: 'Training', color: '#22d3ee', bg: '#0c2a3a', border: '#0891b2', desc: 'Manageable load — focus on technique without time pressure.' },
-              operational: { label: 'Operational', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Realistic airport — sequencing required, conflicts likely.' },
-              stressed: { label: 'Stressed', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'High load — expect missed approaches, fuel pressure.' },
-              overload: { label: 'Overload', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Saturated — staffing/runway capacity exceeded.' }
+              sandbox: { label: t('stem.atctower.sandbox', 'Sandbox'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.atctower.light_traffic_generous_spacing_good_fo', 'Light traffic, generous spacing — good for new controllers.') },
+              training: { label: t('stem.atctower.training', 'Training'), color: '#22d3ee', bg: '#0c2a3a', border: '#0891b2', desc: t('stem.atctower.manageable_load_focus_on_technique_wit', 'Manageable load — focus on technique without time pressure.') },
+              operational: { label: t('stem.atctower.operational', 'Operational'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.atctower.realistic_airport_sequencing_required_', 'Realistic airport — sequencing required, conflicts likely.') },
+              stressed: { label: t('stem.atctower.stressed', 'Stressed'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.atctower.high_load_expect_missed_approaches_fue', 'High load — expect missed approaches, fuel pressure.') },
+              overload: { label: t('stem.atctower.overload', 'Overload'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.atctower.saturated_staffing_runway_capacity_exc', 'Saturated — staffing/runway capacity exceeded.') }
             })[state];
             var rings = [
-              { label: 'Wind', val: iq.wind / 30, num: iq.wind + 'kt' },
-              { label: 'Spawn', val: 1 - (iq.spawn - 1) / 9, num: iq.spawn + 's' },
+              { label: t('stem.atctower.wind', 'Wind'), val: iq.wind / 30, num: iq.wind + 'kt' },
+              { label: t('stem.atctower.spawn', 'Spawn'), val: 1 - (iq.spawn - 1) / 9, num: iq.spawn + 's' },
               { label: 'Sep', val: 1 - (iq.sep - 5) / 15, num: iq.sep + 'nm' },
-              { label: 'Desc', val: (iq.descent - 0.5) / 1.5, num: iq.descent.toFixed(1) + 'x' },
-              { label: 'Timeout', val: 1 - (iq.timeout - 10) / 50, num: iq.timeout + 's' }
+              { label: t('stem.atctower.desc', 'Desc'), val: (iq.descent - 0.5) / 1.5, num: iq.descent.toFixed(1) + 'x' },
+              { label: t('stem.atctower.timeout', 'Timeout'), val: 1 - (iq.timeout - 10) / 50, num: iq.timeout + 's' }
             ];
             var sliders = [
-              { k: 'wind', label: 'Wind speed', min: 0, max: 30, step: 1, unit: 'kt' },
-              { k: 'spawn', label: 'Spawn rate', min: 1, max: 10, step: 1, unit: 's' },
-              { k: 'sep', label: 'Min separation', min: 5, max: 20, step: 1, unit: 'nm' },
-              { k: 'descent', label: 'Descent multiplier', min: 0.5, max: 2.0, step: 0.1, unit: 'x' },
-              { k: 'timeout', label: 'Decision timeout', min: 10, max: 60, step: 5, unit: 's' }
+              { k: 'wind', label: t('stem.atctower.wind_speed', 'Wind speed'), min: 0, max: 30, step: 1, unit: 'kt' },
+              { k: 'spawn', label: t('stem.atctower.spawn_rate', 'Spawn rate'), min: 1, max: 10, step: 1, unit: 's' },
+              { k: 'sep', label: t('stem.atctower.min_separation', 'Min separation'), min: 5, max: 20, step: 1, unit: 'nm' },
+              { k: 'descent', label: t('stem.atctower.descent_multiplier', 'Descent multiplier'), min: 0.5, max: 2.0, step: 0.1, unit: 'x' },
+              { k: 'timeout', label: t('stem.atctower.decision_timeout', 'Decision timeout'), min: 10, max: 60, step: 5, unit: 's' }
             ];
             return h('div', { style: { padding: '14px', margin: '0 24px 12px', borderRadius: '12px', background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-              h('h4', { style: { margin: '0 0 4px', fontSize: '13px', fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: '1px' } }, '🎚️ Ops Control — Inquiry Widget'),
-              h('p', { style: { margin: '0 0 10px', fontSize: '11px', opacity: 0.85, lineHeight: 1.4 } }, 'Move five operational sliders. Predict how each interacts before launching a session. No score, no reveal — you mark your own understanding.'),
-              h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999px', background: sm.color, color: '#000', fontSize: '10px', fontWeight: 800, marginBottom: '6px' } }, 'Predicted load: ' + sm.label),
+              h('h4', { style: { margin: '0 0 4px', fontSize: '13px', fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: '1px' } }, t('stem.atctower.ops_control_inquiry_widget', '🎚️ Ops Control — Inquiry Widget')),
+              h('p', { style: { margin: '0 0 10px', fontSize: '11px', opacity: 0.85, lineHeight: 1.4 } }, t('stem.atctower.move_five_operational_sliders_predict_', 'Move five operational sliders. Predict how each interacts before launching a session. No score, no reveal — you mark your own understanding.')),
+              h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '16px', background: sm.color, color: '#000', fontSize: '10px', fontWeight: 800, marginBottom: '6px' } }, 'Predicted load: ' + sm.label),
               h('p', { style: { margin: '0 0 10px', fontSize: '10px', opacity: 0.8 } }, sm.desc),
               h('div', { style: { display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', marginBottom: '10px' } },
                 rings.map(function(ring, i) {
@@ -1690,32 +1916,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 h('button', { onClick: function() {
                   var t = new Date().toISOString().slice(11, 19);
                   setIQ({ log: iq.log.concat([{ t: t, wind: iq.wind, spawn: iq.spawn, sep: iq.sep, descent: iq.descent, timeout: iq.timeout, state: sm.label }]) });
-                }, style: { flex: 1, padding: '6px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log current setup'),
-                h('button', { onClick: function() { setIQ({ wind: 10, spawn: 5, sep: 8, descent: 1.0, timeout: 30 }); }, style: { padding: '6px 10px', fontSize: 10, borderRadius: 6, border: '1px solid #1a3a2a', background: '#0a1a0a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+                }, style: { flex: 1, padding: '6px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.atctower.log_current_setup', '📋 Log current setup')),
+                h('button', { onClick: function() { setIQ({ wind: 10, spawn: 5, sep: 8, descent: 1.0, timeout: 30 }); }, style: { padding: '6px 10px', fontSize: 10, borderRadius: 6, border: '1px solid #1a3a2a', background: '#0a1a0a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.atctower.reset', 'Reset'))
               ),
               iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a1a0a', border: '1px solid #1a3a2a', marginBottom: 10, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
                 iq.log.slice(-5).map(function(e, i) {
                   return h('div', { key: i }, e.t + '  ' + e.state + ' · w' + e.wind + ' sp' + e.spawn + ' s' + e.sep + ' d' + e.descent.toFixed(1) + ' t' + e.timeout);
                 })
               ),
-              h('label', { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (what combo do you expect to break ops first?)'),
-              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a1a0a', color: '#e8f0f5', fontSize: 10, marginBottom: 10, resize: 'vertical' }, placeholder: 'e.g., low separation + high spawn rate compounds before wind matters...' }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid #1a3a2a', background: '#0a1a0a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+              h('label', { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.atctower.your_hypothesis_what_combo_do_you_expe', 'Your hypothesis (what combo do you expect to break ops first?)')),
+              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a1a0a', color: '#e8f0f5', fontSize: 10, marginBottom: 10, resize: 'vertical' }, placeholder: t('stem.atctower.e_g_low_separation_high_spawn_rate_com', 'e.g., low separation + high spawn rate compounds before wind matters...') }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid #1a3a2a', background: '#0a1a0a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.atctower.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
               iq.stuckRevealed && h('div', { style: { padding: 8, borderRadius: 6, background: '#0a1a0a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 10, lineHeight: 1.5 } },
-                h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+                h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.atctower.open_questions_no_answer_key', 'Open questions (no answer key)')),
                 h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                  h('li', null, 'Which two sliders are most coupled — do you predict additive or multiplicative load?'),
-                  h('li', null, 'Where on each axis does the "trainable" zone end and "stressful" begin?'),
-                  h('li', null, 'If wind goes to 30kt, what minimum separation keeps the load constant?'),
-                  h('li', null, 'Could a faster decision timeout compensate for tighter separation, or does it make things worse?')
+                  h('li', null, t('stem.atctower.which_two_sliders_are_most_coupled_do_', 'Which two sliders are most coupled — do you predict additive or multiplicative load?')),
+                  h('li', null, t('stem.atctower.where_on_each_axis_does_the_trainable_', 'Where on each axis does the "trainable" zone end and "stressful" begin?')),
+                  h('li', null, t('stem.atctower.if_wind_goes_to_30kt_what_minimum_sepa', 'If wind goes to 30kt, what minimum separation keeps the load constant?')),
+                  h('li', null, t('stem.atctower.could_a_faster_decision_timeout_compen', 'Could a faster decision timeout compensate for tighter separation, or does it make things worse?'))
                 )
               ),
               h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
                 h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                h('span', null, 'I can explain — in my own words — why this slider combo gives this load.')
+                h('span', null, t('stem.atctower.i_can_explain_in_my_own_words_why_this', 'I can explain — in my own words — why this slider combo gives this load.'))
               ),
-              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a1a0a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
-              h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Build your own theory.')
+              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.atctower.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a1a0a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
+              h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, t('stem.atctower.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Build your own theory.'))
             );
           })(),
           // Controls legend
@@ -1742,9 +1968,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         var aiLoading = !!d[aiLoadingKey];
         var aiError = d[aiErrorKey] || '';
         var LEVELS = [
-          { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
-          { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
-          { id: 'hs', label: 'High School', hint: 'for a high school student studying pre-calculus or physics' }
+          { id: 'plain', label: t('stem.atctower.plain', 'Plain'), hint: t('stem.atctower.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences') },
+          { id: 'grade5', label: t('stem.atctower.grade_5', 'Grade 5'), hint: t('stem.atctower.for_a_5th_grade_student_brief_and_frie', 'for a 5th grade student, brief and friendly') },
+          { id: 'hs', label: t('stem.atctower.high_school', 'High School'), hint: t('stem.atctower.for_a_high_school_student_studying_pre', 'for a high school student studying pre-calculus or physics') }
         ];
         var explain = function() {
           if (typeof callGemini !== 'function') { upd(aiErrorKey, 'AI tutor not available.'); return; }
@@ -1768,21 +1994,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           });
         };
         return h('div', { style: { padding: '24px', maxWidth: '600px', margin: '0 auto' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '16px', fontSize: '13px', color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Back to Tower'),
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '16px', fontSize: '13px', color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, t('stem.atctower.back_to_tower', '← Back to Tower')),
           h('div', { style: { background: 'linear-gradient(135deg, #021a0a, #0a2e1a)', borderRadius: '16px', padding: '24px', color: '#fff' } },
             h('div', { style: { fontSize: '40px', textAlign: 'center', marginBottom: '8px' }, 'aria-hidden': true }, les.icon),
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
-            h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: '16px' } }, les.content),
+            h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: '16px' } }, __alloT('stem.atctower.' + (d.selectedLesson) + '_content', les.content)),
             h('div', { style: { background: '#0a1a0a', borderRadius: '12px', padding: '16px', border: '1px solid #1a3a2a' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginBottom: '6px' } }, 'Key Formula'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginBottom: '6px' } }, t('stem.atctower.key_formula', 'Key Formula')),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#4ade80', fontFamily: 'monospace', marginBottom: '8px' } }, les.formula)
             ),
 
             // ── AI Tutor Panel ──
             h('div', { style: { marginTop: '12px', padding: '12px', borderRadius: '12px', background: '#0a1a0a', border: '1px solid #6b21a8' }, role: 'region', },
               h('div', { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' } },
-                h('span', { style: { fontSize: '12px', fontWeight: 800, color: '#c084fc' } }, '✨ Explain at my level'),
-                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' }, role: 'group', 'aria-label': 'Reading level' },
+                h('span', { style: { fontSize: '12px', fontWeight: 800, color: '#c084fc' } }, t('stem.atctower.explain_at_my_level', '✨ Explain at my level')),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' }, role: 'group', 'aria-label': t('stem.atctower.reading_level', 'Reading level') },
                   LEVELS.map(function (L) {
                     var active = aiLevel === L.id;
                     return h('button', {
@@ -1803,12 +2029,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               ),
               aiError && h('p', { style: { fontSize: '11px', color: '#fca5a5', margin: 0 }, role: 'alert' }, aiError),
               aiText && h('p', { style: { fontSize: '12px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: '1.6', background: '#000', padding: '10px', borderRadius: '8px', margin: '6px 0 0 0', border: '1px solid #3730a3' } }, aiText),
-              !aiText && !aiLoading && !aiError && h('p', { style: { fontSize: '11px', fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', margin: 0 } }, 'Click "Explain" for a plain-language breakdown of this ATC concept.')
+              !aiText && !aiLoading && !aiError && h('p', { style: { fontSize: '11px', fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', margin: 0 } }, t('stem.atctower.click_explain_for_a_plain_language_bre', 'Click "Explain" for a plain-language breakdown of this ATC concept.'))
             ),
 
             h('button', { onClick: function() { startGame('simple'); },
               style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#16a34a', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
-            }, '🗼 Practice — Start Controlling')
+            }, t('stem.atctower.practice_start_controlling', '🗼 Practice — Start Controlling'))
           )
         );
       }
@@ -1819,7 +2045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           h('canvas', {
             ref: canvasRef,
             role: 'application',
-            'aria-label': 'Air Traffic Control radar display. Use Tab to cycle aircraft, H for heading, R for runway, C to clear approach, Space to pause, I for status summary.',
+            'aria-label': t('stem.atctower.air_traffic_control_radar_display_use_', 'Air Traffic Control radar display. Use Tab to cycle aircraft, H for heading, R for runway, C to clear approach, Space to pause, I for status summary.'),
             'aria-roledescription': 'Air traffic control simulator',
             tabIndex: 0,
             style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none', boxShadow: 'none' },
@@ -1831,8 +2057,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           // container so the canvas + any HUD overlay drawn on top
           // ride along into fullscreen.
           h('button', {
-            'aria-label': 'Toggle fullscreen for the ATC radar',
-            title: 'Fullscreen',
+            'aria-label': t('stem.atctower.toggle_fullscreen_for_the_atc_radar', 'Toggle fullscreen for the ATC radar'),
+            title: t('stem.atctower.fullscreen', 'Fullscreen'),
             onClick: function() {
               var el = document.getElementById('atctower-fs-wrap');
               if (!el) return;
@@ -1843,8 +2069,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
                 if (ex) ex.call(document);
               } else {
-                var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
-                if (rq) rq.call(el);
+                if (window.__alloStemFS) window.__alloStemFS(el);
               }
             },
             style: {
@@ -1862,7 +2087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         );
       }
 
-      return h('div', { style: { padding: '24px', textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Loading ATC Tower...');
+      return h('div', { style: { padding: '24px', textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.atctower.loading_atc_tower', 'Loading ATC Tower...'));
     }
   });
 

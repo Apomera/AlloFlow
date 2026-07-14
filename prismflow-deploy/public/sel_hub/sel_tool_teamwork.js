@@ -439,6 +439,15 @@ window.SelHub = window.SelHub || {
     color: 'lime',
     category: 'relationship-skills',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _teaT = (ctx && ctx.theme) || {};
+      var _teaHC = !!_teaT.isContrast, _teaL = !_teaHC && !_teaT.isDark;
+      var _tea_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff','#334155':'#e2e8f0'}, _tea_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#334155':'#000000','#b45309':'#000000','#3b82f6':'#000000'};
+      var _tea_FGL = {'#94a3b8':'#64748b','#e2e8f0':'#1e293b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#818cf8':'#4338ca','#a78bfa':'#6d28d9'}, _tea_FGH = {'#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#8b5cf6':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#3b82f6':'#ffff00','#475569':'#ffff00','#facc15':'#ffff00','#06b6d4':'#ffff00','#a78bfa':'#ffff00','#ec4899':'#ffff00','#22d3ee':'#ffff00'};
+      var _tea_BDL = {'#334155':'#e2e8f0'}, _tea_BDH = {'#334155':'#ffff00'};
+      var _teaBg = function(h){ return _teaHC ? (_tea_BGH[h]||h) : (_teaL ? (_tea_BGL[h]||h) : h); };
+      var _teaFg = function(h){ return _teaHC ? (_tea_FGH[h]||h) : (_teaL ? (_tea_FGL[h]||h) : h); };
+      var _teaBd = function(h){ return _teaHC ? (_tea_BDH[h]||h) : (_teaL ? (_tea_BDL[h]||h) : h); };
       return (function() {
         var React = ctx.React;
         var h = React.createElement;
@@ -549,6 +558,7 @@ window.SelHub = window.SelHub || {
             upd('showBadgePopup', badgeId);
             if (soundEnabled) sfxBadge();
             addToast(badge.icon + ' Badge earned: ' + badge.name + '!', 'success');
+            if (announceToSR) announceToSR('Badge earned: ' + badge.name);
             awardXP(25);
             setTimeout(function() { upd('showBadgePopup', null); }, 3000);
           }
@@ -593,22 +603,22 @@ window.SelHub = window.SelHub || {
         function renderStars(rating) {
           var stars = [];
           for (var i = 1; i <= 3; i++) {
-            stars.push(h('span', { key: i, style: { color: i <= rating ? '#facc15' : '#334155', fontSize: 18 } }, '\u2B50'));
+            stars.push(h('span', { key: i, style: { color: i <= rating ? _teaFg('#facc15') : _teaBg('#334155'), fontSize: 18 } }, '\u2B50'));
           }
           return h('span', null, stars);
         }
 
         // ── Quick Reflection Prompt (reusable) ──
         function renderQuickReflection(activityType) {
-          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155' } },
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: _teaBg('#0f172a'), border: '1px solid #334155' } },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
             h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflection'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, 'What teamwork skill did you practice?'),
+            h('div', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginBottom: 8 } }, 'What teamwork skill did you practice?'),
             h('select', {
               value: reflectionSkill,
               'aria-label': 'Teamwork skill practiced',
               onChange: function(e) { upd('reflectionSkill', e.target.value); },
-              style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12, marginBottom: 8 }
+              style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#1e293b'), color: _teaFg('#e2e8f0'), fontSize: 12, marginBottom: 8 }
             },
               h('option', { value: '' }, '-- Select a skill --'),
               REFLECTION_SKILLS_DROPDOWN.map(function(sk) {
@@ -621,7 +631,7 @@ window.SelHub = window.SelHub || {
               onChange: function(e) { upd('reflectionNote', e.target.value); },
               placeholder: 'Briefly describe how you used this skill...',
               rows: 2,
-              style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
+              style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#1e293b'), color: _teaFg('#e2e8f0'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
             }),
             h('button', { 'aria-label': 'Save Reflection',
               onClick: function() {
@@ -634,7 +644,7 @@ window.SelHub = window.SelHub || {
                 if (soundEnabled) sfxCorrect();
                 addToast('Reflection saved! +5 XP', 'success');
               },
-              style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 600, fontSize: 11, cursor: 'pointer' }
+              style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: ACCENT, color: _teaFg('#0f172a'), fontWeight: 600, fontSize: 11, cursor: 'pointer' }
             }, 'Save Reflection')
           );
         }
@@ -667,25 +677,25 @@ window.SelHub = window.SelHub || {
               role: 'tab',
               style: {
                 padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-                background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : '#94a3b8',
+                background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _teaFg('#94a3b8'),
                 transition: 'all 0.15s'
               }
             }, t.label);
           }),
           // Sound toggle
-          h('button', { 'aria-label': 'Toggle panel',
+          h('button', { 'aria-label': 'Toggle sound',
             onClick: function() { upd('soundEnabled', !soundEnabled); },
-            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' },
+            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _teaFg('#94a3b8') },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           // Badge counter
           h('button', { 'aria-label': 'Toggle panel',
             onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
-            style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8', position: 'relative' }
+            style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _teaFg('#94a3b8'), position: 'relative' }
           },
             '\uD83C\uDFC5',
             Object.keys(earnedBadges).length > 0 && h('span', {
-              style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#0f172a', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+              style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: _teaFg('#0f172a'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, Object.keys(earnedBadges).length)
           )
         );
@@ -719,7 +729,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: _teaFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })();
@@ -732,10 +742,10 @@ window.SelHub = window.SelHub || {
             badgePopup = h('div', {
               style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)', animation: 'fadeIn 0.3s' }
             },
-              h('div', { style: { background: '#1e293b', borderRadius: 20, padding: 32, textAlign: 'center', border: '2px solid ' + ACCENT, maxWidth: 300, boxShadow: '0 0 40px ' + ACCENT + '44' } },
+              h('div', { style: { background: _teaBg('#1e293b'), borderRadius: 20, padding: 32, textAlign: 'center', border: '2px solid ' + ACCENT, maxWidth: 300, boxShadow: '0 0 40px ' + ACCENT + '44' } },
                 h('div', { style: { fontSize: 48, marginBottom: 12 } }, popBadge.icon),
-                h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, popBadge.name),
-                h('div', { style: { fontSize: 13, color: '#94a3b8' } }, popBadge.desc)
+                h('div', { style: { fontSize: 18, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 6 } }, popBadge.name),
+                h('div', { style: { fontSize: 13, color: _teaFg('#94a3b8') } }, popBadge.desc)
               )
             );
           }
@@ -744,22 +754,22 @@ window.SelHub = window.SelHub || {
         // ── Badge Panel (when toggled) ──
         if (showBadgesPanel) {
           var panelContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFC5 Badges'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               BADGES.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', {                   key: b.id,
-                  style: { padding: 14, borderRadius: 12, background: earned ? '#1e293b' : '#0f172a', border: '1px solid ' + (earned ? ACCENT + '66' : '#334155'), textAlign: 'center', opacity: earned ? 1 : 0.5 }
+                  style: { padding: 14, borderRadius: 12, background: earned ? _teaBg('#1e293b') : '#0f172a', border: '1px solid ' + (earned ? ACCENT + '66' : _teaBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 }
                 },
                   h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? '#f1f5f9' : '#94a3b8', marginTop: 4 } }, b.name),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, b.desc)
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? _teaFg('#f1f5f9') : _teaFg('#94a3b8'), marginTop: 4 } }, b.name),
+                  h('div', { style: { fontSize: 10, color: _teaFg('#94a3b8'), marginTop: 2 } }, b.desc)
                 );
               })
             ),
             h('button', { 'aria-label': 'Close',
               onClick: function() { upd('showBadgesPanel', false); },
-              style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', cursor: 'pointer', fontSize: 12 }
+              style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), cursor: 'pointer', fontSize: 12 }
             }, 'Close')
           );
 
@@ -776,8 +786,8 @@ window.SelHub = window.SelHub || {
           var roles = TEAM_ROLES[band] || TEAM_ROLES.elementary;
 
           rolesContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDC51 Team Role Discovery'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDC51 Team Role Discovery'),
+            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Every team needs different people! Tap on a role to learn about it, then pick the ones that sound like YOU.' :
               band === 'middle' ? 'Strong teams need diverse skills. Explore each role and identify which ones match your strengths.' :
               'Effective collaboration requires self-awareness about your natural tendencies. Discover your role profile.'
@@ -792,7 +802,7 @@ window.SelHub = window.SelHub || {
                   key: role.id,
                   'aria-label': role.name + (isExpanded ? ' (collapse)' : ' (expand)'),
                   'aria-expanded': isExpanded ? 'true' : 'false',
-                  style: { padding: 14, borderRadius: 12, background: isSelected ? '#1e293b' : '#0f172a', border: '1px solid ' + (isSelected ? ACCENT + '88' : '#334155'), cursor: 'pointer', transition: 'all 0.2s' }
+                  style: { padding: 14, borderRadius: 12, background: isSelected ? _teaBg('#1e293b') : '#0f172a', border: '1px solid ' + (isSelected ? ACCENT + '88' : _teaBg('#334155')), cursor: 'pointer', transition: 'all 0.2s' }
                 }, a11yClick(function() {
                     upd('expandedRole', isExpanded ? null : role.id);
                     if (soundEnabled) sfxClick();
@@ -811,9 +821,9 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                     h('span', { style: { fontSize: 24 } }, role.emoji),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontSize: 14, fontWeight: 600, color: '#f1f5f9' } }, role.name),
+                      h('div', { style: { fontSize: 14, fontWeight: 600, color: _teaFg('#f1f5f9') } }, role.name),
                       isExpanded && h('div', { style: { marginTop: 8 } },
-                        h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } }, role.desc),
+                        h('p', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 8 } }, role.desc),
                         h('div', { style: { fontSize: 12, color: ACCENT, fontStyle: 'italic', padding: '8px 12px', background: ACCENT_DIM, borderRadius: 8 } },
                           '\uD83D\uDCAC Sounds like: ' + role.soundsLike
                         )
@@ -829,7 +839,7 @@ window.SelHub = window.SelHub || {
                         if (soundEnabled) sfxTeam();
                         tryAwardBadge('team_player');
                       },
-                      style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + (isSelected ? ACCENT : '#475569'), background: isSelected ? ACCENT_DIM : 'transparent', color: isSelected ? ACCENT : '#94a3b8', fontSize: 11, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
+                      style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + (isSelected ? ACCENT : _teaFg('#475569')), background: isSelected ? ACCENT_DIM : 'transparent', color: isSelected ? ACCENT : _teaFg('#94a3b8'), fontSize: 11, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
                     }, isSelected ? '\u2713 Selected' : 'That\'s Me')
                   )
                 );
@@ -837,8 +847,8 @@ window.SelHub = window.SelHub || {
             ),
 
             // Selected summary
-            selectedRoles.length > 0 && h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\uD83C\uDFAF Your Team Role Profile'),
+            selectedRoles.length > 0 && h('div', { style: { padding: 16, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83C\uDFAF Your Team Role Profile'),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 } },
                 selectedRoles.map(function(rid) {
                   var r = roles.find(function(x) { return x.id === rid; });
@@ -846,17 +856,17 @@ window.SelHub = window.SelHub || {
                 })
               ),
               // Reflection
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCDD My Best Team Role \u2014 Reflection:'),
+              h('div', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginBottom: 8 } }, '\uD83D\uDCDD My Best Team Role \u2014 Reflection:'),
               h('textarea', {
                 value: roleReflection,
                 'aria-label': 'Role reflection',
                 onChange: function(e) { upd('roleReflection', e.target.value); upd('roleReflectionSaved', false); },
                 placeholder: band === 'elementary' ? 'Why did you pick these roles? When do you act like this in a team?' : band === 'middle' ? 'Describe a time you played one of these roles. How did it affect the team?' : 'Analyze how your role preferences shape your collaboration style. What blind spots might you have?',
                 rows: 3,
-                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }
+                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }
               }),
               h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
-                h('button', { 'aria-label': 'Toggle sound',
+                h('button', {
                   onClick: function() {
                     if (!roleReflection.trim()) { addToast('Write a reflection first!', 'info'); return; }
                     upd('roleReflectionSaved', true);
@@ -868,7 +878,7 @@ window.SelHub = window.SelHub || {
                     addToast('Reflection saved!', 'success');
                     ctx.announceToSR && ctx.announceToSR('Reflection saved');
                   },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: roleReflectionSaved ? '#334155' : ACCENT, color: roleReflectionSaved ? '#94a3b8' : '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: roleReflectionSaved ? _teaBg('#334155') : ACCENT, color: roleReflectionSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, roleReflectionSaved ? '\u2713 Saved' : 'Save Reflection'),
                 // AI Coach button
                 h('button', { 'aria-label': 'AI Coach button',
@@ -908,14 +918,14 @@ window.SelHub = window.SelHub || {
                     });
                   },
                   disabled: coachLoading,
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: coachLoading ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 12, cursor: coachLoading ? 'default' : 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: coachLoading ? _teaBg('#334155') : '#6366f1', color: _teaFg('#fff'), fontWeight: 600, fontSize: 12, cursor: coachLoading ? 'default' : 'pointer' }
                 }, coachLoading ? 'Thinking...' : '\u2728 AI Coach')
               ),
               // AI response \u2014 always-rendered live region so SR users get notified
               h('div', { role: 'region', 'aria-label': 'Team coach response', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false' },
-                coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
-                  h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
-                  h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+                coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #6366f144' } },
+                  h('p', { style: { fontSize: 10, color: _teaFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
+                  h('div', { style: { fontSize: 13, color: _teaFg('#e2e8f0'), lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
                 )
               )
             ),
@@ -935,23 +945,23 @@ window.SelHub = window.SelHub || {
           var chRatings = challengeRatings[curCh.id] || {};
 
           challengesContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFD7\uFE0F Collaborative Challenges'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFD7\uFE0F Collaborative Challenges'),
+            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               'Challenge ' + ((challengeIdx % chList.length) + 1) + ' of ' + chList.length
             ),
 
             // Challenge card
-            h('div', { style: { padding: 20, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('div', { style: { padding: 20, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
                 h('span', { style: { fontSize: 28 } }, curCh.icon),
-                h('h4', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', margin: 0 } }, curCh.title)
+                h('h4', { style: { fontSize: 16, fontWeight: 700, color: _teaFg('#f1f5f9'), margin: 0 } }, curCh.title)
               ),
-              h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 14 } }, curCh.desc),
+              h('p', { style: { fontSize: 13, color: _teaFg('#cbd5e1'), lineHeight: 1.7, marginBottom: 14 } }, curCh.desc),
 
               // Skills involved
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
                 curCh.skills.map(function(s) {
-                  return h('span', { key: s, style: { padding: '3px 10px', borderRadius: 20, background: '#334155', color: '#94a3b8', fontSize: 11 } }, s);
+                  return h('span', { key: s, style: { padding: '3px 10px', borderRadius: 20, background: _teaBg('#334155'), color: _teaFg('#94a3b8'), fontSize: 11 } }, s);
                 })
               ),
 
@@ -959,21 +969,21 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 8 } }, '\uD83D\uDCAC Discussion Prompts:'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
                 curCh.prompts.map(function(p, i) {
-                  return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } },
+                  return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: _teaBg('#0f172a'), fontSize: 12, color: _teaFg('#e2e8f0'), lineHeight: 1.6 } },
                     (i + 1) + '. ' + p
                   );
                 })
               ),
 
               // Skill self-rating
-              h('div', { style: { fontSize: 12, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\uD83C\uDFAF Rate Your Team Skills:'),
+              h('div', { style: { fontSize: 12, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83C\uDFAF Rate Your Team Skills:'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
                 curCh.skills.map(function(s) {
                   var r = chRatings[s] || 0;
-                  return h('div', { key: s, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: '#0f172a' } },
-                    h('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1, textTransform: 'capitalize' } }, s.replace(/-/g, ' ')),
+                  return h('div', { key: s, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: _teaBg('#0f172a') } },
+                    h('span', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), flex: 1, textTransform: 'capitalize' } }, s.replace(/-/g, ' ')),
                     [1, 2, 3, 4, 5].map(function(star) {
-                      return h('button', { 'aria-label': 'Toggle sound',
+                      return h('button', { 'aria-label': 'Rate ' + s.replace(/-/g, ' ') + ': ' + star + ' star' + (star === 1 ? '' : 's'),
                         key: star,
                         onClick: function() {
                           var newRatings = Object.assign({}, challengeRatings);
@@ -983,7 +993,7 @@ window.SelHub = window.SelHub || {
                           upd('challengeRatings', newRatings);
                           if (soundEnabled) sfxClick();
                         },
-                        style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: 0, color: star <= r ? '#facc15' : '#334155' }
+                        style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: 0, color: star <= r ? _teaFg('#facc15') : _teaBg('#334155') }
                       }, '\u2B50');
                     })
                   );
@@ -997,14 +1007,14 @@ window.SelHub = window.SelHub || {
                 onChange: function(e) { upd('challengeDiscussion', e.target.value); },
                 placeholder: 'Write your team\'s discussion notes here...',
                 rows: 3,
-                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 12 }
+                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 12 }
               }),
 
               // Navigation
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
                 challengeIdx > 0 && h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd({ challengeIdx: challengeIdx - 1, challengeDiscussion: '' }); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, '\u2190 Previous'),
                 h('button', { 'aria-label': 'Complete & Next',
                   onClick: function() {
@@ -1021,7 +1031,7 @@ window.SelHub = window.SelHub || {
                     upd({ challengeIdx: challengeIdx + 1, challengeDiscussion: '' });
                     ctx.announceToSR && ctx.announceToSR('Challenge completed');
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: _teaFg('#0f172a'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, 'Complete & Next \u2192')
               ),
 
@@ -1042,18 +1052,18 @@ window.SelHub = window.SelHub || {
           var answeredCount = Object.keys(scenarioAnswers).length;
 
           scenariosContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFAD Teamwork Scenarios'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFAD Teamwork Scenarios'),
+            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               'Scenario ' + ((scenarioIdx % SCENARIOS.length) + 1) + ' of ' + SCENARIOS.length + ' \u00B7 ' + answeredCount + ' answered'
             ),
 
             // Scenario card
-            h('div', { style: { padding: 20, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('div', { style: { padding: 20, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
                 h('span', { style: { fontSize: 28 } }, curSc.icon),
-                h('h4', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', margin: 0 } }, curSc.title)
+                h('h4', { style: { fontSize: 16, fontWeight: 700, color: _teaFg('#f1f5f9'), margin: 0 } }, curSc.title)
               ),
-              h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 16 } }, curSc.setup),
+              h('p', { style: { fontSize: 13, color: _teaFg('#cbd5e1'), lineHeight: 1.7, marginBottom: 16 } }, curSc.setup),
 
               // Choices
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -1061,7 +1071,7 @@ window.SelHub = window.SelHub || {
                   var isChosen = scenarioAnswers[curSc.id] === ci;
                   var showFeedback = revealed && isChosen;
                   return h('div', { key: ci },
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', {
                       onClick: function() {
                         if (answered) return;
                         var newAnswers = Object.assign({}, scenarioAnswers);
@@ -1097,15 +1107,15 @@ window.SelHub = window.SelHub || {
                       },
                       disabled: answered,
                       style: {
-                        width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444') : '#334155'),
+                        width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (ch.rating === 3 ? _teaFg('#22c55e') : ch.rating === 2 ? _teaFg('#f59e0b') : _teaFg('#ef4444')) : _teaBg('#334155')),
                         background: isChosen ? (ch.rating === 3 ? '#22c55e11' : ch.rating === 2 ? '#f59e0b11' : '#ef444411') : '#0f172a',
-                        color: '#e2e8f0', fontSize: 13, textAlign: 'left', cursor: answered ? 'default' : 'pointer', lineHeight: 1.5
+                        color: _teaFg('#e2e8f0'), fontSize: 13, textAlign: 'left', cursor: answered ? 'default' : 'pointer', lineHeight: 1.5
                       }
                     },
                       h('span', null, ch.label),
                       isChosen && h('span', { style: { marginLeft: 8 } }, renderStars(ch.rating))
                     ),
-                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: '#0f172a', borderLeft: '3px solid ' + (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444'), marginTop: -2, fontSize: 12, color: '#94a3b8', lineHeight: 1.6 } },
+                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: _teaBg('#0f172a'), borderLeft: '3px solid ' + (ch.rating === 3 ? _teaFg('#22c55e') : ch.rating === 2 ? _teaFg('#f59e0b') : _teaFg('#ef4444')), marginTop: -2, fontSize: 12, color: _teaFg('#94a3b8'), lineHeight: 1.6 } },
                       ch.feedback
                     )
                   );
@@ -1113,11 +1123,11 @@ window.SelHub = window.SelHub || {
               ),
 
               // Show all feedback after answering
-              revealed && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
-                h('div', { style: { fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 6 } }, 'All response ratings:'),
+              revealed && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #334155' } },
+                h('div', { style: { fontSize: 11, fontWeight: 600, color: _teaFg('#94a3b8'), marginBottom: 6 } }, 'All response ratings:'),
                 curSc.choices.map(function(ch, ci) {
                   var isChosen = scenarioAnswers[curSc.id] === ci;
-                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? '#f1f5f9' : '#94a3b8' } },
+                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? _teaFg('#f1f5f9') : _teaFg('#94a3b8') } },
                     renderStars(ch.rating),
                     h('span', { style: { marginLeft: 4 } }, ch.label.substring(0, 50) + (ch.label.length > 50 ? '...' : '')),
                     isChosen && h('span', { style: { color: ACCENT, marginLeft: 4, fontWeight: 700 } }, '\u2190 your pick')
@@ -1129,26 +1139,26 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
                 scenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd('scenarioIdx', scenarioIdx - 1); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, '\u2190 Previous'),
                 scenarioIdx < SCENARIOS.length - 1 && h('button', { 'aria-label': 'Next',
                   onClick: function() { upd('scenarioIdx', scenarioIdx + 1); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, 'Next \u2192')
               )
             ),
 
             // AI Team Coach section
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #6366f133' } },
-              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Coach'),
-              h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10 } }, 'Ask the AI coach about any teamwork challenge you\'re facing.'),
+            h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #6366f133' } },
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\u2728 AI Team Coach'),
+              h('p', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginBottom: 10 } }, 'Ask the AI coach about any teamwork challenge you\'re facing.'),
               h('textarea', {
                 value: coachPrompt,
                 'aria-label': 'Describe your teamwork challenge',
                 onChange: function(e) { upd('coachPrompt', e.target.value); },
                 placeholder: band === 'elementary' ? 'Describe a teamwork problem you\'re having...' : band === 'middle' ? 'What teamwork challenge are you facing? Be specific...' : 'Describe the collaboration issue. Include context about your role and the team dynamics...',
                 rows: 2,
-                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
+                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
               }),
               h('button', { 'aria-label': coachLoading ? 'Thinking...' : '\u2728 Ask Coach',
                 onClick: function() {
@@ -1183,12 +1193,12 @@ window.SelHub = window.SelHub || {
                   });
                 },
                 disabled: coachLoading,
-                style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: coachLoading ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 12, cursor: coachLoading ? 'default' : 'pointer' }
+                style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: coachLoading ? _teaBg('#334155') : '#6366f1', color: _teaFg('#fff'), fontWeight: 600, fontSize: 12, cursor: coachLoading ? 'default' : 'pointer' }
               }, coachLoading ? 'Thinking...' : '\u2728 Ask Coach'),
               h('div', { role: 'region', 'aria-label': 'Coach response', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false' },
-                coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
-                  h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Coach Says'),
-                  h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+                coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #6366f144' } },
+                  h('p', { style: { fontSize: 10, color: _teaFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Coach Says'),
+                  h('div', { style: { fontSize: 13, color: _teaFg('#e2e8f0'), lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
                 )
               )
             ),
@@ -1206,8 +1216,8 @@ window.SelHub = window.SelHub || {
           var quizDone = Object.keys(quizRatings).length === QUIZ_SKILLS.length;
 
           quizContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Team Skills Self-Assessment'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCCA Team Skills Self-Assessment'),
+            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Rate yourself on each skill from 1 (I\'m still learning) to 5 (I\'m really good at this!).' :
               band === 'middle' ? 'Honestly rate your ability in each teamwork skill. 1 = needs work, 5 = strong.' :
               'Assess your competency across 8 core teamwork dimensions. Be candid \u2014 self-awareness drives growth.'
@@ -1219,20 +1229,20 @@ window.SelHub = window.SelHub || {
                 var rating = quizRatings[skill.id] || 0;
                 return h('div', {
                   key: skill.id,
-                  style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + (rating > 0 ? ACCENT + '44' : '#334155') }
+                  style: { padding: 14, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid ' + (rating > 0 ? ACCENT + '44' : _teaBg('#334155')) }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                     h('span', { style: { fontSize: 20 } }, skill.icon),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9' } }, skill.name),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, skill.desc)
+                      h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9') } }, skill.name),
+                      h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginTop: 2 } }, skill.desc)
                     )
                   ),
                   h('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                    h('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 4 } }, 'Low'),
+                    h('span', { style: { fontSize: 10, color: _teaFg('#94a3b8'), marginRight: 4 } }, 'Low'),
                     [1, 2, 3, 4, 5].map(function(val) {
                       var isSelected = rating === val;
-                      return h('button', { 'aria-label': 'Toggle sound',
+                      return h('button', {
                         key: val,
                         onClick: function() {
                           if (quizSubmitted) return;
@@ -1242,13 +1252,13 @@ window.SelHub = window.SelHub || {
                           if (soundEnabled) sfxClick();
                         },
                         style: {
-                          width: 32, height: 32, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : '#334155'),
-                          background: isSelected ? ACCENT_DIM : '#0f172a', color: isSelected ? ACCENT : '#94a3b8',
+                          width: 32, height: 32, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : _teaBg('#334155')),
+                          background: isSelected ? ACCENT_DIM : '#0f172a', color: isSelected ? ACCENT : _teaFg('#94a3b8'),
                           fontWeight: 700, fontSize: 13, cursor: quizSubmitted ? 'default' : 'pointer', transition: 'all 0.15s'
                         }
                       }, String(val));
                     }),
-                    h('span', { style: { fontSize: 10, color: '#94a3b8', marginLeft: 4 } }, 'High')
+                    h('span', { style: { fontSize: 10, color: _teaFg('#94a3b8'), marginLeft: 4 } }, 'High')
                   )
                 );
               })
@@ -1266,12 +1276,12 @@ window.SelHub = window.SelHub || {
                 addToast('Skills assessment complete! +20 XP', 'success');
                 celebrate && celebrate();
               },
-              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: quizDone ? ACCENT : '#334155', color: quizDone ? '#0f172a' : '#94a3b8', fontWeight: 700, fontSize: 14, cursor: quizDone ? 'pointer' : 'default', marginBottom: 20 }
+              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: quizDone ? ACCENT : _teaBg('#334155'), color: quizDone ? '#0f172a' : _teaFg('#94a3b8'), fontWeight: 700, fontSize: 14, cursor: quizDone ? 'pointer' : 'default', marginBottom: 20 }
             }, quizDone ? '\u2705 Submit My Assessment' : 'Rate all 8 skills to continue'),
 
             // Results visualization (bar chart)
-            quizSubmitted && h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 12, textAlign: 'center' } }, '\uD83D\uDCCA Your Skills Profile'),
+            quizSubmitted && h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 12, textAlign: 'center' } }, '\uD83D\uDCCA Your Skills Profile'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 QUIZ_SKILLS.map(function(skill) {
                   var myRating = quizRatings[skill.id] || 0;
@@ -1281,21 +1291,21 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: skill.id },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 } },
                       h('span', { style: { fontSize: 14 } }, skill.icon),
-                      h('span', { style: { fontSize: 11, color: '#cbd5e1', flex: 1, minWidth: 100 } }, skill.name),
+                      h('span', { style: { fontSize: 11, color: _teaFg('#cbd5e1'), flex: 1, minWidth: 100 } }, skill.name),
                       h('span', { style: { fontSize: 11, color: ACCENT, fontWeight: 600, width: 24, textAlign: 'right' } }, String(myRating))
                     ),
                     // My rating bar
-                    h('div', { style: { position: 'relative', height: 10, borderRadius: 5, background: '#0f172a', overflow: 'hidden', marginBottom: 2 } },
+                    h('div', { style: { position: 'relative', height: 10, borderRadius: 5, background: _teaBg('#0f172a'), overflow: 'hidden', marginBottom: 2 } },
                       h('div', { style: { position: 'absolute', top: 0, left: 0, height: '100%', width: barWidthMy + '%', background: ACCENT, borderRadius: 5, transition: 'width 0.5s' } })
                     ),
                     // Ideal bar (subtle reference line)
-                    h('div', { style: { position: 'relative', height: 4, borderRadius: 2, background: '#0f172a', overflow: 'hidden' } },
+                    h('div', { style: { position: 'relative', height: 4, borderRadius: 2, background: _teaBg('#0f172a'), overflow: 'hidden' } },
                       h('div', { style: { position: 'absolute', top: 0, left: 0, height: '100%', width: barWidthIdeal + '%', background: '#6366f144', borderRadius: 2 } })
                     )
                   );
                 })
               ),
-              h('div', { style: { display: 'flex', gap: 16, justifyContent: 'center', marginTop: 12, fontSize: 10, color: '#94a3b8' } },
+              h('div', { style: { display: 'flex', gap: 16, justifyContent: 'center', marginTop: 12, fontSize: 10, color: _teaFg('#94a3b8') } },
                 h('span', null, h('span', { style: { display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: ACCENT, marginRight: 4, verticalAlign: 'middle' } }), 'Your Rating'),
                 h('span', null, h('span', { style: { display: 'inline-block', width: 10, height: 4, borderRadius: 2, background: '#6366f144', marginRight: 4, verticalAlign: 'middle' } }), 'Ideal Team Player')
               ),
@@ -1310,9 +1320,9 @@ window.SelHub = window.SelHub || {
                   if (v < wMin) { wMin = v; weakest = skill.name; }
                 });
                 var avg = count > 0 ? (total / count).toFixed(1) : '0';
-                return h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
-                  h('div', { style: { fontSize: 12, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 } }, '\uD83D\uDCCB Summary'),
-                  h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.8 } },
+                return h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 6 } }, '\uD83D\uDCCB Summary'),
+                  h('div', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.8 } },
                     '\u2022 Average score: ' + avg + '/5',
                     h('br'),
                     '\u2022 Strongest skill: ' + strongest + ' (' + sMax + '/5)',
@@ -1327,7 +1337,7 @@ window.SelHub = window.SelHub || {
               // Reset quiz
               h('button', { 'aria-label': 'Retake Quiz',
                 onClick: function() { upd({ quizRatings: {}, quizSubmitted: false }); if (soundEnabled) sfxClick(); },
-                style: { display: 'block', margin: '12px auto 0', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
+                style: { display: 'block', margin: '12px auto 0', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _teaFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
               }, 'Retake Quiz')
             ),
 
@@ -1342,16 +1352,16 @@ window.SelHub = window.SelHub || {
         var contractContent = null;
         if (activeTab === 'contract') {
           contractContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCDC Team Contract Builder'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCDC Team Contract Builder'),
+            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Make promises with your team about how you\'ll work together!' :
               band === 'middle' ? 'Create a team agreement that sets expectations for how you\'ll collaborate.' :
               'Draft a formal team operating agreement that establishes norms, roles, and accountability structures.'
             ),
 
             // ── Section 1: Team Agreements ──
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 12 } },
+            h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 12 } },
                 '\uD83E\uDD1D ' + (band === 'elementary' ? 'We Promise To...' : 'We Agree To...')
               ),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -1373,7 +1383,7 @@ window.SelHub = window.SelHub || {
                                    idx === 2 ? (band === 'elementary' ? 'Help when someone is stuck' : 'Give constructive feedback, not criticism') :
                                    idx === 3 ? (band === 'elementary' ? 'Say kind things about each other\'s work' : 'Share workload equitably') :
                                    (band === 'elementary' ? 'Try our best even when it\'s hard' : 'Address conflicts directly and respectfully'),
-                      style: { flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12 }
+                      style: { flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12 }
                     })
                   );
                 })
@@ -1381,9 +1391,9 @@ window.SelHub = window.SelHub || {
             ),
 
             // ── Section 2: Role Assignments ──
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 12 } }, '\uD83D\uDC65 Role Assignments'),
-              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } }, 'Assign team members to roles (e.g., "Alex \u2014 Note-Taker", "Sam \u2014 Facilitator"):'),
+            h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 12 } }, '\uD83D\uDC65 Role Assignments'),
+              h('p', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginBottom: 10 } }, 'Assign team members to roles (e.g., "Alex \u2014 Note-Taker", "Sam \u2014 Facilitator"):'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 contractRoles.map(function(role, idx) {
                   return h('input', {
@@ -1398,16 +1408,16 @@ window.SelHub = window.SelHub || {
                       upd('contractSaved', false);
                     },
                     placeholder: 'Team member ' + (idx + 1) + ' \u2014 Role',
-                    style: { padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12 }
+                    style: { padding: 8, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12 }
                   });
                 })
               )
             ),
 
             // ── Section 3: Communication Expectations ──
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDCAC Communication Plan'),
-              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } },
+            h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83D\uDCAC Communication Plan'),
+              h('p', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginBottom: 10 } },
                 band === 'elementary' ? 'How will your team talk to each other during the project?' :
                 'How and when will the team communicate? (e.g., daily check-ins, group chat norms, response time expectations)'
               ),
@@ -1419,16 +1429,16 @@ window.SelHub = window.SelHub || {
                   band === 'middle' ? 'We\'ll use a group chat for updates. We\'ll respond within 24 hours. We\'ll meet twice a week in person.' :
                   'Communication channels, response-time expectations, meeting cadence, status update format...',
                 rows: 3,
-                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
+                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
               })
             ),
 
             // ── Section 4: Consequences ──
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 } },
+            h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 8 } },
                 '\u26A0\uFE0F ' + (band === 'elementary' ? 'What Happens If We Forget?' : 'Accountability Plan')
               ),
-              h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10 } },
+              h('p', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginBottom: 10 } },
                 band === 'elementary' ? 'What will your team do if someone doesn\'t follow the promises?' :
                 'What are the agreed-upon consequences if a team member doesn\'t meet expectations?'
               ),
@@ -1440,7 +1450,7 @@ window.SelHub = window.SelHub || {
                   band === 'middle' ? 'First: private conversation. Second: group discussion. Third: involve the teacher.' :
                   'Progressive accountability: private check-in, team meeting, escalation path, grade impact discussion.',
                 rows: 2,
-                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
+                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
               })
             ),
 
@@ -1458,42 +1468,42 @@ window.SelHub = window.SelHub || {
                   addToast('Team contract saved! +20 XP', 'success');
                   celebrate && celebrate();
                 },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: contractSaved ? '#334155' : ACCENT, color: contractSaved ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: contractSaved ? _teaBg('#334155') : ACCENT, color: contractSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, contractSaved ? '\u2713 Contract Saved' : '\uD83D\uDCBE Save Contract'),
               contractSaved && h('button', { 'aria-label': 'Start New Contract',
                 onClick: function() { upd({ contractAgreements: ['', '', '', '', ''], contractRoles: ['', '', '', ''], contractComms: '', contractConsequence: '', contractSaved: false }); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+                style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: _teaFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
               }, 'Start New Contract')
             ),
 
             // Contract Preview
-            contractSaved && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
+            contractSaved && h('div', { style: { padding: 20, borderRadius: 14, background: _teaBg('#0f172a'), border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
               h('div', { style: { textAlign: 'center', marginBottom: 14 } },
-                h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f1f5f9' } }, '\uD83D\uDCDC Team Contract'),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, 'Created ' + new Date().toLocaleDateString())
+                h('div', { style: { fontSize: 20, fontWeight: 700, color: _teaFg('#f1f5f9') } }, '\uD83D\uDCDC Team Contract'),
+                h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginTop: 4 } }, 'Created ' + new Date().toLocaleDateString())
               ),
               h('div', { style: { marginBottom: 14 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: ACCENT, marginBottom: 6 } }, 'AGREEMENTS:'),
                 contractAgreements.filter(function(a) { return a.trim(); }).map(function(a, i) {
-                  return h('div', { key: i, style: { fontSize: 12, color: '#cbd5e1', padding: '4px 0', paddingLeft: 12, borderLeft: '2px solid ' + ACCENT + '44' } }, (i + 1) + '. ' + a);
+                  return h('div', { key: i, style: { fontSize: 12, color: _teaFg('#cbd5e1'), padding: '4px 0', paddingLeft: 12, borderLeft: '2px solid ' + ACCENT + '44' } }, (i + 1) + '. ' + a);
                 })
               ),
               contractRoles.filter(function(r) { return r.trim(); }).length > 0 && h('div', { style: { marginBottom: 14 } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#8b5cf6', marginBottom: 6 } }, 'ROLES:'),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _teaFg('#8b5cf6'), marginBottom: 6 } }, 'ROLES:'),
                 contractRoles.filter(function(r) { return r.trim(); }).map(function(r, i) {
-                  return h('div', { key: i, style: { fontSize: 12, color: '#cbd5e1', padding: '4px 0', paddingLeft: 12, borderLeft: '2px solid #8b5cf644' } }, r);
+                  return h('div', { key: i, style: { fontSize: 12, color: _teaFg('#cbd5e1'), padding: '4px 0', paddingLeft: 12, borderLeft: '2px solid #8b5cf644' } }, r);
                 })
               ),
               contractComms.trim() && h('div', { style: { marginBottom: 14 } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#f59e0b', marginBottom: 6 } }, 'COMMUNICATION:'),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid #f59e0b44' } }, contractComms)
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _teaFg('#f59e0b'), marginBottom: 6 } }, 'COMMUNICATION:'),
+                h('div', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid #f59e0b44' } }, contractComms)
               ),
               contractConsequence.trim() && h('div', null,
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#ef4444', marginBottom: 6 } }, 'ACCOUNTABILITY:'),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid #ef444444' } }, contractConsequence)
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _teaFg('#ef4444'), marginBottom: 6 } }, 'ACCOUNTABILITY:'),
+                h('div', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid #ef444444' } }, contractConsequence)
               ),
               h('div', { style: { marginTop: 16, paddingTop: 12, borderTop: '1px dashed #334155', textAlign: 'center' } },
-                h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Signatures: _______________  _______________  _______________  _______________')
+                h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), fontStyle: 'italic' } }, 'Signatures: _______________  _______________  _______________  _______________')
               )
             )
           );
@@ -1521,24 +1531,24 @@ window.SelHub = window.SelHub || {
           }
 
           commStyleContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDDE3\uFE0F Communication Style Discovery'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDDE3\uFE0F Communication Style Discovery'),
+            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Find out how you like to talk and work with your team! Answer 10 questions.' :
               band === 'middle' ? 'Discover your natural communication style. There are no wrong answers \u2014 every style has strengths!' :
               'Identify your dominant communication tendencies to leverage strengths and address blind spots in team settings.'
             ),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 16 } }, answeredQuestions + ' / ' + totalQuestions + ' questions answered'),
+            h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), textAlign: 'center', marginBottom: 16 } }, answeredQuestions + ' / ' + totalQuestions + ' questions answered'),
 
             // Questions (not yet submitted)
             !commStyleDone && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 } },
               COMM_STYLE_QUESTIONS.map(function(q, qi) {
                 var answered = commStyleAnswers[qi] != null;
-                return h('div', { key: qi, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + (answered ? ACCENT + '44' : '#334155') } },
-                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, (qi + 1) + '. ' + q.q),
+                return h('div', { key: qi, style: { padding: 14, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid ' + (answered ? ACCENT + '44' : _teaBg('#334155')) } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 10 } }, (qi + 1) + '. ' + q.q),
                   h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                     q.options.map(function(opt, oi) {
                       var isSelected = commStyleAnswers[qi] === opt.style;
-                      return h('button', { 'aria-label': 'Toggle sound',
+                      return h('button', {
                         key: oi,
                         onClick: function() {
                           var newAns = Object.assign({}, commStyleAnswers);
@@ -1547,8 +1557,8 @@ window.SelHub = window.SelHub || {
                           if (soundEnabled) sfxClick();
                         },
                         style: {
-                          padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (isSelected ? ACCENT : '#334155'),
-                          background: isSelected ? ACCENT_DIM : '#0f172a', color: isSelected ? ACCENT : '#cbd5e1',
+                          padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (isSelected ? ACCENT : _teaBg('#334155')),
+                          background: isSelected ? ACCENT_DIM : '#0f172a', color: isSelected ? ACCENT : _teaFg('#cbd5e1'),
                           fontSize: 12, textAlign: 'left', cursor: 'pointer', lineHeight: 1.5, fontWeight: isSelected ? 600 : 400
                         }
                       }, opt.text);
@@ -1572,7 +1582,7 @@ window.SelHub = window.SelHub || {
                 addToast('Communication style discovered! +25 XP', 'success');
                 celebrate && celebrate();
               },
-              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: answeredQuestions === totalQuestions ? ACCENT : '#334155', color: answeredQuestions === totalQuestions ? '#0f172a' : '#94a3b8', fontWeight: 700, fontSize: 14, cursor: answeredQuestions === totalQuestions ? 'pointer' : 'default', marginBottom: 20 }
+              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: answeredQuestions === totalQuestions ? ACCENT : _teaBg('#334155'), color: answeredQuestions === totalQuestions ? '#0f172a' : _teaFg('#94a3b8'), fontWeight: 700, fontSize: 14, cursor: answeredQuestions === totalQuestions ? 'pointer' : 'default', marginBottom: 20 }
             }, answeredQuestions === totalQuestions ? '\u2705 Discover My Style' : 'Answer all ' + totalQuestions + ' questions'),
 
             // Results
@@ -1585,52 +1595,52 @@ window.SelHub = window.SelHub || {
 
               return h('div', null,
                 // Primary & Secondary style cards
-                h('div', { style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '2px solid ' + primary.color + '66', marginBottom: 16 } },
+                h('div', { style: { padding: 18, borderRadius: 14, background: _teaBg('#1e293b'), border: '2px solid ' + primary.color + '66', marginBottom: 16 } },
                   h('div', { style: { textAlign: 'center', marginBottom: 12 } },
                     h('div', { style: { fontSize: 36 } }, primary.icon),
                     h('div', { style: { fontSize: 18, fontWeight: 700, color: primary.color, marginTop: 4 } }, 'Primary: ' + primary.name),
-                    h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.6 } }, primary.desc)
+                    h('div', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginTop: 4, lineHeight: 1.6 } }, primary.desc)
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 } },
-                    h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a' } },
-                      h('div', { style: { fontSize: 11, fontWeight: 700, color: '#22c55e', marginBottom: 6 } }, '\u2705 STRENGTHS'),
+                    h('div', { style: { padding: 12, borderRadius: 10, background: _teaBg('#0f172a') } },
+                      h('div', { style: { fontSize: 11, fontWeight: 700, color: _teaFg('#22c55e'), marginBottom: 6 } }, '\u2705 STRENGTHS'),
                       primary.strengths.map(function(s, i) {
-                        return h('div', { key: i, style: { fontSize: 11, color: '#cbd5e1', padding: '2px 0', lineHeight: 1.5 } }, '\u2022 ' + s);
+                        return h('div', { key: i, style: { fontSize: 11, color: _teaFg('#cbd5e1'), padding: '2px 0', lineHeight: 1.5 } }, '\u2022 ' + s);
                       })
                     ),
-                    h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a' } },
-                      h('div', { style: { fontSize: 11, fontWeight: 700, color: '#f59e0b', marginBottom: 6 } }, '\u26A0\uFE0F BLIND SPOTS'),
+                    h('div', { style: { padding: 12, borderRadius: 10, background: _teaBg('#0f172a') } },
+                      h('div', { style: { fontSize: 11, fontWeight: 700, color: _teaFg('#f59e0b'), marginBottom: 6 } }, '\u26A0\uFE0F BLIND SPOTS'),
                       primary.blindSpots.map(function(s, i) {
-                        return h('div', { key: i, style: { fontSize: 11, color: '#cbd5e1', padding: '2px 0', lineHeight: 1.5 } }, '\u2022 ' + s);
+                        return h('div', { key: i, style: { fontSize: 11, color: _teaFg('#cbd5e1'), padding: '2px 0', lineHeight: 1.5 } }, '\u2022 ' + s);
                       })
                     )
                   )
                 ),
 
                 // Secondary style
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + secondary.color + '44', marginBottom: 16 } },
+                h('div', { style: { padding: 14, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid ' + secondary.color + '44', marginBottom: 16 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                     h('span', { style: { fontSize: 24 } }, secondary.icon),
                     h('div', null,
                       h('div', { style: { fontSize: 13, fontWeight: 600, color: secondary.color } }, 'Secondary: ' + secondary.name),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, secondary.desc)
+                      h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginTop: 2 } }, secondary.desc)
                     )
                   )
                 ),
 
                 // Score bars
-                h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, '\uD83D\uDCCA Style Breakdown'),
+                h('div', { style: { padding: 16, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 10 } }, '\uD83D\uDCCA Style Breakdown'),
                   styleKeys.map(function(sk) {
                     var s = COMM_STYLES[sk];
                     var count = tallies[sk] || 0;
                     var pct = Math.round((count / totalQuestions) * 100);
                     return h('div', { key: sk, style: { marginBottom: 8 } },
                       h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 } },
-                        h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, s.icon + ' ' + s.name),
+                        h('span', { style: { fontSize: 12, color: _teaFg('#cbd5e1') } }, s.icon + ' ' + s.name),
                         h('span', { style: { fontSize: 11, color: s.color, fontWeight: 600 } }, count + '/' + totalQuestions + ' (' + pct + '%)')
                       ),
-                      h('div', { style: { height: 8, borderRadius: 4, background: '#0f172a', overflow: 'hidden' } },
+                      h('div', { style: { height: 8, borderRadius: 4, background: _teaBg('#0f172a'), overflow: 'hidden' } },
                         h('div', { style: { height: '100%', width: pct + '%', background: s.color, borderRadius: 4, transition: 'width 0.5s' } })
                       )
                     );
@@ -1638,21 +1648,21 @@ window.SelHub = window.SelHub || {
                 ),
 
                 // How to work with each style
-                h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, '\uD83E\uDD1D How to Work With Each Style'),
+                h('div', { style: { padding: 16, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 10 } }, '\uD83E\uDD1D How to Work With Each Style'),
                   styleKeys.map(function(sk) {
                     var s = COMM_STYLES[sk];
-                    return h('div', { key: sk, style: { padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 6, borderLeft: '3px solid ' + s.color } },
+                    return h('div', { key: sk, style: { padding: 10, borderRadius: 8, background: _teaBg('#0f172a'), marginBottom: 6, borderLeft: '3px solid ' + s.color } },
                       h('div', { style: { fontSize: 12, fontWeight: 600, color: s.color, marginBottom: 4 } }, s.icon + ' ' + s.name),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.6 } }, s.workWith)
+                      h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), lineHeight: 1.6 } }, s.workWith)
                     );
                   })
                 ),
 
                 // AI team composition advice
-                h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f133', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Composition Advice'),
-                  h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10 } }, 'Get personalized advice on how your style fits into different team compositions.'),
+                h('div', { style: { padding: 16, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid #6366f133', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\u2728 AI Team Composition Advice'),
+                  h('p', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginBottom: 10 } }, 'Get personalized advice on how your style fits into different team compositions.'),
                   h('button', { 'aria-label': commStyleCoachLoad ? 'Thinking...' : '\u2728 Get Team Advice',
                     onClick: function() {
                       if (!callGemini) { addToast('AI not available.', 'error'); return; }
@@ -1676,18 +1686,18 @@ window.SelHub = window.SelHub || {
                       });
                     },
                     disabled: commStyleCoachLoad,
-                    style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: commStyleCoachLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 12, cursor: commStyleCoachLoad ? 'default' : 'pointer' }
+                    style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: commStyleCoachLoad ? _teaBg('#334155') : '#6366f1', color: _teaFg('#fff'), fontWeight: 600, fontSize: 12, cursor: commStyleCoachLoad ? 'default' : 'pointer' }
                   }, commStyleCoachLoad ? 'Thinking...' : '\u2728 Get Team Advice'),
-                  commStyleCoachResp && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
-                    h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
-                    h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, commStyleCoachResp)
+                  commStyleCoachResp && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #6366f144' } },
+                    h('p', { style: { fontSize: 10, color: _teaFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
+                    h('div', { style: { fontSize: 13, color: _teaFg('#e2e8f0'), lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, commStyleCoachResp)
                   )
                 ),
 
                 // Retake
                 h('button', { 'aria-label': 'Retake Quiz',
                   onClick: function() { upd({ commStyleAnswers: {}, commStyleDone: false, commStyleResult: null, commStyleCoachResp: null }); if (soundEnabled) sfxClick(); },
-                  style: { display: 'block', margin: '0 auto', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
+                  style: { display: 'block', margin: '0 auto', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _teaFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
                 }, 'Retake Quiz')
               );
             })(),
@@ -1708,23 +1718,23 @@ window.SelHub = window.SelHub || {
           var vtAnsweredCount = Object.keys(vtAnswers).length;
 
           virtualTeamContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCBB Virtual Team Simulator'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCBB Virtual Team Simulator'),
+            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Practice working with a team when you can\u2019t meet in person!' :
               band === 'middle' ? 'Master the challenges of remote collaboration. 5 realistic scenarios.' :
               'Navigate the complexities of virtual teamwork. Practice async communication, trust-building, and remote conflict resolution.'
             ),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 16 } },
+            h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), textAlign: 'center', marginBottom: 16 } },
               'Scenario ' + ((vtScenarioIdx % VIRTUAL_TEAM_SCENARIOS.length) + 1) + ' of ' + VIRTUAL_TEAM_SCENARIOS.length + ' \u00B7 ' + vtAnsweredCount + ' completed'
             ),
 
             // Scenario card
-            h('div', { style: { padding: 20, borderRadius: 14, background: '#1e293b', border: '1px solid #3b82f644', marginBottom: 16 } },
+            h('div', { style: { padding: 20, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #3b82f644', marginBottom: 16 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
                 h('span', { style: { fontSize: 28 } }, curVt.icon),
-                h('h4', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', margin: 0 } }, curVt.title)
+                h('h4', { style: { fontSize: 16, fontWeight: 700, color: _teaFg('#f1f5f9'), margin: 0 } }, curVt.title)
               ),
-              h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 16 } }, curVt.setup),
+              h('p', { style: { fontSize: 13, color: _teaFg('#cbd5e1'), lineHeight: 1.7, marginBottom: 16 } }, curVt.setup),
 
               // Choices
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -1732,7 +1742,7 @@ window.SelHub = window.SelHub || {
                   var isChosen = vtAnswers[curVt.id] === ci;
                   var showFeedback = vtReveal && isChosen;
                   return h('div', { key: ci },
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', {
                       onClick: function() {
                         if (vtAnswered) return;
                         var newAns = Object.assign({}, vtAnswers);
@@ -1759,15 +1769,15 @@ window.SelHub = window.SelHub || {
                       },
                       disabled: vtAnswered,
                       style: {
-                        width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444') : '#334155'),
+                        width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (ch.rating === 3 ? _teaFg('#22c55e') : ch.rating === 2 ? _teaFg('#f59e0b') : _teaFg('#ef4444')) : _teaBg('#334155')),
                         background: isChosen ? (ch.rating === 3 ? '#22c55e11' : ch.rating === 2 ? '#f59e0b11' : '#ef444411') : '#0f172a',
-                        color: '#e2e8f0', fontSize: 13, textAlign: 'left', cursor: vtAnswered ? 'default' : 'pointer', lineHeight: 1.5
+                        color: _teaFg('#e2e8f0'), fontSize: 13, textAlign: 'left', cursor: vtAnswered ? 'default' : 'pointer', lineHeight: 1.5
                       }
                     },
                       h('span', null, ch.text),
                       isChosen && h('span', { style: { marginLeft: 8 } }, renderStars(ch.rating))
                     ),
-                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: '#0f172a', borderLeft: '3px solid ' + (ch.rating === 3 ? '#22c55e' : ch.rating === 2 ? '#f59e0b' : '#ef4444'), marginTop: -2, fontSize: 12, color: '#94a3b8', lineHeight: 1.6 } },
+                    showFeedback && h('div', { style: { padding: '10px 14px', borderRadius: '0 0 10px 10px', background: _teaBg('#0f172a'), borderLeft: '3px solid ' + (ch.rating === 3 ? _teaFg('#22c55e') : ch.rating === 2 ? _teaFg('#f59e0b') : _teaFg('#ef4444')), marginTop: -2, fontSize: 12, color: _teaFg('#94a3b8'), lineHeight: 1.6 } },
                       ch.feedback
                     )
                   );
@@ -1775,11 +1785,11 @@ window.SelHub = window.SelHub || {
               ),
 
               // Show all ratings after answering
-              vtReveal && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
-                h('div', { style: { fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 6 } }, 'All response ratings:'),
+              vtReveal && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #334155' } },
+                h('div', { style: { fontSize: 11, fontWeight: 600, color: _teaFg('#94a3b8'), marginBottom: 6 } }, 'All response ratings:'),
                 curVt.choices.map(function(ch, ci) {
                   var isChosen = vtAnswers[curVt.id] === ci;
-                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? '#f1f5f9' : '#94a3b8' } },
+                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? _teaFg('#f1f5f9') : _teaFg('#94a3b8') } },
                     renderStars(ch.rating),
                     h('span', { style: { marginLeft: 4 } }, ch.text.substring(0, 50) + (ch.text.length > 50 ? '...' : '')),
                     isChosen && h('span', { style: { color: ACCENT, marginLeft: 4, fontWeight: 700 } }, '\u2190 your pick')
@@ -1788,20 +1798,20 @@ window.SelHub = window.SelHub || {
               ),
 
               // Remote work tip
-              vtReveal && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #3b82f633' } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '\uD83D\uDCA1 Remote Work Tip'),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, curVt.tip)
+              vtReveal && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #3b82f633' } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: _teaFg('#3b82f6'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '\uD83D\uDCA1 Remote Work Tip'),
+                h('div', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.6 } }, curVt.tip)
               ),
 
               // Navigation
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
                 vtScenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd('vtScenarioIdx', vtScenarioIdx - 1); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, '\u2190 Previous'),
                 vtScenarioIdx < VIRTUAL_TEAM_SCENARIOS.length - 1 && h('button', { 'aria-label': 'Next',
                   onClick: function() { upd('vtScenarioIdx', vtScenarioIdx + 1); if (soundEnabled) sfxClick(); },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _teaBg('#334155'), color: _teaFg('#f1f5f9'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, 'Next \u2192')
               )
             ),
@@ -1817,16 +1827,16 @@ window.SelHub = window.SelHub || {
         var conflictToolContent = null;
         if (activeTab === 'conflicttool') {
           conflictToolContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u267B\uFE0F Conflict \u2192 Collaboration Converter'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\u267B\uFE0F Conflict \u2192 Collaboration Converter'),
+            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'When your team has a problem, describe it here and we\u2019ll help you turn it into teamwork!' :
               band === 'middle' ? 'Describe a team conflict and AI will reframe it as a collaboration opportunity with concrete steps.' :
               'Transform team friction into productive collaboration. Describe any conflict and receive actionable reframing strategies.'
             ),
 
             // Input section
-            h('div', { style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '1px solid #f59e0b44', marginBottom: 16 } },
-              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, '\uD83D\uDD25 Describe the Team Conflict'),
+            h('div', { style: { padding: 18, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #f59e0b44', marginBottom: 16 } },
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 10 } }, '\uD83D\uDD25 Describe the Team Conflict'),
               h('textarea', {
                 value: conflictInput,
                 'aria-label': 'Describe your team conflict',
@@ -1835,9 +1845,9 @@ window.SelHub = window.SelHub || {
                   band === 'middle' ? 'Example: Our team is split on the project direction. Half want to do a presentation, half want a video. Nobody will compromise...' :
                   'Describe the conflict in detail: who is involved, what happened, how people feel, and what you\'ve tried so far...',
                 rows: 4,
-                style: { width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 12 }
+                style: { width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 12 }
               }),
-              h('button', { 'aria-label': 'professional coaching language for ages 15-18.',
+              h('button', { 
                 onClick: function() {
                   if (!conflictInput.trim()) { addToast('Describe the conflict first!', 'info'); return; }
                   if (conflictInput.trim().length < 15) { addToast('Please describe the conflict in more detail.', 'info'); return; }
@@ -1883,36 +1893,36 @@ window.SelHub = window.SelHub || {
                   });
                 },
                 disabled: conflictLoading,
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: conflictLoading ? '#334155' : '#f59e0b', color: conflictLoading ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 13, cursor: conflictLoading ? 'default' : 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: conflictLoading ? _teaBg('#334155') : _teaFg('#f59e0b'), color: conflictLoading ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: conflictLoading ? 'default' : 'pointer' }
               }, conflictLoading ? '\u2728 Converting...' : '\u267B\uFE0F Convert to Collaboration')
             ),
 
             // Result
-            conflictResult && h('div', { style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '2px solid #22c55e44', marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#22c55e', marginBottom: 12, textAlign: 'center' } }, '\u2705 Collaboration Opportunity'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, conflictResult),
+            conflictResult && h('div', { style: { padding: 18, borderRadius: 14, background: _teaBg('#1e293b'), border: '2px solid #22c55e44', marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#22c55e'), marginBottom: 12, textAlign: 'center' } }, '\u2705 Collaboration Opportunity'),
+              h('div', { style: { fontSize: 13, color: _teaFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, conflictResult),
               h('button', { 'aria-label': 'Convert Another Conflict',
                 onClick: function() { upd({ conflictInput: '', conflictResult: null }); if (soundEnabled) sfxClick(); },
-                style: { display: 'block', margin: '14px auto 0', padding: '8px 18px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                style: { display: 'block', margin: '14px auto 0', padding: '8px 18px', borderRadius: 8, border: 'none', background: _teaBg('#b45309'), color: _teaFg('#0f172a'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\u267B\uFE0F Convert Another Conflict')
             ),
 
             // Conversion counter
-            h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', marginBottom: 16, textAlign: 'center' } },
-              h('div', { style: { fontSize: 24, fontWeight: 700, color: '#f59e0b' } }, String(conflictCount)),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, 'Conflicts Converted to Collaborations'),
-              conflictCount < 3 && h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, 'Convert ' + (3 - conflictCount) + ' more to earn the Conflict Converter badge!')
+            h('div', { style: { padding: 14, borderRadius: 12, background: _teaBg('#0f172a'), border: '1px solid #334155', marginBottom: 16, textAlign: 'center' } },
+              h('div', { style: { fontSize: 24, fontWeight: 700, color: _teaFg('#f59e0b') } }, String(conflictCount)),
+              h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginTop: 2 } }, 'Conflicts Converted to Collaborations'),
+              conflictCount < 3 && h('div', { style: { fontSize: 10, color: _teaFg('#94a3b8'), marginTop: 4 } }, 'Convert ' + (3 - conflictCount) + ' more to earn the Conflict Converter badge!')
             ),
 
             // History
             conflictHistory.length > 0 && h('div', { style: { marginBottom: 16 } },
-              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDCDD Conversion History'),
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83D\uDCDD Conversion History'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 conflictHistory.slice(-5).reverse().map(function(entry, i) {
-                  return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, new Date(entry.timestamp).toLocaleString()),
-                    h('div', { style: { fontSize: 11, color: '#ef4444', marginBottom: 4, fontStyle: 'italic' } }, '\uD83D\uDD25 "' + (entry.input.length > 80 ? entry.input.substring(0, 80) + '...' : entry.input) + '"'),
-                    h('div', { style: { fontSize: 11, color: '#22c55e' } }, '\u2705 Converted successfully')
+                  return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _teaBg('#1e293b'), border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: 10, color: _teaFg('#94a3b8'), marginBottom: 4 } }, new Date(entry.timestamp).toLocaleString()),
+                    h('div', { style: { fontSize: 11, color: _teaFg('#ef4444'), marginBottom: 4, fontStyle: 'italic' } }, '\uD83D\uDD25 "' + (entry.input.length > 80 ? entry.input.substring(0, 80) + '...' : entry.input) + '"'),
+                    h('div', { style: { fontSize: 11, color: _teaFg('#22c55e') } }, '\u2705 Converted successfully')
                   );
                 })
               )
@@ -1928,14 +1938,14 @@ window.SelHub = window.SelHub || {
         var retroContent = null;
         if (activeTab === 'retro') {
           var retroCategories = [
-            { key: 'green', label: 'What Went Well', color: '#22c55e', icon: '\u2705', items: retroGreen, inputVal: retroGreenInput, inputKey: 'retroGreenInput', listKey: 'retroGreen' },
-            { key: 'yellow', label: 'What Could Improve', color: '#f59e0b', icon: '\u26A0\uFE0F', items: retroYellow, inputVal: retroYellowInput, inputKey: 'retroYellowInput', listKey: 'retroYellow' },
-            { key: 'blue', label: 'Action Items for Next Time', color: '#3b82f6', icon: '\uD83D\uDCCB', items: retroBlue, inputVal: retroBlueInput, inputKey: 'retroBlueInput', listKey: 'retroBlue' }
+            { key: 'green', label: 'What Went Well', color: _teaFg('#22c55e'), icon: '\u2705', items: retroGreen, inputVal: retroGreenInput, inputKey: 'retroGreenInput', listKey: 'retroGreen' },
+            { key: 'yellow', label: 'What Could Improve', color: _teaFg('#f59e0b'), icon: '\u26A0\uFE0F', items: retroYellow, inputVal: retroYellowInput, inputKey: 'retroYellowInput', listKey: 'retroYellow' },
+            { key: 'blue', label: 'Action Items for Next Time', color: _teaFg('#3b82f6'), icon: '\uD83D\uDCCB', items: retroBlue, inputVal: retroBlueInput, inputKey: 'retroBlueInput', listKey: 'retroBlue' }
           ];
 
           retroContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD04 Team Retrospective'),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDD04 Team Retrospective'),
+            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'After working with your team, think about what happened! Add cards to each section.' :
               band === 'middle' ? 'Run a team retro: reflect on what worked, what didn\u2019t, and what to do differently next time.' :
               'Conduct a structured retrospective to extract actionable insights from your team\u2019s collaboration experience.'
@@ -1943,19 +1953,19 @@ window.SelHub = window.SelHub || {
 
             // Three category sections
             retroCategories.map(function(cat) {
-              return h('div', { key: cat.key, style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + cat.color + '44', marginBottom: 14 } },
+              return h('div', { key: cat.key, style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid ' + cat.color + '44', marginBottom: 14 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
                   h('span', { style: { fontSize: 18 } }, cat.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 700, color: cat.color } }, cat.label),
-                  h('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#94a3b8', padding: '2px 8px', borderRadius: 12, background: '#0f172a' } }, cat.items.length + ' cards')
+                  h('span', { style: { marginLeft: 'auto', fontSize: 11, color: _teaFg('#94a3b8'), padding: '2px 8px', borderRadius: 12, background: _teaBg('#0f172a') } }, cat.items.length + ' cards')
                 ),
 
                 // Existing cards
                 cat.items.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
                   cat.items.map(function(item, idx) {
-                    return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid ' + cat.color + '22' } },
+                    return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: _teaBg('#0f172a'), border: '1px solid ' + cat.color + '22' } },
                       h('div', { style: { width: 4, height: 20, borderRadius: 2, background: cat.color, flexShrink: 0 } }),
-                      h('span', { style: { fontSize: 12, color: '#e2e8f0', flex: 1, lineHeight: 1.5 } }, item),
+                      h('span', { style: { fontSize: 12, color: _teaFg('#e2e8f0'), flex: 1, lineHeight: 1.5 } }, item),
                       h('button', { 'aria-label': 'Remove',
                         onClick: function() {
                           var newItems = cat.items.slice();
@@ -1964,7 +1974,7 @@ window.SelHub = window.SelHub || {
                           upd('retroSaved', false);
                           if (soundEnabled) sfxClick();
                         },
-                        style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: '0 4px' },
+                        style: { background: 'none', border: 'none', color: _teaFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: '0 4px' },
                         title: 'Remove'
                       }, '\u00D7')
                     );
@@ -1988,7 +1998,7 @@ window.SelHub = window.SelHub || {
                       }
                     },
                     placeholder: cat.key === 'green' ? 'Something that went well...' : cat.key === 'yellow' ? 'Something to improve...' : 'An action item for next time...',
-                    style: { flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12 }
+                    style: { flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12 }
                   }),
                   h('button', { 'aria-label': '+ Add',
                     onClick: function() {
@@ -1999,7 +2009,7 @@ window.SelHub = window.SelHub || {
                       upd('retroSaved', false);
                       if (soundEnabled) sfxClick();
                     },
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: cat.color, color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: cat.color, color: _teaFg('#fff'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                   }, '+ Add')
                 )
               );
@@ -2007,7 +2017,7 @@ window.SelHub = window.SelHub || {
 
             // Save / Export buttons
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
-              h('button', { 'aria-label': 'Toggle sound',
+              h('button', {
                 onClick: function() {
                   var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
                   if (totalCards < 3) { addToast('Add at least 3 cards total to save!', 'info'); return; }
@@ -2019,7 +2029,7 @@ window.SelHub = window.SelHub || {
                   addToast('Retrospective saved! +20 XP', 'success');
                   celebrate && celebrate();
                 },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: retroSaved ? '#334155' : ACCENT, color: retroSaved ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: retroSaved ? _teaBg('#334155') : ACCENT, color: retroSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, retroSaved ? '\u2713 Saved' : '\uD83D\uDCBE Save Retrospective'),
               h('button', { 'aria-label': 'success',
                 onClick: function() {
@@ -2057,35 +2067,35 @@ window.SelHub = window.SelHub || {
                   }
                   if (soundEnabled) sfxTeam();
                 },
-                style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: _teaBg('#3b82f6'), color: _teaFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCE4 Export as Text'),
               h('button', { 'aria-label': 'Clear All',
                 onClick: function() {
                   upd({ retroGreen: [], retroYellow: [], retroBlue: [], retroGreenInput: '', retroYellowInput: '', retroBlueInput: '', retroSaved: false });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 14px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+                style: { padding: '10px 14px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: _teaFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
               }, 'Clear All')
             ),
 
             // Retro preview (when saved)
-            retroSaved && h('div', { style: { padding: 18, borderRadius: 14, background: '#0f172a', border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
+            retroSaved && h('div', { style: { padding: 18, borderRadius: 14, background: _teaBg('#0f172a'), border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
               h('div', { style: { textAlign: 'center', marginBottom: 14 } },
-                h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9' } }, '\uD83D\uDD04 Retrospective Summary'),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, new Date().toLocaleDateString())
+                h('div', { style: { fontSize: 18, fontWeight: 700, color: _teaFg('#f1f5f9') } }, '\uD83D\uDD04 Retrospective Summary'),
+                h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginTop: 4 } }, new Date().toLocaleDateString())
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 } },
                 [
-                  { color: '#22c55e', icon: '\u2705', label: 'Well', items: retroGreen },
-                  { color: '#f59e0b', icon: '\u26A0\uFE0F', label: 'Improve', items: retroYellow },
-                  { color: '#3b82f6', icon: '\uD83D\uDCCB', label: 'Actions', items: retroBlue }
+                  { color: _teaFg('#22c55e'), icon: '\u2705', label: 'Well', items: retroGreen },
+                  { color: _teaFg('#f59e0b'), icon: '\u26A0\uFE0F', label: 'Improve', items: retroYellow },
+                  { color: _teaFg('#3b82f6'), icon: '\uD83D\uDCCB', label: 'Actions', items: retroBlue }
                 ].map(function(col) {
-                  return h('div', { key: col.label, style: { padding: 10, borderRadius: 10, background: '#1e293b', borderTop: '3px solid ' + col.color } },
+                  return h('div', { key: col.label, style: { padding: 10, borderRadius: 10, background: _teaBg('#1e293b'), borderTop: '3px solid ' + col.color } },
                     h('div', { style: { fontSize: 11, fontWeight: 700, color: col.color, marginBottom: 6, textAlign: 'center' } }, col.icon + ' ' + col.label),
                     col.items.map(function(item, i) {
-                      return h('div', { key: i, style: { fontSize: 10, color: '#cbd5e1', padding: '3px 0', lineHeight: 1.4, borderBottom: '1px solid #334155' } }, '\u2022 ' + item);
+                      return h('div', { key: i, style: { fontSize: 10, color: _teaFg('#cbd5e1'), padding: '3px 0', lineHeight: 1.4, borderBottom: '1px solid #334155' } }, '\u2022 ' + item);
                     }),
-                    col.items.length === 0 && h('div', { style: { fontSize: 10, color: '#475569', fontStyle: 'italic', textAlign: 'center' } }, '(none)')
+                    col.items.length === 0 && h('div', { style: { fontSize: 10, color: _teaFg('#475569'), fontStyle: 'italic', textAlign: 'center' } }, '(none)')
                   );
                 })
               )
@@ -2117,63 +2127,63 @@ window.SelHub = window.SelHub || {
           var vtAnsweredTotal = Object.keys(vtAnswers).length;
           var stats = [
             { icon: '\uD83D\uDC51', label: 'Roles Selected', value: selectedRoles.length + '/' + roles2.length, color: ACCENT },
-            { icon: '\uD83C\uDFD7\uFE0F', label: 'Challenges Done', value: String(challengesCompleted), color: '#f59e0b' },
-            { icon: '\uD83C\uDFAD', label: 'Scenarios Answered', value: answeredScenarios + '/' + SCENARIOS.length, color: '#8b5cf6' },
-            { icon: '\u2B50', label: 'Stars Earned', value: totalStars + '/' + (SCENARIOS.length * 3), color: '#facc15' },
-            { icon: '\uD83D\uDDE3\uFE0F', label: 'Comm Style', value: commStyleDone ? 'Done' : 'Not yet', color: '#ef4444' },
-            { icon: '\uD83D\uDCBB', label: 'Virtual Team', value: vtAnsweredTotal + '/' + VIRTUAL_TEAM_SCENARIOS.length, color: '#3b82f6' },
-            { icon: '\u267B\uFE0F', label: 'Conflicts Conv.', value: String(conflictCount), color: '#f59e0b' },
-            { icon: '\uD83D\uDD04', label: 'Retrospective', value: retroSaved ? 'Done' : 'Not yet', color: '#06b6d4' },
-            { icon: '\uD83D\uDCCA', label: 'Quiz', value: quizSubmitted ? 'Done' : 'Not yet', color: '#06b6d4' },
-            { icon: '\uD83D\uDCDC', label: 'Contract', value: contractSaved ? 'Saved' : 'Not yet', color: '#a78bfa' },
-            { icon: '\uD83C\uDFC5', label: 'Badges', value: Object.keys(earnedBadges).length + '/' + BADGES.length, color: '#ec4899' },
-            { icon: '\uD83D\uDCDD', label: 'Reflections', value: String(reflectionLog.length), color: '#22d3ee' },
-            { icon: '\uD83D\uDD25', label: 'Activities', value: String(practiceLog.length), color: '#ef4444' }
+            { icon: '\uD83C\uDFD7\uFE0F', label: 'Challenges Done', value: String(challengesCompleted), color: _teaFg('#f59e0b') },
+            { icon: '\uD83C\uDFAD', label: 'Scenarios Answered', value: answeredScenarios + '/' + SCENARIOS.length, color: _teaFg('#8b5cf6') },
+            { icon: '\u2B50', label: 'Stars Earned', value: totalStars + '/' + (SCENARIOS.length * 3), color: _teaFg('#facc15') },
+            { icon: '\uD83D\uDDE3\uFE0F', label: 'Comm Style', value: commStyleDone ? 'Done' : 'Not yet', color: _teaFg('#ef4444') },
+            { icon: '\uD83D\uDCBB', label: 'Virtual Team', value: vtAnsweredTotal + '/' + VIRTUAL_TEAM_SCENARIOS.length, color: _teaFg('#3b82f6') },
+            { icon: '\u267B\uFE0F', label: 'Conflicts Conv.', value: String(conflictCount), color: _teaFg('#f59e0b') },
+            { icon: '\uD83D\uDD04', label: 'Retrospective', value: retroSaved ? 'Done' : 'Not yet', color: _teaFg('#06b6d4') },
+            { icon: '\uD83D\uDCCA', label: 'Quiz', value: quizSubmitted ? 'Done' : 'Not yet', color: _teaFg('#06b6d4') },
+            { icon: '\uD83D\uDCDC', label: 'Contract', value: contractSaved ? 'Saved' : 'Not yet', color: _teaFg('#a78bfa') },
+            { icon: '\uD83C\uDFC5', label: 'Badges', value: Object.keys(earnedBadges).length + '/' + BADGES.length, color: _teaFg('#ec4899') },
+            { icon: '\uD83D\uDCDD', label: 'Reflections', value: String(reflectionLog.length), color: _teaFg('#22d3ee') },
+            { icon: '\uD83D\uDD25', label: 'Activities', value: String(practiceLog.length), color: _teaFg('#ef4444') }
           ];
 
           progressContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Your Teamwork Progress'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCCA Your Teamwork Progress'),
 
             // Stats grid
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 } },
               stats.map(function(s) {
                 return h('div', {
                   key: s.label,
-                  style: { padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid ' + s.color + '44', textAlign: 'center' }
+                  style: { padding: 12, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid ' + s.color + '44', textAlign: 'center' }
                 },
                   h('div', { style: { fontSize: 20 } }, s.icon),
                   h('div', { style: { fontSize: 18, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, s.label)
+                  h('div', { style: { fontSize: 10, color: _teaFg('#94a3b8') } }, s.label)
                 );
               })
             ),
 
             // Role profile
-            selectedRoles.length > 0 && h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDC51 Your Role Profile'),
+            selectedRoles.length > 0 && h('div', { style: { padding: 16, borderRadius: 12, background: _teaBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83D\uDC51 Your Role Profile'),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 selectedRoles.map(function(rid) {
                   var r = roles2.find(function(x) { return x.id === rid; });
                   return r ? h('span', { key: rid, style: { padding: '4px 10px', borderRadius: 20, background: ACCENT_DIM, color: ACCENT, fontSize: 12, fontWeight: 600 } }, r.emoji + ' ' + r.name) : null;
                 })
               ),
-              roleReflectionSaved && roleReflection && h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: '#0f172a', fontSize: 12, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.6 } },
+              roleReflectionSaved && roleReflection && h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: _teaBg('#0f172a'), fontSize: 12, color: _teaFg('#94a3b8'), fontStyle: 'italic', lineHeight: 1.6 } },
                 '\uD83D\uDCDD "' + roleReflection + '"'
               )
             ),
 
             // Badges earned
             h('div', { style: { marginBottom: 16 } },
-              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\uD83C\uDFC5 Badges Earned'),
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83C\uDFC5 Badges Earned'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 } },
                 BADGES.map(function(b) {
                   var earned = !!earnedBadges[b.id];
                   return h('div', {
                     key: b.id,
-                    style: { padding: 10, borderRadius: 10, background: earned ? '#1e293b' : '#0f172a', border: '1px solid ' + (earned ? ACCENT + '44' : '#1e293b'), textAlign: 'center', opacity: earned ? 1 : 0.4 }
+                    style: { padding: 10, borderRadius: 10, background: earned ? _teaBg('#1e293b') : '#0f172a', border: '1px solid ' + (earned ? ACCENT + '44' : _teaBg('#1e293b')), textAlign: 'center', opacity: earned ? 1 : 0.4 }
                   },
                     h('div', { style: { fontSize: 22 } }, earned ? b.icon : '\uD83D\uDD12'),
-                    h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#f1f5f9' : '#475569', marginTop: 2 } }, b.name)
+                    h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _teaFg('#f1f5f9') : _teaFg('#475569'), marginTop: 2 } }, b.name)
                   );
                 })
               )
@@ -2181,18 +2191,18 @@ window.SelHub = window.SelHub || {
 
             // Quick Reflections log
             reflectionLog.length > 0 && h('div', { style: { marginBottom: 16 } },
-              h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflections'),
+              h('h4', { style: { fontSize: 14, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflections'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 reflectionLog.slice(-6).reverse().map(function(entry, i) {
                   return h('div', {
                     key: i,
-                    style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', fontSize: 12, border: '1px solid #334155' }
+                    style: { padding: '8px 12px', borderRadius: 8, background: _teaBg('#0f172a'), fontSize: 12, border: '1px solid #334155' }
                   },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                       h('span', { style: { padding: '2px 8px', borderRadius: 12, background: ACCENT_DIM, color: ACCENT, fontSize: 10, fontWeight: 600 } }, entry.skill),
-                      h('span', { style: { fontSize: 10, color: '#94a3b8', marginLeft: 'auto' } }, entry.activity + ' \u00B7 ' + new Date(entry.timestamp).toLocaleDateString())
+                      h('span', { style: { fontSize: 10, color: _teaFg('#94a3b8'), marginLeft: 'auto' } }, entry.activity + ' \u00B7 ' + new Date(entry.timestamp).toLocaleDateString())
                     ),
-                    entry.note && h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '"' + entry.note + '"')
+                    entry.note && h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), fontStyle: 'italic' } }, '"' + entry.note + '"')
                   );
                 })
               )
@@ -2200,18 +2210,18 @@ window.SelHub = window.SelHub || {
 
             // Recent practice log
             practiceLog.length > 0 && h('div', null,
-              h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, 'Recent Practice'),
+              h('h4', { style: { fontSize: 14, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, 'Recent Practice'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 practiceLog.slice(-8).reverse().map(function(entry, i) {
                   var icons = { role_explore: '\uD83D\uDC51', reflection: '\uD83D\uDCDD', challenge: '\uD83C\uDFD7\uFE0F', scenario: '\uD83C\uDFAD', ai_coach: '\u2728', quiz: '\uD83D\uDCCA', contract: '\uD83D\uDCDC', quick_reflection: '\uD83D\uDCDD', comm_style: '\uD83D\uDDE3\uFE0F', virtual_team: '\uD83D\uDCBB', conflict_convert: '\u267B\uFE0F', retro: '\uD83D\uDD04' };
                   var labels = { role_explore: 'Role Explored', reflection: 'Reflection', challenge: 'Challenge', scenario: 'Scenario', ai_coach: 'AI Coach', quiz: 'Skills Quiz', contract: 'Team Contract', quick_reflection: 'Quick Reflection', comm_style: 'Comm Style', virtual_team: 'Virtual Team', conflict_convert: 'Conflict Converted', retro: 'Retrospective' };
                   return h('div', {
                     key: i,
-                    style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }
+                    style: { padding: '8px 12px', borderRadius: 8, background: _teaBg('#0f172a'), display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }
                   },
                     h('span', null, icons[entry.type] || '\uD83D\uDCDD'),
-                    h('span', { style: { color: '#e2e8f0', fontWeight: 500 } }, labels[entry.type] || entry.type),
-                    h('span', { style: { marginLeft: 'auto', color: '#94a3b8', fontSize: 11 } }, new Date(entry.timestamp).toLocaleString())
+                    h('span', { style: { color: _teaFg('#e2e8f0'), fontWeight: 500 } }, labels[entry.type] || entry.type),
+                    h('span', { style: { marginLeft: 'auto', color: _teaFg('#94a3b8'), fontSize: 11 } }, new Date(entry.timestamp).toLocaleString())
                   );
                 })
               )

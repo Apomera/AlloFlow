@@ -77,6 +77,30 @@ const KNOWN = new Set(['undefined','NaN','Infinity','globalThis','Math','JSON','
 // window.__alloT). Don't add setX/callX/handleX here — CDN factories receive those at runtime.
 const ALWAYS_SCOPED = new Set(['t']);
 
+// The ONLY setX-shaped identifiers that are legitimately free (host/browser
+// globals) — verified empirically across every module: an unresolved setX is
+// otherwise ALWAYS a dropped React state setter. Anything not here that is
+// unresolved + setX-shaped is the edit-war "stomped useState declaration"
+// class (the reconPreviewIdx fatal crash 2026-06-13).
+const TIMER_SETTERS = new Set(['setTimeout', 'setInterval', 'setImmediate']);
+
+// Setters the HOST app / a tool FACTORY injects at runtime as ambient free
+// vars (eslint-scope can't see the injection, so they sit in globalScope.through
+// in EVERY module that uses them — not a dropped declaration). Verified
+// injected: each module here passes its render golden (the value can't be
+// undefined at render) and/or guards with `typeof setX === 'function'`
+// (e.g. content_engine_source.jsx:1871). Two sources: (a) main-app setters
+// passed into sub-modules (setHistory/setGeneratedContent/setShowClassAnalytics),
+// (b) tool-factory state (setToolData/setState in STEM tools). A genuinely-
+// LOCAL state setter that gets stomped is NOT here, so it still hard-fails —
+// which is the whole point (the reconPreviewIdx class). Adding a NEW
+// factory-injected setter requires one entry here; that's the only maintenance.
+const HOST_INJECTED_SETTERS = new Set([
+  'setToolData', 'setState', 'setHistory', 'setGeneratedContent',
+  'setShowClassAnalytics', 'setIsPlaying', 'setIsPaused', 'setIsGeneratingGuide',
+  'setRtiGoals', 'setConfirmDialog', 'setPhishMode', 'setTriageActive',
+]);
+
 function isHook(callee, name) {
   if (callee.type === 'MemberExpression' && callee.object.type === 'Identifier' &&
       callee.object.name === 'React' && callee.property.type === 'Identifier')
@@ -110,11 +134,31 @@ function scanFile(file) {
   }
   const sm = eslintScope.analyze(ast, { ecmaVersion: 2022, sourceType: 'script', ignoreEval: true });
   const unresolved = new Set();
-  for (const ref of sm.globalScope.through) unresolved.add(ref.identifier.range[0] + ':' + ref.identifier.range[1]);
+  const unresolvedNames = new Set();
+  for (const ref of sm.globalScope.through) {
+    unresolved.add(ref.identifier.range[0] + ':' + ref.identifier.range[1]);
+    unresolvedNames.add(ref.identifier.name);
+  }
 
   const errors = [], warns = [];
+  const seenDroppedSetters = new Set();
   (function walk(n) {
     if (!n || typeof n.type !== 'string') return;
+    // Dropped useState/useReducer declaration (edit-war stomp class, BLOCKING).
+    // A `const [x, setX] = useState(...)` whose declaration line was deleted
+    // while its usages survived: `x` is read in render (crashes ON render) and
+    // `setX` is called in handlers — both become unresolved. An unresolved,
+    // non-timer setX-shaped free identifier is a near-certain dropped setter.
+    // This is the reconPreviewIdx fatal crash the dep-array/IIFE/t checks all
+    // missed (it was a plain JSX expression read).
+    if (n.type === 'Identifier' && /^set[A-Z]/.test(n.name) && !TIMER_SETTERS.has(n.name)
+        && !HOST_INJECTED_SETTERS.has(n.name)
+        && unresolved.has(n.range[0] + ':' + n.range[1]) && !seenDroppedSetters.has(n.name)) {
+      seenDroppedSetters.add(n.name);
+      const valueName = n.name.charAt(3).toLowerCase() + n.name.slice(4);
+      const pairNote = unresolvedNames.has(valueName) ? (' — paired value `' + valueName + '` is read in render') : '';
+      errors.push({ name: n.name, line: n.loc.start.line, where: 'dropped useState setter (render crash)' + pairNote });
+    }
     if (n.type === 'CallExpression' && n.callee) {
       const memo = isHook(n.callee, 'useMemo'), cb = isHook(n.callee, 'useCallback'), eff = isHook(n.callee, 'useEffect');
       if (memo || cb || eff) {
@@ -200,7 +244,7 @@ for (const file of targets) {
 }
 
 if (totalErrors > 0 || parseErrors > 0) {
-  if (totalErrors) console.log(`\n❌ ${totalErrors} render-crash candidate(s) (hook dep-array free vars + called free t()).`);
+  if (totalErrors) console.log(`\n❌ ${totalErrors} render-crash candidate(s) (hook dep-array free vars + called free t() + dropped useState setters).`);
   if (parseErrors) console.log(`❌ ${parseErrors} module(s) fail to parse (won't load).`);
   console.log('check_render_refs: fix before deploy (bypass: SKIP_RENDER_CHECK=1).');
   process.exit(1);

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-business-ethics-catalog",
+  "title": "OpenStax Business Ethics",
+  "description": "A source card for the OpenStax Business Ethics textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Ethics",
+    "Business",
+    "Civics",
+    "Textbooks"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/business-ethics"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Business Ethics introduces ethical frameworks, corporate responsibility, stakeholders, workplace ethics, diversity, globalization, sustainability, and professional decision-making."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for applied argument writing where students evaluate choices, tradeoffs, duties, consequences, and evidence in realistic scenarios."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters, figures, or ancillary materials."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

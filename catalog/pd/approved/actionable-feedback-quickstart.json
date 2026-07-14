@@ -1,0 +1,64 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_module",
+  "metadata": {
+    "id": "actionable-feedback-quickstart",
+    "title": "Giving Actionable Feedback to Students",
+    "topic": "Feedback",
+    "summary": "A ~12-minute module on making feedback specific and actionable — read the principles, then practice rewriting feedback in a scenario and get formative AI coaching. General educator PD.",
+    "estMinutes": 12,
+    "credit": "AlloFlow Seed Library",
+    "license": "CC-BY-SA-4.0",
+    "audience": "educator"
+  },
+  "sections": [
+    {
+      "title": "Learn",
+      "activities": [
+        {
+          "id": "read-feedback",
+          "type": "read",
+          "title": "What makes feedback actionable",
+          "content": {
+            "body": "Feedback helps learning most when it answers three questions for the student: Where am I going? (the goal or success criteria), How am I doing? (against that goal), and Where to next? (the concrete next step). This 'feed up / feed back / feed forward' framing comes from Hattie & Timperley's widely cited review, The Power of Feedback (2007).\n\nIn practice, that means feedback is specific, tied to a criterion, and names ONE next move the student can act on — not vague praise. 'Nice start!' feels good but tells a student nothing. 'Your opening states a clear claim; next, add one piece of evidence to support it' tells them exactly what to do.\n\nA useful rule of thumb (Dylan Wiliam): good feedback should be more work for the receiver than the giver — it should cause thinking and a next action, not just a grade. Keep it specific, kind, and oriented to the next step.",
+            "keyPoints": [
+              "Answer: where am I going, how am I doing, where to next?",
+              "Be specific and tie it to a success criterion — not vague praise.",
+              "Name ONE concrete next step the student can act on."
+            ]
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Practice",
+      "activities": [
+        {
+          "id": "sim-feedback",
+          "type": "sim",
+          "title": "Rewrite this feedback",
+          "content": {
+            "scenario": "A 7th-grader submits the opening paragraph of an argument essay. It states a clear claim but gives no supporting evidence yet. You were about to write: \"Nice start!\"\n\nRewrite your feedback so it is specific, ties to a success criterion, and gives ONE concrete next step — while staying encouraging.",
+            "rubric": "Specificity (names what the student actually did); ties to a criterion (e.g., claim/evidence); exactly ONE clear, actionable next step; encouraging, respectful tone; concise."
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Apply it",
+      "activities": [
+        {
+          "id": "reflect-feedback",
+          "type": "reflect",
+          "title": "Plan your next step",
+          "content": {
+            "prompt": "Think of an assignment you will give feedback on this week. Write a sentence frame you could reuse that names a strength AND one concrete next step."
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    }
+  ]
+}

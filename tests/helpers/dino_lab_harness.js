@@ -39,8 +39,8 @@ export const ReactDOMServer = require(resolve(MODULES_DIR, 'react-dom/server'));
 
 const noop = () => {};
 
-// The 14 tab ids, in the order they appear in the tab bar.
-export const TABS = ['explore', 'timeline', 'deeptime', 'sites', 'map', 'ecosystem', 'compare', 'dig', 'classify', 'birds', 'extinction', 'anatomy', 'records', 'quiz', 'notes', 'glossary', 'classroom'];
+// The Dino Lab tab ids, in the order they appear in the tab bar.
+export const TABS = ['explore', 'timeline', 'deeptime', 'sites', 'map', 'ecosystem', 'compare', 'field3d', 'dig', 'classify', 'birds', 'extinction', 'anatomy', 'records', 'quiz', 'notes', 'glossary', 'classroom'];
 
 let _tool = null;
 let _internals = null;
@@ -89,6 +89,7 @@ export function setupDinoLab() {
 export function baseData(tab) {
   const d = {
     selected: 'tyrannosaurus',
+    field3dSelected: 'tyrannosaurus', field3dShowSkeleton: true, field3dShowBody: true, field3dShowHuman: true, field3dShowEvidence: true,
     compareA: 'spinosaurus', compareB: 'argentinosaurus',
     digSeed: 3, digRevealed: [0, 1, 2, 5, 8, 9, 12], digGuess: 'allosaurus', digSolvedFor: null, digsSolved: 0,
     quizIdx: 2, quizPicked: 1, quizAnswered: true, quizCorrect: 3, quizDone: 5,

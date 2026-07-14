@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pass the EPPP — AlloFlow Legacy Workspace</title>
+    <meta name="description" content="Comprehensive EPPP study tool with practice exams, quizzes, flashcards, and analytics across all 8 content domains. PasstheEPPP.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="alloflow_embed.css">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="url(#brandGrad)" stroke-width="2.5"/><path d="M10 17.5C10 14 12.5 10 16 10s6 4 6 7.5" stroke="url(#brandGrad)" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="21" r="2" fill="url(#brandGrad)"/><defs><linearGradient id="brandGrad" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#6EE7B7"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs></svg>
+            </div>
+            <span class="brand-text">PasstheEPPP</span>
+        </div>
+
+        <div class="sidebar-nav">
+            <button class="nav-item active" data-page="dashboard" id="nav-dashboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-item" data-page="diagnostic" id="nav-diagnostic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                <span>Diagnostic</span>
+            </button>
+            <button class="nav-item" data-page="study" id="nav-study">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                <span>Study</span>
+            </button>
+            <button class="nav-item" data-page="textbook" id="nav-textbook">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                <span>Textbook</span>
+            </button>
+            <button class="nav-item" data-page="flashcards" id="nav-flashcards">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="16" height="14" rx="2"/><rect x="6" y="6" width="16" height="14" rx="2"/></svg>
+                <span>Flashcards</span>
+            </button>
+            <button class="nav-item" data-page="quiz" id="nav-quiz">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 9a3 3 0 115.12 2.13c-.58.49-1.12 1.02-1.12 1.87"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+                <span>Quiz</span>
+            </button>
+            <button class="nav-item" data-page="exam" id="nav-exam">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span>Practice Exam</span>
+            </button>
+            <button class="nav-item" data-page="cat" id="nav-cat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/><circle cx="12" cy="10" r="2"/></svg>
+                <span>Adaptive (CAT)</span>
+            </button>
+            <button class="nav-item" data-page="analytics" id="nav-analytics">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span>Analytics</span>
+            </button>
+            <button class="nav-item" data-page="goals" id="nav-goals">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                <span>Study Goals</span>
+            </button>
+            <button class="nav-item" data-page="memory_aids" id="nav-memory_aids">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                <span>Memory Aids</span>
+            </button>
+            <button class="nav-item" data-page="bookmarks" id="nav-bookmarks">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                <span>Bookmarks</span>
+            </button>
+            <button class="nav-item" data-page="search" id="nav-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Search</span>
+            </button>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="nav-item" data-page="reflections" id="nav-reflections">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>Reflections</span>
+            </button>
+            <button class="nav-item" data-page="about" id="nav-about">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <span>About & Transparency</span>
+            </button>
+            <button class="nav-item" data-page="settings" id="nav-settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                <span>Settings</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile top bar -->
+    <header class="mobile-header">
+        <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="mobile-title">PasstheEPPP</span>
+    </header>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-content">
+        <!-- Pages are rendered here dynamically -->
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav id="mobile-bottom-nav" class="mobile-bottom-nav">
+        <button class="bottom-nav-item active" data-page="dashboard" id="bnav-dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Home</span>
+        </button>
+        <button class="bottom-nav-item" data-page="quiz" id="bnav-quiz">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Quiz</span>
+        </button>
+        <button class="bottom-nav-item" data-page="flashcards" id="bnav-flashcards">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+            <span>Cards</span>
+        </button>
+        <button class="bottom-nav-item" data-page="study" id="bnav-study">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            <span>Study</span>
+        </button>
+        <button class="bottom-nav-item" data-page="menu" id="bnav-more">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            <span>More</span>
+        </button>
+    </nav>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <!-- Data -->
+    <script src="js/data.js"></script>
+    <script src="js/questions_bank.js"></script>
+    <script src="js/data_batch7.js"></script>
+    <script src="js/data_batch8.js"></script>
+    <script src="js/data_batch9.js"></script>
+    <script src="js/data_batch10.js"></script>
+    <script src="js/data_batch11.js"></script>
+    <script src="js/data_batch12.js"></script>
+    <script src="js/data_batch13.js"></script>
+    <script src="js/data_batch14.js"></script>
+    <script src="js/data_batch15.js"></script>
+    <script src="js/data_batch16.js"></script>
+    <script src="js/data_batch17.js"></script>
+    <script src="js/data_batch18.js"></script>
+    <script src="js/data_batch19.js"></script>
+    <script src="js/data_batch20.js"></script>
+    <script src="js/data_batch21.js"></script>
+    <script src="js/data_batch22.js"></script>
+    <script src="js/data_batch23.js"></script>
+    <script src="js/data_batch24.js"></script>
+    <script src="js/data_batch25.js"></script>
+    <script src="js/data_batch26.js"></script>
+    <script src="js/data_batch27.js"></script>
+    <script src="js/data_batch28.js"></script>
+    <script src="js/data_batch29.js"></script>
+    <script src="js/data_batch30.js"></script>
+    <script src="js/data_batch31.js"></script>
+    <script src="js/data_batch32.js"></script>
+    <script src="js/data_batch33.js"></script>
+    <script src="js/data_batch34.js"></script>
+    <script src="js/data_batch35.js"></script>
+    <script src="js/data_batch36.js"></script>
+    <script src="js/data_batch37.js"></script>
+    <script src="js/data_batch38.js"></script>
+    <script src="js/data_batch39.js"></script>
+    <script src="js/data_batch40.js"></script>
+    <script src="js/data_batch41.js"></script>
+    <script src="js/data_batch42.js"></script>
+    <script src="js/data_batch43.js"></script>
+    <script src="js/data_batch44.js"></script>
+    <script src="js/data_batch45.js"></script>
+    <script src="js/data_batch46.js"></script>
+    <script src="js/data_batch47.js"></script>
+    <script src="js/data_batch48.js"></script>
+    <script src="js/data_batch49.js"></script>
+    <script src="js/data_batch50.js"></script>
+    <script src="js/data_batch51.js"></script>
+    <script src="js/data_batch52.js"></script>
+    <script src="js/data_batch53.js"></script>
+    <script src="js/data_batch54.js"></script>
+    <script src="js/rationale_enhancements.js"></script>
+    <script src="js/rationale_enhancements2.js"></script>
+    <script src="js/references_overlay1.js"></script>
+    <script src="js/references_overlay2.js"></script>
+    <script src="js/references_overlay3.js"></script>
+    <script src="js/references_overlay4.js"></script>
+    <script src="js/references_overlay5.js"></script>
+    <script src="js/references_overlay6.js"></script>
+    <script src="js/references_overlay7.js"></script>
+    <script src="js/references_overlay8.js"></script>
+    <script src="js/references_overlay9.js"></script>
+    <script src="js/references_overlay10.js"></script>
+    <script src="js/references_overlay11.js"></script>
+    <script src="js/references_overlay12.js"></script>
+    <script src="js/references_overlay13.js"></script>
+    <script src="js/references_overlay14.js"></script>
+    <script src="js/references_overlay15.js"></script>
+    <script src="js/references_overlay16.js"></script>
+    <script src="js/references_overlay17.js"></script>
+    <script src="js/flashcards_data.js"></script>
+    <script src="js/flashcards_batch2.js"></script>
+    <script src="js/flashcards_batch3.js"></script>
+    <script src="js/flashcards_batch4.js"></script>
+    <script src="js/flashcards_batch5.js"></script>
+
+    <!-- Reflections & Community -->
+    <script src="js/reflections.js"></script>
+    <script src="js/reflections_entry4.js"></script>
+
+    <!-- Textbook -->
+    <script src="js/textbook_term_defs.js"></script>
+    <script src="js/textbook_ch5_1.js"></script>
+    <script src="js/textbook_ch5_2.js"></script>
+    <script src="js/textbook_ch5_3.js"></script>
+    <script src="js/textbook_ch4.js"></script>
+    <script src="js/textbook_ch5.js"></script>
+    <script src="js/textbook_ch6.js"></script>
+    <script src="js/textbook_ch7.js"></script>
+    <script src="js/textbook_ch8.js"></script>
+    <script src="js/textbook_ch9.js"></script>
+    <script src="js/textbook_ch10.js"></script>
+    <script src="js/textbook_ch11.js"></script>
+    <script src="js/textbook_ch12.js"></script>
+    <script src="js/textbook_ch13.js"></script>
+    <script src="js/textbook_ch14.js"></script>
+    <script src="js/textbook_ch15.js"></script>
+    <script src="js/textbook_ch16.js"></script>
+    <script src="js/textbook_ch17.js"></script>
+    <script src="js/textbook_ch18.js"></script>
+    <script src="js/textbook_ch19.js"></script>
+    <script src="js/textbook_ch20.js"></script>
+    <script src="js/textbook_ch21.js"></script>
+    <script src="js/textbook_ch22.js"></script>
+    <script src="js/textbook_ch23.js"></script>
+    <script src="js/textbook_ch24.js"></script>
+    <script src="js/textbook_ch25.js"></script>
+    <script src="js/textbook_ch26.js"></script>
+    <script src="js/textbook_ch27.js"></script>
+    <script src="js/textbook_ch28.js"></script>
+    <script src="js/textbook_ch29.js"></script>
+    <script src="js/textbook_ch30.js"></script>
+    <script src="js/textbook_ch31.js"></script>
+    <script src="js/textbook_ch32.js"></script>
+    <script src="js/textbook_ch33.js"></script>
+    <script src="js/textbook_ch34.js"></script>
+    <script src="js/textbook_ch35.js"></script>
+    <script src="js/textbook_ch36.js"></script>
+    <script src="js/textbook_ch37.js"></script>
+    <script src="js/textbook_ch38.js"></script>
+    <script src="js/textbook_ch39.js"></script>
+    <script src="js/textbook_ch40.js"></script>
+    <script src="js/textbook_ch41.js"></script>
+    <script src="js/textbook_ch42.js"></script>
+    <script src="js/textbook_ch43.js"></script>
+    <script src="js/textbook_ch44.js"></script>
+    <script src="js/textbook_ch45.js"></script>
+    <script src="js/textbook_ch46.js"></script>
+    <script src="js/textbook_ch47.js"></script>
+    <script src="js/textbook_ch48.js"></script>
+    <script src="js/textbook_ch49.js"></script>
+    <script src="js/textbook_diagrams.js?v=2"></script>
+    <script src="js/textbook_renderer.js"></script>
+
+    <!-- Community Feedback -->
+    <script src="js/community_feedback.js"></script>
+
+    <!-- CAT Engine -->
+    <script src="js/cat_engine.js"></script>
+    <script src="js/cat_page.js"></script>
+
+    <!-- App Core -->
+<script src="js/app.js"></script>
+
+    <!-- Page Modules -->
+    <script src="js/dashboard.js"></script>
+    <script src="js/diagnostic.js"></script>
+    <script src="js/study.js"></script>
+    <script src="js/flashcards_page.js"></script>
+    <script src="js/quiz.js"></script>
+    <script src="js/exam.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/goals.js"></script>
+    <script src="js/memory_aids.js"></script>
+    <script src="js/bookmarks.js"></script>
+    <script src="js/search.js"></script>
+  <script src="alloflow_embed.js"></script>
+</body>
+</html>

@@ -66,6 +66,12 @@ window.StemLab = window.StemLab || {
     desc: 'Graph and explore mathematical functions interactively',
     color: 'indigo',
     category: 'math',
+    questHooks: [
+      { id: 'try_5_families', label: 'Explore 5 function families', icon: '📈', check: function(d) { return Object.keys(d.familiesTried || {}).length >= 5; }, progress: function(d) { return Object.keys(d.familiesTried || {}).length + '/5 families'; } },
+      { id: 'challenge_5', label: 'Answer 5 challenges correctly', icon: '🎯', check: function(d) { return (d.fgScore || 0) >= 5; }, progress: function(d) { return (d.fgScore || 0) + '/5 correct'; } },
+      { id: 'myth_3', label: 'Bust 3 function myths (True or False)', icon: '🧠', check: function(d) { return (d.fgMythsDone || 0) >= 3; }, progress: function(d) { return (d.fgMythsDone || 0) + '/3 myths'; } },
+      { id: 'use_overlays', label: 'Reveal the derivative and area overlays', icon: '📉', check: function(d) { var o = d.overlaysUsed || {}; return !!(o.deriv && o.area); }, progress: function(d) { var o = d.overlaysUsed || {}; return ((o.deriv ? 1 : 0) + (o.area ? 1 : 0)) + '/2 overlays'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -80,6 +86,7 @@ window.StemLab = window.StemLab || {
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -130,6 +137,27 @@ window.StemLab = window.StemLab || {
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
 
+          // ── Theme + grade band (shared pattern with waterCycle) ──
+          var isDark = !!ctx.darkMode;
+          var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
+          function getGradeBand() {
+            var ov = d.fgGradeOverride;
+            if (ov && GRADE_BANDS.indexOf(ov) >= 0) return ov;
+            var gl = (gradeLevel || '5th Grade').toLowerCase();
+            if (/k|1st|2nd|pre/.test(gl)) return 'K-2';
+            if (/3rd|4th|5th/.test(gl)) return '3-5';
+            if (/6th|7th|8th/.test(gl)) return '6-8';
+            if (/9th|10|11|12|high/.test(gl)) return '9-12';
+            return '3-5';
+          }
+          var gradeBand = getGradeBand();
+
+          // Type setter that also feeds the try_5_families quest hook
+          function setFnType(tid) {
+            upd('type', tid);
+            upd('familiesTried', Object.assign({}, d.familiesTried, { [tid]: true }));
+          }
+
           const W = 440, H = 320, pad = 45;
 
           const xR = { xMin: (d.range && d.range.xMin) || -10, xMax: (d.range && d.range.xMax) || 10 };
@@ -149,6 +177,9 @@ window.StemLab = window.StemLab || {
             if (ct === 'cubic') return ca * x * x * x + cb * x + cc;
             if (ct === 'exponential') return ca * Math.pow(Math.E, cb * x) + cc;
             if (ct === 'absolute') return ca * Math.abs(x + cb) + cc;
+            if (ct === 'sqrt') return ca * Math.sqrt(x + cb) + cc;
+            if (ct === 'log') return ca * Math.log(x + cb) + cc;
+            if (ct === 'rational') return ca / (x + cb) + cc;
             return ca * x + cb;
           } : null;
 
@@ -170,6 +201,12 @@ window.StemLab = window.StemLab || {
 
             if (d.type === 'absolute') return d.a * Math.abs(x + d.b) + d.c;
 
+            if (d.type === 'sqrt') return d.a * Math.sqrt(x + d.b) + d.c;   // domain x ≥ −b; NaN outside (auto-skipped)
+
+            if (d.type === 'log') return d.a * Math.log(x + d.b) + d.c;     // natural log; domain x > −b
+
+            if (d.type === 'rational') return d.a / (x + d.b) + d.c;        // vertical asymptote at x = −b
+
             return d.a * x + d.b;
 
           };
@@ -188,7 +225,11 @@ window.StemLab = window.StemLab || {
 
           // Generate curve points
 
-          const pts = [];
+          // Curve as break-aware SEGMENTS: any invalid/out-of-range sample ends the current
+          // segment so a discontinuity (e.g. a rational's vertical asymptote, or a domain edge of
+          // sqrt/log) does NOT draw a spurious connecting line. Each segment renders as its own polyline.
+          const segments = [];
+          var curSeg = null;
 
           const derivPts = [];
 
@@ -204,7 +245,7 @@ window.StemLab = window.StemLab || {
 
             var dy = evalDeriv(x);
 
-            if (y >= yR.yMin && y <= yR.yMax) pts.push(toSX(x) + ',' + toSY(y));
+            if (isFinite(y) && y >= yR.yMin && y <= yR.yMax) { if (!curSeg) { curSeg = []; segments.push(curSeg); } curSeg.push(toSX(x) + ',' + toSY(y)); } else { curSeg = null; }
 
             if (dy >= yR.yMin && dy <= yR.yMax) derivPts.push(toSX(x) + ',' + toSY(dy));
 
@@ -314,6 +355,18 @@ window.StemLab = window.StemLab || {
             var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
             var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
             eqStr += amp + '|' + inner + '|' + fmtConst(d.c, false);
+          } else if (d.type === 'sqrt') {
+            var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += amp + '√(' + inner + ')' + fmtConst(d.c, false);
+          } else if (d.type === 'log') {
+            var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += amp + 'ln(' + inner + ')' + fmtConst(d.c, false);
+          } else if (d.type === 'rational') {
+            var num = d.a === -1 ? '-1' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += num + '/(' + inner + ')' + fmtConst(d.c, false);
           }
 
           // Build comparison equation string
@@ -327,12 +380,15 @@ window.StemLab = window.StemLab || {
             else if (ct === 'cubic') { var p = fmtCoeff(ca, 'x\u00B3', true) + fmtCoeff(cb, 'x', ca === 0) + fmtConst(cc, ca === 0 && cb === 0); eqStr2 += p || '0'; }
             else if (ct === 'exponential') { eqStr2 += (ca === 1 ? '' : ca) + 'e^(' + (cb === 1 ? 'x' : cb + 'x') + ')' + fmtConst(cc, false); }
             else if (ct === 'absolute') { eqStr2 += (ca === 1 ? '' : ca) + '|' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + '|' + fmtConst(cc, false); }
+            else if (ct === 'sqrt') { eqStr2 += (ca === 1 ? '' : ca === -1 ? '-' : ca) + '√(' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + ')' + fmtConst(cc, false); }
+            else if (ct === 'log') { eqStr2 += (ca === 1 ? '' : ca === -1 ? '-' : ca) + 'ln(' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + ')' + fmtConst(cc, false); }
+            else if (ct === 'rational') { eqStr2 += (ca === -1 ? '-1' : ca) + '/(' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + ')' + fmtConst(cc, false); }
           }
 
           // ── Transformation labels ──
           var transformLabels = [];
           if (d.a !== 1 && d.a !== 0) {
-            if (d.a === -1) transformLabels.push({ text: 'Reflected over x-axis', color: 'text-rose-600 bg-rose-50 border-rose-200' });
+            if (d.a === -1) transformLabels.push({ text: __alloT('stem.funcgrapher.reflected_over_x_axis', 'Reflected over x-axis'), color: 'text-rose-600 bg-rose-50 border-rose-200' });
             else if (d.a < 0) transformLabels.push({ text: 'Reflected & scaled \u00D7' + Math.abs(d.a), color: 'text-rose-600 bg-rose-50 border-rose-200' });
             else if (Math.abs(d.a) > 1) transformLabels.push({ text: 'Vertical stretch \u00D7' + d.a, color: 'text-violet-600 bg-violet-50 border-violet-200' });
             else transformLabels.push({ text: 'Vertical compression \u00D7' + d.a, color: 'text-violet-600 bg-violet-50 border-violet-200' });
@@ -348,6 +404,20 @@ window.StemLab = window.StemLab || {
           }
           if (d.b !== 0 && d.type === 'linear') {
             transformLabels.push({ text: 'y-intercept = ' + d.b, color: 'text-green-600 bg-green-50 border-green-200' });
+          }
+          // Key-feature chips for the function families (domain restrictions + asymptotes + vertex)
+          if (d.type === 'quadratic' && d.a !== 0) {
+            transformLabels.push({ text: 'Vertex at x = ' + (-d.b / (2 * d.a)).toFixed(2), color: 'text-indigo-600 bg-indigo-50 border-indigo-200' });
+          }
+          if (d.type === 'sqrt') {
+            transformLabels.push({ text: 'Domain: x ≥ ' + (-d.b), color: 'text-amber-600 bg-amber-50 border-amber-200' });
+          }
+          if (d.type === 'log') {
+            transformLabels.push({ text: 'Domain: x > ' + (-d.b) + ' · asymptote x = ' + (-d.b), color: 'text-amber-600 bg-amber-50 border-amber-200' });
+          }
+          if (d.type === 'rational') {
+            transformLabels.push({ text: 'Vertical asymptote: x = ' + (-d.b), color: 'text-rose-600 bg-rose-50 border-rose-200' });
+            transformLabels.push({ text: 'Horizontal asymptote: y = ' + d.c, color: 'text-rose-600 bg-rose-50 border-rose-200' });
           }
 
 
@@ -366,9 +436,25 @@ window.StemLab = window.StemLab || {
 
             { id: 'exponential', label: t('stem.func_grapher.exponential'), emoji: '\uD83D\uDCC8' },
 
-            { id: 'absolute', label: t('stem.func_grapher.absolute'), emoji: '\u22C0' }
+            { id: 'absolute', label: t('stem.func_grapher.absolute'), emoji: '\u22C0' },
+
+            { id: 'sqrt', label: __alloT('stem.funcgrapher.square_root', 'Square Root'), emoji: '\u221A' },
+
+            { id: 'log', label: __alloT('stem.funcgrapher.logarithm', 'Logarithm'), emoji: 'ln' },
+
+            { id: 'rational', label: __alloT('stem.funcgrapher.rational', 'Rational'), emoji: '\u00F7' }
 
           ];
+
+          var activeType = TYPES.filter(function(tp) { return tp.id === d.type; })[0] || TYPES[0];
+          var familiesTriedCount = Object.keys(d.familiesTried || {}).length;
+          var evidenceCount = roots.length + (yIntercept >= yR.yMin && yIntercept <= yR.yMax ? 1 : 0) + critPts.length;
+          var overlayCount = (d.showDeriv ? 1 : 0) + (d.showArea ? 1 : 0) + (d.showTable ? 1 : 0);
+          var nextMove = familiesTriedCount < 2
+            ? 'Compare a second function family and notice what stays the same.'
+            : overlayCount === 0
+              ? 'Turn on the table or derivative to connect the graph to numerical evidence.'
+              : 'Move the trace point and explain how the value and slope change together.';
 
 
 
@@ -382,7 +468,7 @@ window.StemLab = window.StemLab || {
               var idx = parseInt(k, 10) - 1;
               if (TYPES[idx]) {
                 e.preventDefault();
-                upd('type', TYPES[idx].id);
+                setFnType(TYPES[idx].id);
                 if (typeof announceToSR === 'function') announceToSR(TYPES[idx].label + ' selected.');
               }
             } else if (k === 'd' || k === 'D') { e.preventDefault(); upd('showDeriv', !d.showDeriv); }
@@ -391,38 +477,70 @@ window.StemLab = window.StemLab || {
             else if (k === 'l' || k === 'L') { e.preventDefault(); upd('showLearn', !d.showLearn); }
           }
           return React.createElement("div", {
-              className: "max-w-3xl mx-auto animate-in fade-in duration-200",
+              className: "max-w-5xl mx-auto animate-in fade-in duration-200",
               role: "region",
-              "aria-label": "Function Grapher. Keyboard shortcuts: 1 through 6 pick a function type, D derivative, A area, T table, L learn.",
+              "aria-label": __alloT('stem.funcgrapher.function_grapher_keyboard_shortcuts_1_', "Function Grapher. Keyboard shortcuts: 1 through 6 pick a function type, D derivative, A area, T table, L learn."),
               tabIndex: 0,
               onKeyDown: onFgKey
             },
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
-
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDCC8 Function Grapher"),
-
-              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
-
+            React.createElement("section", { "data-funcgrapher-command": "true", className: "mb-4 overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-900 text-white shadow-xl" },
+              React.createElement("div", { className: "p-4 sm:p-5" },
+                React.createElement("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between" },
+                  React.createElement("div", { className: "min-w-0" },
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': __alloT('stem.funcgrapher.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                      React.createElement("span", { className: "rounded-full bg-cyan-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30" }, "Graph exploration console")
+                    ),
+                    React.createElement("h3", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }, __alloT('stem.funcgrapher.function_grapher', "\uD83D\uDCC8 Function Grapher")),
+                    React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-6 text-indigo-100" }, "Change a rule, observe its shape, then use values and rates to explain the pattern."),
+                    React.createElement("div", { className: "mt-3 rounded-xl border border-white/15 bg-white/10 p-3" },
+                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200" }, "Recommended next move"),
+                      React.createElement("p", { className: "mt-1 text-sm font-semibold text-white" }, nextMove)
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 lg:w-[22rem]" },
+                    [
+                      { label: 'Family', value: activeType.emoji + ' ' + activeType.label },
+                      { label: 'Evidence', value: String(evidenceCount) },
+                      { label: 'Tools on', value: String(overlayCount) }
+                    ].map(function(metric) {
+                      return React.createElement("div", { key: metric.label, className: "min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center" },
+                        React.createElement("div", { className: "truncate text-sm font-black text-white", title: metric.value }, metric.value),
+                        React.createElement("div", { className: "mt-1 text-[9px] font-bold uppercase tracking-wider text-indigo-200" }, metric.label)
+                      );
+                    })
+                  )
+                ),
+                React.createElement("ol", { className: "mt-4 grid gap-2 text-xs sm:grid-cols-3", "aria-label": "Function investigation pathway" },
+                  [
+                    { n: '1', title: 'Choose', detail: 'Pick a function family.' },
+                    { n: '2', title: 'Transform', detail: 'Adjust coefficients and trace.' },
+                    { n: '3', title: 'Explain', detail: 'Use intercepts, slope, or a table.' }
+                  ].map(function(step) {
+                    return React.createElement("li", { key: step.n, className: "flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5" },
+                      React.createElement("span", { className: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-300 font-black text-slate-950" }, step.n),
+                      React.createElement("span", null, React.createElement("strong", { className: "block text-white" }, step.title), React.createElement("span", { className: "text-indigo-200" }, step.detail))
+                    );
+                  })
+                )
+              )
             ),
 
             // Function type buttons
 
-            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-
-              TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { upd("type", tp.id); },
-
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
-
-              }, tp.emoji + " " + tp.label); })
-
+            React.createElement("div", { className: "mb-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm" },
+              React.createElement("p", { className: "mb-2 px-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500" }, "Choose a function family"),
+              React.createElement("div", { className: "grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5", role: "group", "aria-label": "Function families" },
+                TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { setFnType(tp.id); },
+                  className: "min-h-[2.5rem] px-3 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50')
+                }, tp.emoji + " " + tp.label); })
+              )
             ),
 
             // SVG Graph
 
-            React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-white rounded-xl border-2 border-indigo-200 shadow-sm", style: { maxHeight: "340px" } },
+            React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full rounded-xl border-2 shadow-sm " + (isDark ? "bg-slate-900 border-indigo-800" : "bg-white border-indigo-200"), style: { maxHeight: "340px" } },
 
               // Grid lines (rendered first, behind curves)
 
@@ -438,7 +556,7 @@ window.StemLab = window.StemLab || {
 
                   if (sx > pad && sx < W - pad) {
 
-                    gridLines.push(React.createElement("line", { key: 'gx' + gx, x1: sx, y1: pad, x2: sx, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 0.5 }));
+                    gridLines.push(React.createElement("line", { key: 'gx' + gx, x1: sx, y1: pad, x2: sx, y2: H - pad, stroke: isDark ? "#1e293b" : "#e2e8f0", strokeWidth: 0.5 }));
 
                   }
 
@@ -452,7 +570,7 @@ window.StemLab = window.StemLab || {
 
                   if (sy > pad && sy < H - pad) {
 
-                    gridLines.push(React.createElement("line", { key: 'gy' + gy, x1: pad, y1: sy, x2: W - pad, y2: sy, stroke: "#e2e8f0", strokeWidth: 0.5 }));
+                    gridLines.push(React.createElement("line", { key: 'gy' + gy, x1: pad, y1: sy, x2: W - pad, y2: sy, stroke: isDark ? "#1e293b" : "#e2e8f0", strokeWidth: 0.5 }));
 
                   }
 
@@ -464,15 +582,15 @@ window.StemLab = window.StemLab || {
 
               // Axes
 
-              React.createElement("line", { x1: pad, y1: toSY(0), x2: W - pad, y2: toSY(0), stroke: "#64748b", strokeWidth: 1.5 }),
+              React.createElement("line", { x1: pad, y1: toSY(0), x2: W - pad, y2: toSY(0), stroke: isDark ? "#94a3b8" : "#64748b", strokeWidth: 1.5 }),
 
-              React.createElement("line", { x1: toSX(0), y1: pad, x2: toSX(0), y2: H - pad, stroke: "#64748b", strokeWidth: 1.5 }),
+              React.createElement("line", { x1: toSX(0), y1: pad, x2: toSX(0), y2: H - pad, stroke: isDark ? "#94a3b8" : "#64748b", strokeWidth: 1.5 }),
 
               // Axis labels
 
-              React.createElement("text", { x: W - pad + 5, y: toSY(0) + 4, fill: "#64748b", style: { fontSize: '10px', fontWeight: 'bold' } }, "x"),
+              React.createElement("text", { x: W - pad + 5, y: toSY(0) + 4, fill: isDark ? "#94a3b8" : "#64748b", style: { fontSize: '10px', fontWeight: 'bold' } }, "x"),
 
-              React.createElement("text", { x: toSX(0) + 5, y: pad - 5, fill: "#64748b", style: { fontSize: '10px', fontWeight: 'bold' } }, "y"),
+              React.createElement("text", { x: toSX(0) + 5, y: pad - 5, fill: isDark ? "#94a3b8" : "#64748b", style: { fontSize: '10px', fontWeight: 'bold' } }, "y"),
 
               // Area under curve (positive x)
 
@@ -480,7 +598,7 @@ window.StemLab = window.StemLab || {
 
                 points: toSX(0) + ',' + toSY(0) + ' ' + areaPts.map(p => p.sx + ',' + p.sy).join(' ') + ' ' + areaPts[areaPts.length - 1].sx + ',' + toSY(0),
 
-                fill: "rgba(79,70,229,0.08)", stroke: "none"
+                fill: isDark ? "rgba(129,140,248,0.16)" : "rgba(79,70,229,0.08)", stroke: "none"
 
               }),
 
@@ -490,7 +608,8 @@ window.StemLab = window.StemLab || {
 
               // Main curve
 
-              pts.length > 1 && React.createElement("polyline", { points: pts.join(" "), fill: "none", stroke: "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(79,70,229,0.45))' } }),
+              d.type === 'rational' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "5 4", "aria-label": "vertical asymptote at x = " + (-d.b) }),
+              segments.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'seg' + si, points: seg.join(" "), fill: "none", stroke: isDark ? "#818cf8" : "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(' + (isDark ? '129,140,248,0.6' : '79,70,229,0.45') + '))' } }) : null; }),
 
               // Comparison curve (orange)
               d.compare && comparePts.length > 1 && React.createElement("polyline", { points: comparePts.join(" "), fill: "none", stroke: "#f97316", strokeWidth: 2, strokeDasharray: "8 4" }),
@@ -563,7 +682,7 @@ window.StemLab = window.StemLab || {
 
                   if (sx > pad && sx < W - pad) {
 
-                    gridLabels.push(React.createElement("text", { key: 'tx' + gx, x: sx, y: H - pad + 14, textAnchor: "middle", fill: "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gx));
+                    gridLabels.push(React.createElement("text", { key: 'tx' + gx, x: sx, y: H - pad + 14, textAnchor: "middle", fill: isDark ? "#94a3b8" : "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gx));
 
                   }
 
@@ -577,7 +696,7 @@ window.StemLab = window.StemLab || {
 
                   if (sy > pad && sy < H - pad) {
 
-                    gridLabels.push(React.createElement("text", { key: 'ty' + gy, x: pad - 5, y: sy + 3, textAnchor: "end", fill: "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gy));
+                    gridLabels.push(React.createElement("text", { key: 'ty' + gy, x: pad - 5, y: sy + 3, textAnchor: "end", fill: isDark ? "#94a3b8" : "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gy));
 
                   }
 
@@ -589,7 +708,7 @@ window.StemLab = window.StemLab || {
 
               // Equation label
 
-              React.createElement("text", { x: d.compare ? W / 3 : W / 2, y: H - 5, textAnchor: "middle", fill: "#4f46e5", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr),
+              React.createElement("text", { x: d.compare ? W / 3 : W / 2, y: H - 5, textAnchor: "middle", fill: isDark ? "#a5b4fc" : "#4f46e5", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr),
 
               // Comparison equation label
               d.compare && eqStr2 && React.createElement("text", { x: W * 2 / 3, y: H - 5, textAnchor: "middle", fill: "#f97316", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr2)
@@ -598,14 +717,14 @@ window.StemLab = window.StemLab || {
 
             // ── Zoom / Pan Controls ──
             React.createElement("div", { className: "flex items-center gap-1.5 mt-2 mb-1 flex-wrap" },
-              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83D\uDD0D View"),
-              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin) / 4, hh = (yR.yMax - yR.yMin) / 4; upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Zoom in' }, "\u2795 Zoom In"),
-              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin), hh = (yR.yMax - yR.yMin); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Zoom out' }, "\u2796 Zoom Out"),
-              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin - dx, xMax: xR.xMax - dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Pan left' }, "\u2B05"),
-              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin + dx, xMax: xR.xMax + dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Pan right' }, "\u27A1"),
-              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin + dy, yMax: yR.yMax + dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Pan up' }, "\u2B06"),
-              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin - dy, yMax: yR.yMax - dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': 'Pan down' }, "\u2B07"),
-              React.createElement("button", { onClick: function() { upd('range', { xMin: -10, xMax: 10, yMin: -10, yMax: 10 }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-600 transition-all", 'aria-label': 'Reset view' }, "\u21BA Reset"),
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, __alloT('stem.funcgrapher.view', "\uD83D\uDD0D View")),
+              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin) / 4, hh = (yR.yMax - yR.yMin) / 4; upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.zoom_in', 'Zoom in') }, __alloT('stem.funcgrapher.zoom_in_2', "\u2795 Zoom In")),
+              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin), hh = (yR.yMax - yR.yMin); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.zoom_out', 'Zoom out') }, __alloT('stem.funcgrapher.zoom_out_2', "\u2796 Zoom Out")),
+              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin - dx, xMax: xR.xMax - dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_left', 'Pan left') }, "\u2B05"),
+              React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin + dx, xMax: xR.xMax + dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_right', 'Pan right') }, "\u27A1"),
+              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin + dy, yMax: yR.yMax + dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_up', 'Pan up') }, "\u2B06"),
+              React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin - dy, yMax: yR.yMax - dy }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_down', 'Pan down') }, "\u2B07"),
+              React.createElement("button", { onClick: function() { upd('range', { xMin: -10, xMax: 10, yMin: -10, yMax: 10 }); }, className: "px-2 py-1 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-600 transition-all", 'aria-label': __alloT('stem.funcgrapher.reset_view', 'Reset view') }, __alloT('stem.funcgrapher.reset', "\u21BA Reset")),
               React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, "x:[" + xR.xMin.toFixed(0) + "," + xR.xMax.toFixed(0) + "] y:[" + yR.yMin.toFixed(0) + "," + yR.yMax.toFixed(0) + "]")
             ),
 
@@ -620,9 +739,9 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex gap-2 mt-3 mb-2 flex-wrap" },
 
-              React.createElement("button", { onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-600') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
+              React.createElement("button", { onClick: () => { if (!d.showDeriv) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { deriv: true })); upd('showDeriv', !d.showDeriv); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-600') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
 
-              React.createElement("button", { onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
+              React.createElement("button", { onClick: () => { if (!d.showArea) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { area: true })); upd('showArea', !d.showArea); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
 
               d.showArea && React.createElement("span", { className: "px-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-mono font-bold border border-indigo-300" }, "\u222B\u2080^" + xR.xMax.toFixed(0) + " f(x)dx \u2248 " + integral0ToMax.toFixed(2)),
 
@@ -640,16 +759,16 @@ window.StemLab = window.StemLab || {
             React.createElement("div", { className: "bg-pink-50 rounded-lg p-2 border border-pink-200 mt-1" },
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", { className: "text-xs font-bold text-pink-600" }, "\uD83D\uDCCC Trace: x = " + traceX.toFixed(1)),
-                React.createElement("input", { type: "range", min: xR.xMin, max: xR.xMax, step: 0.1, value: traceX, onChange: e => upd('traceX', parseFloat(e.target.value)), className: "flex-1 accent-pink-500", 'aria-label': 'Trace x position' }),
+                React.createElement("input", { type: "range", min: xR.xMin, max: xR.xMax, step: 0.1, value: traceX, onChange: e => upd('traceX', parseFloat(e.target.value)), className: "flex-1 accent-pink-500", 'aria-label': __alloT('stem.funcgrapher.trace_x_position', 'Trace x position') }),
                 tangentInRange && React.createElement("span", { className: "text-[11px] font-mono text-pink-700" }, "f(" + traceX.toFixed(1) + ") = " + traceY.toFixed(2) + ", slope = " + traceSlope.toFixed(2))
               )
             ),
 
             // ── Table of Values (collapsible) ──
             d.showTable && React.createElement("div", { className: "mt-2 bg-cyan-50 rounded-xl border border-cyan-200 p-3 overflow-x-auto" },
-              React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCB Table of Values"),
+              React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, __alloT('stem.funcgrapher.table_of_values', "\uD83D\uDCCB Table of Values")),
               React.createElement("table", { className: "w-full text-xs" },
-                React.createElement("caption", { className: "sr-only" }, "funcgrapher data table"), React.createElement("thead", null,
+                React.createElement("caption", { className: "sr-only" }, __alloT('stem.funcgrapher.funcgrapher_data_table', "funcgrapher data table")), React.createElement("thead", null,
                   React.createElement("tr", { className: "border-b border-cyan-200" },
                     React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-cyan-800" }, "x"),
                     React.createElement("th", { scope: "col", className: "px-2 py-1 text-left font-bold text-indigo-700" }, "f(x)"),
@@ -676,35 +795,35 @@ window.StemLab = window.StemLab || {
 
             // ── Educational Learn Panel (collapsible) ──
             d.showLearn && React.createElement("div", { className: "mt-2 bg-emerald-50 rounded-xl border border-emerald-200 p-4" },
-              React.createElement("h4", { className: "text-sm font-bold text-emerald-800 mb-2" }, "\uD83D\uDCD6 Understanding Functions"),
+              React.createElement("h4", { className: "text-sm font-bold text-emerald-800 mb-2" }, __alloT('stem.funcgrapher.understanding_functions', "\uD83D\uDCD6 Understanding Functions")),
               React.createElement("div", { className: "grid grid-cols-1 gap-2 text-xs text-emerald-900" },
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-red-600" }, "\uD83D\uDD34 Roots (x-intercepts): "),
-                  "Where the function crosses the x-axis. At these points, f(x) = 0. Solving for the roots is essential in algebra and calculus."
+                  React.createElement("span", { className: "font-bold text-red-600" }, __alloT('stem.funcgrapher.roots_x_intercepts', "\uD83D\uDD34 Roots (x-intercepts): ")),
+                  __alloT('stem.funcgrapher.where_the_function_crosses_the_x_axis_', "Where the function crosses the x-axis. At these points, f(x) = 0. Solving for the roots is essential in algebra and calculus.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-green-600" }, "\uD83D\uDFE2 Y-intercept: "),
-                  "Where the function crosses the y-axis. This is the value of f(0) — simply plug in x = 0."
+                  React.createElement("span", { className: "font-bold text-green-600" }, __alloT('stem.funcgrapher.y_intercept', "\uD83D\uDFE2 Y-intercept: ")),
+                  __alloT('stem.funcgrapher.where_the_function_crosses_the_y_axis_', "Where the function crosses the y-axis. This is the value of f(0) — simply plug in x = 0.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-pink-600" }, "\uD83D\uDCCC Slope & Tangent Line: "),
-                  "The slope tells you how steep the function is at any point. The tangent line touches the curve at exactly one point. Use the trace slider to explore!"
+                  React.createElement("span", { className: "font-bold text-pink-600" }, __alloT('stem.funcgrapher.slope_tangent_line', "\uD83D\uDCCC Slope & Tangent Line: ")),
+                  __alloT('stem.funcgrapher.the_slope_tells_you_how_steep_the_func', "The slope tells you how steep the function is at any point. The tangent line touches the curve at exactly one point. Use the trace slider to explore!")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-amber-600" }, "\uD83D\uDCC9 Derivative f\u2032(x): "),
-                  "The derivative measures the rate of change. Toggle it on to see how the slope varies across the function. Where f\u2032(x) = 0, the function has a local max or min."
+                  React.createElement("span", { className: "font-bold text-amber-600" }, __alloT('stem.funcgrapher.derivative_f_x', "\uD83D\uDCC9 Derivative f\u2032(x): ")),
+                  __alloT('stem.funcgrapher.the_derivative_measures_the_rate_of_ch', "The derivative measures the rate of change. Toggle it on to see how the slope varies across the function. Where f\u2032(x) = 0, the function has a local max or min.")
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-indigo-600" }, "\u222B Area Under the Curve: "),
-                  "The shaded area represents the integral — the total \"accumulation\" of f(x). In real life, this could mean distance traveled, energy consumed, or probability."
+                  React.createElement("span", { className: "font-bold text-indigo-600" }, __alloT('stem.funcgrapher.area_under_the_curve', "\u222B Area Under the Curve: ")),
+                  __alloT('stem.funcgrapher.the_shaded_area_represents_the_integra', "The shaded area represents the integral — the total \"accumulation\" of f(x). In real life, this could mean distance traveled, energy consumed, or probability.")
                 ),
                 d.type === 'quadratic' && React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-purple-600" }, "\u2229 Parabolas: "),
-                  "When a > 0, the parabola opens up (\u23E3). When a < 0, it opens down (\u23E2). The vertex is the turning point. Try changing 'a' to see!"
+                  React.createElement("span", { className: "font-bold text-purple-600" }, __alloT('stem.funcgrapher.parabolas', "\u2229 Parabolas: ")),
+                  __alloT('stem.funcgrapher.when_a_0_the_parabola_opens_up_when_a_', "When a > 0, the parabola opens up (\u23E3). When a < 0, it opens down (\u23E2). The vertex is the turning point. Try changing 'a' to see!")
                 ),
                 d.type === 'trig' && React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-purple-600" }, "\u223C Trig Functions: "),
-                  "Amplitude (a) controls the height, frequency (b) controls how many cycles, and phase shift (c) slides the wave left/right. Period = 2\u03C0/b."
+                  React.createElement("span", { className: "font-bold text-purple-600" }, __alloT('stem.funcgrapher.trig_functions', "\u223C Trig Functions: ")),
+                  __alloT('stem.funcgrapher.amplitude_a_controls_the_height_freque', "Amplitude (a) controls the height, frequency (b) controls how many cycles, and phase shift (c) slides the wave left/right. Period = 2\u03C0/b.")
                 )
               )
             ),
@@ -768,7 +887,7 @@ window.StemLab = window.StemLab || {
               }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Thinking...' : '\u2728 Explain This Graph'),
               d.aiExplain && React.createElement("div", { className: "mt-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 leading-relaxed" },
                 React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
-                  React.createElement("span", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-wider" }, "\uD83E\uDDE0 AI Explanation")
+                  React.createElement("span", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-wider" }, __alloT('stem.funcgrapher.ai_explanation', "\uD83E\uDDE0 AI Explanation"))
                 ),
                 d.aiExplain
               )
@@ -778,33 +897,33 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u26A1 Quick Presets"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, __alloT('stem.funcgrapher.quick_presets', "\u26A1 Quick Presets")),
 
               React.createElement("div", { className: "flex flex-wrap gap-1.5" },
 
                 [
 
-                  { label: 'y = 2x + 1', type: 'linear', a: 2, b: 1, c: 0, tip: 'Slope 2, y-intercept 1' },
+                  { label: __alloT('stem.funcgrapher.y_2x_1', 'y = 2x + 1'), type: 'linear', a: 2, b: 1, c: 0, tip: __alloT('stem.funcgrapher.slope_2_y_intercept_1', 'Slope 2, y-intercept 1') },
 
-                  { label: 'y = x\u00B2', type: 'quadratic', a: 1, b: 0, c: 0, tip: 'Standard parabola' },
+                  { label: __alloT('stem.funcgrapher.y_x', 'y = x\u00B2'), type: 'quadratic', a: 1, b: 0, c: 0, tip: __alloT('stem.funcgrapher.standard_parabola', 'Standard parabola') },
 
-                  { label: 'y = -x\u00B2 + 4', type: 'quadratic', a: -1, b: 0, c: 4, tip: 'Inverted parabola, vertex at (0,4)' },
+                  { label: __alloT('stem.funcgrapher.y_x_4', 'y = -x\u00B2 + 4'), type: 'quadratic', a: -1, b: 0, c: 4, tip: __alloT('stem.funcgrapher.inverted_parabola_vertex_at_0_4', 'Inverted parabola, vertex at (0,4)') },
 
-                  { label: 'y = sin(x)', type: 'trig', a: 1, b: 1, c: 0, tip: 'Standard sine wave' },
+                  { label: __alloT('stem.funcgrapher.y_sin_x', 'y = sin(x)'), type: 'trig', a: 1, b: 1, c: 0, tip: __alloT('stem.funcgrapher.standard_sine_wave', 'Standard sine wave') },
 
-                  { label: 'y = 2sin(3x)', type: 'trig', a: 2, b: 3, c: 0, tip: 'Amplitude=2, period=2\u03C0/3' },
+                  { label: __alloT('stem.funcgrapher.y_2sin_3x', 'y = 2sin(3x)'), type: 'trig', a: 2, b: 3, c: 0, tip: __alloT('stem.funcgrapher.amplitude_2_period_2_3', 'Amplitude=2, period=2\u03C0/3') },
 
-                  { label: 'y = x\u00B3', type: 'cubic', a: 1, b: 0, c: 0, tip: 'Cubic with inflection at origin' },
+                  { label: __alloT('stem.funcgrapher.y_x_2', 'y = x\u00B3'), type: 'cubic', a: 1, b: 0, c: 0, tip: __alloT('stem.funcgrapher.cubic_with_inflection_at_origin', 'Cubic with inflection at origin') },
 
-                  { label: 'y = e^x', type: 'exponential', a: 1, b: 1, c: 0, tip: 'Natural exponential growth' },
+                  { label: __alloT('stem.funcgrapher.y_e_x', 'y = e^x'), type: 'exponential', a: 1, b: 1, c: 0, tip: __alloT('stem.funcgrapher.natural_exponential_growth', 'Natural exponential growth') },
 
-                  { label: 'y = |x|', type: 'absolute', a: 1, b: 0, c: 0, tip: 'V-shaped absolute value' },
+                  { label: __alloT('stem.funcgrapher.y_x_3', 'y = |x|'), type: 'absolute', a: 1, b: 0, c: 0, tip: __alloT('stem.funcgrapher.v_shaped_absolute_value', 'V-shaped absolute value') },
 
                 ].map(function (p) {
 
                   return React.createElement("button", { key: p.label, onClick: function () {
 
-                      upd('type', p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
+                      setFnType(p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
 
                       addToast('\uD83D\uDCC8 ' + p.tip, 'success');
 
@@ -822,15 +941,15 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mt-2 flex items-center gap-4 text-[11px] text-slate-600" },
 
-              React.createElement("span", null, "\u2014\u2014 f(x)"),
+              React.createElement("span", null, __alloT('stem.funcgrapher.f_x', "\u2014\u2014 f(x)")),
 
-              d.showDeriv && React.createElement("span", null, "- - - f\u2032(x)"),
+              d.showDeriv && React.createElement("span", null, __alloT('stem.funcgrapher.f_x_2', "- - - f\u2032(x)")),
 
-              d.compare && React.createElement("span", { style: { color: '#f97316' } }, "- \u2500 - g(x)"),
+              d.compare && React.createElement("span", { style: { color: '#f97316' } }, __alloT('stem.funcgrapher.g_x', "- \u2500 - g(x)")),
 
-              React.createElement("span", null, "\uD83D\uDD34 Roots"),
+              React.createElement("span", null, __alloT('stem.funcgrapher.roots', "\uD83D\uDD34 Roots")),
 
-              React.createElement("span", null, "\uD83D\uDFE2 y-intercept")
+              React.createElement("span", null, __alloT('stem.funcgrapher.y_intercept_2', "\uD83D\uDFE2 y-intercept"))
 
             ),
 
@@ -848,21 +967,44 @@ window.StemLab = window.StemLab || {
 
 
 
-              // ── Name That Graph generator ──
+              // ── Family labels + visual signatures (drive both quiz options and the
+              // corrective feedback — the signature is HOW you tell that family apart) ──
+
+              var FG_LABELS = { linear: 'Linear (y = ax + b)', quadratic: 'Quadratic (y = ax² + bx + c)', trig: 'Trigonometric (y = a·sin(bx + c))', cubic: 'Cubic (y = ax³ + bx + c)', exponential: 'Exponential (y = a·eᵇˣ + c)', absolute: 'Absolute Value (y = a|x + b| + c)', sqrt: 'Square Root (y = a√(x + b) + c)', log: 'Logarithm (y = a·ln(x + b) + c)', rational: 'Rational (y = a/(x + b) + c)' };
+
+              var FG_TRAITS = {
+                linear: 'a perfectly straight line — the slope never changes',
+                quadratic: 'a single U-turn (the vertex) with both arms heading the SAME direction',
+                trig: 'a wave that repeats the same cycle forever',
+                cubic: 'an S-bend whose two ends head in OPPOSITE directions',
+                exponential: 'nearly flat on one side, then exploding upward on the other',
+                absolute: 'a sharp V corner — two straight pieces meeting at a point',
+                sqrt: 'half a sideways parabola that STARTS at an edge point and only goes one way',
+                log: 'a fast climb that flattens out, with a vertical wall (asymptote) on one side',
+                rational: 'two separate branches split by a vertical asymptote the curve never touches'
+              };
+
+              // Family pool grows with grade band
+              var FG_BAND_TYPES = {
+                'K-2':  ['linear', 'quadratic', 'absolute'],
+                '3-5':  ['linear', 'quadratic', 'absolute', 'trig'],
+                '6-8':  ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute'],
+                '9-12': ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute', 'sqrt', 'log', 'rational']
+              };
+
+              // ── Name That Graph generator (grade-banded pool) ──
 
               function makeFgQuiz() {
 
-                var types = ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute'];
-
-                var labels = { linear: 'Linear (y = ax + b)', quadratic: 'Quadratic (y = ax² + bx + c)', trig: 'Trigonometric (y = a·sin(bx + c))', cubic: 'Cubic (y = ax³ + bx + c)', exponential: 'Exponential (y = a·eᵇˣ + c)', absolute: 'Absolute Value (y = a|x + b| + c)' };
+                var types = FG_BAND_TYPES[gradeBand] || FG_BAND_TYPES['3-5'];
 
                 var tp = types[Math.floor(Math.random() * types.length)];
 
-                var opts = [labels[tp]];
+                var opts = [FG_LABELS[tp]];
 
-                while (opts.length < 4) { var r = labels[types[Math.floor(Math.random() * types.length)]]; if (opts.indexOf(r) < 0) opts.push(r); }
+                while (opts.length < Math.min(4, types.length)) { var r = FG_LABELS[types[Math.floor(Math.random() * types.length)]]; if (opts.indexOf(r) < 0) opts.push(r); }
 
-                return { mode: 'name', type: tp, answer: labels[tp], opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
+                return { mode: 'name', type: tp, answer: FG_LABELS[tp], opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
 
               }
 
@@ -872,9 +1014,10 @@ window.StemLab = window.StemLab || {
 
               function makeRootQuiz() {
 
-                // Pick linear or quadratic with guaranteed nice roots
+                // Pick linear or quadratic with guaranteed nice roots.
+                // Younger bands stay linear-only; quadratics unlock at 6-8.
 
-                var pick = Math.random();
+                var pick = (gradeBand === 'K-2' || gradeBand === '3-5') ? 0 : Math.random();
 
                 var qa, qb, qc, qtype, rootAnswer;
 
@@ -926,7 +1069,8 @@ window.StemLab = window.StemLab || {
 
               function makeYIntQuiz() {
 
-                var pick = Math.random();
+                // Banded: K-2/3-5 linear only, 6-8 adds quadratic, 9-12 adds cubic
+                var pick = (gradeBand === 'K-2' || gradeBand === '3-5') ? 0 : (gradeBand === '6-8' ? Math.random() * 0.8 : Math.random());
 
                 var qa, qb, qc, qtype, yIntAnswer;
 
@@ -976,6 +1120,76 @@ window.StemLab = window.StemLab || {
 
 
 
+              // ── Misconception bank (True/False "myth busting") ──
+              // Each entry targets a documented student misconception; the `why` is the
+              // corrective explanation shown after EVERY answer, right or wrong.
+              var FG_MYTHS = {
+                '3-5': [
+                  { s: 'A steeper line has a bigger slope number.', t: true, why: 'Slope counts how much the line climbs for each step to the right — steeper climb, bigger number.' },
+                  { s: 'The line y = 2x goes DOWN as you move right.', t: false, why: 'The slope 2 is positive, so the line climbs. Only negative slopes go downhill.' },
+                  { s: 'A graph can cross the y-axis in two different places.', t: false, why: 'A function gives exactly one output at x = 0, so it has exactly ONE y-intercept.' },
+                  { s: 'Making "a" negative in y = a·x flips the line downhill.', t: true, why: 'A negative slope trades climbing for falling — the line reflects over the x-axis.' },
+                  { s: 'Adding 3 to a function (y = x + 3) slides the whole line up 3.', t: true, why: 'Every point gets 3 added to its height — same shape, shifted up.' }
+                ],
+                '6-8': [
+                  { s: 'A bigger "a" in y = ax² makes the parabola wider.', t: false, why: 'Bigger |a| makes it NARROWER — each step in x now costs more height. Wide parabolas come from |a| < 1.' },
+                  { s: 'y = x² + 3 has the same shape as y = x², just moved up.', t: true, why: 'Adding a constant lifts every point 3 units — the shape is untouched.' },
+                  { s: 'sin(2x) is twice as TALL as sin(x).', t: false, why: 'The 2 INSIDE squeezes the wave to twice the cycles (shorter period). Height comes from the number in FRONT — the amplitude.' },
+                  { s: 'Every parabola crosses the x-axis twice.', t: false, why: 'Lift the vertex above the x-axis and it never crosses — a parabola can have 0, 1, or 2 roots.' },
+                  { s: 'y = |x| has a sharp corner at the origin.', t: true, why: 'Left of 0 the slope is −1, right of 0 it is +1. That sudden switch is the V corner — no smooth turn.' },
+                  { s: 'If two graphs cross, they are equal at that x-value.', t: true, why: 'A crossing point is exactly where both functions give the same output — that is what solving f(x) = g(x) finds.' }
+                ],
+                '9-12': [
+                  { s: 'The graph of y = 1/x eventually touches the x-axis.', t: false, why: 'It gets infinitely close but never arrives — the x-axis is a horizontal ASYMPTOTE, a boundary the curve approaches forever.' },
+                  { s: 'Exponential growth eventually beats ANY polynomial.', t: true, why: 'For big enough x, eˣ outruns x², x³, even x¹⁰⁰. Growth proportional to current size always wins the long game.' },
+                  { s: 'ln(x) flattens out and approaches a maximum height.', t: false, why: 'It grows forever — just very slowly. It has no horizontal asymptote and eventually passes ANY height.' },
+                  { s: 'Wherever f′(x) = 0, the function has a max or a min.', t: false, why: 'y = x³ at x = 0: the slope is 0 but it is a flat S-bend (an inflection), not a peak or valley. Zero slope is necessary, not sufficient.' },
+                  { s: 'Shifting a graph up can change how many roots it has.', t: true, why: 'Raise y = x² − 1 by one unit and its two roots merge into one; raise it more and they vanish. Vertical shifts move the axis crossings.' },
+                  { s: '√x is just x² in reverse, so its graph is a full parabola.', t: false, why: 'It is HALF a sideways parabola — the square root only returns the non-negative answer, so the graph starts at the edge and goes one way.' }
+                ]
+              };
+              function mythBankForBand() { return FG_MYTHS[gradeBand === 'K-2' ? '3-5' : gradeBand] || FG_MYTHS['6-8']; }
+
+              function makeMythQuiz() {
+                var bank = mythBankForBand();
+                var lastIdx = typeof d.fgLastMythIdx === 'number' ? d.fgLastMythIdx : -1;
+                var mi = Math.floor(Math.random() * bank.length);
+                if (mi === lastIdx) mi = (mi + 1) % bank.length; // avoid immediate repeat
+                var m = bank[mi];
+                return { mode: 'myth', mythIdx: mi, s: m.s, answer: m.t, why: m.why, opts: [true, false], answered: false };
+              }
+
+              // Evaluate a quiz's stored function at x — powers the diagnostic feedback
+              function evalQ(q, x) {
+                if (q.type === 'linear') return q.a * x + q.b;
+                if (q.type === 'quadratic') return q.a * x * x + q.b * x + q.c;
+                if (q.type === 'cubic') return q.a * x * x * x + q.b * x + q.c;
+                return NaN;
+              }
+
+              // ── Corrective feedback: explain WHY, not just reveal the answer ──
+              // Wrong answers get a diagnosis of the mistake (e.g. "f(your pick) isn't 0");
+              // right answers get a one-line reinforcement of the underlying rule.
+              function buildFeedback(q, chosen, correct) {
+                if (q.mode === 'myth') {
+                  return (q.answer ? 'TRUE' : 'FALSE') + ' — ' + q.why;
+                }
+                if (q.mode === 'root') {
+                  if (correct) return 'f(' + chosen + ') = 0 — the curve crosses the x-axis exactly there.';
+                  var fAt = evalQ(q, chosen);
+                  return 'A root is where the curve CROSSES the x-axis — where f(x) = 0. At your pick x = ' + chosen + ', f(' + chosen + ') = ' + (isFinite(fAt) ? Math.round(fAt * 100) / 100 : '?') + ', not 0. Look where the curve meets the axis: x = ' + q.answer + '.';
+                }
+                if (q.mode === 'yint') {
+                  if (correct) return 'f(0) = ' + q.answer + ' — the y-intercept is always just the function evaluated at x = 0.';
+                  return 'The y-intercept is f(0): set x = 0 and every x-term vanishes. What remains is ' + q.answer + '. (You picked ' + chosen + ' — the curve may pass that height, but not at x = 0.)';
+                }
+                // name mode — chosen is a label string; map it back to its family
+                var chosenId = null;
+                for (var fk in FG_LABELS) { if (FG_LABELS[fk] === chosen) { chosenId = fk; break; } }
+                if (correct) return 'Signature spotted: ' + FG_TRAITS[q.type] + '.';
+                return 'You picked ' + chosen + ' — that family shows ' + (chosenId && FG_TRAITS[chosenId] ? FG_TRAITS[chosenId] : 'a different shape') + '. This graph instead shows ' + FG_TRAITS[q.type] + '.';
+              }
+
               // Start a challenge based on the current mode
 
               function startChallenge() {
@@ -985,6 +1199,8 @@ window.StemLab = window.StemLab || {
                 if (challengeMode === 'root') { q = makeRootQuiz(); }
 
                 else if (challengeMode === 'yint') { q = makeYIntQuiz(); }
+
+                else if (challengeMode === 'myth') { q = makeMythQuiz(); upd('fgLastMythIdx', q.mythIdx); }
 
                 else { q = makeFgQuiz(); }
 
@@ -1006,11 +1222,13 @@ window.StemLab = window.StemLab || {
 
               var CHALLENGE_MODES = [
 
-                { id: 'name', label: '🎯 Name That Graph', color: 'violet' },
+                { id: 'name', label: __alloT('stem.funcgrapher.name_that_graph', '🎯 Name That Graph'), color: 'violet' },
 
-                { id: 'root', label: '📍 Find the Root', color: 'red' },
+                { id: 'root', label: __alloT('stem.funcgrapher.find_the_root', '📍 Find the Root'), color: 'red' },
 
-                { id: 'yint', label: '🟢 Y-Intercept?', color: 'emerald' }
+                { id: 'yint', label: __alloT('stem.funcgrapher.y_intercept_3', '🟢 Y-Intercept?'), color: 'emerald' },
+
+                { id: 'myth', label: __alloT('stem.funcgrapher.true_or_false', '🧠 True or False?'), color: 'amber' }
 
               ];
 
@@ -1022,7 +1240,9 @@ window.StemLab = window.StemLab || {
 
                 : challengeMode === 'yint' ? 'What is the y-intercept of this function?'
 
-                  : 'What type of function is graphed above?';
+                  : challengeMode === 'myth' ? ((fgQuiz && fgQuiz.mode === 'myth') ? '“' + fgQuiz.s + '”' : 'True or false?')
+
+                    : 'What type of function is graphed above?';
 
 
 
@@ -1038,7 +1258,7 @@ window.StemLab = window.StemLab || {
 
                     return React.createElement("button", { key: cm.id, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
 
-                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? (({ indigo: 'bg-indigo-600', violet: 'bg-violet-600', red: 'bg-red-600', emerald: 'bg-emerald-600' }[cm.color]) || 'bg-indigo-600') + ' text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? (({ indigo: 'bg-indigo-600', violet: 'bg-violet-600', red: 'bg-red-600', emerald: 'bg-emerald-600', amber: 'bg-amber-600' }[cm.color]) || 'bg-indigo-600') + ' text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                     }, cm.label);
 
@@ -1048,9 +1268,23 @@ window.StemLab = window.StemLab || {
 
                 ),
 
+                // Grade-band selector — challenges scale their content to the band
+                React.createElement("div", { className: "flex items-center gap-1.5 mb-2", role: "group", "aria-label": __alloT('stem.funcgrapher.challenge_level', "Challenge level") },
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, __alloT('stem.funcgrapher.level', "Level:")),
+                  GRADE_BANDS.map(function (gb) {
+                    var active = gradeBand === gb;
+                    return React.createElement("button", {
+                      key: gb,
+                      onClick: function () { upd('fgGradeOverride', gb); upd('fgQuiz', null); },
+                      "aria-pressed": active,
+                      className: "px-2 py-0.5 rounded-full text-[10px] font-bold transition-all " + (active ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-indigo-50')
+                    }, gb);
+                  })
+                ),
+
                 // Start / New Challenge button
 
-                React.createElement("button", { "aria-label": "Start Challenge",
+                React.createElement("button", { "aria-label": __alloT('stem.funcgrapher.start_challenge', "Start Challenge"),
 
                   onClick: startChallenge,
 
@@ -1070,17 +1304,27 @@ window.StemLab = window.StemLab || {
 
                     fgQuiz.opts.map(function (opt) {
 
-                      return React.createElement("button", { "aria-label": "Select answer: " + String(opt),
+                      var optLabel = fgQuiz.mode === 'myth' ? (opt ? '\u2705 True' : '\u274C False')
+                        : challengeMode === 'name' ? opt
+                          : (challengeMode === 'yint' ? 'y = ' + opt : 'x = ' + opt);
+
+                      return React.createElement("button", { "aria-label": "Select answer: " + (fgQuiz.mode === 'myth' ? (opt ? 'True' : 'False') : String(opt)),
 
                         key: String(opt), onClick: function () {
 
                           var correct = opt === fgQuiz.answer;
 
-                          upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt }));
+                          var fb = buildFeedback(fgQuiz, opt, correct);
+
+                          upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt, fb: fb }));
 
                           upd('fgScore', fgScore + (correct ? 1 : 0));
 
                           upd('fgStreak', correct ? fgStreak + 1 : 0);
+
+                          if (fgQuiz.mode === 'myth') upd('fgMythsDone', (d.fgMythsDone || 0) + 1);
+
+                          if (typeof announceToSR === 'function') announceToSR((correct ? 'Correct. ' : 'Not quite. ') + fb);
 
                           if (correct) {
 
@@ -1094,25 +1338,18 @@ window.StemLab = window.StemLab || {
                               if (typeof awardStemXP === 'function') awardStemXP('funcGrapher', 10, 'Function Grapher streak bonus');
                             }
 
-                            // Auto-advance after 1.5s
-
-                            setTimeout(function () { startChallenge(); }, 1500);
+                            // Auto-advance \u2014 except in myth mode, where the "why" deserves a read
+                            if (fgQuiz.mode !== 'myth') setTimeout(function () { startChallenge(); }, 2200);
 
                           } else {
 
-                            var hint = challengeMode === 'root' ? 'The root is x = ' + fgQuiz.answer
-
-                              : challengeMode === 'yint' ? 'The y-intercept is ' + fgQuiz.answer
-
-                                : "It's a " + fgQuiz.type + ' function';
-
-                            addToast('\u274C ' + hint, 'error');
+                            addToast('\u274C Not quite \u2014 see why below', 'error');
 
                           }
 
                         }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
 
-                      }, challengeMode === 'name' ? opt : (challengeMode === 'yint' ? 'y = ' + opt : 'x = ' + opt));
+                      }, optLabel);
 
                     })
 
@@ -1120,11 +1357,15 @@ window.StemLab = window.StemLab || {
 
                 ),
 
-                // Result card
+                // Result card \u2014 headline + corrective explanation (the pedagogy payload)
 
-                fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (fgQuiz.chosen === fgQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
+                fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl " + (fgQuiz.chosen === fgQuiz.answer ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'), role: "status" },
 
-                  fgQuiz.chosen === fgQuiz.answer ? '\u2705 Correct! +5 XP' : '\u274C Answer: ' + fgQuiz.answer
+                  React.createElement("p", { className: "text-sm font-bold mb-1 " + (fgQuiz.chosen === fgQuiz.answer ? 'text-emerald-700' : 'text-red-700') },
+                    fgQuiz.chosen === fgQuiz.answer ? '\u2705 Correct! +5 XP' : '\u274C Not quite'
+                  ),
+
+                  fgQuiz.fb && React.createElement("p", { className: "text-xs leading-relaxed " + (fgQuiz.chosen === fgQuiz.answer ? 'text-emerald-800' : 'text-red-800') }, fgQuiz.fb)
 
                 )
 
@@ -1132,7 +1373,7 @@ window.StemLab = window.StemLab || {
 
             })(),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
+            React.createElement("button", { "aria-label": __alloT('stem.funcgrapher.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.funcgrapher.snapshot_2', "\uD83D\uDCF8 Snapshot")),
 
             // ── AI Function Tutor (reading-level aware) ──
             (function () {
@@ -1141,9 +1382,9 @@ window.StemLab = window.StemLab || {
               var aiLoading = !!d.aiLoading;
               var aiError = d.aiError || '';
               var LEVELS = [
-                { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences, no jargon' },
-                { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student' },
-                { id: 'hs', label: 'High School', hint: 'for a high school algebra or pre-calc student, including vocabulary like slope, intercept, vertex, period, amplitude' }
+                { id: 'plain', label: __alloT('stem.funcgrapher.plain', 'Plain'), hint: __alloT('stem.funcgrapher.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences, no jargon') },
+                { id: 'grade5', label: __alloT('stem.funcgrapher.grade_5', 'Grade 5'), hint: __alloT('stem.funcgrapher.for_a_5th_grade_student', 'for a 5th grade student') },
+                { id: 'hs', label: __alloT('stem.funcgrapher.high_school', 'High School'), hint: __alloT('stem.funcgrapher.for_a_high_school_algebra_or_pre_calc_', 'for a high school algebra or pre-calc student, including vocabulary like slope, intercept, vertex, period, amplitude') }
               ];
               function explain() {
                 if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
@@ -1168,8 +1409,8 @@ window.StemLab = window.StemLab || {
               }
               return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
-                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
-                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, __alloT('stem.funcgrapher.explain_at_my_level', "\u2728 Explain at my level")),
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.funcgrapher.reading_level', "Reading level") },
                     LEVELS.map(function (L) {
                       var active = aiLevel === L.id;
                       return React.createElement("button", {
@@ -1190,7 +1431,7 @@ window.StemLab = window.StemLab || {
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, __alloT('stem.funcgrapher.click_explain_for_the_ai_tutor_to_desc', "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level."))
               );
             })(),
 
@@ -1198,7 +1439,7 @@ window.StemLab = window.StemLab || {
             React.createElement('div', { className: 'mt-5 rounded-2xl border border-indigo-300 bg-white p-3 shadow-sm' },
               React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
                 React.createElement('span', { className: 'text-lg' }, '\uD83D\uDCCA'),
-                React.createElement('h4', { className: 'text-sm font-bold text-indigo-700' }, 'Function Zoo \u2014 Six common function shapes')
+                React.createElement('h4', { className: 'text-sm font-bold text-indigo-700' }, __alloT('stem.funcgrapher.function_zoo_six_common_function_shape', 'Function Zoo \u2014 Six common function shapes'))
               ),
               React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#020210', aspectRatio: '16/6' } },
                 React.createElement('canvas', {
@@ -1217,12 +1458,12 @@ window.StemLab = window.StemLab || {
                       c2.fillStyle = '#020210';
                       c2.fillRect(0, 0, W, H);
                       var funcs = [
-                        { name: 'Linear', f: function(x) { return x; }, color: '#7dd3fc' },
-                        { name: 'Quadratic', f: function(x) { return x * x / 4; }, color: '#fbbf24' },
-                        { name: 'Cubic', f: function(x) { return x * x * x / 16; }, color: '#10b981' },
-                        { name: 'Exponential', f: function(x) { return Math.exp(x / 3) - 1; }, color: '#dc2626' },
+                        { name: __alloT('stem.funcgrapher.linear', 'Linear'), f: function(x) { return x; }, color: '#7dd3fc' },
+                        { name: __alloT('stem.funcgrapher.quadratic', 'Quadratic'), f: function(x) { return x * x / 4; }, color: '#fbbf24' },
+                        { name: __alloT('stem.funcgrapher.cubic', 'Cubic'), f: function(x) { return x * x * x / 16; }, color: '#10b981' },
+                        { name: __alloT('stem.funcgrapher.exponential', 'Exponential'), f: function(x) { return Math.exp(x / 3) - 1; }, color: '#dc2626' },
                         { name: 'Log', f: function(x) { return x > 0 ? Math.log(x + 1) * 2 : -Math.log(-x + 1) * 2; }, color: '#a78bfa' },
-                        { name: 'Sine', f: function(x) { return Math.sin(x); }, color: '#f472b6' }
+                        { name: __alloT('stem.funcgrapher.sine', 'Sine'), f: function(x) { return Math.sin(x); }, color: '#f472b6' }
                       ];
                       var cols = 3, rows = 2;
                       var cellW = W / cols, cellH = H / rows;
@@ -1237,7 +1478,9 @@ window.StemLab = window.StemLab || {
                         c2.moveTo(ox - cellW * 0.4, oy); c2.lineTo(ox + cellW * 0.4, oy);
                         c2.moveTo(ox, oy - cellH * 0.4); c2.lineTo(ox, oy + cellH * 0.4);
                         c2.stroke();
-                        // Curve
+                        // Curve — neon glow per function color + a light bead tracing it
+                        c2.save();
+                        c2.shadowColor = fn.color; c2.shadowBlur = 7;
                         c2.strokeStyle = fn.color; c2.lineWidth = 2;
                         c2.beginPath();
                         for (var x = -cellW * 0.4; x <= cellW * 0.4; x++) {
@@ -1248,6 +1491,14 @@ window.StemLab = window.StemLab || {
                           else c2.lineTo(ox + x, py);
                         }
                         c2.stroke();
+                        // Light bead sweeping along the curve (stays within the cell)
+                        var beadX = -cellW * 0.4 + ((t * 0.22 + fi * 0.13) % 1) * cellW * 0.8;
+                        var beadY = oy - fn.f(beadX / 12) * 8;
+                        if (beadY > oy - cellH * 0.46 && beadY < oy + cellH * 0.46) {
+                          c2.shadowBlur = 10; c2.fillStyle = '#ffffff';
+                          c2.beginPath(); c2.arc(ox + beadX, beadY, 2.3, 0, Math.PI * 2); c2.fill();
+                        }
+                        c2.restore();
                         // Label
                         c2.font = 'bold 9px sans-serif'; c2.fillStyle = fn.color; c2.textAlign = 'center';
                         c2.fillText(fn.name, ox, oy + cellH * 0.45);
@@ -1256,6 +1507,7 @@ window.StemLab = window.StemLab || {
                     cvEl._fzAnim = 1;
                     drawFz();
                     var ro = new ResizeObserver(function() {
+                      if (!cvEl.isConnected) { ro.disconnect(); return; }
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
                       cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2); drawFz();
                     });
@@ -1278,15 +1530,15 @@ window.StemLab = window.StemLab || {
               else if (ampS === 'short') state = 'short';
               else state = 'normal';
               var sm = {
-                tallFast: { label: '🌊 Tall + Fast (intense)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                tall:     { label: '🗻 Tall wave', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-                fast:     { label: '⚡ Fast cycle', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-                short:    { label: '〰️ Short wave', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-                normal:   { label: '🟢 Standard', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+                tallFast: { label: __alloT('stem.funcgrapher.tall_fast_intense', '🌊 Tall + Fast (intense)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                tall:     { label: __alloT('stem.funcgrapher.tall_wave', '🗻 Tall wave'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+                fast:     { label: __alloT('stem.funcgrapher.fast_cycle', '⚡ Fast cycle'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+                short:    { label: __alloT('stem.funcgrapher.short_wave', '〰️ Short wave'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                normal:   { label: __alloT('stem.funcgrapher.standard', '🟢 Standard'), color: '#059669', bg: '#ecfdf5', border: '#86efac' }
               }[state];
               return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-violet-300 space-y-2' },
-                h('h3', { className: 'text-sm font-black text-violet-700' }, '🌊 Wave parameter discovery'),
-                h('p', { className: 'text-[11px] text-slate-700' }, 'Sliders for amplitude, frequency, phase. Discrete 5-state classification. No score, no reveal.'),
+                h('h3', { className: 'text-sm font-black text-violet-700' }, __alloT('stem.funcgrapher.wave_parameter_discovery', '🌊 Wave parameter discovery')),
+                h('p', { className: 'text-[11px] text-slate-700' }, __alloT('stem.funcgrapher.sliders_for_amplitude_frequency_phase_', 'Sliders for amplitude, frequency, phase. Discrete 5-state classification. No score, no reveal.')),
                 h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
                   h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'y = ' + iq.amp + ' sin(' + iq.freq + 'x + ' + iq.phase.toFixed(2) + ')')
@@ -1303,22 +1555,22 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amp, f: iq.freq, p: iq.phase.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ amp: 1, freq: 1, phase: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amp, f: iq.freq, p: iq.phase.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.funcgrapher.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ amp: 1, freq: 1, phase: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.funcgrapher.reset_2', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does phase shift affect the visible wave?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.hypothesis_how_does_phase_shift_affect', 'Hypothesis: How does phase shift affect the visible wave?'),
                   className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.funcgrapher.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
                   h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                    h('li', null, 'Find two settings that produce visually identical waves.'),
-                    h('li', null, 'What does negative amplitude do?'))),
+                    h('li', null, __alloT('stem.funcgrapher.find_two_settings_that_produce_visuall', 'Find two settings that produce visually identical waves.')),
+                    h('li', null, __alloT('stem.funcgrapher.what_does_negative_amplitude_do', 'What does negative amplitude do?')))),
                 h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-                  'I understand — explain in own words'),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how each parameter shapes a sine wave.',
+                  __alloT('stem.funcgrapher.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.explain_how_each_parameter_shapes_a_si', 'Explain how each parameter shapes a sine wave.'),
                   className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-                h('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 5-state marker; no wave score; no reveal — by design.')
+                h('div', { className: 'text-[9px] italic text-slate-500' }, __alloT('stem.funcgrapher.design_note_discrete_5_state_marker_no', 'Design note: discrete 5-state marker; no wave score; no reveal — by design.'))
               );
             })()
           )

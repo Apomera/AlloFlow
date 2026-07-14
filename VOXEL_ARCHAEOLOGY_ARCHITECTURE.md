@@ -1,5 +1,7 @@
 # Voxel Archaeology: Contents + Architecture Analysis
 
+> **Architecture snapshot note (2026-07-09):** This May 2026 analysis describes the intended Voxel Archaeology architecture and the platform contract as read at that time. Re-check current STEM Lab module conventions, shared helpers, and registry/tool ids before implementing from this document.
+
 **Status:** Architecture analysis, not built. Authored 2026-05-31. Companion to `VOXEL_ARCHAEOLOGY_SPEC.md` (the spec is "what/why"; this is "what to include + how").
 **Working id/file:** `archaeology` / `stem_lab/stem_tool_archaeology.js`
 
@@ -92,7 +94,7 @@ ExcavationState {
 
 - ARIA `grid`/`row`/`gridcell` with **roving tabindex** (one tab stop, arrow keys move within).
 - Every cell has an accessible name: position + depth + material + exposed artifact. State changes pushed through `announceToSR`.
-- **No color-only encoding:** strata carry a label and a pattern, not just a palette color. All text meets WCAG 2.1 AA via theme vars in light/dark/high-contrast.
+- **No color-only encoding:** strata carry a label and a pattern, not just a palette color. Text must meet WCAG 2.1 AA contrast via theme vars in light/dark/high-contrast.
 - Focus management on layer change and view switches; visible focus ring.
 - Honor reduced-motion and global mute; never convey essential state by motion or sound alone.
 

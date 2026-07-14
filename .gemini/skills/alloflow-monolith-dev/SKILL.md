@@ -1,24 +1,28 @@
 ---
 name: alloflow-monolith-dev
-description: Development patterns for the AlloFlow monolith (AlloFlowANTI.txt) - auditing, refactoring, feature addition, debugging, and safe editing of the 74K-line single-file React application
+description: Development patterns for the AlloFlow monolith (AlloFlowANTI.txt) - auditing, refactoring, feature addition, debugging, and safe editing of the ~29K-line single-file React application
 ---
 
 # AlloFlow Monolith Development Skill
 
 ## Architecture Context
 
-AlloFlow is a **74,000+ line single-file React application** (`AlloFlowANTI.txt`) deployed via Gemini Canvas. The monolith constraint is intentional — the entire app must remain in one file for Canvas deployment.
+AlloFlow is a **~29,000-line single-file React application** (`AlloFlowANTI.txt`,
+~1.5 MB) deployed via Gemini Canvas. The monolith constraint is intentional — the
+entire app must remain in one file for Canvas deployment. It used to be ~74K
+lines; it shrank as heavy features were extracted into ~250 CDN modules.
 
 ### Key Structural Landmarks
-- **L1-18**: License header (AGPL 3.0)
-- **L19**: React imports (useState, useEffect, useRef, useCallback, useContext, useMemo, useReducer)
-- **L21-31**: Lucide icon imports (5 categorical groups)
-- **L38**: Firebase config
-- **L43-45**: `DEBUG_LOG` flag and `debugLog()` function
-- **L~1040**: `GEMINI_MODELS` config block
-- **L~31394+**: Phase 4 reducer definitions (wsReducer, advReducer, quizReducer, glossaryReducer, conceptSortReducer, uiChromeReducer, settingsReducer)
-- **L~31460**: `const AlloFlowContent = () => {` — the God Component
-- **L~73834**: `export default`
+**Line numbers drift constantly as modules are extracted — always `grep` for the
+symbol rather than jumping to a fixed line.** Current approximate anchors:
+- License header (AGPL 3.0) + React/Lucide imports at the top
+- `const DEBUG_LOG` + `debugLog()` — search `DEBUG_LOG` (~L504)
+- `GEMINI_MODELS` config — search `GEMINI_MODELS` (near the top, ~L260)
+- Phase 4 reducers (`wsReducer`, `advReducer`, `quizReducer`, `glossaryReducer`,
+  `conceptSortReducer`, `uiChromeReducer`, `settingsReducer`) — search the
+  reducer name (e.g. `function wsReducer` ~L3070)
+- `AlloFlowContent` — the God Component; search `AlloFlowContent`
+- `export default function WrappedApp()` — the end of the component tree (~L29030)
 
 ### State Management (Post Phase 4)
 - 7 `useReducer` instances manage cohesive subsystems:
@@ -28,8 +32,9 @@ AlloFlow is a **74,000+ line single-file React application** (`AlloFlowANTI.txt`
 
 ## Safe Editing Patterns
 
-### File Size Constraint
-The file exceeds the 4MB editor tool limit. **Always use Python scripts** for modifications:
+### File Size
+The file is ~1.5 MB — the `Edit`/`Write` tools handle it directly. Python or
+Node scripts are optional for large scripted/bulk edits, not required:
 
 ```python
 with open('AlloFlowANTI.txt', 'r', encoding='utf-8') as f:
@@ -40,13 +45,14 @@ with open('AlloFlowANTI.txt', 'w', encoding='utf-8') as f:
 ```
 
 ### Brace Balance Verification
-After every modification, verify brace balance hasn't changed:
+After every modification, verify the brace delta is **unchanged** from before
+your edit (the absolute value drifts over time — don't anchor on a fixed number;
+as of this writing it is -2):
 ```python
 open_b = text.count('{')
 close_b = text.count('}')
 print(f"Brace balance: {open_b} open, {close_b} close, delta = {open_b - close_b}")
 ```
-Expected delta: **-8** (as of Feb 2026)
 
 ### useReducer Migration Pattern
 When migrating `useState` to `useReducer`, use the **thin setter wrapper** pattern:

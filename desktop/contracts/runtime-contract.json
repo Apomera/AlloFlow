@@ -1,0 +1,179 @@
+{
+  "name": "AlloFlow Desktop Runtime Contract",
+  "version": "0.1.0-foundation",
+  "status": "foundation",
+  "defaultPorts": {
+    "commandCenter": 32170,
+    "alloflowLocalEngine": 32173,
+    "schoolBoxHost": 32174,
+    "lanShare": 32175,
+    "alloflowLocalAsr": 32176,
+    "alloflowWebApp": 3000
+  },
+  "schoolBox": {
+    "status": "optional-docker-foundation",
+    "role": "Optional server/appliance stack. AlloFlow Desktop LAN classrooms, the bundled app, built-in AI engine, local keys, Kokoro voice, and offline ASR do not require Docker.",
+    "defaultMode": "desktop-host",
+    "defaultProjectName": "alloflow-schoolbox",
+    "defaultWebUrl": "http://127.0.0.1:32174",
+    "stack": "Uses ALLOFLOW_SCHOOLBOX_ROOT when set, then packaged resources/schoolbox when installed, then the checkout root docker-compose.yml during development. This stack is for optional School Box server/appliance scenarios, not ordinary Desktop LAN classroom hosting.",
+    "modes": {
+      "desktop-host": "Prepare and run the optional local Docker-based School Box server stack from AlloFlow Desktop.",
+      "district-server": "Reserved for the future district/server command center; it does not start local Docker services yet.",
+      "disabled": "Do not prepare or start optional School Box server services."
+    },
+    "services": ["frontend", "pocketbase", "ollama", "piper", "searxng"],
+    "optionalServices": ["edge-tts", "flux"],
+    "statusValues": ["disabled", "district-planned", "missing-stack", "missing-app-build", "needs-setup", "needs-docker", "ready", "partial", "running"],
+    "statusResponseAdds": ["nextActions"]
+  },
+  "appDelivery": {
+    "defaultMode": "auto",
+    "bundledRoute": "/app/",
+    "fallbackDevUrl": "http://localhost:3000",
+    "behavior": "Use the bundled static app build when desktop/app-build/index.html exists; otherwise start or connect to the configured local web app URL."
+  },
+  "updates": {
+    "defaultChannel": "latest",
+    "channels": ["latest", "beta"],
+    "behavior": "Packaged Electron builds can switch update checks between latest and beta. Beta release workflow runs use prerelease package versions so update metadata stays separate."
+  },
+  "liveSession": {
+    "defaultMode": "schoolbox-lan",
+    "desktopConfigKey": "alloflow_live_session_config",
+    "behavior": "Desktop writes the selected live-session backend into the bundled app before loading /app/. The app blocks Firestore classroom session docs unless a cloud mode is explicitly selected. In schoolbox-lan mode, shown to users as Desktop LAN / Local Network, classroom session document reads and writes are routed to the Desktop local LAN bridge and do not require Docker.",
+    "modes": {
+      "schoolbox-lan": "Preferred classroom path. Use the teacher Desktop runtime and LAN Share listener on the local network; Firestore live-session creation is blocked from Desktop.",
+      "local-preview": "Single-device preview only; students on other devices cannot join.",
+      "district-server": "Reserved for a future district-controlled server command center.",
+      "byo-firebase": "Explicit opt-in for a school or district-owned Firebase project.",
+      "alloflow-demo-cloud": "Explicit demo-only cloud mode; not intended for real student data."
+    },
+    "lanBridge": {
+      "status": "foundation",
+      "storage": "in-memory with TTL",
+      "defaultTtlMinutes": 480,
+      "defaultShareUrl": "http://{teacher-lan-ip}:32175",
+      "networkReachability": "Local by default while the Desktop command center is bound to 127.0.0.1. Cross-device student joining uses an explicit LAN Share listener that exposes only /app/, /join/{code}, and LAN session bridge endpoints.",
+      "joinRoute": "/join/{code}",
+      "sessionRoutes": ["/api/lan-sessions", "/api/lan-sessions/{code}", "/api/lan-sessions/{code}/events"],
+      "docRoutes": {
+        "routes": ["/api/lan-docs/{key}"],
+        "purpose": "Chunked session assets (resources manifests, ref:: images) written by the app's uploadSessionAssets externalization and read back by student hydration — the LAN stand-in for the Firestore session_assets collection.",
+        "keyFormat": "[A-Za-z0-9_-]{1,512}; invalid keys are rejected, never rewritten",
+        "publicAccess": "GET only, behind the same join PIN as session endpoints; create/replace/delete are private-runtime (teacher) only",
+        "storage": "in-memory with the same TTL as LAN sessions; capped at 4000 docs (writes fail loudly when full)"
+      },
+      "joinPin": {
+        "configKey": "liveSession.lan.pin",
+        "behavior": "Optional classroom join PIN. Latched onto the share listener when LAN sharing starts (change the PIN, then restart sharing to apply). When latched, the public join page asks for the PIN before serving the app link + session config, and public session read/patch/events endpoints require it via ?pin= or the x-allo-lan-pin header (401 with pinRequired:true otherwise). The validated PIN is forwarded to the app inside alloflow_live_session_config as lanPin for the future in-app LAN adapter.",
+        "notEnforcedOn": ["/api/health", "/api/live-session/status", "/api/lan-session/status", "/app/"]
+      },
+      "presenterRoute": "/present/{code} (PRIVATE runtime only): projector page with giant class code, QR of the join link, the join PIN when set, and same-network guidance. Never served by the public LAN Share listener."
+    },
+    "statusResponseAdds": ["cloudSessionAllowed", "firestoreAllowed", "dataLocation", "lanBridge", "warnings", "nextActions"]
+  },
+  "secrets": {
+    "desktopStorage": "Packaged Electron builds use OS-backed Electron safeStorage for saved provider keys.",
+    "redaction": "Config and diagnostics responses expose only hasKey, storage, and updatedAt metadata.",
+    "developmentFallback": "Plaintext fallback exists only for non-Electron local runtime checks."
+  },
+  "providers": {
+    "alloflow-local": {
+      "label": "AlloFlow Built-in Engine",
+      "protocol": "openai-compatible",
+      "baseUrl": "http://localhost:32173",
+      "modelsEndpoint": "/v1/models",
+      "managedByDesktop": true,
+      "implementation": {
+        "status": "SHIPPED 2026-07-05 (E2E-verified on Windows ARM64)",
+        "server": "llama.cpp llama-server, pinned CPU build per-arch (b9878), downloaded on first start (~11-17MB)",
+        "model": "config localEngine.modelUrl GGUF, default Qwen2.5-3B-Instruct Q4_K_M (~2GB); swap URL + a CUDA/Vulkan binaryUrl for GPU boxes — zero code changes",
+        "archFallback": "On Windows ARM64 a native loader failure (missing VC++ ARM64 runtime, exit 0xC000007B/0xC0000135) automatically falls back to the x64 build under emulation and surfaces a one-line advisory with the vc_redist.arm64 link",
+        "diskPreflight": "Downloads require the file size plus 1.5GB free or they refuse with a plain-language message",
+        "cloudFallback": "config localEngine.cloudFallbackEnabled defaults false. When enabled, the app may use the private local text engine after a cloud quota/rate-limit only for task shapes passed by /api/engine/probe",
+        "probeTaskSupport": "The local model check reports simpleText, strictJson, and remediationJson readiness so JSON-heavy remediation never relies on model-name guesses",
+        "boundary": "Binds 127.0.0.1 only; never exposed by the LAN share listener"
+      }
+    },
+    "lmstudio": {
+      "label": "LM Studio",
+      "protocol": "openai-compatible",
+      "baseUrl": "http://localhost:1234",
+      "modelsEndpoint": "/v1/models",
+      "managedByDesktop": false
+    },
+    "ollama": {
+      "label": "Ollama",
+      "protocol": "ollama-native",
+      "baseUrl": "http://localhost:11434",
+      "modelsEndpoint": "/api/tags",
+      "managedByDesktop": false
+    },
+    "gemini": {
+      "label": "Gemini",
+      "protocol": "gemini",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+      "managedByDesktop": false
+    }
+  },
+  "httpApi": [
+    { "method": "GET", "path": "/api/health", "purpose": "Runtime, app, path, and service status" },
+    { "method": "GET", "path": "/api/config", "purpose": "Redacted runtime configuration" },
+    { "method": "POST", "path": "/api/config", "purpose": "Merge runtime configuration" },
+    { "method": "GET", "path": "/api/app/status", "purpose": "Managed AlloFlow web app status" },
+    { "method": "POST", "path": "/api/app/start", "purpose": "Start the local AlloFlow web app when it is not already reachable" },
+    { "method": "POST", "path": "/api/app/stop", "purpose": "Stop only the Desktop-managed AlloFlow web app process" },
+    { "method": "GET", "path": "/api/app/logs", "purpose": "Recent managed AlloFlow app process logs" },
+    { "method": "GET", "path": "/api/diagnostics", "purpose": "Redacted diagnostics bundle for copy/paste bug reports" },
+    { "method": "GET", "path": "/api/readiness", "purpose": "Redacted local-first readiness report for teacher/support review: app, selected AI provider, built-in engine, offline ASR, live sessions, optional School Box server, and disk headroom" },
+    { "method": "GET", "path": "/api/providers", "purpose": "Provider presets and availability" },
+    { "method": "POST", "path": "/api/providers/test", "purpose": "Probe one provider by id/baseUrl" },
+    { "method": "POST", "path": "/api/secrets/{providerId}", "purpose": "Store a provider key locally and return only redacted state" },
+    { "method": "GET", "path": "/api/engine/status", "purpose": "Built-in engine status: phase, download progress, model presence, disk headroom, arch, advisory, cloudFallbackEnabled, lastProbe, and taskSupport" },
+    { "method": "POST", "path": "/api/engine/start", "purpose": "Download (first run) and start the managed llama-server; returns a snapshot immediately — poll status for progress" },
+    { "method": "POST", "path": "/api/engine/stop", "purpose": "Stop the managed llama-server process tree" },
+    { "method": "GET", "path": "/api/engine/logs", "purpose": "Recent built-in engine process logs" },
+    { "method": "POST", "path": "/api/engine/probe", "purpose": "Click-only local model capability check. Does not start the engine or change settings; when running, sends tiny plain-text, strict JSON, and remediation JSON probes to the private built-in engine and records taskSupport" },
+    { "method": "GET", "path": "/api/asr/status", "purpose": "Offline speech-to-text (whisper.cpp) status: phase, download progress, model presence, arch, inference URL. 127.0.0.1 only; never on the LAN share listener. Practice-signal STT for oral-reading fluency, not norm-referenced" },
+    { "method": "POST", "path": "/api/asr/start", "purpose": "Download (first run) and start the managed whisper-server; returns a snapshot immediately — poll status for progress. whisper.cpp ships x64-only on Windows (arm64 runs it under emulation)" },
+    { "method": "POST", "path": "/api/asr/stop", "purpose": "Stop the managed whisper-server process tree" },
+    { "method": "GET", "path": "/api/asr/logs", "purpose": "Recent offline ASR process logs" },
+    { "method": "GET", "path": "/api/live-session/status", "purpose": "Selected live-session backend, data location, cloud allowance, and next actions" },
+    { "method": "GET", "path": "/api/lan-share/status", "purpose": "Private command-center status for the explicit student-safe LAN share listener" },
+    { "method": "GET", "path": "/api/lan-share/diagnostics", "purpose": "Private plain-language network readout: LAN addresses, share/PIN state, join base URLs, and firewall/client-isolation guidance" },
+    { "method": "POST", "path": "/api/lan-share/start", "purpose": "Start the student-safe LAN share listener on the configured LAN share port" },
+    { "method": "POST", "path": "/api/lan-share/stop", "purpose": "Stop the student-safe LAN share listener" },
+    { "method": "GET", "path": "/api/lan-session/status", "purpose": "Local classroom session bridge status and join base URLs" },
+    { "method": "POST", "path": "/api/lan-sessions", "purpose": "Create or replace an in-memory LAN classroom session" },
+    { "method": "GET", "path": "/api/lan-sessions/{code}", "purpose": "Read a LAN classroom session document" },
+    { "method": "PATCH", "path": "/api/lan-sessions/{code}", "purpose": "Apply dotted-field classroom session updates" },
+    { "method": "DELETE", "path": "/api/lan-sessions/{code}", "purpose": "End a LAN classroom session" },
+    { "method": "GET", "path": "/api/lan-sessions/{code}/events", "purpose": "Subscribe to LAN classroom session updates with server-sent events" },
+    { "method": "GET", "path": "/api/lan-docs/{key}", "purpose": "Read a chunked session asset doc (public LAN share: PIN-gated)" },
+    { "method": "PUT", "path": "/api/lan-docs/{key}", "purpose": "Create or replace a session asset doc (private runtime only; POST accepted as alias)" },
+    { "method": "DELETE", "path": "/api/lan-docs/{key}", "purpose": "Delete a session asset doc (private runtime only; TTL cleans up otherwise)" },
+    { "method": "GET", "path": "/api/schoolbox/status", "purpose": "Optional School Box Docker server stack readiness and service status" },
+    { "method": "POST", "path": "/api/schoolbox/setup", "purpose": "Create or update docker/.env for the optional desktop-managed School Box server stack" },
+    { "method": "POST", "path": "/api/schoolbox/start", "purpose": "Start the optional desktop-managed School Box Docker server stack" },
+    { "method": "POST", "path": "/api/schoolbox/stop", "purpose": "Stop the optional desktop-managed School Box Docker server stack" },
+    { "method": "GET", "path": "/api/schoolbox/logs", "purpose": "Recent optional School Box server setup/start/stop logs" }
+  ],
+  "staticRoutes": [
+    { "method": "GET", "path": "/", "purpose": "Desktop command center" },
+    { "method": "GET", "path": "/app/", "purpose": "Bundled AlloFlow app when a desktop web build exists" },
+    { "method": "GET", "path": "/join/{code}", "purpose": "Local-network join landing page that primes desktop LAN session config before opening the app; asks for the join PIN first when one is latched" },
+    { "method": "GET", "path": "/present/{code}", "purpose": "PRIVATE-only teacher presenter page: giant class code, join-link QR, PIN when set, same-network guidance" }
+  ],
+  "security": {
+    "bindHost": "127.0.0.1",
+    "lanShare": "The optional LAN Share listener binds separately and exposes only app files, join pages, and LAN session endpoints. It does not expose config, diagnostics, readiness, provider, secret, app-management, or School Box control APIs.",
+    "configResponse": "secrets are redacted",
+    "next": [
+      "Move secrets into the OS keychain before production packaging.",
+      "Gate non-loopback access behind explicit admin approval.",
+      "Add signed update and model provenance checks before bundling model files.",
+      "Keep desktop live sessions in school-controlled backends unless the teacher explicitly chooses a cloud mode."
+    ]
+  }
+}

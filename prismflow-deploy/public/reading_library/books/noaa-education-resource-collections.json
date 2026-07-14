@@ -1,0 +1,45 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-education-resource-collections",
+  "title": "NOAA Education Resource Collections",
+  "description": "A source card for NOAA education collections on weather, climate, oceans, coasts, data, and marine life.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": ["Weather", "Climate", "Ocean science", "Data literacy"],
+  "authors": ["NOAA Education"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education/resource-collections",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Education",
+    "url": "https://www.noaa.gov/education/resource-collections"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA Education Resource Collections organize federal science materials by topic. Students can browse ocean and coasts, weather and atmosphere, climate, marine life, freshwater, data resources, and printable activities."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This is a strong nonfiction path for research projects because NOAA connects observations, models, real-time data, and human decisions. It is especially useful for climate impacts, hurricanes, ocean acidification, watersheds, and weather data."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Rights note: NOAA is a US government source, but the portal links to many offices and partner resources. Treat this as a trusted catalog and check item-level rights before mirroring a linked worksheet, image, or dataset."
+    }
+  ],
+  "stats": { "pages": 3, "words": 97 }
+}

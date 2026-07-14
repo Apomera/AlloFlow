@@ -15,6 +15,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_kokoro_offer_modal_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_kokoro_offer_modal_module.js');
+const PUBLIC_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_kokoro_offer_modal_module.js');
 const TMP = path.join(ROOT, '_tmp_kokoro_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -83,5 +84,6 @@ ${compiled}
 `;
 
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+fs.writeFileSync(PUBLIC_OUTPUT, outputCode, 'utf-8');
 const lineCount = outputCode.split('\n').length;
 console.log(`Built ${OUTPUT} (${lineCount} lines)`);

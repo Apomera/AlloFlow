@@ -1,4 +1,4 @@
-// view_pdf_audit_source.jsx — PDF Accessibility Audit modal CDN module
+﻿// view_pdf_audit_source.jsx — PDF Accessibility Audit modal CDN module
 // Extracted from AlloFlowANTI.txt L30982-L38171 (May 2026, Round 4 Tier A).
 //
 // This is the single largest extraction in the project — 148 props
@@ -15,6 +15,30 @@
 // Resolved once at module load so the per-render hook order stays stable;
 // no-op fallback keeps the modal working on hosts that predate the hook.
 const _alloUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
+
+// OCR language picker options (2026-06-20). Every code here is supported by the pipeline's
+// _toTesseractLang map, so picking one makes the scanned-PDF OCR use the right Tesseract model
+// (its word boxes drive the searchable text layer; 'eng' mis-segments non-Latin scripts). '' = the
+// auto-detect default. ELL-relevant languages (Somali, Arabic, Pashto, Amharic…) lead the list.
+const OCR_LANG_OPTIONS = [
+  { code: 'es', label: '🇪🇸 Spanish — Español' }, { code: 'so', label: '🇸🇴 Somali — Soomaali' },
+  { code: 'ar', label: '🇸🇦 Arabic — العربية' }, { code: 'vi', label: '🇻🇳 Vietnamese — Tiếng Việt' },
+  { code: 'ps', label: '🇦🇫 Pashto — پښتو' }, { code: 'fa', label: '🇮🇷 Dari / Farsi — فارسی' },
+  { code: 'am', label: '🇪🇹 Amharic — አማርኛ' }, { code: 'ti', label: '🇪🇷 Tigrinya — ትግርኛ' },
+  { code: 'sw', label: '🇰🇪 Swahili — Kiswahili' }, { code: 'ht', label: '🇭🇹 Haitian Creole — Kreyòl' },
+  { code: 'fr', label: '🇫🇷 French — Français' }, { code: 'pt', label: '🇧🇷 Portuguese — Português' },
+  { code: 'zh', label: '🇨🇳 Chinese — 中文' }, { code: 'ru', label: '🇷🇺 Russian — Русский' },
+  { code: 'uk', label: '🇺🇦 Ukrainian — Українська' }, { code: 'ur', label: '🇵🇰 Urdu — اردو' },
+  { code: 'hi', label: '🇮🇳 Hindi — हिन्दी' }, { code: 'bn', label: '🇧🇩 Bengali — বাংলা' },
+  { code: 'pa', label: '🇮🇳 Punjabi — ਪੰਜਾਬੀ' }, { code: 'gu', label: '🇮🇳 Gujarati — ગુજરાતી' },
+  { code: 'ta', label: '🇮🇳 Tamil — தமிழ்' }, { code: 'th', label: '🇹🇭 Thai — ไทย' },
+  { code: 'km', label: '🇰🇭 Khmer — ខ្មែរ' }, { code: 'my', label: '🇲🇲 Burmese — မြန်မာ' },
+  { code: 'ja', label: '🇯🇵 Japanese — 日本語' }, { code: 'ko', label: '🇰🇷 Korean — 한국어' },
+  { code: 'tl', label: '🇵🇭 Tagalog' }, { code: 'tr', label: '🇹🇷 Turkish — Türkçe' },
+  { code: 'de', label: '🇩🇪 German — Deutsch' }, { code: 'it', label: '🇮🇹 Italian — Italiano' },
+  { code: 'pl', label: '🇵🇱 Polish — Polski' }, { code: 'el', label: '🇬🇷 Greek — Ελληνικά' },
+  { code: 'he', label: '🇮🇱 Hebrew — עברית' },
+];
 
 // ── Accessible Word (.docx) export ──────────────────────────────────────────
 // _ensureDocxLib: lazy-load the docx UMD build (window.docx). Mirror chain —
@@ -96,6 +120,388 @@ async function _latexToOmml(latex) {
 }
 if (typeof window !== 'undefined') window.__alloLatexToOmml = _latexToOmml; // test seam
 
+// _sha256OfBytes: SHA-256 hex of a byte buffer (Uint8Array / ArrayBuffer). Null on empty input
+// or any failure. Used to fingerprint shipped PDF bytes AND to BIND a veraPDF verdict to the exact
+// bytes it validated — so the signed audit trail can never pair a fingerprint with a verdict that
+// was computed on different bytes (the stale-verdict defect, 2026-06-22).
+async function _sha256OfBytes(bytes) {
+  try {
+    if (!bytes || !bytes.byteLength || typeof crypto === 'undefined' || !crypto.subtle) return null;
+    const buf = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  } catch (_) { return null; }
+}
+
+function _viewVerificationBindingHelper(pipeline, name) {
+  try {
+    const factory = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
+    const helper = (pipeline && pipeline[name]) || (factory && factory[name]);
+    return typeof helper === 'function' ? helper : null;
+  } catch (_) { return null; }
+}
+function _viewValidVerificationHtmlBinding(binding) {
+  return !!(binding && binding.version === 1 && binding.algorithm === 'SHA-256' &&
+    /^[a-f0-9]{64}$/.test(binding.digest || '') && Number.isInteger(binding.utf8ByteLength) && binding.utf8ByteLength >= 0);
+}
+function _viewAttachRuntimeBindingProof(target, html, bindingKey, snapshotKey, digestKey) {
+  const binding = target && target[bindingKey];
+  if (!target || typeof target !== 'object' || typeof html !== 'string' || !_viewValidVerificationHtmlBinding(binding)) return false;
+  try {
+    Object.defineProperty(target, snapshotKey, { value: html, writable: true, configurable: true, enumerable: false });
+    Object.defineProperty(target, digestKey, { value: binding.digest, writable: true, configurable: true, enumerable: false });
+    return true;
+  } catch (_) {
+    try { delete target[snapshotKey]; } catch (_) {}
+    try { delete target[digestKey]; } catch (_) {}
+    return false;
+  }
+}
+async function _viewCreateVerificationHtmlBinding(html, pipeline) {
+  const shared = _viewVerificationBindingHelper(pipeline, 'createVerificationHtmlBinding');
+  if (shared) { try { return await shared(String(html == null ? '' : html)); } catch (_) { return null; } }
+  try {
+    if (typeof crypto === 'undefined' || !crypto.subtle || typeof TextEncoder === 'undefined') return null;
+    const bytes = new TextEncoder().encode(String(html == null ? '' : html));
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return {
+      version: 1,
+      algorithm: 'SHA-256',
+      digest: Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join(''),
+      utf8ByteLength: bytes.byteLength,
+    };
+  } catch (_) { return null; }
+}
+async function _viewVerifyVerificationHtmlBinding(html, binding, pipeline) {
+  const shared = _viewVerificationBindingHelper(pipeline, 'verifyVerificationHtmlBinding');
+  if (shared) { try { return !!(await shared(String(html == null ? '' : html), binding)); } catch (_) { return false; } }
+  if (!_viewValidVerificationHtmlBinding(binding)) return false;
+  const fresh = await _viewCreateVerificationHtmlBinding(html, null);
+  return !!(fresh && fresh.digest === binding.digest && fresh.utf8ByteLength === binding.utf8ByteLength);
+}
+function _viewIsLiveVerificationHtmlBound(result, html, pipeline) {
+  const shared = _viewVerificationBindingHelper(pipeline, 'isLiveVerificationHtmlBound');
+  if (shared) { try { return !!shared(result, html); } catch (_) { return false; } }
+  if (!result || !_viewValidVerificationHtmlBinding(result.verificationHtmlBinding)) return false;
+  const exact = String(html == null ? result.accessibleHtml == null ? '' : result.accessibleHtml : html);
+  let descriptor = null;
+  let digestDescriptor = null;
+  try {
+    descriptor = Object.getOwnPropertyDescriptor(result, '_verificationHtmlSnapshot');
+    digestDescriptor = Object.getOwnPropertyDescriptor(result, '_verificationHtmlBindingDigest');
+  } catch (_) {}
+  if (!descriptor || descriptor.enumerable !== false || descriptor.value !== exact
+      || !digestDescriptor || digestDescriptor.enumerable !== false
+      || digestDescriptor.value !== result.verificationHtmlBinding.digest) return false;
+  try {
+    return typeof TextEncoder !== 'undefined' && new TextEncoder().encode(exact).byteLength === result.verificationHtmlBinding.utf8ByteLength;
+  } catch (_) { return false; }
+}
+function _viewEnforceVerificationHtmlBinding(result, reason, pipeline) {
+  if (!result || typeof result !== 'object') return result;
+  const shared = _viewVerificationBindingHelper(pipeline, 'enforceVerificationHtmlBinding');
+  if (shared) { try { return shared(result, reason); } catch (_) {} }
+  const value = result;
+  if (_viewIsLiveVerificationHtmlBound(value, value.accessibleHtml, null)) return value;
+  const why = String(reason || 'verification-html-binding-missing-or-stale');
+  const oldReasons = Array.isArray(value.verificationReasons) ? value.verificationReasons : (Array.isArray(value.reasons) ? value.reasons : []);
+  const reasons = Array.from(new Set(oldReasons.concat(why)));
+  const oldCoverage = value.verificationCoverage || value.coverage || null;
+  const coverage = oldCoverage ? { ...oldCoverage, pdfUaSelfCheck: 'not-run' } : oldCoverage;
+  const next = {
+    ...value,
+    verificationState: value.verificationState === 'complete' ? 'partial' : (value.verificationState || 'unavailable'),
+    afterScoreVerified: false,
+    requiresManualReview: true,
+    verificationReasons: reasons,
+    reasons,
+  };
+  if (coverage) { next.verificationCoverage = coverage; next.coverage = coverage; }
+  return next;
+}
+async function _viewRehydrateVerificationHtmlBinding(saved, pipeline) {
+  const shared = _viewVerificationBindingHelper(pipeline, 'rehydrateVerificationHtmlBinding');
+  if (shared) { try { return await shared(saved); } catch (_) {} }
+  if (!saved || typeof saved !== 'object') return saved;
+  const next = { ...saved };
+  // Never trust serialized runtime proof. Recreate it only after SHA-256 verification.
+  try { delete next._verificationHtmlSnapshot; } catch (_) {}
+  try { delete next._verificationHtmlBindingDigest; } catch (_) {}
+  const html = String(next.accessibleHtml == null ? '' : next.accessibleHtml);
+  if (await _viewVerifyVerificationHtmlBinding(html, next.verificationHtmlBinding, null)) {
+    _viewAttachRuntimeBindingProof(next, html, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
+  }
+  return _viewEnforceVerificationHtmlBinding(next, null, null);
+}
+async function _viewBindFreshVerificationResult(result, html, pipeline) {
+  const exact = String(html == null ? '' : html);
+  const binding = await _viewCreateVerificationHtmlBinding(exact, pipeline);
+  const next = { ...(result || {}), accessibleHtml: exact, verificationHtmlBinding: binding || null };
+  if (binding) {
+    _viewAttachRuntimeBindingProof(next, exact, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
+  }
+  return _viewEnforceVerificationHtmlBinding(next, null, pipeline);
+}
+async function _viewBindValidationToHtml(validation, html, pipeline) {
+  const exact = String(html == null ? '' : html);
+  const binding = await _viewCreateVerificationHtmlBinding(exact, pipeline);
+  const next = { ...(validation || {}), sourceHtmlBinding: binding || null };
+  if (binding) {
+    _viewAttachRuntimeBindingProof(next, exact, 'sourceHtmlBinding', '_sourceHtmlSnapshot', '_sourceHtmlBindingDigest');
+  }
+  return next;
+}
+function _viewValidationMatchesHtml(validation, html) {
+  if (!validation || !_viewValidVerificationHtmlBinding(validation.sourceHtmlBinding)) return false;
+  const exact = String(html == null ? '' : html);
+  let descriptor = null;
+  let digestDescriptor = null;
+  try {
+    descriptor = Object.getOwnPropertyDescriptor(validation, '_sourceHtmlSnapshot');
+    digestDescriptor = Object.getOwnPropertyDescriptor(validation, '_sourceHtmlBindingDigest');
+  } catch (_) {}
+  if (!descriptor || descriptor.enumerable !== false || descriptor.value !== exact
+      || !digestDescriptor || digestDescriptor.enumerable !== false
+      || digestDescriptor.value !== validation.sourceHtmlBinding.digest) return false;
+  try { return typeof TextEncoder !== 'undefined' && new TextEncoder().encode(exact).byteLength === validation.sourceHtmlBinding.utf8ByteLength; }
+  catch (_) { return false; }
+}
+function _viewAttachTaggedArtifactProof(value, ticket) {
+  if (!value || typeof value !== 'object' || !ticket || !ticket.bytes || !Number.isSafeInteger(ticket.generation)) return value;
+  try {
+    Object.defineProperties(value, {
+      _taggedArtifactBytes: { value: ticket.bytes, enumerable: false, configurable: true },
+      _taggedArtifactGeneration: { value: ticket.generation, enumerable: false, configurable: true },
+    });
+  } catch (_) {}
+  return value;
+}
+function _viewTaggedArtifactProofMatches(value, ticket) {
+  if (!value || !ticket || !ticket.bytes || !Number.isSafeInteger(ticket.generation)) return false;
+  let bytesDescriptor = null;
+  let generationDescriptor = null;
+  try {
+    bytesDescriptor = Object.getOwnPropertyDescriptor(value, '_taggedArtifactBytes');
+    generationDescriptor = Object.getOwnPropertyDescriptor(value, '_taggedArtifactGeneration');
+  } catch (_) {}
+  return !!(bytesDescriptor && bytesDescriptor.enumerable === false && bytesDescriptor.value === ticket.bytes
+    && generationDescriptor && generationDescriptor.enumerable === false && generationDescriptor.value === ticket.generation);
+}
+function _viewPatchBoundValidation(validation, patch) {
+  if (!validation) return validation;
+  const next = { ...validation, ...(patch || {}) };
+  let descriptor = null;
+  let digestDescriptor = null;
+  try {
+    descriptor = Object.getOwnPropertyDescriptor(validation, '_sourceHtmlSnapshot');
+    digestDescriptor = Object.getOwnPropertyDescriptor(validation, '_sourceHtmlBindingDigest');
+  } catch (_) {}
+  if (_viewValidVerificationHtmlBinding(next.sourceHtmlBinding)
+      && descriptor && descriptor.enumerable === false && typeof descriptor.value === 'string'
+      && digestDescriptor && digestDescriptor.enumerable === false
+      && digestDescriptor.value === next.sourceHtmlBinding.digest) {
+    _viewAttachRuntimeBindingProof(next, descriptor.value, 'sourceHtmlBinding', '_sourceHtmlSnapshot', '_sourceHtmlBindingDigest');
+  }
+  let artifactBytesDescriptor = null;
+  let artifactGenerationDescriptor = null;
+  try {
+    artifactBytesDescriptor = Object.getOwnPropertyDescriptor(validation, '_taggedArtifactBytes');
+    artifactGenerationDescriptor = Object.getOwnPropertyDescriptor(validation, '_taggedArtifactGeneration');
+  } catch (_) {}
+  if (artifactBytesDescriptor && artifactBytesDescriptor.enumerable === false && artifactBytesDescriptor.value
+      && artifactGenerationDescriptor && artifactGenerationDescriptor.enumerable === false
+      && Number.isSafeInteger(artifactGenerationDescriptor.value)) {
+    _viewAttachTaggedArtifactProof(next, { bytes: artifactBytesDescriptor.value, generation: artifactGenerationDescriptor.value });
+  }
+  return next;
+}
+// _withTimeout: bound a promise so a hung network (remote TTS / proxy / image fetch) or a stalled
+// pdf.js worker (Compare PDF-preview render) can't freeze the audit UI forever. view_pdf_audit had no
+// timeout helper, so those awaits were unbounded — this mirrors doc_pipeline's _withTimeout. Race-based:
+// the underlying op may still run after the reject, so callers wrap in try/catch and degrade gracefully.
+function _withTimeout(promise, ms, label) {
+  // S7 (deep dive 2026-07-02): clear the timer when the op settles first — doc_pipeline's
+  // copy does; this one leaked a live timer per call, which adds up across a long batch
+  // (thousands of pending timeouts holding their closures).
+  let _t = null;
+  const timeout = new Promise((_, reject) => { _t = setTimeout(() => reject(new Error('Timed out after ' + ms + 'ms: ' + (label || 'operation'))), ms); });
+  return Promise.race([promise, timeout]).finally(() => { if (_t) clearTimeout(_t); });
+}
+
+function _websiteFetchError(message, code, allowProxy) {
+  const error = new Error(message);
+  error.websiteFetchCode = code;
+  error.allowProxyFallback = !!allowProxy;
+  return error;
+}
+async function _readWebsiteResponseBounded(response, maxBytes, controller) {
+  const limit = Number.isFinite(maxBytes) && maxBytes > 0 ? maxBytes : (5 * 1024 * 1024);
+  const advertised = Number(response && response.headers && response.headers.get('content-length')) || 0;
+  if (advertised > limit) {
+    try { controller.abort(); } catch (_) {}
+    throw _websiteFetchError('Website response is larger than the 5 MB audit limit.', 'too-large', false);
+  }
+  if (!response.body || typeof response.body.getReader !== 'function' || typeof TextDecoder === 'undefined') {
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength > limit) throw _websiteFetchError('Website response is larger than the 5 MB audit limit.', 'too-large', false);
+    return typeof TextDecoder !== 'undefined' ? new TextDecoder().decode(bytes) : String.fromCharCode.apply(null, bytes);
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let total = 0;
+  let text = '';
+  try {
+    while (true) {
+      const part = await reader.read();
+      if (part.done) break;
+      total += part.value.byteLength;
+      if (total > limit) {
+        try { await reader.cancel(); } catch (_) {}
+        try { controller.abort(); } catch (_) {}
+        throw _websiteFetchError('Website response is larger than the 5 MB audit limit.', 'too-large', false);
+      }
+      text += decoder.decode(part.value, { stream: true });
+    }
+    return text + decoder.decode();
+  } finally { try { reader.releaseLock(); } catch (_) {} }
+}
+async function _fetchWebsiteSourceOnce(url, options, timeoutMs, label, maxBytes) {
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => { timedOut = true; try { controller.abort(); } catch (_) {} }, timeoutMs);
+  try {
+    let response;
+    try { response = await fetch(url, { ...(options || {}), signal: controller.signal }); }
+    catch (error) {
+      if (error && error.websiteFetchCode) throw error;
+      throw _websiteFetchError(timedOut ? (label + ' timed out.') : (label + ' was blocked by browser CORS or a network error.'), timedOut ? 'timeout' : 'cors-or-network', true);
+    }
+    if (!response.ok) throw _websiteFetchError(label + ' returned HTTP ' + response.status + '.', 'http-' + response.status, false);
+    const contentType = String((response.headers && response.headers.get('content-type')) || '').toLowerCase();
+    if (contentType && !/(text\/html|application\/xhtml\+xml|text\/plain)/.test(contentType)) throw _websiteFetchError('URL did not return HTML or text content (' + contentType + ').', 'content-type', false);
+    const html = await _readWebsiteResponseBounded(response, maxBytes, controller);
+    return { response, html };
+  } catch (error) {
+    if (error && error.websiteFetchCode) throw error;
+    throw _websiteFetchError(timedOut ? (label + ' timed out.') : (label + ' failed while reading the response.'), timedOut ? 'timeout' : 'network-read', true);
+  } finally { clearTimeout(timer); }
+}
+function _htmlHasExplicitLanguage(html) {
+  return /<html\b[^>]*\blang\s*=\s*(?:"\s*[^"]+\s*"|'\s*[^']+\s*'|[^\s"'=<>]+)(?=[\s>])/i.test(String(html || ''));
+}
+
+// Load-order-safe adapter for the pipeline's canonical verification-state helper.
+function _viewDeriveVerificationState(input, pipeline) {
+  const data = input || {};
+  try {
+    const factory = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
+    const canonical = (pipeline && pipeline.deriveVerificationState) || (factory && factory.deriveVerificationState);
+    if (typeof canonical === 'function') {
+      const result = canonical(data);
+      if (result && result.coverage && typeof result.verificationState === 'string') return result;
+    }
+  } catch (_) {}
+  const finite = (value) => typeof value === 'number' && Number.isFinite(value);
+  const count = (value) => finite(value) ? Math.max(0, Math.floor(value)) : null;
+  const ai = data.ai || data.verificationAudit || null;
+  const axe = data.axe || data.axeAudit || null;
+  const equalAccess = data.equalAccess || data.secondEngineAudit || null;
+  const reasons = [];
+
+  let aiStatus = 'unavailable';
+  if (!finite(ai && ai.score)) reasons.push('ai-unavailable');
+  else if (data.aiIncomplete || data.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized) {
+    aiStatus = 'partial';
+    if (data.aiIncomplete || data.aiVerificationIncomplete) reasons.push('ai-verification-incomplete');
+    if (ai._partialAudit || ai.partial) reasons.push('ai-partial-audit');
+    if (ai._scoreDegraded || ai.scoreDegraded) reasons.push('ai-score-degraded');
+    if (ai.synthesized) reasons.push('ai-synthesized');
+  } else aiStatus = 'complete';
+
+  let axeStatus = 'unavailable';
+  let axeReviewCount = 0;
+  if (!finite(axe && axe.score)) reasons.push('axe-unavailable');
+  else {
+    const incomplete = count(axe.totalIncomplete);
+    if (incomplete === null) { axeStatus = 'partial'; reasons.push('axe-review-count-unknown'); }
+    else if (incomplete > 0) { axeStatus = 'complete-with-review'; axeReviewCount = incomplete; reasons.push('axe-incomplete:' + incomplete); }
+    else axeStatus = 'complete';
+  }
+
+  let eaStatus = 'unavailable';
+  let eaReviewCount = 0;
+  if (!finite(equalAccess && equalAccess.score)) reasons.push('equal-access-unavailable');
+  else {
+    const potential = count(equalAccess.potentialViolations);
+    const manual = count(equalAccess.manualViolations);
+    const aggregate = count(equalAccess.reviewFindingCount);
+    if ((potential === null || manual === null) && aggregate === null) { eaStatus = 'partial'; reasons.push('equal-access-review-count-unknown'); }
+    else {
+      eaReviewCount = aggregate !== null ? Math.max(aggregate, (potential || 0) + (manual || 0)) : ((potential || 0) + (manual || 0));
+      if (eaReviewCount > 0) {
+        eaStatus = 'complete-with-review';
+        if ((potential || 0) > 0) reasons.push('equal-access-potential:' + potential);
+        if ((manual || 0) > 0) reasons.push('equal-access-manual:' + manual);
+        if ((potential === null || manual === null) && aggregate > 0) reasons.push('equal-access-review-findings:' + aggregate);
+      } else eaStatus = 'complete';
+    }
+  }
+
+  const extra = (Array.isArray(data.extraReasons) ? data.extraReasons : (data.extraReasons == null || data.extraReasons === '' ? [] : [data.extraReasons]))
+    .map((reason) => String(reason == null ? '' : reason).trim()).filter(Boolean);
+  reasons.push(...extra);
+  if (data.languageReviewRequired) reasons.push(String(data.languageReviewReason || 'document-language-needs-review'));
+  const reviewCount = axeReviewCount + eaReviewCount + extra.length + Number(!!data.languageReviewRequired);
+  const allComplete = aiStatus === 'complete' && axeStatus === 'complete' && eaStatus === 'complete';
+  const allUnavailable = aiStatus === 'unavailable' && axeStatus === 'unavailable' && eaStatus === 'unavailable';
+  const hasReviewEvidence = reviewCount > 0 || aiStatus === 'complete-with-review' || axeStatus === 'complete-with-review' || eaStatus === 'complete-with-review';
+  const verificationState = allUnavailable ? 'unavailable' : hasReviewEvidence ? 'review-required' : allComplete ? 'complete' : 'partial';
+  const coverage = { standard: 'WCAG 2.2 AA', ai: aiStatus, axe: axeStatus, equalAccess: eaStatus, pdfUaSelfCheck: data.pdfUaSelfCheck || 'not-run' };
+  return { verificationCoverage: coverage, coverage, verificationState, afterScoreVerified: verificationState === 'complete', requiresManualReview: verificationState !== 'complete', reviewCount, reasons };
+}
+function _viewVerificationForExport(result, pipeline) {
+  const value = result || {};
+  const derived = _viewDeriveVerificationState({
+    ai: value.verificationAudit || null,
+    aiVerificationIncomplete: !!value._aiVerificationIncomplete,
+    axe: value.axeAudit || null,
+    equalAccess: value.secondEngineAudit || null,
+    pdfUaSelfCheck: value.verificationCoverage && value.verificationCoverage.pdfUaSelfCheck,
+    languageReviewRequired: !!value.languageReviewRequired,
+    extraReasons: value.verificationExtraReasons || [],
+  }, pipeline);
+  const binding = _viewValidVerificationHtmlBinding(value.verificationHtmlBinding) ? value.verificationHtmlBinding : null;
+  const stored = !!(value.verificationCoverage && value.verificationCoverage.standard === 'WCAG 2.2 AA' && /^(complete|review-required|partial|unavailable)$/.test(value.verificationState || ''));
+  const liveBound = _viewIsLiveVerificationHtmlBound(value, value.accessibleHtml, pipeline);
+  if (stored && liveBound) return { ...derived, verificationHtmlBinding: binding };
+  const why = stored ? 'verification-html-binding-missing-or-stale' : 'This saved result predates canonical verification coverage and is unverified.';
+  const reasons = Array.from(new Set([why].concat(derived.reasons || [])));
+  return {
+    ...derived,
+    verificationState: derived.verificationState === 'complete' ? 'partial' : derived.verificationState,
+    afterScoreVerified: false,
+    requiresManualReview: true,
+    reviewCount: Math.max(1, derived.reviewCount || 0),
+    reasons,
+    verificationHtmlBinding: binding,
+  };
+}
+// S7 (deep dive 2026-07-02): unicode token fold for missing-word diffs — DELEGATES to the
+// pipeline's canonical _alloNormTokenForDiff (normTokenForDiff static). This fold feeds
+// teacher-visible numbers (residual missing-word counts, restoration UI), and the view used
+// to carry TWO inline copies that could silently drift from the pipeline's (and did,
+// 2026-06-23). The fallback below is for load-order edge cases only and is drift-sentinel
+// tested against the pipeline's copy (tests/norm_token_drift.test.js) — edit BOTH or neither.
+function _viewNormTokenFallback(s) {
+  return String(s || '').toLowerCase().replace(/[​‌‍﻿]/g, '').replace(/ﬀ/g, 'ff').replace(/ﬁ/g, 'fi').replace(/ﬂ/g, 'fl').replace(/ﬃ/g, 'ffi').replace(/ﬄ/g, 'ffl').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/(\p{L})[-­‐‑](\p{L})/gu, '$1$2').replace(/­/g, '').replace(/\s+/g, '');
+}
+function _normTokenForDiffShared(s) {
+  try {
+    const f = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.normTokenForDiff;
+    if (f) return f(s);
+  } catch (_) {}
+  return _viewNormTokenFallback(s);
+}
+
 // _htmlToDocxSpec: pure HTML → block-spec transformer. Deliberately free of
 // docx-library types so it stays unit-testable headlessly —
 // tests/view_pdf_audit_docx_spec.test.js extracts this function at runtime
@@ -104,8 +510,22 @@ function _htmlToDocxSpec(html) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const title = (((doc.querySelector('title') || {}).textContent) || ((doc.querySelector('h1') || {}).textContent) || 'Accessible document').trim().slice(0, 200) || 'Accessible document';
   const lang = (doc.documentElement.getAttribute('lang') || 'en').trim() || 'en';
+  // RTL capture (export-format review #2, 2026-07-01): the pipeline sets dir="rtl" on the
+  // accessible HTML for RTL languages, but the export spec never carried it — Arabic/
+  // Hebrew/Urdu DOCX/ODT/DAISY shipped left-to-right (visually inverted, semantically
+  // wrong for AT). Prefer the document's explicit dir; fall back to an RTL-language
+  // prefix check so a doc whose dir attribute was lost in transit still exports right.
+  const _dirAttr = ((doc.documentElement.getAttribute('dir') || (doc.body && doc.body.getAttribute('dir')) || '') + '').toLowerCase();
+  const rtl = _dirAttr === 'rtl' || (_dirAttr !== 'ltr' && /^(ar|he|iw|fa|ur|ps|sd|ug|yi|dv|ckb)([-_]|$)/i.test(lang));
   const blocks = [];
   const counts = { headings: 0, paragraphs: 0, images: 0, tables: 0, lists: 0, links: 0 };
+  // Footnotes (2026-06-14, A6): each note's data-fn-uid → a Word footnote id, plus
+  // its definition runs. Populated just before the walk; then the in-text anchors
+  // emit a FootnoteReferenceRun instead of a superscript number, and the
+  // end-of-doc notes section is skipped (it becomes Word's NATIVE footnote area,
+  // not a trailing list). Declared early so inlineRuns can close over the map.
+  const _fnIdByUid = {};
+  const _fnDefs = {};
   const SKIP = { SCRIPT: 1, STYLE: 1, BUTTON: 1, SELECT: 1, INPUT: 1, TEXTAREA: 1, AUDIO: 1, VIDEO: 1, TEMPLATE: 1, NOSCRIPT: 1, IFRAME: 1, CANVAS: 1 };
   const _isControlEl = (el) => {
     if (SKIP[el.tagName]) return true;
@@ -123,11 +543,19 @@ function _htmlToDocxSpec(html) {
       const n = kids[i];
       if (n.nodeType === 3) {
         const txt = String(n.textContent || '').replace(/\s+/g, ' ');
-        if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, link: fmt.link || null });
+        if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, link: fmt.link || null, sup: !!fmt.sup, sub: !!fmt.sub });
         continue;
       }
       if (n.nodeType !== 1 || _isControlEl(n)) continue;
       const tag = n.tagName;
+      // Footnote anchor (A6): a <sup class="allo-fn-ref"> with a mapped note
+      // becomes a real Word footnote reference (auto-numbered by Word), not a
+      // superscript digit. Falls through to plain superscript if unmapped.
+      if (tag === 'SUP' && n.classList && n.classList.contains('allo-fn-ref')) {
+        const _fuid = n.getAttribute('data-fn-uid');
+        const _fid = _fuid && _fnIdByUid[_fuid];
+        if (_fid) { out.push({ footnoteId: _fid }); continue; }
+      }
       if (tag === 'BR') { out.push({ br: true }); continue; }
       // Fillable S0 fields → Word keeps visible blanks (real content
       // controls are the S1+ question; an underscore run prints right).
@@ -143,12 +571,17 @@ function _htmlToDocxSpec(html) {
         italic: fmt.italic || tag === 'I' || tag === 'EM',
         underline: fmt.underline || tag === 'U',
         link: fmt.link || (tag === 'A' && n.getAttribute('href')) || null,
+        // Superscript/subscript (2026-06-13): footnote anchors (<sup>),
+        // exponents (x²), ordinals, and chemical formulae (H₂O) were
+        // flattening to baseline in docx/pptx. Thread vertical alignment.
+        sup: fmt.sup || tag === 'SUP',
+        sub: fmt.sub || tag === 'SUB',
       }));
     }
     return out;
   };
   const _runsText = (runs) => runs.map((r) => r.text || '').join('').trim();
-  const pushParagraph = (runs) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs }); counts.paragraphs++; } };
+  const pushParagraph = (runs, opts) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs, ...(opts && opts.hanging ? { hanging: true } : {}), ...(opts && opts.centered ? { centered: true } : {}) }); counts.paragraphs++; } };
   const pushImage = (img, fallbackAlt) => {
     const src = img.getAttribute('src') || '';
     const alt = (img.getAttribute('alt') || fallbackAlt || '').trim();
@@ -172,14 +605,43 @@ function _htmlToDocxSpec(html) {
     }
   };
   const walk = (el) => {
-    const kids = el.children || [];
+    // Inline content (text nodes + inline elements) directly inside a container — possibly
+    // interleaved with block elements — accumulates here and flushes as ONE paragraph at each block
+    // boundary (and at the container's end). BUGFIX (audit #8, 2026-06-15): walk() iterated
+    // el.children (elements only), so a container with any block descendant recursed and never
+    // visited its own TEXT nodes — '<div>Intro<p>Body</p></div>' silently dropped "Intro". DOCX/ODT/
+    // DAISY all share this walk, so loose text between blocks was lost from every Office/DAISY export.
+    const _INLINE = { SPAN: 1, B: 1, STRONG: 1, I: 1, EM: 1, U: 1, A: 1, SUP: 1, SUB: 1, CODE: 1, SMALL: 1, MARK: 1, ABBR: 1, CITE: 1, Q: 1, S: 1, DEL: 1, INS: 1, BR: 1, WBR: 1, TIME: 1, BDI: 1, BDO: 1, KBD: 1, SAMP: 1, VAR: 1 };
+    let _pending = [];
+    const _flushInline = () => { if (_pending.length) { pushParagraph(inlineRuns({ childNodes: _pending }, {})); _pending = []; } };
+    const kids = el.childNodes || [];
     for (let i = 0; i < kids.length; i++) {
       const n = kids[i];
-      if (_isControlEl(n)) continue;
+      if (n.nodeType === 3) { if ((n.nodeValue || '').trim()) _pending.push(n); continue; } // loose text → accumulate
+      if (n.nodeType !== 1 || _isControlEl(n)) continue;
       const tag = n.tagName;
+      if (tag !== 'IMG' && _INLINE[tag]) { _pending.push(n); continue; } // inline element → accumulate (IMG is block)
+      _flushInline(); // a block element ends the current inline paragraph
+      // Footnotes section (A6): skip it here — its notes are emitted as Word's
+      // native footnotes (collected before the walk), so it must NOT also appear
+      // as a trailing list in the body.
+      if (n.classList && n.classList.contains('allo-footnotes')) continue;
+      // Page break (2026-06-13): the .allo-block-pagebreak div used to fall
+      // through to the generic DIV handler, which leaked its "— Page Break —"
+      // label text as a paragraph AND emitted no actual break. Now it becomes a
+      // real docx page break and the label never reaches the document.
+      if (n.classList && n.classList.contains('allo-block-pagebreak')) { blocks.push({ type: 'pagebreak' }); continue; }
+      const _inTitlePage = n.closest && n.closest('.allo-titlepage');
       const h = /^H([1-6])$/.exec(tag);
-      if (h) { const runs = inlineRuns(n, {}); if (_runsText(runs)) { blocks.push({ type: 'heading', level: parseInt(h[1], 10), runs }); counts.headings++; } continue; }
-      if (tag === 'P' || tag === 'BLOCKQUOTE' || tag === 'PRE' || tag === 'DT' || tag === 'DD' || tag === 'FIGCAPTION' || tag === 'CAPTION') { pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {})); continue; }
+      if (h) { const runs = inlineRuns(n, {}); if (_runsText(runs)) { blocks.push({ type: 'heading', level: parseInt(h[1], 10), runs, ...(_inTitlePage ? { centered: true } : {}) }); counts.headings++; } continue; }
+      if (tag === 'P' || tag === 'BLOCKQUOTE' || tag === 'PRE' || tag === 'DT' || tag === 'DD' || tag === 'FIGCAPTION' || tag === 'CAPTION') {
+        // Reference-list entries (APA/MLA/Chicago) get a hanging indent in docx;
+        // title-page lines (title/author/affiliation/course) are centered in any
+        // mode — a title page is inherently centered.
+        const isRef = (n.classList && n.classList.contains('allo-ref-entry')) || (n.closest && n.closest('.allo-references'));
+        pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage });
+        continue;
+      }
       if (tag === 'UL' || tag === 'OL') { const items = []; listItems(n, 0, items); if (items.length) { blocks.push({ type: 'list', ordered: tag === 'OL', items }); counts.lists++; } continue; }
       if (tag === 'TABLE') {
         const rows = [];
@@ -192,7 +654,12 @@ function _htmlToDocxSpec(html) {
             const cell = tr.children[c];
             if (cell.tagName !== 'TH' && cell.tagName !== 'TD') continue;
             if (cell.tagName !== 'TH') allTh = false;
-            cells.push({ runs: inlineRuns(cell, {}), header: cell.tagName === 'TH' });
+            // Merged cells (builder-review A5, 2026-07-01): carry colspan/rowspan into the
+            // spec so the DOCX builder can emit real merges. HTML omits cells covered by a
+            // rowspan, which is exactly the shape the docx lib's rowSpan expects.
+            cells.push({ runs: inlineRuns(cell, {}), header: cell.tagName === 'TH',
+              colSpan: Math.max(1, parseInt(cell.getAttribute('colspan') || '1', 10) || 1),
+              rowSpan: Math.max(1, parseInt(cell.getAttribute('rowspan') || '1', 10) || 1) });
           }
           if (cells.length) rows.push({ header: allTh || (tr.parentNode && tr.parentNode.tagName === 'THEAD'), cells });
         }
@@ -217,40 +684,622 @@ function _htmlToDocxSpec(html) {
       }
       pushParagraph(inlineRuns(n, {}));
     }
+    _flushInline(); // trailing inline (container ending with loose text/inline)
   };
+  // ── Collect footnote definitions (A6) BEFORE the walk, so the in-text anchors
+  // can resolve their ids. Each note's spoken text (minus the ↩ back-link) becomes
+  // a Word footnote; document order = id order, matching the on-screen numbering. ──
+  try {
+    const _fnSec = doc.querySelector('section.allo-footnotes');
+    if (_fnSec) {
+      let _fnSeq = 0;
+      Array.from(_fnSec.querySelectorAll('ol > li[data-fn-uid]')).forEach((li) => {
+        const uid = li.getAttribute('data-fn-uid');
+        if (!uid || _fnIdByUid[uid]) return;
+        const id = ++_fnSeq;
+        _fnIdByUid[uid] = id;
+        const _txtEl = li.querySelector('.allo-fn-text') || li;
+        const _runs = inlineRuns(_txtEl, {});
+        _fnDefs[id] = (_runs && _runs.length) ? _runs : [{ text: (li.textContent || '').replace(/↩/g, '').trim() }];
+      });
+    }
+  } catch (_) {}
   walk(doc.body);
-  return { title, lang, blocks, counts };
+  return { title, lang, rtl, blocks, counts, footnotes: _fnDefs };
 }
 // end _htmlToDocxSpec
+
+// ── ODT + DAISY exporters (2026-06-14) ──────────────────────────────────────
+// Both reuse the SAME tested block model from _htmlToDocxSpec(html) as their
+// intermediate representation, then serialize it to OpenDocument Text (ODT) and
+// DAISY 3 (DTBook 2005-3). Pure string builders (no JSZip) so they unit-test
+// like _htmlToDocxSpec; the zip packaging lives in the export handlers.
+function _expXmlEsc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+// Serialize a spec run-array to ODF inline markup (nested text:spans so we only
+// need single-property styles, all defined in the automatic-styles below).
+function _odtRuns(runs, footnotes) {
+  return (runs || []).map((r) => {
+    if (!r) return '';
+    // Footnote anchor → a real ODF inline footnote (2026-06-15 fix: these used to
+    // return '' so ALL footnotes silently vanished from ODT). Body from spec.footnotes.
+    if (r.footnoteId != null) {
+      const _fnRuns = (footnotes && footnotes[r.footnoteId]) || [];
+      const _body = _odtRuns(_fnRuns, footnotes) || _expXmlEsc(String(r.footnoteId)); // thread footnotes so a footnote-in-footnote ref's text survives (#5)
+      const _fid = _expXmlEsc(String(r.footnoteId));
+      return '<text:note text:id="ftn' + _fid + '" text:note-class="footnote"><text:note-citation>' + _fid + '</text:note-citation><text:note-body><text:p text:style-name="Standard">' + _body + '</text:p></text:note-body></text:note>';
+    }
+    if (r.br) return '<text:line-break/>';
+    if (typeof r.text !== 'string') return '';
+    let t = _expXmlEsc(r.text);
+    if (r.sub) t = '<text:span text:style-name="T_Sub">' + t + '</text:span>';
+    if (r.sup) t = '<text:span text:style-name="T_Sup">' + t + '</text:span>';
+    if (r.italic) t = '<text:span text:style-name="T_Italic">' + t + '</text:span>';
+    if (r.bold) t = '<text:span text:style-name="T_Bold">' + t + '</text:span>';
+    if (r.link) t = '<text:a xlink:href="' + _expXmlEsc(r.link) + '">' + t + '</text:a>';
+    return t;
+  }).join('');
+}
+
+// content.xml for an ODT. Heading_20_N / Standard map to LibreOffice built-ins;
+// the bold/italic/sub/sup + list styles are declared as automatic-styles so the
+// file opens cleanly in LibreOffice / Word / Google Docs with no missing-style.
+
+// Rebuild a NESTED list from the flat spec items[] (each carrying it.level). The DOCX/PPTX builders
+// honor it.level via numbering/bullet indent, but the ODT + DTBook serializers used to emit every
+// item at the top level (audit #24). Shared so both stay consistent. itemOpen(it) returns the item's
+// OPEN markup INCLUDING its content but NOT its close, so a child list nests inside it before the close.
+function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listCloseTag) {
+  let out = '';
+  let depth = 0;
+  const open = [];
+  for (const it of (items || [])) {
+    const L = Math.max(1, (it.level || 0) + 1);
+    while (depth < L) { out += listOpenTag; depth++; open[depth] = false; }
+    while (depth > L) { if (open[depth]) { out += itemCloseTag; open[depth] = false; } out += listCloseTag; depth--; }
+    if (open[depth]) out += itemCloseTag;
+    out += itemOpen(it);
+    open[depth] = true;
+  }
+  while (depth > 0) { if (open[depth]) { out += itemCloseTag; open[depth] = false; } out += listCloseTag; depth--; }
+  return out;
+}
+
+function _htmlToOdtContentXml(html) {
+  const spec = _htmlToDocxSpec(html);
+  const body = [];
+  for (const b of (spec.blocks || [])) {
+    if (b.type === 'heading') {
+      const lvl = Math.min(6, Math.max(1, b.level || 1));
+      body.push('<text:h text:style-name="Heading_20_' + lvl + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs, spec.footnotes) + '</text:h>');
+    } else if (b.type === 'paragraph') {
+      body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs, spec.footnotes) + '</text:p>');
+    } else if (b.type === 'list') {
+      body.push(_buildNestedListXml(b.items,
+        '<text:list text:style-name="' + (b.ordered ? 'L_Number' : 'L_Bullet') + '">',
+        (it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + '</text:p>',
+        '</text:list-item>', '</text:list>')); // nested by it.level (audit #24)
+    } else if (b.type === 'table') {
+      // Merge parity (#10): ODF merges = table:number-columns/rows-spanned on the
+      // anchor cell + <table:covered-table-cell/> placeholders for every covered
+      // position (same-row trailing for colspan; tracked into FOLLOWING rows for
+      // rowspan via _pend[col] = remaining covered rows). HTML omits covered
+      // cells, so the grid tracker reconstructs the true geometry.
+      const _rows0 = b.rows || [];
+      const cols = Math.max(1, ..._rows0.map((r) => (r.cells || []).reduce((s, c) => s + Math.max(1, c.colSpan || 1), 0)));
+      const _pend = [];
+      const _odtRow = (r) => {
+        let out = '<table:table-row>';
+        const cells = r.cells || [];
+        let col = 0, ci = 0;
+        while (col < cols && (ci < cells.length || (_pend[col] || 0) > 0)) {
+          if ((_pend[col] || 0) > 0) { out += '<table:covered-table-cell/>'; _pend[col]--; col++; continue; }
+          const c = cells[ci++];
+          if (!c) break;
+          const cs = Math.max(1, c.colSpan || 1), rs = Math.max(1, c.rowSpan || 1);
+          out += '<table:table-cell office:value-type="string"'
+            + (cs > 1 ? ' table:number-columns-spanned="' + cs + '"' : '')
+            + (rs > 1 ? ' table:number-rows-spanned="' + rs + '"' : '')
+            + '><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + '</text:p></table:table-cell>';
+          if (cs > 1) out += Array(cs - 1).fill('<table:covered-table-cell/>').join('');
+          if (rs > 1) for (let k = 0; k < cs; k++) _pend[col + k] = (_pend[col + k] || 0) + (rs - 1);
+          col += cs;
+        }
+        return out + '</table:table-row>';
+      };
+      const _rows = _rows0;
+      // ODF: wrap the leading header row(s) in <table:table-header-rows> so AT announces them as
+      // headers (audit #19 — every row used to serialize as a plain table-row, so DOCX/DTBook kept
+      // header semantics but ODT alone lost them). r.header is the spec's all-th/<thead> flag.
+      let _hdr = 0;
+      while (_hdr < _rows.length && _rows[_hdr].header) _hdr++;
+      const _hdrXml = _hdr > 0 ? '<table:table-header-rows>' + _rows.slice(0, _hdr).map(_odtRow).join('') + '</table:table-header-rows>' : '';
+      body.push('<table:table table:name="Table1">' +
+        '<table:table-column table:number-columns-repeated="' + cols + '"/>' +
+        _hdrXml + _rows.slice(_hdr).map(_odtRow).join('') +
+        '</table:table>');
+    } else if (b.type === 'image') {
+      // ODT image embedding needs Pictures/ + draw:frame; degrade to alt text so
+      // the figure's meaning is never silently lost (same rule as the docx path).
+      if (b.alt) body.push('<text:p text:style-name="Standard">[' + _expXmlEsc(b.alt) + ']</text:p>');
+    } else if (b.type === 'pagebreak') {
+      body.push('<text:p text:style-name="P_PageBreak"/>');
+    }
+  }
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" office:version="1.2">\n' +
+    '<office:automatic-styles>' +
+    '<style:style style:name="T_Bold" style:family="text"><style:text-properties fo:font-weight="bold"/></style:style>' +
+    '<style:style style:name="T_Italic" style:family="text"><style:text-properties fo:font-style="italic"/></style:style>' +
+    '<style:style style:name="T_Sub" style:family="text"><style:text-properties style:text-position="sub 58%"/></style:style>' +
+    '<style:style style:name="T_Sup" style:family="text"><style:text-properties style:text-position="super 58%"/></style:style>' +
+    '<style:style style:name="P_PageBreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>' +
+    '<text:list-style style:name="L_Bullet"><text:list-level-style-bullet text:level="1" text:bullet-char="•"><style:list-level-properties text:space-before="0.25in" text:min-label-width="0.25in"/></text:list-level-style-bullet></text:list-style>' +
+    '<text:list-style style:name="L_Number"><text:list-level-style-number text:level="1" style:num-format="1" text:num-suffix="."><style:list-level-properties text:space-before="0.25in" text:min-label-width="0.25in"/></text:list-level-style-number></text:list-style>' +
+    '</office:automatic-styles>\n' +
+    '<office:body><office:text>' + body.join('\n') + '</office:text></office:body>\n' +
+    '</office:document-content>';
+}
+
+// The fixed ODT sidecar files (mimetype must be FIRST + STORED in the zip).
+const _ODT_MANIFEST_XML = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+  '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">' +
+  '<manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.text"/>' +
+  '<manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>' +
+  '<manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>' +
+  '<manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>' +
+  '</manifest:manifest>';
+const _ODT_STYLES_XML = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+  '<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" office:version="1.2"><office:styles>' +
+  '<style:default-style style:family="paragraph"><style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/></style:default-style>' +
+  '<style:style style:name="Standard" style:family="paragraph" style:class="text"/>' +
+  ['1', '2', '3', '4', '5', '6'].map((n) => '<style:style style:name="Heading_20_' + n + '" style:display-name="Heading ' + n + '" style:family="paragraph" style:parent-style-name="Standard" style:class="text"><style:text-properties fo:font-weight="bold" fo:font-size="' + (20 - (n - 1) * 2) + 'pt"/></style:style>').join('') +
+  '</office:styles></office:document-styles>';
+
+// DAISY 3 (DTBook 2005-3) full-text talking book. Text-only: DAISY readers
+// provide their own speech/braille/large-print rendering. (Synced read-aloud
+// audio is the separate EPUB3 Media Overlays export.) Builds the nested levelN
+// containers DTBook requires from the flat heading sequence.
+function _expDtbookRuns(runs) {
+  return (runs || []).map((r) => {
+    if (!r) return '';
+    // Footnote anchor → DTBook noteref (paired with a <note> in the Notes level
+    // appended by _htmlToDtbookXml). 2026-06-15 fix: these returned '' so footnotes
+    // silently vanished from the DAISY export.
+    if (r.footnoteId != null) { const _fid = _expXmlEsc(String(r.footnoteId)); return '<noteref idref="dtbfn' + _fid + '">' + _fid + '</noteref>'; }
+    if (r.br) return '<br/>';
+    if (typeof r.text !== 'string') return '';
+    let t = _expXmlEsc(r.text);
+    if (r.sub) t = '<sub>' + t + '</sub>';
+    if (r.sup) t = '<sup>' + t + '</sup>';
+    if (r.italic) t = '<em>' + t + '</em>';
+    if (r.bold) t = '<strong>' + t + '</strong>';
+    if (r.link) t = '<a href="' + _expXmlEsc(r.link) + '">' + t + '</a>';
+    return t;
+  }).join('');
+}
+function _htmlToDtbookXml(html, lang) {
+  const spec = _htmlToDocxSpec(html);
+  const L = lang || spec.lang || 'en';
+  const title = _expXmlEsc(spec.title || 'Document');
+  const out = [];
+  let depth = 0;
+  let headingSeq = 0; // matches _htmlToDaisyNcx's per-heading index so navPoints resolve (#2)
+  const ensureContentLevel = () => { if (depth === 0) { out.push('<level1>'); out.push('<h1>' + title + '</h1>'); depth = 1; } };
+  for (const b of (spec.blocks || [])) {
+    if (b.type === 'heading') {
+      const lvl = Math.min(6, Math.max(1, b.level || 1));
+      while (depth >= lvl) { out.push('</level' + depth + '>'); depth--; }
+      while (depth < lvl) { depth++; out.push('<level' + depth + '>'); }
+      const _h = _expDtbookRuns(b.runs);
+      // id="hN" so the NCX navPoint content src="dtbook.xml#hN" resolves (was a dangling anchor →
+      // every TOC jump landed at page 1). Counter increments ONLY here, matching the NCX which
+      // counts only spec.blocks headings — NOT the injected title/Notes <h1>. (#2)
+      out.push('<h' + lvl + ' id="h' + (++headingSeq) + '">' + (_h || title) + '</h' + lvl + '>');
+    } else if (b.type === 'paragraph') {
+      ensureContentLevel();
+      out.push('<p>' + _expDtbookRuns(b.runs) + '</p>');
+    } else if (b.type === 'list') {
+      ensureContentLevel();
+      out.push(_buildNestedListXml(b.items, '<list type="' + (b.ordered ? 'ol' : 'ul') + '">',
+        (it) => '<li>' + _expDtbookRuns(it.runs), '</li>', '</list>')); // nested by it.level (audit #24)
+    } else if (b.type === 'table') {
+      ensureContentLevel();
+      out.push('<table>' + (b.rows || []).map((r) => '<tr>' + (r.cells || []).map((c) => { const tg = c.header ? 'th' : 'td'; return '<' + tg + '>' + _expDtbookRuns(c.runs) + '</' + tg + '>'; }).join('') + '</tr>').join('') + '</table>');
+    } else if (b.type === 'image') {
+      ensureContentLevel();
+      // alt-only degrade as a plain labelled paragraph — a DTBook <imggroup> with no <img> child
+      // violates the 2005-3 content model (strict DAISY tools reject it), and no image bytes are
+      // packaged in the DAISY zip so a real <img src> would dangle. Mirrors the ODT/DOCX fallback. (#4)
+      if (b.alt) out.push('<p>[Image: ' + _expXmlEsc(b.alt) + ']</p>');
+    }
+  }
+  while (depth > 0) { out.push('</level' + depth + '>'); depth--; }
+  // Footnotes → a DTBook "Notes" level (2026-06-15 fix): each inline noteref above
+  // pairs with a <note> here so footnote text survives the DAISY export.
+  const _fnKeys = spec.footnotes ? Object.keys(spec.footnotes) : [];
+  if (_fnKeys.length) {
+    out.push('<level1><h1>Notes</h1>');
+    for (const _k of _fnKeys) {
+      const _fid = _expXmlEsc(String(_k));
+      out.push('<note id="dtbfn' + _fid + '"><p>' + (_expDtbookRuns(spec.footnotes[_k]) || '') + '</p></note>');
+    }
+    out.push('</level1>');
+  }
+  const bodyInner = out.join('\n') || ('<level1><h1>' + title + '</h1></level1>');
+  return '<?xml version="1.0" encoding="utf-8"?>\n' +
+    '<!DOCTYPE dtbook PUBLIC "-//NISO//DTD dtbook 2005-3//EN" "http://www.daisy.org/z3986/2005/dtbook-2005-3.dtd">\n' +
+    '<dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/" version="2005-3" xml:lang="' + _expXmlEsc(L) + '"' + (spec.rtl ? ' dir="rtl"' : '') + '>\n' +
+    '<head>' +
+    '<meta name="dc:Title" content="' + title + '"/>' +
+    '<meta name="dc:Language" content="' + _expXmlEsc(L) + '"/>' +
+    '<meta name="dc:Publisher" content="AlloFlow"/>' +
+    '<meta name="dc:Format" content="ANSI/NISO Z39.86-2005"/>' +
+    '<meta name="dtb:uid" content="alloflow-daisy-' + Date.now() + '"/>' +
+    '</head>\n' +
+    '<book><bodymatter>' + bodyInner + '</bodymatter></book>\n' +
+    '</dtbook>';
+}
+// Navigation Control file (NCX) + OPF package for the DAISY book — navPoints
+// from the document headings so DAISY players get a real navigable TOC.
+function _htmlToDaisyNcx(html, title) {
+  const spec = _htmlToDocxSpec(html);
+  const heads = (spec.blocks || []).filter((b) => b.type === 'heading');
+  let i = 0;
+  const navPoints = heads.map((h) => {
+    i++;
+    const label = _expXmlEsc((h.runs || []).map((r) => r.text || '').join('') || ('Section ' + i));
+    return '<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="dtbook.xml#h' + i + '"/></navPoint>';
+  }).join('\n');
+  return '<?xml version="1.0" encoding="utf-8"?>\n' +
+    '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n' +
+    '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n' +
+    '<head><meta name="dtb:uid" content="alloflow-daisy"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
+    '<docTitle><text>' + _expXmlEsc(title || spec.title || 'Document') + '</text></docTitle>\n' +
+    '<navMap>' + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || 'Document') + '</text></navLabel><content src="dtbook.xml"/></navPoint>') + '</navMap>\n' +
+    '</ncx>';
+}
+const _DAISY_OPF_XML = (title, lang) => '<?xml version="1.0" encoding="utf-8"?>\n' +
+  '<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="uid">\n' +
+  '<metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
+  '<dc:Title>' + _expXmlEsc(title) + '</dc:Title>' +
+  '<dc:Language>' + _expXmlEsc(lang || 'en') + '</dc:Language>' +
+  '<dc:Format>ANSI/NISO Z39.86-2005</dc:Format>' +
+  '<dc:Identifier id="uid">alloflow-daisy</dc:Identifier>' +
+  '<dc:Publisher>AlloFlow</dc:Publisher>' +
+  '</dc-metadata><x-metadata><meta name="dtb:multimediaType" content="textNCX"/><meta name="dtb:totalTime" content="0:00:00"/></x-metadata></metadata>\n' +
+  '<manifest>' +
+  '<item id="opf" href="package.opf" media-type="text/xml"/>' +
+  '<item id="dtbook" href="dtbook.xml" media-type="application/x-dtbook+xml"/>' +
+  '<item id="ncx" href="navigation.ncx" media-type="application/x-dtbncx+xml"/>' +
+  '</manifest>\n<spine><itemref idref="dtbook"/></spine>\n</package>';
+
+// ── EPUB3 Media Overlays (read-along) — pure helpers (2026-06-14) ────────────
+// True read-along: each spoken text block gets a stable id, one TTS clip, and a
+// SMIL <par> linking the id to its clip so a reading system highlights the text
+// as the audio plays. These are the PURE pieces (id assignment, SMIL, OPF); the
+// async handler generates the per-block audio + measures clip durations.
+// Recover a WAV clip's duration from its header bytes when HTMLMediaElement reports
+// 0/Infinity (default Gemini WAV: metadata never resolves, so clipEnd would collapse
+// to 0s and that block would speak nothing / never highlight). Uses the SAME canonical
+// header offsets as _concatAudioBlobs: byteRate@28, 'data' chunk scanned like there.
+// Returns seconds (>0) or 0 when the bytes are not a parseable PCM WAV. (exp-clip-duration)
+function _wavDurationFromBytes(u8) {
+  try {
+    if (!u8 || u8.length <= 44) return 0;
+    if (!(u8[0]===0x52 && u8[1]===0x49 && u8[2]===0x46 && u8[3]===0x46 && u8[8]===0x57 && u8[9]===0x41 && u8[10]===0x56 && u8[11]===0x45)) return 0; // 'RIFF'....'WAVE'
+    const byteRate = (u8[28] | (u8[29]<<8) | (u8[30]<<16) | (u8[31]<<24)) >>> 0;
+    if (!(byteRate > 0)) return 0;
+    let dataLen = 0;
+    for (let j = 12; j < Math.min(u8.length - 8, 256); j++) {
+      if (u8[j]===0x64 && u8[j+1]===0x61 && u8[j+2]===0x74 && u8[j+3]===0x61) { // 'data'
+        dataLen = (u8[j+4] | (u8[j+5]<<8) | (u8[j+6]<<16) | (u8[j+7]<<24)) >>> 0;
+        if (!(dataLen > 0) || dataLen > (u8.length - (j+8))) dataLen = u8.length - (j+8); // honor actual bytes if header size is 0/over-long
+        break;
+      }
+    }
+    if (!(dataLen > 0)) return 0;
+    const sec = dataLen / byteRate;
+    return (isFinite(sec) && sec > 0) ? sec : 0;
+  } catch (_) { return 0; }
+}
+
+function _moClock(sec) {
+  // SMIL clock value in seconds form (e.g. "12.345s") — valid for clipEnd and
+  // media:duration. Guards NaN/negatives to 0.
+  const s = (typeof sec === 'number' && isFinite(sec) && sec > 0) ? sec : 0;
+  return (Math.round(s * 1000) / 1000) + 's';
+}
+// Assign a stable id to every leaf text block + return the per-block spoken text.
+// Reuses existing ids when present so the SMIL references match the xhtml. Strips
+// non-spoken editor chrome (same intent as _audioReadyText) so audio == on-screen.
+function _collectMoSegments(html) {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  const root = doc.body || doc.documentElement;
+  if (!root) return { segments: [], bodyHtml: '', lang: 'en' };
+  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], script, style, .allo-block-controls, .allo-block-remove').forEach((el) => el.remove());
+  const SEL = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td';
+  const segments = [];
+  // EPUB requires UNIQUE ids and the read-along SMIL references each segment by id. The AI HTML can
+  // carry DUPLICATE ids (a real epubcheck RSC-005 + ambiguous media-overlay), and upstream dedup runs
+  // BEFORE the AI passes, so AI-reintroduced dupes survive to here. Keep an id only if it's unique so
+  // far; otherwise mint a fresh id that collides with NO existing id (segment or not). (#25)
+  const _seen = new Set();
+  const _usedIds = new Set(Array.from(root.querySelectorAll('[id]')).map((el) => el.getAttribute('id')).filter(Boolean));
+  let _uid = 0;
+  const _freshMoId = () => { let _c; do { _uid++; _c = 'mo' + _uid; } while (_seen.has(_c) || _usedIds.has(_c)); return _c; };
+  Array.from(root.querySelectorAll(SEL)).forEach((el) => {
+    if (el.querySelector(SEL)) return; // only leaf blocks — don't double-speak a wrapper
+    const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!text) return;
+    let _id = el.getAttribute('id');
+    if (!_id || _seen.has(_id)) { _id = _freshMoId(); el.setAttribute('id', _id); }
+    _seen.add(_id);
+    segments.push({ id: _id, text });
+  });
+  // Serialize as XML, not innerHTML: the read-along content.xhtml is application/xhtml+xml and MUST
+  // be well-formed. innerHTML leaves void elements unclosed (<input data-allo-field>, <col>, <source>,
+  // …) and named entities (&mdash; &copy;) that are undefined in XML, so epubcheck / Apple Books /
+  // Thorium reject the WHOLE EPUB with a parse error — while the toast claims success. XMLSerializer
+  // self-closes void elements and emits literal chars; strip the per-child redundant xhtml xmlns. (#1)
+  let bodyHtml;
+  try {
+    const _xs = new XMLSerializer();
+    bodyHtml = Array.from(root.childNodes).map((n) => _xs.serializeToString(n)).join('').replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
+  } catch (_) { bodyHtml = root.innerHTML; }
+  return { segments, bodyHtml, lang: (doc.documentElement.getAttribute('lang') || 'en') };
+}
+// SMIL overlay: one <par> per segment. Per-segment audio files, so each clip is
+// 0..duration of its own file. `ext` is the audio extension (mp3 by default;
+// the TTS service may return wav, which we pass through honestly rather than
+// mislabel as mp3 — most reading systems play wav even though mp3 is the core type).
+function _buildMoSmil(segments, durations, ext, hasAudio) {
+  const _ext = ext || 'mp3';
+  // hasAudio[idx] === false → that block's TTS failed: emit a TEXT-ONLY <par> (no
+  // <audio>) instead of referencing a clip that isn't in the zip. A missing audio
+  // resource makes the WHOLE EPUB invalid/unopenable (epubcheck RSC-001), so one
+  // failed TTS call must NOT poison the file (2026-06-15 review P0 fix). Omitting
+  // hasAudio entirely keeps the prior all-present behavior.
+  const _has = (i) => !hasAudio || hasAudio[i];
+  const pars = (segments || []).map((s, idx) => {
+    const text = '<text src="content.xhtml#' + _expXmlEsc(s.id) + '"/>';
+    if (!_has(idx)) return '<par id="par' + (idx + 1) + '">' + text + '</par>';
+    const dur = (durations && durations[idx]) || 0;
+    return '<par id="par' + (idx + 1) + '">' + text +
+      '<audio src="audio/seg' + (idx + 1) + '.' + _ext + '" clipBegin="' + _moClock(0) + '" clipEnd="' + _moClock(dur) + '"/></par>';
+  }).join('\n');
+  return '<?xml version="1.0" encoding="utf-8"?>\n' +
+    '<smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">\n' +
+    '<body><seq>' + pars + '</seq></body>\n</smil>';
+}
+// OPF for the media-overlay ePub: content references its overlay; manifest lists
+// the SMIL + every audio clip; media:duration (global + per-overlay) is required.
+function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio) {
+  const _ext = ext || 'mp3';
+  const _mime = mime || 'audio/mpeg';
+  // Only manifest the audio clips that actually exist in the zip (a declared item
+  // with no file = invalid EPUB). 2026-06-15 review P0 fix.
+  const _has = (i) => !hasAudio || hasAudio[i];
+  const audioItems = (segments || []).map((s, i) => _has(i) ? '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + '.' + _ext + '" media-type="' + _mime + '"/>' : '').filter(Boolean).join('\n');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n' +
+    '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n' +
+    '<dc:identifier id="uid">alloflow-mo-' + Date.now() + '</dc:identifier>' +
+    '<dc:title>' + _expXmlEsc(title) + '</dc:title>' +
+    '<dc:language>' + _expXmlEsc(lang || 'en') + '</dc:language>' +
+    '<dc:creator>AlloFlow Document Pipeline</dc:creator>' +
+    '<meta property="dcterms:modified">' + _expXmlEsc(modifiedIso || new Date().toISOString().replace(/\.\d+Z/, 'Z')) + '</meta>' +
+    '<meta property="media:duration">' + _moClock(totalSec) + '</meta>' +
+    '<meta property="media:duration" refines="#smil">' + _moClock(totalSec) + '</meta>' +
+    '<meta property="media:active-class">-epub-media-overlay-active</meta>' +
+    '<meta property="schema:accessMode">textual</meta>' +
+    '<meta property="schema:accessMode">auditory</meta>' +
+    '<meta property="schema:accessModeSufficient">textual,auditory</meta>' +
+    '<meta property="schema:accessibilityFeature">readingOrder</meta>' +
+    '<meta property="schema:accessibilityFeature">synchronizedAudioText</meta>' +
+    '<meta property="schema:accessibilityFeature">structuralNavigation</meta>' +
+    '<meta property="schema:accessibilityHazard">none</meta>' +
+    '<meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta>' +
+    '</metadata>\n' +
+    '<manifest>\n' +
+    '<item id="content" href="content.xhtml" media-type="application/xhtml+xml" media-overlay="smil"/>\n' +
+    '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n' +
+    '<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' +
+    audioItems + '\n' +
+    '</manifest>\n<spine><itemref idref="content"/></spine>\n</package>';
+}
+
+// In-house EPUB structural self-check (2026-06-22). NOT a substitute for epubcheck — a
+// CheerpJ epubcheck spike is risky (EPUB is a ZIP needing reverse seeks vs veraPDF's linear
+// byte-stream). This instead validates the package WE just assembled, catching our own export
+// bugs before the file ships: a dangling SMIL audio/text ref or a missing manifest file makes
+// the WHOLE EPUB unopenable (epubcheck RSC-001/RSC-005), and a not-well-formed content.xhtml
+// (AI body HTML) is rejected with a parse error while the toast claims success. Pure JS; takes
+// the same path→content map handed to JSZip (audio entries can be any truthy placeholder — only
+// existence is checked, not bytes). Uses the global DOMParser when present (browser + jsdom) for
+// well-formedness; skips that sub-check where it isn't. Returns { valid, issues:[{severity,code,message}] }.
+function validateEpubStructure(files) {
+  const issues = [];
+  const f = files || {};
+  const err = (code, message) => issues.push({ severity: 'error', code, message });
+  const warn = (code, message) => issues.push({ severity: 'warning', code, message });
+  const has = (p) => p != null && Object.prototype.hasOwnProperty.call(f, p) && f[p] != null;
+  const get = (p) => (has(p) ? String(f[p]) : '');
+  // Resolve a relative href/src against a base file path (POSIX), dropping any #fragment.
+  const resolveRel = (base, src) => {
+    const noFrag = String(src || '').replace(/#.*$/, '');
+    if (!noFrag) return null;
+    const baseDir = base.indexOf('/') >= 0 ? base.replace(/\/[^/]*$/, '') : '';
+    const parts = (baseDir ? baseDir.split('/') : []).concat(noFrag.split('/'));
+    const out = [];
+    for (const seg of parts) { if (seg === '' || seg === '.') continue; if (seg === '..') out.pop(); else out.push(seg); }
+    return out.join('/');
+  };
+  // XML well-formedness via DOMParser (browser/jsdom); returns an error string or null.
+  const xmlError = (p) => {
+    if (typeof DOMParser === 'undefined') return null;
+    try {
+      const d = new DOMParser().parseFromString(get(p), 'application/xml');
+      const pe = d.getElementsByTagName('parsererror')[0];
+      return pe ? String(pe.textContent || 'XML parse error').replace(/\s+/g, ' ').trim().slice(0, 200) : null;
+    } catch (_) { return null; }
+  };
+  // 1. OCF mimetype.
+  if (!has('mimetype')) err('mimetype-missing', "OCF requires a 'mimetype' entry.");
+  else if (get('mimetype').trim() !== 'application/epub+zip') err('mimetype-wrong', "mimetype must be exactly 'application/epub+zip'.");
+  // 2. container.xml → rootfile OPF.
+  const CONTAINER = 'META-INF/container.xml';
+  let opfPath = null;
+  if (!has(CONTAINER)) err('container-missing', 'META-INF/container.xml is required.');
+  else {
+    const xe = xmlError(CONTAINER); if (xe) err('container-malformed', 'container.xml is not well-formed XML: ' + xe);
+    const m = get(CONTAINER).match(/full-path\s*=\s*"([^"]+)"/);
+    if (!m) err('rootfile-missing', 'container.xml declares no rootfile full-path.');
+    else { opfPath = m[1]; if (!has(opfPath)) err('rootfile-unresolved', "container rootfile '" + opfPath + "' is not in the package."); }
+  }
+  // 3. OPF manifest / spine / nav / media-overlay.
+  if (opfPath && has(opfPath)) {
+    const opf = get(opfPath);
+    const xe = xmlError(opfPath); if (xe) err('opf-malformed', 'content.opf is not well-formed XML: ' + xe);
+    const items = {};
+    let im; const itemRe = /<item\b([^>]*?)\/?>/g;
+    while ((im = itemRe.exec(opf))) {
+      const a = im[1];
+      const id = (a.match(/\bid\s*=\s*"([^"]*)"/) || [])[1];
+      const href = (a.match(/\bhref\s*=\s*"([^"]*)"/) || [])[1];
+      if (!id || !href) continue;
+      const obj = {
+        id, href,
+        props: (a.match(/\bproperties\s*=\s*"([^"]*)"/) || [])[1] || '',
+        mediaType: (a.match(/\bmedia-type\s*=\s*"([^"]*)"/) || [])[1] || '',
+        overlay: (a.match(/\bmedia-overlay\s*=\s*"([^"]*)"/) || [])[1] || '',
+        resolved: resolveRel(opfPath, href),
+      };
+      items[id] = obj;
+      if (!has(obj.resolved)) err('manifest-href-unresolved', "manifest item '" + id + "' href '" + href + "' is not in the package.");
+    }
+    let sm, spineCount = 0; const spineRe = /<itemref\b([^>]*?)\/?>/g;
+    while ((sm = spineRe.exec(opf))) {
+      spineCount++;
+      const idref = (sm[1].match(/\bidref\s*=\s*"([^"]*)"/) || [])[1];
+      if (!idref || !items[idref]) err('spine-idref-unresolved', "spine itemref '" + (idref || '') + "' has no matching manifest item.");
+    }
+    if (spineCount === 0) err('spine-empty', 'OPF spine has no itemref.');
+    if (!Object.keys(items).some((id) => /\bnav\b/.test(items[id].props))) err('nav-missing', 'OPF manifest has no properties="nav" navigation document.');
+    const overlayItems = Object.keys(items).map((id) => items[id]).filter((it) => it.overlay);
+    for (const it of overlayItems) {
+      const ov = items[it.overlay];
+      if (!ov) err('overlay-unresolved', "item '" + it.id + "' media-overlay='" + it.overlay + "' has no matching manifest item.");
+      else if (!/smil/i.test(ov.mediaType)) warn('overlay-mediatype', "media-overlay target '" + it.overlay + "' is not application/smil+xml.");
+    }
+    if (overlayItems.length && !/property\s*=\s*"media:duration"/.test(opf)) err('duration-missing', 'media overlays are declared but no media:duration metadata is present.');
+    // XHTML content documents must be well-formed XML — the AI body HTML lands in content.xhtml,
+    // and a single undefined entity / unclosed void element makes a reader reject the whole EPUB.
+    for (const id of Object.keys(items)) {
+      const it = items[id];
+      if (/xhtml\+xml/i.test(it.mediaType) && has(it.resolved)) {
+        const xeX = xmlError(it.resolved); if (xeX) err('xhtml-malformed', it.href + ' is not well-formed XML: ' + xeX);
+      }
+    }
+    // 4. SMIL cross-checks: text-src ids exist; audio-src files exist; SMIL well-formed.
+    const idCache = {};
+    const idsOf = (path) => { if (idCache[path]) return idCache[path]; const set = new Set(); let mm; const idRe = /\bid\s*=\s*"([^"]+)"/g; const s = get(path); while ((mm = idRe.exec(s))) set.add(mm[1]); idCache[path] = set; return set; };
+    for (const id of Object.keys(items)) {
+      const it = items[id];
+      if (!/smil/i.test(it.mediaType) || !has(it.resolved)) continue;
+      const smil = get(it.resolved);
+      const xe2 = xmlError(it.resolved); if (xe2) err('smil-malformed', it.href + ' is not well-formed XML: ' + xe2);
+      let tm; const tRe = /<text\b[^>]*?\bsrc\s*=\s*"([^"]+)"/g;
+      while ((tm = tRe.exec(smil))) {
+        const src = tm[1], hash = src.indexOf('#'), target = resolveRel(it.resolved, src);
+        if (!has(target)) { err('smil-text-target-missing', "SMIL text src '" + src + "' points to a file not in the package."); continue; }
+        if (hash >= 0) { const frag = src.slice(hash + 1); if (frag && !idsOf(target).has(frag)) err('smil-text-id-missing', "SMIL text src '" + src + "' references id '" + frag + "' absent from " + target + "."); }
+      }
+      let am; const aRe = /<audio\b[^>]*?\bsrc\s*=\s*"([^"]+)"/g;
+      while ((am = aRe.exec(smil))) { const target = resolveRel(it.resolved, am[1]); if (!has(target)) err('smil-audio-missing', "SMIL audio src '" + am[1] + "' is not in the package (a missing clip invalidates the whole EPUB)."); }
+    }
+  }
+  return { valid: issues.filter((i) => i.severity === 'error').length === 0, issues };
+}
 
 // _buildDocxBlobFromSpec: map the pure spec onto the docx UMD library (d).
 // Accessibility mapping: real HeadingN styles, tableHeader rows, real list
 // numbering/bullets, ExternalHyperlink (keeps link semantics), ImageRun with
 // altText; an image that can't embed degrades to its alt text, never silence.
-async function _buildDocxBlobFromSpec(spec, d) {
+async function _buildDocxBlobFromSpec(spec, d, mode) {
+  // Document mode (2026-06-13): when an academic mode (APA/MLA/Chicago) is
+  // active, the .docx must actually carry the formatting the preview shows —
+  // otherwise picking "APA" then downloading Word gives plain Calibri,
+  // single-spaced, no hanging indent (the mode looked like a no-op in the
+  // format teachers actually submit). All native to docx@8.5.0; no new dep.
+  const academic = !!(mode && mode.academic);
+  // RTL (export-format review #2): w:bidi on every paragraph + w:rtl on every run when
+  // the spec says the document is right-to-left. Word needs BOTH — bidi flips the
+  // paragraph direction, rtl marks the runs as complex-script so punctuation and
+  // numbers order correctly.
+  const _rtl = !!spec.rtl;
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
   const runsTo = (runs) => runs.map((r) => {
     if (r.br) return new d.TextRun({ break: 1 });
-    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, style: r.link ? 'Hyperlink' : undefined });
+    // Real Word footnote reference (A6) — Word auto-numbers it and links to the
+    // definition in document.footnotes. Degrades to a superscript digit only if
+    // the lib lacks FootnoteReferenceRun (very old CDN cache).
+    if (r.footnoteId) { return (typeof d.FootnoteReferenceRun === 'function') ? new d.FootnoteReferenceRun(r.footnoteId) : new d.TextRun({ text: String(r.footnoteId), superScript: true }); }
+    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? 'Hyperlink' : undefined, ...(_rtl ? { rightToLeft: true } : {}) });
     return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
+  // Every Paragraph in this builder goes through _P so the bidi flag can't be missed
+  // at one of the eight construction sites.
+  const _P = (opts) => new d.Paragraph(_rtl ? { bidirectional: true, ...opts } : opts);
   const children = [];
+  const _lang = (spec.lang || 'en');
+  let _olCount = 0; // each <ol> gets its own numbering reference (allo-ol-N) so it restarts at 1
   for (const b of spec.blocks) {
-    if (b.type === 'heading') children.push(new d.Paragraph({ heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) }));
-    else if (b.type === 'paragraph') children.push(new d.Paragraph({ children: runsTo(b.runs) }));
+    if (b.type === 'heading') {
+      const hp = { heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) };
+      // Center the title: the H1 in an academic mode, OR any heading inside a
+      // title-page block (any mode). Word's heading style stays, keeping the
+      // doc navigable + tagged on Word's own PDF export.
+      if (((academic && b.level === 1) || b.centered) && d.AlignmentType) hp.alignment = d.AlignmentType.CENTER;
+      children.push(_P(hp));
+    }
+    else if (b.type === 'pagebreak') children.push(_P({ children: [new d.PageBreak()] }));
+    else if (b.type === 'paragraph') {
+      const pp = { children: runsTo(b.runs) };
+      // Reference-list hanging indent (0.5"): first line flush, continuation
+      // lines indented — required by APA-7 / MLA-9 reference lists.
+      if (b.hanging) pp.indent = { left: 720, hanging: 720 };
+      // Title-page lines (author/affiliation/course) center in any mode.
+      if (b.centered && d.AlignmentType) pp.alignment = d.AlignmentType.CENTER;
+      children.push(_P(pp));
+    }
     else if (b.type === 'list') {
+      // Each ordered list gets its OWN numbering reference (allo-ol-0, allo-ol-1, …)
+      // so a second <ol> restarts at 1 — a single shared 'allo-ol' reference made
+      // every ordered list continue one counter (4, 5, 6 …) in Word.
+      const _olRef = b.ordered ? ('allo-ol-' + (_olCount++)) : null;
       for (const it of b.items) {
-        children.push(new d.Paragraph({
+        children.push(_P({
           children: runsTo(it.runs),
-          ...(b.ordered ? { numbering: { reference: 'allo-ol', level: Math.min(it.level || 0, 4) } } : { bullet: { level: Math.min(it.level || 0, 8) } }),
+          ...(b.ordered ? { numbering: { reference: _olRef, level: Math.min(it.level || 0, 4) } } : { bullet: { level: Math.min(it.level || 0, 8) } }),
         }));
       }
     } else if (b.type === 'table' && b.rows.length) {
       children.push(new d.Table({
         width: { size: 100, type: d.WidthType.PERCENTAGE },
+        // RTL (#2): flip the table's visual column order for right-to-left documents.
+        ...(_rtl ? { visuallyRightToLeft: true } : {}),
         rows: b.rows.map((row) => new d.TableRow({
           tableHeader: !!row.header,
-          children: row.cells.map((c) => new d.TableCell({ children: [new d.Paragraph({ children: runsTo(c.runs) })] })),
+          children: row.cells.map((c) => new d.TableCell({
+            // Merged cells (A5): columnSpan → OOXML gridSpan; rowSpan → vMerge chain.
+            // The spec's HTML source omits covered cells, matching the docx lib contract.
+            ...(c.colSpan > 1 ? { columnSpan: c.colSpan } : {}),
+            ...(c.rowSpan > 1 ? { rowSpan: c.rowSpan } : {}),
+            children: [_P({ children: runsTo(c.runs) })],
+          })),
         })),
       }));
     } else if (b.type === 'image') {
@@ -264,11 +1313,11 @@ async function _buildDocxBlobFromSpec(spec, d) {
           const w = Math.min(Math.max(parseInt(b.width, 10) || 480, 40), 600);
           const hRaw = parseInt(b.height, 10);
           const h = Math.max(hRaw || Math.round(w * 0.66), 30);
-          children.push(new d.Paragraph({ children: [new d.ImageRun({ data: bytes, transformation: { width: w, height: h }, altText: { title: b.alt || 'Image', description: b.alt || 'Image', name: (b.alt || 'image').slice(0, 60) } })] }));
+          children.push(_P({ children: [new d.ImageRun({ data: bytes, transformation: { width: w, height: h }, altText: { title: b.alt || 'Image', description: b.alt || 'Image', name: (b.alt || 'image').slice(0, 60) } })] }));
           placed = true;
         } catch (_) { /* degrade to the alt-text paragraph below */ }
       }
-      if (!placed) children.push(new d.Paragraph({ children: [new d.TextRun({ text: '[Image: ' + (b.alt || 'no description available') + ']', italics: true })] }));
+      if (!placed) children.push(_P({ children: [new d.TextRun({ text: '[Image: ' + (b.alt || 'no description available') + ']', italics: true })] }));
       // Word-NATIVE editable math (2026-06-10, item 7): LaTeX → MathML
       // (temml) → OMML (mathml2omml) → ImportedXmlComponent. The equation
       // image stays as visual ground truth; the editable equation follows it.
@@ -277,21 +1326,86 @@ async function _buildDocxBlobFromSpec(spec, d) {
         try {
           const omml = await _latexToOmml(b.latex);
           if (omml && d.ImportedXmlComponent && typeof d.ImportedXmlComponent.fromXmlString === 'function') {
-            children.push(new d.Paragraph({ children: [d.ImportedXmlComponent.fromXmlString(omml)] }));
-            children.push(new d.Paragraph({ children: [new d.TextRun({ text: 'Editable equation (AI-transcribed from the image above — verify before reuse).', italics: true, size: 16 })] }));
+            children.push(_P({ children: [d.ImportedXmlComponent.fromXmlString(omml)] }));
+            children.push(_P({ children: [new d.TextRun({ text: 'Editable equation (AI-transcribed from the image above — verify before reuse).', italics: true, size: 16 })] }));
           }
         } catch (_) { /* fail-soft: image + spoken alt already carry the math */ }
       }
     }
   }
-  const docFile = new d.Document({
+  const _docOpts = {
     title: spec.title,
     creator: 'AlloFlow',
-    numbering: { config: [{ reference: 'allo-ol', levels: [0, 1, 2, 3, 4].map((l) => ({ level: l, format: d.LevelFormat.DECIMAL, text: '%' + (l + 1) + '.', alignment: d.AlignmentType.START })) }] },
-    sections: [{ children: children.length ? children : [new d.Paragraph({ children: [new d.TextRun({ text: ' ' })] })] }],
-  });
+    // One numbering definition per ordered list so each <ol> restarts (see _olCount
+    // above); falls back to a single unused definition when there are no <ol>s.
+    numbering: { config: Array.from({ length: Math.max(_olCount, 1) }, (_v, _i) => ({ reference: 'allo-ol-' + _i, levels: [0, 1, 2, 3, 4].map((l) => ({ level: l, format: d.LevelFormat.DECIMAL, text: '%' + (l + 1) + '.', alignment: d.AlignmentType.START })) })) },
+    // Document default language (w:lang in docDefaults) — Word's Accessibility
+    // Checker flags a .docx with no document language. Follows the CONTENT language
+    // (spec.lang, read from the source <html lang>), not the UI language.
+    styles: { default: { document: { run: { language: { value: _lang } } } } },
+    sections: [{
+      // Academic modes: 1-inch margins (1440 twips) — APA/MLA/Chicago standard.
+      ...(academic ? { properties: { page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } } } : {}),
+      children: children.length ? children : [new d.Paragraph({ children: [new d.TextRun({ text: ' ' })] })],
+    }],
+  };
+  // Real Word footnotes (A6): map each collected note into the document's footnote
+  // store (id → paragraph). The in-text FootnoteReferenceRun(id) links to it, so
+  // the .docx gets bottom-of-page footnotes that Word's own PDF export tags /Note
+  // — instead of a plain trailing list.
+  if (spec.footnotes && Object.keys(spec.footnotes).length && typeof d.FootnoteReferenceRun === 'function') {
+    const _fn = {};
+    for (const id of Object.keys(spec.footnotes)) {
+      try { _fn[id] = { children: [_P({ children: runsTo(spec.footnotes[id]) })] }; } catch (_) {}
+    }
+    if (Object.keys(_fn).length) _docOpts.footnotes = _fn;
+  }
+  if (academic) {
+    // Document defaults: Times New Roman 12pt (size is in half-points), double
+    // spacing (240 twips = single, 480 = double). Rides every body run.
+    // Heading overrides: APA-style headings are TNR 12pt bold black — NOT Word's
+    // large coloured default. We override only the RUN of each heading style, so
+    // they stay REAL Word headings (navigable + tagged on Word's PDF export) but
+    // look academic. L1 centering is handled per-block above.
+    const _acHead = { font: 'Times New Roman', size: 24, bold: true, color: '000000' };
+    _docOpts.styles = { default: {
+      document: {
+        // academic mode replaces the whole styles block, so re-carry the document
+        // language (w:lang) here too — otherwise the academic path drops it.
+        run: { font: 'Times New Roman', size: 24, language: { value: _lang } },
+        paragraph: { spacing: { line: 480, lineRule: (d.LineRuleType && d.LineRuleType.AUTO) || 'auto' } },
+      },
+      heading1: { run: _acHead }, heading2: { run: _acHead }, heading3: { run: _acHead },
+      heading4: { run: _acHead }, heading5: { run: _acHead }, heading6: { run: _acHead },
+    } };
+  }
+  const docFile = new d.Document(_docOpts);
   return d.Packer.toBlob(docFile);
 }
+
+// ── Writing check (Harper) ── (2026-06-13: ported from the export builder so
+// grammar checking is reachable in the MAIN document builder, not only the
+// export view). Open-source grammar checker (Rust→WASM, Apache-2.0, Automattic)
+// that runs ENTIRELY in the browser — no document text ever leaves the device
+// (FERPA posture). English-only; first run downloads ~10 MB WASM (browser-cached
+// after). Spelling stays with the browser's native checker (spellcheck=true is
+// already on in the editable preview). Function-wrapped dynamic import so
+// esbuild doesn't resolve the remote URL at build time.
+let _pdfHarperPromise = null;
+function _ensurePdfHarper() {
+  if (_pdfHarperPromise) return _pdfHarperPromise;
+  _pdfHarperPromise = (async () => {
+    const _imp = new Function('u', 'return import(u)');
+    const mod = await _imp('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/+esm');
+    const binary = await mod.createBinaryModuleFromUrl('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm');
+    const linter = new mod.LocalLinter({ binary });
+    if (linter.setup) await linter.setup();
+    return linter;
+  })();
+  _pdfHarperPromise.catch(() => { _pdfHarperPromise = null; }); // failed load → allow retry
+  return _pdfHarperPromise;
+}
+// end _ensurePdfHarper
 
 // ── Accessible PowerPoint (.pptx) export ────────────────────────────────────
 // _ensurePptxLib: lazy-load the pptxgenjs bundle (window.PptxGenJS). Two
@@ -362,7 +1476,9 @@ function _docxSpecToSlides(spec) {
         if (t) pushItem({ kind: 'bullet', text: t, level: Math.min(it.level || 0, 4) }, 1);
       }
     } else if (b.type === 'table') {
-      const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => runsText(c.runs)) }));
+      // Merge parity (#10): carry the spec's colSpan/rowSpan so the PPTX table
+      // can emit real merges instead of flattening to a rectangular grid.
+      const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => ({ text: runsText(c.runs), colSpan: c.colSpan || 1, rowSpan: c.rowSpan || 1 })) }));
       if (rows.length) pushItem({ kind: 'table', rows }, rows.length + 1);
     } else if (b.type === 'image') {
       pushItem({ kind: 'image', src: b.src || null, alt: b.alt || '', width: b.width, height: b.height }, 8);
@@ -452,7 +1568,13 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
       if (it.kind === 'text' || it.kind === 'bullet' || it.kind === 'subhead') { runs.push(it); continue; }
       flushText();
       if (it.kind === 'table' && it.rows.length) {
-        const tableRows = it.rows.map((r) => r.cells.map((c) => ({ text: c, options: r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {} })));
+        // Merge parity (#10): pptxgenjs cell options take lowercase colspan/rowspan.
+        // Cells may be legacy strings (older saved items) or {text, colSpan, rowSpan}.
+        const tableRows = it.rows.map((r) => r.cells.map((c) => {
+          const _txt = (typeof c === 'string') ? c : (c && c.text) || '';
+          const _cs = (c && c.colSpan) || 1, _rs = (c && c.rowSpan) || 1;
+          return { text: _txt, options: { ...(r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {}), ...(_cs > 1 ? { colspan: _cs } : {}), ...(_rs > 1 ? { rowspan: _rs } : {}) } };
+        }));
         slide.addTable(tableRows, { x: 0.5, y, w: 9, fontSize: 12, border: { type: 'solid', color: th.tableBorder, pt: 0.5 }, color: th.body, fontFace: th.font });
         y += 0.35 * it.rows.length + 0.25;
       } else if (it.kind === 'image') {
@@ -508,6 +1630,12 @@ function _audioReadyText(html) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const root = doc.body || doc.documentElement;
   if (!root) return '';
+  // Speak the AI-translated / AI-simplified disclosure instead of silently
+  // dropping it for listeners (audit 2026-06-13 [11]): capture it as a
+  // spoken preamble BEFORE removing the visual banner.
+  let _preamble = '';
+  const _note = root.querySelector('[data-allo-translation-note], [data-allo-plain-note]');
+  if (_note) { const _nt = (_note.textContent || '').replace(/\s+/g, ' ').trim(); if (_nt) _preamble = _nt + '. '; }
   root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], script, style, button, input, select').forEach((el) => el.remove());
   root.querySelectorAll('details > summary').forEach((el) => el.remove());
   root.querySelectorAll('details em, figcaption em').forEach((el) => { if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || '')) el.remove(); });
@@ -515,26 +1643,247 @@ function _audioReadyText(html) {
   root.querySelectorAll('figure').forEach((fig) => {
     const img = fig.querySelector('img');
     const cap = fig.querySelector('figcaption');
-    if (fig.hasAttribute('data-img-placeholder')) {
+    // Collapse the REAL exported placeholder too (audit 2026-06-13 [14]):
+    // it carries data-img-idx with no <img>, not just data-img-placeholder —
+    // otherwise the upload-UI button text gets read aloud.
+    if (fig.hasAttribute('data-img-placeholder') || (fig.hasAttribute('data-img-idx') && !img)) {
       const d = (cap && cap.textContent.trim()) || '';
       fig.replaceWith(doc.createTextNode(d ? ('Image: ' + d + '. ') : ''));
       return;
     }
     if (img) {
       const alt = (img.getAttribute('alt') || '').trim();
+      // A real author figcaption is content — always read it (audit
+      // 2026-06-13 [5]); only the ALT is gated by decorative role.
+      const isPres = img.getAttribute('role') === 'presentation' || img.getAttribute('aria-hidden') === 'true';
       const capText = cap ? cap.textContent.trim() : '';
-      const say = capText || alt;
       if (cap) cap.remove();
-      img.replaceWith(doc.createTextNode((say && img.getAttribute('role') !== 'presentation') ? ('Image: ' + say + '. ') : ''));
+      const say = capText || (isPres ? '' : alt);
+      img.replaceWith(doc.createTextNode(say ? ('Image: ' + say + '. ') : ''));
     }
   });
   root.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption').forEach((el) => { el.appendChild(doc.createTextNode('. ')); });
-  return (root.textContent || '')
+  return _preamble + (root.textContent || '')
     .replace(/\s+/g, ' ')
     .replace(/\s+([.,;:!?])/g, '$1')
     .replace(/([.!?])\s*\.+/g, '$1')
     .replace(/\.{2,}/g, '.')
     .trim();
+}
+
+// ── Document modes (2026-06-13) ── a GENERIC registry: each mode is just
+// data — its formatting CSS, whether it surfaces the academic blocks, and its
+// citation/reference conventions. APA is mode #1; MLA, Chicago, and Standard
+// are the same shape. Adding a new mode (e.g. a K-2 'Simple' mode) = one entry.
+// The CSS rides accessibleHtml, so every export (HTML/print/tagged-PDF) inherits
+// it. The mode NEVER fabricates citation content — it reconfigures which blocks
+// appear and how the document is formatted; the academic blocks are empty
+// teacher-filled templates.
+const _DOC_MODE_CSS_BASE = '.prose,main{font-family:"Times New Roman",Times,Georgia,serif;font-size:12pt;line-height:2}.allo-references>.allo-ref-entry,.allo-references li,.allo-footnotes li{padding-left:2.5em;text-indent:-2.5em}.allo-references{margin-top:2em}.allo-footnotes{margin-top:2em}.allo-footnotes hr{border:none;border-top:1px solid #000;width:30%;margin:1em 0}.allo-fn-ref{font-size:0.7em;vertical-align:super;line-height:0}';
+/* ──────────────────────────────────────────────────────────────────────
+ * Self-contained accessible HTML reader (Document Builder export — Seam B).
+ * _wrapAsReaderApp() PREPENDS an accessible reading-control bar and APPENDS a
+ * self-contained <style>/<script> to the exported document HTML. Tier 0 only:
+ * fully offline, zero-network, device-voice read-aloud. Higher tiers (baked
+ * neural audio, Kokoro, AIProvider translate/explain) are deferred — see
+ * C:/tmp/accessible_html_reader_export_guide.md.
+ *
+ * ADDITIVE CONTRACT: the document's own markup is never altered — we only
+ * inject before </head>, immediately after <body>, and before </body>. Strip
+ * the injected <style>/<script> and it is a valid accessible document again.
+ * On ANY failure, or if already wrapped, the input is returned untouched, so
+ * deleting the _wrapAsReaderApp() call at the export seam yields a byte-
+ * identical export. Theme values mirror the in-app reader (view_header). The
+ * control UI is lang="en" (device-local); the document keeps its own lang.
+ * ────────────────────────────────────────────────────────────────────── */
+const _READER_APP_CSS = `
+#allo-reader-bar{position:sticky;top:0;z-index:2147483646;background:#0f172a;color:#fff;font:14px/1.4 system-ui,-apple-system,sans-serif;padding:8px 12px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+#allo-reader-bar label{display:inline-flex;align-items:center;gap:5px;font-weight:600;white-space:nowrap}
+#allo-reader-bar select,#allo-reader-bar input[type=range]{font:inherit;color:#0f172a;background:#fff;border-radius:6px;padding:2px 4px}
+#allo-reader-bar input[type=range]{accent-color:#2563eb;padding:0}
+#allo-reader-bar button{background:#1e293b;color:#fff;border:1px solid #475569;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer}
+#allo-reader-bar button:hover{background:#334155}
+#allo-reader-bar button:focus-visible,#allo-reader-bar select:focus-visible,#allo-reader-bar input:focus-visible{outline:3px solid #fde047;outline-offset:2px}
+#allo-reader-bar button[aria-pressed=true]{background:#2563eb;border-color:#60a5fa}
+#allo-reader-panel{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+#allo-reader-panel[hidden]{display:none}
+#allo-reader-ruler{position:fixed;left:0;width:100%;height:2.4em;background:rgba(250,204,21,.16);border-top:2px solid rgba(250,204,21,.65);border-bottom:2px solid rgba(250,204,21,.65);pointer-events:none;z-index:2147483645;display:none}
+html[data-allo-ruler="1"] #allo-reader-ruler{display:block}
+html[data-allo-theme="warm"] body{background:#fef3c7!important;color:#5c4033!important}
+html[data-allo-theme="sepia"] body{background:#f4ecd8!important;color:#5c4033!important}
+html[data-allo-theme="dark"] body{background:#1a1a2e!important;color:#e2e8f0!important}
+html[data-allo-theme="highContrast"] body{background:#000!important;color:#ff0!important}
+html[data-allo-theme="blue"] body{background:#d6eaf8!important;color:#1b2631!important}
+html[data-allo-theme="green"] body{background:#e8f5e9!important;color:#1b5e20!important}
+html[data-allo-theme="rose"] body{background:#fce4ec!important;color:#880e4f!important}
+html[data-allo-theme="dyslexia"] body{background:#faf8ef!important;color:#1e293b!important}
+@media print{#allo-reader-bar,#allo-reader-ruler{display:none!important}}
+`;
+const _READER_APP_BAR = `
+<div id="allo-reader-bar" lang="en" role="region" aria-label="Reading controls">
+<button type="button" id="allo-reader-toggle" aria-expanded="true" aria-controls="allo-reader-panel">&#9881;&#65039; Reading tools</button>
+<div id="allo-reader-panel">
+<label>Font <select id="allo-rd-font" aria-label="Font family"><option value="">Original</option><option value="system-ui, sans-serif">Sans-serif</option><option value="Georgia, 'Times New Roman', serif">Serif</option><option value="'OpenDyslexic','Comic Sans MS','Trebuchet MS',sans-serif">Dyslexia-friendly</option><option value="ui-monospace,'Courier New',monospace">Monospace</option></select></label>
+<label>Size <input type="range" id="allo-rd-size" min="12" max="28" step="1" aria-label="Text size"></label>
+<label>Line <input type="range" id="allo-rd-line" min="1" max="2.5" step="0.1" aria-label="Line spacing"></label>
+<label>Letter <input type="range" id="allo-rd-letter" min="0" max="0.2" step="0.01" aria-label="Letter spacing"></label>
+<label>Theme <select id="allo-rd-theme" aria-label="Reading theme"><option value="default">Default</option><option value="warm">Warm</option><option value="sepia">Sepia</option><option value="dark">Dark</option><option value="highContrast">High contrast</option><option value="blue">Blue</option><option value="green">Green</option><option value="rose">Rose</option><option value="dyslexia">Easy read</option></select></label>
+<button type="button" id="allo-rd-ruler" aria-pressed="false">Reading ruler</button>
+<span role="group" aria-label="Read aloud"><button type="button" id="allo-rd-play">&#9654; Read aloud</button><button type="button" id="allo-rd-stop">&#9209; Stop</button><label>Speed <input type="range" id="allo-rd-rate" min="0.5" max="1.5" step="0.1" value="1" aria-label="Reading speed"></label></span>
+<button type="button" id="allo-rd-reset">Reset</button>
+</div>
+</div>
+<div id="allo-reader-ruler" aria-hidden="true"></div>
+`;
+const _READER_APP_JS = `
+(function(){
+var d=document, root=d.documentElement, LS='allo-reader-prefs';
+function $(id){return d.getElementById(id);}
+var prefs={};
+try{prefs=JSON.parse(localStorage.getItem(LS)||'{}')||{};}catch(e){prefs={};}
+function save(){try{localStorage.setItem(LS,JSON.stringify(prefs));}catch(e){}}
+function apply(){
+var b=d.body;
+if(b){
+b.style.fontFamily=prefs.font||'';
+b.style.fontSize=prefs.size?prefs.size+'px':'';
+b.style.lineHeight=prefs.line?String(prefs.line):'';
+b.style.letterSpacing=prefs.letter?prefs.letter+'em':'';
+}
+if(prefs.theme&&prefs.theme!=='default')root.setAttribute('data-allo-theme',prefs.theme);else root.removeAttribute('data-allo-theme');
+if(prefs.ruler)root.setAttribute('data-allo-ruler','1');else root.removeAttribute('data-allo-ruler');
+if($('allo-rd-font'))$('allo-rd-font').value=prefs.font||'';
+if($('allo-rd-size'))$('allo-rd-size').value=prefs.size||16;
+if($('allo-rd-line'))$('allo-rd-line').value=prefs.line||1.5;
+if($('allo-rd-letter'))$('allo-rd-letter').value=prefs.letter||0;
+if($('allo-rd-theme'))$('allo-rd-theme').value=prefs.theme||'default';
+var rb=$('allo-rd-ruler');if(rb)rb.setAttribute('aria-pressed',prefs.ruler?'true':'false');
+}
+function on(id,ev,fn){var el=$(id);if(el)el.addEventListener(ev,fn);}
+on('allo-rd-font','change',function(e){prefs.font=e.target.value;save();apply();});
+on('allo-rd-size','input',function(e){prefs.size=parseInt(e.target.value,10);save();apply();});
+on('allo-rd-line','input',function(e){prefs.line=parseFloat(e.target.value);save();apply();});
+on('allo-rd-letter','input',function(e){prefs.letter=parseFloat(e.target.value);save();apply();});
+on('allo-rd-theme','change',function(e){prefs.theme=e.target.value;save();apply();});
+on('allo-rd-ruler','click',function(){prefs.ruler=!prefs.ruler;save();apply();});
+on('allo-rd-reset','click',function(){prefs={};save();apply();});
+on('allo-reader-toggle','click',function(){var p=$('allo-reader-panel'),t=$('allo-reader-toggle');if(!p||!t)return;if(p.hasAttribute('hidden')){p.removeAttribute('hidden');t.setAttribute('aria-expanded','true');}else{p.setAttribute('hidden','');t.setAttribute('aria-expanded','false');}});
+var ruler=$('allo-reader-ruler');
+d.addEventListener('mousemove',function(e){if(ruler&&root.getAttribute('data-allo-ruler')==='1')ruler.style.top=(e.clientY-ruler.offsetHeight/2)+'px';});
+var synth=window.speechSynthesis;
+function bodyText(){var b=d.body?d.body.cloneNode(true):null;if(!b)return '';var x=b.querySelector('#allo-reader-bar');if(x&&x.parentNode)x.parentNode.removeChild(x);var y=b.querySelector('#allo-reader-ruler');if(y&&y.parentNode)y.parentNode.removeChild(y);return (b.innerText||b.textContent||'').replace(/\\s+/g,' ').trim();}
+function speak(){if(!synth)return;synth.cancel();var txt=bodyText();if(!txt)return;var rate=$('allo-rd-rate');var r=rate?parseFloat(rate.value)||1:1;var parts=txt.match(/[^.!?]+[.!?]*\\s*/g)||[txt];var buf='',q=[];for(var i=0;i<parts.length;i++){buf+=parts[i];if(buf.length>180){q.push(buf);buf='';}}if(buf)q.push(buf);for(var j=0;j<q.length;j++){var u=new SpeechSynthesisUtterance(q[j]);u.rate=r;synth.speak(u);}}
+on('allo-rd-play','click',speak);
+on('allo-rd-stop','click',function(){if(synth)synth.cancel();});
+apply();
+})();
+`;
+function _wrapAsReaderApp(html, opts) {
+  try {
+    if (!html || typeof html !== 'string') return html;
+    if (html.indexOf('allo-reader-bar') !== -1) return html; // idempotent — never double-wrap
+    const styleTag = '<style id="allo-reader-style">' + _READER_APP_CSS + '</style>';
+    const barHtml = _READER_APP_BAR;
+    const scriptTag = '<script id="allo-reader-script">' + _READER_APP_JS + '<' + '/script>';
+    let out = html;
+    if (/<\/head>/i.test(out)) out = out.replace(/<\/head>/i, function () { return styleTag + '</head>'; });
+    else out = styleTag + out;
+    if (/<body[^>]*>/i.test(out)) out = out.replace(/<body[^>]*>/i, function (m) { return m + barHtml; });
+    else out = barHtml + out;
+    if (/<\/body>/i.test(out)) out = out.replace(/<\/body>/i, function () { return scriptTag + '</body>'; });
+    else out = out + scriptTag;
+    return out;
+  } catch (e) { return html; }
+}
+
+const DOC_MODES = {
+  standard: { id: 'standard', label: 'Standard', icon: '📄', blurb: 'Default document formatting — all blocks, no citation style applied.', academic: false, css: '' },
+  apa: { id: 'apa', label: 'APA 7', icon: '🎓', blurb: 'APA 7th edition: Times New Roman 12pt, double-spaced, centered bold title, hanging-indent References.', academic: true, refHeading: 'References', citation: '(Author, Year)', css: _DOC_MODE_CSS_BASE + 'main h1{text-align:center;font-weight:bold}main h2{font-weight:bold}' },
+  mla: { id: 'mla', label: 'MLA 9', icon: '📝', blurb: 'MLA 9th edition: Times New Roman 12pt, double-spaced, centered Works Cited heading, hanging indent.', academic: true, refHeading: 'Works Cited', citation: '(Author 12)', css: _DOC_MODE_CSS_BASE + 'main h1{text-align:center;font-weight:normal}.allo-references h2{text-align:center;font-weight:normal}' },
+  chicago: { id: 'chicago', label: 'Chicago', icon: '📚', blurb: 'Chicago (notes–bibliography): Times New Roman 12pt, double-spaced, footnotes, hanging-indent Bibliography.', academic: true, refHeading: 'Bibliography', citation: '¹', css: _DOC_MODE_CSS_BASE + 'main h1{text-align:center}.allo-references h2{text-align:center}' },
+};
+
+// Footnote renumber engine (2026-06-13): keeps superscript anchors, the notes
+// list, ids, and back-references in sync after any insert/delete/reorder. Each
+// ref↔note pair shares a stable data-fn-uid; numbers come from document order
+// (the <ol> renders the display number, the <a> shows the inline number).
+function _alloRenumberFootnotes(doc) {
+  try {
+    const refs = Array.from(doc.querySelectorAll('sup.allo-fn-ref'));
+    const sec = doc.querySelector('section.allo-footnotes');
+    const ol = sec && sec.querySelector('ol');
+    if (!ol) return;
+    const liByUid = {};
+    Array.from(ol.children).forEach((li) => { const u = li.getAttribute('data-fn-uid'); if (u) liByUid[u] = li; });
+    const used = {};
+    let n = 0;
+    refs.forEach((ref, i) => {
+      let uid = ref.getAttribute('data-fn-uid');
+      if (!uid) { uid = 'fx' + i; ref.setAttribute('data-fn-uid', uid); }
+      const li = liByUid[uid];
+      if (!li) {
+        // Orphan ref (2026-06-14): the note was deleted but the <sup> marker
+        // survived in the body text. Numbering + linking it would ship a
+        // dangling link to a non-existent #fn-uid in the exported PDF/HTML.
+        // Remove the stray marker so refs ↔ notes stay 1:1 (symmetric with the
+        // orphan-NOTE prune below). Use a separate counter `n` so removing one
+        // doesn't leave a gap in the surviving numbers.
+        ref.remove();
+        return;
+      }
+      n++;
+      used[uid] = 1;
+      const a = ref.querySelector('a') || ref;
+      a.textContent = String(n);
+      a.setAttribute('href', '#fn-' + uid);
+      ref.setAttribute('id', 'fnref-' + uid);
+      li.setAttribute('id', 'fn-' + uid);
+      ol.appendChild(li);
+      const back = li.querySelector('a.allo-fn-back'); if (back) back.setAttribute('href', '#fnref-' + uid);
+    });
+    // Orphan NOTE (2026-06-15, ed-footnote-delete): the ref/marker was deleted (e.g.
+    // backspaced in the body) but the note survives. Do NOT silently drop the
+    // user-authored text — move it to a recovery appendix and announce, so it is never
+    // lost and we're honest about the change (symmetric with the block-remove announce
+    // and the Content Recovery appendix pattern).
+    let _recovered = 0;
+    Array.from(ol.children).forEach((li) => {
+      const u = li.getAttribute('data-fn-uid');
+      if (!u || used[u]) return;
+      const _txtEl = li.querySelector('.allo-fn-text');
+      const _txt = ((_txtEl ? _txtEl.textContent : li.textContent) || '').replace(/↩/g, '').trim();
+      if (_txt) {
+        let rec = doc.querySelector('section.allo-recovered-footnotes');
+        if (!rec) {
+          rec = doc.createElement('section');
+          rec.className = 'allo-recovered-footnotes';
+          rec.setAttribute('aria-label', 'Recovered footnote text');
+          const h = doc.createElement('p');
+          const b = doc.createElement('strong');
+          b.textContent = 'Recovered footnote text (its marker was deleted):';
+          h.appendChild(b);
+          rec.appendChild(h);
+          (doc.querySelector('main') || doc.body).appendChild(rec);
+        }
+        const p = doc.createElement('p');
+        p.className = 'allo-recovered-fn';
+        p.textContent = _txt;
+        rec.appendChild(p);
+        _recovered++;
+      }
+      li.remove();
+    });
+    if (!ol.children.length) sec.remove();
+    if (_recovered) {
+      try {
+        const _msg = _recovered + (_recovered === 1 ? ' footnote whose marker was deleted was moved to a Recovered footnote text section.' : ' footnotes whose markers were deleted were moved to a Recovered footnote text section.');
+        const _lr = doc.getElementById('allo-blocks-live');
+        if (_lr) { _lr.textContent = ''; setTimeout(() => { _lr.textContent = _msg; }, 30); }
+        const _w = doc.defaultView;
+        if (_w && _w.parent && typeof _w.parent.addToast === 'function') _w.parent.addToast(_msg, 'info');
+      } catch (_) {}
+    }
+  } catch (_) {}
 }
 
 function _srStyleTextFromHtml(html) {
@@ -597,29 +1946,32 @@ async function _concatAudioBlobs(blobs) {
     // Non-WAV (e.g. MP3 fallback): frame concatenation is valid; keep prior behavior.
     return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
   }
-  // WAV: strip each file to its PCM data chunk, then write a single canonical header.
-  const pcms = [];
-  const rates = [];
-  for (let i = 0; i < blobs.length; i++) {
-    const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
-    if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) continue; // skip non-RIFF
-    let dataStart = 44; // canonical header; scan for the 'data' chunk to be safe
-    let segRate = 0;
+  // WAV: two-pass single-allocation stitch (perf-audio-concat) — parse each segment's PCM
+  // extent WITHOUT retaining whole buffers (pass 1 sizes + collects rates; pass 2 re-reads
+  // and copies, releasing each buffer as it goes), collapsing the old ~3x peak (pcms[] +
+  // joined pcm + outBuf) to ~1x outBuf + one transient segment. Byte-identical output.
+  const _parsePcm = function (buf) {
+    if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return null; // non-RIFF
+    let dataStart = 44, rate = 0; // canonical header; scan for the 'fmt '/'data' chunks to be safe
     for (let j = 12; j < Math.min(buf.length - 8, 256); j++) {
-      // 'fmt ' chunk — sampleRate is the little-endian uint32 12 bytes into it
-      if (segRate === 0 && buf[j] === 0x66 && buf[j + 1] === 0x6d && buf[j + 2] === 0x74 && buf[j + 3] === 0x20) {
-        const o = j + 12; segRate = buf[o] | (buf[o + 1] << 8) | (buf[o + 2] << 16) | (buf[o + 3] << 24);
+      if (rate === 0 && buf[j] === 0x66 && buf[j + 1] === 0x6d && buf[j + 2] === 0x74 && buf[j + 3] === 0x20) { // 'fmt '
+        const o = j + 12; rate = buf[o] | (buf[o + 1] << 8) | (buf[o + 2] << 16) | (buf[o + 3] << 24);
       }
       if (buf[j] === 0x64 && buf[j + 1] === 0x61 && buf[j + 2] === 0x74 && buf[j + 3] === 0x61) { dataStart = j + 8; break; } // 'data'
     }
-    if (segRate > 0) rates.push(segRate);
-    pcms.push(buf.subarray(dataStart));
+    return { dataStart: dataStart, len: buf.length - dataStart, rate: rate };
+  };
+  // Pass 1 — size + collect rates; each buf falls out of scope per iteration (no retention).
+  const rates = [];
+  let total = 0, used = 0;
+  for (let i = 0; i < blobs.length; i++) {
+    const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
+    const m = _parsePcm(buf);
+    if (!m) continue;
+    if (m.rate > 0) rates.push(m.rate);
+    total += m.len; used++;
   }
-  if (pcms.length === 0) return null;
-  const total = pcms.reduce(function (n, p) { return n + p.length; }, 0);
-  const pcm = new Uint8Array(total);
-  let off = 0;
-  for (let i = 0; i < pcms.length; i++) { pcm.set(pcms[i], off); off += pcms[i].length; }
+  if (used === 0) return null;
   // Use the segments' ACTUAL sample rate (was hardcoded 24000 — wrong for the 22.05 kHz Piper
   // fallback, which then played the whole file ~8.8% fast/pitched-up). Mixed rates across
   // segments can't share one header correctly, so use the first and warn (rare: one TTS
@@ -629,15 +1981,23 @@ async function _concatAudioBlobs(blobs) {
     try { (typeof warnLog === 'function' ? warnLog : console.warn)('[Audio] mixed WAV sample rates ' + JSON.stringify(rates) + ' — using ' + sampleRate + 'Hz; off-rate segments may play at the wrong speed.'); } catch (_) {}
   }
   const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
-  const outBuf = new ArrayBuffer(44 + pcm.length);
+  const outBuf = new ArrayBuffer(44 + total);
   const dv = new DataView(outBuf);
   const ws = function (o, s) { for (let k = 0; k < s.length; k++) dv.setUint8(o + k, s.charCodeAt(k)); };
-  ws(0, 'RIFF'); dv.setUint32(4, 36 + pcm.length, true); ws(8, 'WAVE');
+  ws(0, 'RIFF'); dv.setUint32(4, 36 + total, true); ws(8, 'WAVE');
   ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, numCh, true);
   dv.setUint32(24, sampleRate, true); dv.setUint32(28, byteRate, true);
   dv.setUint16(32, blockAlign, true); dv.setUint16(34, bps, true);
-  ws(36, 'data'); dv.setUint32(40, pcm.length, true);
-  new Uint8Array(outBuf, 44).set(pcm);
+  ws(36, 'data'); dv.setUint32(40, total, true);
+  // Pass 2 — re-read each blob (immutable in-memory), copy its PCM into outBuf, release it.
+  const outPcm = new Uint8Array(outBuf, 44);
+  let poff = 0;
+  for (let i = 0; i < blobs.length; i++) {
+    const buf = new Uint8Array(await blobs[i].arrayBuffer());
+    const m = _parsePcm(buf);
+    if (!m) continue;
+    outPcm.set(buf.subarray(m.dataStart), poff); poff += m.len;
+  }
   return new Blob([outBuf], { type: 'audio/wav' });
 }
 
@@ -747,14 +2107,111 @@ function _listReconstructedTables(html) {
   return out;
 }
 
+// ── In-app pipeline diagnostics panel (2026-06-18) ──────────────────────────
+// Mirrors window.__alloDiagLog (the warnLog/debugLog ring buffer wired in
+// AlloFlowANTI.txt ~L494) into a floating, copyable panel. Inside Gemini Canvas
+// the app runs in a sandboxed iframe whose browser console the teacher can't
+// open, so this panel is the only way to SEE + COPY the pipeline's diagnostics
+// from a remediation run without switching to the billed Firebase deploy.
+// Self-contained (its own React hooks via window.React, its own t/addToast
+// props) so it adds nothing to PdfAuditView's host-supplied prop contract.
+function PdfDiagnosticsLog(props) {
+  const R = (typeof window !== 'undefined' && window.React) ? window.React : null;
+  if (!R) return null; // invariant across renders (window.React never toggles) → hook order stays stable
+  const t = (props && props.t) || ((k) => k);
+  const addToast = (props && props.addToast) || function () {};
+  const [open, setOpen] = R.useState(false);
+  const [warnOnly, setWarnOnly] = R.useState(true);
+  const [, setTick] = R.useState(0);
+  const scrollRef = R.useRef(null);
+  const stickRef = R.useRef(true); // true = follow the live tail; flips false when the user scrolls up so new lines don't yank them back to the end
+  // While open, repaint ~1/s so new log lines from an in-flight run appear live.
+  R.useEffect(() => {
+    if (!open) return undefined;
+    const id = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [open]);
+  const all = (typeof window !== 'undefined' && Array.isArray(window.__alloDiagLog)) ? window.__alloDiagLog : [];
+  const rows = warnOnly ? all.filter((e) => e && e.level === 'warn') : all;
+  // Auto-scroll to the newest line ONLY when the user is already at the bottom (following the live
+  // tail). If they've scrolled up to read earlier entries, leave their position alone — otherwise
+  // the ~1/s repaint above yanks them back to the end every second (the reported "can't scroll
+  // back" bug). Gated on rows.length/open (new content or open) so a tick-only repaint never re-pins.
+  R.useEffect(() => {
+    if (open && stickRef.current && scrollRef.current) { try { scrollRef.current.scrollTop = scrollRef.current.scrollHeight; } catch (_) {} }
+  }, [rows.length, open]);
+  const _time = (e) => { try { return new Date(e.t).toLocaleTimeString(); } catch (_) { return ''; } };
+  const _copy = async () => {
+    const text = rows.map((e) => '[' + _time(e) + '] ' + (e.level === 'warn' ? 'WARN ' : 'debug ') + e.msg).join('\n');
+    // Try the async Clipboard API, but FALL BACK to textarea+execCommand on REJECTION too — not
+    // only when the API is absent. In Gemini's sandboxed Canvas iframe clipboard.writeText can
+    // reject (NotAllowedError); the old `else`-gated fallback never ran in that case, so copy
+    // "failed" with no fallback. Now ANY clipboard failure drops to the execCommand path.
+    let ok = false;
+    try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); ok = true; } } catch (_) { ok = false; }
+    if (!ok) {
+      try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.focus(); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (_) { ok = false; }
+    }
+    addToast(ok ? ((t('pdf_audit.diag.copied') || 'Diagnostics log copied') + ' (' + rows.length + ')') : (t('pdf_audit.diag.copy_failed') || 'Could not copy — select the text manually.'), ok ? 'success' : 'error');
+  };
+  const _clear = () => { try { if (Array.isArray(window.__alloDiagLog)) window.__alloDiagLog.length = 0; } catch (_) {} setTick((n) => n + 1); };
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        /* Bottom-LEFT (2026-06-19): reading-tools FAB stack owns bottom-right; this log + the error
+           badge form a bottom-left diagnostics cluster. bottom-20 keeps it clear of the badge (bottom-4). */
+        className="fixed bottom-20 left-4 z-[210] px-3 py-2 rounded-full shadow-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 flex items-center gap-1.5"
+        aria-label={t('pdf_audit.diag.open_aria') || 'Open pipeline diagnostics log'}
+        title={t('pdf_audit.diag.open_title') || 'Pipeline diagnostics log — view + copy the remediation log (works inside Canvas, no browser console needed)'}
+      >
+        <span aria-hidden="true">🔧</span>
+        <span>{t('pdf_audit.diag.label') || 'Log'}</span>
+        {all.length > 0 ? <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-slate-600 text-[10px]">{all.length}</span> : null}
+      </button>
+    );
+  }
+  return (
+    <div
+      className="fixed bottom-20 left-4 z-[210] w-[min(92vw,520px)] max-h-[60vh] flex flex-col rounded-xl shadow-2xl border border-slate-700 bg-slate-900 text-slate-100"
+      role="region"
+      aria-label={t('pdf_audit.diag.region_aria') || 'Pipeline diagnostics log'}
+    >
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700">
+        <span className="text-sm font-semibold flex items-center gap-1.5"><span aria-hidden="true">🔧</span>{t('pdf_audit.diag.title') || 'Pipeline diagnostics'}</span>
+        <span className="text-[11px] text-slate-400">{rows.length}{warnOnly ? '' : '/' + all.length} {t('pdf_audit.diag.lines') || 'lines'}</span>
+        <label className="ml-auto flex items-center gap-1 text-[11px] text-slate-300 cursor-pointer select-none">
+          <input type="checkbox" checked={warnOnly} onChange={(e) => setWarnOnly(e.target.checked)} className="accent-amber-500" />
+          {t('pdf_audit.diag.warn_only') || 'Warnings only'}
+        </label>
+      </div>
+      <div ref={scrollRef} onScroll={(e) => { const el = e.currentTarget; try { stickRef.current = (el.scrollHeight - el.scrollTop - el.clientHeight) < 48; } catch (_) {} }} className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words">
+        {rows.length === 0
+          ? <div className="text-slate-500 italic">{t('pdf_audit.diag.empty') || 'No log entries yet — run a remediation and they will appear here live.'}</div>
+          : rows.map((e, i) => (
+              <div key={i} className={e.level === 'warn' ? 'text-amber-300' : 'text-slate-400'}>
+                <span className="text-slate-600">{_time(e)}</span>{' '}{e.msg}
+              </div>
+            ))}
+      </div>
+      <div className="flex items-center gap-2 px-3 py-2 border-t border-slate-700">
+        <button type="button" onClick={_copy} className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-medium">{t('pdf_audit.diag.copy') || 'Copy'}</button>
+        <button type="button" onClick={_clear} className="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs">{t('pdf_audit.diag.clear') || 'Clear'}</button>
+        <button type="button" onClick={() => setOpen(false)} className="ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" aria-label={t('pdf_audit.diag.close_aria') || 'Close diagnostics log'}>{t('pdf_audit.diag.close') || 'Close'}</button>
+      </div>
+    </div>
+  );
+}
+
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit,
     _docPipeline, _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit,
     addToast, agentActivityLog, agentLogFullView, applyWordRestorationInPlace,
-    auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
+    auditOutputAccessibility, recomputeIssueResolution, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
     callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-    applyFormBlanks, callTTS, detectPdfBlankFields, overlayPdfFormFields, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, detectFormBlanks, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
+    applyFormBlanks, callTTS, detectPdfBlankFields, overlayPdfFormFields, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, detectFormBlanks, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, theme, updatePdfPreview,
     createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
     ensurePdfBase64, expertCommandInput, exportPreviewRef, extractedImagesList,
     extractionData, fidelityResult, fixAndVerifyPdf, fixContrastViolations,
@@ -784,7 +2241,7 @@ function PdfAuditView(props) {
     setPdfBatchQueue, setPdfBatchSummary, setPdfFixLoading, setPdfFixMode,
     setPdfFixResult, setPdfFixStep, setPdfMultiSession, setPdfPageRange,
     setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
-    setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, setPendingPdfBase64,
+    setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64,
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
     pdfRunHistory, setPdfRunHistory
   } = props;
@@ -802,10 +2259,415 @@ function PdfAuditView(props) {
   // is found in IndexedDB. Hooks must run unconditionally before any early
   // return — keep this above the !pdfAuditResult guard.
   const [resumableBatch, setResumableBatch] = useState(null);
+  // A SHA-256 rehydration can finish out of order when two project files are selected quickly.
+  // Both project pickers share this token: only the most recently selected file may commit.
+  const _projectLoadSelectionRef = useRef(0);
   // Tier A #1: most-recent tagged-PDF validation result, populated by the
   // Tagged PDF download flow. Used by the Download Accessibility Report
   // button to assemble an Adobe-style compliance report.
-  const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
+  const [lastTaggedValidation, _setLastTaggedValidationRaw] = useState(null);
+  const _lastTaggedValidationRef = useRef(null);
+  const _taggedValidationGenerationRef = useRef(0);
+  const setLastTaggedValidation = React.useCallback((nextOrUpdater) => {
+    const next = typeof nextOrUpdater === 'function' ? nextOrUpdater(_lastTaggedValidationRef.current) : nextOrUpdater;
+    _lastTaggedValidationRef.current = next;
+    _taggedValidationGenerationRef.current += 1;
+    _setLastTaggedValidationRaw(next);
+    return next;
+  }, []);
+  // ── Independent veraPDF (ISO 14289-1) validation, in-browser via CheerpJ ──
+  // On-demand + explicit (the results-panel button below IS the opt-in): default-off,
+  // nothing downloads or runs until the user clicks. Runs in a CDN-hosted companion
+  // window (same pattern as PDF Compare) so it works from Canvas's sandboxed iframe;
+  // the user's PDF bytes never leave the browser. Warm-up-during-remediation (to hide
+  // the ~15s first-run boot) is a later optimization. See dev-tools/demo/verapdf_*.
+  const VERAPDF_VALIDATOR_URL = 'https://alloflow-cdn.pages.dev/verapdf/verapdf_validator.html';
+  // M13 (deep dive 2026-07-09): the popup transports used to accept 'verapdf-result' from ANY window
+  // (verdict forgery into the badge + signed trail) and posted the student document bytes with
+  // targetOrigin '*' (delivered to whatever origin owned the window if it navigated — FERPA-adjacent).
+  // Every popup listener now requires ev.source === its own window (the iframe path already did), and
+  // byte-bearing postMessages pin the validator origin.
+  const VERAPDF_ORIGIN = (() => { try { return new URL(VERAPDF_VALIDATOR_URL).origin; } catch (_) { return '*'; } })();
+  const [veraPdfResult, setVeraPdfResult] = useState(null);   // runtime-only current-artifact verdict/error; persisted verdict lives on lastTaggedValidation
+  // M25 (deep dive 2026-07-09): auto-veraPDF is default-ON, so when it silently can't run (popup
+  // blocked + iframe not ready, or the tagged export/validation failed) the teacher reasonably
+  // believes the run INCLUDED the ISO check — an absent badge is indistinguishable from "validation
+  // isn't a thing". Records WHY it was skipped so one amber line can render where the badge would be.
+  const [veraPdfAutoSkipped, setVeraPdfAutoSkipped] = useState(null);
+  const [veraPdfBusy, setVeraPdfBusy] = useState(false);
+  const [veraPdfFixing, setVeraPdfFixing] = useState(false);  // closed-loop remediation in progress
+  // Architecture telemetry (2026-06-21): record which ISO 14289-1 rules an AlloFlow-tagged export actually
+  // FAILS, and which the closed-loop is asked to repair — to settle empirically whether the pdf-lib/PDFBox
+  // repair loop is redundant with createTaggedPdf's native tagging (the consolidation question). Rule IDs
+  // only — no document content, no PII. Read it any time from the console with: __alloVeraPdfRuleStats
+  // Persisted to localStorage (2026-06-30) so the failing-rule histogram ACCUMULATES across sessions,
+  // turning "which veraPDF rules do real docs actually fail?" into a durable, exportable repair-branch
+  // backlog (the data that drives the next batch of repair branches). Still rule IDs only (clause+test)
+  // — no document content, no PII — so persisting it carries nothing sensitive.
+  const _VERA_STATS_KEY = 'alloflow_verapdf_rule_stats';
+  const _emptyVeraStats = () => ({ taggedExports: 0, cleanExports: 0, failures: {}, repairRequests: {} });
+  const _loadVeraStats = () => { try { const s = localStorage.getItem(_VERA_STATS_KEY); if (s) { const p = JSON.parse(s); if (p && typeof p === 'object') return Object.assign(_emptyVeraStats(), p); } } catch (_) {} return _emptyVeraStats(); };
+  const _recordVeraPdfRules = (verdict, source) => {
+    try {
+      if (!verdict || verdict.error) return;
+      const g = (window.__alloVeraPdfRuleStats = window.__alloVeraPdfRuleStats || _loadVeraStats());
+      const rules = Array.isArray(verdict.failedRules) ? verdict.failedRules : [];
+      if (source === 'export' || source === 'validate') { g.taggedExports++; if (verdict.compliant && rules.length === 0) g.cleanExports++; }
+      const bucket = source === 'repair' ? g.repairRequests : g.failures;
+      for (const r of rules) { const k = '§' + (r.clause || '?') + ' t' + (r.testNumber != null ? r.testNumber : '?'); bucket[k] = (bucket[k] || 0) + (r.count || 1); }
+      try { localStorage.setItem(_VERA_STATS_KEY, JSON.stringify(g)); } catch (_) {}
+      warnLog && warnLog('[veraPDF-telemetry] ' + source + ': ' + (rules.length ? rules.map(r => '§' + r.clause + 't' + r.testNumber).join(', ') : 'none') + ' | cumulative ' + (source === 'repair' ? 'repairRequests' : 'failures') + '=' + JSON.stringify(bucket) + (source !== 'repair' ? (' | clean ' + g.cleanExports + '/' + g.taggedExports + ' exports') : ''));
+    } catch (_) {}
+  };
+  // Headline score: route every view-layer min() through the engine's single source of truth (2026-06-21).
+  // Reaches the shared computeHeadline via the global static (set when doc_pipeline_module loads); falls back
+  // to an identical inline null-safe min if the engine module hasn't loaded yet. This is why the four refix/
+  // web-audit/Workbench handlers below can't re-drift to a mean independently of the engine.
+  const _computeHeadline = (content, automated) => {
+    const _f = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.computeHeadline;
+    if (typeof _f === 'function') return _f(content, automated);
+    if (content == null || typeof content !== 'number') return (typeof automated === 'number') ? automated : null;
+    if (typeof automated !== 'number') return content;
+    return Math.min(content, automated);
+  };
+  const _deriveVerificationState = (input) => _viewDeriveVerificationState(input, _docPipeline);
+  const _verificationForExport = (result) => _viewVerificationForExport(result, _docPipeline);
+  const _STATIC_WEB_REVIEW_REASON = 'Static HTML/source audit excludes live scripts, external CSS, responsive states, and interaction behavior.';
+  // #1 Trend (2026-06-21): the headline floors at 0, so re-auditing a doc after real remediation can read
+  // "0 → 0" and hide the progress. Persist each audit's deduction + issue-count per file (keyed like the
+  // chunk session: name|size|pageCount) and surface the delta vs the PRIOR audit so improvement is visible
+  // even at a floored 0. The effect reads the previous snapshot, stashes it, THEN writes the current — so a
+  // re-audit of the same file always compares against the run before it. Display-only; no scoring change.
+  const [_scoreTrend, _setScoreTrend] = useState(null);
+  React.useEffect(() => {
+    try {
+      if (!pdfAuditResult || !pendingPdfFile || typeof pdfAuditResult._consolidatedDeductions !== 'number') { _setScoreTrend(null); return; }
+      const _key = 'alloflow_score_trend_' + (pendingPdfFile.name || 'doc') + '|' + (pendingPdfFile.size || 0) + '|' + (pdfAuditResult.pageCount || 0);
+      const _total = (pdfAuditResult.critical || []).length + (pdfAuditResult.serious || []).length + (pdfAuditResult.moderate || []).length + (pdfAuditResult.minor || []).length;
+      const _cur = { ded: pdfAuditResult._consolidatedDeductions, count: _total, date: pdfAuditResult.timestamp || null };
+      let _prior = null;
+      try { const _raw = localStorage.getItem(_key); if (_raw) _prior = JSON.parse(_raw); } catch (_) {}
+      // Only a DIFFERENT prior snapshot is a trend (an identical re-render of the same audit isn't).
+      _setScoreTrend((_prior && (_prior.ded !== _cur.ded || _prior.count !== _cur.count)) ? { prior: _prior, cur: _cur } : null);
+      try { localStorage.setItem(_key, JSON.stringify(_cur)); } catch (_) {}
+    } catch (_) { _setScoreTrend(null); }
+  }, [pdfAuditResult, pendingPdfFile]);
+  // #3 Structural foundations (2026-06-21): the length-INDEPENDENT, deterministic checks (lang/title/
+  // landmarks/headings/list-semantics/table-headers/labels/ARIA) — document-level wins that a long doc
+  // shouldn't have buried under per-instance content issues. Computed from the engine's single-source fn
+  // (so it can never disagree with the audit's own pass list); memoized on the remediated HTML. The view
+  // renders a "foundations present" scorecard (presence only — not a conformance score).
+  const _structuralFoundations = React.useMemo(() => {
+    const _html = pdfFixResult && pdfFixResult.accessibleHtml;
+    const _fn = _docPipeline && _docPipeline.structuralFoundations;
+    if (!_html || typeof _fn !== 'function') return null;
+    try { return _fn(_html); } catch (_) { return null; }
+  }, [pdfFixResult && pdfFixResult.accessibleHtml]);
+  // (2026-06-20) Auto-validate the remediated output with veraPDF after Make Accessible — default ON.
+  // Warmed inside the click gesture (so the popup is allowed) + validated at the end; opt-out persisted.
+  const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => { try { return localStorage.getItem('alloflow_pdf_auto_verapdf') !== 'false'; } catch (_) { return true; } });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_verapdf', String(pdfAutoVeraPdf)); } catch (_) {} }, [pdfAutoVeraPdf]);
+  const _lastTaggedBytesRef = useRef(null);                   // shipped tagged-PDF bytes, for on-demand veraPDF validation
+  const _taggedArtifactGenerationRef = useRef(0);
+  const _veraPdfValidationGenerationRef = useRef(0);
+  const _selectTaggedArtifact = (bytes) => {
+    const ticket = { bytes: bytes || null, generation: _taggedArtifactGenerationRef.current + 1 };
+    _taggedArtifactGenerationRef.current = ticket.generation;
+    _lastTaggedBytesRef.current = ticket.bytes;
+    // Selecting or clearing bytes invalidates every in-flight validator promise immediately.
+    _veraPdfValidationGenerationRef.current += 1;
+    setVeraPdfBusy(false);
+    return ticket;
+  };
+  const _currentTaggedArtifactTicket = () => ({
+    bytes: _lastTaggedBytesRef.current,
+    generation: _taggedArtifactGenerationRef.current,
+  });
+  const _taggedArtifactTicketIsCurrent = (ticket) => !!(ticket && ticket.bytes
+    && ticket.bytes === _lastTaggedBytesRef.current
+    && ticket.generation === _taggedArtifactGenerationRef.current);
+  const _beginVeraPdfValidation = (ticket, sourceHtml) => ({
+    bytes: ticket && ticket.bytes,
+    generation: ticket && ticket.generation,
+    sourceHtml: String(sourceHtml == null ? '' : sourceHtml),
+    validationGeneration: _taggedValidationGenerationRef.current,
+    operation: ++_veraPdfValidationGenerationRef.current,
+  });
+  const _veraPdfValidationIsCurrent = (run) => !!(run
+    && run.operation === _veraPdfValidationGenerationRef.current
+    && run.validationGeneration === _taggedValidationGenerationRef.current
+    && _taggedArtifactTicketIsCurrent(run)
+    && String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') === run.sourceHtml);
+  // M14 (deep dive 2026-07-09): whether the bytes in _lastTaggedBytesRef were actually HANDED OVER.
+  // A download gate (fidelity / post-save structure / typeset round-trip) can withhold the file after
+  // the ref is set — the signed audit trail then fingerprinted bytes labeled "the artifact actually
+  // shipped to readers" that no reader ever received. { withheld: true, reason } until a real
+  // download delivers them (including the gate panels' explicit "download anyway").
+  const _lastTaggedDeliveryRef = useRef(null);
+  // PDF/UA and veraPDF evidence belongs to the exact HTML used to generate the tagged bytes.
+  // Gate reads synchronously and clear stale bytes/state after any content change, including
+  // same-length and Unicode-only edits that character-count checks cannot detect.
+  const _renderTaggedArtifactTicket = _currentTaggedArtifactTicket();
+  const _currentTaggedValidation = (_viewValidationMatchesHtml(lastTaggedValidation, pdfFixResult && pdfFixResult.accessibleHtml)
+    && _viewTaggedArtifactProofMatches(lastTaggedValidation, _renderTaggedArtifactTicket)) ? lastTaggedValidation : null;
+  const _currentVeraPdfResult = _currentTaggedValidation
+    ? (_viewTaggedArtifactProofMatches(veraPdfResult, _renderTaggedArtifactTicket) ? veraPdfResult : (_currentTaggedValidation.veraPdf || null))
+    : null;
+  React.useEffect(() => {
+    const ticket = _currentTaggedArtifactTicket();
+    if (!lastTaggedValidation || (_viewValidationMatchesHtml(lastTaggedValidation, pdfFixResult && pdfFixResult.accessibleHtml)
+      && _viewTaggedArtifactProofMatches(lastTaggedValidation, ticket))) return;
+    setLastTaggedValidation(null);
+    setVeraPdfResult(null);
+    setVeraPdfAutoSkipped(null);
+    _selectTaggedArtifact(null);
+    _lastTaggedDeliveryRef.current = null;
+  }, [lastTaggedValidation, pdfFixResult && pdfFixResult.accessibleHtml]);
+  // Stable per-result modification timestamp (validate-what-you-ship, 2026-06-21): the auto-validate tags
+  // one PDF and the download tags another; with a per-call new Date() they differ by timestamp so the
+  // veraPDF verdict never attests to the downloaded file. Threading the SAME modDate (keyed on result
+  // IDENTITY — a fresh remediation/edit gets a new stamp) makes createTaggedPdf emit byte-identical
+  // timestamps, so for content-equal docs the validated bytes == the downloaded bytes.
+  const _taggedModDateRef = useRef({ result: null, date: null });
+  const _stableModDate = (result) => {
+    if (!result) return undefined;
+    if (_taggedModDateRef.current.result !== result) _taggedModDateRef.current = { result, date: new Date().toISOString() };
+    return _taggedModDateRef.current.date;
+  };
+  // Typeset (regenerated-layout) tagged-PDF export. Shared by the non-PDF-input button
+  // (Word/PowerPoint have no PDF bytes to tag) AND the PDF-input "sanitized rebuild"
+  // affordance (deep-dive 2026-07-02): because it rebuilds the PDF from the remediated
+  // HTML rather than patching the original bytes, it inherently drops ALL original
+  // active content (/OpenAction, /JavaScript, /Launch, embedded files) and original
+  // metadata — so for a PDF input it doubles as the "clean, safe rebuild" option next
+  // to the fidelity-preserving Tagged PDF. `opts.sanitized` only adjusts the messaging.
+  const _runTypesetExport = async (opts) => {
+    const _sanitized = !!(opts && opts.sanitized);
+    try {
+      const ok = await _ensurePdfLib();
+      if (!ok) { addToast(t('toasts.couldn_load_pdf_tagging_library'), 'error'); return; }
+      addToast(_sanitized
+        ? ('🧼 ' + (t('toasts.typeset_sanitized') || 'Rebuilding a clean, tagged PDF from the remediated content — drops any embedded scripts, actions, or attachments from the original…'))
+        : (t('toasts.typeset_tagging') || '📄 Generating a typeset tagged PDF from the accessible content… (clean layout, not the original design)'), 'info');
+      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: 'en', subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
+      const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
+      if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+      const _typesetSourceHtml = String((pdfFixResult && pdfFixResult.accessibleHtml) || '');
+      const _typesetArtifact = _selectTaggedArtifact(taggedBytes); // selects a new generation and invalidates in-flight verdicts
+      _lastTaggedDeliveryRef.current = null; // M14: delivery state unknown until a download actually fires
+      setLastTaggedValidation(null);
+      setVeraPdfResult(null);
+      // These typeset bytes were NOT validated by veraPDF — bind their self-checks to both
+      // the exact source HTML and this exact runtime byte generation.
+      const _typesetValidation = await _viewBindValidationToHtml({
+        fileName: pendingPdfFile?.name || 'document.pdf',
+        pdfUa1Checks: (_result && _result.pdfUa1Checks) || null,
+        roundTrip: (_result && _result.roundTrip) || null,
+        postExportValidator: (_result && _result.postExportValidator) || null,
+        generatedAt: new Date().toISOString(),
+        veraPdf: null,
+        veraPdfAt: null,
+        veraPdfBytesHash: null,
+      }, _typesetSourceHtml, _docPipeline);
+      if (!_taggedArtifactTicketIsCurrent(_typesetArtifact)
+          || String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== _typesetSourceHtml) return;
+      setLastTaggedValidation(_viewAttachTaggedArtifactProof(_typesetValidation, _typesetArtifact));
+      const _rt = (_result && _result.roundTrip) || null;
+      if (_rt && _rt.ok === false) {
+        _lastTaggedDeliveryRef.current = { withheld: true, reason: 'typeset post-save structure check failed' }; // M14
+        addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check — use the Word or HTML download instead.'), 'error');
+        return;
+      }
+      safeDownloadBlob(new Blob([taggedBytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + (_sanitized ? '-tagged-clean.pdf' : '-tagged-typeset.pdf'));
+      _lastTaggedDeliveryRef.current = { withheld: false }; // M14: actually handed over
+      const _s = (_result && _result.summary) || {};
+      if (_s.typesetFont) {
+        addToast('🈳 ' + (t('toasts.typeset_unicode_font') || 'Non-Latin text detected — embedded ') + _s.typesetFont.family + (t('toasts.typeset_unicode_font2') || ' so the PDF keeps the real characters (script: ') + _s.typesetFont.script + ').', 'info');
+      }
+      if (_s.fieldsCreated > 0) {
+        addToast('📝 ' + _s.fieldsCreated + ' ' + (t('toasts.typeset_fields') || 'fillable form fields embedded and tagged — students can type into the PDF.'), 'success');
+      }
+      if (_s.unicodeTypesetWarning) {
+        // Aaron 2026-07-01: don't just warn — point at the tools that IDENTIFY the
+        // affected text (word-level Diff / Verification panel), since that's how a
+        // teacher decides whether the drop matters before distributing.
+        addToast('⚠ ' + (t('toasts.typeset_unicode_warning') || 'Some text could not be typeset honestly: ') + _s.unicodeTypesetWarning.advice + ' ' + (t('toasts.typeset_unicode_verify') || 'To see exactly which passages are affected, open the word-level Diff in the Verification panel before distributing.'), 'warning');
+      }
+      addToast((_s.uaDeclared ? '✅ ' : '📄 ') + (_sanitized
+        ? (t('toasts.typeset_sanitized_done') || 'Clean tagged PDF ready — regenerated layout (not the original design), original active content removed, full structure tags.')
+        : (t('toasts.typeset_tagged_done') || 'Typeset tagged PDF ready — clean regenerated layout (not the original design), full structure tags.')) + (_s.uaDeclared ? ' PDF/UA declared.' : ''), 'success');
+    } catch (err) { addToast((t('toasts.typeset_failed') || 'Typeset tagging failed: ') + (err?.message || 'unknown'), 'error'); }
+  };
+  const [_issueSourceOpen, _setIssueSourceOpen] = useState({}); // per-issue "peek source" inline expand (keyed 'ai'+i / 'axe'+i)
+  // Direct expert-edit drafts (2026-06-22): an expert who knows the fix can edit a located block's HTML
+  // and re-check it WITHOUT the AI (matters under Canvas throttle storms). Keyed like _issueSourceOpen →
+  // { original, draft, saving }. The mini-audit (auditOutputAccessibility + recomputeIssueResolution) is
+  // shared with the Expert Workbench via _reauditAndScore below.
+  const [_issueEdit, _setIssueEdit] = useState({});
+  // Palette (S2 slice-4, 2026-06-23): recolour the document with a vetted, contrast-GUARANTEED palette.
+  // Fully deterministic (the clamp engine guarantees WCAG) → AI-free + throttle-immune. Snapshot the
+  // pre-palette html for one-click revert; re-audit after each apply via _reauditAndScore.
+  const _paletteSnapshotRef = useRef(null);                     // pre-palette accessibleHtml, for revert
+  const [_appliedPalette, setAppliedPalette] = useState(null);  // { id, name, worst, allPass }
+  const [_paletteBusy, setPaletteBusy] = useState(false);
+  const [_paletteIntent, setPaletteIntent] = useState('');      // slice-3: AI palette intent (mood/brand text)
+  // Freehand region-select (S1, 2026-06-23): arm a drag-to-select-a-region mode over the preview, then scope
+  // an AI edit to just that block. The marquee lives INSIDE the iframe (all geometry in iframe space); the
+  // box is handed to _regionHandlerRef.current so the iframe's once-bound listener always calls the latest
+  // handler (never a stale closure). The selected region opens in the editor keyed off '__region__'.
+  const [_regionArmed, setRegionArmed] = useState(false);
+  const _regionHandlerRef = useRef(null);
+  // S3 block-restyle slice 2 (2026-06-23): AI suggests WHERE a callout/list helps; each suggestion is
+  // already gated by restyleBlock (proposeRestyles drops unsafe picks), so this is an accept/revert plan.
+  const [_restyleProposals, setRestyleProposals] = useState(null);   // null = not run; [] = ran, none
+  const [_restyleProposalsBusy, setRestyleProposalsBusy] = useState(false);
+  const [_restyleDropped, setRestyleDropped] = useState(0);          // model picks filtered out (gate / not safely locatable)
+  // Mirror the armed flag into the live preview window (the in-iframe marquee listener reads it) and show a
+  // crosshair so it's obvious the next drag selects a region. Disarming clears both.
+  useEffect(() => {
+    try {
+      const cw = pdfPreviewRef.current && pdfPreviewRef.current.contentWindow;
+      const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+      if (cw) cw.__alloflowRegionArmed = !!_regionArmed;
+      if (doc && doc.body) doc.body.style.cursor = _regionArmed ? 'crosshair' : '';
+    } catch (_) {}
+  }, [_regionArmed]);
+  const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
+    let win = null;
+    try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
+    if (!win) { reject(new Error('Popup blocked — allow pop-ups so AlloFlow can run veraPDF validation.')); return; }
+    let done = false, gotReady = false;
+    const timer = setTimeout(() => { if (!done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF timed out (the document may be too large for in-browser validation)')); } }, 600000);
+    // Fail fast if the validator never signals ready (boot/CDN failure) — otherwise a dead popup hangs the full 10 min.
+    const readyTimer = setTimeout(() => { if (!gotReady && !done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF validator did not start (check your connection / allow pop-ups).')); } }, 90000);
+    // Fail fast if the user closes the validation window mid-run.
+    const closePoll = setInterval(() => { if (!done && win.closed) { cleanup(); reject(new Error('veraPDF validation window was closed before it finished.')); } }, 1000);
+    function cleanup() { clearTimeout(timer); clearTimeout(readyTimer); clearInterval(closePoll); window.removeEventListener('message', onMsg); }
+    function onMsg(ev) {
+      if (!ev || ev.source !== win) return; // M13: only OUR validator window may answer
+      const d = ev.data || {};
+      if (d.type === 'verapdf-ready') { gotReady = true; clearTimeout(readyTimer); try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, VERAPDF_ORIGIN); } catch (e) {} }
+      else if (d.type === 'verapdf-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); }
+    }
+    window.addEventListener('message', onMsg);
+  });
+  // Closed-loop remediation: the companion window validates → repairs → re-validates → loops until
+  // green (or best-effort), returning the repaired bytes (repairedB64) + the per-iteration log.
+  const runVeraPdfRemediate = (bytes) => new Promise((resolve, reject) => {
+    let win = null;
+    try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
+    if (!win) { reject(new Error('Popup blocked — allow pop-ups so AlloFlow can run veraPDF remediation.')); return; }
+    let done = false, gotReady = false;
+    const timer = setTimeout(() => { if (!done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF remediation timed out')); } }, 600000);
+    // Fail fast if the validator never signals ready (boot/CDN failure) — otherwise a dead popup hangs the full 10 min.
+    const readyTimer = setTimeout(() => { if (!gotReady && !done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF validator did not start (check your connection / allow pop-ups).')); } }, 90000);
+    // Fail fast if the user closes the window mid-run.
+    const closePoll = setInterval(() => { if (!done && win.closed) { cleanup(); reject(new Error('veraPDF remediation window was closed before it finished.')); } }, 1000);
+    function cleanup() { clearTimeout(timer); clearTimeout(readyTimer); clearInterval(closePoll); window.removeEventListener('message', onMsg); }
+    function onMsg(ev) {
+      if (!ev || ev.source !== win) return; // M13: only OUR validator window may answer
+      const d = ev.data || {};
+      if (d.type === 'verapdf-ready') { gotReady = true; clearTimeout(readyTimer); try { win.postMessage({ type: 'verapdf-remediate', bytes: bytes, maxIters: 5 }, VERAPDF_ORIGIN); } catch (e) {} }
+      else if (d.type === 'verapdf-remediate-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); }
+    }
+    window.addEventListener('message', onMsg);
+  });
+  // ── Auto veraPDF (2026-06-20) ── Open + WARM the validator window INSIDE a user gesture (the
+  // Make Accessible click), so the popup is allowed and the ~25MB CheerpJ JVM boots during the
+  // (minutes-long) remediation. The window stays OPEN; validateOnWarmWindow() reuses it at the end
+  // to validate the tagged OUTPUT with NO second popup (which would be blocked off-gesture). This is
+  // the "warm-up-during-remediation" optimization the comment above anticipated, and it's Aaron's
+  // "run veraPDF at the audit kickoff" idea — the kickoff IS the gesture.
+  const warmVeraPdfWindow = () => {
+    let win = null;
+    try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=420,height=320'); } catch (e) {}
+    if (!win) return null; // popup blocked even within the gesture → caller falls back to the manual button
+    const handle = { win, warmed: false };
+    handle.ready = new Promise((resolve) => {
+      const onReady = (ev) => { if (!ev || ev.source !== win) return; const d = ev.data || {}; if (d.type === 'verapdf-ready') { handle.warmed = true; window.removeEventListener('message', onReady); resolve(true); } };
+      window.addEventListener('message', onReady);
+      setTimeout(() => { window.removeEventListener('message', onReady); resolve(handle.warmed); }, 90000); // give up warming after 90s (boot/CDN fail)
+    });
+    return handle;
+  };
+  // Validate bytes on an ALREADY-OPEN warm window (no new popup). Closes the window on completion.
+  const validateOnWarmWindow = (handle, bytes) => new Promise((resolve, reject) => {
+    if (!handle || !handle.win || handle.win.closed) { reject(new Error('validator window unavailable')); return; }
+    const win = handle.win;
+    let done = false;
+    const timer = setTimeout(() => { if (!done) { cleanup(); reject(new Error('veraPDF timed out')); } }, 600000);
+    const closePoll = setInterval(() => { if (!done && win.closed) { cleanup(); reject(new Error('validator window closed')); } }, 1000);
+    function cleanup() { clearTimeout(timer); clearInterval(closePoll); window.removeEventListener('message', onMsg); }
+    function onMsg(ev) { if (!ev || ev.source !== win) return; const d = ev.data || {}; if (d.type === 'verapdf-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); } } // M13: source-filtered
+    window.addEventListener('message', onMsg);
+    // Fast-fail when warming failed (verapdf-closedloop-2): the warm popup resolves `ready` with
+    // warmed=false after a 90s boot timeout but stays OPEN, and a not-booted page silently drops the
+    // validate message — so without this check the only escape was the 600s timer = a ~10-min stuck
+    // "Validating…" spinner. Reject fast + close the dead popup so the manual button takes over.
+    handle.ready.then(() => {
+      if (!handle.warmed) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF validator did not start (boot/CDN failure)')); return; }
+      try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, VERAPDF_ORIGIN); } catch (e) { cleanup(); reject(e); }
+    });
+  });
+  // ── Embedded veraPDF, popup-free when possible (2026-06-21, Aaron's progressive-enhancement idea) ──
+  // PREFER a hidden INLINE iframe over the popup: it validates the tagged bytes in-app with no separate
+  // window (no "what is this?" popup, no alt-tab). The validator page already postMessages 'verapdf-ready'
+  // to window.parent and accepts 'verapdf-validate' from any source, so it runs headless as an iframe.
+  // If the embed is blocked (e.g. a Canvas CSP frame-src restriction) it simply never readies → we fall
+  // back to the popup (warmVeraPdfWindow), today's behavior. The verdict is cached in localStorage so we
+  // don't re-probe every run. A cross-origin iframe runs in its own process (site isolation), so CheerpJ
+  // boots there without blocking AlloFlow's main thread — same isolation the popup gave us, embedded.
+  const _veraIframeRef = useRef(null); // reused warm iframe handle: { frame, warmed, ready:Promise<bool>, isReady() }
+  const _veraEmbedPref = () => { try { return localStorage.getItem('alloflow_verapdf_embed'); } catch (_) { return null; } }; // 'ok' | 'blocked' | null
+  const _setVeraEmbedPref = (v) => { try { localStorage.setItem('alloflow_verapdf_embed', v); } catch (_) {} };
+  const warmVeraPdfIframe = () => {
+    if (_veraIframeRef.current) return _veraIframeRef.current; // reuse a warm iframe across validations
+    let frame = null;
+    try {
+      frame = document.createElement('iframe');
+      frame.src = VERAPDF_VALIDATOR_URL;
+      frame.title = 'AlloFlow PDF/UA validator (background)';
+      frame.setAttribute('aria-hidden', 'true');
+      frame.style.cssText = 'position:absolute;width:1px;height:1px;left:-9999px;top:-9999px;border:0;visibility:hidden;';
+      document.body.appendChild(frame);
+    } catch (_) { return null; }
+    const handle = { frame, warmed: false };
+    handle.ready = new Promise((resolve) => {
+      const onReady = (ev) => {
+        if (frame.contentWindow && ev.source === frame.contentWindow && ev.data && ev.data.type === 'verapdf-ready') {
+          handle.warmed = true; window.removeEventListener('message', onReady); _setVeraEmbedPref('ok'); resolve(true);
+        }
+      };
+      window.addEventListener('message', onReady);
+      // No 'verapdf-ready' within 35s → assume the embed is blocked (CSP) or boot failed; mark blocked so
+      // the gesture pre-opens the popup next time. (~14s normal boot, generous margin for a slow CDN.)
+      setTimeout(() => { window.removeEventListener('message', onReady); if (!handle.warmed && _veraEmbedPref() !== 'ok') _setVeraEmbedPref('blocked'); resolve(handle.warmed); }, 35000);
+    });
+    handle.isReady = () => handle.warmed;
+    _veraIframeRef.current = handle;
+    return handle;
+  };
+  // Validate bytes on the warm iframe (no popup, no teardown — the iframe stays warm for reuse).
+  const validateOnIframe = (handle, bytes) => new Promise((resolve, reject) => {
+    if (!handle || !handle.frame || !handle.frame.contentWindow) { reject(new Error('validator iframe unavailable')); return; }
+    const cw = handle.frame.contentWindow;
+    let done = false;
+    const timer = setTimeout(() => { if (!done) { cleanup(); reject(new Error('veraPDF timed out')); } }, 600000);
+    function cleanup() { clearTimeout(timer); window.removeEventListener('message', onMsg); }
+    function onMsg(ev) { if (ev.source !== cw) return; const d = (ev && ev.data) || {}; if (d.type === 'verapdf-result') { done = true; cleanup(); if (d.error) reject(new Error(d.error)); else resolve(d.result); } }
+    window.addEventListener('message', onMsg);
+    handle.ready.then((ok) => { if (!ok) { cleanup(); reject(new Error('validator iframe not ready')); return; } try { cw.postMessage({ type: 'verapdf-validate', bytes: bytes }, VERAPDF_ORIGIN); } catch (e) { cleanup(); reject(e); } });
+  });
+  // Pre-boot the embedded validator as soon as a PDF is loaded (not known-blocked) — so it's READY by
+  // Make-Accessible time and the gesture can choose iframe (popup-free) vs popup deterministically,
+  // instead of waiting for the ~14s boot mid-gesture. Skipped when the embed proved blocked before.
+  React.useEffect(() => {
+    try {
+      const _nm = (pendingPdfFile?.name || '').toLowerCase();
+      const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nm);
+      if (pdfAutoVeraPdf && _isPdfIn && _veraEmbedPref() !== 'blocked' && !_veraIframeRef.current) warmVeraPdfIframe();
+    } catch (_) {}
+  }, [pendingPdfBase64, pendingPdfFile, pdfAutoVeraPdf]);
   // Human-readable tagged-PDF result lines, pinned in a dismissable panel.
   // Previously these were ~8 sequential toasts that auto-dismissed faster
   // than anyone could read them (user-testing finding 2026-06-10).
@@ -821,6 +2683,91 @@ function PdfAuditView(props) {
   const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
   // Read-only tag-structure inspector output (null = not built yet; [] = built, empty).
   const [tagOutline, setTagOutline] = useState(null);
+  // ── Editable tag inspector (2026-06-14, Adobe-parity #2) ──
+  // Edits the tag tree by mutating the HTML the tags are DERIVED from — since the
+  // PDF tags are generated from this structure, re-tagging a block here can't
+  // drift from the output. Operates on the HTML STRING (parse → mutate →
+  // serialize → re-render) so it works whether or not the live preview iframe is
+  // mounted, then refreshes the outline. domIndex matches _buildTagOutline's
+  // SURFACE selector (same one _findEl uses).
+  const _TAG_EDIT_SURFACE = 'h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer';
+  const _editTagAt = (row, mutate) => {
+    // Accept either the snapshot row object (preferred — enables the desync guard) or a
+    // bare index (legacy internal callers). (ed-outline-desync)
+    const domIndex = row && typeof row === 'object' ? row.domIndex : row;
+    try {
+      const srcHtml = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || '';
+      if (!srcHtml) return;
+      const doc = new DOMParser().parseFromString(srcHtml, 'text/html');
+      if (!doc || !doc.body) return;
+      const el = doc.body.querySelectorAll(_TAG_EDIT_SURFACE)[domIndex];
+      if (!el) return;
+      // Fail-closed desync guard: the outline is a snapshot; positional domIndex can desync
+      // after any preview insert/move/delete, so a row action would silently hit the wrong
+      // element and corrupt reading order. If the live element no longer matches the row's
+      // identity (PDF role + leading text), DON'T mutate — rebuild the outline and tell the
+      // user to retry. (ed-outline-desync)
+      if (row && typeof row === 'object') {
+        const _tn = el.tagName.toLowerCase();
+        const _liveRole = _TAG_TO_PDF_ROLE[_tn] || 'P';
+        const _liveText = _tn === 'img' ? (el.getAttribute('alt') || '(no alt)') : (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+        const _expectText = (row.text || '');
+        const _txtOk = _tn === 'table' || _tn === 'ul' || _tn === 'ol' || _liveText.slice(0, 40) === _expectText.slice(0, 40);
+        if (_liveRole !== row.role || !_txtOk) {
+          try { setTagOutline(_buildTagOutline(srcHtml)); } catch (_) {}
+          try { addToast((t('pdf_audit.taginspect.desync') || 'The preview changed since this tag list was built — the list was refreshed. Please re-apply your edit.'), 'error'); } catch (_) {}
+          return;
+        }
+      }
+      mutate(el, doc);
+      const newHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+      setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: newHtml, _userEditedAt: Date.now() } : prev);
+      try { if (typeof updatePdfPreview === 'function') setTimeout(() => updatePdfPreview(), 40); } catch (_) {}
+      setTagOutline(_buildTagOutline(newHtml));
+    } catch (_) {}
+  };
+  // Re-tag a block: rename its element (P ↔ H1–H6 / BlockQuote), preserving
+  // attributes + children — the cleanest "change this tag's role" operation.
+  const _retagTagEl = (el, doc, newTag) => {
+    if (!el || el.tagName.toLowerCase() === newTag) return;
+    const n = doc.createElement(newTag);
+    for (const a of Array.from(el.attributes)) { try { n.setAttribute(a.name, a.value); } catch (_) {} }
+    while (el.firstChild) n.appendChild(el.firstChild);
+    el.replaceWith(n);
+  };
+  // Mark a figure/image decorative (PDF/UA artifact) or restore it to content.
+  const _toggleDecorativeEl = (el) => {
+    const img = el.tagName.toLowerCase() === 'img' ? el : (el.querySelector && el.querySelector('img'));
+    const target = img || el;
+    const isDec = target.getAttribute('role') === 'presentation' || target.getAttribute('aria-hidden') === 'true';
+    if (isDec) { target.removeAttribute('role'); target.removeAttribute('aria-hidden'); }
+    else { target.setAttribute('role', 'presentation'); if (img) img.setAttribute('alt', ''); target.setAttribute('aria-hidden', 'true'); }
+  };
+  // Reading-order move: swap with the previous/next block-level sibling.
+  const _moveTagEl = (el, dir) => {
+    const sib = dir === 'up' ? el.previousElementSibling : el.nextElementSibling;
+    if (sib && el.parentNode) { if (dir === 'up') el.parentNode.insertBefore(el, sib); else el.parentNode.insertBefore(sib, el); }
+  };
+  // ── Table header editor (2026-06-14, Adobe-parity #3) ──
+  // The most common table-accessibility fix: promote the first row (or first
+  // column) of cells to <th> with the right /scope, so a screen reader can
+  // associate each data cell with its header. mode = 'firstRowHeader' (scope=col)
+  // | 'firstColHeader' (scope=row). td→th preserves attributes + children.
+  const _tableHeaderFix = (tableEl, doc, mode) => {
+    if (!tableEl || tableEl.tagName.toLowerCase() !== 'table') return;
+    const _toTh = (cell, scope) => {
+      if (cell.tagName.toLowerCase() === 'th') { if (!cell.getAttribute('scope')) cell.setAttribute('scope', scope); return; }
+      const th = doc.createElement('th');
+      for (const a of Array.from(cell.attributes)) { try { th.setAttribute(a.name, a.value); } catch (_) {} }
+      while (cell.firstChild) th.appendChild(cell.firstChild);
+      th.setAttribute('scope', scope);
+      cell.replaceWith(th);
+    };
+    const rows = Array.from(tableEl.querySelectorAll('tr'));
+    if (!rows.length) return;
+    if (mode === 'firstRowHeader') { Array.from(rows[0].children).forEach((c) => { const tg = c.tagName.toLowerCase(); if (tg === 'td' || tg === 'th') _toTh(c, 'col'); }); }
+    else if (mode === 'firstColHeader') { rows.forEach((r) => { const c = r.children[0]; if (c) { const tg = c.tagName.toLowerCase(); if (tg === 'td' || tg === 'th') _toTh(c, 'row'); } }); }
+  };
   // Spell-check-style walkthrough for Content-Recovery words: index into
   // autoRestoreSummary.unplaceable (null = closed) + per-word outcomes.
   const [recoveryReviewIdx, setRecoveryReviewIdx] = useState(null);
@@ -840,6 +2787,8 @@ function PdfAuditView(props) {
   const [mediaInstructions, setMediaInstructions] = useState('');
   const [mediaDigesting, setMediaDigesting] = useState(false);
   const [mediaDigestProgress, setMediaDigestProgress] = useState('');
+  // Read-along (EPUB3 Media Overlays) export progress: {total, done, status}.
+  const [moExport, setMoExport] = useState(null);
   // Resumable audio job (2026-06-10, maintainer ask): big documents hit TTS
   // rate limits mid-run — the old handler died and discarded position. The
   // job now generates in chunks (it always did), PAUSES on demand, STALLS
@@ -877,6 +2826,131 @@ function PdfAuditView(props) {
       setPdfFixResult((prev) => prev ? { ...prev, _audioJobMeta: complete ? null : { nextIdx: j.nextIdx, total: j.segments.length, srMode: !!j.srMode, savedAt: Date.now() } } : prev);
     } catch (_) {}
   };
+
+  // ── New-format export handlers (2026-06-14): ODT, DAISY, read-along EPUB3 ──
+  // ODT (OpenDocument Text) — opens natively in LibreOffice / Google Docs / Word.
+  const _dlOdt = async () => {
+    const html = pdfFixResult?.accessibleHtml;
+    if (!html) return;
+    if (!window.JSZip) { addToast(t('toasts.zip_library_loading') || 'Compression library loading — try again in a moment.', 'info'); return; }
+    try {
+      const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
+      const zip = new window.JSZip();
+      zip.file('mimetype', 'application/vnd.oasis.opendocument.text', { compression: 'STORE' });
+      zip.file('META-INF/manifest.xml', _ODT_MANIFEST_XML);
+      zip.file('content.xml', _htmlToOdtContentXml(html));
+      // RTL (#2): ODF document direction lives in the default paragraph style —
+      // style:writing-mode="rl-tb" flips paragraphs, tables, and lists document-wide.
+      const _odtRtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
+      zip.file('styles.xml', _odtRtl
+        ? _ODT_STYLES_XML.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>')
+        : _ODT_STYLES_XML);
+      zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + '</dc:title></office:meta></office:document-meta>');
+      const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.oasis.opendocument.text' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '.odt';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      addToast(t('toasts.odt_downloaded') || '📄 OpenDocument (.odt) downloaded — opens in LibreOffice, Google Docs, or Word.', 'success');
+    } catch (e) { addToast('ODT export failed: ' + (e?.message || 'unknown error'), 'error'); }
+  };
+  // DAISY 3 (DTBook 2005-3) full-text talking book — text-only; DAISY readers
+  // provide speech / braille / large-print. (Synced audio = the read-along ePub.)
+  const _dlDaisy = async () => {
+    const html = pdfFixResult?.accessibleHtml;
+    if (!html) return;
+    if (!window.JSZip) { addToast(t('toasts.zip_library_loading') || 'Compression library loading — try again in a moment.', 'info'); return; }
+    try {
+      const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
+      const lang = (html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en';
+      const zip = new window.JSZip();
+      zip.file('dtbook.xml', _htmlToDtbookXml(html, lang));
+      zip.file('navigation.ncx', _htmlToDaisyNcx(html, title));
+      zip.file('package.opf', _DAISY_OPF_XML(title, lang));
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '-daisy.zip';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      addToast(t('toasts.daisy_downloaded') || '🔊 DAISY talking-book package (.zip) downloaded — open in a DAISY reader.', 'success');
+    } catch (e) { addToast('DAISY export failed: ' + (e?.message || 'unknown error'), 'error'); }
+  };
+  // Read-along EPUB3 (Media Overlays): per-paragraph TTS synced to the text so a
+  // reading system highlights each block as it's spoken. Generates one TTS clip
+  // per text block (many voice calls) — gated behind a confirm + progress.
+  const _dlEpubMO = async () => {
+    const html = pdfFixResult?.accessibleHtml;
+    if (!html) return;
+    if (!window.JSZip) { addToast(t('toasts.zip_library_loading') || 'Compression library loading — try again in a moment.', 'info'); return; }
+    if (typeof callTTS !== 'function') { addToast(t('toasts.mo_no_voice') || 'The voice service is unavailable, so read-along audio can’t be generated right now.', 'error'); return; }
+    if (moExport && moExport.status === 'running') { addToast(t('toasts.mo_busy') || 'A read-along export is already running.', 'info'); return; }
+    const { segments, bodyHtml, lang } = _collectMoSegments(html);
+    if (!segments.length) { addToast(t('toasts.mo_no_text') || 'No readable text found to narrate.', 'error'); return; }
+    const _confirm = (t('pdf_audit.mo.confirm') || 'Build a read-along ebook? This narrates {n} text sections with text-to-speech — about {n} voice calls, which can take a few minutes.').replace(/\{n\}/g, String(segments.length));
+    if (!window.confirm(_confirm)) return;
+    const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
+    const epubLang = lang || 'en';
+    setMoExport({ total: segments.length, done: 0, status: 'running' });
+    const measure = (url) => new Promise((res) => { try { const au = new Audio(); au.preload = 'metadata'; au.onloadedmetadata = () => res(au.duration || 0); au.onerror = () => res(0); au.src = url; } catch (_) { res(0); } });
+    try {
+      const audioBlobs = []; const durations = [];
+      for (let i = 0; i < segments.length; i++) {
+        let blob = null, dur = 0;
+        try {
+          const url = await callTTS(segments[i].text, selectedVoice || 'Puck', 1, 2);
+          if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
+            dur = await measure(url);
+            blob = await (await _withTimeout(fetch(url), 20000, 'TTS audio fetch')).blob();
+            // Recover duration from WAV header bytes when measure() gave 0/Infinity, so the
+            // clip's clipEnd isn't 0s (block would speak nothing / never highlight). (exp-clip-duration)
+            if (!(typeof dur === 'number' && isFinite(dur) && dur > 0) && blob) { try { dur = _wavDurationFromBytes(new Uint8Array(await blob.arrayBuffer())); } catch (_) {} }
+            try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
+          }
+        } catch (_) { /* keep going — a missing clip degrades to text-only for that block */ }
+        audioBlobs.push(blob); durations.push(dur);
+        setMoExport({ total: segments.length, done: i + 1, status: 'running' });
+      }
+      const firstBlob = audioBlobs.find(Boolean);
+      const isWav = !!(firstBlob && /wav/i.test(firstBlob.type || ''));
+      const ext = isWav ? 'wav' : 'mp3';
+      const mime = isWav ? 'audio/wav' : 'audio/mpeg';
+      const totalSec = durations.reduce((a, b) => a + (b || 0), 0);
+      const withAudio = audioBlobs.filter(Boolean).length;
+      const _hasAudio = audioBlobs.map(Boolean); // which segments actually got a clip
+      const zip = new window.JSZip();
+      const _containerXml = '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>';
+      let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + '</title></head><body>' + bodyHtml + '</body></html>';
+      xhtml = xhtml.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+      const _smilXml = _buildMoSmil(segments, durations, ext, _hasAudio);
+      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio);
+      const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + '</a></li></ol></nav></body></html>';
+      zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+      zip.file('META-INF/container.xml', _containerXml);
+      zip.file('OEBPS/content.xhtml', xhtml);
+      zip.file('OEBPS/content.smil', _smilXml);
+      zip.file('OEBPS/content.opf', _opfXml);
+      zip.file('OEBPS/nav.xhtml', _navXhtml);
+      for (let i = 0; i < audioBlobs.length; i++) { if (audioBlobs[i]) zip.file('OEBPS/audio/seg' + (i + 1) + '.' + ext, audioBlobs[i]); }
+      // Structural self-check (catches OUR export bugs: a dangling SMIL ref or a not-well-formed
+      // content.xhtml makes the whole EPUB unopenable while the toast says success). Non-blocking —
+      // the file still downloads — but we surface the count so a broken export isn't silently shipped.
+      let _epubSelfCheckNote = '';
+      try {
+        const _epubFiles = { 'mimetype': 'application/epub+zip', 'META-INF/container.xml': _containerXml, 'OEBPS/content.xhtml': xhtml, 'OEBPS/content.smil': _smilXml, 'OEBPS/content.opf': _opfXml, 'OEBPS/nav.xhtml': _navXhtml };
+        for (let i = 0; i < audioBlobs.length; i++) { if (audioBlobs[i]) _epubFiles['OEBPS/audio/seg' + (i + 1) + '.' + ext] = true; }
+        const _vr = validateEpubStructure(_epubFiles);
+        const _errs = _vr.issues.filter((x) => x.severity === 'error');
+        if (_errs.length) {
+          try { console.warn('[EPUB self-check] ' + _errs.length + ' structural issue(s):', _errs); } catch (_) {}
+          _epubSelfCheckNote = ' ⚠ ' + _errs.length + ' structural issue(s) flagged by the EPUB self-check (see console) — the file may not open in all readers.';
+        }
+      } catch (_) { /* self-check must never block the export */ }
+      const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '-readalong.epub';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      setMoExport({ total: segments.length, done: segments.length, status: 'done' });
+      if (withAudio === 0) addToast((t('toasts.mo_no_audio') || '⚠ Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.') + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'error');
+      else addToast('📖🔊 ' + (t('toasts.mo_done') || 'Read-along ebook downloaded') + ' — ' + withAudio + '/' + segments.length + ' sections narrated.' + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'success');
+      setTimeout(() => setMoExport(null), 4000);
+    } catch (e) { setMoExport(null); addToast('Read-along export failed: ' + (e?.message || 'unknown error'), 'error'); }
+  };
+
   const _runAudioJob = async () => {
     const j = audioJobRef.current;
     if (!j) return;
@@ -888,8 +2962,9 @@ function PdfAuditView(props) {
       try {
         const url = await callTTS(j.segments[j.nextIdx], selectedVoice || 'Puck', 1, 2);
         if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
-          const resp = await fetch(url);
+          const resp = await _withTimeout(fetch(url), 20000, 'TTS audio fetch');
           j.blobs.push(await resp.blob());
+          try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
           j.nextIdx++;
           consecutiveNull = 0;
         } else { j.failed++; consecutiveNull++; j.nextIdx++; }
@@ -922,9 +2997,14 @@ function PdfAuditView(props) {
   const _resumeAudioFromMeta = () => {
     const meta = pdfFixResult && pdfFixResult._audioJobMeta;
     if (!meta || !pdfFixResult.accessibleHtml) return;
+    // Non-SR resume MUST re-segment via _audioReadyText — the SAME prep the original
+    // job used (strips editor chrome, injects "Image: <alt>" text + the translation
+    // preamble). Re-deriving from raw textContent produced a different segment count,
+    // so the "document changed — starting fresh" path fired almost every time,
+    // defeating cross-session resume (2026-06-15 review fix).
     const srcText = meta.srMode
       ? _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim()
-      : (() => { const d = document.createElement('div'); d.innerHTML = pdfFixResult.accessibleHtml; return (d.textContent || '').trim(); })();
+      : _audioReadyText(pdfFixResult.accessibleHtml).trim();
     const segments = [];
     let remaining = srcText;
     while (remaining.length > 0) {
@@ -1003,6 +3083,24 @@ function PdfAuditView(props) {
   const [pdfFieldCandidates, setPdfFieldCandidates] = useState(null);
   const [pdfFieldAccepted, setPdfFieldAccepted] = useState({});
   const [pdfFieldBusy, setPdfFieldBusy] = useState(false);
+  // M23 (deep dive 2026-07-09): the NESTED dialogs (Preview & Edit, both form-field review panels,
+  // the two compare panels, and the close-confirm) had aria-modal but no Tab trap — keyboard users
+  // walked the inert audit modal behind them — and, except the close-confirm, no Escape of their
+  // own, so Esc fell through to the OUTER handler and raised the close-audit confirm over an open
+  // sub-dialog. Same shared trap hook the outer dialog uses (WCAG 2.1.2 / 2.4.3); each dialog's
+  // container also gets its own Escape-with-stopPropagation so Esc peels ONE layer at a time.
+  const pdfPreviewTrapRef = useRef(null);
+  const pdfFieldsTrapRef = useRef(null);
+  const fillableTrapRef = useRef(null);
+  const plainCompareTrapRef = useRef(null);
+  const translateCompareTrapRef = useRef(null);
+  const closeConfirmTrapRef = useRef(null);
+  _alloUseFocusTrap(pdfPreviewTrapRef, !!(pdfPreviewOpen && pdfFixResult));
+  _alloUseFocusTrap(pdfFieldsTrapRef, !!pdfFieldCandidates);
+  _alloUseFocusTrap(fillableTrapRef, !!fillableCandidates);
+  _alloUseFocusTrap(plainCompareTrapRef, !!(showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage));
+  _alloUseFocusTrap(translateCompareTrapRef, !!(showTranslationCompare && pdfFixResult && pdfFixResult._translation));
+  _alloUseFocusTrap(closeConfirmTrapRef, !!showCloseConfirm);
   // S3 (agent): the translate_document command pre-fills the language
   // here via event — the RUN click stays the teacher's (quota guardrail).
   useEffect(() => {
@@ -1044,6 +3142,14 @@ function PdfAuditView(props) {
         addToast('✨ ' + (t('toasts.genimg_done') || 'AI illustration generated from the description and inserted — labeled for verification. Replace it any time with Upload or Pick extracted.'), 'success');
       } catch (e) {
         addToast((t('toasts.genimg_err') || 'Image generation failed: ') + ((e && e.message) || 'unknown'), 'error');
+        // Re-enable the iframe button (audit 2026-06-13 [8]): on a throw it
+        // was left permanently disabled showing '⏳ Generating…'.
+        try {
+          const _ld = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+          const _c = _ld && _ld.getElementById(imgId + '-container');
+          const _b = _c && _c.querySelector('[data-allo-genai]');
+          if (_b) { _b.disabled = false; const _s = _b.querySelector('span'); if (_s) _s.textContent = '✨ Generate (AI)'; }
+        } catch (_) {}
       }
     };
     return () => { try { delete window.__alloflowGenerateImage; } catch (_) { window.__alloflowGenerateImage = null; } };
@@ -1113,10 +3219,56 @@ function PdfAuditView(props) {
     } catch (e) { addToast((t('toasts.smart_table_insert_failed') || 'Insert failed: ') + ((e && e.message) || 'unknown'), 'error'); }
   };
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
+  // Reconstructed-table mini-preview (which row's inline table is expanded).
+  // FATAL-CRASH FIX 2026-06-13: this declaration was lost during a concurrent
+  // edit-war stomp while its 3 usages (the recon review-row map) survived →
+  // 'reconPreviewIdx is not defined' took down the whole PdfAuditView via the
+  // ErrorBoundary. (The render-refs gate doesn't catch a component-local
+  // undefined ref inside a JSX .map.)
+  const [reconPreviewIdx, setReconPreviewIdx] = useState(null);
+  // Document mode (2026-06-13): 'standard' | 'apa' | 'mla' | 'chicago'. Drives
+  // which insert blocks surface (the Academic category) and injects a sentinel
+  // <style id="allo-docmode-style"> into accessibleHtml so every export inherits
+  // the formatting. Reconfigures display only — never fabricates citations.
+  const [docMode, setDocMode] = useState('standard');
+  // Writing-check (Harper) panel state — null | {status:'loading'} | {status:'error',error}
+  // | {status:'done', items:[{blockIndex,message,start,end,bad,snippet,suggestions}], capped}
+  const [writingCheck, setWritingCheck] = useState(null);
+  const _applyDocMode = (modeId) => {
+    const css = (DOC_MODES[modeId] && DOC_MODES[modeId].css) || '';
+    // (1) live preview iframe — instant visual feedback
+    try {
+      const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+      if (d) {
+        let st = d.getElementById('allo-docmode-style');
+        if (css) { if (!st) { st = d.createElement('style'); st.id = 'allo-docmode-style'; (d.head || d.documentElement).appendChild(st); } st.textContent = css; }
+        else if (st) { st.remove(); }
+        if (typeof window.__alloflowOnPdfPreviewMutated === 'function') window.__alloflowOnPdfPreviewMutated();
+      }
+    } catch (_) {}
+    // (2) accessibleHtml — the export source of truth (HTML / print / tagged-PDF)
+    setPdfFixResult((prev) => {
+      if (!prev || !prev.accessibleHtml) return prev;
+      let html = prev.accessibleHtml.replace(/<style id="allo-docmode-style">[\s\S]*?<\/style>/i, '');
+      if (css) {
+        const tag = '<style id="allo-docmode-style">' + css + '</style>';
+        if (/<\/head>/i.test(html)) html = html.replace(/<\/head>/i, tag + '</head>');
+        else if (/<body[^>]*>/i.test(html)) html = html.replace(/(<body[^>]*>)/i, '$1' + tag);
+        else html = tag + html;
+      }
+      return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
+    });
+  };
   // Failed-verification tagged download: bytes wait here while the teacher
   // decides via the inline panel (replaces a blocking window.confirm).
   const [taggedGateIssue, setTaggedGateIssue] = useState(null);
   const _taggedGateBytesRef = useRef(null);
+  // #5 content-fidelity download gate (2026-06-18): a SEVERE text-coverage shortfall (<80%) or a
+  // detected AI refusal means the document may have lost content; the tagged PDF would look
+  // complete but be missing text. Mirror the round-trip gate's opt-in pattern (bytes wait in a
+  // ref; the teacher chooses from a pinned panel) instead of silently handing over an incomplete doc.
+  const [fidelityGateIssue, setFidelityGateIssue] = useState(null);
+  const _fidelityGateBytesRef = useRef(null);
   // Live elapsed counter for the audit wait (honest-wait copy, 2026-06-12).
   const [auditElapsedSec, setAuditElapsedSec] = useState(0);
   useEffect(() => {
@@ -1193,6 +3345,103 @@ function PdfAuditView(props) {
     // Generic fallback — keep the raw message but framed
     return { friendly: 'Something went wrong.', actionable: 'Details: ' + (msg || 'unknown error'), severity: 'error' };
   };
+  // #12 (ChatGPT review 2026-07-10): batch intake budgets. The intake used to start a FileReader
+  // for EVERY selected file at once and retain every result as a base64 string in React state —
+  // the 200 MB per-file decoder cap fired only AFTER the memory expansion (base64 ≈ +33%, JS
+  // strings UTF-16 ≈ ×2), so an oversized selection could exhaust the tab (or evict this origin's
+  // IndexedDB data) before any cap was consulted. Budgets now run BEFORE any read, and the reads
+  // themselves are SEQUENTIAL (one decoded file in flight at a time) instead of all at once.
+  const _BATCH_MAX_FILES = 60;
+  const _BATCH_MAX_FILE_BYTES = 200 * 1024 * 1024;  // matches the decoder cap — a bigger file would only fail later, after the expansion
+  const _BATCH_MAX_TOTAL_BYTES = 300 * 1024 * 1024; // aggregate RAW bytes across the whole queue (≈800 MB resident once base64+UTF-16)
+  const _alloBatchPreflight = (files, existingQueue) => {
+    const _fmtMB = (b) => Math.round(b / (1024 * 1024)) + ' MB';
+    const queuedBytes = (existingQueue || []).reduce((s, q) => s + (q.fileSize || 0), 0);
+    const queuedCount = (existingQueue || []).length;
+    const accepted = [];
+    let total = queuedBytes, overCount = 0, overSize = [], overTotal = 0;
+    for (const f of files) {
+      if (queuedCount + accepted.length >= _BATCH_MAX_FILES) { overCount++; continue; }
+      if ((f.size || 0) > _BATCH_MAX_FILE_BYTES) { overSize.push(f.name || 'file'); continue; }
+      if (total + (f.size || 0) > _BATCH_MAX_TOTAL_BYTES) { overTotal++; continue; }
+      total += (f.size || 0);
+      accepted.push(f);
+    }
+    if (overCount) addToast('⚠ Batch limit is ' + _BATCH_MAX_FILES + ' files — ' + overCount + ' file(s) were not added. Run them as a second batch.', 'warning');
+    if (overSize.length) addToast('⚠ Skipped ' + overSize.length + ' file(s) over the ' + _fmtMB(_BATCH_MAX_FILE_BYTES) + ' per-file limit: ' + overSize.slice(0, 3).join(', ') + (overSize.length > 3 ? '…' : ''), 'warning');
+    if (overTotal) addToast('⚠ Batch memory budget (' + _fmtMB(_BATCH_MAX_TOTAL_BYTES) + ' total) reached — ' + overTotal + ' file(s) were not added. Run them as a second batch.', 'warning');
+    // Storage headroom (best-effort, async): the queue is persisted for Resume; when it likely
+    // will NOT fit, the batch still runs but the resume promise is downgraded UP FRONT instead of
+    // failing silently at checkpoint time. (~1.45 ≈ base64 overhead + record framing.)
+    try {
+      if (accepted.length && typeof navigator !== 'undefined' && navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate().then((est) => {
+          const _free = Math.max(0, ((est && est.quota) || 0) - ((est && est.usage) || 0) - 50 * 1024 * 1024);
+          if (est && est.quota && (total * 1.45) > _free) {
+            addToast('⚠ This batch is larger than the browser can safely checkpoint — it will run, but Resume after a reload may be unavailable. Consider smaller batches.', 'warning');
+          }
+        }).catch(() => {});
+      }
+    } catch (_) {}
+    return accepted;
+  };
+  // One file → one queue entry (shared by the drop + browse handlers, which were byte-identical).
+  // Returns a promise that settles when the read + optional transcript conversion has finished, so
+  // the caller can CHAIN reads instead of firing every FileReader at once.
+  const _alloEnqueueBatchFile = (file) => new Promise((_done) => {
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        if (reader.error || !reader.result) return; // onerror already surfaced it; never push a broken entry
+        let base64 = reader.result.split(',')[1];
+        // Transcript formats (sweep 2026-06-11 LOW[7]): encode to ALLOTRANSCRIPT exactly like the
+        // single-file lane — the batch runner's audit/fix dispatchers already speak it.
+        try {
+          const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || '');
+          const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || '');
+          if (_isText || _isSheet) {
+            let _text;
+            if (_isSheet) {
+              if (typeof convertXlsxToMarkdownTables !== 'function') { addToast('"' + file.name + '" — spreadsheet support is still loading; try again in a moment. Skipped.', 'error'); return; }
+              const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+              // audit 2026-06-13: was assigning the {text,...} OBJECT → .trim() threw → every spreadsheet dropped
+              _text = '# ' + (file.name || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + (_conv.text || '') + (_conv.truncatedRows ? ('\n\n*Note: ' + _conv.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
+            } else {
+              _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
+            }
+            if (!_text || !_text.trim()) { addToast('"' + file.name + '" looks empty — skipped.', 'error'); return; }
+            const _r = await transcribeMediaToPayload(null, 'text/plain', { preText: _text, file });
+            base64 = (_r && _r.payload) || base64;
+          }
+        } catch (_convErr) { addToast('Could not convert "' + file.name + '": ' + ((_convErr && _convErr.message) || 'unknown') + ' — skipped.', 'error'); return; }
+        setPdfBatchQueue(prev => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: 'pending', result: null }]);
+      } finally { _done(); }
+    };
+    reader.onerror = () => { addToast('Could not read "' + file.name + '" — it may be corrupt or locked; skipped.', 'error'); };
+    reader.readAsDataURL(file);
+  });
+  const _alloEnqueueBatchFiles = (files) => {
+    const accepted = _alloBatchPreflight(files, pdfBatchQueue);
+    accepted.reduce((chain, f) => chain.then(() => _alloEnqueueBatchFile(f)), Promise.resolve());
+    return accepted.length;
+  };
+  // M24 (deep dive 2026-07-09): load-bearing score qualifiers were title-tooltips on non-focusable
+  // spans — keyboard, screen-reader, and touch users got the NUMBER without its caveat. This keeps
+  // each chip's exact look but makes it a real inline button: focusable (visible ring), SR-labeled
+  // with the full qualifier, and click/Enter/tap shows the same text as a toast (title= still
+  // serves mouse hover). Dotted underline signals "there's more here" to sighted users too.
+  const _AlloQualifier = ({ text, className, children }) => (
+    <button
+      type="button"
+      title={text}
+      aria-label={text}
+      onClick={() => { try { addToast(text, 'info'); } catch (_) {} }}
+      style={{ font: 'inherit', textAlign: 'inherit' }} /* padding/background come from the caller's chip classes — an inline reset here would beat them */
+      className={(className || '') + ' border-0 cursor-help underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500 rounded'}
+    >
+      {children}
+    </button>
+  );
   // 2026-06-08: per-issue plain-English explanation. Reuses the keyword-regex
   // pattern from the whole-pipeline whyParts (L1940+) but at per-row granularity
   // so a teacher seeing "WCAG 1.4.3" gets actionable context without leaving
@@ -1212,6 +3461,615 @@ function PdfAuditView(props) {
     if (/focus|tab.*order/i.test(s)) return 'Bad focus order means tabbing through the page jumps around unpredictably — keyboard users can\'t complete forms or follow the reading order.';
     return null;
   };
+  // ── Per-issue locator UI (2026-06-16): turn a remaining issue's anchor into a routable action. ──
+  // Prefer the resolver's vetted-unique snippet (issue.locator.kind==='exact'); else the AI's raw
+  // location anchor; a document-level or page-only anchor has no precise spot in the HTML preview.
+  const _issueAnchor = (issue) => {
+    const loc = issue && issue.locator;
+    if (loc && loc.kind === 'exact' && loc.snippet) return String(loc.snippet);
+    const raw = issue && typeof issue.location === 'string' ? issue.location.trim() : '';
+    if (!raw || /^document$/i.test(raw) || /^page\s+\d+$/i.test(raw)) return '';
+    return raw;
+  };
+  // Click-to-jump: find the anchor's verbatim text in the LIVE preview (resolved against the current
+  // DOM, so it's correct even after edits) and scroll + highlight the element. Honest: no precise
+  // anchor → tell the user rather than guessing.
+  const _jumpToIssue = (issue) => {
+    const anchor = _issueAnchor(issue);
+    if (!anchor || anchor.length < 8) { addToast(t('pdf_audit.issue.no_jump') || 'No precise spot for this one — it’s document-level or couldn’t be pinpointed.', 'info'); return; }
+    const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+    if (!d || !d.body) { addToast(t('pdf_audit.issue.preview_gone') || 'Open the preview to jump to an issue.', 'info'); return; }
+    const norm = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+    const needle = norm(anchor);
+    let found = null;
+    try {
+      const w = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT, null);
+      let node; while ((node = w.nextNode())) { if (norm(node.textContent).indexOf(needle) !== -1) { found = node.parentElement; break; } }
+      if (!found) { const blocks = d.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote,caption,a'); for (const b of blocks) { if (norm(b.textContent).indexOf(needle) !== -1) { found = b; break; } } }
+    } catch (_) {}
+    if (!found) { addToast(t('pdf_audit.issue.spot_moved') || 'Couldn’t find that spot in the current preview (the text may have changed).', 'info'); return; }
+    try { found.scrollIntoView({ behavior: 'smooth', block: 'center' }); const prev = found.style.outline; found.style.outline = '3px solid #d97706'; found.style.outlineOffset = '2px'; setTimeout(() => { try { found.style.outline = prev; found.style.outlineOffset = ''; } catch (_) {} }, 2500); } catch (_) {}
+  };
+  // Bridge to the Expert Workbench: prefill a targeted fix command (carrying the precise anchor when
+  // there is one), open + scroll to it. Mirrors the tag-inspector 🛠 bridge.
+  const _issueToWorkbench = (issue) => {
+    const anchor = _issueAnchor(issue);
+    const where = anchor ? (' at "' + anchor.slice(0, 60) + '"') : '';
+    try { setExpertCommandInput('Fix this WCAG ' + (issue.wcag || '') + ' issue' + where + ': ' + (issue.issue || '')); } catch (_) {}
+    try { const wb = document.getElementById('allo-sec-workbench'); if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {}
+    addToast(t('pdf_audit.issue.sent_workbench') || '🛠 Loaded into the Expert Workbench below — review and run it.', 'info');
+  };
+  // Peek the SOURCE of an issue WITHOUT opening the preview. Recovers the real HTML element from the
+  // stored remediated accessibleHtml (parsed off-screen via DOMParser, found by the SAME anchor text the
+  // preview-jump uses), plus the pre-computed visible-text context (locator.before/snippet/after). For a
+  // document/page-level issue there is no precise spot — return the raw anchor + page numbers honestly,
+  // never a guessed location (the locator's fail-safe contract).
+  const _peekIssueSource = (issue) => {
+    const loc = issue && issue.locator;
+    const exact = !!(loc && loc.kind === 'exact' && loc.snippet);
+    const anchor = _issueAnchor(issue);
+    const out = {
+      exact,
+      before: exact ? String(loc.before || '') : '',
+      snippet: exact ? String(loc.snippet || '') : '',
+      after: exact ? String(loc.after || '') : '',
+      pages: (loc && Array.isArray(loc.pages) && loc.pages.length) ? loc.pages : null,
+      rawLocation: (issue && typeof issue.location === 'string') ? issue.location.trim() : '',
+      html: null,
+    };
+    if (anchor && anchor.length >= 8 && pdfFixResult && pdfFixResult.accessibleHtml && typeof DOMParser !== 'undefined') {
+      try {
+        const dom = new DOMParser().parseFromString(pdfFixResult.accessibleHtml, 'text/html');
+        const norm = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+        const needle = norm(anchor);
+        if (needle && dom.body) {
+          let found = null;
+          const _INLINE = /^(STRONG|EM|B|I|U|SPAN|A|CODE|SMALL|SUB|SUP|MARK|ABBR|CITE|Q|S|DEL|INS|FONT|LABEL)$/;
+          const w = dom.createTreeWalker(dom.body, NodeFilter.SHOW_TEXT, null);
+          let node; while ((node = w.nextNode())) { if (norm(node.textContent).indexOf(needle) !== -1) {
+            let el = node.parentElement; // climb past inline wrappers to the block element so the source shows structural context (e.g. <p><strong>…</strong></p>, not just <strong>)
+            while (el && el.parentElement && el.parentElement !== dom.body && _INLINE.test(el.tagName)) el = el.parentElement;
+            found = el; break;
+          } }
+          if (!found) { const blocks = dom.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote,caption,a'); for (const b of blocks) { if (norm(b.textContent).indexOf(needle) !== -1) { found = b; break; } } }
+          if (found && found.outerHTML) { out.fullHtml = found.outerHTML; out.html = found.outerHTML.length > 4000 ? (found.outerHTML.slice(0, 4000) + '…') : found.outerHTML; }
+        }
+      } catch (_) {}
+    }
+    return out;
+  };
+  // Shared mini-audit (2026-06-22): re-audit `newHtml` and fold the result into pdfFixResult — score
+  // (weakest-layer min), verificationAudit, axe, and the resolved/persisted/introduced lists. Used by
+  // BOTH the Expert Workbench AI command and the direct expert-edit path, so they score identically and
+  // can't drift. Non-fatal (swallows errors → returns {ok:false}); onActivity is an optional logger.
+  const _reauditAndScore = async (newHtml, onActivity) => {
+    try {
+      if (onActivity) onActivity({ text: 'Re-auditing to refresh verification evidence...', type: 'audit', time: new Date().toLocaleTimeString() });
+      const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);
+      const [_wv, _wa, _wea] = await Promise.all([
+        _safeAudit(() => auditOutputAccessibility(newHtml)),
+        _safeAudit(() => runAxeAudit(newHtml)),
+        (_docPipeline && typeof _docPipeline.runEqualAccessAudit === 'function')
+          ? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml)) : Promise.resolve(null),
+      ]);
+      const _wvOk = !!(_wv && Number.isFinite(_wv.score) && !_wv._partialAudit && !_wv._scoreDegraded && !_wv.synthesized);
+      const _waOk = !!(_wa && Number.isFinite(_wa.score));
+      const _weaOk = !!(_wea && Number.isFinite(_wea.score));
+      const _wdet = _waOk ? (_weaOk ? Math.min(_wa.score, _wea.score) : _wa.score) : (_weaOk ? _wea.score : null);
+      const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);
+      const _sameBoundHtml = _viewIsLiveVerificationHtmlBound(pdfFixResult, newHtml, _docPipeline);
+      const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);
+      let _applied = false;
+      let _verification = _deriveVerificationState({ ai: _wv, axe: _wa, equalAccess: _wea, pdfUaSelfCheck: 'not-run' });
+      setPdfFixResult(prev => {
+        if (!prev) return prev;
+        if (prev.accessibleHtml !== newHtml) return prev;
+        _applied = true;
+        _verification = _deriveVerificationState({
+          ai: _wv,
+          axe: _wa,
+          equalAccess: _wea,
+          pdfUaSelfCheck: _sameBoundHtml ? ((prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',
+          languageReviewRequired: !!prev.languageReviewRequired,
+          extraReasons: prev.verificationExtraReasons || [],
+        });
+        const _next = ({ ...prev,
+          verificationHtmlBinding: _freshBinding || null,
+          verificationAudit: _wvOk ? _wv : null,
+          afterScore: Number.isFinite(_wscore) ? _wscore : null,
+          afterScoreVerified: _verification.afterScoreVerified,
+          _scoreIsBlended: !!(_wvOk && _wdet !== null),
+          _aiVerificationIncomplete: !_wvOk,
+          _estimatedMinimumScore: (!_wvOk && Number.isFinite(_wscore)) ? _wscore : null,
+          _estimatedScoreBasis: (!_wvOk && Number.isFinite(_wscore)) ? 'deterministic-only re-audit; AI semantic audit unavailable' : null,
+          _finalAuditRetryAvailable: !_wvOk,
+          _scoreSource: _wvOk && _wdet !== null ? 'min' : _wvOk ? 'content-only' : _wdet !== null ? 'deterministic-only' : 'unavailable',
+          // Fresh unavailable engines clear prior objects: stale evidence must never attest to edited HTML.
+          axeAudit: _waOk ? _wa : null,
+          axeViolations: _waOk ? _wa.totalViolations : null,
+          secondEngineAudit: _weaOk ? _wea : null,
+          verificationCoverage: _verification.coverage,
+          verificationState: _verification.verificationState,
+          verificationReasons: _verification.reasons,
+          verificationReviewCount: _verification.reviewCount,
+          requiresManualReview: _verification.requiresManualReview,
+          needsExpertReview: _verification.requiresManualReview || prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both' || (Number.isFinite(_wscore) && _wscore < 70),
+          expertReviewReason: _verification.requiresManualReview
+            ? ((prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both') ? 'both' : 'accessibility')
+            : ((prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both') ? 'content-fidelity' : ((Number.isFinite(_wscore) && _wscore < 70) ? 'accessibility' : null)),
+          issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
+        });
+        if (_freshBinding) {
+          _viewAttachRuntimeBindingProof(_next, newHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
+        }
+        const _bound = _viewEnforceVerificationHtmlBinding(_next, null, _docPipeline);
+        _verification = {
+          ..._verification,
+          coverage: _bound.verificationCoverage || _verification.coverage,
+          verificationCoverage: _bound.verificationCoverage || _verification.coverage,
+          verificationState: _bound.verificationState,
+          afterScoreVerified: !!_bound.afterScoreVerified,
+          requiresManualReview: !!_bound.requiresManualReview,
+          reasons: _bound.verificationReasons || _verification.reasons,
+        };
+        return _bound;
+      });
+      if (_applied && !_sameBoundHtml) {
+        setLastTaggedValidation(null);
+        setVeraPdfResult(null);
+        _selectTaggedArtifact(null);
+        _lastTaggedDeliveryRef.current = null;
+      }
+      const _scoreLabel = Number.isFinite(_wscore) ? (_wscore + '/100') : 'score unavailable';
+      if (onActivity) onActivity({ text: 'Updated: ' + _scoreLabel + ' - verification ' + _verification.verificationState, type: 'score', time: new Date().toLocaleTimeString() });
+      return { ok: Number.isFinite(_wscore), score: Number.isFinite(_wscore) ? _wscore : null, issues: _wvOk ? ((_wv.issues || []).length) : null, stale: !_applied, verificationState: _verification.verificationState };
+    } catch (_) {
+      return { ok: false, score: null, verificationState: 'unavailable' };
+    }
+  };
+  const _commitRefixedSection = async (result, sectionNumber) => {
+    if (!result || !result.html) return { ok: false, score: null, verificationState: 'unavailable' };
+    const newHtml = result.html;
+    setPdfFixResult((prev) => {
+      if (!prev) return prev;
+      const pendingCoverage = {
+        standard: 'WCAG 2.2 AA',
+        ai: 'unavailable',
+        axe: 'unavailable',
+        equalAccess: 'unavailable',
+        pdfUaSelfCheck: (prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck) || 'not-run',
+      };
+      return {
+        ...prev,
+        accessibleHtml: newHtml,
+        verificationAudit: null,
+        axeAudit: null,
+        axeViolations: null,
+        secondEngineAudit: null,
+        afterScore: null,
+        afterScoreVerified: false,
+        _scoreIsBlended: false,
+        _aiVerificationIncomplete: true,
+        _scoreSource: 'unavailable',
+        verificationCoverage: pendingCoverage,
+        verificationState: 'unavailable',
+        verificationReasons: ['content-modified-pending-reverification'],
+        verificationReviewCount: 0,
+        requiresManualReview: true,
+        needsExpertReview: true,
+        expertReviewReason: prev.fidelityLimited ? 'both' : 'accessibility',
+        issueResolution: null,
+        remainingIssues: null,
+        htmlChars: newHtml.length,
+        chunkState: result.chunkState,
+        chunkWeightedScore: result.chunkWeightedScore,
+      };
+    });
+    const recheck = await _reauditAndScore(newHtml, null);
+    const label = 'Section ' + sectionNumber + ' re-fixed';
+    if (recheck && recheck.ok) {
+      addToast(label + ': ' + recheck.score + '/100 · verification ' + recheck.verificationState, recheck.verificationState === 'complete' ? 'success' : 'warning');
+    } else {
+      addToast(label + ', but no current score is available. Verification evidence was cleared; re-run the audit when ready.', 'warning');
+    }
+    return recheck;
+  };
+  // Pure single-occurrence block splice (testable): replace the located ORIGINAL outerHTML with the
+  // expert's DRAFT in the full document, touching nothing else. Refuses when the original isn't found
+  // (it moved) or appears more than once (ambiguous → can't be sure which one). Minimal mutation =
+  // content-preservation safe (the b0d24ae3 scar).
+  const _spliceBlock = (html, original, draft) => {
+    if (!html || !original) return { ok: false, reason: 'no-input' };
+    const idx = html.indexOf(original);
+    if (idx === -1) return { ok: false, reason: 'not-found' };
+    if (html.indexOf(original, idx + original.length) !== -1) return { ok: false, reason: 'ambiguous' };
+    return { ok: true, html: html.slice(0, idx) + draft + html.slice(idx + original.length) };
+  };
+
+  // S1 region-select hit-test (2026-06-23). The deterministic core behind freehand drag-to-select-a-region:
+  // given a preview document and a drag box {left,top,right,bottom} in getBoundingClientRect() coordinates,
+  // return the TOP-MOST block elements at least HALF covered by the box (a box edge clipping a giant
+  // container won't grab it; ≥50% coverage means "the user meant this block"). Children of an already-hit
+  // block are dropped, so a box over a whole <section> yields the section, not every paragraph inside it.
+  // Pure geometry → unit-testable with mocked rects; the marquee + coordinate plumbing is the Canvas-smoke
+  // part. Returns [{ el, area }] (area = the in-box pixel area, so _dominantBlock can pick the main one).
+  const _elementsInBox = (doc, box) => {
+    const out = [];
+    if (!doc || !doc.body || !box) return out;
+    let nodes; try { nodes = doc.body.querySelectorAll('p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div'); } catch (_) { return out; }
+    const hits = [];
+    for (const el of nodes) {
+      let r; try { r = el.getBoundingClientRect(); } catch (_) { continue; }
+      if (!r) continue;
+      const w = r.width || (r.right - r.left), h = r.height || (r.bottom - r.top);
+      if (w <= 0 || h <= 0) continue;
+      const ix = Math.max(0, Math.min(r.right, box.right) - Math.max(r.left, box.left));
+      const iy = Math.max(0, Math.min(r.bottom, box.bottom) - Math.max(r.top, box.top));
+      if (ix <= 0 || iy <= 0) continue;                       // no overlap
+      if ((ix * iy) / (w * h) >= 0.5) hits.push({ el: el, area: ix * iy }); // ≥half the element inside the box
+    }
+    const set = hits.map((x) => x.el);
+    for (const x of hits) {
+      let anc = x.el.parentElement, nested = false;
+      while (anc) { if (set.indexOf(anc) !== -1) { nested = true; break; } anc = anc.parentElement; }
+      if (!nested) out.push(x);                               // keep only top-most hits
+    }
+    return out;
+  };
+  // From the hit-test result, the single best region target: the block with the largest in-box area (when a
+  // box spans several top-level blocks, that's the one the user mostly covered). Pure → testable.
+  const _dominantBlock = (hits) => {
+    if (!hits || !hits.length) return null;
+    let best = hits[0];
+    for (const x of hits) if (x.area > best.area) best = x;
+    return best.el;
+  };
+
+  // Direct expert-edit (2026-06-22): apply the expert's hand-edited block HTML in place of the located
+  // original via _spliceBlock, then run the SAME mini-audit as the Workbench. No AI call, so it works
+  // even when Canvas is throttling. Snapshots _preCmdHtml so the existing one-click revert covers it too.
+  const _saveManualEdit = async (issue, key) => {
+    const ed = _issueEdit[key];
+    if (!ed || ed.saving || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    const original = String(ed.original || '');
+    const draft = String(ed.draft == null ? '' : ed.draft);
+    const html = pdfFixResult.accessibleHtml;
+    if (!original) return;
+    if (draft.trim() === original.trim()) { addToast(t('pdf_audit.issue.edit_nochange') || 'No change to save.', 'info'); _setIssueEdit(prev => { const n = { ...prev }; delete n[key]; return n; }); return; }
+    const sp = _spliceBlock(html, original, draft);
+    if (!sp.ok) {
+      addToast(sp.reason === 'ambiguous'
+        ? (t('pdf_audit.issue.edit_ambiguous') || 'This exact markup appears more than once — use the Expert Workbench for a targeted fix instead.')
+        : (t('pdf_audit.issue.edit_moved') || 'That section changed since you opened it — close and reopen Source, then try again.'),
+        sp.reason === 'ambiguous' ? 'info' : 'error');
+      return;
+    }
+    _setIssueEdit(prev => ({ ...prev, [key]: { ...prev[key], saving: true } }));
+    const newHtml = sp.html;
+    setPdfFixResult(prev => prev ? ({ ...prev, accessibleHtml: newHtml, _preCmdHtml: html, _lastCmdDiff: null }) : prev);
+    addToast(t('pdf_audit.issue.edit_saved') || '✏ Manual edit applied — re-checking…', 'info');
+    const res = await _reauditAndScore(newHtml, null);
+    _setIssueEdit(prev => { const n = { ...prev }; delete n[key]; return n; });   // close the editor
+    _setIssueSourceOpen(prev => ({ ...prev, [key]: false }));                      // collapse the source panel
+    if (res && res.ok) addToast((t('pdf_audit.issue.edit_rechecked') || '📊 Re-checked: ') + res.score + '/100 · ' + res.issues + ' issue(s) remaining', 'success');
+    else addToast(t('pdf_audit.issue.edit_applied_no_reaudit') || '✏ Edit applied. (Couldn’t re-score automatically — the preview is updated; re-run audit when ready.)', 'info');
+  };
+
+  // S1 (2026-06-23): scope → intent → AGENT apply. The expert describes a fix in words; the agent edits
+  // ONLY this located block (passed as a fragment), and the result is spliced back via _spliceBlock — so
+  // the agent's blast radius is BOUNDED to the region (the box=blast-radius primitive, here using the
+  // located block as the region; freehand region-select is the next S1 increment). Unwraps any <body> the
+  // agent adds, refuses moved/ambiguous, re-audits, and snapshots for one-click revert. Graceful on failure.
+  const _applyScopedIntent = async (issue, key) => {
+    const ed = _issueEdit[key];
+    const intent = ed && ed.intent ? String(ed.intent).trim() : '';
+    if (!intent || (ed && ed.saving) || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (typeof processExpertCommand !== 'function') { addToast(t('pdf_audit.issue.ai_unavailable') || 'The AI agent is unavailable right now — edit the HTML directly above instead.', 'info'); return; }
+    const original = String((ed && ed.original) || '');
+    if (!original) return;
+    _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: true } }));
+    addToast(t('pdf_audit.issue.ai_running') || '✨ Asking the AI to apply that to this section…', 'info');
+    let result = null;
+    try { result = await processExpertCommand(intent, original, {}); } catch (_) {}
+    let edited = result && result.html ? result.html : null;
+    if (edited && /<body[\s>]/i.test(edited)) { const m = edited.match(/<body[^>]*>([\s\S]*?)<\/body>/i); if (m) edited = m[1].trim(); } // unwrap if the agent returned a full doc
+    if (!edited || edited === original) { _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } })); addToast(t('pdf_audit.issue.ai_nochange') || 'The AI made no change here (or it was busy) — rephrase, or edit the HTML directly above.', 'info'); return; }
+    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, edited);
+    if (!sp.ok) {
+      _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } }));
+      addToast(sp.reason === 'ambiguous'
+        ? (t('pdf_audit.issue.edit_ambiguous') || 'This exact markup appears more than once — use the Expert Workbench for a targeted fix instead.')
+        : (t('pdf_audit.issue.edit_moved') || 'That section changed since you opened it — close and reopen Source, then try again.'),
+        sp.reason === 'ambiguous' ? 'info' : 'error');
+      return;
+    }
+    const _before = pdfFixResult.accessibleHtml;
+    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    _setIssueEdit((prev) => { const n = { ...prev }; delete n[key]; return n; });
+    _setIssueSourceOpen((prev) => ({ ...prev, [key]: false }));
+    addToast(t('pdf_audit.issue.ai_applied') || '✨ Applied to this section — re-checking…', 'success');
+    const _ra = await _reauditAndScore(sp.html, null);
+    if (_ra && _ra.ok === false) addToast(t('pdf_audit.issue.ai_norescore') || '✨ Applied. Couldn’t re-score automatically (the checker was busy) — the document is updated; re-run the audit when ready.', 'info');
+  };
+
+  // S1 freehand region-select (2026-06-23). The user drags a box over the preview; this resolves it to the
+  // dominant block under the box (deterministic _elementsInBox/_dominantBlock), then bridges that LIVE element
+  // back to the STORED source: it re-finds the block in an off-screen DOMParser doc parsed from accessibleHtml
+  // (matched by anchor text, preferring the same tag) so `original` matches the stored string — never the
+  // live DOM, which carries injected outlines/palette styles a splice could never find. It then opens the
+  // region editor pointed at that block, reusing the proven _applyScopedIntent / _saveManualEdit path keyed
+  // off the reserved '__region__' key. So the drag is just a NEW WAY to scope; the bounded apply is unchanged.
+  const _runRegionSelect = async (box) => {
+    setRegionArmed(false);                                    // one-shot: each drag arms once
+    const live = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+    if (!live || !live.body || !pdfFixResult || !pdfFixResult.accessibleHtml) { addToast(t('pdf_audit.region.no_preview') || 'Open the preview first, then drag a box over a block.', 'info'); return; }
+    if (!box || (box.right - box.left) < 8 || (box.bottom - box.top) < 8) { addToast(t('pdf_audit.region.too_small') || 'Draw a box over a paragraph or heading to select it.', 'info'); return; }
+    const hits = _elementsInBox(live, box);
+    const el = _dominantBlock(hits);
+    if (!el) { addToast(t('pdf_audit.region.empty') || 'No block was at least half inside that box — try a box that covers a paragraph or heading.', 'info'); return; }
+    const _RSEL = 'p,li,h1,h2,h3,h4,h5,h6,blockquote,figure,figcaption,img,table,tr,td,th,ul,ol,dl,dt,dd,pre,aside,section,article,header,footer,div';
+    const norm = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+    const anchor = norm(el.textContent).slice(0, 80);
+    let original = '';
+    try {
+      if (typeof DOMParser !== 'undefined') {
+        const dom = new DOMParser().parseFromString(pdfFixResult.accessibleHtml, 'text/html');
+        if (dom.body) {
+          const tag = el.tagName;
+          const liveBlocks = Array.prototype.slice.call(live.body.querySelectorAll(_RSEL));
+          const offBlocks = Array.prototype.slice.call(dom.body.querySelectorAll(_RSEL));
+          const liveIdx = liveBlocks.indexOf(el);
+          let pick = null;
+          // 1) Bridge by DOCUMENT-ORDER POSITION: when the live + stored block lists line up (the common
+          //    case), the dragged element's index maps straight to the stored block — no text guessing. This
+          //    is what stops "two blocks share an 80-char prefix → edit the FIRST" from silently hitting the
+          //    wrong section (the highlight is on the right one, so a wrong-target edit would be invisible).
+          if (liveIdx >= 0 && offBlocks.length === liveBlocks.length && offBlocks[liveIdx]) {
+            const cand = offBlocks[liveIdx];
+            if (!anchor || cand.tagName === tag || norm(cand.textContent).indexOf(anchor) !== -1) pick = cand;
+          }
+          // 2) Fallback (lists diverged, e.g. A11y-inspect injected nodes): anchor search, but REFUSE on
+          //    ambiguity instead of guessing the first match.
+          if (!pick && anchor && anchor.length >= 6) {
+            const matches = offBlocks.filter((b) => norm(b.textContent).indexOf(anchor) !== -1);
+            const sameTagMatches = matches.filter((b) => b.tagName === tag);
+            const pool = sameTagMatches.length ? sameTagMatches : matches;
+            if (pool.length === 1) pick = pool[0];
+            else if (pool.length > 1) { addToast(t('pdf_audit.region.ambiguous') || 'That block looks identical to another one — I can’t tell them apart safely. Use the issue list or the Expert Workbench for a targeted fix.', 'info'); return; }
+          }
+          if (pick && pick.outerHTML) original = pick.outerHTML;
+        }
+      }
+    } catch (_) {}
+    if (!original) original = el.outerHTML;                   // last-resort fallback (may carry live styles → splice may not-find → graceful)
+    // Outline-hostility for a possible heading promotion: a block inside nav/header/footer/aside/figure must
+    // not become a section heading. Captured here from the live element (same structure as the stored doc).
+    let _badAnc = false; try { let _a = el.parentElement; while (_a) { if (/^(NAV|HEADER|FOOTER|ASIDE|FIGURE|FIGCAPTION)$/.test(_a.tagName)) { _badAnc = true; break; } _a = _a.parentElement; } } catch (_) {}
+    _setIssueEdit((prev) => ({ ...prev, ['__region__']: { original: original, draft: original, intent: '', _region: true, tag: (el.tagName || '').toLowerCase(), preview: norm(el.textContent).slice(0, 140), badAncestor: _badAnc } }));
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const _prev = el.style.outline; el.style.outline = '3px solid #4f46e5'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = _prev; el.style.outlineOffset = ''; } catch (_) {} }, 3000); } catch (_) {}
+    try { const p = document.getElementById('allo-region-editor'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    addToast(t('pdf_audit.region.selected') || '▭ Region selected — describe the change, then Apply with AI (scoped to just this block).', 'info');
+  };
+  _regionHandlerRef.current = _runRegionSelect;               // keep the iframe's once-bound listener calling the LATEST handler (never stale)
+
+  // S3 block-restyle (2026-06-23): apply a CURATED, content-preserving structure transform (callout/list) to
+  // the selected region. The TRANSFORM is deterministic + AI-free (restyleBlock never calls the model) and
+  // triple-gated (reading order + link/image fidelity + valid-nesting context) so it refuses rather than
+  // corrupt. Splices the candidate in via _spliceBlock, snapshots _preCmdHtml for one-click revert, then runs
+  // the SAME re-check the rest of the pipeline uses (which IS an AI audit) — so the SCORE refresh is not
+  // throttle-immune, and a throttled re-audit is surfaced (R11) rather than left silently stale.
+  const _restyleRegion = async (kind) => {
+    const rgn = _issueEdit['__region__'];
+    if (!rgn || rgn.saving || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.restyleBlock !== 'function') { addToast(t('pdf_audit.region.unavailable') || 'Restyle tools are still loading — try again in a moment.', 'info'); return; }
+    const original = String(rgn.original || '');
+    if (!original) return;
+    let topts = {};
+    if (kind === 'heading') {
+      // outline-safe: pick a no-skip level from the nearest preceding heading, and refuse outline-hostile ancestors
+      topts.precedingLevel = (typeof _docPipeline.precedingHeadingLevel === 'function') ? _docPipeline.precedingHeadingLevel(pdfFixResult.accessibleHtml, original) : 0;
+      topts.badAncestor = !!rgn.badAncestor;
+    }
+    let res = null;
+    try { res = _docPipeline.restyleBlock(original, kind, topts); } catch (_) {}
+    if (!res || !res.ok) {
+      const why = res && res.reason;
+      // Honest, reason-specific refusal — every one of these is the deterministic guard REFUSING rather than
+      // shipping a content-loss/invalid-nesting edit (the whole point of the self-gate).
+      const msg = (why === 'reading-order' || why === 'link-fidelity' || why === 'image-fidelity') ? (t('pdf_audit.region.restyle_ro') || 'Skipped — that restyle would have changed the content or reading order (a link, image, or word would move/disappear), so it was refused for content safety.')
+        : why === 'inline-markup' ? (t('pdf_audit.region.restyle_inline') || 'Skipped — this text has links or formatting that a list would flatten. Add line breaks between items, or use “Apply with AI”.')
+        : why === 'bad-context' ? (t('pdf_audit.region.restyle_context') || 'Pick the whole list / parent block, not a single item (list item, table cell, or caption) — restyling it in place would break the structure.')
+        : why === 'multi-block' ? (t('pdf_audit.region.restyle_multiblock') || 'That selection holds several blocks — select a single paragraph to make a list, or use “Make a callout” to wrap them.')
+        : why === 'no-delimiter' ? (t('pdf_audit.region.restyle_nolist') || 'Couldn’t find list items here — separate items with line breaks or bullets first.')
+        : why === 'already-list' ? (t('pdf_audit.region.restyle_already') || 'This block is already a list.')
+        : why === 'already-callout' ? (t('pdf_audit.region.restyle_already_callout') || 'This block is already a callout.')
+        : why === 'already-heading' ? (t('pdf_audit.region.restyle_already_heading') || 'This block is already a heading.')
+        : why === 'too-long' ? (t('pdf_audit.region.restyle_toolong') || 'That block is too long to be a heading — headings should be short titles.')
+        : (t('pdf_audit.region.restyle_cant') || 'Couldn’t restyle this block.');
+      addToast(msg, 'info'); return;
+    }
+    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, res.html);
+    if (!sp.ok) {
+      addToast(sp.reason === 'ambiguous'
+        ? (t('pdf_audit.issue.edit_ambiguous') || 'This exact markup appears more than once — use the Expert Workbench for a targeted fix instead.')
+        : (t('pdf_audit.issue.edit_moved') || 'That section changed since you opened it — close and reopen Source, then try again.'),
+        sp.reason === 'ambiguous' ? 'info' : 'error');
+      return;
+    }
+    _setIssueEdit((prev) => ({ ...prev, ['__region__']: { ...prev['__region__'], saving: true } }));
+    const _before = pdfFixResult.accessibleHtml;
+    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    _setIssueEdit((prev) => { const n = { ...prev }; delete n['__region__']; return n; });
+    addToast(t('pdf_audit.region.restyled') || '✨ Restyled this block — re-checking…', 'success');
+    if (kind === 'heading') _warnHeadingOutline(_before, sp.html);   // axe's heading-order/no-h1 are best-practice (not in the WCAG re-audit) — warn deterministically
+    const _rescore = await _reauditAndScore(sp.html, null);
+    // R11: don't leave the headline score silently stale if the re-audit was throttled — say so (parity with _saveManualEdit).
+    if (_rescore && _rescore.ok === false) addToast(t('pdf_audit.region.restyle_norescore') || '✨ Restyle applied. Couldn’t re-score automatically (the checker was busy) — the document is updated; re-run the audit when ready.', 'info');
+  };
+  // Deterministic heading-outline warning (honest backstop): the re-audit's axe run loads only WCAG-tagged
+  // rules, and heading-order / page-has-heading-one are best-practice — so they would NOT surface a heading
+  // edit that left the outline broken. Compare before/after and warn ONLY on a newly-introduced problem.
+  const _warnHeadingOutline = (beforeHtml, afterHtml) => {
+    try {
+      if (!_docPipeline || typeof _docPipeline.headingOutlineIssue !== 'function') return;
+      const b = _docPipeline.headingOutlineIssue(beforeHtml) || {};
+      const a = _docPipeline.headingOutlineIssue(afterHtml) || {};
+      if (a.skip && !b.skip) addToast(t('pdf_audit.region.heading_skip') || '⚠ Heading added, but it skips a level (e.g. H2 → H4). Re-level it (or the surrounding headings) so the outline has no gaps.', 'info');
+      else if (a.missingH1 && !b.missingH1) addToast(t('pdf_audit.region.heading_no_h1') || '⚠ Heading added, but this document has no H1. Mark the document title as the single top-level heading (H1) so the outline is complete.', 'info');
+    } catch (_) {}
+  };
+
+  // S3 block-restyle slice 2 (2026-06-23): ask the AI WHERE a callout/list would help. proposeRestyles sends
+  // only block text snippets (selection-only — the model returns refs+kind, never HTML) and pre-filters every
+  // pick through the deterministic restyleBlock gate, so what comes back is already a list of SAFE,
+  // accept/revert-ready edits. Graceful under throttle.
+  const _suggestRestyles = async () => {
+    if (_restyleProposalsBusy || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.proposeRestyles !== 'function') { addToast(t('pdf_audit.region.suggest_unavailable') || 'Suggestion tools are still loading — try again in a moment.', 'info'); return; }
+    setRestyleProposalsBusy(true);
+    addToast(t('pdf_audit.region.suggesting') || '✨ Looking for blocks that would read better as callouts or lists…', 'info');
+    let r = null;
+    try { r = await _docPipeline.proposeRestyles(pdfFixResult.accessibleHtml, { max: 10 }); } catch (_) {}
+    setRestyleProposalsBusy(false);
+    if (!r) { addToast(t('pdf_audit.region.suggest_failed') || 'Couldn’t get suggestions right now (the AI may be busy) — try again later.', 'info'); setRestyleProposals(null); return; }
+    setRestyleProposals(r.proposals || []);
+    // Honest accounting: the AI may pick more than we surface — some are filtered by the safety gate or
+    // because their markup can't be located/applied unambiguously. Show how many were dropped (finding 4).
+    setRestyleDropped(Math.max(0, (r.suggested || 0) - ((r.proposals || []).length)));
+    if (!r.proposals || !r.proposals.length) addToast(t('pdf_audit.region.suggest_none') || 'No structure changes suggested — the document already reads cleanly.', 'info');
+  };
+  // Apply one AI suggestion. Its candidate HTML was ALREADY gated by restyleBlock at proposal time; here we
+  // only splice it in (single-occurrence, refuses ambiguous/moved), snapshot for revert, and re-audit.
+  const _applyProposal = async (p) => {
+    if (!p || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    const sp = _spliceBlock(pdfFixResult.accessibleHtml, p.original, p.html);
+    if (!sp.ok) {
+      addToast(sp.reason === 'ambiguous'
+        ? (t('pdf_audit.issue.edit_ambiguous') || 'This exact markup appears more than once — use the Expert Workbench for a targeted fix instead.')
+        : (t('pdf_audit.region.suggest_stale') || 'That block changed since the suggestion was made — re-run “Suggest” to refresh.'),
+        sp.reason === 'ambiguous' ? 'info' : 'error');
+      setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev);   // drop the now-stale suggestion
+      return;
+    }
+    const _before = pdfFixResult.accessibleHtml;
+    setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: sp.html, _preCmdHtml: _before } : prev);
+    setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev);
+    addToast(t('pdf_audit.region.suggest_applied') || '✨ Applied — re-checking…', 'success');
+    if (p.kind === 'heading') _warnHeadingOutline(_before, sp.html);   // honest outline backstop (axe best-practice rules aren't in the re-audit)
+    const _rs = await _reauditAndScore(sp.html, null);
+    if (_rs && _rs.ok === false) addToast(t('pdf_audit.region.restyle_norescore') || '✨ Applied. Couldn’t re-score automatically (the checker was busy) — the document is updated; re-run the audit when ready.', 'info');
+  };
+
+  // Recovery residual source (Option B, 2026-06-22): decide what missing-token list drives the Tier-B
+  // "Re-run with restoration" UI. PREFER the tagged-PDF round-trip snapshot (tokens lost in PDF tagging)
+  // when it's fresh; otherwise — e.g. after the auto-continue loop, which updates the document but never
+  // refreshes lastTaggedValidation — FALL BACK to a fresh source-vs-final-text diff (tokens lost in
+  // remediation) so Recovery is runnable any time after remediation, not only right after a Tagged PDF
+  // export. Pure (no closure deps) → testable. Returns { missingTokens, residual, freshMode }.
+  const _recoveryResidualSource = (td, sourceText, finalText) => {
+    const _normTokenForDiff = _normTokenForDiffShared; // S7: single-sourced from the pipeline
+    const _normalize = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const snap = td && typeof td.residualMissingCount === 'number' ? td.residualMissingCount : null;
+    if (td && snap && snap > 0 && Array.isArray(td.missingTokens)) {
+      return { missingTokens: td.missingTokens, residual: snap, freshMode: false };
+    }
+    if (finalText && sourceText) {
+      const shipSet = new Set(_normalize(finalText).split(' ').filter((w) => w.length >= 3).map(_normTokenForDiff));
+      const seen = new Set(); const uniq = [];
+      for (const w of _normalize(sourceText).split(' ').filter((w) => w.length >= 3)) {
+        const k = _normTokenForDiff(w);
+        if (!k || shipSet.has(k) || seen.has(k)) continue;
+        seen.add(k); uniq.push(w);
+      }
+      return { missingTokens: uniq, residual: uniq.length, freshMode: true };
+    }
+    return { missingTokens: [], residual: 0, freshMode: false };
+  };
+
+  // Apply a vetted palette preset to the document (S2 slice-4). buildPaletteCss/applyPaletteToHtml CLAMP
+  // the palette so contrast is GUARANTEED before it touches the doc; we always re-apply onto the ORIGINAL
+  // pre-palette html (so switching presets can't stack), snapshot it for one-click revert (and set
+  // _preCmdHtml so the generic revert covers it too), then re-audit so the score reflects the recolour.
+  const _applyPalette = async (preset) => {
+    if (!preset || _paletteBusy || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+    if (!_docPipeline || typeof _docPipeline.applyPaletteToHtml !== 'function') { addToast(t('pdf_audit.palette.unavailable') || 'Palette tools are still loading — try again in a moment.', 'info'); return; }
+    const origin = _paletteSnapshotRef.current || pdfFixResult.accessibleHtml;
+    setPaletteBusy(true);
+    try {
+      const built = (typeof _docPipeline.buildPaletteCss === 'function') ? _docPipeline.buildPaletteCss(preset.tokens) : null;
+      const newHtml = _docPipeline.applyPaletteToHtml(origin, preset.tokens);
+      if (newHtml && newHtml !== pdfFixResult.accessibleHtml) {
+        if (!_paletteSnapshotRef.current) _paletteSnapshotRef.current = pdfFixResult.accessibleHtml; // first apply → snapshot the pre-palette state
+        const worst = (built && built.report && built.report.length) ? Math.round(Math.min.apply(null, built.report.map((r) => r.after)) * 10) / 10 : null;
+        const _snap = _paletteSnapshotRef.current;
+        setPdfFixResult((p) => p ? { ...p, accessibleHtml: newHtml, _preCmdHtml: _snap } : p);
+        setAppliedPalette({ id: preset.id, name: preset.name, worst: worst, allPass: built ? built.allPass : true });
+        addToast((t('pdf_audit.palette.applied') || '🎨 Applied palette:') + ' ' + preset.name + ' — re-checking contrast…', 'info');
+        await _reauditAndScore(newHtml, null);
+      } else {
+        setAppliedPalette({ id: preset.id, name: preset.name, worst: null, allPass: true });
+      }
+    } catch (e) { addToast((t('pdf_audit.palette.failed') || 'Palette apply failed:') + ' ' + ((e && e.message) || 'unknown'), 'error'); }
+    setPaletteBusy(false);
+  };
+  // S2 slice-3: ask the AI for a palette from a taste intent (mood/brand), then run it through the SAME
+  // deterministic clamp→apply→re-audit as the presets — so the AI only contributes TASTE; accessibility is
+  // still guaranteed. FERPA: only the intent string is sent (proposePaletteFromIntent sends no doc content).
+  // Graceful under throttle: a null result falls back to "pick a preset" (contrast is guaranteed either way).
+  const _suggestPalette = async () => {
+    const intent = String(_paletteIntent || '').trim();
+    if (!intent || _paletteBusy) return;
+    if (!_docPipeline || typeof _docPipeline.proposePaletteFromIntent !== 'function') { addToast(t('pdf_audit.palette.unavailable') || 'Palette tools are still loading — try again in a moment.', 'info'); return; }
+    setPaletteBusy(true);
+    addToast((t('pdf_audit.palette.ai_asking') || '✨ Asking the AI for a palette:') + ' "' + intent + '"…', 'info');
+    let proposed = null;
+    try { proposed = await _docPipeline.proposePaletteFromIntent(intent); } catch (_) {}
+    setPaletteBusy(false); // _applyPalette manages its own busy flag
+    if (!proposed || !proposed.tokens) { addToast(t('pdf_audit.palette.ai_failed') || 'The AI couldn’t suggest a palette right now (it may be busy) — pick a preset above; contrast is guaranteed either way.', 'info'); return; }
+    await _applyPalette({ id: 'ai:' + intent.slice(0, 24), name: 'AI: ' + intent.slice(0, 24), tokens: proposed.tokens });
+  };
+  const _revertPalette = async () => {
+    const snap = _paletteSnapshotRef.current;
+    if (!snap || _paletteBusy || !pdfFixResult) return;
+    setPaletteBusy(true);
+    setPdfFixResult((p) => p ? { ...p, accessibleHtml: snap } : p);
+    _paletteSnapshotRef.current = null;
+    setAppliedPalette(null);
+    addToast(t('pdf_audit.palette.reverted') || '↩ Reverted to the original colours.', 'info');
+    try { await _reauditAndScore(snap, null); } catch (_) {}
+    setPaletteBusy(false);
+  };
+
+  // Same actions for an axe violation — its nodeDetails[0].target is an EXACT CSS selector (more
+  // precise than the AI text-anchor search), so Find resolves it directly against the live preview.
+  const _axeTarget = (v) => {
+    const nd = v && Array.isArray(v.nodeDetails) ? v.nodeDetails[0] : null;
+    const raw = nd && nd.target;
+    if (raw == null) return '';
+    return Array.isArray(raw) ? (Array.isArray(raw[raw.length - 1]) ? raw[raw.length - 1].join(' ') : raw.join(' ')) : String(raw);
+  };
+  const _jumpToAxe = (v) => {
+    const sel = _axeTarget(v);
+    if (!sel) { addToast(t('pdf_audit.issue.no_jump') || 'No precise spot for this one — it’s document-level or couldn’t be pinpointed.', 'info'); return; }
+    const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+    if (!d || !d.body) { addToast(t('pdf_audit.issue.preview_gone') || 'Open the preview to jump to an issue.', 'info'); return; }
+    let el = null; try { el = d.querySelector(sel); } catch (_) {}
+    if (!el) { addToast(t('pdf_audit.issue.spot_moved') || 'Couldn’t find that spot in the current preview (the text may have changed).', 'info'); return; }
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const prev = el.style.outline; el.style.outline = '3px solid #4f46e5'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = prev; el.style.outlineOffset = ''; } catch (_) {} }, 2500); } catch (_) {}
+  };
+  const _axeToWorkbench = (v) => {
+    const sel = _axeTarget(v);
+    const where = sel ? (' at selector `' + sel.slice(0, 80) + '`') : '';
+    try { setExpertCommandInput('Fix this accessibility issue (' + (v.id || '') + (v.wcag ? ', WCAG ' + v.wcag : '') + ')' + where + ': ' + (v.description || '')); } catch (_) {}
+    try { const wb = document.getElementById('allo-sec-workbench'); if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {}
+    addToast(t('pdf_audit.issue.sent_workbench') || '🛠 Loaded into the Expert Workbench below — review and run it.', 'info');
+  };
+  const _axeActions = (v) => (
+    <span className="shrink-0 flex gap-1">
+      {_axeTarget(v) && <button onClick={() => _jumpToAxe(v)} className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 hover:bg-indigo-200 font-bold" title={t('pdf_audit.issue.find_title') || 'Scroll the preview to this spot and highlight it'} aria-label={(t('pdf_audit.issue.find_aria') || 'Find in preview') + ': ' + (v.description || v.id)}>🔎</button>}
+      <button onClick={() => _axeToWorkbench(v)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.issue.workbench_title') || 'Send to the Expert Workbench — prefills a targeted fix command (with the exact selector)'} aria-label={(t('pdf_audit.issue.workbench_aria') || 'Send to Expert Workbench') + ': ' + (v.description || v.id)}>🛠</button>
+    </span>
+  );
   // Map a WCAG rule number to its W3C Understanding page slug.
   const _wcagUnderstandingUrl = (wcag) => {
     const map = {
@@ -1257,7 +4115,7 @@ function PdfAuditView(props) {
   return (
         <div
           data-help-key="pdf_audit_view_panel"
-          className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          className="allo-docsuite fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
           role="dialog" aria-modal="true" aria-label={t('pdf_audit.modal_aria') || 'PDF Accessibility Audit'}
           tabIndex={-1}
           onClick={(e) => {
@@ -1272,10 +4130,22 @@ function PdfAuditView(props) {
           }}
           ref={(el) => { pdfModalRef.current = el; if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
         >
+          {/* Floating diagnostics log — fixed bottom-right, above the modal; lets the teacher see +
+              copy the pipeline's warnLog/debugLog output from inside Canvas (no browser console). */}
+          <PdfDiagnosticsLog t={t} addToast={addToast} />
           <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
             {/* Persistent close button — sticky so it stays visible when the modal content scrolls.
                 Disabled while remediation is mid-flight so users don't kill a running pipeline by accident. */}
             <div className="sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none">
+              <button
+                type="button"
+                onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
+                aria-label={t('a11y.toggle_theme') || 'Toggle color theme'}
+                title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}
+                className="pointer-events-auto w-9 h-9 me-2 bg-white hover:bg-indigo-50 text-slate-600 rounded-full shadow-md border border-slate-400 flex items-center justify-center transition-colors"
+              >
+                <span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span>
+              </button>
               <button
                 data-help-key="pdf_audit_view_close_btn"
                 type="button"
@@ -1301,7 +4171,8 @@ function PdfAuditView(props) {
                 {pdfWebMode ? (
                   <div className="text-left space-y-4">
                     <h3 className="text-lg font-black text-slate-800 mb-1 text-center">{t('pdf_audit.web.heading') || '🌐 Website & HTML Accessibility'}</h3>
-                    <p className="text-xs text-slate-600 text-center">{t('pdf_audit.web.subheading') || 'Audit a website URL or paste HTML for full WCAG 2.1 AA audit + remediation'}</p>
+                    <p className="text-xs text-slate-600 text-center">{t('pdf_audit.web.static_scope_subheading') || 'Static HTML/source evidence under WCAG 2.2 AA; live behavior and external styles require review'}</p>
+                    <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-center">Static HTML/source audit only: live scripts, external CSS, responsive states, and interaction behavior are not evaluated. Scores are evidence, not a conformance certificate.</p>
 
                     {/* URL Input */}
                     <div>
@@ -1334,14 +4205,41 @@ function PdfAuditView(props) {
                           }
                           addToast(t('toasts.fetching_website'), 'info');
                           try {
-                            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-                            const resp = await fetch(proxyUrl);
-                            if (!resp.ok) throw new Error('Fetch failed: ' + resp.status);
-                            let html = await resp.text();
-                            if (!html.includes('<base')) {
-                              const baseTag = '<base href="' + url.replace(/\/[^/]*$/, '/') + '">';
-                              html = html.replace(/<head([^>]*)>/i, '<head$1>' + baseTag);
+                            const parsedUrl = new URL(url);
+                            if (!/^https?:$/.test(parsedUrl.protocol)) throw new Error('Only http:// and https:// website URLs can be fetched.');
+                            const maxWebsiteBytes = 5 * 1024 * 1024;
+                            let fetched = null;
+                            let usedProxyFallback = false;
+                            let proxyFallbackReason = '';
+                            try {
+                              fetched = await _fetchWebsiteSourceOnce(
+                                parsedUrl.href,
+                                { headers: { Accept: 'text/html,application/xhtml+xml,text/plain;q=0.8' }, credentials: 'omit', redirect: 'follow' },
+                                15000,
+                                'Direct website fetch',
+                                maxWebsiteBytes
+                              );
+                            } catch (directError) {
+                              if (!directError || directError.allowProxyFallback !== true) throw directError;
+                              usedProxyFallback = true;
+                              proxyFallbackReason = directError.message || 'browser CORS or network failure';
+                              const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(parsedUrl.href);
+                              fetched = await _fetchWebsiteSourceOnce(
+                                proxyUrl,
+                                { credentials: 'omit', redirect: 'follow' },
+                                20000,
+                                'AllOrigins proxy fetch',
+                                maxWebsiteBytes
+                              );
                             }
+                            let html = fetched.html;
+                            const finalSourceUrl = (!usedProxyFallback && fetched.response && fetched.response.url) ? fetched.response.url : parsedUrl.href;
+                            if (!/<base\b/i.test(html)) {
+                              const baseHref = new URL(finalSourceUrl).href.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                              const baseTag = '<base href="' + baseHref + '">';
+                              html = /<head\b[^>]*>/i.test(html) ? html.replace(/<head([^>]*)>/i, '<head$1>' + baseTag) : (baseTag + html);
+                            }
+                            if (usedProxyFallback) addToast('AllOrigins proxy fallback was used because the direct request could not be read: ' + proxyFallbackReason + ' AllOrigins received the requested URL.', 'info');
                             document.getElementById('web-audit-html').value = html;
                             addToast(t('toasts.website_fetched') + html.length.toLocaleString() + ' chars) — click Audit to analyze', 'success');
                           } catch (e) {
@@ -1352,6 +4250,7 @@ function PdfAuditView(props) {
                         </button>
                       </div>
                       <p className="text-[11px] text-slate-600 mt-1">{t('pdf_audit.web.or_paste_hint') || 'Or paste HTML source code directly below'}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Fetch tries the site directly first. If CORS, a timeout, or a network/read failure prevents direct access, AllOrigins is used as a fallback and receives the requested URL.</p>
                     </div>
 
                     {/* HTML Input */}
@@ -1367,75 +4266,164 @@ function PdfAuditView(props) {
                       <button onClick={async () => {
                         const html = document.getElementById('web-audit-html')?.value?.trim();
                         if (!html || html.length < 20) { addToast(t('toasts.paste_fetch_html_first'), 'info'); return; }
-                        addToast(t('toasts.running_accessibility_audit'), 'info');
-                        const [aiResult, axeResult] = await Promise.all([
-                          auditOutputAccessibility(html),
-                          runAxeAudit(html)
+                        addToast('Running static HTML/source accessibility audit...', 'info');
+                        const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);
+                        const [aiResult, axeResult, eaResult] = await Promise.all([
+                          _safeAudit(() => auditOutputAccessibility(html)),
+                          _safeAudit(() => runAxeAudit(html)),
+                          (_docPipeline && typeof _docPipeline.runEqualAccessAudit === 'function')
+                            ? _safeAudit(() => _docPipeline.runEqualAccessAudit(html)) : Promise.resolve(null),
                         ]);
-                        const aiScore = aiResult?.score ?? null;
-                        const axeScore = axeResult?.score ?? null;
-                        const blended = (aiScore !== null && axeScore !== null) ? Math.round((aiScore + axeScore) / 2) : (axeScore ?? aiScore ?? 0);
+                        const aiScore = (aiResult && Number.isFinite(aiResult.score) && !aiResult._partialAudit && !aiResult._scoreDegraded && !aiResult.synthesized) ? aiResult.score : null;
+                        const axeScore = axeResult && Number.isFinite(axeResult.score) ? axeResult.score : null;
+                        const eaScore = eaResult && Number.isFinite(eaResult.score) ? eaResult.score : null;
+                        const deterministicScore = axeScore !== null ? (eaScore !== null ? Math.min(axeScore, eaScore) : axeScore) : eaScore;
+                        const blended = _computeHeadline(aiScore, deterministicScore);
+                        const languageReviewRequired = !_htmlHasExplicitLanguage(html);
+                        const verification = _deriveVerificationState({
+                          ai: aiResult,
+                          axe: axeResult,
+                          equalAccess: eaResult,
+                          pdfUaSelfCheck: 'not-run',
+                          languageReviewRequired,
+                          extraReasons: [_STATIC_WEB_REVIEW_REASON],
+                        });
+                        const details = (verification.reasons || []).join(' ');
                         setPdfAuditResult({
-                          score: blended,
+                          score: Number.isFinite(blended) ? blended : null,
                           _aiOnlyScore: aiScore,
                           _baselineAxeScore: axeScore,
-                          summary: (aiResult?.summary || 'Website audit complete') + (axeResult ? ` | axe-core: ${axeResult.totalViolations} violations` : ''),
+                          _baselineAxeAudit: axeResult,
+                          _baselineSecondEngineAudit: eaResult,
+                          summary: 'Static HTML/source audit: ' + verification.verificationState + '.' + (details ? (' ' + details) : ''),
                           critical: aiResult?.issues?.filter(i => i.severity === 'critical') || [],
                           major: aiResult?.issues?.filter(i => i.severity === 'serious' || i.severity === 'major') || [],
                           minor: aiResult?.issues?.filter(i => i.severity === 'moderate' || i.severity === 'minor') || [],
                           passes: aiResult?.passes || [],
                           axeAudit: axeResult,
+                          secondEngineAudit: eaResult,
+                          verificationCoverage: verification.coverage,
+                          verificationState: verification.verificationState,
+                          verificationReasons: verification.reasons,
+                          verificationReviewCount: verification.reviewCount,
+                          requiresManualReview: verification.requiresManualReview,
+                          afterScoreVerified: verification.afterScoreVerified,
+                          languageReviewRequired,
+                          verificationExtraReasons: [_STATIC_WEB_REVIEW_REASON],
                           _isWebAudit: true,
-                          scores: [blended],
+                          _scoreIsBlended: aiScore !== null && deterministicScore !== null,
+                          scores: Number.isFinite(blended) ? [blended] : [],
                           scoreSD: 0,
                           scoreRange: 0,
-                          auditorCount: 1,
+                          auditorCount: aiScore !== null ? 1 : 0,
                         });
                         setPendingPdfBase64(null);
                         setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '.html' });
                         window.__pendingWebHtml = html;
+                        const scoreText = Number.isFinite(blended) ? (' Evidence score: ' + blended + '/100.') : ' No score is available.';
+                        addToast('Static HTML/source audit ' + verification.verificationState + '.' + scoreText, verification.verificationState === 'complete' ? 'success' : 'warning');
                       }} data-help-key="pdf_audit_view_web_audit_btn" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
-                        ♿ Audit (AI + axe-core)
+                        ♿ Audit static source (AI + axe-core + IBM Equal Access)
                       </button>
                       <button onClick={async () => {
                         const html = document.getElementById('web-audit-html')?.value?.trim();
                         if (!html || html.length < 20) { addToast(t('toasts.paste_fetch_html_first'), 'info'); return; }
-                        addToast(t('toasts.auditing_remediating_html'), 'info');
+                        const _sourceLanguageReviewRequired = !_htmlHasExplicitLanguage(html);
+                        addToast('Auditing and remediating static HTML source...', 'info');
                         setPdfFixLoading(true);
-                        setPdfFixStep('Applying deterministic fixes...');
+                        setPdfFixStep('Auditing original static source...');
                         try {
+                          const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);
+                          const [baseAi, baseAxe, baseEa] = await Promise.all([
+                            _safeAudit(() => auditOutputAccessibility(html)),
+                            _safeAudit(() => runAxeAudit(html)),
+                            (_docPipeline && typeof _docPipeline.runEqualAccessAudit === 'function')
+                              ? _safeAudit(() => _docPipeline.runEqualAccessAudit(html)) : Promise.resolve(null),
+                          ]);
+                          const _bAi = (baseAi && Number.isFinite(baseAi.score) && !baseAi._partialAudit && !baseAi._scoreDegraded && !baseAi.synthesized) ? baseAi.score : null;
+                          const _bAxe = baseAxe && Number.isFinite(baseAxe.score) ? baseAxe.score : null;
+                          const _bEa = baseEa && Number.isFinite(baseEa.score) ? baseEa.score : null;
+                          const _bDet = _bAxe !== null ? (_bEa !== null ? Math.min(_bAxe, _bEa) : _bAxe) : _bEa;
+                          const beforeScore = _computeHeadline(_bAi, _bDet);
+
+                          setPdfFixStep('Applying deterministic fixes...');
                           let fixed = html;
                           const cf = fixContrastViolations(fixed);
                           if (cf.fixCount > 0) fixed = cf.html;
-                          if (!fixed.includes('lang=')) fixed = fixed.replace(/<html/, '<html lang="en"');
+                          // Do not guess lang="en". An unknown primary language remains explicit review evidence.
                           if (!fixed.includes('<main')) { fixed = fixed.replace(/<body[^>]*>/, (m) => m + '\n<main id="main-content" role="main">'); fixed = fixed.replace('</body>', '</main>\n</body>'); }
                           if (!fixed.includes('Skip to') && !fixed.includes('skip-nav')) fixed = fixed.replace(/<body[^>]*>/, (m) => m + '\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>');
-                          const autoFix = await autoFixAxeViolations(fixed, await runAxeAudit(fixed), pdfAutoFixPasses);
+                          const preFixAxe = await _safeAudit(() => runAxeAudit(fixed));
+                          let autoFix = null;
+                          if (preFixAxe) autoFix = await _safeAudit(() => autoFixAxeViolations(fixed, preFixAxe, pdfAutoFixPasses));
                           if (autoFix?.html) fixed = autoFix.html;
-                          const [finalAi, finalAxe] = await Promise.all([auditOutputAccessibility(fixed), runAxeAudit(fixed)]);
-                          const finalScore = (finalAi && finalAxe) ? Math.round(((finalAi.score || 0) + (finalAxe.score || 0)) / 2) : (finalAi?.score || 0);
-                          setPdfFixResult({
+                          // The shared axe fixer uses lang="en" as a generic missing-lang fallback. For
+                          // language-unknown pasted/fetched source, remove that guess and keep WCAG 3.1.1
+                          // as explicit review work rather than shipping a potentially wrong language.
+                          if (_sourceLanguageReviewRequired) {
+                            fixed = fixed.replace(/(<html\b[^>]*?)\s+lang\s*=\s*(["'])en\2([^>]*>)/i, (_m, before, _quote, after) => before + after);
+                          }
+
+                          setPdfFixStep('Verifying static source with all engines...');
+                          const [finalAi, finalAxe, finalEa] = await Promise.all([
+                            _safeAudit(() => auditOutputAccessibility(fixed)),
+                            _safeAudit(() => runAxeAudit(fixed)),
+                            (_docPipeline && typeof _docPipeline.runEqualAccessAudit === 'function')
+                              ? _safeAudit(() => _docPipeline.runEqualAccessAudit(fixed)) : Promise.resolve(null),
+                          ]);
+                          const _finalAiScore = (finalAi && Number.isFinite(finalAi.score) && !finalAi._partialAudit && !finalAi._scoreDegraded && !finalAi.synthesized) ? finalAi.score : null;
+                          const _finalAxeScore = finalAxe && Number.isFinite(finalAxe.score) ? finalAxe.score : null;
+                          const _finalEaScore = finalEa && Number.isFinite(finalEa.score) ? finalEa.score : null;
+                          const _finalDetScore = _finalAxeScore !== null ? (_finalEaScore !== null ? Math.min(_finalAxeScore, _finalEaScore) : _finalAxeScore) : _finalEaScore;
+                          const finalScore = _computeHeadline(_finalAiScore, _finalDetScore);
+                          const languageReviewRequired = _sourceLanguageReviewRequired;
+                          const verification = _deriveVerificationState({
+                            ai: finalAi,
+                            axe: finalAxe,
+                            equalAccess: finalEa,
+                            pdfUaSelfCheck: 'not-run',
+                            languageReviewRequired,
+                            extraReasons: [_STATIC_WEB_REVIEW_REASON],
+                          });
+                          const _boundWebResult = await _viewBindFreshVerificationResult({
                             accessibleHtml: fixed,
-                            beforeScore: 0,
-                            afterScore: finalScore,
+                            beforeScore: Number.isFinite(beforeScore) ? beforeScore : null,
+                            afterScore: Number.isFinite(finalScore) ? finalScore : null,
+                            afterScoreVerified: verification.afterScoreVerified,
                             verificationAudit: finalAi,
-                            axeAudit: finalAxe,
+                            axeAudit: finalAxe && Number.isFinite(finalAxe.score) ? finalAxe : null,
+                            secondEngineAudit: finalEa && Number.isFinite(finalEa.score) ? finalEa : null,
+                            verificationCoverage: verification.coverage,
+                            verificationState: verification.verificationState,
+                            verificationReasons: verification.reasons,
+                            verificationReviewCount: verification.reviewCount,
+                            requiresManualReview: verification.requiresManualReview,
+                            languageReviewRequired,
+                            verificationExtraReasons: [_STATIC_WEB_REVIEW_REASON],
                             autoFixPasses: autoFix?.passes || 0,
-                            needsExpertReview: finalScore < 70,
+                            needsExpertReview: verification.requiresManualReview || (Number.isFinite(finalScore) && finalScore < 70),
+                            expertReviewReason: 'accessibility',
                             htmlChars: fixed.length,
                             chunkState: autoFix?.chunkState || null,
                             chunkWeightedScore: autoFix?.chunkWeightedScore || null,
-                          });
+                            _isWebRemediation: true,
+                          }, fixed, _docPipeline);
+                          setPdfFixResult(_boundWebResult);
                           setPendingPdfFile({ name: (document.getElementById('web-audit-url')?.value || 'website') + '-remediated.html' });
-                          addToast(`Remediation complete! Score: ${finalScore}/100`, 'success');
-                        } catch (e) { const _c = classifyPdfError(e); addToast((t('toasts.remediation_failed') || 'Remediation failed: ') + _c.friendly + (_c.actionable ? ' — ' + _c.actionable : ''), _c.severity === 'info' ? 'info' : 'error'); }
-                        setPdfFixLoading(false);
-                        setPdfFixStep('');
-                      }} data-help-key="pdf_audit_view_web_remediate_btn" className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
-                        🔧 Audit & Remediate
+                          const scoreText = Number.isFinite(finalScore) ? (' Evidence score: ' + finalScore + '/100.') : ' No score is available.';
+                          addToast('Static HTML remediation finished: ' + _boundWebResult.verificationState + '.' + scoreText, _boundWebResult.verificationState === 'complete' ? 'success' : 'warning');
+                        } catch (e) {
+                          const _c = classifyPdfError(e);
+                          addToast((t('toasts.remediation_failed') || 'Remediation failed: ') + _c.friendly + (_c.actionable ? ' - ' + _c.actionable : ''), _c.severity === 'info' ? 'info' : 'error');
+                        } finally {
+                          setPdfFixLoading(false);
+                          setPdfFixStep('');
+                        }
+                      }} data-help-key="pdf_audit_view_web_remediate_btn" className="px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center gap-2">
+                        🔧 Audit & Remediate static source
                       </button>
                     </div>
-                    <p className="text-[11px] text-slate-600 text-center">"Audit" scores without changing. "Audit & Remediate" fixes the HTML and produces a downloadable accessible version.</p>
+                    <p className="text-[11px] text-slate-600 text-center">Both actions inspect static source with AI, axe-core, and IBM Equal Access. Remediation produces downloadable HTML, with unresolved and out-of-scope checks retained for manual review.</p>
                   </div>
                 ) : pdfBatchMode ? (
                   <div className="text-left">
@@ -1453,36 +4441,9 @@ function PdfAuditView(props) {
                           e.currentTarget.classList.remove('border-indigo-500', 'bg-indigo-50');
                           const files = [...e.dataTransfer.files].filter(f => f.type === 'application/pdf' || /\.(docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i.test(f.name || ''));
                           if (files.length === 0) { addToast(t('toasts.drop_pdf_files_only'), 'error'); return; }
-                          files.forEach(file => {
-                            const reader = new FileReader();
-                            reader.onloadend = async () => {
-                              if (reader.error || !reader.result) return; // onerror already surfaced it; never push a broken entry
-                              let base64 = reader.result.split(',')[1];
-                              // Transcript formats (sweep 2026-06-11 LOW[7]): encode to
-                              // ALLOTRANSCRIPT exactly like the single-file lane — the batch
-                              // runner's audit/fix dispatchers already speak it.
-                              try {
-                                const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || '');
-                                const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || '');
-                                if (_isText || _isSheet) {
-                                  let _text;
-                                  if (_isSheet) {
-                                    if (typeof convertXlsxToMarkdownTables !== 'function') { addToast('"' + file.name + '" — spreadsheet support is still loading; try again in a moment. Skipped.', 'error'); return; }
-                                    _text = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
-                                  } else {
-                                    _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
-                                  }
-                                  if (!_text || !_text.trim()) { addToast('"' + file.name + '" looks empty — skipped.', 'error'); return; }
-                                  const _r = await transcribeMediaToPayload(null, 'text/plain', { preText: _text, file });
-                                  base64 = (_r && _r.payload) || base64;
-                                }
-                              } catch (_convErr) { addToast('Could not convert "' + file.name + '": ' + ((_convErr && _convErr.message) || 'unknown') + ' — skipped.', 'error'); return; }
-                              setPdfBatchQueue(prev => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: 'pending', result: null }]);
-                            };
-                            reader.onerror = () => addToast('Could not read "' + file.name + '" — it may be corrupt or locked; skipped.', 'error');
-                            reader.readAsDataURL(file);
-                          });
-                          addToast(`Added ${files.length} file(s) to batch queue`, 'success');
+                          // #12: budget-checked + sequential reads (shared helper — was a byte-copy of the browse handler)
+                          const _added = _alloEnqueueBatchFiles(files);
+                          if (_added > 0) addToast(`Added ${_added} file(s) to batch queue`, 'success');
                         }}
                       >
                         <div className="text-4xl mb-2">📥</div>
@@ -1490,36 +4451,9 @@ function PdfAuditView(props) {
                         <p className="text-xs text-slate-600 mt-1">or click to browse</p>
                         <input type="file" accept=".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods" multiple className="hidden" id="batch-pdf-input" onChange={(e) => {
                           const files = [...(e.target.files || [])].filter(f => f.type === 'application/pdf' || /\.(docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i.test(f.name || ''));
-                          files.forEach(file => {
-                            const reader = new FileReader();
-                            reader.onloadend = async () => {
-                              if (reader.error || !reader.result) return; // onerror already surfaced it; never push a broken entry
-                              let base64 = reader.result.split(',')[1];
-                              // Transcript formats (sweep 2026-06-11 LOW[7]): encode to
-                              // ALLOTRANSCRIPT exactly like the single-file lane — the batch
-                              // runner's audit/fix dispatchers already speak it.
-                              try {
-                                const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || '');
-                                const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || '');
-                                if (_isText || _isSheet) {
-                                  let _text;
-                                  if (_isSheet) {
-                                    if (typeof convertXlsxToMarkdownTables !== 'function') { addToast('"' + file.name + '" — spreadsheet support is still loading; try again in a moment. Skipped.', 'error'); return; }
-                                    _text = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
-                                  } else {
-                                    _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
-                                  }
-                                  if (!_text || !_text.trim()) { addToast('"' + file.name + '" looks empty — skipped.', 'error'); return; }
-                                  const _r = await transcribeMediaToPayload(null, 'text/plain', { preText: _text, file });
-                                  base64 = (_r && _r.payload) || base64;
-                                }
-                              } catch (_convErr) { addToast('Could not convert "' + file.name + '": ' + ((_convErr && _convErr.message) || 'unknown') + ' — skipped.', 'error'); return; }
-                              setPdfBatchQueue(prev => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: 'pending', result: null }]);
-                            };
-                            reader.onerror = () => addToast('Could not read "' + file.name + '" — it may be corrupt or locked; skipped.', 'error');
-                            reader.readAsDataURL(file);
-                          });
-                          if (files.length > 0) addToast(`Added ${files.length} PDF(s)`, 'success');
+                          // #12: budget-checked + sequential reads (shared helper — was a byte-copy of the drop handler)
+                          const _added = _alloEnqueueBatchFiles(files);
+                          if (_added > 0) addToast(`Added ${_added} PDF(s)`, 'success');
                           e.target.value = '';
                         }} />
                         <label data-help-key="pdf_audit_view_batch_browse_btn" htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">{t('pdf_audit.batch.browse_files') || 'Browse Files'}</label>
@@ -1551,10 +4485,14 @@ function PdfAuditView(props) {
                                   const toastMsg = t('pdf_audit.batch.resume.toast', { done: resumableBatch._doneCount, remaining: resumableBatch._incompleteCount }) || `Resuming batch · ${resumableBatch._doneCount} cached, ${resumableBatch._incompleteCount} to process`;
                                   setResumableBatch(null);
                                   addToast(toastMsg, 'info');
-                                  try { runPdfBatchRemediation({ resumeQueue }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
+                                  // Finding 10 (ChatGPT review 2026-07-10): resume with the batch's SAVED settings —
+                                  // resuming under the CURRENT sliders mixed configurations in one summary and
+                                  // broke the Tier-4 done-skip (cache keys no longer matched).
+                                  if (resumableBatch.settings) { addToast(t('pdf_audit.batch.resume.settings_toast') || 'Resuming with the batch’s original settings — current slider values apply to new batches.', 'info'); }
+                                  try { runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
                                 }}
                                 data-help-key="pdf_audit_view_batch_resume_btn"
-                                className="px-4 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg text-xs font-bold hover:from-amber-700 hover:to-orange-700 transition-all shadow"
+                                className="px-4 py-1.5 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-lg text-xs font-bold hover:from-amber-900 hover:to-orange-900 transition-all shadow"
                               >
                                 {'▶'} {t('pdf_audit.batch.resume.resume_button') || 'Resume Batch'}
                               </button>
@@ -1651,15 +4589,16 @@ function PdfAuditView(props) {
 
                     {/* Batch Summary */}
                     {pdfBatchSummary && (
-                      <div className="mb-4 p-4 bg-green-50 rounded-xl border border-green-200">
-                        <h4 className="text-sm font-black text-green-800 mb-2">{'\u2705'} Batch Complete</h4>
-                        <div className="grid grid-cols-3 gap-2 mb-3">
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-600">{pdfBatchSummary.succeeded}/{pdfBatchSummary.total}</div><div className="text-[11px] text-slate-600">Succeeded</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-indigo-600">+{pdfBatchSummary.avgImprovement}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.avg_improvement') || 'Avg Improvement'}</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-600">{pdfBatchSummary.above90}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.scored_90_plus') || 'Scored 90+'}</div></div>
+                      <div className={`mb-4 p-4 rounded-xl border ${(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+                        <h4 className={`text-sm font-black mb-2 ${(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? 'text-amber-900' : 'text-green-800'}`}>{(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? '\u26a0' : '\u2705'} Batch Processing Complete</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-slate-700">{pdfBatchSummary.processed ?? (pdfBatchSummary.succeeded + (pdfBatchSummary.reviewRequired || 0))}/{pdfBatchSummary.total}</div><div className="text-[11px] text-slate-600">Processed</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-700">{pdfBatchSummary.fullyVerified ?? pdfBatchSummary.succeeded}</div><div className="text-[11px] text-slate-600">Fully verified</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-amber-700">{pdfBatchSummary.reviewRequired || 0}</div><div className="text-[11px] text-slate-600">Need review</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-700">{pdfBatchSummary.above90Verified ?? 0}</div><div className="text-[11px] text-slate-600">Verified at 90+</div></div>
                         </div>
                         <div className="text-xs text-slate-600 space-y-0.5">
-                          <p>{'\ud83d\udcc8'} Average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter}</p>
+                          <p>{'\ud83d\udcc8'} Numeric-score average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter} ({pdfBatchSummary.avgImprovement >= 0 ? '+' : ''}{pdfBatchSummary.avgImprovement} average change)</p>
                           {pdfBatchSummary.failed > 0 && <p>{'\u274c'} {pdfBatchSummary.failed} failed</p>}
                           {pdfBatchSummary.needsExpert > 0 && <p>{'\ud83e\uddd1\u200d\ud83d\udd2c'} {pdfBatchSummary.needsExpert} need expert review</p>}
                           <p>{'\u23f1\ufe0f'} Total time: {Math.floor(pdfBatchSummary.totalElapsed / 60)}m {pdfBatchSummary.totalElapsed % 60}s</p>
@@ -1712,7 +4651,7 @@ function PdfAuditView(props) {
                       )}
                       {pdfBatchSummary && (
                         <>
-                          <button data-help-key="pdf_audit_view_batch_download_zip_btn" onClick={() => downloadBatchResults()} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
+                          <button data-help-key="pdf_audit_view_batch_download_zip_btn" onClick={() => downloadBatchResults()} className="px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center gap-2">
                             {'\ud83d\udce5'} Download All (ZIP)
                           </button>
                           <button data-help-key="pdf_audit_view_batch_new_batch_btn" onClick={() => { setPdfBatchQueue([]); setPdfBatchSummary(null); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">{t('pdf_audit.batch.new_batch') || 'New Batch'}</button>
@@ -1722,6 +4661,11 @@ function PdfAuditView(props) {
                             const done = queue.filter(f => f.status === 'done');
                             const failed = queue.filter(f => f.status === 'failed');
                             const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                            // Escape every user/AI-derived value written into this same-origin
+                            // popup (filenames, error text, AI-derived violation strings): a crafted
+                            // or shared filename would otherwise run script here. Attribute-safe
+                            // (includes &quot;). (#9 XSS)
+                            const esc = (x) => String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
                             const excellent = done.filter(f => (f.result?.afterScore || 0) >= 90);
                             const good = done.filter(f => (f.result?.afterScore || 0) >= 70 && (f.result?.afterScore || 0) < 90);
@@ -1776,7 +4720,7 @@ tr:hover{background:#1e293b50}
 <div class="grid">
   <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} succeeded · ${failed.length} failed</div></div>
   <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter||0) >= 80 ? '#4ade80' : (summary?.avgAfter||0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: +${summary?.avgImprovement || 0}</div></div>
-  <div class="card"><div class="card-title">Compliance Rate</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+</div></div>
+  <div class="card"><div class="card-title">Docs Scoring 90+ (content audit)</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+ on the content audit (not PDF/UA conformance)</div></div>
   <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert||0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
 </div>
 
@@ -1787,7 +4731,7 @@ tr:hover{background:#1e293b50}
       <div class="chart">${done.map(f => {
         const s = f.result?.afterScore || 0;
         const color = s >= 90 ? '#4ade80' : s >= 70 ? '#fbbf24' : '#f87171';
-        return '<div class="chart-bar" style="height:' + Math.max(4, s) + '%;background:' + color + '" title="' + f.fileName + ': ' + s + '/100"></div>';
+        return '<div class="chart-bar" style="height:' + Math.max(4, s) + '%;background:' + color + '" title="' + esc(f.fileName) + ': ' + s + '/100"></div>';
       }).join('')}</div>
       <div style="font-size:10px;color:#64748b;margin-top:8px;text-align:center">Each bar = one document (height = score)</div>
     </div>
@@ -1815,24 +4759,25 @@ tr:hover{background:#1e293b50}
     const r = f.result;
     const after = r?.afterScore || 0;
     const cls = after >= 90 ? 'excellent' : after >= 70 ? 'good' : 'needs-work';
-    return '<tr><td>' + (i+1) + '</td><td>' + f.fileName + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>+' + (r ? (r.afterScore - r.beforeScore) : '—') + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + (f.error || '')) + '</td></tr>';
+    return '<tr><td>' + (i+1) + '</td><td>' + esc(f.fileName) + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>+' + (r ? (r.afterScore - r.beforeScore) : '—') + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + esc(f.error || '')) + '</td></tr>';
   }).join('')}
   </tbody></table>
 </div>
 
 ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (Training Priorities)</h2>' +
-  topViolations.map(([v, count]) => '<div class="violation-row"><span>' + v + '</span><span style="font-weight:800;color:#f87171">' + count + ' docs</span></div>').join('') +
+  topViolations.map(([v, count]) => '<div class="violation-row"><span>' + esc(v) + '</span><span style="font-weight:800;color:#f87171">' + count + ' docs</span></div>').join('') +
   '<p style="font-size:11px;color:#64748b;margin-top:12px">These violations appeared across multiple documents — addressing them through faculty training would have the highest impact.</p></div>' : ''}
 
 <div class="section">
   <h2>Compliance Summary</h2>
   <div style="background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155">
     <p style="font-size:13px;line-height:1.8;color:#cbd5e1">
-      Of <strong>${queue.length}</strong> documents analyzed, <strong>${excellent.length}</strong> (${done.length > 0 ? Math.round(excellent.length/done.length*100) : 0}%) meet WCAG 2.1 Level AA compliance (score ≥ 90).
-      ${good.length > 0 ? '<strong>' + good.length + '</strong> document' + (good.length > 1 ? 's are' : ' is') + ' partially compliant (70-89) and may meet requirements with minor additional remediation.' : ''}
-      ${needsWork.length > 0 ? '<strong>' + needsWork.length + '</strong> document' + (needsWork.length > 1 ? 's require' : ' requires') + ' significant remediation or expert review to meet compliance standards.' : ''}
+      Of <strong>${queue.length}</strong> documents analyzed, <strong>${excellent.length}</strong> (${done.length > 0 ? Math.round(excellent.length/done.length*100) : 0}%) scored <strong>≥ 90 on AlloFlow's content audit</strong> (a WCAG 2.2 AA-oriented heuristic run on the remediated HTML reconstruction).
+      ${good.length > 0 ? '<strong>' + good.length + '</strong> document' + (good.length > 1 ? 's' : '') + ' scored 70-89 and may meet requirements with minor additional remediation.' : ''}
+      ${needsWork.length > 0 ? '<strong>' + needsWork.length + '</strong> document' + (needsWork.length > 1 ? 's' : '') + ' scored below 70 and require significant remediation or expert review.' : ''}
     </p>
-    <p style="font-size:11px;color:#64748b;margin-top:12px">Standards: WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
+    <p style="font-size:11px;color:#fbbf24;margin-top:12px;line-height:1.6">⚠ The content-audit score is <strong>not</strong> an ISO 14289-1 (PDF/UA) conformance verdict for the exported tagged PDFs — it measures the HTML/text content, not the shipped PDF bytes. Validate exported PDFs in veraPDF / PAC (and confirm alt-text quality and reading order by hand) before claiming compliance for filing.</p>
+    <p style="font-size:11px;color:#64748b;margin-top:12px">Standards referenced: WCAG 2.2 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
     <p style="font-size:11px;color:#64748b">Methodology: AI multi-pass review (one model, varied prompts) + axe-core (Deque) automated verification · 39 deterministic fixes + 17 surgical AI-diagnosed fixes + iterative AI remediation loop</p>
   </div>
 </div>
@@ -1907,25 +4852,227 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     "Audit & Remediate" below, but with the recommended defaults
                     applied: auto post-fix mode + auto-continue-to-target forced on. */}
                 <div className="mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4">
+                  {/* A1 (2026-06-28): FERPA/privacy egress disclosure. The document's text + images are sent to
+                      Google Gemini for the AI portions of the audit; surfaced ABOVE the primary CTA so a teacher
+                      sees it before any audit runs. The automated WCAG checks (axe / Equal Access) run locally.
+                      Note: PDFs always use Gemini Vision today — there is no AI-free PDF audit mode (Office /
+                      transcript inputs already run axe-only). */}
+                  <p className="text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200">🔒 {t('pdf_audit.gemini_disclosure') || 'Privacy: this document’s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don’t upload documents containing student personal information you aren’t permitted to share with a third-party AI service.'}</p>
                   <button data-help-key="pdf_audit_view_make_accessible_btn" onClick={async () => {
-                    if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } 
+                    if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
+                    // B1 (2026-06-28): a PRIOR run's Stop left pdfAutoContinueAbortRef.current = true and it is
+                    // never reset elsewhere — so a fresh "Make Accessible" would see _stopped()===true and skip
+                    // BOTH auto-continue loops (one pass, then a silent stop). Clear it at the start of each run.
+                    try { pdfAutoContinueAbortRef.current = false; } catch (_) {}
+                    // M12 (deep dive 2026-07-09): a NEW run's output hasn't been validated — clear the
+                    // previous export's PDF/UA badge/panel state at run entry so a fresh upload (which
+                    // doesn't pass through the project loaders' per-doc resets) can never wear the prior
+                    // document's verdict. The signed trail was already hash-protected; the live UI wasn't.
+                    try { setLastTaggedValidation(null); setVeraPdfResult(null); setVeraPdfAutoSkipped(null); _selectTaggedArtifact(null); } catch (_) {}
+                    // (2026-06-20) Auto veraPDF: open + warm the independent ISO validator NOW, inside this
+                    // click (a gesture → popup allowed), so it boots during the run and validates the tagged
+                    // output at the end with no second popup. Default-on (localStorage opt-out), PDF inputs
+                    // only. Popup-blocked / closed → silently falls back to the manual button below.
+                    let _veraWarm = null; let _veraIframe = null;
+                    try {
+                      const _nmIn = (pendingPdfFile?.name || '').toLowerCase();
+                      const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmIn);
+                      if (pdfAutoVeraPdf && _isPdfIn) {
+                        _veraIframe = warmVeraPdfIframe(); // ensure the embedded validator exists (no gesture needed)
+                        // Prefer the inline iframe when it's a proven/ready transport → POPUP-FREE. Only open the
+                        // visible popup as a fallback: when the embed is known-blocked, or it hasn't readied yet on
+                        // a first run (so this run still validates). The popup MUST open in THIS gesture — its
+                        // transient activation can't survive the iframe's ~14s boot — hence the deterministic choice.
+                        const _embedViable = !!(_veraIframe && (_veraEmbedPref() === 'ok' || _veraIframe.isReady()));
+                        if (!_embedViable) _veraWarm = warmVeraPdfWindow();
+                      }
+                    } catch (_) {}
                     // TRUE hands-free chain (2026-06-10 fix — user testing showed the
                     // previous handler stopped after the audit, identical to the manual
                     // path): audit → Fix & Verify → auto-continue to target → autosave.
                     setPdfFixMode('auto');
                     setPdfAuditResult(null);
                     addToast(t('toasts.auditing_remediating_pdf'), 'info');
-                    await runPdfAccessibilityAudit(pendingPdfBase64);
-                    // Let the audit state settle through a render before the fix reads it.
+                    // Capture the audit result and hand it DIRECTLY to the fix. fixAndVerifyPdf
+                    // REQUIRES an audit result and otherwise reads it from React state (pdfAuditResult),
+                    // which the fixed setTimeout(250) below did NOT reliably let propagate on a slow/
+                    // large run — so the fix bailed with "no audit results found" and remediation
+                    // silently never ran after the audit (the reported intermittent bug). Passing
+                    // auditResult removes that race; the try/catch keeps an audit error from aborting
+                    // the whole chain. (Make-Accessible auto-continue fix 2026-06-15)
+                    let _audit = null;
+                    try { _audit = await runPdfAccessibilityAudit(pendingPdfBase64); }
+                    catch (auditErr) { addToast((t('toasts.audit_error_continuing') || '⚠ The audit hit an error — attempting remediation anyway.'), 'warning'); }
+                    // Cosmetic settle only — the fix no longer depends on audit STATE (it gets auditResult below).
                     await new Promise((res) => setTimeout(res, 250));
                     addToast(t('toasts.make_accessible_fixing') || '✨ Audit done — remediating automatically (no clicks needed)…', 'info');
-                    try {
-                      await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name });
-                    } catch (_) { /* fix surface shows its own errors; chain continues to the check below */ }
-                    await new Promise((res) => setTimeout(res, 250));
-                    const r = pdfFixResultRef.current;
-                    const needsLoop = r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); }
-                    if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); }
+                    // ── Hands-off auto-retry (2026-06-18) ──
+                    // "Make Accessible" IS the unattended path, so don't stop at a single bail: (1) if the
+                    // fix produced NO result (a true pipeline failure), re-run it; (2) keep resuming the
+                    // auto-continue loop while it KEEPS IMPROVING. Both are bounded (max 3) + progress-gated
+                    // so a plateau can't loop forever, and PERMANENT errors (auth/quota/config — re-running
+                    // can't help) are never retried. Robust to the dead-man switches (we gate on the RESULT
+                    // ref, not the loading flags). Each retry posts a visible note.
+                    const _HANDSOFF_MAX = 3;
+                    // Disposition table (ChatGPT review 2026-07-10, findings 2+8): fixAndVerifyPdf now
+                    // RETHROWS single-mode failures carrying the Gemini classification (isQuota/isAuth/
+                    // isConfig/canvasTransientAuth/classification.perDay) — previously it swallowed them,
+                    // _handsErr stayed null, and auth/daily-quota/config failures burned up to 3 full
+                    // reruns. Policy reads the STRUCTURED evidence first; the message regex is only the
+                    // fallback for unclassified errors. Note the old regex treated EVERY quota/429 as
+                    // permanent — a per-minute burst should wait-and-retry (H2), not bail.
+                    const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i;
+                    const _handsDisposition = (e) => {
+                      if (!e) return 'retry';                              // no result, no error → transient shape
+                      const _m = String((e && (e.message || e)) || '');
+                      if (e.name === 'AbortError' || /\baborted?\b/i.test(_m)) return 'stop-silent'; // cancellation: no retry, no alarm
+                      if (e.isConfig) return 'never';
+                      if (e.isAuth && !e.canvasTransientAuth) return 'never';
+                      if (e.isQuota) return (e.classification && e.classification.perDay) ? 'pause-daily' : 'wait-retry';
+                      if (e.canvasTransientAuth) return 'wait-retry';
+                      if (_permanentRegex.test(_m)) return 'never';
+                      return 'retry';                                      // network/5xx/timeout → bounded retry
+                    };
+                    const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current); // user pressed Stop
+                    let _handsErr = null, _res = null;
+                    // Capture the RETURN value (no 250ms ref-timing race) and fall back to the ref if the
+                    // pipeline doesn't return it — but NEVER adopt a stale ref after a FAILED run (the ref
+                    // can still hold the PREVIOUS document's result, which read as instant success).
+                    const _runFix = async () => { _handsErr = null; try { _res = await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || undefined }); } catch (e) { _handsErr = e; /* fix surface shows its own errors */ } if (!_handsErr) { for (let _w = 0; _w < 6 && !(_res || pdfFixResultRef.current); _w++) { await new Promise((res) => setTimeout(res, 200)); } _res = _res || pdfFixResultRef.current; } };
+                    await _runFix();
+                    let _fixTries = 0;
+                    // (1) Re-run the whole fix only if it produced NO result — bounded, disposition-gated,
+                    // never after the user pressed Stop.
+                    while (!_res && _fixTries < _HANDSOFF_MAX && !_stopped()) {
+                      const _disp = _handsDisposition(_handsErr);
+                      if (_disp === 'never' || _disp === 'stop-silent') break;
+                      if (_disp === 'pause-daily') {
+                        addToast('⏸ ' + (t('toasts.handsoff_daily_quota') || 'Daily AI quota reached — the run is paused, your progress is preserved. Re-run after the quota resets (midnight Pacific).'), 'warning');
+                        break;
+                      }
+                      _fixTries++;
+                      if (_disp === 'wait-retry') {
+                        addToast('⏳ ' + (t('toasts.handsoff_wait_retry') || 'AI rate-limit — waiting for it to ease before retrying') + ' (' + _fixTries + '/' + _HANDSOFF_MAX + ')…', 'info');
+                        try { if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === 'function') await _docPipeline.waitForGeminiCalm({ maxWaitMs: 180000, shouldAbort: _stopped }); } catch (_) {}
+                      } else {
+                        addToast('🔁 ' + (t('toasts.handsoff_retry_fix') || 'Hands-off mode — the fix produced no result; retrying') + ' (' + _fixTries + '/' + _HANDSOFF_MAX + ')…', 'info');
+                        await new Promise((res) => setTimeout(res, 1500 * _fixTries));
+                      }
+                      if (_stopped()) break;
+                      await _runFix();
+                    }
+                    let r = _res || pdfFixResultRef.current;
+                    if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); }
+                    // (2) Resume the auto-continue loop while it KEEPS IMPROVING — bounded, progress-gated, and
+                    // STOP-AWARE: the user's Stop must be durable across the retry boundary (runAutoFixLoop
+                    // resets the abort flag at entry, so without these checks the wrapper would relaunch it).
+                    let _loopTries = 0, _prevScore = -1;
+                    // (2026-06-20) Throttle bail: if the AI semantic audit was degraded (the service is being
+                    // throttled) AND the deterministic checks are already CLEAN, more AI passes can't help —
+                    // they'd just grind against the throttle. Ship the structural result with a clear message
+                    // instead of looping. (The pipeline now sets afterScore to the deterministic score under
+                    // degradation, so this is the one residual case where the loop would otherwise still run.)
+                    const _aiThrottledClean = !!(r && r._aiVerificationIncomplete && r.axeAudit && r.axeAudit.totalViolations === 0);
+                    if (_aiThrottledClean) addToast(t('toasts.ai_throttled_shipped') || '⚠ The AI service is throttled, so the AI semantic score is incomplete — but the structural/automated checks are clean. Shipped the structural result; re-run in a few minutes for a full AI-verified score.', 'warning');
+                    while (!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped()) {
+                      await runAutoFixLoop(8);
+                      if (_stopped()) break; // user pressed Stop during the loop — honor it, don't relaunch
+                      r = pdfFixResultRef.current;
+                      const _s = r ? (r.afterScore || 0) : 0;
+                      if (!r || _s >= pdfTargetScore || (r.axeAudit && r.axeAudit.totalViolations === 0) || _s <= _prevScore) break; // done or plateaued
+                      _prevScore = _s; _loopTries++;
+                      addToast('🔁 ' + (t('toasts.handsoff_retry_loop') || 'Hands-off mode — below target; retrying the loop') + ' (' + _loopTries + '/' + _HANDSOFF_MAX + ', ' + _s + '/100, target ' + pdfTargetScore + ')…', 'info');
+                      await new Promise((res) => setTimeout(res, 1500 * _loopTries));
+                    }
+                    // Hands-off FINAL state (2026-06-24): the auto-continue loop's passes are INCREMENTAL, so the
+                    // run ends on an incremental pass — a throttle-degraded final audit leaves the headline computed
+                    // from a PARTIAL pass ("N/M sections audited") and the Verification section stale. End on a
+                    // COMPLETE audit: re-run the full content audit via _reauditAndScore (same weakest-layer score +
+                    // H-9 stale-guard; it refreshes verificationAudit and clears the throttle-degraded flag ONLY when
+                    // the re-audit returns a real score — so a re-throttle leaves the honest partial state untouched
+                    // rather than masking it). The GeminiGate stagger makes a re-throttle far less likely. Skip the
+                    // explicit throttle-bail case (we already decided more AI passes can't help there) and honor Stop.
+                    const _finCur = pdfFixResultRef.current;
+                    if (!_aiThrottledClean && !_stopped() && _finCur && _finCur.accessibleHtml && (_loopTries > 0 || _finCur._aiVerificationIncomplete)) {
+                      addToast('🔍 ' + (t('toasts.handsoff_final_audit') || 'Finalizing — running one full audit so the score covers the whole document…'), 'info');
+                      try { await _reauditAndScore(_finCur.accessibleHtml, null); } catch (_) {}
+                    }
+                    if (pdfFixResultRef.current && pdfAutoSaveProject) { saveProjectToFile(true); }
+                    // (2026-06-20) Auto veraPDF: validate the remediated OUTPUT on the warm window opened at
+                    // the click. Generate the tagged PDF (pure compute) then validate it on the already-open,
+                    // already-warm validator — no second popup. Best-effort: any failure leaves the manual
+                    // "Independently validate with veraPDF" button available.
+                    // Pick the transport: the popup if one was opened (fallback path), otherwise the warm
+                    // inline iframe (popup-free path). Either validates the SAME tagged bytes with no extra UI.
+                    const _viaPopup = !!(_veraWarm && _veraWarm.win && !_veraWarm.win.closed);
+                    const _viaIframe = !_viaPopup && !!(_veraIframe && _veraIframe.isReady());
+                    if (_viaPopup || _viaIframe) {
+                      let _validated = false;
+                      let _veraRun = null;
+                      const _autoSetupOperation = ++_veraPdfValidationGenerationRef.current;
+                      setVeraPdfBusy(true);
+                      try {
+                        const _fr = pdfFixResultRef.current;
+                        const _autoSourceHtml = String((_fr && _fr.accessibleHtml) || '');
+                        const _okLib = _autoSourceHtml ? await _ensurePdfLib() : false;
+                        const _b64v = _okLib ? await ensurePdfBase64() : null;
+                        if (_b64v) {
+                          const _binV = atob(_b64v);
+                          const _bytesV = new Uint8Array(_binV.length);
+                          for (let _i = 0; _i < _binV.length; _i++) _bytesV[_i] = _binV.charCodeAt(_i);
+                          const _dmV = _deriveDocMeta(_autoSourceHtml, pendingPdfFile?.name);
+                          const _ovV = pdfMetaOverride || {};
+                          const _resV = await createTaggedPdf(_bytesV, _fr, { title: (_ovV.title && _ovV.title.trim()) || _dmV.title, lang: (_ovV.lang && _ovV.lang.trim()) || _dmV.lang || 'en', author: (_ovV.author && _ovV.author.trim()) || undefined, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(_fr) });
+                          const _tbV = _resV && _resV.bytes ? _resV.bytes : _resV;
+                          if (_tbV && _autoSetupOperation === _veraPdfValidationGenerationRef.current
+                              && String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') === _autoSourceHtml) {
+                            const _autoArtifact = _selectTaggedArtifact(_tbV);
+                            setLastTaggedValidation(null);
+                            setVeraPdfResult(null);
+                            _veraRun = _beginVeraPdfValidation(_autoArtifact, _autoSourceHtml);
+                            setVeraPdfBusy(true);
+                            const _vrV = _viaIframe ? await validateOnIframe(_veraIframe, _veraRun.bytes) : await validateOnWarmWindow(_veraWarm, _veraRun.bytes); // popup path closes the window on completion; iframe stays warm
+                            _validated = true;
+                            const _vbhV = await _sha256OfBytes(_veraRun.bytes); // bind the verdict to the exact bytes it validated
+                            const _boundAutoValidation = await _viewBindValidationToHtml({
+                              fileName: pendingPdfFile?.name || 'document.pdf',
+                              pdfUa1Checks: (_resV && _resV.pdfUa1Checks) || null,
+                              roundTrip: (_resV && _resV.roundTrip) || null,
+                              postExportValidator: (_resV && _resV.postExportValidator) || null,
+                              veraPdf: _vrV,
+                              veraPdfAt: new Date().toISOString(),
+                              veraPdfBytesHash: _vbhV,
+                              generatedAt: new Date().toISOString(),
+                            }, _autoSourceHtml, _docPipeline);
+                            if (_veraPdfValidationIsCurrent(_veraRun)) {
+                              setLastTaggedValidation(_viewAttachTaggedArtifactProof(_boundAutoValidation, _veraRun));
+                              setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._vrV }, _veraRun));
+                              setVeraPdfAutoSkipped(null);
+                              _recordVeraPdfRules(_vrV, 'export'); // only current-artifact verdicts enter telemetry/UI
+                              if (_vrV && !_vrV.error) addToast((_vrV.compliant ? '✅ ' : '⚠ ') + (t('toasts.auto_verapdf_done') || 'Independent veraPDF (ISO 14289-1) validation complete') + (_vrV.compliant ? '' : ' — ' + (_vrV.failedRules ? _vrV.failedRules.length : 0) + ' rule(s) flagged — see the Self-check section'), _vrV.compliant ? 'success' : 'warning');
+                            }
+                          }
+                        }
+                      } catch (_vErr) { try { warnLog && warnLog('[auto-veraPDF] ' + (_vErr && _vErr.message)); } catch (_) {} }
+                      finally {
+                        const _attemptCurrent = _veraRun
+                          ? _veraRun.operation === _veraPdfValidationGenerationRef.current
+                          : _autoSetupOperation === _veraPdfValidationGenerationRef.current;
+                        if (_attemptCurrent) { try { setVeraPdfBusy(false); } catch (_) {} }
+                        if (!_validated && _viaPopup) { try { if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close(); } catch (_) {} }
+                        // M25: a transport existed but the CURRENT validation never completed → say so.
+                        if (!_validated && _attemptCurrent) { try { setVeraPdfAutoSkipped('validation-failed'); } catch (_) {} }
+                      }
+                    } else {
+                      if (_veraWarm && _veraWarm.win) { try { _veraWarm.win.close(); } catch (_) {} }
+                      // M25: NEITHER transport was available (popup blocked + iframe not ready) — the
+                      // default-ON auto-validation silently didn't run; record it for the amber line.
+                      try {
+                        const _nmSkip = (pendingPdfFile?.name || '').toLowerCase();
+                        const _isPdfSkip = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmSkip);
+                        if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped('transport-blocked');
+                      } catch (_) {}
+                    }
                   }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
                   </button>
@@ -1939,7 +5086,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       positioning writes itself without overclaiming. */}
                   <details className="text-left mt-2 text-[11px] text-slate-500">
                     <summary className="cursor-pointer text-center hover:text-slate-700">ℹ️ {t('pdf_audit.title2.summary') || 'Why schools are required to do this (ADA Title II)'}</summary>
-                    <p className="mt-1.5 px-2">{t('pdf_audit.title2.body') || 'The US Department of Justice’s ADA Title II rule requires WCAG 2.1 AA digital accessibility from state and local government entities — including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence — every document you fix now is one fewer at the deadline. (Informational, not legal advice.)'}</p>
+                    <p className="mt-1.5 px-2">{t('pdf_audit.title2.body') || 'The US Department of Justice’s ADA Title II rule requires WCAG 2.2 AA digital accessibility from state and local government entities — including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence — every document you fix now is one fewer at the deadline. (Informational, not legal advice.)'}</p>
                   </details>
                 </div>
 
@@ -1960,7 +5107,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="text-slate-600">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
                       </div>
                       <input data-help-key="pdf_audit_view_target_score_slider" type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.target_score_aria') || 'Target accessibility score'} />
-                      <div className="flex justify-between text-[11px] text-slate-600"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
+                      {/* M10 (deep dive 2026-07-09): the label said "90 (default)" for 2+ weeks after the
+                          default was raised to 95 (2026-06-23 maintainer ask). */}
+                      <div className="flex justify-between text-[11px] text-slate-600"><span>60 (min)</span><span>95 (default)</span><span>100</span></div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[11px]">
@@ -1969,6 +5118,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                       <input data-help-key="pdf_audit_view_max_fix_passes_slider" type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.max_fix_passes_aria') || 'Max fix pass count'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
+                    </div>
+                    {/* OCR language (2026-06-20): for SCANNED/image PDFs, let the teacher tell the pipeline
+                        the language so Tesseract uses the right model — serves ELL handouts. '' = auto-detect. */}
+                    <div>
+                      <div className="flex justify-between text-[11px] mb-0.5">
+                        <span className="font-bold text-slate-600">{t('pdf_audit.settings.ocr_lang') || 'Scanned-doc OCR language'}</span>
+                        {!pdfOcrLanguage && <span className="text-slate-600">{t('pdf_audit.settings.ocr_auto') || 'Auto-detect'}</span>}
+                      </div>
+                      <select data-help-key="pdf_audit_view_ocr_language" value={pdfOcrLanguage || ''} onChange={(e) => setPdfOcrLanguage(e.target.value)} aria-label={t('pdf_audit.settings.ocr_lang_aria') || 'OCR language for scanned documents'} className="w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700">
+                        <option value="">🌐 {t('pdf_audit.settings.ocr_auto_long') || 'Auto-detect (recommended)'}</option>
+                        {OCR_LANG_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.label}</option>)}
+                      </select>
+                      <div className="text-[10px] text-slate-500 mt-0.5">{t('pdf_audit.settings.ocr_lang_hint') || 'Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.'}</div>
                     </div>
                     <label className="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200">
                       <input data-help-key="pdf_audit_view_auto_continue_toggle" type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.settings.auto_continue_aria') || 'Auto-continue remediation until target score'} />
@@ -1982,6 +5144,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <input data-help-key="pdf_audit_view_polish_passes_slider" type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.polish_passes_aria') || 'Polish pass count'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0</span><span>2 (default)</span><span>3</span></div>
                     </div>
+                    {/* M10 (deep dive 2026-07-09): the settings-lock disclosure the 2026-07-02 S1 decision
+                        called for ("settings lock at run entry") but never shipped — a teacher who drags
+                        Target Score mid-run to make it finish was never told why nothing changed. Shown
+                        only while a run is active, so it never adds noise to setup. */}
+                    {(pdfFixLoading || pdfAutoContinueRunning) && (
+                      <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                        ⓘ {t('pdf_audit.settings.locked_midrun') || 'A run is in progress — changes here apply to the NEXT run; the current run keeps the settings it started with.'}
+                      </p>
+                    )}
                   </div>
                 </details>
                 {/* Style & Branding for remediation output */}
@@ -2307,6 +5478,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
                               const summary = (_result && _result.summary) || null;
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+                              _selectTaggedArtifact(taggedBytes); // select a new artifact generation; baseline bytes have no veraPDF verdict
+                              _lastTaggedDeliveryRef.current = null; // M14: delivery state unknown until a download actually fires
+                              // These baseline bytes were NOT validated by veraPDF — drop any stale verdict so the
+                              // live UI + signed audit trail never pair it with this (different) artifact.
+                              setLastTaggedValidation(null);
+                              setVeraPdfResult(null);
                               // Parity with the main tagged-download path: never hand over
                               // a baseline file whose structure failed the post-save check.
                               const _blRoundTrip = (_result && _result.roundTrip) || null;
@@ -2317,10 +5494,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const _blProceed = (typeof window !== 'undefined' && typeof window.confirm === 'function')
                                   ? window.confirm('The baseline tagged PDF FAILED its post-save structure check:\n\n' + _blMsg + '\n\nDownload the unverified file anyway?')
                                   : false;
-                                if (!_blProceed) { addToast('Download cancelled — the baseline tagged PDF did not pass verification.', 'info'); return; }
+                                if (!_blProceed) { _lastTaggedDeliveryRef.current = { withheld: true, reason: 'baseline post-save structure check failed (declined)' }; addToast('Download cancelled — the baseline tagged PDF did not pass verification.', 'info'); return; } // M14
                               }
                               const blob = new Blob([taggedBytes], { type: 'application/pdf' });
                               safeDownloadBlob(blob, baseTitle + '-tagged-baseline.pdf');
+                              _lastTaggedDeliveryRef.current = { withheld: false }; // M14: actually handed over
                               if (summary) {
                                   const parts = [];
                                   if (summary.headings) parts.push(summary.headings + (summary.headings === 1 ? ' heading' : ' headings'));
@@ -2373,22 +5551,98 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     📂 {t('pdf_audit.continue_session') || 'Continue a previous session'}
                     <input type="file" accept=".json" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0]; if (!file) return;
+                      const _projectLoadToken = ++_projectLoadSelectionRef.current;
                       const reader = new FileReader();
-                      reader.onload = (ev) => {
+                      reader.onload = async (ev) => {
+                        if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                         try {
-                          const project = JSON.parse(ev.target.result);
-                          if (!project.accessibleHtml || !project.version) { addToast(t('toasts.valid_alloflow_project_file'), 'error'); return; }
+                          const parsedProject = JSON.parse(ev.target.result);
+                          const project = await _viewRehydrateVerificationHtmlBinding(parsedProject, _docPipeline);
+                          if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+                          if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.valid_alloflow_project_file'), 'error'); return; }
+                          // Forward-version guard (deep dive 2026-07-02 H12): a v3+ file half-loading
+                          // silently would drop whatever fields the newer format carries. Warn, keep going.
+                          if (typeof project.version === 'number' && project.version > 2) { addToast(t('toasts.project_newer_version') || ('This project was saved by a newer AlloFlow (v' + project.version + ' format). Loading what this version understands — some saved data may be ignored.'), 'warning'); }
+                          // Resume an interrupted run (resumable-incomplete-project 2026-06-20): an
+                          // incomplete project has the banked extraction + source bytes but no finished
+                          // HTML. Restore enough to re-run from "Make Accessible" without re-scanning.
+                          if (project.incomplete) {
+                            if (project.pdfBase64 && typeof setPendingPdfBase64 === 'function') setPendingPdfBase64(project.pdfBase64);
+                            // H2 (deep dive 2026-07-02): restore fileSize — the stub used to carry NO size,
+                            // so every size-keyed store (multi-session ranges, chunk progress, score trend)
+                            // computed its key with size=0 and all resumed docs sharing the fallback name
+                            // collided on the same msdoc_ key.
+                            setPendingPdfFile({ name: project.fileName || 'resumed-project.pdf', size: (typeof project.fileSize === 'number' && project.fileSize > 0) ? project.fileSize : undefined });
+                            // OCR-skip seed (2026-06-20): park the already-extracted text under the SAME
+                            // filename fixAndVerifyPdf will compute (pendingPdfFile.name), so Step 1 reuses
+                            // it instead of re-running the slow OCR. Single-use; cleared once consumed.
+                            // H2: thread the saved docKey through — the consume site refuses the seed when
+                            // the re-uploaded bytes fingerprint differently (same name, different file).
+                            try { if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || 'resumed-project.pdf', text: project.extractedText, docKey: project.docKey || null }; } catch (_) {}
+                            if (project.auditResult) {
+                              setPdfAuditResult(project.auditResult);
+                            } else {
+                              setPdfAuditResult({
+                                score: 0, scores: [], critical: [], major: [], minor: [], passes: [],
+                                summary: 'Resumed from an unfinished session', pageCount: project.pageCount || 1,
+                                hasSearchableText: true, hasImages: false,
+                              });
+                            }
+                            if (project.extractedText && typeof setInputText === 'function') setInputText(project.extractedText);
+                            setPdfFixResult(null);
+                            // M12 (deep dive 2026-07-09): a resumed doc must not wear the previous doc's
+                            // PDF/UA badge/panel (see the project loaders' twin resets).
+                            setLastTaggedValidation(null);
+                            setVeraPdfResult(null);
+                            _selectTaggedArtifact(null);
+                            try {
+                              if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === 'function') setPdfRunHistory(project.runHistory.slice(-200));
+                              const _pp = project.prefs || {};
+                              if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
+                              if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
+                              if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
+                              if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
+                              if (_pp.builderFont) { try { localStorage.setItem('allo_selected_font', _pp.builderFont); } catch (_) {} }
+                            } catch (_) {}
+                            // Restore the active page range so resume CONTINUES the same
+                            // partial slice (e.g. pages 6-10) instead of silently treating the
+                            // resumed text as the whole document (which shipped only those
+                            // pages, OCR skipped). Surfaced in the toast so the scope is honest.
+                            let _rangeNote = '';
+                            if (Array.isArray(project.pageRange) && project.pageRange.length === 2 && typeof setPdfPageRange === 'function') {
+                              setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
+                              _rangeNote = ' ⚠ This project covers only pages ' + project.pageRange[0] + '–' + project.pageRange[1] + ' of the original — finish those, or clear the page range to process the whole file.';
+                            }
+                            const _why = project.failureReason === 'auth' ? 'an API key / permission problem'
+                              : project.failureReason === 'quota' ? 'a usage or quota limit'
+                              : project.failureReason === 'network' ? 'a dropped connection'
+                              : 'an AI-service hiccup';
+                            addToast('📂 Resumed “' + (project.fileName || 'project') + '” — it stopped last time due to ' + _why + '. Your extracted text is restored; click Make Accessible to finish' + (project.pdfBase64 ? '' : ' (re-upload the original file first — its bytes weren’t saved)') + '.' + _rangeNote, 'success');
+                            e.target.value = '';
+                            return;
+                          }
                           setPdfAuditResult({
                             score: project.beforeScore || 0, scores: [], critical: [], major: [], minor: [],
                             passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
                             hasSearchableText: true, hasImages: project.imageCount > 0,
                           });
-                          setPdfFixResult({
+                          const _loadedFixResult = {
                             accessibleHtml: project.accessibleHtml,
                             beforeScore: project.beforeScore,
                             afterScore: project.afterScore,
+                            _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
+                            _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : (Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null),
+                            _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
+                            _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
                             axeAudit: project.axeAudit || null,
                             secondEngineAudit: project.secondEngineAudit || null,
+                            verificationCoverage: project.verificationCoverage || null,
+                            verificationHtmlBinding: project.verificationHtmlBinding || null,
+                            verificationState: project.verificationState || 'unavailable',
+                            verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : [],
+                            verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0,
+                            afterScoreVerified: !!project.afterScoreVerified,
+                            requiresManualReview: !!project.requiresManualReview,
                             verificationAudit: project.verificationAudit || null,
                             docStyle: project.docStyle || null,
                             pageCount: project.pageCount,
@@ -2399,6 +5653,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             expertReviewReason: project.expertReviewReason || null,
                             integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
                             integrityWarning: project.integrityWarning || null,
+                            fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
+                            fidelityLimited: project.fidelityLimited || false,
                             sourceText: project.sourceText || '', finalText: project.finalText || '',
                             htmlChars: project.htmlChars || project.accessibleHtml.length,
                             extractedChars: project.extractedChars || 0,
@@ -2408,8 +5664,33 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
                             _plainLanguage: project._plainLanguage || null,
-                          });
+                          };
+                          if (_viewIsLiveVerificationHtmlBound(project, project.accessibleHtml, _docPipeline)) {
+                            _viewAttachRuntimeBindingProof(_loadedFixResult, project.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
+                          }
+                          setPdfFixResult(_loadedFixResult);
                           setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
+                          // H-8 (audit 2026-06-23): this start-screen loader swaps in a DIFFERENT doc's HTML
+                          // but the component never remounts, so per-document refs/state from the PREVIOUS doc
+                          // survive — most dangerously _paletteSnapshotRef, whose stale snapshot lets a palette
+                          // Revert OVERWRITE this freshly-loaded doc with the prior one. Mirror the per-doc reset
+                          // the sidebar "Load Project" loader runs (~9903) so the loaded doc starts clean. Pure
+                          // per-doc-holdover clears (refs / unrelated state slices) — never the loaded
+                          // pdfFixResult / pdfAuditResult / prefs / runHistory set just above.
+                          _paletteSnapshotRef.current = null;
+                          _selectTaggedArtifact(null);
+                          // M12 (deep dive 2026-07-09): the PDF/UA badge state survived the doc swap —
+                          // doc A's "veraPDF: passes" chip/panel rendered for doc B until B produced its
+                          // own tagged export (the signed trail is hash-protected; the live UI was not).
+                          setLastTaggedValidation(null);
+                          setVeraPdfResult(null);
+                          setAppliedPalette(null);
+                          setPaletteIntent('');
+                          _setIssueEdit({});
+                          setRestyleProposals(null);
+                          setRestyleDropped(0);
+                          setRegionArmed(false);
+                          setTagOutline(null);
                           // Restore the cross-session memory the project file carries
                           // (2026-06-10): run history + pipeline prefs. Canvas wipes
                           // origin storage between sessions — the file is the memory.
@@ -2423,7 +5704,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (_pp.builderFont) { try { localStorage.setItem('allo_selected_font', _pp.builderFont); } catch (_) {} }
                           } catch (_) {}
                           addToast(t('toasts.loaded_2') + (project.fileName || 'project') + ' — continue editing!', 'success');
-                        } catch(err) { addToast(t('toasts.failed_load') + err.message, 'error'); }
+                        } catch(err) { if (_projectLoadToken === _projectLoadSelectionRef.current) addToast(t('toasts.failed_load') + err.message, 'error'); }
                       };
                       reader.readAsText(file);
                       e.target.value = '';
@@ -2439,13 +5720,35 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   const _gains = _hist.filter((r) => r.beforeScore != null && r.afterScore != null);
                   const _avgGain = _gains.length ? Math.round(_gains.reduce((s, r) => s + (r.afterScore - r.beforeScore), 0) / _gains.length) : null;
                   const _last = _hist[_hist.length - 1];
+                  // Reliability denominator (2026-06-13): only rows that carry an
+                  // `outcome` count toward the rate, so pre-telemetry / loaded
+                  // rows (outcome=null) don't dilute it into a dishonest 100%.
+                  const _outcomed = _hist.filter((r) => r.outcome === 'success' || r.outcome === 'incomplete' || r.outcome === 'failed');
+                  const _succeeded = _outcomed.filter((r) => r.outcome === 'success');
+                  const _failed = _outcomed.filter((r) => r.outcome === 'failed');
+                  const _incomplete = _outcomed.filter((r) => r.outcome === 'incomplete');
+                  // Honest rate (2026-06-14): success = reached the target with no
+                  // residual violations. 'incomplete' (completed BELOW target) sits
+                  // in the denominator, NOT the numerator — so this is a real
+                  // success rate, not "every run that didn't crash".
+                  const _successRate = _outcomed.length ? Math.round(_succeeded.length / _outcomed.length * 100) : null;
+                  // Most common failure stage, for an at-a-glance "where it breaks".
+                  const _stageTally = {};
+                  _failed.forEach((r) => { const s = r.failStage || 'unknown'; _stageTally[s] = (_stageTally[s] || 0) + 1; });
+                  const _topStage = Object.keys(_stageTally).sort((a, b) => _stageTally[b] - _stageTally[a])[0] || null;
                   return (
                     <div className="mt-2 bg-indigo-50/60 border border-indigo-200 rounded-xl px-3 py-2 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap" data-help-key="pdf_audit_run_history_panel">
                       <span className="font-bold text-indigo-800">📈 {t('pdf_audit.history.lead') || 'Remediation history'}:</span>
                       <span>{_hist.length} {t('pdf_audit.history.runs') || 'document(s)'}{_avgGain != null ? (' · ' + (t('pdf_audit.history.avg') || 'average gain') + ' +' + _avgGain) : ''}{_last ? (' · ' + (t('pdf_audit.history.last') || 'last') + ': ' + _last.fileName + (_last.beforeScore != null ? (' (' + _last.beforeScore + '→' + _last.afterScore + ')') : '')) : ''}</span>
+                      {_outcomed.length > 0 && (
+                        <span className={(_failed.length === 0 && _incomplete.length === 0) ? 'text-emerald-700 font-bold' : 'text-amber-700 font-bold'} title={_failed.length > 0 && _topStage ? ('Most failures at: ' + _topStage) : ''}>
+                          · {_successRate}% {t('pdf_audit.history.success') || 'success'} ({_succeeded.length}/{_outcomed.length}{_incomplete.length > 0 ? (', ' + _incomplete.length + ' ' + (t('pdf_audit.history.incomplete') || 'below target')) : ''}{_failed.length > 0 ? (', ' + _failed.length + ' ' + (t('pdf_audit.history.failed') || 'failed') + (_topStage ? (' · ' + (t('pdf_audit.history.mostly_at') || 'mostly at') + ' ' + _topStage) : '')) : ''})
+                        </span>
+                      )}
                       <button onClick={() => {
-                        const head = 'date,file,before,after,gain,passes,axe_violations,pages';
-                        const lines = _hist.map((r) => [String(r.at || '').slice(0, 10), '"' + String(r.fileName || '').replace(/"/g, '""') + '"', r.beforeScore != null ? r.beforeScore : '', r.afterScore != null ? r.afterScore : '', (r.beforeScore != null && r.afterScore != null) ? (r.afterScore - r.beforeScore) : '', r.passes || 0, r.axeViolations != null ? r.axeViolations : '', r.pages != null ? r.pages : ''].join(','));
+                        const head = 'date,file,outcome,fail_stage,fail_reason,before,after,gain,passes,axe_violations,pages,retries,vision_calls,api_calls,api_ms,duration_s';
+                        const _csv = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+                        const lines = _hist.map((r) => [String(r.at || '').slice(0, 10), _csv(r.fileName || ''), r.outcome || '', _csv(r.failStage || ''), _csv(r.failReason || ''), r.beforeScore != null ? r.beforeScore : '', r.afterScore != null ? r.afterScore : '', (r.beforeScore != null && r.afterScore != null) ? (r.afterScore - r.beforeScore) : '', r.passes != null ? r.passes : '', r.axeViolations != null ? r.axeViolations : '', r.pages != null ? r.pages : '', r.retries != null ? r.retries : '', r.visionCalls != null ? r.visionCalls : '', r.apiCalls != null ? r.apiCalls : '', r.apiMs != null ? r.apiMs : '', r.durationMs != null ? Math.round(r.durationMs / 1000) : ''].join(','));
                         safeDownloadBlob(new Blob([head + '\n' + lines.join('\n')], { type: 'text/csv' }), 'alloflow-remediation-history.csv');
                       }} className="ml-auto px-2 py-0.5 bg-white border border-indigo-300 text-indigo-700 rounded-full font-bold hover:bg-indigo-100 shrink-0">⬇ CSV</button>
                     </div>
@@ -2504,7 +5807,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 space-y-2" style={{ animation: 'fadeInUp 0.7s ease-out 5s both' }}>
                     <div className="text-[11px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">⚖️ Why Digital Accessibility Matters</div>
                     <p className="text-[11px] text-slate-700 leading-relaxed">
-                      <strong className="text-amber-900">{t('pdf_audit.knowbility.ada_title') || 'The Americans with Disabilities Act (ADA) Title II'}</strong> requires state and local governments to make their digital services accessible to people with disabilities. In April 2024, the Department of Justice published <strong>final regulations</strong> mandating <strong>{t('pdf_audit.knowbility.wcag_label') || 'WCAG 2.1 Level AA'}</strong> compliance for all web content and mobile applications, with compliance deadlines ranging from <strong>{t('pdf_audit.knowbility.deadline_range') || 'April 2026 to April 2027'}</strong> depending on population size.
+                      <strong className="text-amber-900">{t('pdf_audit.knowbility.ada_title') || 'The Americans with Disabilities Act (ADA) Title II'}</strong> requires state and local governments to make their digital services accessible to people with disabilities. In April 2024, the Department of Justice published <strong>final regulations</strong> mandating <strong>{t('pdf_audit.knowbility.wcag_label') || 'WCAG 2.2 Level AA'}</strong> compliance for all web content and mobile applications, with compliance deadlines ranging from <strong>{t('pdf_audit.knowbility.deadline_range') || 'April 2026 to April 2027'}</strong> depending on population size.
                     </p>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       But compliance is just the baseline. Accessible documents benefit <strong>everyone</strong> — not just the 1 in 4 Americans living with a disability:
@@ -2527,7 +5830,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="text-[11px] text-slate-600 leading-snug">{t('pdf_audit.knowbility.future_desc') || 'WCAG-compliant content adapts to new devices, AI readers, and emerging assistive technologies'}</div>
                       </div>
                     </div>
-                    <p className="text-[11px] text-amber-700 italic leading-relaxed">{t('pdf_audit.knowbility.italic_callout') || "WCAG 2.1 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being."}</p>
+                    <p className="text-[11px] text-amber-700 italic leading-relaxed">{t('pdf_audit.knowbility.italic_callout') || "WCAG 2.2 AA isn't just about avoiding litigation — it's about building documents that are perceivable, operable, understandable, and robust for every human being."}</p>
                   </div>
 
                   {/* Services Grid */}
@@ -2580,7 +5883,30 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </div>
               </div>
-            ) : pdfAuditResult && pdfAuditResult.score < 0 ? (
+            ) : pdfAuditResult && pdfAuditResult._isWebAudit && pdfAuditResult.score == null ? (
+              <div role="alert" className="rounded-2xl overflow-hidden border border-amber-300 shadow-lg">
+                <div className="p-6 text-center bg-gradient-to-r from-amber-800 to-orange-800 text-white">
+                  <div className="text-4xl mb-2" aria-hidden="true">⚠️</div>
+                  <h3 className="text-lg font-bold">Static HTML/source audit unavailable</h3>
+                  <p className="text-sm opacity-90 mt-1">None of the audit engines returned a usable score. No 0/100 score was fabricated.</p>
+                </div>
+                <div className="p-4 bg-white space-y-3">
+                  {(pdfAuditResult.verificationReasons || []).length > 0 && (
+                    <ul className="text-xs text-slate-700 list-disc ps-5 space-y-1">
+                      {pdfAuditResult.verificationReasons.map((reason, index) => <li key={index}>{reason}</li>)}
+                    </ul>
+                  )}
+                  <div className="flex gap-2 justify-center">
+                    <button onClick={() => {
+                      const saved = window.__pendingWebHtml || '';
+                      setPdfAuditResult({ _choosing: true });
+                      setPdfWebMode(true);
+                      setTimeout(() => { const field = document.getElementById('web-audit-html'); if (field) field.value = saved; }, 0);
+                    }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">Back to static HTML input</button>
+                    <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
+                  </div>
+                </div>
+              </div>) : pdfAuditResult && pdfAuditResult.score < 0 ? (
               <div role="alert" className="rounded-2xl overflow-hidden border border-slate-400 shadow-lg">
                 <div className="p-6 text-center bg-gradient-to-r from-slate-600 to-slate-700 text-white">
                   <div className="text-4xl mb-2">⚠️</div>
@@ -2596,7 +5922,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 </div>
               </div>
             ) : pdfAuditResult && (
-              <div role="status" aria-live="polite" aria-label={`PDF accessibility audit complete. Score: ${pdfAuditResult.score} out of 100.`}>
+              <div role="status" aria-live="polite" aria-label={pdfAuditResult._isWebAudit ? `Static HTML source audit. Evidence score: ${pdfAuditResult.score} out of 100. Verification: ${pdfAuditResult.verificationState || 'partial'}.` : `PDF accessibility audit complete. Score: ${pdfAuditResult.score} out of 100.`}>
                 {pdfFixResult && (
                   <div role="tablist" aria-label={t('pdf_audit.tabs.aria') || 'Audit view'} className="flex gap-1 mb-3 bg-slate-100 p-1 rounded-xl w-fit">
                     <button data-help-key="pdf_audit_results_tab_remediation_btn" role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.remediation_results') || 'Remediation Results'}</button>
@@ -2604,10 +5930,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 )}
                 {(!pdfFixResult || pdfAuditTab === 'original') && (
-                <div data-help-key="pdf_audit_results_score_badge" className={`p-6 text-center ${pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-red-500 to-rose-600'} text-white rounded-t-2xl`}>
+                <div data-help-key="pdf_audit_results_score_badge" className={`p-6 text-center ${pdfAuditResult._isWebAudit && pdfAuditResult.verificationState !== 'complete' ? 'bg-gradient-to-r from-amber-800 to-orange-800' : pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-800 to-emerald-800' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-800 to-orange-800' : 'bg-gradient-to-r from-red-800 to-rose-800'} text-white rounded-t-2xl`}>
                   <div className="text-5xl font-black mb-1" aria-label={`Score: ${pdfAuditResult.score >= 0 ? pdfAuditResult.score : 'unknown'} out of 100`}>{pdfAuditResult.score >= 0 ? pdfAuditResult.score : '?'}<span className="text-2xl opacity-80" aria-hidden="true">/100</span></div>
-                  <h3 className="text-lg font-bold" id="pdf-audit-title">{pdfAuditResult._officeInput ? 'Document Accessibility Score' : 'PDF Accessibility Score'} {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(AI + axe-core blend)</span> : pdfAuditResult._officeInput ? <span className="text-xs font-normal opacity-70">(axe-core on extracted text)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
-                  {pdfAuditResult.scores && <p className="text-xs opacity-70 mt-0.5">{pdfAuditResult.auditorCount || pdfAuditResult.scores.length} AI audit passes (varied persona prompts, same model) · scores: {pdfAuditResult.scores.join(', ')} · SD: {pdfAuditResult.scoreSD ?? '?'}</p>}
+                  <h3 className="text-lg font-bold" id="pdf-audit-title">{pdfAuditResult._isWebAudit ? 'Static HTML Source Evidence Score' : pdfAuditResult._officeInput ? 'Document Accessibility Score' : 'PDF Accessibility Score'} {pdfAuditResult._isWebAudit ? <span className="text-xs font-normal">(available engine evidence; lower score governs)</span> : pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-80">{pdfAuditResult.hasSearchableText === false ? '(AI rubric — automated checks N/A, no text layer)' : '(lower of AI & automated)'}</span> : pdfAuditResult._officeInput ? <span className="text-xs font-normal opacity-80">(axe-core on extracted text)</span> : <span className="text-xs font-normal opacity-80">(AI Rubric)</span>}</h3>
+                  {pdfAuditResult._isWebAudit && <p className="text-xs mt-1 bg-black/20 inline-block px-2 py-0.5 rounded-full font-bold">Verification: {pdfAuditResult.verificationState || 'partial'} · AI + axe-core + IBM Equal Access</p>}
+                  {pdfAuditResult._slicedAudit && <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title="Merged from page-slices because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate. Not cached.">🧩 Approximate — audited in {pdfAuditResult._sliceCount || 'multiple'} page-slices</p>}
+                  {pdfAuditResult._slicedAudit
+                    ? <p className="text-xs opacity-70 mt-0.5">One pass per page-slice (same model) · approximate cross-page coverage</p>
+                    : (pdfAuditResult.scores && pdfAuditResult.scores.length > 1 && <p className="text-xs opacity-70 mt-0.5">{pdfAuditResult.auditorCount || pdfAuditResult.scores.length} AI audit passes (varied persona prompts, same model) · scores: {pdfAuditResult.scores.join(', ')} · SD: {pdfAuditResult.scoreSD ?? '?'}</p>)}
                   {pdfAuditResult.structTree && pdfAuditResult.structTree.hasTags && (() => {
                     const rc = pdfAuditResult.structTree.roleCounts || {};
                     const top = Object.entries(rc).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([r, n]) => `${r}×${n}`).join(', ');
@@ -2617,34 +5947,81 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </p>
                     );
                   })()}
-                  {pdfAuditResult._scoreIsBlended ? (
+                  {pdfAuditResult._isWebAudit ? (
+                    <p className="text-[11px] mt-1">
+                      {[
+                        Number.isFinite(pdfAuditResult._aiOnlyScore) ? ('AI: ' + pdfAuditResult._aiOnlyScore) : 'AI: unavailable',
+                        Number.isFinite(pdfAuditResult._baselineAxeScore) ? ('axe-core: ' + pdfAuditResult._baselineAxeScore) : 'axe-core: unavailable',
+                        pdfAuditResult._baselineSecondEngineAudit && Number.isFinite(pdfAuditResult._baselineSecondEngineAudit.score) ? ('Equal Access: ' + pdfAuditResult._baselineSecondEngineAudit.score) : 'Equal Access: unavailable',
+                      ].join(' | ')} | Governing evidence: {pdfAuditResult.score}
+                    </p>
+                  ) : pdfAuditResult._scoreIsBlended ? (
                     <>
-                      <p className="text-[11px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult._baselineAxeScore} | Blended: {pdfAuditResult.score} (50/50)</p>
+                      {/* No-text-layer honesty (2026-06-30): on an image-only scan the deterministic engines
+                          audit an EMPTY text reconstruction, so their ~100 is by-construction — NOT earned. Show
+                          "n/a" instead of a misleading 100 (the AI rubric is the only meaningful layer; it governs). */}
+                      <p className="text-[11px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult.hasSearchableText === false ? 'n/a (no text layer)' : pdfAuditResult._baselineAxeScore}{pdfAuditResult._baselineSecondEngineAudit && typeof pdfAuditResult._baselineSecondEngineAudit.score === 'number' ? (pdfAuditResult.hasSearchableText === false ? ' | Equal Access: n/a' : ' | Equal Access: ' + pdfAuditResult._baselineSecondEngineAudit.score) : ''} | Governing: {pdfAuditResult.score} {pdfAuditResult.hasSearchableText === false ? '(automated checks ran on an empty text reconstruction — not meaningful; the AI rubric governs)' : '(the lower of the engines — never averaged)'}</p>
                       {(() => {
                         const ai = pdfAuditResult._aiOnlyScore;
                         const axe = pdfAuditResult._baselineAxeScore;
                         if (ai == null || axe == null) return null;
                         const spread = Math.abs(ai - axe);
-                        // A critical axe violation is surfaced REGARDLESS of spread — a
-                        // passing blended average must not mask a hard WCAG failure.
+                        // A critical axe violation is surfaced REGARDLESS of spread — a high automated
+                        // score must not mask a hard WCAG failure.
                         const axeCrit = ((pdfAuditResult._baselineAxeAudit || {}).critical || []).length;
-                        if (spread < 15 && !axeCrit) return null;
+                        // Image-only scan (no text layer): axe runs on a near-EMPTY reconstruction, so its
+                        // high score is purely by-construction — calling that "structurally compliant" is the
+                        // exact trap we warn about. Always surface the OCR message for a scan. (2026-06-21)
+                        const noTextLayer = pdfAuditResult.hasSearchableText === false;
+                        if (spread < 15 && !axeCrit && !noTextLayer) return null;
                         // AI lower than axe → semantic issues (alt text, heading meaning) that axe can't see
                         // axe lower than AI → code-level WCAG failures that the rubric didn't weight enough
                         const aiWeaker = ai < axe;
-                        const msg = axeCrit
-                          ? (t('pdf_audit.divergence.critical_override') || 'axe-core found {n} critical WCAG violation(s) — review them before trusting the blended score; an average can hide a hard failure').replace('{n}', String(axeCrit))
+                        const msg = noTextLayer
+                          ? (t('pdf_audit.divergence.no_text_layer') || 'Image-only scan — no searchable text layer. The high automated score is by construction (the checker only sees an empty text reconstruction, not the scanned pages); this document needs OCR before it can be made accessible.')
+                          : axeCrit
+                          ? (t('pdf_audit.divergence.critical_override') || 'axe-core found {n} critical WCAG violation(s) — review them before trusting the score; the governing (lower) layer should already reflect this').replace('{n}', String(axeCrit))
                           : aiWeaker
                           ? (t('pdf_audit.divergence.semantic') || 'Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can\'t detect')
                           : (t('pdf_audit.divergence.structural') || 'Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly');
-                        return <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title={axeCrit ? `Critical violations: ${axeCrit}` : `Spread: ${spread} points`}>{'⚠️'} {msg}</p>;
+                        return <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title={noTextLayer ? 'Image-only scan (no text layer) — needs OCR' : axeCrit ? `Critical violations: ${axeCrit}` : `Spread: ${spread} points`}>{'⚠️'} {msg}</p>;
                       })()}
                     </>
                   ) : (
-                    <p className="text-[11px] opacity-60 mt-0.5">axe-core automated verification will be added after Fix & Verify (50/50 blend)</p>
+                    <p className="text-[11px] opacity-60 mt-0.5">axe-core automated verification will be added after Fix & Verify (then the lower of the two layers governs)</p>
                   )}
                   {pdfAuditResult.scoreRange > 25 && <p className="text-xs mt-1 bg-white/20 inline-block px-3 py-1 rounded-full font-bold">Note: Score variance is high (range: {pdfAuditResult.scoreRange}) — this is normal for documents with low accessibility scores</p>}
                   <p className="text-sm opacity-90 mt-1">{pdfAuditResult.summary}</p>
+                  {/* Companion metrics (2026-06-21): the headline stays an honest deduction floored at 0, so a
+                      long good-faith document and a hopeless one can both read "0". These labeled companions —
+                      the underlying issue COUNT + deduction (which keep moving as you remediate, even while a
+                      floored score sits at 0) and a per-PAGE density (so a long doc isn't judged like a short
+                      one) — restore that resolution WITHOUT inflating the score. Never labeled "score". */}
+                  {(() => {
+                    const _crit = (pdfAuditResult.critical || []).length, _ser = (pdfAuditResult.serious || []).length;
+                    const _mod = (pdfAuditResult.moderate || []).length, _min = (pdfAuditResult.minor || []).length;
+                    const _total = _crit + _ser + _mod + _min;
+                    const _ded = pdfAuditResult._consolidatedDeductions;
+                    const _pages = pdfAuditResult.pageCount;
+                    if (_total === 0 && typeof _ded !== 'number') return null;
+                    const _perPage = (typeof _ded === 'number' && typeof _pages === 'number' && _pages > 0) ? (_ded / _pages) : null;
+                    return (
+                      <p className="text-[11px] opacity-80 mt-1.5" title={t('pdf_audit.score.companion_tip') || 'A density read so a long document is not judged the same as a short one — the same issues spread over more pages are less pervasive. These numbers keep moving as you remediate even while a floored score sits at 0. This is NOT the score; the score above reflects only confirmed issues.'}>
+                        {'📊 '}{_total} {t('pdf_audit.score.confirmed_issues') || (_total === 1 ? 'confirmed issue' : 'confirmed issues')}{typeof _ded === 'number' ? ' · ' + (t('pdf_audit.score.deduction') || 'deduction') + ' ' + _ded : ''}{_perPage != null ? ' · ' + _perPage.toFixed(1) + ' ' + (t('pdf_audit.score.per_page') || 'per page across') + ' ' + _pages + ' ' + (_pages === 1 ? (t('pdf_audit.score.page') || 'page') : (t('pdf_audit.score.pages') || 'pages')) : ''}
+                      </p>
+                    );
+                  })()}
+                  {/* #1 Trend: progress since the prior audit of this file — visible even while a floored score sits at 0. */}
+                  {_scoreTrend && (() => {
+                    const _resolved = _scoreTrend.prior.count - _scoreTrend.cur.count;
+                    const _dedDelta = _scoreTrend.prior.ded - _scoreTrend.cur.ded;
+                    const _better = _dedDelta > 0 || _resolved > 0;
+                    return (
+                      <p className="text-[11px] opacity-95 mt-1 font-semibold" title={t('pdf_audit.score.trend_tip') || 'Change since your last audit of this file — visible even while a floored score sits at 0.'}>
+                        {_better ? '📈 ' : '📉 '}{t('pdf_audit.score.since_last') || 'Since your last audit'}: {_scoreTrend.prior.count} → {_scoreTrend.cur.count} {t('pdf_audit.score.issues_word') || 'issues'}, {t('pdf_audit.score.deduction') || 'deduction'} {_scoreTrend.prior.ded} → {_scoreTrend.cur.ded}{_resolved > 0 ? ' (' + _resolved + ' ' + (t('pdf_audit.score.resolved') || 'resolved') + ')' : (_resolved < 0 ? ' (' + (-_resolved) + ' ' + (t('pdf_audit.score.new_word') || 'new') + ')' : '')}
+                      </p>
+                    );
+                  })()}
                 </div>
                 )}
 
@@ -2669,17 +6046,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="grid grid-cols-2 gap-2 mt-1">
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className="text-lg font-black text-indigo-700">{pdfAuditResult.ci95?.[0]}–{pdfAuditResult.ci95?.[1]}</div>
-                            <div className="text-[11px] text-slate-600 font-bold uppercase">95% Confidence Interval</div>
+                            <div className="text-[11px] text-slate-600 font-bold uppercase" title={t('pdf_audit.reliability.ci95_title') || 'Spread of repeated AI estimates across re-prompts (reproducibility) — NOT the measurement uncertainty of the document’s true accessibility'}>95% CI (re-prompt spread)</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className="text-lg font-black text-indigo-700">{pdfAuditResult.scoreSD}</div>
                             <div className="text-[11px] text-slate-600 font-bold uppercase">{t('pdf_audit.reliability.std_dev') || 'Standard Deviation'}</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
-                            <div className={`text-lg font-black ${pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.icc}</div>
+                            <div className={`text-lg font-black ${pdfAuditResult.reliabilityDegenerate ? 'text-slate-400' : pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.reliabilityDegenerate ? 'n/a' : pdfAuditResult.icc}</div>
                             <div className="text-[11px] text-slate-600 font-bold uppercase" title={t('pdf_audit.reliability.icc_title') || 'Custom 1−(SD/50) index; not textbook ICC'}>{t('pdf_audit.reliability.icc_label') || 'Auditor Consistency (ICC-like)'}</div>
                           </div>
-                          {pdfAuditResult.cronbachAlpha !== null && (
+                          {pdfAuditResult.cronbachAlpha !== null && !pdfAuditResult.reliabilityDegenerate && (
                             <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                               <div className={`text-lg font-black ${pdfAuditResult.cronbachAlpha >= 0.7 ? 'text-green-700' : 'text-amber-700'}`}>{pdfAuditResult.cronbachAlpha}</div>
                               <div className="text-[11px] text-slate-600 font-bold uppercase" title={t('pdf_audit.reliability.cronbach_title') || 'CV + pairwise hybrid heuristic across AI passes; not textbook Cronbach’s α'}>{t('pdf_audit.reliability.cronbach') || 'Auditor Consistency (α-like)'}</div>
@@ -2687,9 +6064,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
                         </div>
                         <div className="text-[11px] text-indigo-600 space-y-0.5">
-                          <div>SEM: ±{pdfAuditResult.scoreSEM} | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
+                          <div className="italic text-slate-500 normal-case">{t('pdf_audit.reliability.basis_note') || 'These figures measure how consistently the AI auditors agreed with each other across re-prompts (reproducibility) — they are NOT the measurement uncertainty of the document’s true accessibility, and a tight range does not mean the score is correct.'}</div>
+                          <div>SEM: ±{pdfAuditResult.scoreSEM} <span className="text-slate-400">(re-prompt spread)</span> | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
                           <div>Individual scores: {pdfAuditResult.scores.join(', ')}</div>
-                          <div>{pdfAuditResult.icc >= 0.9 ? '✅ Excellent agreement — auditors highly consistent' : pdfAuditResult.icc >= 0.75 ? '✅ Good agreement — scores clustered tightly' : pdfAuditResult.icc >= 0.5 ? '⚠️ Moderate agreement — some variation between auditors' : '⚠️ Variable agreement — consider increasing auditor count'}</div>
+                          <div>{pdfAuditResult.reliabilityDegenerate
+                            ? (pdfAuditResult.auditorCount < 2 ? '⚠️ Single pass — no cross-pass agreement to report' : '✅ Unanimous at the floor — every pass independently scored 0/100 (each pass’s own findings exceeded the 100-point deduction scale); only the variance-based index is undefined at a boundary, so it shows n/a')
+                            : pdfAuditResult.icc >= 0.9 ? '✅ Excellent agreement — auditors highly consistent' : pdfAuditResult.icc >= 0.75 ? '✅ Good agreement — scores clustered tightly' : pdfAuditResult.icc >= 0.5 ? '⚠️ Moderate agreement — some variation between auditors' : '⚠️ Variable agreement — consider increasing auditor count'}</div>
                         </div>
                       </div>
                     </details>
@@ -2705,11 +6085,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const totalIssues = critCount + seriousCount + modCount + minCount;
                     const totalChecks = totalIssues + passCount;
                     const passRate = totalChecks > 0 ? Math.round((passCount / totalChecks) * 100) : 0;
-                    const aiScore = pdfAuditResult._aiOnlyScore ?? pdfAuditResult.score;
-                    const axeScore = pdfAuditResult._baselineAxeScore;
+                    const aiScore = Number.isFinite(pdfAuditResult._aiOnlyScore) ? pdfAuditResult._aiOnlyScore : (pdfAuditResult._isWebAudit ? null : pdfAuditResult.score);
+                    const axeScore = Number.isFinite(pdfAuditResult._baselineAxeScore) ? pdfAuditResult._baselineAxeScore : null;
                     const axeAudit = pdfAuditResult._baselineAxeAudit;
-                    const isBlended = pdfAuditResult._scoreIsBlended && axeScore !== undefined;
+                    const isBlended = pdfAuditResult._scoreIsBlended && axeScore !== null;
                     const displayedScore = pdfAuditResult.score;
+                    // Image-only scan: axe/EA ran on an EMPTY text reconstruction, so their ~100 is
+                    // by-construction (not earned). Mirror the score-badge's "n/a (no text layer)" guard here
+                    // in the Score Breakdown so the SAME modal doesn't show a real-looking axe 100. (audit #7)
+                    const _noText = pdfAuditResult.hasSearchableText === false;
                     // The blend's deterministic operand is min(axe, EqualAccess)
                     // when both ran — the equation must show THE NUMBER USED
                     // (user report 2026-06-12: it printed axe 80 while the total
@@ -2718,9 +6102,80 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const deterministicShown = (_eaBase && typeof _eaBase.score === 'number' && typeof axeScore === 'number')
                       ? Math.min(axeScore, _eaBase.score) : axeScore;
                     const _eaIsLower = deterministicShown !== axeScore;
-                    const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-                    const scoreWithoutPasses = Math.max(0, 100 - rawDed);
-                    const passBenefit = Math.max(0, aiScore - scoreWithoutPasses);
+                    if (pdfAuditResult._isWebAudit) {
+                      const coverage = pdfAuditResult.verificationCoverage || {};
+                      const eaAudit = pdfAuditResult._baselineSecondEngineAudit;
+                      const aiAvailable = Number.isFinite(pdfAuditResult._aiOnlyScore);
+                      const axeAvailable = !!(axeAudit && Number.isFinite(axeAudit.score));
+                      const eaAvailable = !!(eaAudit && Number.isFinite(eaAudit.score));
+                      const axeIncomplete = axeAudit && Array.isArray(axeAudit.incomplete) ? axeAudit.incomplete : [];
+                      const eaPotential = eaAudit && Array.isArray(eaAudit.potentialFindings) ? eaAudit.potentialFindings : [];
+                      const eaManual = eaAudit && Array.isArray(eaAudit.manualFindings) ? eaAudit.manualFindings : [];
+                      return (
+                        <details data-help-key="pdf_audit_results_score_breakdown_details" className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden" open>
+                          <summary className="px-3 py-2 text-[11px] font-bold text-slate-700 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
+                            Static source engine evidence
+                          </summary>
+                          <div className="px-3 pb-3 text-[11px] text-slate-700 space-y-3 mt-1">
+                            <p className="bg-amber-50 border border-amber-300 text-amber-950 rounded-lg p-2">
+                              Governing evidence score: <strong>{Number.isFinite(displayedScore) ? displayedScore + '/100' : 'unavailable'}</strong>. The lowest available engine score governs; unavailable engines are never displayed as zero.
+                            </p>
+                            <div className="grid gap-2 md:grid-cols-3">
+                              <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-2.5 text-purple-950">
+                                <div className="font-black text-sm">AI semantic review</div>
+                                <div className="text-lg font-black">{aiAvailable ? pdfAuditResult._aiOnlyScore + '/100' : 'Unavailable'}</div>
+                                <div>Status: {coverage.ai || (aiAvailable ? 'complete' : 'unavailable')}</div>
+                              </div>
+                              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-2.5 text-blue-950">
+                                <div className="font-black text-sm">axe-core</div>
+                                <div className="text-lg font-black">{axeAvailable ? axeAudit.score + '/100' : 'Unavailable'}</div>
+                                <div>Status: {coverage.axe || (axeAvailable ? 'complete' : 'unavailable')}</div>
+                                {axeAvailable && <div>{axeAudit.totalViolations || 0} confirmed violation(s) · {axeAudit.totalIncomplete || 0} needing review</div>}
+                              </div>
+                              <div className="bg-teal-50 border-2 border-teal-300 rounded-lg p-2.5 text-teal-950">
+                                <div className="font-black text-sm">IBM Equal Access</div>
+                                <div className="text-lg font-black">{eaAvailable ? eaAudit.score + '/100' : 'Unavailable'}</div>
+                                <div>Status: {coverage.equalAccess || (eaAvailable ? 'complete' : 'unavailable')}</div>
+                                {eaAvailable && <div>{eaAudit.failViolations || 0} confirmed · {eaAudit.potentialViolations || 0} potential · {eaAudit.manualViolations || 0} manual</div>}
+                              </div>
+                            </div>
+                            {axeIncomplete.length > 0 && (
+                              <div className="bg-amber-50 border border-amber-300 rounded-lg p-2.5 text-amber-950">
+                                <h4 className="font-black">axe-core rules needing manual review</h4>
+                                <ul className="list-disc ps-5 space-y-1 mt-1">
+                                  {axeIncomplete.slice(0, 20).map((finding, index) => (
+                                    <li key={'axe-review-' + index}>
+                                      <span className="font-mono font-bold">{finding.id || 'unknown-rule'}</span>: {finding.description || 'Review this rule manually'}
+                                      {finding.nodes > 0 ? (' (' + finding.nodes + ' location' + (finding.nodes === 1 ? '' : 's') + ')') : ''}
+                                      {finding.wcagCriteria && finding.wcagCriteria.length ? (' · WCAG ' + finding.wcagCriteria.join(', ')) : ''}
+                                      {finding.helpUrl && <>{' · '}<a href={finding.helpUrl} target="_blank" rel="noopener noreferrer" className="font-bold underline text-blue-800">Guidance</a></>}
+                                    </li>
+                                  ))}
+                                  {axeIncomplete.length > 20 && <li>{axeIncomplete.length - 20} more rule(s) in the JSON report.</li>}
+                                </ul>
+                              </div>
+                            )}
+                            {(eaPotential.length > 0 || eaManual.length > 0) && (
+                              <div className="bg-amber-50 border border-amber-300 rounded-lg p-2.5 text-amber-950">
+                                <h4 className="font-black">IBM Equal Access findings needing review</h4>
+                                <ul className="list-disc ps-5 space-y-1 mt-1">
+                                  {eaPotential.slice(0, 15).map((finding, index) => (
+                                    <li key={'ea-potential-' + index}><span className="font-bold">Potential · </span><span className="font-mono font-bold">{finding.id || 'unknown-rule'}</span>: {finding.description || 'Review this finding'}{finding.nodes > 0 ? (' (' + finding.nodes + ' locations)') : ''}</li>
+                                  ))}
+                                  {eaManual.slice(0, 15).map((finding, index) => (
+                                    <li key={'ea-manual-' + index}><span className="font-bold">Manual · </span><span className="font-mono font-bold">{finding.id || 'unknown-rule'}</span>: {finding.description || 'Review this finding'}{finding.nodes > 0 ? (' (' + finding.nodes + ' locations)') : ''}</li>
+                                  ))}
+                                  {(eaPotential.length + eaManual.length) > 30 && <li>{eaPotential.length + eaManual.length - 30} more finding(s) in the JSON report.</li>}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </details>
+                      );
+                    }
+                    // Buyback display removed (2026-06-20): the engine's disclosed methodology is
+                    // passFactor=1 — unverified passes do NOT buy back deductions — so the UI must not
+                    // show a pass-buyback line implying a discount the score never actually applied.
                     return (
                   <details data-help-key="pdf_audit_results_score_breakdown_details" className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden" open>
                     <summary className="px-3 py-2 text-[11px] font-bold text-slate-700 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
@@ -2730,7 +6185,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Overview */}
                       <div className="bg-white rounded-lg border border-slate-400 p-2.5 space-y-1">
                         <div className="flex justify-between"><span>{t('pdf_audit.score.total_checks') || 'Total checks performed'}</span><span className="font-bold">{totalChecks}</span></div>
-                        <div className="flex justify-between text-green-700 font-bold"><span>Passed</span><span>{passCount} ({passRate}%)</span></div>
+                        <div className="flex justify-between text-slate-500"><span title={t('pdf_audit.score.passed_info_title') || 'Informational only — the score is deduction-based (100 minus issues), NOT this pass ratio. A check that "passed" was found present, not independently verified for quality.'}>{t('pdf_audit.score.passed_checks') || 'Checks passed (informational)'}</span><span>{passCount} ({passRate}%)</span></div>
                         <div className="flex justify-between text-red-700 font-bold"><span>{t('pdf_audit.score.issues_found') || 'Issues found'}</span><span>{totalIssues}</span></div>
                         {totalIssues > 0 && (
                           <div className="text-[11px] text-slate-600 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
@@ -2745,17 +6200,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="text-[11px] font-black text-purple-600 uppercase">{t('pdf_audit.score.ai_rubric_label') || 'AI Rubric'}</span>
                           </div>
                           <div className="text-[11px] text-purple-800 space-y-0.5">
-                            <div>{t('pdf_audit.score.starts_at_100') || 'Starts at 100, deducts per issue type'}</div>
+                            {(() => {
+                              // This doc's ACTUAL arithmetic — reconstructable from the issue list shown below.
+                              const _ded = pdfAuditResult._consolidatedDeductions;
+                              if (typeof _ded !== 'number') return (<div>{t('pdf_audit.score.starts_at_100') || '100 minus a count-weighted deduction per issue (floored at 0).'}</div>);
+                              const _floored = _ded > 100;
+                              return (<div><span className="font-mono">100 {'−'} {_ded} = {aiScore}</span>{_floored ? (' ' + (t('pdf_audit.score.floored_note') || '(floored at 0 — deductions exceed 100; with this many critical issues the 0–100 scale can’t rank further)')) : ''}</div>);
+                            })()}
                             {totalIssues > 0 && <div>{totalIssues} issues found</div>}
-                            {passBenefit > 0 && <div className="text-green-700 font-bold">{passCount} passes recovered +{passBenefit} pts</div>}
                           </div>
                           <details data-help-key="pdf_audit_results_score_how_ai_details" className="mt-1 text-[11px]">
-                            <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">{t('pdf_audit.score.how_ai_scores') || 'How AI scores'}</summary>
+                            <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">{t('pdf_audit.score.how_ai_scores') || 'How the content score works'}</summary>
                             <div className="mt-1 space-y-0.5 text-purple-700">
-                              <div>{t('pdf_audit.score.ai_critical_rule') || 'Critical: -15 each (lang, title, alt, landmark, contrast)'}</div>
-                              <div>{t('pdf_audit.score.ai_major_rule') || 'Major: -10 each (headings, tables, forms)'}</div>
-                              <div>{t('pdf_audit.score.ai_minor_rule') || 'Minor: -5 each (skip-nav, landmarks, links, lists)'}</div>
-                              <div>{t('pdf_audit.score.ai_passes_rule') || 'Passes reduce total deductions proportionally'}</div>
+                              <div>{t('pdf_audit.score.ai_weights_v3') || 'Critical −15 · Serious −10 · Moderate −5 · Minor −2, per unique issue'}</div>
+                              <div>{t('pdf_audit.score.ai_countweight_rule') || 'A repeated issue deducts more, scaled by how many places it occurs (×1 to ×3).'}</div>
+                              <div>{t('pdf_audit.score.ai_floor_rule') || 'Floored at 0. Computed from the issue list shown — no model-reported number is used.'}</div>
+                              <div>{t('pdf_audit.score.ai_passes_rule_v3') || 'Passes are informational; the score is 100 minus deductions, so passes don’t change it.'}</div>
                             </div>
                           </details>
                         </div>
@@ -2763,12 +6223,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {isBlended && axeAudit && (
                         <div className="bg-blue-100 rounded-lg border-2 border-blue-300 p-2.5">
                           <div className="flex justify-between items-baseline mb-1">
-                            <span className="font-black text-blue-900 text-sm">{axeScore}<span className="text-[11px] font-bold text-blue-500">/100</span></span>
+                            <span className="font-black text-blue-900 text-sm">{_noText ? <span className="text-[11px] font-bold text-blue-700" title="No searchable text layer — axe-core audited an empty reconstruction, so this number is by-construction, not an earned score.">n/a (no text layer)</span> : <>{axeScore}<span className="text-[11px] font-bold text-blue-500">/100</span></>}</span>
                             <span className="text-[11px] font-black text-blue-600 uppercase">axe-core</span>
                           </div>
                           <div className="text-[11px] text-blue-800 space-y-0.5">
-                            <div>{t('pdf_audit.score.axe_desc') || 'Deque automated WCAG 2.1 AA checker'}</div>
-                            <div>{axeAudit.totalViolations} violation{axeAudit.totalViolations !== 1 ? 's' : ''}, {axeAudit.totalPasses} passed</div>
+                            {/* "checker" implied full WCAG coverage; automated tools verify only the
+                                machine-testable subset (~a third of criteria) — say so. (i18n packs
+                                translating the old fallback keep their wording until re-extracted.) */}
+                            <div>{t('pdf_audit.score.axe_desc') || 'Deque axe-core — automated checks for the machine-testable subset of WCAG 2.2 AA'}</div>
+                            {/* No-text scans: the counts are as by-construction as the score — don't render
+                                "0 violations, N passed" as if the engine meaningfully checked anything. */}
+                            <div>{_noText ? (t('pdf_audit.score.axe_counts_na') || 'ran on an empty text reconstruction — counts not meaningful') : `${axeAudit.totalViolations} violation${axeAudit.totalViolations !== 1 ? 's' : ''}, ${axeAudit.totalPasses} passed`}</div>
                             <div className="text-[10px] text-blue-600 italic">{t('pdf_audit.score.axe_proxy_note') || 'Runs on a text reconstruction of the extracted content — not the original PDF bytes — so page-structure/landmark rules can pass by construction. Treat as a content-level check, not a PDF/UA validation.'}</div>
                           </div>
                           <details data-help-key="pdf_audit_results_score_how_axe_details" className="mt-1 text-[11px]">
@@ -2801,7 +6266,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {pdfAuditResult && pdfAuditResult._baselineSecondEngineAudit ? (
                             <div className="mt-1.5 text-[11px] text-blue-700">
                               <span className="font-bold">{t('pdf_audit.score.second_engine_baseline') || 'Second engine at baseline (IBM Equal Access):'}</span>{' '}
-                              {pdfAuditResult._baselineSecondEngineAudit.failViolations} {t('pdf_audit.score.confirmed_fails') || 'confirmed rule failure(s)'} → {t('pdf_audit.score.score_label') || 'score'} {pdfAuditResult._baselineSecondEngineAudit.score}.{!pdfFixResult ? (' ' + (t('pdf_audit.score.conservative_note') || 'The blend uses the more conservative of the two engines.')) : ''}
+                              {/* Same n/a guard as the axe card above — this line previously showed a
+                                  real-looking "score 100" for image-only scans two inches below the
+                                  axe card's n/a (same modal, two different stories). */}
+                              {_noText
+                                ? (t('pdf_audit.score.ea_na_no_text') || 'n/a (no text layer — ran on an empty reconstruction)')
+                                : <>{pdfAuditResult._baselineSecondEngineAudit.failViolations} {t('pdf_audit.score.confirmed_fails') || 'confirmed rule failure(s)'} → {t('pdf_audit.score.score_label') || 'score'} {pdfAuditResult._baselineSecondEngineAudit.score}.{!pdfFixResult ? (' ' + (t('pdf_audit.score.conservative_note') || 'The blend uses the more conservative of the two engines.')) : ''}</>}
                               {Array.isArray(pdfAuditResult._baselineSecondEngineAudit.fails) && pdfAuditResult._baselineSecondEngineAudit.fails.length > 0 && (
                                 <details className="mt-1">
                                   <summary className="cursor-pointer font-bold text-blue-600 hover:text-blue-800">{t('pdf_audit.score.ea_fails_baseline_summary') || 'What Equal Access flagged at baseline'}</summary>
@@ -2843,22 +6313,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                         )}
                       </div>
-                      {/* Blend formula with /2 */}
+                      {/* Headline = the lower (governing) layer — min, NEVER an average. The two layers
+                          measure different things (content semantics vs automated WCAG on the reconstruction),
+                          so averaging them produced a midpoint that described neither. (weakest-layer, 2026-06-21) */}
                       {isBlended && (
                         <div className="bg-white rounded-lg border-2 border-slate-300 p-2.5 text-center">
                           <div className="text-sm">
-                            <span className="text-slate-600">(</span>
-                            <span className="text-purple-800 font-black">{aiScore}</span>
-                            <span className="text-slate-600 mx-1">+</span>
-                            <span className="text-blue-800 font-black">{deterministicShown}</span>
-                            <span className="text-slate-600">)</span>
-                            <span className="text-slate-600 mx-1">/</span>
-                            <span className="text-slate-600 font-bold">2</span>
+                            <span className="text-slate-600 font-bold">{t('pdf_audit.score.lower_of') || 'lower of'}{' '}</span>
+                            <span className="text-purple-800 font-black" title={t('pdf_audit.score.content_short') || 'content'}>{aiScore}</span>
+                            <span className="text-slate-600 mx-1">{t('pdf_audit.score.and_word') || 'and'}</span>
+                            <span className="text-blue-800 font-black" title={t('pdf_audit.score.automated_short') || 'automated'}>{_noText ? 'n/a' : deterministicShown}</span>
                             <span className="text-slate-600 mx-2">=</span>
                             <span className="font-black text-slate-900 text-lg">{displayedScore}</span>
                             <span className="text-slate-600 text-xs">/100</span>
                           </div>
-                          <div className="text-[11px] text-slate-600 mt-0.5">{_eaIsLower ? ((t('pdf_audit.score.average_conservative') || 'AI averaged with the more conservative deterministic engine — Equal Access ') + deterministicShown + (t('pdf_audit.score.average_conservative2') || ' was lower than axe ') + axeScore + '.') : (t('pdf_audit.score.average_both') || 'Average of both engines (equal weight)')}</div>
+                          <div className="text-[11px] text-slate-600 mt-0.5">{_noText ? (t('pdf_audit.score.governed_no_text') || 'Automated checks are not applicable (no text layer) — the content rubric governs by definition.') : (aiScore <= deterministicShown) ? (t('pdf_audit.score.governed_by_content') || 'Governed by the content layer — the AI rubric scored lower.') : (t('pdf_audit.score.governed_by_automated') || 'Governed by the automated layer — the WCAG checkers scored lower.')} {t('pdf_audit.score.no_average_note') || 'The two layers measure different things and are shown separately, never averaged.'}</div>
                         </div>
                       )}
                     </div>
@@ -2965,19 +6434,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   )}
                   {pdfAuditResult.passes?.length > 0 && (() => {
                     const pc = pdfAuditResult.passes.length;
-                    const critC = (pdfAuditResult.critical || []).length;
-                    const serC = (pdfAuditResult.serious || pdfAuditResult.major || []).length;
-                    const modC = (pdfAuditResult.moderate || []).length;
-                    const minC = (pdfAuditResult.minor || []).length;
-                    const rawDed = critC * 15 + serC * 10 + modC * 5 + minC * 2;
-                    const ic = critC + serC + modC + minC;
-                    const passRatio = pc > 0 ? pc / (pc + ic) : 0;
-                    const pf = 1 - (passRatio * 0.4);
-                    const saved = rawDed - Math.round(rawDed * pf);
+                    // Buyback badge removed (2026-06-20): the score uses passFactor=1 (no buyback), so a
+                    // pass-buyback pill advertised a discount the score never applied — exactly the kind of
+                    // fabricated-looking inflation a skeptical reviewer would discount the whole tool over.
                     return (
                     <section aria-label={`${pc} accessibility checks passed`}>
                       <h4 className="text-xs font-bold text-green-600 uppercase tracking-widest mb-2">
-                        Passed Checks ({pc}){saved > 0 && <span className="ml-2 text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold normal-case">+{saved} points recovered</span>}
+                        Passed Checks ({pc})
                       </h4>
                       <ul className="list-none space-y-1">
                       {pdfAuditResult.passes.map((pass, i) => (
@@ -3302,11 +6765,41 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (finalAiResult) finalAiResult.score = avgScore;
                             const perfect = ((finalAiResult?.issues?.length || 0) === 0 && (finalAxeResult?.totalViolations || 0) === 0);
                             const startCount = (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0);
+                            // Re-run the SAME content-fidelity sweep the main path runs (numeric values, structural
+                            // nets, reading-order) over THIS run's output so the panel + amber asterisk reflect the
+                            // current re-fix instead of the prior run's clean state. WARN-only: never blocks the commit.
+                            let _refixNotes = Array.isArray(pdfFixResult.fidelityNotes) ? pdfFixResult.fidelityNotes.slice() : [];
+                            try {
+                              const _srcRaw = pdfFixResult.sourceText || '';
+                              const _outText = (_docPipeline && typeof _docPipeline.htmlToPlainText === 'function') ? _docPipeline.htmlToPlainText(bestHtml) : '';
+                              const _notes = [];
+                              if (_srcRaw && _docPipeline && typeof _docPipeline.computeStructuralFidelityNotes === 'function') {
+                                const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml);
+                                if (Array.isArray(_sf)) _sf.forEach(n => _notes.push(n));
+                              }
+                              if (_srcRaw && _outText && _docPipeline && typeof _docPipeline.numericFidelityLosses === 'function') {
+                                const _lost = _docPipeline.numericFidelityLosses(_srcRaw, _outText);
+                                if (_lost && _lost.length) {
+                                  const _vs = _lost.slice(0, 8).join(', ') + (_lost.length > 8 ? ', …' : '');
+                                  _notes.push({ kind: 'numeric', msg: _lost.length + ' source numeric value(s) not found unchanged in the output (' + _vs + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.' });
+                                }
+                              }
+                              if (_docPipeline && typeof _docPipeline.checkReadingOrderPreserved === 'function') {
+                                const _ro = _docPipeline.checkReadingOrderPreserved(prevSnapshot.html, bestHtml);
+                                if (_ro && _ro.ok === false) _notes.push({ kind: 'reading-order', msg: 'Reading order: content may have moved or been dropped vs the previous version (token "' + (_ro.droppedToken || '') + '"; ' + _ro.beforeCount + '→' + _ro.afterCount + ' tokens). Magnitude checks passed but order was not preserved — review the Diff before distributing.' });
+                              }
+                              _refixNotes = _notes; // THIS run's findings replace the prior run's
+                              _notes.forEach(n => warnLog('[Fix Remaining] fidelity: ' + n.msg));
+                            } catch (_fidErr) { warnLog('[Fix Remaining] fidelity sweep failed (non-critical): ' + (_fidErr && _fidErr.message)); }
                             const committed = commitOrRevertPdfFix(
                               prevSnapshot,
                               { html: bestHtml, ai: finalAiResult, axe: finalAxeResult, chars: bestHtml.length, perfect },
                               {
-                                commit: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses },
+                                // M22 (deep dive 2026-07-09): fidelityLimited has TWO halves in the pipeline
+                                // (coverage<90 OR notes) — recomputing it here from the re-fix notes alone made
+                                // the header's "verify content" chip + amber asterisk VANISH on a doc still at
+                                // e.g. 85% coverage, while the expert panel on the same screen kept saying 85%.
+                                commit: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses, fidelityNotes: _refixNotes, fidelityLimited: _refixNotes.length > 0 || (typeof pdfFixResult.integrityCoverage === 'number' && pdfFixResult.integrityCoverage < 90) },
                                 preserveOnRevert: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses },
                               },
                               'Fix Remaining'
@@ -3316,7 +6809,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             }
                           } catch(e) { warnLog('Fix remaining failed:', e); addToast(t('toasts.fix_remaining_failed') + (e?.message || 'unknown error'), 'error'); }
                           finally { setPdfFixLoading(false); setPdfFixStep(''); pdfFixModeRef.current = ''; }
-                        }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
+                        }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-xl font-bold text-sm hover:from-amber-900 hover:to-orange-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                           {pdfFixLoading && pdfFixModeRef.current === 'fix' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Fixing...'}</> : <><Wrench size={16} /> {((pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : 'Run Additional Fix Pass'}</>}
                         </button>
                     </>) : (
@@ -3325,11 +6818,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const freshBase64 = await ensurePdfBase64();
                         if (!freshBase64) return; // user cancelled re-attach
                         if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
-                          fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name });
+                          fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting — swallow here (fire-and-forget button)
                         } else {
-                          fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name });
+                          fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting
                         }
-                      }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
+                      }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {pdfFixLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
                         {pdfFixLoading ? (pdfFixStep || 'Fixing...') : (pdfPageRange ? `♿ Fix Pages ${pdfPageRange.start}–${pdfPageRange.end}` : `♿ Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ''}`)}
                       </button>
@@ -3367,14 +6860,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               return { what: 'Rebuilding your document with proper semantic structure that assistive technology can interpret and navigate.', why: 'Think of a PDF as a printed page photographed — it looks right, but a computer doesn\'t understand what anything means. This step transforms it into structured content where every element is labeled: headings have levels (H1 for chapter, H2 for section, H3 for subsection), tables have headers explaining each column, images have descriptions, and the reading order follows the visual layout. This is the core of what makes a document accessible — giving it meaning, not just appearance.' };
                             }
                             if (/Step 3/i.test(stepText)) {
-                              if (/axe/i.test(stepText)) return { what: 'Running the axe-core accessibility checker — the same professional tool used by accessibility auditors at schools, universities, and government agencies.', why: 'axe-core (by Deque Systems) checks your document against WCAG 2.1 Level AA — the international accessibility standard referenced by the ADA. It catches concrete issues like: images with no alt text (blind students miss the content), text with insufficient color contrast (hard to read for the 1 in 12 males with color vision differences), tables missing header cells (a screen reader user can\'t tell which column they\'re in), form fields with no labels (quiz answers can\'t be entered), and elements unreachable by keyboard (essential for students who can\'t use a mouse).' };
+                              if (/axe/i.test(stepText)) return { what: 'Running the axe-core accessibility checker — the same professional tool used by accessibility auditors at schools, universities, and government agencies.', why: 'axe-core (by Deque Systems) checks your document against WCAG 2.2 Level AA — the international accessibility standard referenced by the ADA. It catches concrete issues like: images with no alt text (blind students miss the content), text with insufficient color contrast (hard to read for the 1 in 12 males with color vision differences), tables missing header cells (a screen reader user can\'t tell which column they\'re in), form fields with no labels (quiz answers can\'t be entered), and elements unreachable by keyboard (essential for students who can\'t use a mouse).' };
                               if (/verif/i.test(stepText)) return { what: 'An AI accessibility reviewer is examining your document for problems that automated tools can\'t detect.', why: 'Automated checkers are excellent at finding technical violations, but some accessibility problems require understanding the content. For example: an image might have alt text that says "chart" — technically present, but useless to a blind student who needs "Bar chart showing 73% of students improved reading scores." The AI evaluates whether descriptions are meaningful, whether heading levels make logical sense for the content, and whether the document\'s structure matches how someone would actually read and navigate it.' };
-                              return { what: 'Measuring your document\'s current accessibility level against the WCAG 2.1 AA standard before making any fixes.', why: 'This baseline score tells you where your document stands. The score reflects how well a student using a screen reader, screen magnifier, voice control, switch device, or other assistive technology could independently read and navigate it. It also establishes a "before" measurement so you can see exactly how much the remediation improves the document — both the numeric score and the specific barriers that were removed.' };
+                              return { what: 'Measuring your document\'s current accessibility level against the WCAG 2.2 AA standard before making any fixes.', why: 'This baseline score tells you where your document stands. The score reflects how well a student using a screen reader, screen magnifier, voice control, switch device, or other assistive technology could independently read and navigate it. It also establishes a "before" measurement so you can see exactly how much the remediation improves the document — both the numeric score and the specific barriers that were removed.' };
                             }
                             if (/Step 4|Auto-fix|Auto-continue|Improv|pass \d/i.test(stepText)) {
                               if (/Verif|check/i.test(stepText)) return { what: 'Verifying that each round of fixes actually improved accessibility without introducing new problems.', why: 'After fixing issues, we re-check the entire document. For example, fixing one heading level might affect the navigation hierarchy elsewhere, or adding alt text to one image might create a duplicate ID. If any fix accidentally made the document less accessible, it\'s automatically rolled back. This verify-then-accept approach ensures the document only gets better, never worse — because an accessibility regression could leave a student more confused than before.' };
                               if (/surg|micro/i.test(stepText)) return { what: 'Applying targeted accessibility fixes — each one addresses a single specific barrier in your document.', why: 'These are precise repairs: adding a meaningful description to a specific image (so a blind student knows what it shows instead of hearing silence), correcting a heading that jumped from "Chapter" to "Subsection" with no "Section" in between (so keyboard navigation makes logical sense), adding a label to a form field (so a screen reader announces "Student Name" instead of just "edit text"), and adding scope attributes to table headers (so a screen reader can say "Column: Grade, Row: Student A, Value: 92" instead of just "92" with no context).' };
-                              if (/zero issue|clean|0 issue/i.test(stepText)) return { what: 'Your document passed! No remaining accessibility barriers were detected by either the automated checker or AI reviewer.', why: 'Your document now meets WCAG 2.1 Level AA — the standard required by the ADA for all public educational institutions as of April 2026. This means: a student using a screen reader can navigate by headings and read all content including image descriptions; a student with low vision can zoom to 200% without losing content; a student who can\'t use a mouse can reach every element by keyboard; data tables announce their headers so values have context; and the document has proper reading order, sufficient color contrast, and labeled form fields.' };
+                              if (/zero issue|clean|0 issue/i.test(stepText)) return { what: 'Your document passed! No remaining accessibility barriers were detected by either the automated checker or AI reviewer.', why: 'Your document now meets WCAG 2.2 Level AA — the standard required by the ADA for all public educational institutions as of April 2026. This means: a student using a screen reader can navigate by headings and read all content including image descriptions; a student with low vision can zoom to 200% without losing content; a student who can\'t use a mouse can reach every element by keyboard; data tables announce their headers so values have context; and the document has proper reading order, sufficient color contrast, and labeled form fields.' };
                               if (/\d+ issue|\d+ axe.*\d+ AI/i.test(stepText)) {
                                 const m = stepText.match(/(\d+)\s*issue/); const count = m ? m[1] : 'several';
                                 if (fixIssuesList && fixIssuesList.issues && fixIssuesList.issues.length > 0) {
@@ -3466,15 +6959,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {liveChunkStream.map((chunk, ci) => {
                                 const isWorking = chunk.status === 'working';
                                 const totalFixes = (chunk.deterministicFixCount || 0) + (chunk.surgicalFixCount || 0);
-                                const scoreColor = chunk.score >= 80 ? 'text-green-700' : chunk.score >= 60 ? 'text-amber-700' : 'text-red-700';
+                                // (2026-06-20) A section whose audit didn't return a number (AI throttled) must
+                                // NOT be painted red 0 — that reads as "scored zero / broken" when it's just "not
+                                // scored yet". Render it neutral slate with an honest "not scored" label.
+                                const _hasScore = typeof chunk.score === 'number';
+                                const scoreColor = !_hasScore ? 'text-slate-500' : chunk.score >= 80 ? 'text-green-700' : chunk.score >= 60 ? 'text-amber-700' : 'text-red-700';
                                 return (
-                                  <div key={ci} className={`flex items-center gap-x-2 gap-y-1 px-3 py-2 rounded-lg border text-xs flex-wrap ${isWorking ? 'bg-indigo-50 border-indigo-200 animate-pulse' : chunk.score >= 80 ? 'bg-green-50 border-green-200' : chunk.score >= 60 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
-                                    <span>{isWorking ? '⏳' : chunk.score >= 80 ? '✅' : chunk.score >= 60 ? '🟡' : '🔴'}</span>
+                                  <div key={ci} className={`flex items-center gap-x-2 gap-y-1 px-3 py-2 rounded-lg border text-xs flex-wrap ${isWorking ? 'bg-indigo-50 border-indigo-200 animate-pulse' : !_hasScore ? 'bg-slate-50 border-slate-200' : chunk.score >= 80 ? 'bg-green-50 border-green-200' : chunk.score >= 60 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                                    <span>{isWorking ? '⏳' : !_hasScore ? '⋯' : chunk.score >= 80 ? '✅' : chunk.score >= 60 ? '🟡' : '🔴'}</span>
                                     <span className="font-bold text-slate-800">§{(chunk.index || ci) + 1}</span>
                                     {!isWorking && <>
                                       <span className="text-slate-600" aria-hidden="true">·</span>
                                       <span className="text-slate-700">WCAG</span>
-                                      <span className={`font-black ${scoreColor}`}>{chunk.score}/100</span>
+                                      <span className={`font-black ${scoreColor}`}>{_hasScore ? chunk.score + '/100' : (t('pdf_audit.live_chunk.not_scored') || 'not scored (AI throttled)')}</span>
                                       {totalFixes > 0 && <>
                                         <span className="text-slate-600" aria-hidden="true">·</span>
                                         <span
@@ -3549,17 +7046,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {/* ── ADA Title II Legal Context — timed to appear after benefits section ── */}
                         <div className="mt-3 bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-rose-50/30 border border-amber-200/60 rounded-2xl p-5 space-y-3" style={{ animation: 'fadeInUp 0.9s ease-out 4s both' }}>
                           <div className="flex items-start gap-3">
-                            <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-200">
+                            <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-800 to-orange-800 flex items-center justify-center shadow-lg shadow-amber-200">
                               <span className="text-white text-lg" aria-hidden="true">⚖️</span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.ada.heading') || 'ADA Title II & WCAG 2.1 AA'}</h4>
+                                <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.ada.heading') || 'ADA Title II & WCAG 2.2 AA'}</h4>
                                 <span className="text-[11px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">{t('pdf_audit.ada.deadline_badge') || 'Deadline: April 2027 (extended)'}</span>
                               </div>
                               <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
                                 The U.S. Department of Justice finalized a rule under <strong className="text-slate-700">{t('pdf_audit.ada.title_strong') || 'Title II of the Americans with Disabilities Act (ADA)'}</strong> requiring
-                                all state and local government entities to make their web content and digital documents conform to <strong className="text-slate-700">{t('pdf_audit.ada.wcag_strong') || 'WCAG 2.1 Level AA'}</strong>.
+                                all state and local government entities to make their web content and digital documents conform to <strong className="text-slate-700">{t('pdf_audit.ada.wcag_strong') || 'WCAG 2.2 Level AA'}</strong>.
                                 This applies to websites, mobile apps, PDFs, Word documents, and social media content.
                               </p>
                             </div>
@@ -3590,7 +7087,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                           <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5 text-center">
                             <p className="text-[11px] text-slate-600 leading-snug">
-                              <strong className="text-amber-800">{t('pdf_audit.ada.standard_callout') || 'The standard AlloFlow targets — WCAG 2.1 Level AA — is the exact standard required by this federal rule.'}</strong>{' '}
+                              <strong className="text-amber-800">{t('pdf_audit.ada.standard_callout') || 'The standard AlloFlow targets — WCAG 2.2 Level AA — is the exact standard required by this federal rule.'}</strong>{' '}
                               This remediation pipeline helps ensure your documents meet the technical requirements set by the DOJ.
                             </p>
                             <a href="https://www.ada.gov/resources/web-guidance/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1.5 text-[11px] font-bold text-amber-700 hover:text-amber-900 underline decoration-amber-300">
@@ -3705,12 +7202,44 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <textarea
                                           defaultValue={img.description || ''}
                                           onChange={(e) => {
-                                            idxs.forEach((di) => window.dispatchEvent(new CustomEvent('alloflow:alt-text-edited', { detail: { index: di, altText: e.target.value } })));
+                                            const _newAlt = e.target.value;
+                                            idxs.forEach((di) => window.dispatchEvent(new CustomEvent('alloflow:alt-text-edited', { detail: { index: di, altText: _newAlt } })));
                                             setExtractionData(prev => {
                                               if (!prev) return prev;
-                                              const updated = { ...prev, images: prev.images.map((im, i) => idxs.includes(i) ? { ...im, description: e.target.value } : im) };
+                                              const updated = { ...prev, images: prev.images.map((im, i) => idxs.includes(i) ? { ...im, description: _newAlt } : im) };
                                               return updated;
                                             });
+                                            // Audit 2026-06-13: on the RESULTS screen the fix is
+                                            // already done — the in-engine listener no longer
+                                            // applies, so the edit must reach accessibleHtml (the
+                                            // export source of truth) directly. Patch by src
+                                            // (grouped copies share it); update the adjacent
+                                            // figcaption too when it mirrored the alt.
+                                            if (img.src && pdfFixResult?.accessibleHtml) {
+                                              setPdfFixResult((prev) => {
+                                                if (!prev || !prev.accessibleHtml) return prev;
+                                                try {
+                                                  const d = new DOMParser().parseFromString(prev.accessibleHtml, 'text/html');
+                                                  let touched = 0;
+                                                  d.querySelectorAll('img').forEach((im) => {
+                                                    if (im.getAttribute('src') === img.src) {
+                                                      const oldAlt = (im.getAttribute('alt') || '').trim();
+                                                      im.setAttribute('alt', _newAlt);
+                                                      const fc = im.closest('figure') && im.closest('figure').querySelector('figcaption');
+                                                      if (fc && oldAlt && fc.textContent.trim() === oldAlt) fc.textContent = _newAlt;
+                                                      touched++;
+                                                    }
+                                                  });
+                                                  if (!touched) return prev;
+                                                  return { ...prev, accessibleHtml: '<!DOCTYPE html>\n' + d.documentElement.outerHTML, _userEditedAt: Date.now() };
+                                                } catch (_) { return prev; }
+                                              });
+                                              // Mirror into the live preview iframe (live-DOM-wins).
+                                              try {
+                                                const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+                                                if (ldoc) ldoc.querySelectorAll('img').forEach((im) => { if (im.getAttribute('src') === img.src) im.setAttribute('alt', _newAlt); });
+                                              } catch (_) {}
+                                            }
                                           }}
                                           placeholder={t('pdf_audit.images.alt_placeholder') || 'Describe this image for screen reader users...'}
                                           rows={2}
@@ -4147,6 +7676,50 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     </div>
                                   </details>
                                 )}
+                                {/* Automatic dual-OCR recovery banner. High-confidence drops —
+                                    words BOTH Tesseract AND Vision saw in the source but that the
+                                    remediation dropped — are restored automatically at remediation
+                                    time (doc_pipeline Auto-restore block). This surfaces it (NOT
+                                    silent, per the 1714fdcc "never hide a real loss" rule) and gives
+                                    one-click undo. Unplaceable words are in the Content Recovery
+                                    appendix, so nothing is ever dropped either way. */}
+                                {pdfFixResult && pdfFixResult.autoRestore && !pdfFixResult.autoRestore.undone && (() => {
+                                  const _ar = pdfFixResult.autoRestore;
+                                  const _total = (_ar.restoredInline || 0) + (_ar.preservedInAppendix || 0);
+                                  return (
+                                    <div className="mb-2 bg-rose-50 border-2 border-rose-300 rounded-xl px-3 py-2 text-[11px] text-rose-900" role="status">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-bold" aria-hidden="true">✓✓</span>
+                                        <span className="font-bold">{_total.toLocaleString()} {t('pdf_audit.auto_restore.title') || (_total === 1 ? 'word auto-restored' : 'words auto-restored')}</span>
+                                        <span>{t('pdf_audit.auto_restore.detail') || 'Both Tesseract AND Vision saw these in your source, but the remediation had dropped them.'}{' '}{_ar.restoredInline > 0 ? `${_ar.restoredInline.toLocaleString()} ${t('pdf_audit.auto_restore.inline') || 'put back in context'}` : ''}{_ar.preservedInAppendix > 0 ? `${_ar.restoredInline > 0 ? ' · ' : ''}${_ar.preservedInAppendix.toLocaleString()} ${t('pdf_audit.auto_restore.appendix') || 'preserved in the Content Recovery section'}` : ''}.</span>
+                                        <button
+                                          onClick={() => {
+                                            const _pre = _ar.preRestoreHtml;
+                                            if (!_pre) return;
+                                            // Free the now-dead full-doc snapshot: _pre already holds it for this revert,
+                                            // and the banner (the only reader of preRestoreHtml) is gated on !undone, so it
+                                            // is never read again. Reclaims one full-doc-size string. (perf-pdffix-snapshots)
+                                            setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: _pre, htmlChars: _pre.length, autoRestore: { ...prev.autoRestore, undone: true, preRestoreHtml: null } } : prev);
+                                            if (addToast) addToast(t('pdf_audit.auto_restore.undone') || 'Auto-restore undone — the dropped words were removed again.', 'info');
+                                          }}
+                                          className="ml-auto px-2 py-0.5 bg-white border border-rose-400 text-rose-800 rounded-full text-[10px] font-bold hover:bg-rose-100 focus:ring-2 focus:ring-rose-400"
+                                          title={t('pdf_audit.auto_restore.undo_title') || 'Remove the automatically restored words again (revert to the pre-restore remediation).'}
+                                        >{t('pdf_audit.auto_restore.undo') || '↶ Undo auto-restore'}</button>
+                                      </div>
+                                      {Array.isArray(_ar.words) && _ar.words.length > 0 && (
+                                        <details className="mt-1.5">
+                                          <summary className="cursor-pointer text-[10px] text-rose-700 font-semibold">{t('pdf_audit.auto_restore.show_words') || 'Show restored words'}</summary>
+                                          <div className="mt-1 flex flex-wrap gap-1">
+                                            {_ar.words.map((w, i) => (
+                                              <span key={i} className="px-1.5 py-0.5 bg-white border border-rose-300 rounded text-[10px] font-mono text-rose-800">{String(w).slice(0, 40)}</span>
+                                            ))}
+                                          </div>
+                                        </details>
+                                      )}
+                                      <p className="text-[10px] text-rose-700 mt-1">{t('pdf_audit.auto_restore.review_hint') || 'Review them in the Diff view — click Undo if any were intentional removals.'}</p>
+                                    </div>
+                                  );
+                                })()}
                                 {/* Auto-restore summary — shown after the auto-flow or a manual restore run. */}
                                 {autoRestoreSummary && (
                                   <div className="mb-2 bg-emerald-50 border border-emerald-200 rounded-xl px-2.5 py-1.5 text-[11px] text-emerald-900 flex items-center gap-2 flex-wrap">
@@ -4188,54 +7761,96 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   const _wm = _ctx.match(_wRe);
                                   const _beforeWords = _wm ? _norm(_ctx.slice(0, _wm.index)).split(' ').filter(Boolean).slice(-4) : [];
                                   const _afterWords = _wm ? _norm(_ctx.slice(_wm.index + it.word.length)).split(' ').filter(Boolean).slice(0, 4) : [];
+                                  // Use the live preview iframe when the modal is open; otherwise fall
+                                  // back to a DETACHED parse of accessibleHtml so the walkthrough works
+                                  // with the preview CLOSED (2026-06-15 review fix — it used to find
+                                  // "no match" for every word and disable Insert out of the box).
+                                  const _getReviewDoc = () => {
+                                    try { const live = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument; if (live && live.body) return { doc: live, live: true }; } catch (_) {}
+                                    try { const html = (pdfFixResult && pdfFixResult.accessibleHtml) || ''; if (!html) return null; return { doc: new DOMParser().parseFromString(html, 'text/html'), live: false }; } catch (_) { return null; }
+                                  };
                                   const _findAnchor = () => {
                                     try {
-                                      const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+                                      const rd = _getReviewDoc();
+                                      const d = rd && rd.doc;
                                       if (!d || !d.body) return null;
                                       const useBefore = _beforeWords.length >= 2;
                                       const anchor = (useBefore ? _beforeWords : _afterWords).join(' ');
-                                      if (!anchor || anchor.length < 6) return null;
+                                      // Mirror the AUTO path's uniqueness rule (findUniqueContext refuses a non-unique
+                                      // anchor): a short/common anchor that recurs would splice the word into an
+                                      // unrelated but similarly-worded passage while the UI claims "found the matching
+                                      // spot". Require a specific anchor (>=12 chars) AND exactly ONE occurrence
+                                      // doc-wide; otherwise no confident match (word stays in the appendix). (#8)
+                                      if (!anchor || anchor.length < 12) return null;
                                       const walker = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT, null);
-                                      let node;
+                                      let node, hit = null, count = 0;
                                       while ((node = walker.nextNode())) {
                                         if (node.parentElement && node.parentElement.closest('section[data-content-recovery="true"]')) continue;
-                                        const ni = _norm(node.textContent).indexOf(anchor);
-                                        if (ni !== -1) return { node, anchor, useBefore };
+                                        const _txt = _norm(node.textContent);
+                                        let from = 0, idx;
+                                        while ((idx = _txt.indexOf(anchor, from)) !== -1) {
+                                          count++;
+                                          if (!hit) hit = { node, anchor, useBefore, doc: d, live: rd.live };
+                                          if (count > 1) return null; // ambiguous — refuse, like the auto path
+                                          from = idx + anchor.length;
+                                        }
                                       }
-                                      return null;
+                                      return hit;
                                     } catch (_) { return null; }
                                   };
                                   const _anchorHit = _findAnchor();
                                   const _advance = (outcome) => {
                                     setRecoveryReviewOutcomes((p) => ({ ...p, [recoveryReviewIdx]: outcome }));
-                                    setRecoveryReviewIdx(recoveryReviewIdx + 1);
+                                    const _next = recoveryReviewIdx + 1;
+                                    setRecoveryReviewIdx(_next);
+                                    // Announce the next word for screen-reader / keyboard users — the card
+                                    // is role=group, so advancing otherwise gives no spoken feedback (review fix).
+                                    try { const _nx = _items[_next]; if (typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce(_nx ? ('Word ' + (_next + 1) + ' of ' + _items.length + ', ' + _nx.word) : 'Content recovery review complete'); } catch (_) {}
                                   };
                                   const _doInsert = () => {
                                     try {
                                       const hit = _findAnchor();
                                       if (!hit) { addToast(t('toasts.recovery_anchor_gone') || 'The context anchor is no longer in the document — the word stays in the appendix.', 'info'); _advance('kept'); return; }
-                                      const d = pdfPreviewRef.current.contentDocument;
+                                      const d = hit.doc;
                                       // Insert the word right after (or before) its anchor inside
                                       // the matching text node, preserving original casing.
                                       const raw = hit.node.textContent;
                                       const nIdx = _norm(raw).indexOf(hit.anchor);
                                       // Map normalized index back: walk raw counting normalized chars.
                                       let rawPos = 0, normCount = 0;
+                                      // Skip leading whitespace WITHOUT counting it — _norm trims it, so
+                                      // counting it inserted the word one token early (2026-06-15 review fix).
+                                      while (rawPos < raw.length && /\s/.test(raw[rawPos])) rawPos++;
                                       const target = hit.useBefore ? nIdx + hit.anchor.length : nIdx;
                                       while (rawPos < raw.length && normCount < target) {
                                         if (/\s/.test(raw[rawPos])) { while (rawPos < raw.length && /\s/.test(raw[rawPos])) rawPos++; normCount++; }
                                         else { rawPos++; normCount++; }
                                       }
                                       hit.node.textContent = raw.slice(0, rawPos) + (hit.useBefore ? ' ' + it.word : it.word + ' ') + raw.slice(rawPos);
-                                      // Remove this word's entry from the appendix (it's placed now).
+                                      // Update the appendix entry. We insert exactly ONE occurrence, so a word that
+                                      // was missing N>1 times still has N-1 occurrences unplaced — DON'T remove its
+                                      // record (that silently dropped them, breaking "nothing is ever dropped"). Keep
+                                      // the <li> and annotate the residual; only remove it when the single occurrence
+                                      // is fully placed. (#7)
                                       try {
+                                        const _resid = (it.missingCount > 1 ? it.missingCount : 1) - 1;
                                         const lis = d.querySelectorAll('section[data-content-recovery="true"] li');
-                                        for (const li of lis) { const st = li.querySelector('strong'); if (st && st.textContent === it.word) { li.remove(); break; } }
+                                        for (const li of lis) {
+                                          const st = li.querySelector('strong');
+                                          if (st && st.textContent === it.word) {
+                                            if (_resid > 0) { li.appendChild(d.createTextNode(' — ' + _resid + ' more occurrence' + (_resid === 1 ? '' : 's') + ' could not be auto-placed; kept here.')); }
+                                            else { li.remove(); }
+                                            break;
+                                          }
+                                        }
                                         const ul = d.querySelector('section[data-content-recovery="true"] ul');
                                         if (ul && ul.children.length === 0) { const sec = d.querySelector('section[data-content-recovery="true"]'); if (sec) sec.remove(); }
                                       } catch (_) {}
-                                      // Persist: snapshot the edited iframe into accessibleHtml.
-                                      const h = getPdfPreviewHtml();
+                                      // Persist: snapshot the live iframe, or serialize the detached doc
+                                      // when the preview is closed — accessibleHtml is the source of truth.
+                                      let h = null;
+                                      if (hit.live) { h = getPdfPreviewHtml(); }
+                                      else { try { h = d.documentElement ? ('<!DOCTYPE html>\n' + d.documentElement.outerHTML) : null; } catch (_) { h = null; } }
                                       if (h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: h, _userEditedAt: Date.now() } : prev);
                                       try { window.dispatchEvent(new CustomEvent('alloflow:fidelity-stale')); } catch (_) {}
                                       addToast((t('toasts.recovery_word_inserted') || '📍 Inserted') + ' "' + it.word + '"', 'success');
@@ -4500,7 +8115,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           🌐 HTML Report
                         </button>
                         <button onClick={() => {
-                          const reportData = { ...pdfAuditResult, fileName: pendingPdfFile?.name || 'document.pdf', auditDate: new Date().toISOString(), tool: 'AlloFlow PDF Accessibility Auditor', standard: 'WCAG 2.1 AA' };
+                          const reportData = { ...pdfAuditResult, fileName: pendingPdfFile?.name || 'document.pdf', auditDate: new Date().toISOString(), tool: 'AlloFlow PDF Accessibility Auditor', standard: 'WCAG 2.2 AA' };
                           const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a'); a.href = url;
@@ -4573,10 +8188,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const isWorking = chunk.status === 'working';
                           const isRejected = !!liveChunkRejected[chunk.index];
                           const isExpanded = !!liveChunkExpanded[chunk.index];
-                          const scoreColor = chunk.score >= 80 ? 'green' : chunk.score >= 60 ? 'amber' : 'red';
-                          const scoreBg = scoreColor === 'green' ? 'bg-green-50 border-green-200' : scoreColor === 'amber' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200';
-                          const scoreText = scoreColor === 'green' ? 'text-green-600' : scoreColor === 'amber' ? 'text-amber-600' : 'text-red-600';
-                          const scoreDot = scoreColor === 'green' ? 'bg-green-500' : scoreColor === 'amber' ? 'bg-amber-500' : 'bg-red-500';
+                          // (2026-06-22) A section whose per-chunk audit didn't return a number (AI throttled /
+                          // partial coverage → score NULLED) must NOT render as a blank red "/100" — that reads
+                          // as "scored zero / broken" when it's just "not scored". Mirror the sister list view
+                          // (line ~5334): neutral slate + an honest "not scored" label.
+                          const _hasScore = typeof chunk.score === 'number';
+                          const _noChanges = !isWorking && !chunk.usedOriginal && ((chunk.deterministicFixCount || 0) + (chunk.surgicalFixCount || 0)) === 0;
+                          const scoreColor = !_hasScore ? 'slate' : chunk.score >= 80 ? 'green' : chunk.score >= 60 ? 'amber' : 'red';
+                          const scoreBg = scoreColor === 'green' ? 'bg-green-50 border-green-200' : scoreColor === 'amber' ? 'bg-amber-50 border-amber-200' : scoreColor === 'slate' ? 'bg-slate-50 border-slate-200' : 'bg-red-50 border-red-200';
+                          const scoreText = scoreColor === 'green' ? 'text-green-600' : scoreColor === 'amber' ? 'text-amber-600' : scoreColor === 'slate' ? 'text-slate-500' : 'text-red-600';
+                          const scoreDot = scoreColor === 'green' ? 'bg-green-500' : scoreColor === 'amber' ? 'bg-amber-500' : scoreColor === 'slate' ? 'bg-slate-400' : 'bg-red-500';
 
                           return (
                             <div key={chunk.index} className={`border-2 rounded-xl transition-all duration-300 ${isRejected ? 'bg-slate-50 border-slate-300 opacity-60' : isWorking ? 'bg-indigo-50 border-indigo-200' : scoreBg}`}>
@@ -4593,14 +8214,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.targeted_title') || 'AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)'}>{chunk.surgicalFixCount} targeted</span>}
                                     {!isWorking && chunk.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.ai_skipped_short_title') || 'AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.'}>{t('pdf_audit.live_chunk.ai_skipped_short') || 'AI skipped'}</span>}
                                     {!isWorking && chunk.wasRetried && !chunk.usedOriginal && <span className="text-[11px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">retried</span>}
-                                    {!isWorking && chunk.aiVerified && <span className="text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.verified_title') || 'AI verified content preserved'}>✓ verified</span>}
+                                    {_noChanges && <span className="text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold italic" title={t('pdf_audit.live_chunk.no_changes_card_title') || 'No changes were made to this section this run. The green badges below confirm its content is intact — not that it was edited.'}>{t('pdf_audit.live_chunk.no_changes_card') || 'no changes'}</span>}
+                                    {!isWorking && chunk.aiVerified && <span className="text-[11px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.verified_title') || 'AI verified content preserved (not necessarily edited)'}>✓ verified</span>}
                                     {!isWorking && chunk.integrityPassed && <span className="text-[11px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.integrity_title') || 'Word overlap integrity check passed'}>integrity ✓</span>}
                                     {isRejected && <span className="text-[11px] bg-slate-300 text-slate-700 px-1.5 py-0.5 rounded font-bold">rejected</span>}
                                   </div>
                                 </div>
                                 {!isWorking && (
                                   <div className={`text-base font-black shrink-0 ${scoreText}`}>
-                                    {chunk.score}<span className="text-[11px] opacity-60">/100</span>
+                                    {_hasScore
+                                      ? <>{chunk.score}<span className="text-[11px] opacity-60">/100</span></>
+                                      : <span className="text-[11px] font-bold">{t('pdf_audit.live_chunk.not_scored') || 'not scored (AI throttled)'}</span>}
                                   </div>
                                 )}
                               </div>
@@ -4624,24 +8248,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         try {
                                           const result = await refixChunk(chunk.index, { onProgress: setPdfFixStep, currentHtml: pdfFixResult.accessibleHtml, persistedState: pdfFixResult.chunkState });
                                           if (result?.html) {
-                                            const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
-                                            if (!reAi) {
-                                              warnLog('[Re-fix] AI re-verification returned null for section ' + (chunk.index + 1) + '; not committing new HTML.');
-                                              addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
-                                            } else {
-                                              const newScore = reAxe ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi.score;
-                                              setPdfFixResult(prev => ({
-                                                ...prev,
-                                                accessibleHtml: result.html,
-                                                verificationAudit: reAi,
-                                                axeAudit: reAxe || prev?.axeAudit,
-                                                afterScore: newScore ?? prev?.afterScore,
-                                                htmlChars: result.html.length,
-                                                chunkState: result.chunkState,
-                                                chunkWeightedScore: result.chunkWeightedScore,
-                                              }));
-                                              addToast(`Section ${chunk.index + 1} re-fixed: ${result.chunkResult.score}/100`, 'success');
-                                            }
+                                            await _commitRefixedSection(result, chunk.index + 1);
                                           }
                                         } catch(e) { addToast(`Re-fix failed: ${e?.message}`, 'error'); }
                                         finally { setPdfFixLoading(false); setPdfFixStep(''); }
@@ -4747,15 +8354,76 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
                     <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300">
+                      {/* ── R1 verdict strip (2026-07-10): the one-line answer to the teacher's actual
+                          question — "Can I hand this out?" — computed by the pipeline (single source,
+                          unit-tested) from the honesty signals the result already carries. VISIBLE
+                          text, never tooltip-only; role=status so screen readers announce it. */}
+                      {(() => {
+                        const _v = (_docPipeline && typeof _docPipeline.distributionVerdict === 'function')
+                          ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore }) : null;
+                        if (!_v) return null;
+                        const _sty = _v.level === 'ready' ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
+                          : _v.level === 'caution' ? 'bg-amber-50 border-amber-400 text-amber-900'
+                          : 'bg-rose-50 border-rose-400 text-rose-900';
+                        const _icon = _v.level === 'ready' ? '✅' : _v.level === 'caution' ? '⚠️' : '🛑';
+                        const _items = _v.level === 'review' ? _v.review.concat(_v.cautions) : _v.cautions;
+                        return (
+                          <div role="status" data-help-key="pdf_audit_verdict_strip" className={`rounded-xl border-2 p-3 ${_sty}`}>
+                            <p className="text-sm font-black"><span aria-hidden="true">{_icon} </span>{t('pdf_audit.verdict.' + _v.level) || _v.headline}</p>
+                            {_items.length > 0 && (
+                              <ul className="mt-1 ml-5 list-disc text-xs space-y-0.5">
+                                {_items.slice(0, 6).map((m, i) => <li key={i}>{m}</li>)}
+                                {_items.length > 6 && <li>{'+ ' + (_items.length - 6) + ' ' + (t('pdf_audit.verdict.more') || 'more — see the panels below')}</li>}
+                              </ul>
+                            )}
+                          </div>
+                        );
+                      })()}
                       {/* ── Results dashboard bar: pinned overview + jump-links. ──
                           NAVIGATION-ONLY by design: it moves no existing element
                           (the 308-element inventory is the completeness contract —
                           additions only, zero relocations). Chips scroll to section
                           anchors; details targets auto-open on jump. */}
                       {(() => {
-                        const _jump = (id) => { try { const el = document.getElementById(id); if (!el) { addToast(t('pdf_audit.dashboard.section_unavailable') || 'That section has nothing to show for this pass (its data didn’t apply this round) — everything else is below.', 'info'); return; } if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} };
+                        const _jump = (id) => {
+                          try {
+                            const el = document.getElementById(id);
+                            if (!el) {
+                              // Don't dead-end (#3, 2026-06-17). The Verification + Recovery reports are
+                              // produced by a FULL audit; an incremental Additional Sweep / Fix Remaining
+                              // (or the section-review flow) updates the document but doesn't regenerate
+                              // them, so the anchor isn't in the DOM. Explain honestly AND land the user on
+                              // the results that ARE present instead of leaving them on a bare toast.
+                              const _names = { 'allo-sec-verify': (t('pdf_audit.dashboard.verify') || 'Verification'), 'allo-sec-recovery': (t('pdf_audit.dashboard.recovery') || 'Recovery') };
+                              const _nm = _names[id];
+                              addToast(
+                                _nm
+                                  ? (t('pdf_audit.dashboard.section_from_full_audit') || (_nm + ' is produced by a full audit — your latest pass was an incremental fix, so it wasn’t regenerated. Run a fresh audit to refresh it; the rest of the results are below.'))
+                                  : (t('pdf_audit.dashboard.section_unavailable') || 'That section has nothing to show for this pass — everything else is below.'),
+                                'info'
+                              );
+                              try { const _fb = document.getElementById('allo-sec-downloads'); if (_fb) _fb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+                              return;
+                            }
+                            if (el.tagName === 'DETAILS') el.open = true;
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          } catch (_) {}
+                        };
                         const _vio = pdfFixResult.axeAudit ? (pdfFixResult.axeAudit.totalViolations || 0) : null;
                         const _chip = 'px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors whitespace-nowrap';
+                        // Governing-layer tag for the compact header. The headline = min(content, automated[axe/EA]).
+                        // When the deterministic engines are the lower layer, the headline is "automated", NOT
+                        // "content" (the AI rubric may be far higher) — labeling an EA-governed 60 as "content" is
+                        // the collision that confused the score. Mirrors the breakdown below the score badge.
+                        const _hdrAi = pdfFixResult.verificationAudit?.score ?? null;
+                        const _hdrAxe = pdfFixResult.axeAudit?.score ?? null;
+                        const _hdrEa = pdfFixResult.secondEngineAudit?.score ?? null;
+                        const _hdrDet = (_hdrAxe != null && _hdrEa != null) ? Math.min(_hdrAxe, _hdrEa) : (_hdrAxe ?? _hdrEa);
+                        const _govTag = pdfFixResult._aiVerificationIncomplete
+                          ? (t('pdf_audit.dashboard.content_structural_tag') || 'structural only')
+                          : (pdfFixResult._scoreIsBlended && _hdrAi != null && _hdrDet != null && _hdrDet < _hdrAi)
+                            ? (t('pdf_audit.dashboard.automated_tag') || 'automated')
+                            : (t('pdf_audit.dashboard.content_tag') || 'content');
                         return (<>
                           {/* Unmissable running banner (2026-06-11, maintainer ask):
                               results render after round 1 while auto-continue keeps
@@ -4768,14 +8436,94 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
-                            <span className="text-xs font-black text-emerald-800 whitespace-nowrap" title={t('pdf_audit.dashboard.score_title') || 'Accessibility score: before → after'}>
-                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span>
+                            <span className={'text-xs font-black whitespace-nowrap ' + (pdfFixResult._aiVerificationIncomplete ? 'text-slate-500' : 'text-emerald-800')} title={(pdfFixResult._aiVerificationIncomplete ? ((t('pdf_audit.dashboard.score_incomplete_title') || 'Structural/automated checks only — the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.') + ' ') : '') + (t('pdf_audit.dashboard.score_title') || 'Content audit score (HTML reconstruction: AI rubric + axe), before → after. This is NOT PDF/UA conformance of the exported PDF — see the PDF/UA chip.')}>
+                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {pdfFixResult._aiVerificationIncomplete ? (<span className="text-slate-500">{'—'}</span>) : (<>{(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span></>)} {pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) ? (<_AlloQualifier className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase tracking-wide" text={t('pdf_audit.dashboard.estimated_min_title') || 'Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score.'}>{t('pdf_audit.dashboard.estimated_min') || 'est. min'} {pdfFixResult._estimatedMinimumScore}/100</_AlloQualifier>) : null} {_govTag === (t('pdf_audit.dashboard.automated_tag') || 'automated') ? <_AlloQualifier className="font-normal text-slate-400 text-[9px] uppercase tracking-wide" text={t('pdf_audit.dashboard.automated_tag_title') || 'Headline governed by the automated layer (axe-core / IBM Equal Access) — the lower of the engines. The AI content rubric may be higher; see the breakdown below.'}>{_govTag}</_AlloQualifier> : <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide">{_govTag}</span>}{pdfFixResult.fidelityLimited ? <_AlloQualifier className="text-amber-600 font-bold" text={t('pdf_audit.dashboard.fidelity_limited_title') || 'Asterisk: content fidelity is limited on this run (reduced coverage or fidelity notes) — a high score must not be read as “all good”. See the fidelity panel below for the specifics.'}>*</_AlloQualifier> : null}
                             </span>
-                            {_vio !== null && (
-                              <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold ' + (_vio === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')}>
-                                {_vio === 0 ? (t('pdf_audit.dashboard.zero_issues') || '0 issues') : _vio + ' ' + (t('pdf_audit.dashboard.issues_left') || 'issues left')}
+                            {/* #1 score↔fidelity coupling — a high accessibility number must not read as
+                                "all good" when source content may not have carried over. */}
+                            {pdfFixResult.fidelityLimited && (
+                              <span
+                                className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 whitespace-nowrap"
+                                title={t('pdf_audit.dashboard.fidelity_limited_title') || 'This is an ACCESSIBILITY score only. Some source content may not have carried over' + (typeof pdfFixResult.integrityCoverage === 'number' ? ' (' + pdfFixResult.integrityCoverage + '% of source text preserved)' : '') + ' — verify content fidelity (review the Diff) before distributing.'}
+                              >
+                                {t('pdf_audit.dashboard.fidelity_limited') || '⚠ verify content'}
                               </span>
                             )}
+                            {_vio !== null && (
+                              <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold ' + (_vio === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')}>
+                                {_vio === 0 ? (t('pdf_audit.dashboard.zero_issues') || '0 content issues') : _vio + ' ' + (t('pdf_audit.dashboard.issues_left') || 'content issues')}
+                              </span>
+                            )}
+                            {/* #3 Structural foundations: length-independent wins, scored on their OWN axis so a long
+                                document's per-issue pile can't bury them. Presence only — never a conformance score. */}
+                            {_structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && (
+                              <_AlloQualifier className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800"
+                                text={(t('pdf_audit.dashboard.foundations_title') || 'HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) — presence only, not validated for correctness, and separate from the per-issue content score above. Also DIFFERENT from the “PDF/UA self-check” chip, which checks the EXPORTED PDF’s byte-level structure — the two happen to both count to 18 but measure different things. Present:') + ' ' + _structuralFoundations.present.join('; ')}>
+                                🏗️ {_structuralFoundations.present.length}{_structuralFoundations.checked ? '/' + _structuralFoundations.checked : ''} {t('pdf_audit.dashboard.foundations') || 'HTML foundations'}
+                              </_AlloQualifier>
+                            )}
+                            {/* Best-practice STRUCTURE recommendations (advisory, NOT WCAG, never scored): the gaps the
+                                WCAG-tagged re-audit can't see — no <main>, no <h1>, heading-order skips. Surfaced honestly
+                                so "0 WCAG issues" can't imply a perfect outline, and so a teacher can see the Tier-1/2a
+                                fixes land (the chip shrinks as they're applied). (2026-06-24) */}
+                            {_structuralFoundations && Array.isArray(_structuralFoundations.advisory) && _structuralFoundations.advisory.length > 0 && (
+                              <_AlloQualifier className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-amber-100 text-amber-800"
+                                text={(t('pdf_audit.dashboard.foundations_advisory_title') || 'Best-practice structure recommendations — these IMPROVE the document outline / landmarks but are NOT WCAG failures and are NOT counted in the score (axe’s region / page-has-heading-one / heading-order are best-practice rules). Recommendations:') + ' ' + _structuralFoundations.advisory.map((a) => a.label).join('  •  ')}>
+                                💡 {_structuralFoundations.advisory.length} {t('pdf_audit.dashboard.foundations_tips') || 'best-practice tip(s)'}
+                              </_AlloQualifier>
+                            )}
+                            {/* Distinct PDF/UA verdict for the EXPORTED tagged PDF — separate from the content score above.
+                                Prefers the independent veraPDF verdict; falls back to the byte/self-check. A failing
+                                PDF/UA chip never lets a green content chip stand alone (the inconsistency we fixed). */}
+                            {veraPdfBusy && (
+                              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-indigo-100 text-indigo-700" title={t('pdf_audit.pdfua_badge.validating') || 'Validating PDF/UA-1 (ISO 14289-1) with veraPDF…'}>⏳ {t('pdf_audit.dashboard.pdfua_validating') || 'PDF/UA: validating…'}</span>
+                            )}
+                            {!veraPdfBusy && _currentTaggedValidation && (() => {
+                              const _v = _currentTaggedValidation.veraPdf;
+                              const _pev = _currentTaggedValidation.postExportValidator && _currentTaggedValidation.postExportValidator.summary;
+                              const _sc = _currentTaggedValidation.pdfUa1Checks && _currentTaggedValidation.pdfUa1Checks.summary;
+                              let label = null, fail = false, indep = false, warnOnly = false;
+                              if (_v && !_v.error) {
+                                indep = true; fail = _v.compliant === false;
+                                label = fail ? ('veraPDF: ' + (_v.failedRules ? _v.failedRules.length : 0) + ' rule(s)') : 'veraPDF: passes';
+                              } else if (_pev) {
+                                const _w = _pev.warn || 0;
+                                fail = (_pev.fail || 0) > 0;
+                                warnOnly = !fail && _w > 0; // warn-only must NOT render green — match the authoritative badge + conformancePct = pass/(pass+fail+warn)
+                                label = 'PDF/UA self-check: ' + (_pev.pass || 0) + '/' + ((_pev.pass || 0) + (_pev.fail || 0) + _w) + (_w ? ' (' + _w + ' warn)' : '');
+                              } else if (_sc) {
+                                const _w = _sc.warn || 0;
+                                fail = (_sc.fail || 0) > 0;
+                                warnOnly = !fail && _w > 0;
+                                label = 'PDF/UA self-check: ' + (_sc.conformancePct || 0) + '%' + (_w ? ' (' + _w + ' warn)' : '');
+                              }
+                              if (!label) return null;
+                              return (
+                                <_AlloQualifier className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (fail ? 'bg-red-100 text-red-700' : (warnOnly ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'))}
+                                  text={(t('pdf_audit.dashboard.pdfua_title') || 'PDF/UA conformance of the EXPORTED tagged PDF — the actual file you hand out, distinct from the content score.') + (indep ? '' : ' Run "Independently validate with veraPDF" for the authoritative ISO 14289-1 verdict.')}>
+                                  {(fail ? '❌ ' : (warnOnly ? '⚠️ ' : '✅ ')) + label}
+                                </_AlloQualifier>
+                              );
+                            })()}
+                            {(() => {
+                              // H-5 Phase-A instrument: always-visible reading-order readout for the
+                              // EXPORTED tagged PDF. The ratio is the LCS monotonic-match between the
+                              // source token order and the round-tripped tagged-PDF order (100% = identical
+                              // order). Low values flag multi-column / table reflow a screen reader would
+                              // read out of sequence. Informational only — calibration corpus pending
+                              // before this gates conformance (see doc_pipeline readingOrderSequenceRatio).
+                              const _td = _currentTaggedValidation && _currentTaggedValidation.roundTrip && _currentTaggedValidation.roundTrip.textDiff;
+                              const _ro = _td && typeof _td.readingOrderRatio === 'number' ? _td.readingOrderRatio : null;
+                              if (_ro === null) return null;
+                              const _low = _ro < 80;
+                              const _mid = !_low && _ro < 90;
+                              return (
+                                <_AlloQualifier className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (_low ? 'bg-amber-100 text-amber-700' : (_mid ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-600'))}
+                                  text={t('pdf_audit.dashboard.reading_order_title') || 'Reading-order match between the SOURCE document and the EXPORTED tagged PDF (round-trip token order, longest-common-subsequence). 100% = identical order. Lower values can indicate multi-column or table reflow that a screen reader will read out of sequence. Informational — being calibrated, does not yet block conformance.'}>
+                                  {(_low ? '⚠️ ' : '') + (t('pdf_audit.dashboard.reading_order') || 'Reading order') + ': ' + (Math.round(_ro * 10) / 10) + '%'}
+                                </_AlloQualifier>
+                              );
+                            })()}
                             <span className="h-4 w-px bg-slate-300 mx-0.5" aria-hidden="true"></span>
                             <button className={_chip} onClick={() => _jump('allo-sec-verify')}>✅ {t('pdf_audit.dashboard.verify') || 'Verification'}</button>
                             <button className={_chip} onClick={() => _jump('allo-sec-recovery')}>🩹 {t('pdf_audit.dashboard.recovery') || 'Recovery'}</button>
@@ -4791,26 +8539,61 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </>);
                       })()}
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1">✅ {t('pdf_audit.results.ready_heading') || 'Your accessible copy is ready'}</h4>
-                        <button
-                          onClick={() => {
-                            if (window.confirm(t('pdf_audit.start_new_confirm') || 'Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
-                              startNewPdfAudit();
-                            }
-                          }}
-                          className="text-[11px] px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1"
-                          title={t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF'}
-                        >
-                          🗑️ {t('pdf_audit.start_new_audit') || 'Start New Audit'}
-                        </button>
+                        {/* Honest headline (2026-06-22): don't say an unqualified "ready" while the
+                            auto-continue loop is still grinding below target, or when content fidelity is
+                            in question — that conflates "a downloadable copy exists" with "done + safe to
+                            share". Mirror the fidelity-aware "What now?" strip below. */}
+                        {(() => {
+                          const _stillWorking = pdfAutoContinueRunning || pdfFixLoading;
+                          const _fidelity = !!(pdfFixResult && pdfFixResult.fidelityLimited);
+                          const _label = _stillWorking
+                            ? (t('pdf_audit.results.ready_heading_working') || 'Draft accessible copy ready — still improving…')
+                            : _fidelity
+                              ? (t('pdf_audit.results.ready_heading_verify') || 'Accessible copy ready — verify content before sharing')
+                              : (t('pdf_audit.results.ready_heading') || 'Your accessible copy is ready');
+                          const _icon = _stillWorking ? '⏳' : _fidelity ? '⚠️' : '✅';
+                          const _color = _stillWorking ? 'text-indigo-800' : _fidelity ? 'text-amber-800' : 'text-emerald-800';
+                          return <h4 className={'text-sm font-bold flex items-center gap-2 flex-1 ' + _color}>{_icon} {_label}</h4>;
+                        })()}
+                        {/* While the auto-continue loop is grinding (legitimately, for minutes), this
+                            button used to just look dead. Make it an ACTIONABLE Stop instead — once the
+                            loop ends it reverts to Start New Audit. (Stop only sets the abort flag, so
+                            there's no reset-while-running resurrection race.) */}
+                        {pdfAutoContinueRunning ? (
+                          <button
+                            onClick={() => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); }}
+                            className="text-[11px] px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-400 rounded-md font-bold inline-flex items-center gap-1 hover:bg-amber-100"
+                            title={t('pdf_audit.stop_then_new_title') || 'Remediation is still improving the document. Stop it (keeps what’s done) — then this becomes “Start New Audit”.'}
+                          >
+                            ⏹ {t('pdf_audit.stop_running') || 'Stop (still working…)'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              if (window.confirm(t('pdf_audit.start_new_confirm') || 'Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
+                                startNewPdfAudit();
+                              }
+                            }}
+                            disabled={pdfFixLoading}
+                            className={'text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 ' + (pdfFixLoading ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100')}
+                            title={pdfFixLoading ? (t('pdf_audit.start_new_running_title') || 'Remediation is still running — clearing now would lose this run.') : (t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF')}
+                          >
+                            {pdfFixLoading ? '⏳' : '🗑️'} {t('pdf_audit.start_new_audit') || 'Start New Audit'}
+                          </button>
+                        )}
                       </div>
                       {/* "What now?" strip (2026-06-12): 308 elements below — give
                           the first action explicitly. Additions-only. */}
-                      <div data-help-key="pdf_audit_results_whatnow" className="bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap" role="note">
-                        <span className="font-black text-emerald-800">{t('pdf_audit.whatnow.lead') || 'What now?'}</span>
-                        <span>{_inputIsPdf
-                          ? (t('pdf_audit.whatnow.pdf') || '1️⃣ Scroll to Downloads and grab the Tagged PDF — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')
-                          : (t('pdf_audit.whatnow.office') || '1️⃣ Scroll to Downloads and grab the Word file — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')}</span>
+                      <div data-help-key="pdf_audit_results_whatnow" className={'bg-white border rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap ' + ((pdfFixResult && pdfFixResult.fidelityLimited) ? 'border-amber-300' : 'border-emerald-200')} role="note">
+                        <span className={'font-black ' + ((pdfFixResult && pdfFixResult.fidelityLimited) ? 'text-amber-800' : 'text-emerald-800')}>{t('pdf_audit.whatnow.lead') || 'What now?'}</span>
+                        {/* Integrity-aware (2026-06-20): when content fidelity is in question (low coverage,
+                            a changed number, a dropped table/link), do NOT call the output "share-ready"
+                            or the fidelity notes "optional polish" — lead with verifying the content. */}
+                        <span>{(pdfFixResult && pdfFixResult.fidelityLimited)
+                          ? (t('pdf_audit.whatnow.fidelity') || ('⚠ Before sharing: some source content may not have carried over (see the fidelity notes below). 1️⃣ Open Compare/Diff and confirm scores, numbers, dates, and key text match the original. 2️⃣ Only then grab the ' + (_inputIsPdf ? 'Tagged PDF' : 'Word file') + ' from Downloads.'))
+                          : (_inputIsPdf
+                            ? (t('pdf_audit.whatnow.pdf') || '1️⃣ Scroll to Downloads and grab the Tagged PDF — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')
+                            : (t('pdf_audit.whatnow.office') || '1️⃣ Scroll to Downloads and grab the Word file — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.'))}</span>
                         <button onClick={() => { try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="ml-auto px-2.5 py-1 bg-emerald-600 text-white rounded-full text-[11px] font-bold hover:bg-emerald-700 shrink-0">📥 {t('pdf_audit.whatnow.go') || 'Take me to Downloads'}</button>
                         {/* The reverse door, surfaced (2026-06-11): the Full
                             Differentiation Pipeline button existed deep in the
@@ -4820,7 +8603,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           setInputText(temp.textContent || temp.innerText || '');
                           _closePdfAuditModal();
                           addToast(t('toasts.reverse_door') || '✨ Document loaded as source material — generate a glossary, quiz, leveled text, or full lesson from it using the tools on the left.', 'success');
-                        }} className="px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 shrink-0" title={t('pdf_audit.whatnow.materials_title') || 'Open the content tools with this document as the source — glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text.'}>✨ {t('pdf_audit.whatnow.materials') || 'Make learning materials'}</button>
+                        }} disabled={pdfFixLoading || pdfAutoContinueRunning} className={'px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold shrink-0 ' + ((pdfFixLoading || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-700')} title={(pdfFixLoading || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : (t('pdf_audit.whatnow.materials_title') || 'Open the content tools with this document as the source — glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text.')}>✨ {t('pdf_audit.whatnow.materials') || 'Make learning materials'}</button>
                       </div>
                       {/* Image-description reviewer (item 8b): entry + stepper. */}
                       {(() => {
@@ -4879,23 +8662,52 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📝 {(pdfFixResult.extractedChars || 0).toLocaleString()} chars extracted</span>
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">🌐 {(pdfFixResult.htmlChars || 0).toLocaleString()} chars HTML</span>
                           {pdfFixResult.imageCount > 0 && <span className="text-[11px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">🖼️ {pdfFixResult.imageCount} images identified</span>}
+                          {/* Estimated OCR quality (scanned docs only) — answers "is the searchable text we
+                              embedded faithful, or garbled?". Heuristic + disclosed; never a measured accuracy. */}
+                          {pdfFixResult.ocrAccuracy && typeof pdfFixResult.ocrAccuracy.score === 'number' && (() => {
+                            const _oa = pdfFixResult.ocrAccuracy;
+                            const _cls = _oa.band === 'good' ? 'bg-emerald-100 text-emerald-700' : (_oa.band === 'fair' ? 'bg-amber-50 text-amber-700' : 'bg-amber-100 text-amber-800');
+                            const _lbl = _oa.band === 'good' ? (t('pdf_audit.dashboard.ocr_good') || 'Good') : (_oa.band === 'fair' ? (t('pdf_audit.dashboard.ocr_fair') || 'Fair') : (t('pdf_audit.dashboard.ocr_poor') || 'Poor'));
+                            return (
+                              <_AlloQualifier className={'text-[11px] px-2 py-0.5 rounded-full font-bold ' + _cls}
+                                text={(t('pdf_audit.dashboard.ocr_quality_title') || 'ESTIMATED quality of the OCR text embedded as this scanned document’s searchable layer. Heuristic (' + _oa.basis + '; ' + _oa.confidence + ' confidence) — NOT a measured accuracy: it reliably flags badly-garbled OCR but cannot catch every single-character error. Review the Diff for the final word.') + (Array.isArray(_oa.suspectSamples) && _oa.suspectSamples.length ? ('  Suspect tokens: ' + _oa.suspectSamples.join(', ')) : '')}>
+                                {(_oa.band === 'poor' ? '⚠️ ' : '🔎 ') + (t('pdf_audit.dashboard.ocr_quality') || 'OCR quality') + ': ' + _lbl + ' (~' + _oa.score + '%)'}
+                              </_AlloQualifier>
+                            );
+                          })()}
                         </div>
                       )}
 
                       {/* Before → After Score */}
                       {(() => {
-                        const afterAi = pdfFixResult.afterScore;
+                        // Score honesty (2026-06-13; weakest-layer 2026-06-21): pdfFixResult.afterScore is
+                        // ALREADY the engine's canonical headline — min(AI content, min(axe,EA) automated),
+                        // the LOWER (governing) layer, NOT an average. Display it DIRECTLY; the breakdown
+                        // below shows the TRUE operands separately (content = verificationAudit.score;
+                        // automated = min(axe,EA)) and names which layer governs — never an averaged number.
                         const afterAxe = pdfFixResult.axeAudit?.score ?? null;
-                        const blendedAfter = (afterAi !== null && afterAxe !== null)
-                          ? Math.round((afterAxe + afterAi) / 2)
-                          : (afterAxe ?? afterAi ?? null);
+                        const afterEa = pdfFixResult.secondEngineAudit?.score ?? null;
+                        const afterDet = (afterAxe !== null && afterEa !== null) ? Math.min(afterAxe, afterEa) : (afterAxe ?? afterEa ?? null);
+                        const afterAi = pdfFixResult.verificationAudit?.score ?? pdfFixResult.afterScore; // true AI-only after (for the chip)
+                        const blendedAfter = pdfFixResult.afterScore ?? afterDet ?? null;
                         const initialBlended = pdfAuditResult?.score ?? null;
                         const initialAi = pdfAuditResult?._aiOnlyScore ?? pdfFixResult.beforeScore;
-                        const initialAxe = pdfAuditResult?._baselineAxeScore ?? pdfFixResult.beforeAxeScore ?? null;
-                        const blendedBefore = initialBlended ?? ((initialAi !== null && initialAxe !== null) ? Math.round((initialAxe + initialAi) / 2) : (initialAi ?? null));
+                        const _beforeEa = pdfAuditResult?._baselineSecondEngineAudit?.score ?? null;
+                        const initialAxeRaw = pdfAuditResult?._baselineAxeScore ?? pdfFixResult.beforeAxeScore ?? null;
+                        const initialAxe = (initialAxeRaw !== null && _beforeEa !== null) ? Math.min(initialAxeRaw, _beforeEa) : initialAxeRaw;
+                        const blendedBefore = initialBlended ?? ((initialAi !== null && initialAxe !== null) ? _computeHeadline(initialAxe, initialAi) : (initialAi ?? null));
                         const beforeDisplay = blendedBefore ?? '?';
                         const afterDisplay = blendedAfter !== null ? blendedAfter : '?';
                         const gain = (blendedAfter !== null && blendedBefore !== null) ? blendedAfter - blendedBefore : 0;
+                        // Degraded-AI honesty (2026-06-20): when the AI semantic audit was throttle-degraded,
+                        // the pipeline set afterScore to the reliable DETERMINISTIC structural number and
+                        // flagged it. Render it NEUTRAL (slate, no green, no +gain) + labeled below, so a
+                        // structural-only score is never read as a confident AI-verified result.
+                        const _aiIncomplete = !!pdfFixResult._aiVerificationIncomplete;
+                        const _estimatedMinimum = Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null;
+                        // The BEFORE audit was a page-slice approximation (the whole-document audit failed),
+                        // so the before↔after delta is NOT apples-to-apples — render it neutrally, no green +gain.
+                        const _beforeSliced = !!pdfFixResult._beforeWasSliced;
                         return (<>
                       <div className="flex items-center justify-center gap-4">
                         <div className="text-center">
@@ -4903,30 +8715,137 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {beforeDisplay}<span className="text-sm opacity-60">/100</span>
                           </div>
                           <div className="text-[11px] font-bold text-slate-600 uppercase">Before</div>
+                          {_beforeSliced && (
+                            <div className="text-[10px] font-semibold text-amber-600 mt-0.5 whitespace-nowrap" title="The initial audit was a page-slice approximation because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate.">\u2248 sliced/approx baseline</div>
+                          )}
                         </div>
                         <div className="text-2xl text-slate-600">{'\u2192'}</div>
                         <div className="text-center">
-                          <div className={`text-3xl font-black ${(blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}>
-                            {afterDisplay}<span className="text-sm opacity-60">/100</span>
+                          {/* Headline honesty (2026-06-28): when the AI semantic audit didn't finish (throttled),
+                              the "after" number is the STRUCTURAL-only score — NOT a verified content score. Showing
+                              it as the big headline (even in slate) reads as "your doc is now N/100". Render a dash
+                              instead so there is no headline number, and demote the structural figure to a small
+                              caption below. The "re-run for a full score" CTA lives in the sub-line beneath. */}
+                          <div className={`text-3xl font-black ${_aiIncomplete ? 'text-slate-400' : (blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}
+                            title={_aiIncomplete ? (t('pdf_audit.score.after_incomplete_title') || 'No verified score yet — the AI semantic audit was throttled and did not finish. Re-run for a full score. The structural-only number is shown below.') : undefined}>
+                            {_aiIncomplete
+                              ? (<span aria-label={t('pdf_audit.score.after_incomplete_aria') || 'No verified score yet — re-run for a full score'}>{'—'}</span>)
+                              : (<>{afterDisplay}<span className="text-sm opacity-60">/100</span></>)}
                           </div>
                           <div className="text-[11px] font-bold text-slate-600 uppercase">After</div>
+                          {_aiIncomplete && (
+                            <div className="text-[10px] font-semibold text-slate-500 mt-0.5 whitespace-nowrap">{t('pdf_audit.score.structural_caption') || 'structural only'}: {afterDisplay}<span className="opacity-60">/100</span></div>
+                          )}
+                          {_aiIncomplete && _estimatedMinimum !== null && (
+                            <div className="text-[10px] font-bold text-amber-700 mt-0.5 whitespace-nowrap" title={t('pdf_audit.score.estimated_min_title') || 'Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score.'}>{t('pdf_audit.score.estimated_min') || 'estimated minimum'}: {_estimatedMinimum}<span className="opacity-60">/100</span></div>
+                          )}
                         </div>
-                        {gain > 0 && (
+                        {gain > 0 && !_aiIncomplete && !_beforeSliced && (
                           <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
                             +{gain}
                           </div>
                         )}
+                        {gain > 0 && !_aiIncomplete && _beforeSliced && (
+                          <div className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-bold" title="The 'before' score was a page-slice approximation, so this is not a clean apples-to-apples delta.">
+                            ≈+{gain} <span className="font-normal opacity-70">(approx.)</span>
+                          </div>
+                        )}
                       </div>
-                      {/* Individual engine scores with /2 formula */}
+                      {/* PDF/UA-1 conformance verdict (2026-06-20) — the INDEPENDENT ISO 14289-1 check on the
+                          EXPORTED bytes, shown BESIDE the content score, never blended into it (different
+                          artifact: the actual file vs the HTML content; the content score's axe half passes
+                          "by construction" and can't see byte-level tagging — this is what catches that).
+                          Prefers the veraPDF verdict, falls back to the self-check. */}
+                      {(() => {
+                        if (veraPdfBusy) return (<div className="text-center mt-1.5"><span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700">⏳ {t('pdf_audit.pdfua_badge.validating') || 'Validating PDF/UA-1 (ISO 14289-1) with veraPDF…'}</span></div>);
+                        const _ltv = _currentTaggedValidation;
+                        // M25 (deep dive 2026-07-09): auto-validation is default-ON — when it silently
+                        // couldn't run, an ABSENT badge read as "validation isn't a thing". One amber
+                        // line says what happened and where the manual button is.
+                        if (!_ltv && veraPdfAutoSkipped) return (
+                          <div className="text-center mt-1.5"><span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
+                            ⚠ {veraPdfAutoSkipped === 'transport-blocked'
+                              ? (t('pdf_audit.pdfua_badge.auto_skipped_popup') || 'PDF/UA validation could not run (pop-up blocked / validator still starting) — use "Independently validate with veraPDF" below.')
+                              : (t('pdf_audit.pdfua_badge.auto_skipped_failed') || 'PDF/UA auto-validation did not complete — use "Independently validate with veraPDF" below.')}
+                          </span></div>
+                        );
+                        if (!_ltv) return null;
+                        const _v = _ltv.veraPdf;
+                        const _pev = _ltv.postExportValidator && _ltv.postExportValidator.summary;
+                        const _sc = _ltv.pdfUa1Checks && _ltv.pdfUa1Checks.summary;
+                        let label = null, fail = false, indep = false, warnOnly = false;
+                        if (_v && !_v.error) { indep = true; fail = _v.compliant === false; label = fail ? ((_v.failedRules ? _v.failedRules.length : 0) + ' rule(s) fail') : 'conformant'; }
+                        else if (_pev) {
+                          // Denominator includes WARN (matches the canonical conformancePct); a warn is
+                          // not a pass. A warn-only state (warn>0, fail=0 — e.g. the §7.1 content-marking
+                          // check that's a permanent WARN) is NOT conformant, so render amber, not green.
+                          const _warn = _pev.warn || 0;
+                          fail = (_pev.fail || 0) > 0;
+                          warnOnly = !fail && _warn > 0;
+                          label = (_pev.pass || 0) + '/' + ((_pev.pass || 0) + (_pev.fail || 0) + _warn) + (_warn ? ' (' + _warn + ' warn)' : '');
+                        }
+                        else if (_sc) {
+                          const _warn = _sc.warn || 0;
+                          fail = (_sc.fail || 0) > 0;
+                          warnOnly = !fail && _warn > 0;
+                          label = (_sc.conformancePct || 0) + '%' + (_warn ? ' (' + _warn + ' warn)' : '');
+                        }
+                        if (!label) return null;
+                        const _badgeCls = fail ? 'bg-red-100 text-red-700' : (warnOnly ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-700');
+                        const _badgeIcon = fail ? '❌' : (warnOnly ? '⚠️' : '✅');
+                        return (
+                          <div className="text-center mt-1.5">
+                            <_AlloQualifier className={'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ' + _badgeCls}
+                              text={(t('pdf_audit.pdfua_badge.title') || 'PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF — the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).') + (warnOnly ? ' One or more rules are WARN (could not be auto-verified) — not yet conformant.' : '') + (indep ? ' Independently validated by veraPDF.' : ' AlloFlow self-check — run "Independently validate with veraPDF" for the authoritative verdict.')}>
+                              {_badgeIcon} {t('pdf_audit.pdfua_badge.lead') || 'PDF/UA-1'}{indep ? '' : ' (self-check)'}: {label}
+                            </_AlloQualifier>
+                          </div>
+                        );
+                      })()}
+                      {/* Two layers, shown SEPARATELY. The headline above is the LOWER (governing) layer \u2014
+                          never an average. (weakest-layer-governs, 2026-06-21) */}
                       <div className="text-center mt-1 text-[11px]">
-                        <div className="inline-flex items-center gap-1">
-                          <span className="text-slate-600">(</span>
-                          <span className="text-purple-700 font-bold" title={t('pdf_audit.score.ai_rubric_label') || 'AI Rubric'}>AI: {initialAi ?? '?'}{'\u2192'}{afterAi ?? '?'}</span>
-                          <span className="text-slate-600">+</span>
-                          <span className="text-blue-700 font-bold" title="axe-core">axe: {initialAxe ?? '?'}{'\u2192'}{afterAxe ?? '?'}</span>
-                          <span className="text-slate-600">) / 2</span>
+                        <div className="inline-flex items-center gap-1.5 flex-wrap justify-center">
+                          <_AlloQualifier className="text-purple-700 font-bold" text={t('pdf_audit.score.content_label') || 'Content & semantics \u2014 the AI rubric reading of meaning, alt-text quality and reading order. Reproducible: 100 minus the count-weighted deductions for the issues listed below.'}>{t('pdf_audit.score.content_short') || 'content'}: {initialAi ?? '?'}{'\u2192'}{_aiIncomplete ? (t('pdf_audit.score.ai_incomplete_short') || 'incomplete') : (afterAi ?? '?')}</_AlloQualifier>
+                          {/* When the AI semantic audit was throttle-degraded, the headline falls back to the
+                              DETERMINISTIC structural score (the reliable, completed engine) \u2014 labeled so it's
+                              never read as an AI-verified result. Otherwise show both layers + name the governing one. */}
+                          {_aiIncomplete ? (
+                          <span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.det_only_incomplete') || 'structural/automated checks only; AI semantic audit incomplete \u2014 re-run for a full score'}</span>
+                          ) : pdfFixResult._scoreIsBlended ? (<>
+                          <span className="text-slate-400">{'\u00b7'}</span>
+                          <_AlloQualifier className="text-blue-700 font-bold" text={t('pdf_audit.score.automated_label') || 'Automated WCAG \u2014 the stricter of axe-core / IBM Equal Access, run on the HTML reconstruction (passes by construction; blind to byte-level PDF tagging \u2014 see the PDF/UA badge).'}>{t('pdf_audit.score.automated_short') || 'automated'}: {(pdfAuditResult?.hasSearchableText === false) ? 'n/a' : (initialAxe ?? '?')}{'\u2192'}{afterDet ?? '?'}</_AlloQualifier>
+                          <span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.governing_lead') || 'headline = the lower (governing) layer'}{(typeof afterAi === 'number' && typeof afterDet === 'number') ? ' (' + ((afterAi <= afterDet) ? (t('pdf_audit.score.content_short') || 'content') : (t('pdf_audit.score.automated_short') || 'automated')) + ')' : ''}</span>
+                          </>) : (<span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.ai_only_note') || 'AI content rubric only (automated checks unavailable)'}</span>)}
                         </div>
                       </div>
+                      {/* When IBM Equal Access (the 2nd deterministic engine) scored LOWER than axe-core, it GOVERNS
+                          the "automated" number above \u2014 and a low headline next to a high axe score is confusing
+                          without naming it. Surface WHY + what it flagged, right where the governing number shows.
+                          (2026-06-30: closes the same transparency gap the exported report had.) */}
+                      {(!_aiIncomplete && pdfFixResult._scoreIsBlended && pdfFixResult.secondEngineAudit
+                        && typeof afterEa === 'number' && typeof afterAxe === 'number' && afterEa < afterAxe) ? (
+                        <div className="text-center mt-1 text-[11px]">
+                          <div className="inline-block text-left max-w-xl bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+                            <span className="text-amber-800">
+                              <span className="font-bold">{(typeof afterAi === 'number' && typeof afterDet === 'number' && afterAi < afterDet) ? (t('pdf_audit.score.ea_explains_lead') || 'About the automated layer:') : (t('pdf_audit.score.ea_governs_lead') || 'Why the automated layer is the lower number:')}</span>{' '}
+                              {((typeof afterAi === 'number' && typeof afterDet === 'number' && afterAi < afterDet) ? (t('pdf_audit.score.ea_explains_body') || 'axe-core scored {axe}, but the second independent WCAG engine, IBM Equal Access, scored {ea} ({n} confirmed rule failure(s)). The automated layer always reports the stricter of the two engines. The headline is governed by the lower content layer, not by this number.') : (t('pdf_audit.score.ea_governs_body') || 'axe-core scored {axe}, but the second independent WCAG engine, IBM Equal Access, scored {ea} ({n} confirmed rule failure(s)). The headline always uses the stricter of the two engines, so Equal Access governs here, not the higher axe-core number.'))
+                                .replace('{axe}', String(afterAxe)).replace('{ea}', String(afterEa)).replace('{n}', String(pdfFixResult.secondEngineAudit.failViolations ?? '?'))}
+                            </span>
+                            {Array.isArray(pdfFixResult.secondEngineAudit.fails) && pdfFixResult.secondEngineAudit.fails.length > 0 && (
+                              <details className="mt-1">
+                                <summary className="cursor-pointer font-bold text-amber-700 hover:text-amber-900">{t('pdf_audit.score.ea_fails_summary') || 'What Equal Access flagged'}</summary>
+                                <ul className="mt-0.5 space-y-0.5 text-[10px] text-amber-900 list-disc pl-4">
+                                  {pdfFixResult.secondEngineAudit.fails.slice(0, 12).map((f, fi) => (
+                                    <li key={fi}><span className="font-mono">{f.id}</span>{f.description ? (' \u2014 ' + f.description) : ''}{f.nodes > 1 ? (' (' + f.nodes + ' ' + (t('pdf_audit.score.ea_places') || 'places') + ')') : ''}</li>
+                                  ))}
+                                  {pdfFixResult.secondEngineAudit.fails.length > 12 && <li>\u2026{t('pdf_audit.score.ea_more') || 'and'} {pdfFixResult.secondEngineAudit.fails.length - 12} {t('pdf_audit.score.ea_more2') || 'more'}</li>}
+                                </ul>
+                              </details>
+                            )}
+                          </div>
+                        </div>
+                      ) : null}
                       </>);
                       })()}
 
@@ -4941,7 +8860,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <span className="text-lg" aria-hidden="true">🎯</span>
                                 <div>
                                   <div className="text-xs font-bold text-emerald-800">{t('pdf_audit.resolution.heading') || 'Issue Resolution'}</div>
-                                  <div className="text-[11px] text-emerald-600">{t('pdf_audit.resolution.subheading', { resolved: s.resolvedCount, total: s.totalPre, pct }) || `Resolved ${s.resolvedCount} of ${s.totalPre} original issues (${pct}%)`}</div>
+                                  {/* State-aware subheading (2026-06-23, maintainer Canvas test): give an explicit
+                                      "no remaining issues" affirmative when all originals are resolved, and — when
+                                      new issues were introduced — say so plainly so "100%" isn't misread as
+                                      "issue-free" (100% is about ORIGINAL issues; the new ones still need attention). */}
+                                  <div className="text-[11px] text-emerald-600">{
+                                    (s.persistedCount === 0 && s.introducedCount === 0)
+                                      ? (t('pdf_audit.resolution.all_clean', { total: s.totalPre }) || `✓ All ${s.totalPre} original issues resolved — none remaining`)
+                                      : (s.persistedCount === 0)
+                                        ? (t('pdf_audit.resolution.all_resolved_new', { total: s.totalPre, introduced: s.introducedCount }) || `✓ All ${s.totalPre} original issues resolved · ⊕ ${s.introducedCount} new issue${s.introducedCount === 1 ? '' : 's'} introduced — review below`)
+                                        : (t('pdf_audit.resolution.subheading', { resolved: s.resolvedCount, total: s.totalPre, pct }) || `Resolved ${s.resolvedCount} of ${s.totalPre} original issues (${pct}%) · ${s.persistedCount} still present`)
+                                  }</div>
                                 </div>
                               </div>
                               <div className="flex gap-1.5 text-[11px] font-bold shrink-0">
@@ -5001,18 +8930,131 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Verification details */}
                       {pdfFixResult.verificationAudit && (
                         <div className="space-y-2">
-                          <div className="text-xs text-emerald-700 font-medium">{pdfFixResult.verificationAudit.summary}</div>
+                          {/* (2026-06-20) When the AI audit was throttle-degraded, the raw summary says
+                              "Score unavailable…" — but the headline now shows the deterministic structural
+                              score. Render ONE reconciled amber line instead of the contradictory green one. */}
+                          <div className={`text-xs font-medium ${pdfFixResult._aiVerificationIncomplete ? 'text-amber-700' : 'text-emerald-700'}`}>{pdfFixResult._aiVerificationIncomplete
+                            ? (t('pdf_audit.verification.ai_incomplete_summary') || ('AI semantic verification incomplete' + (pdfFixResult.verificationAudit.chunksAudited != null && pdfFixResult.verificationAudit.chunksRequested != null ? ' (' + pdfFixResult.verificationAudit.chunksAudited + ' of ' + pdfFixResult.verificationAudit.chunksRequested + ' sections audited — the AI service was throttled)' : '') + '. The score shown is structural/automated checks; re-run for a full AI-verified score.'))
+                            : pdfFixResult.verificationAudit.summary}</div>
+                          {pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[11px] text-amber-900">
+                              <span className="font-black">{t('pdf_audit.verification.estimated_min_label') || 'Estimated minimum'}: {pdfFixResult._estimatedMinimumScore}/100.</span>{' '}
+                              {t('pdf_audit.verification.estimated_min_body') || 'Lower confidence: this uses the lower of the last successful AI audit and the current automated checks. Complete the final audit to verify the score.'}
+                              {pdfFixResult._estimatedScoreBasis && (
+                                <span className="block mt-0.5 text-amber-700">
+                                  {t('pdf_audit.verification.estimated_min_basis') || 'Basis'}: AI {pdfFixResult._estimatedScoreBasis.lastSuccessfulAiScore ?? '?'} / automated {pdfFixResult._estimatedScoreBasis.automatedScore ?? '?'}.
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {/* Manual recovery for a throttle-degraded audit (2026-06-29): re-audit the CURRENT
+                              output now that the AI service may have settled. A full re-audit re-checks every
+                              section, so the sections that were throttled last time get covered again. Reuses
+                              the shared _reauditAndScore (stale-HTML guarded), so it folds the refreshed score
+                              + remaining-issues back into the result. */}
+                          {pdfFixResult._aiVerificationIncomplete && pdfFixResult.accessibleHtml && (
+                            <button
+                              disabled={pdfFixLoading}
+                              onClick={async () => {
+                                if (pdfFixLoading) return;
+                                try {
+                                  setPdfFixLoading(true);
+                                  setPdfFixStep(t('pdf_audit.verification.waiting_for_checker') || 'Waiting for the AI checker to settle...');
+                                  // M6 (deep dive 2026-07-09): tick a countdown during the up-to-4-min wait — this
+                                  // used to sit on the static line above with no sign of life.
+                                  try { if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === 'function') await _docPipeline.waitForGeminiCalm({ maxWaitMs: 240000, onTick: (w) => { try { const _ws = Math.max(1, Math.ceil((((w && w.cooldownRemainingMs) || 5000)) / 1000)); setPdfFixStep((t('pdf_audit.verification.waiting_for_checker') || 'Waiting for the AI checker to settle...') + ' (' + (w && w.probing ? (t('pdf_audit.verification.probing') || 'testing with one small call…') : ('~' + _ws + 's')) + ', ' + Math.round(((w && w.waitedMs) || 0) / 1000) + 's waited)'); } catch (_) {} } }); } catch (_) {}
+                                  setPdfFixStep(t('pdf_audit.verification.reauditing') || 'Completing final audit...');
+                                  const _r = await _reauditAndScore(pdfFixResult.accessibleHtml);
+                                  if (_r && _r.ok) addToast((t('toasts.reaudit_done') || 'Re-audit complete — score refreshed to ') + _r.score + '/100.', 'success');
+                                  else addToast(t('toasts.reaudit_still_throttled') || 'Re-audit still incomplete — the AI service may still be throttled. Try again in a moment.', 'info');
+                                } catch (e) { addToast((t('toasts.reaudit_failed') || 'Re-audit failed: ') + (e && e.message ? e.message : 'unknown error'), 'error'); }
+                                finally { setPdfFixLoading(false); setPdfFixStep(''); }
+                              }}
+                              className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-amber-800 border-amber-300 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              aria-label={t('pdf_audit.verification.reaudit_aria') || 'Re-run the AI audit on all sections to recover sections the service throttled'}
+                              title={t('pdf_audit.verification.reaudit_title') || 'Re-checks the whole document, so the sections the AI service throttled last time get audited again and the score becomes full-coverage.'}
+                              data-help-key="pdf_audit_reaudit_button"
+                            >🔁 {pdfFixLoading ? (t('pdf_audit.verification.reauditing_short') || 'Completing audit...') : (t('pdf_audit.verification.reaudit') || 'Complete final audit')}</button>
+                          )}
                           {(pdfFixResult.verificationAudit.issues || []).length > 0 && (
                             <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
                               <div className="text-[11px] font-bold text-amber-600 uppercase mb-1">Remaining Issues ({pdfFixResult.verificationAudit.issues.length})</div>
-                              {pdfFixResult.verificationAudit.issues.map((issue, i) => (
-                                <div key={i} className="text-[11px] text-amber-800 mb-0.5">• {issue.issue} <span className="text-amber-500">({issue.wcag})</span></div>
-                              ))}
+                              {pdfFixResult.verificationAudit.issues.map((issue, i) => {
+                                const _srcKey = 'ai' + i;
+                                const _srcOpen = !!_issueSourceOpen[_srcKey];
+                                return (
+                                <div key={i} className="mb-1">
+                                  <div className="flex items-start gap-1.5 text-[11px] text-amber-800">
+                                    <span className="flex-1 leading-snug">• {issue.issue} <span className="text-amber-500">({issue.wcag})</span></span>
+                                    <button onClick={() => _setIssueSourceOpen(prev => ({ ...prev, [_srcKey]: !prev[_srcKey] }))} className="shrink-0 px-1.5 py-0.5 rounded bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 font-bold" aria-expanded={_srcOpen} title={t('pdf_audit.issue.source_title') || 'Show the source of this issue inline — no need to open the preview'} aria-label={(t('pdf_audit.issue.source_aria') || 'Show source') + ': ' + issue.issue}>👁 {t('pdf_audit.issue.source') || 'Source'}</button>
+                                    {_issueAnchor(issue) && (
+                                      <button onClick={() => _jumpToIssue(issue)} className="shrink-0 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 font-bold" title={t('pdf_audit.issue.find_title') || 'Scroll the preview to this spot and highlight it'} aria-label={(t('pdf_audit.issue.find_aria') || 'Find in preview') + ': ' + issue.issue}>🔎 {t('pdf_audit.issue.find') || 'Find'}</button>
+                                    )}
+                                    <button onClick={() => _issueToWorkbench(issue)} className="shrink-0 px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.issue.workbench_title') || 'Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)'} aria-label={(t('pdf_audit.issue.workbench_aria') || 'Send to Expert Workbench') + ': ' + issue.issue}>🛠</button>
+                                  </div>
+                                  {_srcOpen && (() => {
+                                    const _src = _peekIssueSource(issue);
+                                    return (
+                                      <div className="mt-1 mb-1.5 rounded-lg border border-amber-200 bg-white p-2 text-[11px] text-slate-700" role="region" aria-label={(t('pdf_audit.issue.source_region') || 'Source of issue') + ': ' + issue.issue}>
+                                        {_src.html ? (
+                                          <>
+                                            <div className="font-bold text-slate-500 mb-1 flex items-center gap-2">
+                                              <span className="flex-1">{t('pdf_audit.issue.source_html') || 'Source (from the remediated document)'}{_src.pages ? ' · ' + (t('pdf_audit.issue.source_page') || 'page') + ' ' + _src.pages.join(', ') : ''}</span>
+                                              {!_issueEdit[_srcKey] && _src.fullHtml && _src.fullHtml.length <= 8000 && (
+                                                <button onClick={() => _setIssueEdit(prev => ({ ...prev, [_srcKey]: { original: _src.fullHtml, draft: _src.fullHtml } }))} className="shrink-0 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 font-bold normal-case" title={t('pdf_audit.issue.edit_title') || 'Edit this section’s HTML yourself and re-check — a direct expert path that does not use the AI (works even when the AI is rate-limited).'}>✏ {t('pdf_audit.issue.edit') || 'Edit & re-check'}</button>
+                                              )}
+                                            </div>
+                                            {_issueEdit[_srcKey] ? (
+                                              <>
+                                                <textarea value={_issueEdit[_srcKey].draft} onChange={(e) => { const v = e.target.value; _setIssueEdit(prev => ({ ...prev, [_srcKey]: { ...prev[_srcKey], draft: v } })); }} spellCheck={false} rows={6} className="w-full bg-slate-50 border border-emerald-300 rounded p-1.5 font-mono text-[10px] leading-snug resize-y" aria-label={(t('pdf_audit.issue.edit_aria') || 'Edit the HTML for this issue') + ': ' + issue.issue} />
+                                                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                                  <button onClick={() => _saveManualEdit(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving} className={'px-2 py-0.5 rounded bg-emerald-600 text-white font-bold ' + (_issueEdit[_srcKey].saving ? 'opacity-50 cursor-wait' : 'hover:bg-emerald-700')}>{_issueEdit[_srcKey].saving ? (t('pdf_audit.issue.edit_saving') || 'Re-checking…') : ('✓ ' + (t('pdf_audit.issue.edit_save') || 'Save & re-check'))}</button>
+                                                  <button onClick={() => _setIssueEdit(prev => { const n = { ...prev }; delete n[_srcKey]; return n; })} disabled={!!_issueEdit[_srcKey].saving} className="px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-600 font-bold hover:bg-slate-100">{t('pdf_audit.issue.edit_cancel') || 'Cancel'}</button>
+                                                  <span className="text-[10px] text-slate-400 italic">{t('pdf_audit.issue.edit_hint') || 'Edits the HTML directly, then runs the same check the Workbench uses — no AI.'}</span>
+                                                </div>
+                                                {/* S1: or describe the fix in words — the agent edits ONLY this section (bounded), then re-checks. */}
+                                                {typeof processExpertCommand === 'function' && (
+                                                  <div className="mt-1.5 pt-1.5 border-t border-slate-200">
+                                                    <div className="flex items-center gap-1.5">
+                                                      <input type="text" value={(_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || ''} onChange={(e) => { const v = e.target.value; _setIssueEdit((prev) => ({ ...prev, [_srcKey]: { ...prev[_srcKey], intent: v } })); }} disabled={!!_issueEdit[_srcKey].saving}
+                                                        placeholder={t('pdf_audit.issue.ai_placeholder') || 'or describe the fix — the AI edits just this section'}
+                                                        aria-label={(t('pdf_audit.issue.ai_aria') || 'Describe a fix for this section for the AI') + ': ' + issue.issue}
+                                                        className="flex-1 min-w-0 px-2 py-1 text-[10px] border border-indigo-300 rounded focus:ring-2 focus:ring-indigo-400" />
+                                                      <button onClick={() => _applyScopedIntent(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()} className={'px-2 py-0.5 rounded bg-indigo-600 text-white font-bold shrink-0 ' + ((_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700')} title={t('pdf_audit.issue.ai_btn_title') || 'The AI edits ONLY this section (bounded), then re-checks — accept or revert.'}>✨ {t('pdf_audit.issue.ai_btn') || 'Apply with AI'}</button>
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-400 italic">{t('pdf_audit.issue.ai_scoped_hint') || 'Scoped to this section only — bounded so the agent can’t touch the rest of the document.'}</span>
+                                                  </div>
+                                                )}
+                                              </>
+                                            ) : (
+                                              <pre className="whitespace-pre-wrap break-words bg-slate-50 border border-slate-200 rounded p-1.5 max-h-48 overflow-auto font-mono text-[10px] leading-snug">{_src.html}</pre>
+                                            )}
+                                          </>
+                                        ) : _src.exact ? (
+                                          <>
+                                            <div className="font-bold text-slate-500 mb-1">{t('pdf_audit.issue.source_context') || 'Context (text around this issue)'}</div>
+                                            <div className="bg-slate-50 border border-slate-200 rounded p-1.5 leading-relaxed">
+                                              <span className="text-slate-400">…{_src.before} </span><mark className="bg-amber-200 text-amber-900 font-semibold px-0.5 rounded">{_src.snippet}</mark><span className="text-slate-400"> {_src.after}…</span>
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <div className="text-slate-600">
+                                            {t('pdf_audit.issue.source_coarse') || 'This issue is document- or page-level — there is no single text spot to show.'}
+                                            {_src.pages ? ' ' + (t('pdf_audit.issue.source_page_cap') || 'Page') + ' ' + _src.pages.join(', ') + '.' : ''}
+                                            {_src.rawLocation && !/^document$/i.test(_src.rawLocation) ? <> <span className="text-slate-400">{t('pdf_audit.issue.source_anchor') || 'Auditor note'}:</span> <span className="italic">“{_src.rawLocation.slice(0, 140)}”</span></> : null}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                                );
+                              })}
                             </div>
                           )}
                           {(pdfFixResult.verificationAudit.passes || []).length > 0 && (
                             <div className="bg-green-50 rounded-lg p-2 border border-green-200">
-                              <div className="text-[11px] font-bold text-green-600 uppercase mb-1">{t('pdf_audit.results.verified_accessible') || 'Verified Accessible'}</div>
+                              <div className="text-[11px] font-bold text-green-600 uppercase mb-1">{t('pdf_audit.results.ai_reported_passing') || 'Reported passing (AI rubric — not independently verified)'}</div>
                               {pdfFixResult.verificationAudit.passes.map((pass, i) => (
                                 <div key={i} className="text-[11px] text-green-700 mb-0.5">✓ {pass}</div>
                               ))}
@@ -5029,7 +9071,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <span className="text-lg">🔬</span>
                               <div>
                                 <div className="text-xs font-bold text-indigo-800">axe-core Automated WCAG Checker</div>
-                                <div className="text-[11px] text-indigo-500">Industry-standard engine (Deque) v{pdfFixResult.axeAudit.version} — WCAG 2.1 AA</div>
+                                <div className="text-[11px] text-indigo-500">Industry-standard engine (Deque) v{pdfFixResult.axeAudit.version} — WCAG 2.2 AA</div>
                               </div>
                             </div>
                             <div className={`text-2xl font-black ${pdfFixResult.axeAudit.totalViolations === 0 ? 'text-green-600' : pdfFixResult.axeAudit.totalViolations <= 3 ? 'text-amber-600' : 'text-red-600'}`}>
@@ -5048,7 +9090,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-red-50 rounded-lg p-2 border border-red-200">
                               <div className="text-[11px] font-bold text-red-600 uppercase mb-1">Critical ({pdfFixResult.axeAudit.critical.length})</div>
                               {pdfFixResult.axeAudit.critical.map((v, i) => (
-                                <div key={i} className="text-[11px] text-red-800 mb-0.5">🔴 {v.description} <span className="text-red-600">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></div>
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-red-800 mb-1"><span className="flex-1 leading-snug">🔴 {v.description} <span className="text-red-600">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></span>{_axeActions(v)}</div>
                               ))}
                             </div>
                           )}
@@ -5056,7 +9098,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-orange-50 rounded-lg p-2 border border-orange-200">
                               <div className="text-[11px] font-bold text-orange-600 uppercase mb-1">Serious ({pdfFixResult.axeAudit.serious.length})</div>
                               {pdfFixResult.axeAudit.serious.map((v, i) => (
-                                <div key={i} className="text-[11px] text-orange-800 mb-0.5">🟠 {v.description} <span className="text-orange-700">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></div>
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-orange-800 mb-1"><span className="flex-1 leading-snug">🟠 {v.description} <span className="text-orange-700">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></span>{_axeActions(v)}</div>
                               ))}
                             </div>
                           )}
@@ -5064,7 +9106,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
                               <div className="text-[11px] font-bold text-amber-600 uppercase mb-1">Moderate ({pdfFixResult.axeAudit.moderate.length})</div>
                               {pdfFixResult.axeAudit.moderate.map((v, i) => (
-                                <div key={i} className="text-[11px] text-amber-800 mb-0.5">🟡 {v.description} <span className="text-amber-700">({v.id})</span></div>
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-amber-800 mb-1"><span className="flex-1 leading-snug">🟡 {v.description} <span className="text-amber-700">({v.id})</span></span>{_axeActions(v)}</div>
                               ))}
                             </div>
                           )}
@@ -5072,7 +9114,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-slate-50 rounded-lg p-2 border border-slate-400">
                               <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">Minor ({pdfFixResult.axeAudit.minor.length})</div>
                               {pdfFixResult.axeAudit.minor.map((v, i) => (
-                                <div key={i} className="text-[11px] text-slate-600 mb-0.5">⚪ {v.description}</div>
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-slate-600 mb-1"><span className="flex-1 leading-snug">⚪ {v.description}</span>{_axeActions(v)}</div>
                               ))}
                             </div>
                           )}
@@ -5126,21 +9168,33 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (!scMap[sc]) scMap[sc] = { passes: 0, violations: 0, incomplete: 0 };
                               scMap[sc][bucket]++;
                             };
-                            const extractSc = (w) => {
-                              if (!w) return null;
-                              const m = String(w).match(/(\d+\.\d+(?:\.\d+)?)/);
-                              return m ? m[1] : null;
+                            // Finding 14 (ChatGPT review 2026-07-10): axe ships COMPACT tags (wcag111) but this
+                            // parser only matched dotted text — the whole SC report rendered EMPTY forever. The
+                            // pipeline now provides normalized wcagCriteria arrays (every SC a rule maps to, not
+                            // just the first); the extractor converts compact tags as the legacy fallback.
+                            const extractScList = (entry) => {
+                              if (entry && Array.isArray(entry.wcagCriteria) && entry.wcagCriteria.length) return entry.wcagCriteria;
+                              const w = entry && entry.wcag;
+                              if (!w) return [];
+                              const out = [];
+                              String(w).split(/[,\s]+/).forEach((tok) => {
+                                const compact = tok.match(/^wcag(\d{3,4})$/i);
+                                if (compact) { const d = compact[1]; const sc = d[0] + '.' + d[1] + '.' + d.slice(2); if (!out.includes(sc)) out.push(sc); return; }
+                                const dotted = tok.match(/^(\d+\.\d+(?:\.\d+)?)$/);
+                                if (dotted && !out.includes(dotted[1])) out.push(dotted[1]);
+                              });
+                              return out;
                             };
                             (pdfFixResult.axeAudit.passes || []).forEach(p => {
-                              const sc = extractSc(p.wcag); if (sc) addToSc(sc, 'passes');
+                              extractScList(p).forEach(sc => addToSc(sc, 'passes'));
                             });
                             ['critical','serious','moderate','minor'].forEach(sev => {
                               (pdfFixResult.axeAudit[sev] || []).forEach(v => {
-                                const sc = extractSc(v.wcag); if (sc) addToSc(sc, 'violations');
+                                extractScList(v).forEach(sc => addToSc(sc, 'violations'));
                               });
                             });
                             (pdfFixResult.axeAudit.incomplete || []).forEach(i => {
-                              const sc = extractSc(i.wcag); if (sc) addToSc(sc, 'incomplete');
+                              extractScList(i).forEach(sc => addToSc(sc, 'incomplete'));
                             });
                             const scEntries = Object.entries(scMap).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
                             if (scEntries.length === 0) return null;
@@ -5311,24 +9365,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       try {
                                         const result = await refixChunk(ci, { onProgress: setPdfFixStep, currentHtml: pdfFixResult.accessibleHtml, persistedState: pdfFixResult.chunkState });
                                         if (result?.html) {
-                                          const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
-                                          if (!reAi) {
-                                            warnLog('[Re-fix] AI re-verification returned null for section ' + (ci + 1) + '; not committing new HTML.');
-                                            addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
-                                          } else {
-                                            const newScore = reAxe ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi.score;
-                                            setPdfFixResult(prev => ({
-                                              ...prev,
-                                              accessibleHtml: result.html,
-                                              verificationAudit: reAi,
-                                              axeAudit: reAxe || prev.axeAudit,
-                                              afterScore: newScore ?? prev.afterScore,
-                                              htmlChars: result.html.length,
-                                              chunkState: result.chunkState,
-                                              chunkWeightedScore: result.chunkWeightedScore,
-                                            }));
-                                            addToast(`Section ${ci + 1} re-fixed: ${result.chunkResult.score}/100`, 'success');
-                                          }
+                                          await _commitRefixedSection(result, ci + 1);
                                         }
                                       } catch(e) { addToast(`Re-fix failed: ${e?.message}`, 'error'); }
                                       finally { setPdfFixLoading(false); setPdfFixStep(''); }
@@ -5398,9 +9435,37 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="text-2xl shrink-0">📄</span>
                             <div>
                               <h4 className="text-sm font-bold text-sky-900">{t('pdf_audit.fidelity_review.heading') || 'Verify Content Fidelity Before Use'}</h4>
-                              <p className="text-xs text-sky-800 leading-relaxed mt-1">
-                                {(t('pdf_audit.fidelity_review.body') || 'After accounting for de-hyphenation and whitespace cleanup, the remediated output still preserves {cov} of the source text. This is a content-fidelity check, not an accessibility barrier — some source text may not have carried over. Open the Diff view to compare the remediated text against the original, and keep the source PDF on hand to confirm nothing important was dropped.').replace('{cov}', cov != null ? cov + '%' : 'less than the full source')}
-                              </p>
+                              {/* M21 (deep dive 2026-07-09): the lead sentence framed EVERY note kind as text
+                                  loss ("some source text may not have carried over") — a doc at 100% coverage
+                                  whose only notes are alt-quality/OCR-confidence flags got a banner asserting
+                                  text might be missing; the teacher checks the Diff, finds nothing missing, and
+                                  learns to distrust the panel. Quality-class notes now get a quality lead. */}
+                              {(() => {
+                                const _notes = Array.isArray(pdfFixResult.fidelityNotes) ? pdfFixResult.fidelityNotes : [];
+                                const _qualityKinds = { altQuality: 1, activeContent: 1, lowOcrAccuracy: 1, lowOcrConfidence: 1, ocrDupeCollapse: 1, pageEdge: 1 };
+                                const _textLossConcern = (cov == null || cov < 97) || pdfFixResult.integrityWarning || _notes.some(n => n && !_qualityKinds[n.kind]);
+                                return _textLossConcern ? (
+                                  <p className="text-xs text-sky-800 leading-relaxed mt-1">
+                                    {(t('pdf_audit.fidelity_review.body') || 'After accounting for de-hyphenation and whitespace cleanup, the remediated output still preserves {cov} of the source text. This is a content-fidelity check, not an accessibility barrier — some source text may not have carried over. Open the Diff view to compare the remediated text against the original, and keep the source PDF on hand to confirm nothing important was dropped.').replace('{cov}', cov != null ? cov + '%' : 'less than the full source')}
+                                  </p>
+                                ) : (
+                                  <p className="text-xs text-sky-800 leading-relaxed mt-1">
+                                    {(t('pdf_audit.fidelity_review.body_quality') || 'The text carried over fully ({cov} of source characters preserved) — the notes below are QUALITY flags (image descriptions, OCR confidence, removed running heads), not missing text. Review each note; the Diff view is available if you want to double-check.').replace('{cov}', cov != null ? cov + '%' : '~100%')}
+                                  </p>
+                                );
+                              })()}
+                              {/* Structural fidelity nets (#2 refusal / #3 tables / #4 links) — the
+                                  specific, actionable losses the bulk char-coverage % can miss. */}
+                              {Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.length > 0 && (
+                                <ul className="mt-2 space-y-1">
+                                  {pdfFixResult.fidelityNotes.map((n, i) => (
+                                    <li key={i} className={'text-xs leading-snug flex items-start gap-1.5 ' + (n.kind === 'refusal' ? 'text-red-700 font-semibold' : (n.kind === 'numeric' || n.kind === 'placement') ? 'text-amber-800 font-semibold' : 'text-sky-800')}>
+                                      <span aria-hidden="true">{n.kind === 'refusal' ? '🚫' : n.kind === 'numeric' ? '🔢' : n.kind === 'placement' ? '📑' : n.kind === 'tables' ? '▦' : '🔗'}</span>
+                                      <span>{n.msg}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                               <p className="text-[11px] text-sky-600 mt-2 italic">
                                 {t('pdf_audit.fidelity_review.note') || 'Coverage already excludes formatting-only changes (rejoined hyphens, collapsed spaces), so a shortfall here points to actual missing text worth a human glance — not a scoring artifact.'}
                               </p>
@@ -5520,8 +9585,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             // toggle — same createTaggedPdf path as the download button.
                             window.__alloflowCompareGetTagged = async () => {
                               try {
-                                const freshBase64 = await ensurePdfBase64();
-                                if (!freshBase64) return { error: 'original PDF bytes unavailable — re-attach the file in the app' };
+                                // Never let a non-settling file-picker (ensurePdfBase64's fallback, whose
+                                // 'cancel' event is unreliable in the Canvas iframe) freeze the popup's
+                                // "Generating…" spinner forever — bound it. The fast path (bytes already
+                                // resident, the normal case) still resolves instantly.
+                                const freshBase64 = await Promise.race([
+                                  ensurePdfBase64(),
+                                  new Promise((r) => setTimeout(() => r(null), 30000)),
+                                ]);
+                                if (!freshBase64) return { error: 'original PDF bytes unavailable — re-attach the file in the app, then try again' };
                                 const okLib = await _ensurePdfLib();
                                 if (!okLib) return { error: 'PDF tagging library failed to load' };
                                 const binStr = atob(freshBase64);
@@ -5529,7 +9601,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
                                 const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name);
                                 const _ov = pdfMetaOverride || {};
-                                const _result = await createTaggedPdf(bytes, pdfFixResult, { title: (_ov.title && _ov.title.trim()) || _dm.title, lang: (_ov.lang && _ov.lang.trim()) || _dm.lang || 'en', subject: 'Remediated for accessibility by AlloFlow' });
+                                const _result = await createTaggedPdf(bytes, pdfFixResult, { title: (_ov.title && _ov.title.trim()) || _dm.title, lang: (_ov.lang && _ov.lang.trim()) || _dm.lang || 'en', subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(pdfFixResult) });
                                 const tBytes = _result && _result.bytes ? _result.bytes : _result;
                                 if (!tBytes) return { error: 'tagged PDF generation returned no bytes' };
                                 const u8 = new Uint8Array(tBytes);
@@ -5544,7 +9616,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? '?';
                           const afterAi = pdfFixResult.afterScore;
                           const afterAxe = pdfFixResult.axeAudit?.score ?? null;
-                          const afterScore = (afterAi !== null && afterAxe !== null) ? Math.round((afterAxe + afterAi) / 2) : (afterAxe ?? afterAi ?? '?');
+                          const afterScore = (afterAi != null ? afterAi : (afterAxe ?? '?')); // canonical blend; no re-blend (audit 2026-06-13)
                           const scoreColor = (s) => typeof s === 'number' ? (s >= 80 ? '#16a34a' : s >= 50 ? '#d97706' : '#dc2626') : '#64748b';
                           win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Before / After Comparison</title>
                           <style>
@@ -5602,7 +9674,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <button onclick="printHtml()" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Print">🖨️</button>
                                 </div>
                               </div>
-                              <iframe id="after-frame"></iframe>
+                              <iframe id="after-frame" sandbox="allow-same-origin"></iframe>
                             </div>
                           </div>
                           <script>
@@ -5646,27 +9718,46 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               var host = document.getElementById('before-pane'); if (!host) return;
                               host.innerHTML = '';
                               var st = _paneStatus('⚠ Could not render the ' + label + ' here (' + msg + '). ');
-                              try { var u = URL.createObjectURL(new Blob([_b64ToBytes(b64)], { type: 'application/pdf' })); var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.style.color = '#93c5fd'; a.textContent = 'Open it in its own tab instead'; st.appendChild(a); } catch (_) {}
+                              try {
+                                var u = URL.createObjectURL(new Blob([_b64ToBytes(b64)], { type: 'application/pdf' }));
+                                var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.style.color = '#93c5fd'; a.textContent = 'Open it in its own tab instead'; st.appendChild(a);
+                                // C1 (2026-06-28): the fallback link's blob URL (the whole PDF) was never revoked, so every
+                                // failed Compare render leaked one until page close. Free it shortly after a click (the new
+                                // tab has already grabbed it) + a long backstop timeout if it's never clicked.
+                                var _revokeFailUrl = function () { try { URL.revokeObjectURL(u); } catch (_) {} };
+                                a.addEventListener('click', function () { setTimeout(_revokeFailUrl, 1000); });
+                                setTimeout(_revokeFailUrl, 300000);
+                              } catch (_) {}
                             }
+                            var _cmpPdfDoc = null; // the pdf.js doc currently rendering in Compare — tracked so it's destroyed (was leaking every render/toggle)
                             function _renderPdfInto(b64, label) {
                               var host = document.getElementById('before-pane'); if (!host) return;
                               try { _cropCleanup(); } catch (_) {}
+                              // Release any doc from a prior render (e.g. a fast Verify-tagged toggle) before
+                              // starting a new one — _renderPdfInto previously never destroyed the pdf.js doc,
+                              // so each render/toggle leaked a worker document.
+                              if (_cmpPdfDoc) { try { _cmpPdfDoc.destroy(); } catch (_) {} _cmpPdfDoc = null; }
                               host.innerHTML = '';
                               var st = _paneStatus('Rendering ' + label + '…');
                               _ensurePdfjs().then(function (pdfjs) {
-                                pdfjs.getDocument({ data: _b64ToBytes(b64) }).promise.then(function (doc) {
-                                  if (st) { try { st.remove(); } catch (_) {} }
+                                _withTimeout(pdfjs.getDocument({ data: _b64ToBytes(b64) }).promise, 30000, 'Compare getDocument').then(function (doc) {
+                                  _cmpPdfDoc = doc;
+                                  // Render progressively at a lighter scale (1.0): rasterizing every page
+                                  // of a scanned IMAGE PDF is the entire reason Compare's tagged view felt
+                                  // far slower than the Downloads button (which never rasterizes). Keep a
+                                  // live "page N / M" status so it's visibly working, not stuck.
                                   (function renderPage(n) {
-                                    if (n > doc.numPages) return;
-                                    doc.getPage(n).then(function (page) {
-                                      var vp = page.getViewport({ scale: 1.25 });
+                                    if (n > doc.numPages) { if (st) { try { st.remove(); } catch (_) {} } try { doc.destroy(); } catch (_) {} if (_cmpPdfDoc === doc) _cmpPdfDoc = null; return; }
+                                    if (st) { try { st.textContent = 'Rendering ' + label + '… page ' + n + ' / ' + doc.numPages; } catch (_) {} }
+                                    _withTimeout(doc.getPage(n), 30000, 'Compare getPage ' + n).then(function (page) {
+                                      var vp = page.getViewport({ scale: 1.0 });
                                       var c = document.createElement('canvas');
                                       c.width = vp.width; c.height = vp.height;
                                       c.style.cssText = 'display:block;margin:10px auto;box-shadow:0 2px 8px rgba(0,0,0,.5);max-width:96%;height:auto;background:white';
                                       c.setAttribute('role', 'img');
                                       c.setAttribute('aria-label', label + ', page ' + n + ' of ' + doc.numPages);
                                       host.appendChild(c);
-                                      page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(
+                                      _withTimeout(page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise, 30000, 'Compare render ' + n).then(
                                         function () { renderPage(n + 1); },
                                         function () { renderPage(n + 1); }
                                       );
@@ -5803,7 +9894,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                             var _b64 = "${(() => {
                               try {
-                                return btoa(unescape(encodeURIComponent(pdfFixResult.accessibleHtml || '')));
+                                // XSS hardening (2026-06-15): accessibleHtml is RAW model output written into
+                                // the (now sandboxed) after-frame. Strip active content at the source too —
+                                // defense-in-depth, mirrors doc_pipeline's _sanitizeHtmlForWrite. Keeps <style>.
+                                const _safeHtml = String(pdfFixResult.accessibleHtml || '')
+                                  .replace(/<script[\s\S]*?<\/script>/gi, '')
+                                  .replace(/<\/?(?:iframe|object|embed)\b[^>]*>/gi, '')
+                                  .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+                                  .replace(/(?:javascript|vbscript)\s*:/gi, '');
+                                return btoa(unescape(encodeURIComponent(_safeHtml)));
                               } catch (_) { return ''; }
                             })()}";
                             var html = '';
@@ -6058,10 +10157,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         })()}
                         {/* ── Read-only tag-structure inspector (the "tag tree": what the tagged PDF will contain) ── */}
                         <details id="allo-sec-taginspect" className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs" onToggle={(e) => { if (e.currentTarget.open && tagOutline === null) { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } } }}>
-                          <summary className="cursor-pointer font-bold text-slate-700">🔍 Inspect tag structure <span className="font-normal text-slate-500">— the roles + warnings your tagged PDF will contain</span></summary>
+                          <summary className="cursor-pointer font-bold text-slate-700">🔍 Tag structure <span className="font-normal text-slate-500">— view + edit the roles your tagged PDF will carry</span></summary>
                           <div className="mt-2">
                             <div className="flex items-center justify-between gap-2 mb-1">
-                              <span className="text-[10px] text-slate-500">Derived from the remediated HTML — the same structure createTaggedPdf tags. Click a row to find it in the preview above.</span>
+                              <span className="text-[10px] text-slate-500">Derived from the remediated HTML — the same structure createTaggedPdf tags. Re-tag a block (role dropdown), mark a figure decorative (◐), or reorder (▲▼). Click a row to find it in the preview.</span>
                               <button onClick={() => { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } }} className="px-2 py-0.5 bg-slate-200 rounded text-[10px] font-bold hover:bg-slate-300 shrink-0">↻ Refresh</button>
                             </div>
                             {Array.isArray(tagOutline) && tagOutline.length > 0 && (
@@ -6081,6 +10180,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <span className="inline-block px-1 rounded bg-indigo-100 text-indigo-700 font-mono text-[10px] font-bold">{n.role}</span>
                                         <span className="text-slate-600 ml-1">{n.text || '(empty)'}</span>
                                       </button>
+                                      {/* ── Edit controls (2026-06-14, Adobe-parity #2): re-tag role, mark decorative, reading-order move ── */}
+                                      {['H1','H2','H3','H4','H5','H6','P','BlockQuote'].includes(n.role) && (
+                                        <select value={n.role} onChange={(e) => { const _rt = { H1:'h1',H2:'h2',H3:'h3',H4:'h4',H5:'h5',H6:'h6',P:'p',BlockQuote:'blockquote' }[e.target.value]; if (_rt) _editTagAt(n, (el, doc) => _retagTagEl(el, doc, _rt)); }} className="shrink-0 text-[10px] border border-slate-300 rounded px-0.5 py-0.5 bg-white text-slate-700" title={t('pdf_audit.taginspect.retag_title') || 'Re-tag this block — change its role (e.g. a paragraph that should be a heading)'} aria-label={'Tag role for ' + (n.text || 'block')}>
+                                          {['H1','H2','H3','H4','H5','H6','P','BlockQuote'].map((r) => <option key={r} value={r}>{r}</option>)}
+                                        </select>
+                                      )}
+                                      {n.role === 'Figure' && (
+                                        <button onClick={() => _editTagAt(n, (el) => _toggleDecorativeEl(el))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-violet-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.decorative_title') || 'Mark this image as decorative (artifact — screen readers skip it) / restore as content'} aria-label="Toggle decorative">◐</button>
+                                      )}
+                                      {n.role === 'Table' && (<>
+                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstRowHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_rowhead_title') || 'Make the first ROW header cells (th, scope=col) — so columns are announced'} aria-label="First row as headers">⬓H</button>
+                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstColHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_colhead_title') || 'Make the first COLUMN header cells (th, scope=row) — so rows are announced'} aria-label="First column as headers">▏H</button>
+                                      </>)}
+                                      <button onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'up'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_up_title') || 'Move earlier in the reading order'} aria-label="Move up">▲</button>
+                                      <button onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'down'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_down_title') || 'Move later in the reading order'} aria-label="Move down">▼</button>
                                       {n.warnings.length > 0 && <span className="text-amber-600 text-[11px] shrink-0" title={n.warnings.join('; ')}>⚠</span>}
                                       <button
                                         onClick={() => {
@@ -6103,7 +10217,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     );
                                   })}
                                 </ul>
-                                {tagOutline.some(x => x.warnings.length) && <div className="mt-1 text-[10px] text-slate-500">Hover ⚠ for the issue. Fix it in the preview above (relabel headings, add alt text / table headers), then ↻ Refresh. This is structure editing on the HTML that generates the tags — not byte-level PDF tag editing.</div>}
+                                {tagOutline.some(x => x.warnings.length) && <div className="mt-1 text-[10px] text-slate-500">Hover ⚠ for the issue. Re-tag/reorder here, or fix content (alt text, table headers) in the preview, then ↻ Refresh. Edits change the HTML the tags are <em>derived</em> from, so the tag tree and the document can't drift apart — this is structure editing, not byte-level PDF tag patching.</div>}
                               </div>
                             )}
                             {Array.isArray(tagOutline) && tagOutline.length === 0 && <div className="text-[11px] text-slate-500">No taggable block structure found in the remediated HTML.</div>}
@@ -6116,9 +10230,23 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="font-black mb-1">⚠ {t('pdf_audit.gate.heading') || 'This tagged PDF did not pass its own structure check'}</div>
                             <p className="mb-2">{t('pdf_audit.gate.body') || 'The accessibility structure may not have survived saving:'} <span className="font-mono text-[11px]">{taggedGateIssue}</span></p>
                             <div className="flex gap-2 flex-wrap">
-                              <button onClick={() => { try { const g = _taggedGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); addToast(t('toasts.unverified_downloaded') || '⚠ Unverified tagged PDF downloaded (filename marked) — verify in PAC 2024 or a screen reader before distributing.', 'warning'); } } catch (_) {} setTaggedGateIssue(null); }} className="px-3 py-1.5 bg-white border border-amber-500 text-amber-800 rounded-lg font-bold hover:bg-amber-100">⬇ {t('pdf_audit.gate.anyway') || 'Download anyway (marked unverified)'}</button>
+                              <button onClick={() => { try { const g = _taggedGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); _lastTaggedDeliveryRef.current = { withheld: false }; addToast(t('toasts.unverified_downloaded') || '⚠ Unverified tagged PDF downloaded (filename marked) — verify in PAC 2024 or a screen reader before distributing.', 'warning'); } } catch (_) {} setTaggedGateIssue(null); }} className="px-3 py-1.5 bg-white border border-amber-500 text-amber-800 rounded-lg font-bold hover:bg-amber-100">⬇ {t('pdf_audit.gate.anyway') || 'Download anyway (marked unverified)'}</button>
                               <button onClick={() => { setTaggedGateIssue(null); try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700">📝 {t('pdf_audit.gate.word_instead') || 'Use the Word or HTML download instead'}</button>
                               <button onClick={() => setTaggedGateIssue(null)} className="px-3 py-1.5 text-amber-700 font-bold hover:text-red-600">✕ {t('pdf_audit.gate.dismiss') || 'Dismiss'}</button>
+                            </div>
+                          </div>
+                        )}
+                        {/* #5 Content-fidelity gate panel — severe content loss / refusal. Opt-in,
+                            never a hard block; the primary action is to REVIEW (the Diff), because
+                            "use Word instead" doesn't fix a content shortfall (same text loss). */}
+                        {fidelityGateIssue && (
+                          <div className="w-full mt-2 bg-orange-50 border-2 border-orange-400 rounded-xl p-3 text-xs text-orange-900" role="alert">
+                            <div className="font-black mb-1">⚠ {t('pdf_audit.fidelity_gate.heading') || 'Review the content before distributing this document'}</div>
+                            <p className="mb-2">{t('pdf_audit.fidelity_gate.body') || 'The remediated document may be missing source content'} — <span className="font-semibold">{fidelityGateIssue}</span>. {t('pdf_audit.fidelity_gate.body2') || 'A tagged PDF will look complete but could be missing text. Open the Diff to compare it against the original first.'}</p>
+                            <div className="flex gap-2 flex-wrap">
+                              <button onClick={() => { setFidelityGateIssue(null); try { setDiffViewOpen(true); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700">🔍 {t('pdf_audit.fidelity_gate.diff') || 'Open the Diff to review'}</button>
+                              <button onClick={() => { try { const g = _fidelityGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); _lastTaggedDeliveryRef.current = { withheld: false }; addToast(t('toasts.fidelity_downloaded') || '⚠ Downloaded (filename marked) — verify the content against the source before distributing.', 'warning'); } } catch (_) {} setFidelityGateIssue(null); }} className="px-3 py-1.5 bg-white border border-orange-500 text-orange-800 rounded-lg font-bold hover:bg-orange-100">⬇ {t('pdf_audit.fidelity_gate.anyway') || 'Download anyway (I’ve reviewed)'}</button>
+                              <button onClick={() => setFidelityGateIssue(null)} className="px-3 py-1.5 text-orange-700 font-bold hover:text-red-600">✕ {t('pdf_audit.fidelity_gate.dismiss') || 'Dismiss'}</button>
                             </div>
                           </div>
                         )}
@@ -6158,6 +10286,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             bytes to tag — they get the Word/HTML exports instead. */}
                         {_inputIsPdf ? (
                         <button
+                          id="allo-tagged-pdf-btn"
                           onClick={async () => {
                             try {
                               const freshBase64 = await ensurePdfBase64();
@@ -6176,7 +10305,51 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const title = (_ov.title && _ov.title.trim()) || _dm.title;
                               const lang = (_ov.lang && _ov.lang.trim()) || _dm.lang || 'en';
                               const _author = (_ov.author && _ov.author.trim()) || undefined;
-                              const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow' });
+                              let _tagSourceHtml = pdfFixResult.accessibleHtml;
+                              let _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(pdfFixResult) });
+                              // ── Auto-recovery on export (2026-07-01, Aaron: recovery should run without user
+                              // intervention when it safely can) ── The manual "↻ Re-run with restoration" stages
+                              // 1–2 are fully DETERMINISTIC (fuzzy word splice + sentence anchor/appendix — no AI,
+                              // no network), so when the post-save round-trip finds residual missing source words
+                              // we run them right here and re-tag ONCE, and the user's SAME click downloads the
+                              // better file. Never silent (pinned-report line shows before→after), never worse
+                              // (adopted only if the re-tag passes its own checks and residual didn't grow),
+                              // undoable (_preCmdHtml → the existing ↩ Revert). Capped at 200 residuals: beyond
+                              // that it's usually OCR noise on a scan — that stays a human call via the manual
+                              // Tier-B button and the word-level Diff.
+                              let _autoRestoreLine = null;
+                              try {
+                                const _td0 = _result && _result.roundTrip && _result.roundTrip.textDiff;
+                                const _res0 = _td0 && typeof _td0.residualMissingCount === 'number' ? _td0.residualMissingCount : 0;
+                                const _srcTxt = pdfFixResult.sourceText || '';
+                                if (_res0 > 0 && _res0 <= 200 && Array.isArray(_td0.missingTokens) && _td0.missingTokens.length && _srcTxt && _docPipeline && typeof _docPipeline.applyWordRestoration === 'function') {
+                                  let _h = pdfFixResult.accessibleHtml, _placed = [], _left = _td0.missingTokens.map(w => ({ word: w }));
+                                  try { const r1 = _docPipeline.applyWordRestoration(_h, _left, _srcTxt); if (r1 && r1.html) { _h = r1.html; _placed = r1.restored || []; _left = r1.unplaceable || []; } } catch (_e1) { warnLog('[AutoRestore] word splice failed: ' + (_e1 && _e1.message)); }
+                                  if (_left.length > 0 && typeof _docPipeline.restoreSentencesDeterministic === 'function') {
+                                    try { const r2 = _docPipeline.restoreSentencesDeterministic(_h, _left, _srcTxt); if (r2 && r2.html) { _h = r2.html; _placed = _placed.concat(r2.restoredViaSentence || []); _left = r2.stillMissing || []; } } catch (_e2) { warnLog('[AutoRestore] sentence anchor failed: ' + (_e2 && _e2.message)); }
+                                  }
+                                  if (_placed.length > 0 || _left.length < _td0.missingTokens.length) {
+                                    const _txt = _h.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+                                    const _fr2 = { ...pdfFixResult, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt };
+                                    const _r2 = await createTaggedPdf(bytes, _fr2, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(_fr2) });
+                                    const _td2 = _r2 && _r2.roundTrip && _r2.roundTrip.textDiff;
+                                    const _res2 = _td2 && typeof _td2.residualMissingCount === 'number' ? _td2.residualMissingCount : null;
+                                    if (_r2 && _r2.bytes && !(_r2.roundTrip && _r2.roundTrip.ok === false) && _res2 != null && _res2 <= _res0) {
+                                      const _pre = pdfFixResult.accessibleHtml;
+                                      setPdfFixResult(prev => prev ? _viewEnforceVerificationHtmlBinding({ ...prev, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt, _preCmdHtml: _pre }, 'content-modified-pending-reverification', _docPipeline) : prev);
+                                      _tagSourceHtml = _h;
+                                      _result = _r2;
+                                      _autoRestoreLine = { tone: 'success', text: 'Auto-recovery: ' + _placed.length + ' missing source word(s) restored inline' + (_left.length > 0 ? ' (' + _left.length + ' preserved in the Content Recovery appendix)' : '') + ' before tagging — residual missing ' + _res0 + ' → ' + _res2 + '. ↩ Revert undoes it.' };
+                                    } else {
+                                      _autoRestoreLine = { tone: 'info', text: 'Auto-recovery attempted on ' + _res0 + ' residual missing word(s) but did not improve the result — the original output was kept. Use ↻ Re-run with restoration to review manually.' };
+                                    }
+                                  } else {
+                                    _autoRestoreLine = { tone: 'info', text: _res0 + ' residual missing word(s) could not be auto-placed — open the word-level Diff to review them (often cosmetic: quotes, form fills, hyphenation).' };
+                                  }
+                                } else if (_res0 > 200) {
+                                  _autoRestoreLine = { tone: 'warn', text: _res0 + ' residual missing words — too many to auto-restore safely (often OCR noise on scans). Open the word-level Diff, then ↻ Re-run with restoration if they are real content.' };
+                                }
+                              } catch (_eAuto) { warnLog('[AutoRestore] skipped: ' + (_eAuto && _eAuto.message)); }
                               // createTaggedPdf returns { bytes, summary, pdfUa1Checks }.
                               // Tolerate older shapes for users on stale CDN-cached modules.
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
@@ -6185,18 +10358,63 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const ocrTextLayer = (_result && _result.ocrTextLayer) || null;
                               const roundTrip = (_result && _result.roundTrip) || null;
                               const postExportValidator = (_result && _result.postExportValidator) || null;
-                              if (pdfUa1Checks) {
-                                setLastTaggedValidation({
-                                  fileName: (pendingPdfFile?.name || 'document.pdf'),
-                                  title,
-                                  pdfUa1Checks,
-                                  ocrTextLayer,
-                                  roundTrip,
-                                  postExportValidator,
-                                  generatedAt: new Date().toISOString(),
-                                });
-                              }
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+                              // Auto-validation and the later download regenerate with the same stable modDate.
+                              // Preserve that verdict only after SHA-256 proves the newly generated bytes are exact.
+                              const _priorArtifact = _currentTaggedArtifactTicket();
+                              const _priorValidation = _lastTaggedValidationRef.current;
+                              const _priorValidationGeneration = _taggedValidationGenerationRef.current;
+                              const _priorCanTransfer = !!(_taggedArtifactTicketIsCurrent(_priorArtifact)
+                                && _viewValidationMatchesHtml(_priorValidation, _tagSourceHtml)
+                                && _viewTaggedArtifactProofMatches(_priorValidation, _priorArtifact)
+                                && _priorValidation.veraPdf && _priorValidation.veraPdfBytesHash);
+                              const _newTaggedHash = _priorCanTransfer ? await _sha256OfBytes(taggedBytes) : null;
+                              const _transferVeraVerdict = !!(_priorCanTransfer
+                                && _priorValidationGeneration === _taggedValidationGenerationRef.current
+                                && _taggedArtifactTicketIsCurrent(_priorArtifact)
+                                && _newTaggedHash === _priorValidation.veraPdfBytesHash);
+                              const _taggedArtifact = _selectTaggedArtifact(taggedBytes); // new bytes always start a new artifact generation
+                              _lastTaggedDeliveryRef.current = null; // M14: delivery state unknown until a download actually fires
+                              setLastTaggedValidation(null);
+                              setVeraPdfResult(null);
+                              // Bind even an unavailable self-check to the exact HTML + bytes so the manual
+                              // validator has an honest current artifact. A prior verdict transfers only on hash equality.
+                              const _boundTaggedValidation = await _viewBindValidationToHtml({
+                                fileName: (pendingPdfFile?.name || 'document.pdf'),
+                                title,
+                                pdfUa1Checks,
+                                ocrTextLayer,
+                                roundTrip,
+                                postExportValidator,
+                                veraPdf: _transferVeraVerdict ? _priorValidation.veraPdf : null,
+                                veraPdfAt: _transferVeraVerdict ? _priorValidation.veraPdfAt : null,
+                                veraPdfBytesHash: _transferVeraVerdict ? _newTaggedHash : null,
+                                generatedAt: new Date().toISOString(),
+                              }, _tagSourceHtml, _docPipeline);
+                              if (!_taggedArtifactTicketIsCurrent(_taggedArtifact)
+                                  || String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(_tagSourceHtml || '')) return;
+                              setLastTaggedValidation(_viewAttachTaggedArtifactProof(_boundTaggedValidation, _taggedArtifact));
+                              if (_transferVeraVerdict) setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._priorValidation.veraPdf }, _taggedArtifact));
+                              // ── #5 Content-fidelity gate ── A SEVERE shortfall (<80% of source text
+                              // preserved) or a detected AI refusal means the doc may be missing
+                              // content; a tagged PDF would look complete but be incomplete. Don't hand
+                              // it over silently — require an explicit "I've reviewed" opt-in. Threshold
+                              // is deliberately conservative (<80%, well below the 97% warn line) so a
+                              // borderline or false reading never blocks a good document.
+                              {
+                                const _covSev = (typeof pdfFixResult.integrityCoverage === 'number' && pdfFixResult.integrityCoverage < 80);
+                                const _refusalSev = Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.some(n => n && n.kind === 'refusal');
+                                if (_covSev || _refusalSev) {
+                                  const _why = _refusalSev
+                                    ? 'AI refusal/meta text was detected in the output'
+                                    : ('only ' + pdfFixResult.integrityCoverage + '% of the source text was preserved');
+                                  _fidelityGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged-REVIEW-CONTENT.pdf' };
+                                  _lastTaggedDeliveryRef.current = { withheld: true, reason: 'content-fidelity gate (' + _why + ')' }; // M14
+                                  setFidelityGateIssue(_why);
+                                  addToast(t('toasts.fidelity_gate_pinned') || '⚠ This document may be missing source content — your options are pinned above the download buttons.', 'warning');
+                                  return;
+                                }
+                              }
                               // ── Gate the download on the post-save structural self-check ──
                               // createTaggedPdf re-parses the SHIPPED bytes; if the tag tree / MarkInfo /
                               // language didn't survive serialization (roundTrip.ok === false), do NOT
@@ -6212,19 +10430,32 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 // flow could have. The bytes wait in a ref; the teacher
                                 // chooses calmly from the pinned panel.
                                 _taggedGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged-UNVERIFIED.pdf' };
+                                _lastTaggedDeliveryRef.current = { withheld: true, reason: 'post-save structure check failed (' + _rtMsg + ')' }; // M14
                                 setTaggedGateIssue(_rtMsg);
                                 addToast(t('toasts.tagged_gate_pinned') || '⚠ The tagged PDF failed its post-save structure check — your options are pinned above the download buttons.', 'warning');
                                 return;
                               }
                               const blob = new Blob([taggedBytes], { type: 'application/pdf' });
                               safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged.pdf');
+                              _lastTaggedDeliveryRef.current = { withheld: false }; // M14: actually handed over
                               // ── Pinned report instead of a toast cascade ──
                               // All result lines collect into ONE dismissable panel
                               // (lastTaggedReport) the teacher can read at their own
                               // pace; a single short toast points at it.
                               const _rpt = [];
+                              if (_autoRestoreLine) _rpt.push(_autoRestoreLine);
                               if (ocrTextLayer && typeof ocrTextLayer.coveragePct === 'number' && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
                                 _rpt.push({ tone: 'error', text: 'Searchable text layer covers ' + ocrTextLayer.coveragePct + '% of the scanned text — ' + (ocrTextLayer.droppedChars || 0) + ' character(s) in a non-Latin script could not be embedded, so those passages will not be searchable or read aloud.' });
+                              }
+                              // Per-page OCR coverage (audit wo72lu4mh #8): the whole-doc char % can look fine while
+                              // SPECIFIC scanned pages got no / only partial searchable text. createTaggedPdf computes
+                              // these per-page counts "so the UI can warn" — surface them instead of only warnLog'ing.
+                              if (ocrTextLayer && (((ocrTextLayer.pagesEmpty || 0) > 0) || ((ocrTextLayer.pagesIncomplete || 0) > 0))) {
+                                const _pw = ocrTextLayer.pagesWithText || ((ocrTextLayer.pagesCovered || 0) + (ocrTextLayer.pagesIncomplete || 0) + (ocrTextLayer.pagesEmpty || 0));
+                                const _bits = [];
+                                if ((ocrTextLayer.pagesEmpty || 0) > 0) _bits.push(ocrTextLayer.pagesEmpty + ' got NO searchable text');
+                                if ((ocrTextLayer.pagesIncomplete || 0) > 0) _bits.push(ocrTextLayer.pagesIncomplete + ' got only partial text');
+                                _rpt.push({ tone: 'warn', text: 'Per-page OCR: of ' + _pw + ' scanned page(s), ' + _bits.join(' and ') + ' — those page(s) will not be fully searchable or read aloud; verify them against the original.' });
                               }
                               if (roundTrip && roundTrip.ok !== false && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
                                 _rpt.push({ tone: 'warn', text: 'Structure self-check notes: ' + roundTrip.warnings.join('; ') });
@@ -6299,38 +10530,30 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                         ) : (
                         <button
+                          id="allo-tagged-pdf-btn"
                           data-help-key="pdf_audit_view_typeset_tagged_btn"
-                          onClick={async () => {
-                            try {
-                              const ok = await _ensurePdfLib();
-                              if (!ok) { addToast(t('toasts.couldn_load_pdf_tagging_library'), 'error'); return; }
-                              addToast(t('toasts.typeset_tagging') || '📄 Generating a typeset tagged PDF from the accessible content… (clean layout, not the original design)', 'info');
-                              const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: 'en', subject: 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
-                              const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
-                              if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
-                              const _rt = (_result && _result.roundTrip) || null;
-                              if (_rt && _rt.ok === false) {
-                                addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check — use the Word or HTML download instead.'), 'error');
-                                return;
-                              }
-                              safeDownloadBlob(new Blob([taggedBytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + '-tagged-typeset.pdf');
-                              const _s = (_result && _result.summary) || {};
-                              if (_s.typesetFont) {
-                                addToast('🈳 ' + (t('toasts.typeset_unicode_font') || 'Non-Latin text detected — embedded ') + _s.typesetFont.family + (t('toasts.typeset_unicode_font2') || ' so the PDF keeps the real characters (script: ') + _s.typesetFont.script + ').', 'info');
-                              }
-                              if (_s.fieldsCreated > 0) {
-                                addToast('📝 ' + _s.fieldsCreated + ' ' + (t('toasts.typeset_fields') || 'fillable form fields embedded and tagged — students can type into the PDF.'), 'success');
-                              }
-                              if (_s.unicodeTypesetWarning) {
-                                addToast('⚠ ' + (t('toasts.typeset_unicode_warning') || 'Some text could not be typeset honestly: ') + _s.unicodeTypesetWarning.advice, 'warning');
-                              }
-                              addToast((_s.uaDeclared ? '✅ ' : '📄 ') + (t('toasts.typeset_tagged_done') || 'Typeset tagged PDF ready — clean regenerated layout (not the original design), full structure tags.') + (_s.uaDeclared ? ' PDF/UA declared.' : ''), 'success');
-                            } catch (err) { addToast((t('toasts.typeset_failed') || 'Typeset tagging failed: ') + (err?.message || 'unknown'), 'error'); }
-                          }}
+                          onClick={() => _runTypesetExport()}
                           className="px-4 py-2.5 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl text-xs font-bold hover:from-slate-700 hover:to-slate-800 transition-all flex items-center gap-1.5"
                           title={t('pdf_audit.tagged_pdf.typeset_title') || 'Word/PowerPoint inputs have no PDF bytes to tag — this generates a CLEAN typeset PDF from the remediated content (simple layout, NOT the original design) and runs the full tagger on it: real structure tree, verified after saving, declaration only when earned.'}
                         >
                           📄 {t('pdf_audit.tagged_pdf.typeset_label') || 'Tagged PDF (generated layout)'}
+                        </button>
+                        )}
+                        {/* Sanitized rebuild — PDF inputs only (deep-dive 2026-07-02). The Tagged PDF
+                            button above preserves the original bytes byte-for-byte (and with them any
+                            embedded scripts/actions/attachments the source carried); this offers the
+                            SAME typeset rebuild the non-PDF path uses as an explicit "clean" alternative
+                            that drops all original active content. Secondary styling so the fidelity-
+                            preserving Tagged PDF stays the default choice. */}
+                        {_inputIsPdf && (
+                        <button
+                          id="allo-tagged-pdf-clean-btn"
+                          data-help-key="pdf_audit_view_sanitized_rebuild_btn"
+                          onClick={() => _runTypesetExport({ sanitized: true })}
+                          className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
+                          title={t('pdf_audit.tagged_pdf.sanitized_title') || "Rebuild a CLEAN tagged PDF from the remediated content instead of tagging the original file. Because it regenerates the PDF, it drops any embedded JavaScript, open/launch actions, file attachments, and original metadata the source carried — a safer file to redistribute, at the cost of the original visual design. Use this when the source PDF is from an untrusted or unknown origin."}
+                        >
+                          🧼 {t('pdf_audit.tagged_pdf.sanitized_label') || 'Rebuild clean (drops embedded scripts)'}
                         </button>
                         )}
                         <button onClick={async () => {
@@ -6339,7 +10562,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const d = await _ensureDocxLib();
                             if (!d) { addToast('Could not load the Word export library from any CDN mirror — check the network, or use the HTML download.', 'error'); return; }
                             const spec = _htmlToDocxSpec(pdfFixResult.accessibleHtml);
-                            const blob = await _buildDocxBlobFromSpec(spec, d);
+                            const blob = await _buildDocxBlobFromSpec(spec, d, DOC_MODES[docMode]);
                             safeDownloadBlob(blob, `${(pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '')}-accessible.docx`);
                             const bits = [];
                             if (spec.counts.headings) bits.push(spec.counts.headings + ' real heading style' + (spec.counts.headings === 1 ? '' : 's'));
@@ -6352,7 +10575,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             warnLog('[DocxExport] failed:', err);
                             addToast('Word export failed: ' + (err?.message || 'unknown error') + '. The accessible HTML download carries the same content.', 'error');
                           }
-                        }} className="px-4 py-2.5 bg-sky-50 text-sky-700 rounded-xl font-bold text-sm hover:bg-sky-100 transition-colors flex items-center gap-1.5"
+                        }} id="allo-export-docx" className="px-4 py-2.5 bg-sky-50 text-sky-700 rounded-xl font-bold text-sm hover:bg-sky-100 transition-colors flex items-center gap-1.5"
                           title={t('pdf_audit.docx_export.title') || "Convert the remediated content into a Word document with real heading styles, alt text on images, table header rows, list structure, and working hyperlinks. Verify with Word's built-in Accessibility Checker (Review → Check Accessibility) before distributing."}
                         >
                           📝 Word (.docx)
@@ -6387,7 +10610,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             warnLog('[PptxExport] failed:', err);
                             addToast('PowerPoint export failed: ' + (err?.message || 'unknown error') + '. The accessible HTML and Word downloads carry the same content.', 'error');
                           }
-                        }} className="px-4 py-2.5 bg-orange-50 text-orange-700 rounded-xl font-bold text-sm hover:bg-orange-100 transition-colors flex items-center gap-1.5"
+                        }} id="allo-export-pptx" className="px-4 py-2.5 bg-orange-50 text-orange-700 rounded-xl font-bold text-sm hover:bg-orange-100 transition-colors flex items-center gap-1.5"
                           title={t('pdf_audit.pptx_export.title') || "Rebuild the remediated content as a PowerPoint deck with real slide titles, alt text on images, header-styled table rows, true bullet lists, and reading order = visual order. A rebuilt accessible layout — not a visual clone of the original. Verify with PowerPoint's Accessibility Checker before distributing."}
                         >
                           📽 PowerPoint (.pptx)
@@ -6407,7 +10630,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <option value="ai">✨ AI: match my topic</option>
                         </select>
                         <button onClick={() => {
-                          const blob = new Blob([pdfFixResult.accessibleHtml], { type: 'text/html' });
+                          const blob = new Blob([_wrapAsReaderApp(pdfFixResult.accessibleHtml)], { type: 'text/html' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
                           a.href = url; a.download = `${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-accessible.html`;
@@ -6435,7 +10658,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 // Use the cached validation from the most recent Tagged PDF
                                 // generation. If the user hasn't generated a Tagged PDF yet,
                                 // the report still works (omits the PDF/UA-1 section).
-                                const cached = lastTaggedValidation;
+                                const cached = _currentTaggedValidation;
                                 const checks = cached && cached.pdfUa1Checks ? cached.pdfUa1Checks : null;
                                 // Thread the post-export validator results (re-parsed exported
                                 // bytes, 14 PDF/UA-1-relevant rules) into the report opts so
@@ -6445,11 +10668,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 // missingTokens, missingTokenCount) so the renderer can surface a
                                 // "Text content diff" section when text was dropped at save.
                                 const roundTrip = cached && cached.roundTrip ? cached.roundTrip : null;
+                                // Independent ISO 14289-1 verdict (veraPDF), persisted onto _currentTaggedValidation
+                                // when the user ran the in-browser validator. null if they didn't — the report
+                                // then notes that no independent validation was run (it does NOT imply conformance).
+                                const veraPdf = cached && cached.veraPdf ? cached.veraPdf : null;
                                 const html = _docPipeline.generateAccessibilityReportHtml(
                                   pdfFixResult,
                                   pdfAuditResult,
                                   checks,
-                                  { fileName: pendingPdfFile?.name || 'document.pdf', postExportValidator, roundTrip }
+                                  { fileName: pendingPdfFile?.name || 'document.pdf', postExportValidator, roundTrip, veraPdf }
                                 );
                                 const blob = new Blob([html], { type: 'text/html' });
                                 const url = URL.createObjectURL(blob);
@@ -6468,8 +10695,155 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 addToast(t('toasts.report_generation_failed') || 'Report generation failed: ' + (err?.message || 'unknown'), 'error');
                               }
                             }} data-help-key="pdf_audit_view_adobe_report_btn" className="w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors">
-                              🏛️ Adobe-style A11y Report{lastTaggedValidation ? ` (${(lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0)}% self-check)` : ''}
+                              {/* "?? 0" previously rendered "(0% self-check)" when the self-check simply
+                                  hadn't run — a false-LOW claim on the button itself. Show the pct only
+                                  when it exists. */}
+                              🏛️ Adobe-style A11y Report{_currentTaggedValidation && typeof _currentTaggedValidation.pdfUa1Checks?.summary?.conformancePct === 'number' ? ` (${_currentTaggedValidation.pdfUa1Checks.summary.conformancePct}% self-check)` : ''}
                             </button>
+                            {/* Inline per-rule PDF/UA-1 self-check on the SHIPPED bytes (2026-06-19). The per-rule
+                                detail was previously only in the downloadable Adobe report + transient gate messages;
+                                surface it here, always one click away. Honestly labeled — AlloFlow's own rules vs.
+                                the exported bytes, NOT ISO certification (prefer postExportValidator = the shipped
+                                file; fall back to the in-memory pdfUa1Checks). */}
+                            {(() => {
+                              const _pev = _currentTaggedValidation && _currentTaggedValidation.postExportValidator;
+                              const _checks = (_pev && Array.isArray(_pev.checks) && _pev.checks.length) ? _pev.checks
+                                : (_currentTaggedValidation && _currentTaggedValidation.pdfUa1Checks && Array.isArray(_currentTaggedValidation.pdfUa1Checks.checks) ? _currentTaggedValidation.pdfUa1Checks.checks : null);
+                              if (!_checks || !_checks.length) return null;
+                              const _pass = _checks.filter(c => c && c.status === 'pass').length;
+                              const _fail = _checks.filter(c => c && c.status === 'fail').length;
+                              const _warn = _checks.filter(c => c && c.status === 'warn').length;
+                              return (
+                                <details className="mt-1 mx-2 px-3 py-2 text-xs border border-emerald-100 rounded-lg bg-emerald-50/40">
+                                  <summary data-help-ignore="true" className="cursor-pointer font-bold text-slate-700 outline-none">🔎 {t('pdf_audit.selfcheck.title') || 'PDF/UA-1 self-check (exported bytes)'} — {_pass}/{_checks.length} {t('pdf_audit.selfcheck.pass') || 'rules pass'}{_fail ? ` · ${_fail} ${t('pdf_audit.selfcheck.failed') || 'failed'}` : ''}{_warn ? ` · ${_warn} ${t('pdf_audit.selfcheck.warn') || 'warn'}` : ''}</summary>
+                                  <p className="text-[10px] text-slate-500 italic mt-1 mb-2">{t('pdf_audit.selfcheck.note') || "AlloFlow's own PDF/UA-1 (ISO 14289-1) rules, re-parsed from the exported PDF bytes — a self-check, not certification. For an ISO verdict, validate in veraPDF or PAC 2024."}</p>
+                                  <ul className="space-y-1">
+                                    {_checks.map((c, i) => (
+                                      <li key={i} className="flex items-start gap-1.5 leading-snug">
+                                        <span aria-hidden="true">{c.status === 'pass' ? '✅' : c.status === 'warn' ? '⚠️' : '❌'}</span>
+                                        <span className={c.status === 'fail' ? 'text-red-700' : c.status === 'warn' ? 'text-amber-700' : 'text-slate-600'}><strong>{c.rule || c.label || ('Rule ' + (i + 1))}</strong>{c.detail ? ' — ' + c.detail : ''}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </details>
+                              );
+                            })()}
+                            {/* Independent ISO 14289-1 validation via veraPDF, in-browser (CheerpJ).
+                                On-demand opt-in — nothing downloads until clicked (~25 MB one-time, then
+                                ~seconds for small docs; large docs may take minutes). Bytes never leave the browser. */}
+                            {_currentTaggedValidation && _lastTaggedBytesRef.current && (
+                              <div className="mt-1 mx-2 px-3 py-2 text-xs border border-indigo-100 rounded-lg bg-indigo-50/40">
+                                <button type="button" disabled={veraPdfBusy} data-help-ignore="true"
+                                  onClick={async () => {
+                                    const _manualArtifact = _currentTaggedArtifactTicket();
+                                    const _manualValidation = _lastTaggedValidationRef.current;
+                                    const _manualSourceHtml = String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '');
+                                    if (!_taggedArtifactTicketIsCurrent(_manualArtifact)
+                                        || !_viewValidationMatchesHtml(_manualValidation, _manualSourceHtml)
+                                        || !_viewTaggedArtifactProofMatches(_manualValidation, _manualArtifact)) return;
+                                    const _manualRun = _beginVeraPdfValidation(_manualArtifact, _manualSourceHtml);
+                                    setVeraPdfBusy(true); setVeraPdfResult(null);
+                                    try {
+                                      const _vr = await runVeraPdfValidation(_manualRun.bytes);
+                                      // Hash the exact buffer passed to the validator, then commit only if neither
+                                      // the artifact, bound validation, HTML, nor a newer validation request changed.
+                                      const _vbh = await _sha256OfBytes(_manualRun.bytes);
+                                      if (!_veraPdfValidationIsCurrent(_manualRun)) return;
+                                      const _patchedValidation = _viewPatchBoundValidation(_manualValidation, { veraPdf: _vr, veraPdfAt: new Date().toISOString(), veraPdfBytesHash: _vbh });
+                                      setLastTaggedValidation(_viewAttachTaggedArtifactProof(_patchedValidation, _manualRun));
+                                      setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._vr }, _manualRun));
+                                      _recordVeraPdfRules(_vr, 'validate'); // only current-artifact verdicts enter telemetry/UI
+                                    }
+                                    catch (e) {
+                                      if (_veraPdfValidationIsCurrent(_manualRun)) {
+                                        setVeraPdfResult(_viewAttachTaggedArtifactProof({ error: String((e && e.message) || e) }, _manualRun));
+                                      }
+                                    }
+                                    finally {
+                                      if (_manualRun.operation === _veraPdfValidationGenerationRef.current) setVeraPdfBusy(false);
+                                    }
+                                  }}
+                                  className="font-bold text-indigo-700 hover:underline disabled:opacity-60 outline-none">
+                                  {veraPdfBusy
+                                    ? '⏳ ' + (t('pdf_audit.verapdf.running') || 'Validating with veraPDF… (first run downloads ~25 MB, ~15s)')
+                                    : '🔎 ' + (t('pdf_audit.verapdf.btn') || 'Independently validate with veraPDF (ISO 14289-1)')}
+                                </button>
+                                <label className="flex items-start gap-1.5 mt-1 text-[10px] text-slate-600 cursor-pointer" title={t('pdf_audit.verapdf.auto_toggle_title') || 'When on, AlloFlow opens + warms the veraPDF validator during Make Accessible and validates the tagged output automatically — no extra click. Turn off to validate only on demand.'}>
+                                  <input type="checkbox" checked={pdfAutoVeraPdf} onChange={(e) => setPdfAutoVeraPdf(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.verapdf.auto_toggle_aria') || 'Auto-validate with veraPDF after Make Accessible'} />
+                                  <span>{t('pdf_audit.verapdf.auto_toggle') || 'Auto-validate with veraPDF after every Make Accessible (recommended)'}</span>
+                                </label>
+                                {_currentVeraPdfResult && _currentVeraPdfResult.error && (
+                                  <p className="text-amber-700 mt-1">{t('pdf_audit.verapdf.unavailable') || 'veraPDF validation unavailable'} ({_currentVeraPdfResult.error}) — {t('pdf_audit.verapdf.fallback') || 'rely on the self-check above and verify in PAC 2024.'}</p>
+                                )}
+                                {_currentVeraPdfResult && !_currentVeraPdfResult.error && (
+                                  <div className="mt-1">
+                                    <p className="font-bold">{_currentVeraPdfResult.compliant
+                                      ? '✅ ' + (t('pdf_audit.verapdf.pass') || 'Passes PDF/UA-1 (independently validated by veraPDF)')
+                                      : '❌ ' + ((_currentVeraPdfResult.failedRules ? _currentVeraPdfResult.failedRules.length : 0) + ' ' + (t('pdf_audit.verapdf.failed') || 'rule(s) failed (veraPDF)'))}</p>
+                                    {_currentVeraPdfResult.failedRules && _currentVeraPdfResult.failedRules.length > 0 && (
+                                      <ul className="space-y-1 mt-1">
+                                        {_currentVeraPdfResult.failedRules.map((f, i) => (
+                                          <li key={i} className="text-red-700 leading-snug">ISO 14289-1 §{f.clause} (test {f.testNumber}): {f.message}{f.count > 1 ? ' ×' + f.count : ''}</li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                    {/* Closed-loop auto-fix: the validator window validates → repairs → re-validates → loops
+                                        until veraPDF passes (or best-effort), then downloads the result. Bytes never leave the browser. */}
+                                    {_currentVeraPdfResult.failedRules && _currentVeraPdfResult.failedRules.length > 0 && _lastTaggedBytesRef.current && (
+                                      <button type="button" disabled={veraPdfFixing} data-help-ignore="true"
+                                        onClick={async () => {
+                                          const _repairArtifact = _currentTaggedArtifactTicket();
+                                          const _repairValidation = _lastTaggedValidationRef.current;
+                                          const _repairSourceHtml = String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '');
+                                          if (!_taggedArtifactTicketIsCurrent(_repairArtifact)
+                                              || !_viewValidationMatchesHtml(_repairValidation, _repairSourceHtml)
+                                              || !_viewTaggedArtifactProofMatches(_repairValidation, _repairArtifact)) return;
+                                          const _repairRun = _beginVeraPdfValidation(_repairArtifact, _repairSourceHtml);
+                                          setVeraPdfFixing(true);
+                                          _recordVeraPdfRules(_currentVeraPdfResult, 'repair'); // the rules the native tagger left for the patch loop to fix
+                                          try {
+                                            const _rem = await runVeraPdfRemediate(_repairRun.bytes);
+                                            if (_rem && _rem.repairedB64) {
+                                              const _bin = atob(_rem.repairedB64);
+                                              const _u8 = new Uint8Array(_bin.length);
+                                              for (let _i = 0; _i < _bin.length; _i++) _u8[_i] = _bin.charCodeAt(_i);
+                                              const _rv = _rem.verdict || { compliant: !!_rem.compliant, failedChecks: 0, failedRules: [] };
+                                              // Hash before selecting the repaired bytes. Selection invalidates the old operation,
+                                              // then the verdict + validation are transferred synchronously to the new generation.
+                                              const _rvh = await _sha256OfBytes(_u8);
+                                              if (!_veraPdfValidationIsCurrent(_repairRun)) return;
+                                              const _repairedArtifact = _selectTaggedArtifact(_u8);
+                                              const _repairedValidation = _viewPatchBoundValidation(_repairValidation, { veraPdf: _rv, veraPdfAt: new Date().toISOString(), veraPdfBytesHash: _rvh });
+                                              setLastTaggedValidation(_viewAttachTaggedArtifactProof(_repairedValidation, _repairedArtifact));
+                                              setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._rv }, _repairedArtifact));
+                                              const _url = URL.createObjectURL(new Blob([_u8], { type: 'application/pdf' }));
+                                              const _a = document.createElement('a');
+                                              _a.href = _url; _a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged-veraPDF-fixed.pdf';
+                                              document.body.appendChild(_a); _a.click(); document.body.removeChild(_a); URL.revokeObjectURL(_url);
+                                              addToast(_rem.compliant
+                                                ? (t('pdf_audit.verapdf.fixed_pass') || 'Auto-fixed to PDF/UA-1 — downloaded the independently-validated file.')
+                                                : (t('pdf_audit.verapdf.fixed_partial') || 'Applied veraPDF auto-fixes (some rules need richer repair) — downloaded the improved file.'),
+                                                _rem.compliant ? 'success' : 'warning');
+                                              // Integrity: surface any content-altering repair (font substitution, Artifact-marking) so a
+                                              // "PASSES PDF/UA-1" verdict never silently hides a change that needs human review.
+                                              const _disc = [];
+                                              try { for (const _s of (_rem.log || [])) for (const _a of (_s.applied || [])) if (/REVIEW:/.test(_a)) _disc.push(_a.replace(/^§[^:]*:\s*/, '')); } catch (_e) {}
+                                              if (_disc.length) addToast('⚠ ' + (t('pdf_audit.verapdf.fix_review') || 'Auto-fix made changes to review before distribution') + ': ' + [...new Set(_disc)].join('; '), 'warning');
+                                            }
+                                          } catch (e) { addToast((t('pdf_audit.verapdf.fix_failed') || 'veraPDF auto-fix failed') + ': ' + String((e && e.message) || e), 'error'); }
+                                          finally { setVeraPdfFixing(false); }
+                                        }}
+                                        className="mt-1.5 block font-bold text-emerald-700 hover:underline disabled:opacity-60 outline-none">
+                                        {veraPdfFixing
+                                          ? '⏳ ' + (t('pdf_audit.verapdf.fixing') || 'Auto-fixing to PDF/UA-1 (validate → repair → re-validate)…')
+                                          : '🔧 ' + (t('pdf_audit.verapdf.autofix') || 'Auto-fix remaining issues (veraPDF closed loop)')}
+                                      </button>
+                                    )}
+                                    <p className="text-[10px] text-slate-500 italic mt-1">{t('pdf_audit.verapdf.disclaimer') || 'Independent open-source validation — not a legal accessibility certificate; human review still recommended.'}</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             {/* Tier B — Re-run with restoration. Appears only when the post-export
                                 text-diff found RESIDUAL missing tokens. Sibling "Open Diff view"
                                 button below uses the EXISTING jsdiff word-level viewer (no new
@@ -6477,12 +10851,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 to restore. Aaron's 2026-06-07 reminder: don't duplicate the existing
                                 diff UX — just make it easier to reach. */}
                             {(() => {
-                              const td = lastTaggedValidation && lastTaggedValidation.roundTrip && lastTaggedValidation.roundTrip.textDiff;
-                              const residual = td && typeof td.residualMissingCount === 'number' ? td.residualMissingCount : null;
-                              if (!td || !residual || residual <= 0) return null;
+                              const td = _currentTaggedValidation && _currentTaggedValidation.roundTrip && _currentTaggedValidation.roundTrip.textDiff;
                               if (!pdfFixResult || !pdfFixResult.accessibleHtml) return null;
                               const sourceText = pdfFixResult.sourceText || (typeof window !== 'undefined' && (window.__lastGroundTruthPageMap || []).map(p => p && p.text).filter(Boolean).join('\n\n')) || '';
                               if (!sourceText) return null;
+                              // Prefer the tagged-PDF round-trip snapshot when fresh; else a fresh source-vs-final diff
+                              // so Recovery runs ANY time after remediation (Option B) — not only right after a Tagged
+                              // PDF export (_currentTaggedValidation goes stale across the auto-continue loop).
+                              const _rs = _recoveryResidualSource(td, sourceText, pdfFixResult.finalText);
+                              const residual = _rs.residual;
+                              if (!residual || residual <= 0) return null;
                               const hasDiffInputs = !!(pdfFixResult.sourceText && pdfFixResult.finalText);
                               return (
                                 <>
@@ -6505,12 +10883,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     setPdfFixStep && setPdfFixStep('Restoring (1/3): word-level splice…');
                                     // Re-derive residual tokens from the textDiff. The same normalization
                                     // check used by the surface layer; agree-with-Tier-A floor.
-                                    const _normTokenForDiff = (s) => String(s || '').toLowerCase().replace(/(\p{L})[-­](\p{L})/gu, '$1$2').replace(/­/g, '').replace(/\s+/g, '');
+                                    const _normTokenForDiff = _normTokenForDiffShared; // S7: single-sourced from the pipeline
                                     const shipNorm = new Set();
                                     const _normalize = (s) => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
                                     const shipTokens = _normalize(pdfFixResult.finalText || '').split(' ').filter(t => t.length >= 3);
                                     for (const t of shipTokens) shipNorm.add(_normTokenForDiff(t));
-                                    const residualTokens = (td.missingTokens || []).filter(w => !shipNorm.has(_normTokenForDiff(w)));
+                                    const residualTokens = _rs.missingTokens.filter(w => !shipNorm.has(_normTokenForDiff(w)));
                                     if (residualTokens.length === 0) { addToast('No residual tokens to restore (all cosmetic). Nothing to do.', 'info'); setPdfFixStep && setPdfFixStep(''); setTierBStage(''); return; }
                                     const missingEntries = residualTokens.map(w => ({ word: w }));
                                     let html = pdfFixResult.accessibleHtml;
@@ -6528,18 +10906,42 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         if (r3 && r3.html) { html = r3.html; allRestored = allRestored.concat(r3.restoredViaSentence || []); allUnplaceable = r3.stillMissing || []; }
                                       } catch (e3) { warnLog('[TierB] restoreSentencesDeterministic failed: ' + (e3 && e3.message)); }
                                     }
-                                    setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html, htmlChars: html.length } : prev);
+                                    // Refresh finalText to the restored plain text so the integrity/coverage displays and the
+                                    // fresh (Option B) residual recompute reflect the just-restored words, not the pre-restore text.
+                                    const _restoredText = html.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+                                    setPdfFixResult(prev => prev ? _viewEnforceVerificationHtmlBinding({ ...prev, accessibleHtml: html, htmlChars: html.length, finalText: _restoredText }, 'content-modified-pending-reverification', _docPipeline) : prev);
                                     setTierBStage('re-tag');
                                     setPdfFixStep && setPdfFixStep('Restoring (3/3): re-tagging PDF with restored content…');
                                     try {
-                                      const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length };
+                                      const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length, finalText: _restoredText };
                                       const _bytes = pendingPdfBase64 ? Uint8Array.from(atob(pendingPdfBase64.includes(',') ? pendingPdfBase64.split(',')[1] : pendingPdfBase64), c => c.charCodeAt(0)) : null;
                                       if (_bytes && createTaggedPdf) {
                                         const _tbm = pdfMetaOverride || {};
                                         const _re = await createTaggedPdf(_bytes, _freshFixResult, { title: (_tbm.title && _tbm.title.trim()) || pdfFixResult.title || (pendingPdfFile?.name || 'document.pdf'), lang: (_tbm.lang && _tbm.lang.trim()) || 'en', author: (_tbm.author && _tbm.author.trim()) || undefined, subject: 'Restored via Tier B re-run' });
                                         const afterTd = _re && _re.roundTrip && _re.roundTrip.textDiff;
                                         const afterResidual = afterTd && typeof afterTd.residualMissingCount === 'number' ? afterTd.residualMissingCount : null;
-                                        setLastTaggedValidation(prev => prev ? { ...prev, roundTrip: _re.roundTrip || prev.roundTrip, postExportValidator: _re.postExportValidator || prev.postExportValidator, pdfUa1Checks: _re.pdfUa1Checks || prev.pdfUa1Checks, generatedAt: new Date().toISOString() } : prev);
+                                        // These are NEW bytes (the restored content was re-tagged) that veraPDF never validated.
+                                        // Point the manual-validate ref at the fresh bytes AND DROP the stale prev.veraPdf — otherwise
+                                        // the Adobe-style report would claim "Conformant (veraPDF · ISO 14289-1 verified)" for a file
+                                        // that was never validated (critic gap #3, 2026-06-21). Self-checks are recomputed on the new bytes.
+                                        const _reBytes = (_re && _re.bytes) ? _re.bytes : _re;
+                                        if (!(_reBytes instanceof Uint8Array)) throw new Error('Restored tagged export returned no byte buffer');
+                                        const _restoredArtifact = _selectTaggedArtifact(_reBytes);
+                                        setLastTaggedValidation(null);
+                                        setVeraPdfResult(null);
+                                        const _restoredValidation = await _viewBindValidationToHtml({
+                                          fileName: pendingPdfFile?.name || 'document.pdf',
+                                          roundTrip: _re.roundTrip || null,
+                                          postExportValidator: _re.postExportValidator || null,
+                                          pdfUa1Checks: _re.pdfUa1Checks || null,
+                                          veraPdf: null,
+                                          veraPdfAt: null,
+                                          veraPdfBytesHash: null,
+                                          generatedAt: new Date().toISOString(),
+                                        }, html, _docPipeline);
+                                        if (!_taggedArtifactTicketIsCurrent(_restoredArtifact)
+                                            || String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(html || '')) return;
+                                        setLastTaggedValidation(_viewAttachTaggedArtifactProof(_restoredValidation, _restoredArtifact));
                                         const restoredCount = allRestored.length;
                                         const unresolvedCount = allUnplaceable.length;
                                         const _msg = `Restored ${restoredCount} inline${unresolvedCount > 0 ? `; ${unresolvedCount} preserved in Content Recovery` : ''}. Residual missing: ${residual} → ${afterResidual != null ? afterResidual : '?'}.`;
@@ -6549,7 +10951,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       }
                                     } catch (eRe) {
                                       warnLog('[TierB] re-tag failed: ' + (eRe && eRe.message));
-                                      addToast(`Restored ${allRestored.length} inline; re-tag failed — try the Tagged PDF button to regenerate.`, 'info');
+                                      // Desync guard (2026-06-22): the HTML was restored but re-tagging FAILED, so the previously
+                                      // tagged bytes no longer match the visible (restored) document. Drop the cached bytes + flag
+                                      // the validation stale so a later "Tagged PDF" export regenerates from the RESTORED html
+                                      // instead of silently shipping the pre-restoration file (the display↔export divergence).
+                                      try { _selectTaggedArtifact(null); } catch (_) {}
+                                      setLastTaggedValidation(null);
+                                      setVeraPdfResult(null);
+                                      addToast(`Restored ${allRestored.length} inline, but re-tagging the PDF failed — click “Tagged PDF” to regenerate it with the restored content (the previous tagged file no longer matches).`, 'info');
                                     }
                                     setPdfFixStep && setPdfFixStep('');
                                     setTierBStage('');
@@ -6569,8 +10978,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               );
                             })()}
                             <button onClick={() => {
-                              const _rptAi = pdfFixResult.afterScore; const _rptAxe = pdfFixResult.axeAudit?.score ?? null; const _rptBlended = (_rptAi !== null && _rptAxe !== null) ? Math.round((_rptAxe + _rptAi) / 2) : (_rptAxe ?? _rptAi);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || '' };
+                              const _rptAi = pdfFixResult.afterScore; const _rptAxe = pdfFixResult.axeAudit?.score ?? null; const _rptBlended = (_rptAi != null ? _rptAi : _rptAxe) /* canonical engine blend; no re-blend (audit 2026-06-13) */; const _rptVerification = _verificationForExport(pdfFixResult);
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, afterScoreVerified: _rptVerification.afterScoreVerified, verificationState: _rptVerification.verificationState, verificationReasons: _rptVerification.reasons, verificationHtmlBinding: _rptVerification.verificationHtmlBinding, verificationResult: pdfFixResult, summary: pdfAuditResult?.summary || '', integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _rptVerification.coverage, requiresManualReview: _rptVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, _estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, _estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null };
                               const html = generateAuditReportHtml(full, pendingPdfFile?.name || 'document.pdf', true);
                               const w = window.open('', '_blank');
                               if (w) {
@@ -6585,8 +10994,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               📄 Formatted Report (PDF)
                             </button>
                             <button onClick={() => {
-                              const _dlAi = pdfFixResult.afterScore; const _dlAxe = pdfFixResult.axeAudit?.score ?? null; const _dlBlended = (_dlAi !== null && _dlAxe !== null) ? Math.round((_dlAxe + _dlAi) / 2) : (_dlAxe ?? _dlAi);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, summary: pdfAuditResult?.summary || '' };
+                              const _dlAi = pdfFixResult.afterScore; const _dlAxe = pdfFixResult.axeAudit?.score ?? null; const _dlBlended = (_dlAi != null ? _dlAi : _dlAxe); const _dlVerification = _verificationForExport(pdfFixResult);
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, afterScoreVerified: _dlVerification.afterScoreVerified, verificationState: _dlVerification.verificationState, verificationReasons: _dlVerification.reasons, verificationHtmlBinding: _dlVerification.verificationHtmlBinding, verificationResult: pdfFixResult, summary: pdfAuditResult?.summary || '', integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _dlVerification.coverage, requiresManualReview: _dlVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, _estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, _estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null };
                               const html = generateAuditReportHtml(full, pendingPdfFile?.name || 'document.pdf', true);
                               const blob = new Blob([html], { type: 'text/html' });
                               const url = URL.createObjectURL(blob);
@@ -6597,8 +11006,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               🌐 HTML Report
                             </button>
                             <button onClick={() => {
-                              const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi !== null && _jsonAxe !== null) ? Math.round((_jsonAxe + _jsonAi) / 2) : (_jsonAxe ?? _jsonAi);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'] };
+                              const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi != null ? _jsonAi : _jsonAxe); const _jsonVerification = _verificationForExport(pdfFixResult);
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: _jsonVerification.afterScoreVerified, verificationState: _jsonVerification.verificationState, verificationReasons: _jsonVerification.reasons, verificationHtmlBinding: _jsonVerification.verificationHtmlBinding, afterScoreBasis: _jsonVerification.afterScoreVerified ? 'min(content,automated) — weakest-layer governing score, NOT an average' : 'unverified (' + _jsonVerification.verificationState + '): ' + (_jsonVerification.reasons || []).join(' '), integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _jsonVerification.coverage, requiresManualReview: _jsonVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.2 AA', engines: (() => { const _p = pdfAuditResult && (pdfAuditResult.auditorCount || (pdfAuditResult.scores && pdfAuditResult.scores.length)); return ['AI (Gemini' + (_p ? ', ' + _p + '-pass self-consistency' : '') + ')'].concat((pdfFixResult.axeAudit && typeof pdfFixResult.axeAudit.score === 'number') ? ['axe-core (Deque WCAG 2.2 AA)'] : []).concat(pdfFixResult.secondEngineAudit ? ['IBM Equal Access (WCAG 2.2 AA)'] : []); })(), issueResolution: pdfFixResult.issueResolution || null, fidelityNotes: pdfFixResult.fidelityNotes || [], fidelityLimited: !!pdfFixResult.fidelityLimited, expertReview: { needed: !!pdfFixResult.needsExpertReview, reason: pdfFixResult.expertReviewReason || null }, ocrAccuracy: pdfFixResult.ocrAccuracy || null, groundTruth: { charCount: pdfFixResult.groundTruthCharCount || null, method: pdfFixResult.groundTruthMethod || null }, remainingIssues: pdfFixResult.remainingIssues ?? null };
                               const blob = new Blob([JSON.stringify(full, null, 2)], { type: 'application/json' });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${new Date().toISOString().split('T')[0]}.json`;
@@ -6623,7 +11032,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if (promptedName) { try { localStorage.setItem('alloflow_teacher_name', promptedName); } catch (_) {} }
                                 const signer = promptedName || 'Unknown';
                                 const _aiS = pdfFixResult.afterScore; const _axS = pdfFixResult.axeAudit?.score ?? null;
-                                const blended = (_aiS !== null && _axS !== null) ? Math.round((_axS + _aiS) / 2) : (_axS ?? _aiS);
+                                const blended = (_aiS != null ? _aiS : _axS); const _trailVerification = _verificationForExport(pdfFixResult);
                                 let docFingerprint = null;
                                 if (pendingPdfBase64) {
                                   try {
@@ -6632,6 +11041,29 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     docFingerprint = Array.from(new Uint8Array(dfBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
                                   } catch (_) { docFingerprint = null; }
                                 }
+                                // Hash the SHIPPED (remediated, tagged) PDF bytes — the artifact a reviewer
+                                // actually receives — so the trail fingerprints the OUTPUT, not only the
+                                // source. Null when no tagged PDF has been produced in this session yet.
+                                const shippedFingerprint = _currentTaggedValidation ? await _sha256OfBytes(_lastTaggedBytesRef.current) : null;
+                                // Independent ISO 14289-1 (PDF/UA-1) verdict from veraPDF — attached ONLY if it
+                                // was computed on the SAME bytes we are shipping. The verdict carries
+                                // veraPdfBytesHash (hash of the bytes veraPDF validated); if that doesn't match
+                                // shippedFingerprint the verdict is STALE (e.g. new tagged bytes were produced
+                                // after validating) and pairing it with this fingerprint would misrepresent the
+                                // shipped artifact, so we withhold it. failedRules are PDF-structural metadata
+                                // (clause/test/message) — never document content / student data (FERPA-safe).
+                                const _vera = _currentTaggedValidation && _currentTaggedValidation.veraPdf;
+                                const _veraBytesMatch = !!(_vera && shippedFingerprint && _currentTaggedValidation.veraPdfBytesHash && _currentTaggedValidation.veraPdfBytesHash === shippedFingerprint);
+                                const _veraStale = !!(_vera && !_veraBytesMatch); // a verdict exists, but for different bytes than shipped
+                                const veraPdfTrail = (_veraBytesMatch && !_vera.error) ? {
+                                  validator: 'veraPDF (ISO 14289-1 / PDF/UA-1)',
+                                  validatedAt: _currentTaggedValidation.veraPdfAt || null,
+                                  compliant: _vera.compliant === true,
+                                  failedChecks: _vera.failedChecks != null ? _vera.failedChecks : (_vera.failedRules ? _vera.failedRules.length : 0),
+                                  failedRules: (_vera.failedRules || []).map(f => ({ clause: f.clause, testNumber: f.testNumber, message: f.message, count: f.count || 1 })),
+                                  bytesHash: { algo: 'SHA-256', hash: _currentTaggedValidation.veraPdfBytesHash },
+                                } : (_veraBytesMatch && _vera.error ? { validator: 'veraPDF (ISO 14289-1 / PDF/UA-1)', error: String(_vera.error) } : null);
+                                const _escT = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                                 let pipelineHash = 'unknown';
                                 try {
                                   const scripts = Array.from(document.querySelectorAll('script[src*="Apomera/AlloFlow@"]'));
@@ -6651,16 +11083,54 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     pageCount: pdfFixResult.pageCount || pdfAuditResult?.pageCount || null,
                                     imageCount: pdfFixResult.imageCount || 0,
                                     fingerprint: docFingerprint ? { algo: 'SHA-256', hash: docFingerprint } : null,
+                                    // M14 (deep dive 2026-07-09): a download gate (fidelity / post-save structure) can
+                                    // withhold the produced file — the trail then fingerprinted bytes labeled "actually
+                                    // shipped" that no reader received (unmatchable to any distributed file, and a
+                                    // provenance misstatement). The note now says which it was.
+                                    shippedFingerprint: shippedFingerprint ? { algo: 'SHA-256', hash: shippedFingerprint,
+                                      withheldByGate: !!(_lastTaggedDeliveryRef.current && _lastTaggedDeliveryRef.current.withheld),
+                                      withheldReason: (_lastTaggedDeliveryRef.current && _lastTaggedDeliveryRef.current.withheld) ? (_lastTaggedDeliveryRef.current.reason || 'download gate') : undefined,
+                                      note: (_lastTaggedDeliveryRef.current && _lastTaggedDeliveryRef.current.withheld)
+                                        ? 'SHA-256 of the remediated tagged-PDF bytes AlloFlow produced. NOTE: a download gate withheld this file in this session (' + (_lastTaggedDeliveryRef.current.reason || 'see gate') + ') and it was NOT handed over — this fingerprint identifies the produced artifact, not a distributed one.'
+                                        : 'SHA-256 of the remediated tagged-PDF bytes AlloFlow produced (the artifact actually shipped to readers)' } : null,
+                                  },
+                                  validation: {
+                                    pdfUA: veraPdfTrail,
+                                    note: (veraPdfTrail && !veraPdfTrail.error)
+                                      ? 'Independent ISO 14289-1 (PDF/UA-1) verdict on the shipped bytes from the open-source reference validator (veraPDF). Authoritative at the PDF level and independent of the content score above — a high content score does not by itself imply PDF/UA conformance. Not a legal accessibility certificate; human review (alt-text quality, reading order) still recommended.'
+                                      : (_veraStale
+                                          ? 'A prior veraPDF verdict exists but was computed on a DIFFERENT set of bytes than the PDF fingerprinted here (new tagged bytes were produced after validating), so it is withheld to avoid misrepresenting the shipped artifact. Re-run "Independently validate with veraPDF" on the shipped PDF before claiming conformance.'
+                                          : 'No independent veraPDF / PDF-UA validation verdict was recorded for the shipped PDF. The scores above are AlloFlow self-checks plus the AI/axe content audit — NOT an ISO 14289-1 conformance verdict. Run "Independently validate with veraPDF" (or validate externally in veraPDF / PAC 2024) before claiming conformance.'),
                                   },
                                   remediation: {
-                                    standard: 'WCAG 2.1 AA',
-                                    engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'],
+                                    standard: 'WCAG 2.2 AA',
+                                    engines: (() => { const _p = pdfAuditResult && (pdfAuditResult.auditorCount || (pdfAuditResult.scores && pdfAuditResult.scores.length)); return ['AI (Gemini' + (_p ? ', ' + _p + '-pass self-consistency' : '') + ')'].concat((pdfFixResult.axeAudit && typeof pdfFixResult.axeAudit.score === 'number') ? ['axe-core (Deque WCAG 2.2 AA)'] : []).concat(pdfFixResult.secondEngineAudit ? ['IBM Equal Access (WCAG 2.2 AA)'] : []); })(),
                                     beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore,
                                     afterScore: blended,
+                                    afterScoreVerified: _trailVerification.afterScoreVerified, verificationCoverage: _trailVerification.coverage, verificationState: _trailVerification.verificationState, verificationReasons: _trailVerification.reasons, verificationHtmlBinding: _trailVerification.verificationHtmlBinding, requiresManualReview: _trailVerification.requiresManualReview,
+                                    estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null,
+                                    estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null,
+                                    aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete,
                                     aiAudit: pdfFixResult.verificationAudit || null,
                                     axeAudit: pdfFixResult.axeAudit || null,
                                     autoFixPasses: pdfFixResult.autoFixPasses || 0,
                                     integrityCoverage: pdfFixResult.integrityCoverage ?? null,
+                                    fidelity: {
+                                      coverage: pdfFixResult.integrityCoverage ?? null,
+                                      limited: !!pdfFixResult.fidelityLimited,
+                                      notes: pdfFixResult.fidelityNotes || [],
+                                      ocrAccuracy: pdfFixResult.ocrAccuracy || null,
+                                      groundTruth: {
+                                        charCount: pdfFixResult.groundTruthCharCount || null,
+                                        method: pdfFixResult.groundTruthMethod || null,
+                                      },
+                                    },
+                                    issueResolution: pdfFixResult.issueResolution || null,
+                                    expertReview: {
+                                      needed: !!pdfFixResult.needsExpertReview,
+                                      reason: pdfFixResult.expertReviewReason || null,
+                                    },
+                                    remainingIssues: pdfFixResult.remainingIssues ?? null,
                                     userEdits: {
                                       rejectedHunkCount: pdfFixResult._rejectedHunkCount || 0,
                                       userEditedAt: pdfFixResult._userEditedAt || null,
@@ -6674,19 +11144,30 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const hashBuf = await crypto.subtle.digest('SHA-256', enc);
                                 const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
                                 const baseReport = generateAuditReportHtml(
-                                  { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: blended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: blended, summary: pdfAuditResult?.summary || '' },
+                                  { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: blended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: blended, afterScoreVerified: _trailVerification.afterScoreVerified, verificationCoverage: _trailVerification.coverage, verificationState: _trailVerification.verificationState, verificationReasons: _trailVerification.reasons, verificationHtmlBinding: _trailVerification.verificationHtmlBinding, verificationResult: pdfFixResult, requiresManualReview: _trailVerification.requiresManualReview, summary: pdfAuditResult?.summary || '', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, _estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null },
                                   pendingPdfFile?.name || 'document.pdf',
                                   true
                                 );
+                                const _veraSummaryHtml = veraPdfTrail
+                                  ? (veraPdfTrail.error
+                                      ? '<span style="color:#d97706">⚠ validation did not complete (' + _escT(veraPdfTrail.error) + ') — validate externally before claiming conformance</span>'
+                                      : (veraPdfTrail.compliant
+                                          ? '<span style="color:#16a34a;font-weight:bold">✓ Passes PDF/UA-1</span> <span style="color:#64748b">(independently validated by veraPDF' + (veraPdfTrail.validatedAt ? ' · ' + _escT(veraPdfTrail.validatedAt) : '') + ')</span>'
+                                          : '<span style="color:#dc2626;font-weight:bold">✕ Does NOT pass PDF/UA-1 — ' + (veraPdfTrail.failedChecks || 0) + ' rule(s) failed</span> <span style="color:#64748b">(veraPDF — see the JSON payload below for the rule list)</span>'))
+                                  : (_veraStale
+                                      ? '<span style="color:#d97706">⚠ A prior veraPDF verdict was for different bytes than the shipped PDF — re-validate before claiming conformance</span>'
+                                      : '<span style="color:#64748b">Not independently validated — the content score above is not an ISO 14289-1 verdict</span>');
                                 const trailFooter = `
 <section id="alloflow-audit-trail" style="margin-top:40px;padding:20px;background:#f1f5f9;border-radius:12px;border:2px solid #6366f1;font-family:system-ui,sans-serif">
   <h2 style="color:#4f46e5;font-size:18px;margin:0 0 8px">🔒 Audit Trail — Signed Integrity Envelope</h2>
   <p style="color:#475569;font-size:13px;margin:0 0 12px">This report is signed with a SHA-256 hash of its embedded audit payload. The hash is computed client-side in the browser that generated this file — sufficient to detect alteration of the JSON payload below, not a legal-grade cryptographic signature. For a tamper-evident server-signed audit, an institutional reviewer should record this hash at generation time.</p>
   <dl style="display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;font-size:12px;color:#334155;margin:0 0 12px">
-    <dt style="font-weight:bold">Signer</dt><dd>${signer.replace(/</g, '&lt;')}</dd>
+    <dt style="font-weight:bold">Signer</dt><dd>${_escT(signer)}</dd>
     <dt style="font-weight:bold">Generated</dt><dd>${nowISO}</dd>
     <dt style="font-weight:bold">Pipeline</dt><dd>AlloFlow @ ${pipelineHash}</dd>
-    <dt style="font-weight:bold">Document fingerprint</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all">${docFingerprint || '(PDF not attached at sign time)'}</dd>
+    <dt style="font-weight:bold">Source fingerprint</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all">${docFingerprint || '(PDF not attached at sign time)'}</dd>
+    <dt style="font-weight:bold">Shipped PDF fingerprint</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all">${shippedFingerprint ? (shippedFingerprint + ((_lastTaggedDeliveryRef.current && _lastTaggedDeliveryRef.current.withheld) ? ' <span style="font-family:system-ui,sans-serif;color:#d97706;font-weight:bold">(⚠ withheld by a download gate — produced but NOT handed over in this session)</span>' : '')) : '(no tagged PDF produced in this session — run Fix &amp; Verify / download first)'}</dd>
+    <dt style="font-weight:bold">PDF/UA (veraPDF)</dt><dd>${_veraSummaryHtml}</dd>
     <dt style="font-weight:bold">Payload hash (SHA-256)</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all" id="aat-stored-hash">${hashHex}</dd>
   </dl>
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -6748,6 +11229,43 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         </div>
                       </div>
+                      {/* Re-scan with OCR (2026-06-20): recovery when the extracted text looks wrong —
+                          a garbled embedded text layer (broken font encodings extract as gibberish) or
+                          low-confidence OCR. Forces a fresh re-OCR of the whole document, or just the
+                          low-confidence pages, ignoring the text layer + any saved/cached text. */}
+                      {(() => {
+                        const _lowConf = (typeof window !== 'undefined' && Array.isArray(window.__lastOcrLowConfidencePages)) ? window.__lastOcrLowConfidencePages : [];
+                        const _lowPages = _lowConf.map((p) => p && p.pageNum).filter((n) => typeof n === 'number');
+                        const _reRun = async (force) => {
+                          // Re-scanning re-runs the WHOLE pipeline and REPLACES the current results (2026-06-23,
+                          // maintainer Canvas test: this was wiping a good audit with no warning). When there's a
+                          // result to lose, confirm first and offer to save the project so it isn't discarded.
+                          if (pdfFixResult && pdfFixResult.accessibleHtml && typeof window !== 'undefined' && typeof window.confirm === 'function') {
+                            if (!window.confirm(t('pdf_audit.rescan_confirm') || 'Re-scanning with OCR starts the audit over and REPLACES your current results. Continue?')) return;
+                            if (typeof saveProjectToFile === 'function' && window.confirm(t('pdf_audit.rescan_save_first') || 'Save your current project first?\n\nOK = download a .alloflow.json now, then re-scan.\nCancel = re-scan without saving.')) {
+                              try { saveProjectToFile(false); addToast(t('pdf_audit.rescan_saved') || '💾 Project saved — re-scanning…', 'info'); } catch (_) {}
+                            }
+                          }
+                          try { window.__alloForceOcr = force; } catch (_) {}
+                          const fb = await ensurePdfBase64();
+                          if (!fb) { try { window.__alloForceOcr = null; } catch (_) {} return; } // user cancelled re-attach
+                          if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
+                          else fixAndVerifyPdf({ base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
+                        };
+                        return (
+                          <div className="mb-2">
+                            {_lowPages.length > 0 && (
+                              <div className="mb-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-center gap-2 flex-wrap">
+                                <span>⚠ {t('pdf_audit.low_conf_ocr') || 'Low OCR confidence on'} page{_lowPages.length === 1 ? '' : 's'} {_lowPages.slice(0, 8).join(', ')}{_lowPages.length > 8 ? '…' : ''}. {t('pdf_audit.low_conf_ocr_hint') || 'The text may be misread.'}</span>
+                                <button onClick={() => _reRun({ pages: _lowPages })} disabled={pdfFixLoading} className="ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0">🔄 Re-OCR {_lowPages.length} {_lowPages.length === 1 ? (t('pdf_audit.page') || 'page') : (t('pdf_audit.pages') || 'pages')}</button>
+                              </div>
+                            )}
+                            <button onClick={() => _reRun('all')} disabled={pdfFixLoading} title={t('pdf_audit.rescan_ocr_tooltip') || 'Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.'} className="w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40">
+                              🔄 {t('pdf_audit.rescan_ocr') || 'Re-scan with OCR (text looks wrong?)'}
+                            </button>
+                          </div>
+                        );
+                      })()}
                       {/* Save / Load Project — manual button now delegates to the shared saveProjectToFile helper,
                           which also powers auto-save after the initial remediation + auto-continue loop. */}
                       <div className="flex gap-2">
@@ -6758,17 +11276,39 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           📂 Load Project
                           <input type="file" accept=".json,.alloflow.json" className="hidden" onChange={(e) => {
                             const file = e.target.files?.[0]; if (!file) return;
+                            const _projectLoadToken = ++_projectLoadSelectionRef.current;
                             const reader = new FileReader();
-                            reader.onload = (ev) => {
+                            reader.onload = async (ev) => {
+                              if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                               try {
-                                const project = JSON.parse(ev.target.result);
+                                const parsedProject = JSON.parse(ev.target.result);
+                                const project = await _viewRehydrateVerificationHtmlBinding(parsedProject, _docPipeline);
+                                if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
+                                if (project && project.incomplete && project.version) {
+                                  // Unfinished run: this results-screen loader only swaps in COMPLETED
+                                  // projects. Point the teacher at the start-screen entry that resumes.
+                                  addToast(t('toasts.incomplete_use_continue') || 'This is an unfinished project. Close this and use “Continue a previous session” on the start screen to pick up where it stopped (no re-scanning needed).', 'info');
+                                  e.target.value = '';
+                                  return;
+                                }
                                 if (!project.accessibleHtml || !project.version) { addToast(t('toasts.invalid_project_file_2'), 'error'); return; }
-                                setPdfFixResult({
+                                const _loadedFixResult = {
                                   accessibleHtml: project.accessibleHtml,
                                   beforeScore: project.beforeScore,
                                   afterScore: project.afterScore,
+                                  _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
+                                  _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : (Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null),
+                                  _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
+                                  _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
                                   axeAudit: project.axeAudit || null,
                             secondEngineAudit: project.secondEngineAudit || null,
+                            verificationCoverage: project.verificationCoverage || null,
+                            verificationHtmlBinding: project.verificationHtmlBinding || null,
+                            verificationState: project.verificationState || 'unavailable',
+                            verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : [],
+                            verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0,
+                            afterScoreVerified: !!project.afterScoreVerified,
+                            requiresManualReview: !!project.requiresManualReview,
                                   verificationAudit: project.verificationAudit || null,
                                   docStyle: project.docStyle || null,
                                   pageCount: project.pageCount,
@@ -6788,7 +11328,31 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
                             _plainLanguage: project._plainLanguage || null,
-                                });
+                                };
+                                if (_viewIsLiveVerificationHtmlBound(project, project.accessibleHtml, _docPipeline)) {
+                                  _viewAttachRuntimeBindingProof(_loadedFixResult, project.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
+                                }
+                                setPdfFixResult(_loadedFixResult);
+                                // H-8 (audit 2026-06-23): the component never remounts on Load Project, so
+                                // per-document refs/state from the PREVIOUS doc survive — most dangerously
+                                // _paletteSnapshotRef (a ref), whose stale snapshot lets palette Revert
+                                // OVERWRITE this freshly-loaded doc with the prior one. Reset every
+                                // per-document holdover so the loaded doc starts clean. (The fully-robust fix
+                                // is a key= remount on PdfAuditView in the host; done here at the load entry
+                                // point to avoid editing the concurrently-edited host file.)
+                                _paletteSnapshotRef.current = null;
+                                _selectTaggedArtifact(null);
+                                // M12 (deep dive 2026-07-09): also clear the PDF/UA badge state — see the
+                                // start-screen loader's twin reset for rationale.
+                                setLastTaggedValidation(null);
+                                setVeraPdfResult(null);
+                                setAppliedPalette(null);
+                                setPaletteIntent('');
+                                _setIssueEdit({});
+                                setRestyleProposals(null);
+                                setRestyleDropped(0);
+                                setRegionArmed(false);
+                                setTagOutline(null);
                                 setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: project.multiSession?.fileSize || 0 });
                                 // Restore run history + pipeline prefs (see the other
                                 // Load Project site for rationale).
@@ -6803,10 +11367,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 } catch (_) {}
                                 if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
                                   setPdfMultiSession(project.multiSession);
-                                  const sortedR = project.multiSession.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
-                                  const lastEnd = sortedR[sortedR.length - 1].pages[1];
+                                  // B2 (2026-06-28): guard a malformed/hand-edited .alloflow.json whose ranges lack a
+                                  // valid pages array — a bare range.pages[0]/[1] access otherwise throws and strands the
+                                  // teacher on the results screen with no recovery. Degrade: skip the resume-range step.
+                                  const sortedR = project.multiSession.ranges.slice().sort((a, b) => ((a.pages && a.pages[0]) || 0) - ((b.pages && b.pages[0]) || 0));
+                                  const _lastRange = sortedR[sortedR.length - 1];
+                                  const lastEnd = (_lastRange && Array.isArray(_lastRange.pages)) ? _lastRange.pages[1] : null;
                                   const total = project.pageCount || project.multiSession.pageCount || 1;
-                                  if (lastEnd < total) {
+                                  if (lastEnd == null) {
+                                    addToast(t('toasts.multisession_corrupt') || 'This project’s multi-session range data looks corrupted — skipping the resume-range step.', 'warning');
+                                  } else if (lastEnd < total) {
                                     const nextStart = lastEnd + 1;
                                     const nextEnd = Math.min(nextStart + 29, total);
                                     setPdfPageRange({ start: nextStart, end: nextEnd });
@@ -6821,7 +11391,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   setPdfPageRange(null);
                                   addToast(t('toasts.project_loaded_2') + (project.fileName || 'document') + ' — continue editing!', 'success');
                                 }
-                              } catch(err) { addToast(t('toasts.failed_load_project') + err.message, 'error'); }
+                              } catch(err) { if (_projectLoadToken === _projectLoadSelectionRef.current) addToast(t('toasts.failed_load_project') + err.message, 'error'); }
                             };
                             reader.readAsText(file);
                             e.target.value = '';
@@ -6891,13 +11461,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         📐 Save Structure as Template (for future documents)
                       </button>
 
-                      {/* Alternative Formats (matching Anthology Ally feature set) */}
-                      <details data-help-key="pdf_audit_alt_formats_summary" className="group">
-                        <summary className="text-[11px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
-                          📑 {t('pdf_audit.alt_formats.heading') || 'Alternative Formats'} <span className="normal-case font-normal text-slate-500">{t('pdf_audit.alt_formats.list') || '— EPUB · Braille (BRF) · Plain text · Markdown'}</span> <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
+                      {/* Unified Export dropdown (2026-06-14): ONE clear grouped menu for
+                          every output format. Document formats facade the primary buttons
+                          by id (zero logic change to those flows); accessible/text/new
+                          formats call dedicated handlers. Replaces the old collapsed
+                          "Alternative Formats" disclosure (and its open-by-default sprawl). */}
+                      <details data-help-key="pdf_audit_alt_formats_summary" className="group w-full">
+                        <summary className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-xl font-bold text-sm cursor-pointer hover:from-teal-700 hover:to-cyan-700 transition-colors list-none">
+                          ⬇ {t('pdf_audit.export_menu.button') || 'Export / Download'} <span className="text-xs opacity-90 group-open:rotate-180 transition-transform">▾</span>
                         </summary>
-                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1.5">
-                          <p id="allo-sec-downloads" className="text-[11px] text-slate-600">{t('pdf_audit.alt_formats.intro') || 'Download the remediated document in accessible alternative formats'}</p>
+                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1" role="menu" aria-label={t('pdf_audit.export_menu.aria') || 'Export formats'}>
+                          <p id="allo-sec-downloads" className="text-[11px] text-slate-600 mb-1">{t('pdf_audit.export_menu.intro') || 'Download the remediated document in any format — pick the one that fits how it’ll be used.'}</p>
+
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1 mb-0.5">{t('pdf_audit.export_menu.group_docs') || 'Documents'}</div>
+                          {_inputIsPdf && (
+                            <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-tagged-pdf-btn'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📄 {t('pdf_audit.export_menu.tagged_pdf') || 'Tagged PDF (PDF/UA — give to students)'}</button>
+                          )}
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-docx'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📝 {t('pdf_audit.export_menu.word') || 'Word (.docx — keep editing)'}</button>
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-pptx'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📽 {t('pdf_audit.export_menu.pptx') || 'PowerPoint (.pptx — present it)'}</button>
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const html = pdfFixResult?.accessibleHtml; if (!html) return; const blob = new Blob(['<!DOCTYPE html>\n' + html], { type: 'text/html;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href); if (addToast) addToast(t('toasts.html_downloaded') || '🌐 HTML downloaded — opens in any browser.', 'success'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">🌐 {t('pdf_audit.export_menu.html') || 'HTML (opens anywhere, no software)'}</button>
+
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_access') || 'Accessible formats'}</div>
 
                           {/* ePub */}
                           <button onClick={() => {
@@ -6937,7 +11521,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
   <spine><itemref idref="content"/></spine>
 </package>`;
                             zip.file('OEBPS/content.opf', opf);
-                            let xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+                            // Serialize the whole doc as XML so content.xhtml is well-formed: the
+                            // old hand-rolled regex only self-closed <br>/<hr>/<img> and missed
+                            // <input>/<col>/<source>/<wbr> + named entities, which epubcheck/Apple
+                            // Books reject. XMLSerializer handles all void elements + entities. (#1)
+                            let xhtml;
+                            try {
+                              const _d = new DOMParser().parseFromString(html, 'text/html');
+                              xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
+                            } catch (_) { xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;'); }
                             if (!xhtml.includes('xmlns')) xhtml = xhtml.replace('<html', '<html xmlns="http://www.w3.org/1999/xhtml"');
                             zip.file('OEBPS/content.xhtml', xhtml);
                             const headings = [...html.matchAll(/<h([1-3])[^>]*id="([^"]*)"[^>]*>([^<]+)/gi)];
@@ -6964,29 +11556,38 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
                             const text = html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-                            const brailleMap = {'a':'1','b':'12','c':'14','d':'145','e':'15','f':'124','g':'1245','h':'125','i':'24','j':'245','k':'13','l':'123','m':'134','n':'1345','o':'135','p':'1234','q':'12345','r':'1235','s':'234','t':'2345','u':'136','v':'1236','w':'2456','x':'1346','y':'13456','z':'1356',' ':' ','1':'1','2':'12','3':'14','4':'145','5':'15','6':'124','7':'1245','8':'125','9':'24','0':'245','.':'256',',':'2','?':'236','!':'235',':':'25',';':'23','-':'36',"'":"3"};
-                            const dotToAscii = (dots) => {
-                              const val = dots.split('').reduce((s, d) => s + (1 << (parseInt(d) - 1)), 0);
-                              return String.fromCharCode(0x2800 + val);
-                            };
-                            let brf = '';
-                            const lines = text.split('\n');
-                            for (const line of lines) {
-                              let brailleLine = '';
-                              const lower = line.toLowerCase();
-                              for (let i = 0; i < lower.length; i++) {
-                                const ch = lower[i];
-                                if (brailleMap[ch]) {
-                                  if (line[i] !== lower[i]) brailleLine += dotToAscii('6');
-                                  if (/[0-9]/.test(ch) && (i === 0 || !/[0-9]/.test(lower[i-1]))) brailleLine += dotToAscii('3456');
-                                  brailleLine += dotToAscii(brailleMap[ch]);
-                                } else {
-                                  brailleLine += ch;
+                            // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit
+                            // 2026-06-13): a .brf must be ASCII braille (0x20–0x5F North-
+                            // American Braille Computer Code), NOT Unicode U+2800 patterns —
+                            // embossers and braille displays read the ASCII bytes, so the old
+                            // U+2800 output was un-embossable garbage under a "BRF" label.
+                            // Ported from the export-preview lane's _toBRF so both braille
+                            // exports match: capital sign (,) before each capital; number
+                            // sign (#) before a 1-0→A-J digit run; standard BRF punctuation;
+                            // 40-cell line wrap.
+                            const _brfDigit = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
+                            const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '7', ')': '7', '"': '7', "'": "'", '-': '-', '/': '/', '*': '9', '&': '&', '@': '@', '#': '#' };
+                            const _toBRF = (src) => {
+                              const lines = src.replace(/\r\n?/g, '\n').split('\n');
+                              const out = [];
+                              for (const line of lines) {
+                                let bl = ''; let numMode = false;
+                                for (let i = 0; i < line.length; i++) {
+                                  const ch = line[i];
+                                  if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _brfDigit[ch]; continue; }
+                                  numMode = false;
+                                  if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
+                                  if (ch >= 'A' && ch <= 'Z') { bl += ',' + ch; continue; }
+                                  if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
+                                  bl += (_brfPunct[ch] !== undefined ? _brfPunct[ch] : (ch.charCodeAt(0) >= 0x20 && ch.charCodeAt(0) <= 0x7e ? ch.toUpperCase() : ''));
                                 }
+                                out.push(bl.slice(0, 40));
+                                if (bl.length > 40) { let rest = bl.slice(40); while (rest.length) { out.push(rest.slice(0, 40)); rest = rest.slice(40); } }
                               }
-                              brf += brailleLine + '\n';
-                            }
-                            const blob = new Blob([brf], { type: 'text/plain;charset=utf-8' });
+                              return out.join('\r\n');
+                            };
+                            const brf = _toBRF(text);
+                            const blob = new Blob([brf], { type: 'application/x-brf' });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a'); a.href = url;
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';
@@ -6995,6 +11596,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           }} data-help-key="pdf_audit_alt_formats_braille_btn" className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             ⠃⠗⠇ Electronic Braille (BRF)
                           </button>
+
+                          {/* DAISY 3 full-text talking book */}
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; _dlDaisy(); }} data-help-key="pdf_audit_alt_formats_daisy_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.daisy_title') || 'DAISY 3 (DTBook) full-text talking-book package. Open in a DAISY reader, which provides speech, braille, or large print. (For synced read-aloud audio, use Read-along below.)'}>
+                            🔊 {t('pdf_audit.export_menu.daisy') || 'DAISY talking book (full text)'}
+                          </button>
+
+                          {/* Read-along EPUB3 (Media Overlays) — TTS synced to text */}
+                          <button role="menuitem" disabled={!!(moExport && moExport.status === 'running')} onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; _dlEpubMO(); }} data-help-key="pdf_audit_alt_formats_readalong_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" title={t('pdf_audit.export_menu.readalong_title') || 'Read-along ebook (EPUB3 Media Overlays): generates text-to-speech for each paragraph and syncs it to the text so a reading system highlights words as they’re spoken. Makes many voice calls — can take a few minutes.'}>
+                            📖🔊 {(moExport && moExport.status === 'running')
+                              ? ((t('pdf_audit.export_menu.readalong_progress') || 'Narrating… {done}/{total}').replace('{done}', String(moExport.done)).replace('{total}', String(moExport.total)))
+                              : (t('pdf_audit.export_menu.readalong') || 'Read-along ebook (synced audio)')}
+                          </button>
+
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_text') || 'Text & editable'}</div>
 
                           {/* Plain text */}
                           <button onClick={() => {
@@ -7042,8 +11657,103 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           }} data-help-key="pdf_audit_alt_formats_markdown_btn" className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📋 Markdown (LMS, wiki, docs)
                           </button>
+
+                          {/* ODT (OpenDocument) */}
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; _dlOdt(); }} data-help-key="pdf_audit_alt_formats_odt_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.odt_title') || 'OpenDocument Text — opens natively in LibreOffice and Google Docs (and Word).'}>
+                            📄 {t('pdf_audit.export_menu.odt') || 'ODT (LibreOffice / Google Docs)'}
+                          </button>
+
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_audio') || 'Audio narration'}</div>
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-audio'); if (b) { b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.click(); } else if (addToast) addToast(t('toasts.audio_unavailable_now') || 'Audio is unavailable right now (a job may be running, or the voice service is off).', 'info'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.audio_title') || 'Spoken narration of the document (MP3/WAV).'}>
+                            🎧 {t('pdf_audit.export_menu.audio') || 'Audio narration (standard)'}
+                          </button>
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-audio-sr'); if (b) { b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.click(); } else if (addToast) addToast(t('toasts.audio_unavailable_now') || 'Audio is unavailable right now (a job may be running, or the voice service is off).', 'info'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.audio_sr_title') || 'Same voice, but announcing structure the way a screen reader would (heading levels, list counts, table rows, image alts).'}>
+                            🦻 {t('pdf_audit.export_menu.audio_sr') || 'Audio (screen-reader style)'}
+                          </button>
                         </div>
                       </details>
+
+                      {/* Document colours (S2): pick a vetted palette — contrast is GUARANTEED (every colour
+                          is clamped to meet WCAG before it's applied). Deterministic + AI-free → works under
+                          a Canvas throttle. AI-suggested palettes come in a later slice. */}
+                      {_docPipeline && Array.isArray(_docPipeline.palettePresets) && _docPipeline.palettePresets.length > 0 && pdfFixResult && pdfFixResult.accessibleHtml && (
+                        <details className="bg-white border-2 border-violet-200 rounded-xl group">
+                          <summary className="cursor-pointer p-3 text-[11px] font-bold text-violet-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-violet-50 rounded-xl">
+                            <span className="inline-block transition-transform group-open:rotate-90 text-violet-400" aria-hidden="true">▸</span>
+                            🎨 {t('pdf_audit.palette.heading') || 'Document colours'}
+                            {_appliedPalette && <span className="text-[10px] bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full normal-case font-bold">{_appliedPalette.name}</span>}
+                            {_appliedPalette && typeof _appliedPalette.worst === 'number' && <span className="ml-auto text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold normal-case" title={t('pdf_audit.palette.badge_title') || 'Contrast is guaranteed: every text/surface pair was clamped to meet WCAG (4.5:1 body text, 3:1 large text + UI).'}>✓ {t('pdf_audit.palette.badge') || 'contrast guaranteed'} (worst {_appliedPalette.worst}:1)</span>}
+                          </summary>
+                          <div className="px-3 pb-3 space-y-2">
+                            <p className="text-[11px] text-slate-600">{t('pdf_audit.palette.lead') || 'Recolour the document with a vetted palette. Contrast is GUARANTEED — each colour is automatically nudged to meet WCAG before it is applied, and links keep their underline so colour never carries meaning alone.'}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {_docPipeline.palettePresets.map((preset) => (
+                                <button key={preset.id} onClick={() => _applyPalette(preset)} disabled={_paletteBusy}
+                                  aria-pressed={!!(_appliedPalette && _appliedPalette.id === preset.id)}
+                                  className={'px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors inline-flex items-center gap-1.5 ' + (_appliedPalette && _appliedPalette.id === preset.id ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-violet-50') + (_paletteBusy ? ' opacity-50 cursor-wait' : '')}
+                                  title={t('pdf_audit.palette.apply_title') || 'Apply this palette (contrast guaranteed) and re-check'}>
+                                  {preset.tokens && <span aria-hidden="true" style={{ display: 'inline-block', width: 11, height: 11, borderRadius: 9999, background: preset.tokens.accent || preset.tokens.heading || '#666', border: '1px solid rgba(0,0,0,0.15)' }} />}
+                                  {preset.name}
+                                </button>
+                              ))}
+                              {_appliedPalette && (
+                                <button onClick={_revertPalette} disabled={_paletteBusy} className={'px-2.5 py-1 rounded-full text-[11px] font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 ' + (_paletteBusy ? 'opacity-50 cursor-wait' : '')} title={t('pdf_audit.palette.revert_title') || 'Restore the original colours'}>↩ {t('pdf_audit.palette.revert') || 'Revert'}</button>
+                              )}
+                            </div>
+                            {_docPipeline && typeof _docPipeline.proposePaletteFromIntent === 'function' && (
+                              <form className="flex gap-1.5 items-center" onSubmit={(e) => { e.preventDefault(); _suggestPalette(); }}>
+                                <input type="text" value={_paletteIntent} onChange={(e) => setPaletteIntent(e.target.value)} disabled={_paletteBusy}
+                                  placeholder={t('pdf_audit.palette.ai_placeholder') || 'Or describe a mood / brand colour — e.g. "warm and calm", "#0d9488"'}
+                                  aria-label={t('pdf_audit.palette.ai_aria') || 'Describe a palette for the AI to suggest (contrast is still guaranteed)'}
+                                  className="flex-1 min-w-0 px-2 py-1 text-[11px] border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-400" />
+                                <button type="submit" disabled={_paletteBusy || !String(_paletteIntent || '').trim()} className={'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-violet-600 text-white shrink-0 ' + ((_paletteBusy || !String(_paletteIntent || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-violet-700')} title={t('pdf_audit.palette.ai_btn_title') || 'The AI suggests colours for the mood; we still clamp them to meet WCAG before applying.'}>✨ {t('pdf_audit.palette.ai_btn') || 'Suggest'}</button>
+                              </form>
+                            )}
+                            <p className="text-[10px] text-slate-400 italic">{t('pdf_audit.palette.note') || 'The AI contributes taste only — every colour is still clamped to meet WCAG before it is applied. Presets work with no AI at all, even when the AI service is busy.'}</p>
+                          </div>
+                        </details>
+                      )}
+
+                      {/* S3 block-restyle slice 2: AI engagement suggestions (callout/list) — accept/revert plan */}
+                      {_docPipeline && typeof _docPipeline.proposeRestyles === 'function' && pdfFixResult && pdfFixResult.accessibleHtml && (
+                        <details data-help-key="pdf_audit_restyle_suggest" className="bg-indigo-50 rounded-lg border border-indigo-200 overflow-hidden group">
+                          <summary className="cursor-pointer p-2.5 text-[11px] font-bold text-indigo-800 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-indigo-100/60">
+                            <span className="inline-block transition-transform group-open:rotate-90 text-indigo-400">▸</span>
+                            ✨ {t('pdf_audit.region.suggest_heading') || 'Suggest engagement edits'}
+                            {Array.isArray(_restyleProposals) && _restyleProposals.length > 0 && <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded-full normal-case">{_restyleProposals.length}</span>}
+                          </summary>
+                          <div className="px-3 pb-3 space-y-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <button onClick={_suggestRestyles} disabled={_restyleProposalsBusy}
+                                className={'px-3 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white ' + (_restyleProposalsBusy ? 'opacity-50 cursor-wait' : 'hover:bg-indigo-700')}>
+                                {_restyleProposalsBusy ? ('⏳ ' + (t('pdf_audit.region.suggest_busy') || 'Analyzing…')) : ('✨ ' + (t('pdf_audit.region.suggest_btn') || 'Suggest callouts & lists'))}
+                              </button>
+                            </div>
+                            <p className="text-[10px] text-indigo-700 italic">{t('pdf_audit.region.suggest_note') || 'The AI only PICKS blocks — it never rewrites your text. Each suggestion is applied by the same safe transform and refused if it would change content. Block text is sent to the AI (as during remediation).'}</p>
+                            {Array.isArray(_restyleProposals) && _restyleProposals.length > 0 && (
+                              <ul className="space-y-1.5">
+                                {_restyleProposals.map((p, idx) => (
+                                  <li key={idx} className="bg-white border border-indigo-200 rounded-lg p-2 flex items-start gap-2">
+                                    <span className={'shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ' + (p.kind === 'heading' ? 'bg-emerald-100 text-emerald-800' : p.kind === 'callout' ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800')}>{p.kind === 'heading' ? ('🔠 ' + (t('pdf_audit.region.make_heading') || 'Make a heading') + (p.level ? (' (H' + p.level + ')') : '')) : p.kind === 'callout' ? ('📌 ' + (t('pdf_audit.region.make_callout') || 'Make a callout')) : ('• ' + (t('pdf_audit.region.make_list') || 'Make a list'))}</span>
+                                    <div className="min-w-0 flex-1">
+                                      {p.reason && <div className="text-[11px] text-slate-700">{p.reason}</div>}
+                                      <div className="text-[10px] text-slate-500 truncate" title={p.preview}>“{p.preview}”</div>
+                                    </div>
+                                    <button onClick={() => _applyProposal(p)} className="shrink-0 px-2 py-0.5 rounded bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700">{t('pdf_audit.region.suggest_apply') || 'Apply'}</button>
+                                    <button onClick={() => setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev)} className="shrink-0 px-1.5 py-0.5 rounded text-slate-500 text-[11px] font-bold hover:bg-slate-100" aria-label={t('pdf_audit.region.suggest_dismiss') || 'Dismiss this suggestion'}>✕</button>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            {Array.isArray(_restyleProposals) && _restyleProposals.length === 0 && (
+                              <p className="text-[11px] text-slate-500">{t('pdf_audit.region.suggest_none_inline') || 'No structure changes suggested — the document already reads cleanly.'}</p>
+                            )}
+                            {Array.isArray(_restyleProposals) && _restyleDropped > 0 && (
+                              <p className="text-[10px] text-slate-500 italic">{'✓ ' + _restyleDropped + ' ' + (t('pdf_audit.region.suggest_filtered') || 'more AI suggestion(s) were filtered out — they couldn’t be applied here without changing content.')}</p>
+                            )}
+                          </div>
+                        </details>
+                      )}
 
                       {/* Expert Workbench — Advanced Remediation Command Bar (collapsible) */}
                       <details id="allo-sec-workbench" className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group">
@@ -7076,12 +11786,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               // open a word-level diff of just this command (not the whole remediation).
                               const _stripT = (h) => String(h || '').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
                               const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
-                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff }));
-                              if (result.score !== undefined) {
-                                setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
+                              // Snapshot the FULL before-HTML so a regressing fix can be reverted in one
+                              // click (mini-audit, 2026-06-16) — mirrors the _preBionicHtml snapshot pattern.
+                              const _preCmdHtml = pdfFixResult.accessibleHtml;
+                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }));
+                              // Re-audit + recompute so the headline score, "Remaining Issues" count, and the
+                              // Newly-Introduced list reflect THIS Workbench fix (the mini-audit only verifies
+                              // axe STRUCTURE; the panel was otherwise stale until a full re-run). The fix is
+                              // already applied above, so any re-audit failure is non-fatal — keep prior numbers.
+                              // Re-audit + recompute via the shared mini-audit (same path the direct
+                              // expert-edit uses). Non-fatal: on failure keep the prior numbers + log the
+                              // command's own score if it returned one.
+                              const _ra = await _reauditAndScore(result.html, (entry) => setAgentActivityLog(prev => [...prev, entry]));
+                              if (!_ra.ok && result.score !== undefined) setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
+                              console.info('[ExpertWorkbench] complete command=' + JSON.stringify(cmd) + ' score=' + (result.score !== undefined ? result.score : 'n/a') + ' miniAudit=' + (result.miniAudit ? result.miniAudit.verdict : 'none'));
+                              if (result.miniAudit && result.miniAudit.verdict === 'regressed') {
+                                addToast((t('toasts.command_applied_regressed') || 'Applied, but it introduced new issues — review or revert below.'), 'error');
+                              } else {
+                                addToast(t('toasts.command_applied'), 'success');
                               }
-                              console.info('[ExpertWorkbench] complete command=' + JSON.stringify(cmd) + ' score=' + (result.score !== undefined ? result.score : 'n/a'));
-                              addToast(t('toasts.command_applied'), 'success');
                             } else {
                               console.warn('[ExpertWorkbench] noop command=' + JSON.stringify(cmd) + ' — no HTML changes');
                               setAgentActivityLog(prev => [...prev, { text: 'ℹ No changes applied', type: 'info', time: new Date().toLocaleTimeString() }]);
@@ -7113,6 +11836,39 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             title={t('pdf_audit.expert.see_changes_title') || 'Open a word-level diff of exactly what your last command changed — reject any part to undo it'}
                           >📝 See what the last command changed</button>
                         )}
+                        {pdfFixResult._lastMiniAudit && pdfFixResult._lastMiniAudit.verdict === 'regressed' && Array.isArray(pdfFixResult._lastMiniAudit.introduced) && (
+                          <div className="mt-1 px-2 py-1.5 bg-red-950/40 border border-red-700/60 rounded text-[11px] text-red-200" role="alert">
+                            ⚠️ {t('pdf_audit.expert.mini_audit_regressed') || 'That fix introduced new accessibility issues:'} <span className="font-mono text-red-300">{pdfFixResult._lastMiniAudit.introduced.map(x => x.id).join(', ')}</span>. {t('pdf_audit.expert.mini_audit_revert_hint') || 'Revert to undo it, or keep it and fix those too.'}
+                          </div>
+                        )}
+                        {/* Table semantic readback (table-refinement slice 1): confirm the MEANING of a
+                            table edit in plain language — the human check axe can't do. Keep = right,
+                            Revert below = wrong. 'layout' is the one that REDUCES accessibility → red. */}
+                        {pdfFixResult._lastTableReadback && pdfFixResult._lastTableReadback.text && (
+                          <div className={'mt-1 px-2 py-1.5 rounded text-[11px] border ' + (pdfFixResult._lastTableReadback.kind === 'layout' ? 'bg-red-950/40 border-red-700/60 text-red-200' : 'bg-indigo-950/40 border-indigo-600/60 text-indigo-100')} role="status" aria-live="polite">
+                            📊 <span className="font-bold">{pdfFixResult._lastTableReadback.kind === 'layout' ? (t('pdf_audit.expert.table_readback_layout') || 'Table marked as layout') : (t('pdf_audit.expert.table_readback') || 'How this table now reads')}:</span> {pdfFixResult._lastTableReadback.text} <span className="opacity-80">{t('pdf_audit.expert.table_readback_hint') || 'Keep it if that’s right, or Revert below.'}</span>
+                            {pdfFixResult._lastTableReadback.content && pdfFixResult._lastTableReadback.content.checked && (
+                              <div className={'mt-0.5 font-bold ' + (pdfFixResult._lastTableReadback.content.preserved ? 'text-emerald-300' : 'text-red-300')}>
+                                {pdfFixResult._lastTableReadback.content.preserved
+                                  ? ('✓ No content lost — all ' + pdfFixResult._lastTableReadback.content.afterCount + ' cells preserved.')
+                                  : ('⚠ Content changed: ' + pdfFixResult._lastTableReadback.content.lost.length + ' cell(s) lost, ' + pdfFixResult._lastTableReadback.content.added.length + ' added — review or Revert.')}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {/* Revert is hidden while a reading overlay (Bionic / Line Guide) is active, since
+                            reverting past the command would also silently drop the overlay; it reappears
+                            cleanly once the overlay is toggled off (its own snapshot handles that undo). */}
+                        {pdfFixResult._preCmdHtml && !pdfFixResult._preBionicHtml && !pdfFixResult._preLineGuideHtml && (
+                          <button type="button" onClick={() => {
+                            setPdfFixResult(p => (p && p._preCmdHtml) ? ({ ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null, _lastTableReadback: null }) : p);
+                            setAgentActivityLog(prev => [...prev, { text: '↩ Reverted last command', type: 'info', time: new Date().toLocaleTimeString() }]);
+                            addToast(t('toasts.command_reverted') || 'Reverted the last command.', 'info');
+                          }}
+                            className="mt-1 w-full px-2 py-1 bg-slate-700 text-amber-200 text-[11px] font-bold rounded border border-amber-700/50 hover:bg-slate-600 transition-colors"
+                            title={t('pdf_audit.expert.revert_title') || 'Undo the last command and restore the document to its state before it ran'}
+                          >↩ {t('pdf_audit.expert.revert') || 'Revert last command'}</button>
+                        )}
                         {agentActivityLog.length > 0 && (
                           <div>
                             <div className={(agentLogFullView ? 'max-h-64' : 'max-h-20') + ' overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-atomic="true" aria-label={t('pdf_audit.expert.log_aria') || 'Agent activity log'}>
@@ -7127,11 +11883,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
                                 {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
                               </button>
+                              <button type="button" onClick={async () => {
+                                const text = agentActivityLog.map(e => ((e && e.time ? e.time + ' ' : '') + ((e && e.text) || ''))).join('\n');
+                                let ok = false;
+                                try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); ok = true; } } catch (_) { ok = false; }
+                                if (!ok) { try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.focus(); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (_) { ok = false; } }
+                                addToast(ok ? ('📋 Log copied (' + agentActivityLog.length + ' events)') : 'Could not copy — select the log text manually.', ok ? 'success' : 'error');
+                              }} className="text-[10px] text-cyan-300 hover:text-cyan-200 underline" title="Copy the full agent/pipeline log to the clipboard">📋 Copy log</button>
                               <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>
                             </div>
                           </div>
                         )}
-                        <p className="text-[11px] text-slate-400">Commands: <span className="text-slate-400">audit</span> · <span className="text-slate-400">auto</span> · <span className="text-slate-400">contrast</span> · or describe what to fix in plain language</p>
+                        <p className="text-[11px] text-slate-400">Commands: <span className="text-slate-400">audit</span> · <span className="text-slate-400">auto</span> · <span className="text-slate-400">contrast</span> · <span className="text-slate-400">rebuild table N: …</span> · or describe what to fix in plain language</p>
                         </div>
                       </details>
 
@@ -7329,14 +12092,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           setInputText(temp.textContent || temp.innerText || '');
                           _closePdfAuditModal();
                           addToast(t('toasts.content_loaded_generate_leveled_text'), 'success');
-                        }} className="w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center">
+                        }} disabled={pdfFixLoading || pdfAutoContinueRunning} className={'w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 transition-all flex items-center gap-2 justify-center ' + ((pdfFixLoading || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-100')} title={(pdfFixLoading || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : undefined}>
                           ✨ Full Differentiation Pipeline
                         </button>
 
                         <p className="text-[11px] text-violet-500">Translations and simplifications stack — add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.</p>
                       </div>
                       <div className="flex gap-2">
-                        {callTTS && !audioJob && <button data-help-key="pdf_audit_audio_download_btn" onClick={() => {
+                        {callTTS && !audioJob && <button id="allo-export-audio" data-help-key="pdf_audit_audio_download_btn" onClick={() => {
                           const fullText = _audioReadyText(pdfFixResult.accessibleHtml);
                           if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                           // Sentence-boundary segmentation (~600 chars/segment) — the
@@ -7361,7 +12124,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             voice, but announcing structure the way a screen
                             reader would — heading levels, list counts, table
                             rows, image alts. */}
-                        {callTTS && !audioJob && <button data-help-key="pdf_audit_audio_sr_btn" onClick={() => {
+                        {callTTS && !audioJob && <button id="allo-export-audio-sr" data-help-key="pdf_audit_audio_sr_btn" onClick={() => {
                           const srText = _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim();
                           if (!srText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                           const segments = [];
@@ -7455,7 +12218,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   langCode: _code,
                                   onProgress: (i, total) => setPdfTranslateProgress(i + '/' + total),
                                 });
-                                setPdfFixResult((prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                setPdfFixResult((prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
                                 addToast('🌐 ' + (t('toasts.translated_doc') || 'Document translated to ') + r.lang + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.translated_doc_partial') || ' sections kept the original text (structure check failed); review them in Compare.')) : (t('toasts.translated_doc_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.translated_doc_review') || 'AI translation: have a bilingual reviewer check before official use.'), r.chunksFailed > 0 ? 'info' : 'success');
                               } catch (e) {
                                 addToast((t('toasts.translate_failed') || 'Translation failed: ') + ((e && e.message) || 'unknown'), 'error');
@@ -7532,7 +12295,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               setPlainLangBusy(true);
                               try {
                                 const r = await simplifyAccessibleHtml(pdfFixResult.accessibleHtml, { gradeBand: plainLangLevel, onProgress: (i, total) => setPlainLangProgress(i + '/' + total) });
-                                setPdfFixResult((prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                setPdfFixResult((prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
                                 addToast('🪶 ' + (t('toasts.plain_done') || 'Plain-language version ready') + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.plain_partial') || ' sections kept the original text (structure check failed).')) : (t('toasts.plain_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.plain_review') || 'Wording simplified, facts kept; the original remains authoritative.'), r.chunksFailed > 0 ? 'info' : 'success');
                               } catch (e) {
                                 addToast((t('toasts.plain_failed') || 'Plain-language version failed: ') + ((e && e.message) || 'unknown'), 'error');
@@ -7781,12 +12544,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
           layers above the audit modal (z-[210] vs z-[200]) without nesting. */}
       {showCloseConfirm && (
         <div
-          className="fixed inset-0 z-[210] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          className="allo-docsuite fixed inset-0 z-[210] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
           role="dialog" aria-modal="true" aria-labelledby="pdf-close-confirm-title"
           onClick={(e) => { if (e.target === e.currentTarget) setShowCloseConfirm(false); }}
           onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowCloseConfirm(false); } }}
           tabIndex={-1}
-          ref={(el) => { if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
+          ref={closeConfirmTrapRef} /* M23: shared Tab trap; the hook focuses the first button and restores focus on close */
         >
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-2 border-amber-300">
             <h3 id="pdf-close-confirm-title" className="text-lg font-bold text-slate-800 mb-2">{t('pdf_audit.close_confirm.title') || 'Close without saving?'}</h3>
@@ -7828,7 +12591,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
       {/* ═══ PDF Preview & Edit Modal ═══ */}
       {pdfPreviewOpen && pdfFixResult && (
-        <div className="fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label={t('pdf_audit.preview.modal_aria') || 'Accessible document preview and editor'}>
+        <div className="allo-docsuite fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label={t('pdf_audit.preview.modal_aria') || 'Accessible document preview and editor'}
+          ref={pdfPreviewTrapRef} tabIndex={-1}
+          onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setPdfPreviewOpen(false); } }}>
           <div className="flex flex-1 m-4 gap-0 animate-in fade-in duration-200">
             {/* Left panel: controls */}
             <div className="w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0">
@@ -7839,6 +12604,159 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </button>
               </div>
               <p className="text-[11px] text-slate-600">{t('pdf_audit.preview.edit_hint') || 'Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.'}</p>
+
+              {/* Tag this edited document directly from the builder (2026-06-14):
+                  previously you had to close this modal and hunt for the Tagged
+                  PDF button on the results screen. This force-syncs the CURRENT
+                  edits into accessibleHtml, closes the modal, and triggers the
+                  same gated tagged-PDF flow (which surfaces its report/gate on
+                  the results screen). */}
+              <button
+                onClick={() => {
+                  try { const _h = (typeof getPdfPreviewHtml === 'function') ? getPdfPreviewHtml() : ''; if (_h) setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: _h, _userEditedAt: Date.now() } : prev); } catch (_) {}
+                  setPdfPreviewOpen(false);
+                  // let the state sync + modal close settle, then trigger the real (gated) flow
+                  setTimeout(() => { try { const b = document.getElementById('allo-tagged-pdf-btn'); if (b) b.click(); else { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {} }, 220);
+                }}
+                className="w-full px-3 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                title={t('pdf_audit.preview.tag_now_title') || 'Generate an accessible tagged PDF from your current edits — preserves the original layout and injects the structure tree. Runs the same verified, gated flow as the Tagged PDF button on the results screen.'}>
+                📄 {t('pdf_audit.preview.tag_now') || 'Generate Tagged PDF'}
+              </button>
+
+              {/* ── Writing check (Harper — local grammar, suggestions-only) ──
+                  Top of the editor controls so it's easy to find; browser native
+                  spellcheck (red squiggles) is already on in the preview. */}
+              {(() => {
+                const wc = writingCheck;
+                const _leafBlocks = () => {
+                  const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+                  if (!doc || !doc.body) return null;
+                  return Array.from(doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote'))
+                    .filter((el) => !el.closest('section[data-content-recovery="true"]'))
+                    .filter((el) => !el.closest('[contenteditable="false"]'))
+                    .filter((el) => !el.querySelector('p,li,td,th,blockquote'))
+                    .filter((el) => (el.textContent || '').trim().length >= 3);
+                };
+                const runWritingCheck = async () => {
+                  // Harper is English-only (2026-06-14). If the document declares a
+                  // non-English language, don't lint it — and don't download the
+                  // ~10 MB WASM — because every word would come back as a false
+                  // "error", flooding the panel and eroding trust on exactly the
+                  // multilingual surface AlloFlow leans on. An empty/missing lang
+                  // is treated as English (conservative; no false block).
+                  const _docLang = (() => { try { const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument; return (d && d.documentElement && (d.documentElement.getAttribute('lang') || '').toLowerCase()) || ''; } catch (_) { return ''; } })();
+                  if (_docLang && _docLang.split('-')[0] !== 'en') {
+                    setWritingCheck({ status: 'error', error: (t('export_preview.writing.non_english') || ('Writing Check is English-only — this document is set to language "' + _docLang + '". Your browser still underlines spelling as you type.')) });
+                    return;
+                  }
+                  setWritingCheck({ status: 'loading' });
+                  try {
+                    const linter = await _ensurePdfHarper();
+                    const blocks = _leafBlocks();
+                    if (!blocks) { setWritingCheck({ status: 'error', error: t('export_preview.writing.no_preview') || 'Preview not ready — wait for it to render.' }); return; }
+                    const items = []; let capped = false;
+                    for (let bi = 0; bi < blocks.length; bi++) {
+                      if (items.length >= 150) { capped = true; break; }
+                      const text = blocks[bi].textContent || '';
+                      let lints = [];
+                      try { lints = await linter.lint(text); } catch (_) { continue; }
+                      for (const l of lints) {
+                        try {
+                          const span = l.span();
+                          const sugg = (l.suggestions ? l.suggestions() : []).map((s) => (s.get_replacement_text ? s.get_replacement_text() : '')).filter(Boolean).slice(0, 3);
+                          items.push({ blockIndex: bi, message: l.message ? l.message() : 'Possible issue', start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? '…' : '') + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? '…' : ''), suggestions: sugg });
+                        } catch (_) {}
+                        if (items.length >= 150) { capped = true; break; }
+                      }
+                    }
+                    setWritingCheck({ status: 'done', items, capped });
+                  } catch (e) { setWritingCheck({ status: 'error', error: ((e && e.message) || 'The checker failed to load — check the network and try again.').slice(0, 180) }); }
+                };
+                const _locate = (item, outline) => {
+                  const blocks = _leafBlocks();
+                  const el = blocks && blocks[item.blockIndex];
+                  if (!el) return null;
+                  try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (outline) { el.style.outline = '3px solid #f59e0b'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (_) {} }, 2200); } } catch (_) {}
+                  return el;
+                };
+                const _apply = (item, replacement) => {
+                  try {
+                    const el = _locate(item, false);
+                    const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+                    if (!el || !doc) { addToast(t('toasts.writing_block_gone') || 'That block is no longer in the preview — re-run the check.', 'info'); return; }
+                    const cur = el.textContent || '';
+                    if (cur.slice(item.start, item.end) !== item.bad) { addToast(t('toasts.writing_text_shifted') || 'The text changed since this check ran — re-run the check to apply safely.', 'info'); return; }
+                    const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+                    let node, off = 0, hit = null;
+                    while ((node = walker.nextNode())) { const len = node.textContent.length; if (item.start >= off && item.end <= off + len) { hit = { node, local: item.start - off }; break; } off += len; }
+                    if (!hit) { _locate(item, true); addToast(t('toasts.writing_spans_markup') || 'This suggestion spans formatting (a link or bold text) — fix it by hand at the highlighted spot.', 'info'); return; }
+                    const _badLen = item.end - item.start;
+                    // Apply via the editable doc's insertText so the browser's NATIVE undo stack (and
+                    // the toolbar Undo) can reverse it — a raw textContent assignment is not recorded,
+                    // which is why Undo didn't work. Fall back to a direct write if execCommand can't run.
+                    let _ok = false;
+                    try {
+                      const _range = doc.createRange();
+                      _range.setStart(hit.node, hit.local);
+                      _range.setEnd(hit.node, hit.local + _badLen);
+                      const _sel = (doc.defaultView || window).getSelection();
+                      _sel.removeAllRanges(); _sel.addRange(_range);
+                      _ok = doc.execCommand('insertText', false, replacement);
+                    } catch (_) { _ok = false; }
+                    if (!_ok) { const raw = hit.node.textContent; hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + _badLen); }
+                    try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
+                    try { if (typeof window.__alloflowOnPdfPreviewMutated === 'function') window.__alloflowOnPdfPreviewMutated(); } catch (_) {}
+                    // Drop the applied card AND keep the OTHER suggestions valid: the edit shifts every
+                    // later offset in the SAME block by (replacement − bad) length and invalidates any
+                    // that overlap it. Without this, sibling cards' frozen offsets drifted so every later
+                    // Apply false-tripped the "text changed" guard (the reported bug).
+                    const _delta = replacement.length - _badLen;
+                    setWritingCheck((p) => {
+                      if (!p || !p.items) return p;
+                      const items = p.items.filter((x) => x !== item).map((x) => {
+                        if (x.blockIndex !== item.blockIndex || x.end <= item.start) return x;
+                        if (x.start >= item.end) return { ...x, start: x.start + _delta, end: x.end + _delta };
+                        return null; // overlaps the edit → offsets no longer valid
+                      }).filter(Boolean);
+                      return { ...p, items };
+                    });
+                    addToast('✓ "' + item.bad + '" → "' + replacement + '"', 'success');
+                  } catch (e) { addToast('Apply failed: ' + ((e && e.message) || 'error'), 'error'); }
+                };
+                const _dismiss = (item) => { setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p); };
+                return (
+                  <div className="bg-teal-50/60 border border-teal-300 rounded-lg p-2">
+                    <div className="text-[11px] font-bold text-teal-800 uppercase mb-1.5">📝 {t('export_preview.writing.heading') || 'Writing Check'}</div>
+                    <button onClick={runWritingCheck} data-help-key="pdf_audit_writing_check_btn" disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
+                      {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check grammar (English)')}
+                    </button>
+                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the checker is a ~10 MB download on first use (instant once loaded). Spelling is underlined by your browser as you type.'}</p>
+                    <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This wording comes from the source document — apply grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
+                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.spell_hint') || '💡 To fix a spelling underline, right-click the word in the preview — your browser lists corrections.'}</p>
+                    {wc && wc.status === 'error' && <div className="mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5">{wc.error}</div>}
+                    {wc && wc.status === 'done' && wc.items.length === 0 && <div className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No grammar suggestions found.'}</div>}
+                    {wc && wc.status === 'done' && wc.items.length > 0 && (
+                      <div className="mt-1.5 space-y-1.5 max-h-64 overflow-y-auto">
+                        <div className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>
+                        {wc.items.map((item, ii) => (
+                          <div key={ii} className="bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]">
+                            <button onClick={() => _locate(item, true)} className="text-left w-full hover:underline" title={t('export_preview.writing.locate_title') || 'Scroll the preview to this spot'}>
+                              <span className="text-slate-700">{item.message}</span>
+                              <span className="block text-slate-500 italic mt-0.5">{item.snippet}</span>
+                            </button>
+                            <div className="flex gap-1 mt-1 flex-wrap items-center">
+                              {item.suggestions.map((s, si) => (
+                                <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || '(remove)'}</button>
+                              ))}
+                              <button onClick={() => _dismiss(item)} className="px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto" title={t('export_preview.writing.keep_title') || 'Keep the original wording and dismiss this suggestion'}>✓ {t('export_preview.writing.keep') || 'Keep as-is'}</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Style Seed picker — WCAG-validated styling */}
               <div>
@@ -8166,7 +13084,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       if (textInput) textInput.value = '';
                       addToast(t('toasts.word_art_inserted'), 'success');
                     }}
-                    className="w-full px-3 py-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
+                    className="w-full px-3 py-2 bg-gradient-to-r from-amber-800 to-rose-800 hover:from-amber-900 hover:to-rose-900 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
                   >✨ Insert Word Art</button>
                 </div>
               </details>
@@ -8175,6 +13093,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
               <button onClick={() => { const next = !pdfPreviewA11yInspect; setPdfPreviewA11yInspect(next); setTimeout(() => updatePdfPreview(undefined, undefined, next), 50); }}
                 className={`w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${pdfPreviewA11yInspect ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-slate-200 text-slate-600 hover:border-violet-300'}`}>
                 🔍 A11y Inspect {pdfPreviewA11yInspect ? 'ON' : 'OFF'}
+              </button>
+              {/* S1 region-select arm (2026-06-23): drag a box over the preview to scope an AI edit to one block */}
+              <button onClick={() => setRegionArmed((v) => !v)}
+                aria-pressed={_regionArmed}
+                title={t('pdf_audit.region.arm_title') || 'Drag a box over the preview to pick a block, then describe a change the AI applies to ONLY that region (bounded — accept or revert).'}
+                className={`w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${_regionArmed ? 'bg-indigo-100 border-indigo-400 text-indigo-800' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
+                ▭ {_regionArmed ? (t('pdf_audit.region.arm_on') || 'Drawing — drag a box') : (t('pdf_audit.region.arm_off') || 'Select a region')}
               </button>
               {pdfPreviewA11yInspect && (
                 <div className="text-[11px] text-slate-600 space-y-0.5 bg-slate-50 rounded-lg p-2">
@@ -8274,7 +13199,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         const revoke = () => { try { URL.revokeObjectURL(url); } catch(_) {} };
                         audio.addEventListener('ended', revoke);
                         audio.addEventListener('error', revoke);
-                        audio.play().catch(() => {});
+                        // C2 (2026-06-28): if play() rejects (autoplay-blocked/muted) neither 'ended' nor 'error' fires,
+                        // so the blob URL + listeners leaked. Revoke on the rejection + a timeout backstop.
+                        audio.play().catch(() => { revoke(); });
+                        setTimeout(revoke, 120000);
                       }).catch(() => {});
                     }
                   }
@@ -8382,7 +13310,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           base64 = img.src.split(',')[1];
                         } else {
                           try {
-                            const resp = await fetch(img.src);
+                            const resp = await _withTimeout(fetch(img.src), 20000, 'image fetch');
                             const blob = await resp.blob();
                             base64 = await new Promise((resolve, reject) => {
                               const fr = new FileReader();
@@ -8791,6 +13719,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           if (block) {
                             const type = block.getAttribute('data-allo-block') || 'block';
                             block.remove();
+                            try { _alloRenumberFootnotes(doc); } catch (_) {} // a footnote ref may have ridden inside the removed block
                             announce('Removed ' + type + ' block');
                             persist();
                           }
@@ -8807,6 +13736,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           while (prev && (prev.tagName === 'SPAN' || prev.id === 'allo-blocks-live')) prev = prev.previousElementSibling;
                           if (prev && block.parentNode) {
                             block.parentNode.insertBefore(block, prev);
+                            try { _alloRenumberFootnotes(doc); } catch (_) {} // reorder may change footnote ref order → renumber
                             announce('Moved up');
                             setTimeout(() => { try { block.focus(); } catch (_) {} }, 30);
                             persist();
@@ -8824,6 +13754,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           while (next && (next.tagName === 'SPAN' || next.id === 'allo-blocks-live')) next = next.nextElementSibling;
                           if (next && block.parentNode) {
                             block.parentNode.insertBefore(next, block);
+                            try { _alloRenumberFootnotes(doc); } catch (_) {} // reorder may change footnote ref order → renumber
                             announce('Moved down');
                             setTimeout(() => { try { block.focus(); } catch (_) {} }, 30);
                             persist();
@@ -8963,6 +13894,28 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         const block = ctrlBtn.closest('[data-allo-block]');
                         if (!block) return;
                         const isRubric = block.classList.contains('allo-block-rubric');
+                        // ── References block (2026-06-14, A5): add an entry + sort A–Z ──
+                        // APA-7 / MLA-9 require alphabetized reference lists. Sort is by the
+                        // teacher's TYPED text only — it never invents or rewrites a citation.
+                        if (action === 'ref-add-entry' || action === 'ref-sort') {
+                          if (block.classList.contains('allo-references')) {
+                            const _ctrls = block.querySelector('.allo-block-controls');
+                            if (action === 'ref-add-entry') {
+                              const _e = doc.createElement('p');
+                              _e.className = 'allo-ref-entry';
+                              _e.setAttribute('contenteditable', 'true');
+                              _e.textContent = 'Author, A. A. (Year). Title of the work. Source.';
+                              block.insertBefore(_e, _ctrls);
+                              setTimeout(() => { try { _e.focus(); doc.getSelection().selectAllChildren(_e); } catch (_) {} }, 40);
+                            } else {
+                              const _entries = Array.from(block.querySelectorAll('.allo-ref-entry'));
+                              _entries.sort((a, b) => (a.textContent || '').trim().localeCompare((b.textContent || '').trim(), undefined, { sensitivity: 'base' }));
+                              _entries.forEach((e) => block.insertBefore(e, _ctrls));
+                            }
+                            persist();
+                          }
+                          return;
+                        }
                         // ── Structural: rows / cols / items / steps ──
                         if (action === 'add-row') {
                           const tbody = block.querySelector('tbody');
@@ -9180,6 +14133,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       doc.addEventListener('input', (ev) => {
                         const t = ev.target;
                         if (!t) return;
+                        // Footnote integrity (2026-06-13): a contenteditable edit may
+                        // delete a superscript anchor. Re-sync numbering + prune the
+                        // orphaned note — but ONLY when ref/note counts diverge, so
+                        // typing inside a note never triggers a reorder that would
+                        // disrupt the caret.
+                        try {
+                          const _fnSec = doc.querySelector('section.allo-footnotes');
+                          if (_fnSec) {
+                            const _refN = doc.querySelectorAll('sup.allo-fn-ref').length;
+                            const _noteN = _fnSec.querySelectorAll('ol > li[data-fn-uid]').length;
+                            if (_refN !== _noteN) { _alloRenumberFootnotes(doc); persist(); }
+                          }
+                        } catch (_) {}
                         // Math LaTeX live-render
                         if (t.classList && t.classList.contains('allo-math-input')) {
                           const block = t.closest('.allo-block-math');
@@ -9461,51 +14427,51 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       { label: 'Columns', icon: '⬛⬛', category: 'layout', keywords: 'columns grid layout split',
                         html: '<div class="allo-block allo-block-columns" data-allo-block="columns" tabindex="0" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove columns" title="Remove">×</button><div class="allo-col">Column 1 content</div><div class="allo-col">Column 2 content</div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Cols</span><button type="button" data-action="add-column-card" aria-label="Add column">+ Col</button><button type="button" data-action="remove-column-card" aria-label="Remove column">− Col</button><span class="allo-control-label">Ratio</span><button type="button" data-action="cols-ratio-equal" aria-pressed="true">Equal</button><button type="button" data-action="cols-ratio-2-1" aria-pressed="false">2:1</button><button type="button" data-action="cols-ratio-1-2" aria-pressed="false">1:2</button><span class="allo-control-label">Gap</span><button type="button" data-action="cols-gap-tight">Tight</button><button type="button" data-action="cols-gap-normal" aria-pressed="true">Normal</button><button type="button" data-action="cols-gap-wide">Wide</button></div></div>' },
                       { label: 'Divider', icon: '➖', category: 'layout', keywords: 'divider hr separator line',
-                        html: '<div class="allo-block allo-block-divider" data-allo-block="divider" tabindex="0" role="separator" aria-label={t("audit.section_divider")}><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_divider")} title="Remove">×</button><hr /></div>' },
+                        html: '<div class="allo-block allo-block-divider" data-allo-block="divider" tabindex="0" role="separator" aria-label="Section divider"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove divider" title="Remove">×</button><hr /></div>' },
                       { label: 'Page Break', icon: '📄', category: 'layout', keywords: 'page break print pagination',
-                        html: '<div class="allo-block allo-block-pagebreak" data-allo-block="pagebreak" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_page_break")} title="Remove">×</button><span class="allo-pb-label" aria-hidden="true">— Page Break —</span><span class="allo-sr-only">Page break</span></div>' },
+                        html: '<div class="allo-block allo-block-pagebreak" data-allo-block="pagebreak" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove page break" title="Remove">×</button><span class="allo-pb-label" aria-hidden="true">— Page Break —</span><span class="allo-sr-only">Page break</span></div>' },
 
                       // ── Content ──
                       { label: 'Callout', icon: 'ℹ️', category: 'content', keywords: 'info note warning success callout alert tip',
-                        html: '<div class="allo-block allo-callout allo-callout-info" data-allo-block="info" data-allo-style="info" tabindex="0" role="note" aria-label={t("audit.callout")}><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_callout")} title="Remove">×</button><strong>Note:</strong> <span>Enter info here</span><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Style</span><button type="button" data-action="callout-style-info" aria-pressed="true">Info</button><button type="button" data-action="callout-style-warning" aria-pressed="false">Warning</button><button type="button" data-action="callout-style-success" aria-pressed="false">Tip</button><button type="button" data-action="callout-style-note" aria-pressed="false">Note</button><button type="button" data-action="callout-style-danger" aria-pressed="false">Danger</button></div></div>' },
+                        html: '<div class="allo-block allo-callout allo-callout-info" data-allo-block="info" data-allo-style="info" tabindex="0" role="note" aria-label="Callout"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove callout" title="Remove">×</button><strong>Note:</strong> <span>Enter info here</span><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Style</span><button type="button" data-action="callout-style-info" aria-pressed="true">Info</button><button type="button" data-action="callout-style-warning" aria-pressed="false">Warning</button><button type="button" data-action="callout-style-success" aria-pressed="false">Tip</button><button type="button" data-action="callout-style-note" aria-pressed="false">Note</button><button type="button" data-action="callout-style-danger" aria-pressed="false">Danger</button></div></div>' },
                       { label: 'Quote', icon: '💬', category: 'content', keywords: 'quote blockquote cite',
-                        html: '<blockquote class="allo-block allo-block-quote" data-allo-block="quote" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_quote")} title="Remove">×</button>"Enter quote here"<cite>— Source</cite></blockquote>' },
+                        html: '<blockquote class="allo-block allo-block-quote" data-allo-block="quote" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove quote" title="Remove">×</button>"Enter quote here"<cite>— Source</cite></blockquote>' },
                       { label: 'Checklist', icon: '☑️', category: 'content', keywords: 'checklist list tasks todo',
-                        html: (() => { const a = _uid('cl'), b = _uid('cl'), c = _uid('cl'); return '<div class="allo-block" data-allo-block="checklist" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_checklist")} title="Remove">×</button><ul class="allo-block-checklist" data-list-style="checkbox" aria-label={t("audit.checklist")}><li><input type="checkbox" id="' + a + '" /><label for="' + a + '">Task item 1</label></li><li><input type="checkbox" id="' + b + '" /><label for="' + b + '">Task item 2</label></li><li><input type="checkbox" id="' + c + '" /><label for="' + c + '">Task item 3</label></li></ul><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Items</span><button type="button" data-action="add-checklist-item">+ Item</button><button type="button" data-action="remove-checklist-item">− Item</button><span class="allo-control-label">Style</span><button type="button" data-action="list-style-checkbox" aria-pressed="true">☑ Check</button><button type="button" data-action="list-style-bullet" aria-pressed="false">• Bullet</button><button type="button" data-action="list-style-ordered" aria-pressed="false">1. Number</button></div></div>'; }) },
+                        html: (() => { const a = _uid('cl'), b = _uid('cl'), c = _uid('cl'); return '<div class="allo-block" data-allo-block="checklist" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove checklist" title="Remove">×</button><ul class="allo-block-checklist" data-list-style="checkbox" aria-label="Checklist"><li><input type="checkbox" id="' + a + '" /><label for="' + a + '">Task item 1</label></li><li><input type="checkbox" id="' + b + '" /><label for="' + b + '">Task item 2</label></li><li><input type="checkbox" id="' + c + '" /><label for="' + c + '">Task item 3</label></li></ul><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Items</span><button type="button" data-action="add-checklist-item">+ Item</button><button type="button" data-action="remove-checklist-item">− Item</button><span class="allo-control-label">Style</span><button type="button" data-action="list-style-checkbox" aria-pressed="true">☑ Check</button><button type="button" data-action="list-style-bullet" aria-pressed="false">• Bullet</button><button type="button" data-action="list-style-ordered" aria-pressed="false">1. Number</button></div></div>'; }) },
                       { label: 'Numbered Steps', icon: '1️⃣', category: 'content', keywords: 'steps numbered ordered procedure how-to',
-                        html: '<div class="allo-block" data-allo-block="steps" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_steps")} title="Remove">×</button><ol class="allo-block-steps" data-num-style="numeric" aria-label={t("audit.step_by_step")}><li><span class="allo-step-num" aria-hidden="true">1</span><div class="allo-step-body">First step description</div></li><li><span class="allo-step-num" aria-hidden="true">2</span><div class="allo-step-body">Second step description</div></li><li><span class="allo-step-num" aria-hidden="true">3</span><div class="allo-step-body">Third step description</div></li></ol><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Steps</span><button type="button" data-action="add-step">+ Step</button><button type="button" data-action="remove-step">− Step</button><span class="allo-control-label">Numbering</span><button type="button" data-action="num-style-numeric" aria-pressed="true">1, 2, 3</button><button type="button" data-action="num-style-alpha" aria-pressed="false">A, B, C</button><button type="button" data-action="num-style-roman" aria-pressed="false">I, II, III</button></div></div>' },
+                        html: '<div class="allo-block" data-allo-block="steps" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove steps" title="Remove">×</button><ol class="allo-block-steps" data-num-style="numeric" aria-label="Step-by-step instructions"><li><span class="allo-step-num" aria-hidden="true">1</span><div class="allo-step-body">First step description</div></li><li><span class="allo-step-num" aria-hidden="true">2</span><div class="allo-step-body">Second step description</div></li><li><span class="allo-step-num" aria-hidden="true">3</span><div class="allo-step-body">Third step description</div></li></ol><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Steps</span><button type="button" data-action="add-step">+ Step</button><button type="button" data-action="remove-step">− Step</button><span class="allo-control-label">Numbering</span><button type="button" data-action="num-style-numeric" aria-pressed="true">1, 2, 3</button><button type="button" data-action="num-style-alpha" aria-pressed="false">A, B, C</button><button type="button" data-action="num-style-roman" aria-pressed="false">I, II, III</button></div></div>' },
                       { label: 'Accordion', icon: '📂', category: 'content', keywords: 'accordion collapsible expand toggle disclosure',
-                        html: '<details class="allo-block allo-block-accordion" data-allo-block="accordion" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_accordion")} title="Remove">×</button><summary>Click to expand section title</summary><div class="allo-accordion-body">Hidden content goes here. Great for differentiation. <em>Note: collapsed content does not appear in printed/exported PDFs unless expanded.</em><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Default</span><button type="button" data-action="accordion-default-open" aria-pressed="false">Open by default</button></div></div></details>' },
+                        html: '<details class="allo-block allo-block-accordion" data-allo-block="accordion" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove accordion" title="Remove">×</button><summary>Click to expand section title</summary><div class="allo-accordion-body">Hidden content goes here. Great for differentiation. <em>Note: collapsed content does not appear in printed/exported PDFs unless expanded.</em><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Default</span><button type="button" data-action="accordion-default-open" aria-pressed="false">Open by default</button></div></div></details>' },
                       { label: 'Q & A', icon: '❓', category: 'content', keywords: 'qa question answer faq study',
-                        html: '<div class="allo-block allo-block-qa" data-allo-block="qa" tabindex="0" role="group" aria-label={t("audit.qa_pair")}><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_qa")} title="Remove">×</button><div class="allo-qa-question"><strong>Q:</strong> Type the question here.</div><div class="allo-qa-answer"><strong>A:</strong> Type the answer here.</div></div>' },
+                        html: '<div class="allo-block allo-block-qa" data-allo-block="qa" tabindex="0" role="group" aria-label="Question and answer"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove question and answer" title="Remove">×</button><div class="allo-qa-question"><strong>Q:</strong> Type the question here.</div><div class="allo-qa-answer"><strong>A:</strong> Type the answer here.</div></div>' },
                       { label: 'Definition', icon: '📖', category: 'content', keywords: 'definition term vocabulary glossary',
-                        html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_definition")} title="Remove">×</button><dt><span lang="en">Term</span><span class="allo-def-pron">/prə-nun-see-AY-shun/</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd><div class="allo-def-audio"><audio controls aria-label={t("audit.pronunciation_audio")}></audio></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Term Lang</span><select class="allo-def-lang-select" aria-label={t("audit.term_language")}><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="zh">中文</option><option value="ar">العربية</option><option value="la">Latin</option><option value="grc">Greek</option></select><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-def-audio-input" style="display:none" /></label><button type="button" class="allo-def-tts-btn" aria-label={t("audit.gen_pronunciation_term")} title="Generate pronunciation from the term">🎤 TTS</button></div></dl>' },
+                        html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">×</button><dt><span lang="en">Term</span><span class="allo-def-pron">/prə-nun-see-AY-shun/</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd><div class="allo-def-audio"><audio controls aria-label="Pronunciation audio"></audio></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Term Lang</span><select class="allo-def-lang-select" aria-label="Term language"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="zh">中文</option><option value="ar">العربية</option><option value="la">Latin</option><option value="grc">Greek</option></select><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-def-audio-input" style="display:none" /></label><button type="button" class="allo-def-tts-btn" aria-label="Generate pronunciation from the term" title="Generate pronunciation from the term">🎤 TTS</button></div></dl>' },
 
                       // ── Educational ──
                       { label: 'Sentence Frame', icon: '🪧', category: 'educational', keywords: 'sentence frame stem scaffold ell esl',
-                        html: '<div class="allo-block allo-block-frame" data-allo-block="sentence-frame" tabindex="0" role="note" aria-label={t("audit.sentence_frame")}><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_sentence_frame")} title="Remove">×</button>I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.<div class="allo-block-controls allo-frame-template-picker" contenteditable="false"><span class="allo-control-label">Template</span><select class="allo-frame-template-select" aria-label={t("audit.sentence_frame_template")}><option value="notice-because">I noticed ___ because ___</option><option value="cer">Claim / Evidence / Reasoning</option><option value="agree-disagree">I agree/disagree because ___</option><option value="compare">Compare and contrast</option><option value="cause-effect">When ___, then ___</option><option value="wonder">I wonder why ___</option><option value="sel-feeling">I feel ___ when ___</option><option value="add-on">Adding to what ___ said</option></select></div></div>' },
+                        html: '<div class="allo-block allo-block-frame" data-allo-block="sentence-frame" tabindex="0" role="note" aria-label="Sentence frame"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove sentence frame" title="Remove">×</button>I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.<div class="allo-block-controls allo-frame-template-picker" contenteditable="false"><span class="allo-control-label">Template</span><select class="allo-frame-template-select" aria-label="Sentence frame template"><option value="notice-because">I noticed ___ because ___</option><option value="cer">Claim / Evidence / Reasoning</option><option value="agree-disagree">I agree/disagree because ___</option><option value="compare">Compare and contrast</option><option value="cause-effect">When ___, then ___</option><option value="wonder">I wonder why ___</option><option value="sel-feeling">I feel ___ when ___</option><option value="add-on">Adding to what ___ said</option></select></div></div>' },
                       { label: 'Objective', icon: '🎯', category: 'educational', keywords: 'learning objective goal standard outcome',
-                        html: '<div class="allo-block allo-block-objective" data-allo-block="learning-objective" tabindex="0" role="note" aria-label={t("audit.learning_objective")}><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_learning_objective")} title="Remove">×</button><span class="allo-obj-label">Learning Objective</span><div class="allo-obj-text">By the end of this lesson, students will be able to <em>explain the main idea</em>.</div><div class="allo-obj-meta"><span>Standard: <em>edit me</em></span><span>Bloom\'s: <em>Apply</em></span></div></div>' },
+                        html: '<div class="allo-block allo-block-objective" data-allo-block="learning-objective" tabindex="0" role="note" aria-label="Learning objective"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove learning objective" title="Remove">×</button><span class="allo-obj-label">Learning Objective</span><div class="allo-obj-text">By the end of this lesson, students will be able to <em>explain the main idea</em>.</div><div class="allo-obj-meta"><span>Standard: <em>edit me</em></span><span>Bloom\'s: <em>Apply</em></span></div></div>' },
                       { label: 'Vocab Card', icon: '🃏', category: 'educational', keywords: 'vocabulary card word term definition',
-                        html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_vocab_card")} title="Remove">×</button><div class="allo-vocab-img" aria-hidden="true">📖</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-pron">/wərd/</p><div class="allo-vocab-examples"><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div><div class="allo-vocab-audio"><audio controls aria-label={t("audit.pronunciation_audio")}></audio></div></div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Image</span><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-vocab-img-input" style="display:none" /></label><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-vocab-audio-input" style="display:none" /></label><button type="button" class="allo-vocab-tts-btn" aria-label={t("audit.gen_pronunciation_word")} title="Generate pronunciation from the word">🎤 TTS</button><span class="allo-control-label">Examples</span><button type="button" data-action="add-vocab-example">+ Example</button><button type="button" data-action="remove-vocab-example">− Example</button></div></div>' },
+                        html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">×</button><div class="allo-vocab-img" aria-hidden="true">📖</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-pron">/wərd/</p><div class="allo-vocab-examples"><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div><div class="allo-vocab-audio"><audio controls aria-label="Pronunciation audio"></audio></div></div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Image</span><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-vocab-img-input" style="display:none" /></label><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-vocab-audio-input" style="display:none" /></label><button type="button" class="allo-vocab-tts-btn" aria-label="Generate pronunciation from the word" title="Generate pronunciation from the word">🎤 TTS</button><span class="allo-control-label">Examples</span><button type="button" data-action="add-vocab-example">+ Example</button><button type="button" data-action="remove-vocab-example">− Example</button></div></div>' },
                       { label: 'Reflection', icon: '✏️', category: 'educational', keywords: 'reflection journal response writing prompt',
-                        html: '<div class="allo-block allo-block-reflection" data-allo-block="reflection" data-length="medium" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_reflection")} title="Remove">×</button><div class="allo-refl-prompt">Reflect: What did you learn? What questions do you still have?</div><div class="allo-refl-stems">Try starting with: "I learned..." • "I\'m wondering..." • "This connects to..."</div><textarea class="allo-refl-area" aria-label={t("audit.reflection_response_aria")} placeholder={t("placeholders.reflection_response")}></textarea><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Length</span><button type="button" data-action="refl-length-short" aria-pressed="false">Short</button><button type="button" data-action="refl-length-medium" aria-pressed="true">Medium</button><button type="button" data-action="refl-length-long" aria-pressed="false">Long</button></div></div>' },
+                        html: '<div class="allo-block allo-block-reflection" data-allo-block="reflection" data-length="medium" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove reflection" title="Remove">×</button><div class="allo-refl-prompt">Reflect: What did you learn? What questions do you still have?</div><div class="allo-refl-stems">Try starting with: "I learned..." • "I\'m wondering..." • "This connects to..."</div><textarea class="allo-refl-area" aria-label="Reflection response" placeholder="Write your reflection here…"></textarea><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Length</span><button type="button" data-action="refl-length-short" aria-pressed="false">Short</button><button type="button" data-action="refl-length-medium" aria-pressed="true">Medium</button><button type="button" data-action="refl-length-long" aria-pressed="false">Long</button></div></div>' },
                       { label: 'Rubric', icon: '📋', category: 'educational', keywords: 'rubric grading criteria scoring assessment',
-                        html: '<div class="allo-block allo-block-rubric" data-allo-block="rubric" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_rubric")} title="Remove">×</button><table aria-label={t("audit.scoring_rubric")}><caption>Rubric Title — Edit Me</caption><thead><tr><th scope="col">Criterion</th><th scope="col">4 — Exemplary</th><th scope="col">3 — Proficient</th><th scope="col">2 — Developing</th><th scope="col">1 — Beginning</th></tr></thead><tbody><tr><th scope="row">Criterion 1</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 2</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 3</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 4</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr></tbody></table><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Scale</span><button type="button" data-action="rubric-scale-3pt">3-pt</button><button type="button" data-action="rubric-scale-4pt" aria-pressed="true">4-pt</button><button type="button" data-action="rubric-scale-5pt">5-pt</button><button type="button" data-action="rubric-scale-standards">Standards</button><button type="button" data-action="rubric-scale-ungraded">Glow/Grow</button><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Criterion</button><button type="button" data-action="remove-row">− Criterion</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Level</button><button type="button" data-action="remove-col">− Level</button></div></div>' },
+                        html: '<div class="allo-block allo-block-rubric" data-allo-block="rubric" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove rubric" title="Remove">×</button><table aria-label="Scoring rubric"><caption>Rubric Title — Edit Me</caption><thead><tr><th scope="col">Criterion</th><th scope="col">4 — Exemplary</th><th scope="col">3 — Proficient</th><th scope="col">2 — Developing</th><th scope="col">1 — Beginning</th></tr></thead><tbody><tr><th scope="row">Criterion 1</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 2</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 3</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 4</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr></tbody></table><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Scale</span><button type="button" data-action="rubric-scale-3pt">3-pt</button><button type="button" data-action="rubric-scale-4pt" aria-pressed="true">4-pt</button><button type="button" data-action="rubric-scale-5pt">5-pt</button><button type="button" data-action="rubric-scale-standards">Standards</button><button type="button" data-action="rubric-scale-ungraded">Glow/Grow</button><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Criterion</button><button type="button" data-action="remove-row">− Criterion</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Level</button><button type="button" data-action="remove-col">− Level</button></div></div>' },
                       { label: 'Lesson Plan', icon: '📘', category: 'educational', keywords: 'lesson plan template udl objective standards materials assessment',
-                        html: '<section class="allo-block allo-block-lesson" data-allo-block="lesson-plan" tabindex="0" aria-label={t("audit.lesson_plan_template")}><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_lesson_plan")} title="Remove">×</button><h2 class="allo-lesson-title">Lesson Plan: <em>Click to edit title</em></h2><div class="allo-lesson-meta">Grade: <em>3</em> · Subject: <em>Math</em> · Duration: <em>50 min</em> · Date: <em>edit</em></div><div class="allo-lesson-section"><h3>🎯 Learning Objective</h3><p>By the end of this lesson, students will be able to <em>(use measurable verb: explain, identify, solve, create…)</em>.</p></div><div class="allo-lesson-section"><h3>📚 Standards</h3><ul><li>CCSS / NGSS / state standard reference here</li></ul></div><div class="allo-lesson-section"><h3>📦 Materials</h3><ul><li>Material 1</li><li>Material 2</li></ul></div><div class="allo-lesson-section"><h3>📖 Direct Instruction <em class="allo-lesson-time">(10 min)</em></h3><p>Teacher modeling, key vocabulary introduction, anchor chart…</p></div><div class="allo-lesson-section"><h3>👥 Guided Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Partner or small-group work with teacher checking in…</p></div><div class="allo-lesson-section"><h3>✏️ Independent Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Individual application of the skill…</p></div><div class="allo-lesson-section"><h3>📊 Assessment</h3><p>How will you know students met the objective? (exit ticket, rubric, observation…)</p></div><div class="allo-lesson-section"><h3>💭 Closure / Reflection <em class="allo-lesson-time">(5 min)</em></h3><p>Quick reflection prompt or share-out…</p></div><div class="allo-lesson-section allo-lesson-udl"><h3>🌈 UDL Considerations</h3><ul><li><strong>Multiple means of representation:</strong> visual + verbal + hands-on</li><li><strong>Multiple means of action / expression:</strong> students can show learning by writing, speaking, drawing, or building</li><li><strong>Multiple means of engagement:</strong> choice in topic / partner / format</li></ul></div></section>' },
+                        html: '<section class="allo-block allo-block-lesson" data-allo-block="lesson-plan" tabindex="0" aria-label="Lesson plan template"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove lesson plan" title="Remove">×</button><h2 class="allo-lesson-title">Lesson Plan: <em>Click to edit title</em></h2><div class="allo-lesson-meta">Grade: <em>3</em> · Subject: <em>Math</em> · Duration: <em>50 min</em> · Date: <em>edit</em></div><div class="allo-lesson-section"><h3>🎯 Learning Objective</h3><p>By the end of this lesson, students will be able to <em>(use measurable verb: explain, identify, solve, create…)</em>.</p></div><div class="allo-lesson-section"><h3>📚 Standards</h3><ul><li>CCSS / NGSS / state standard reference here</li></ul></div><div class="allo-lesson-section"><h3>📦 Materials</h3><ul><li>Material 1</li><li>Material 2</li></ul></div><div class="allo-lesson-section"><h3>📖 Direct Instruction <em class="allo-lesson-time">(10 min)</em></h3><p>Teacher modeling, key vocabulary introduction, anchor chart…</p></div><div class="allo-lesson-section"><h3>👥 Guided Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Partner or small-group work with teacher checking in…</p></div><div class="allo-lesson-section"><h3>✏️ Independent Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Individual application of the skill…</p></div><div class="allo-lesson-section"><h3>📊 Assessment</h3><p>How will you know students met the objective? (exit ticket, rubric, observation…)</p></div><div class="allo-lesson-section"><h3>💭 Closure / Reflection <em class="allo-lesson-time">(5 min)</em></h3><p>Quick reflection prompt or share-out…</p></div><div class="allo-lesson-section allo-lesson-udl"><h3>🌈 UDL Considerations</h3><ul><li><strong>Multiple means of representation:</strong> visual + verbal + hands-on</li><li><strong>Multiple means of action / expression:</strong> students can show learning by writing, speaking, drawing, or building</li><li><strong>Multiple means of engagement:</strong> choice in topic / partner / format</li></ul></div></section>' },
 
                       // ── Interactive ──
                       { label: 'Data Table', icon: '📊', category: 'interactive', keywords: 'table data grid spreadsheet',
-                        html: '<div class="allo-block allo-block-table" data-allo-block="table" data-header-style="default" data-zebra="on" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_table")} title="Remove">×</button><figure><table aria-label={t("audit.data_table")}><caption>Table Title — Edit Me</caption><thead><tr><th scope="col">Header 1</th><th scope="col">Header 2</th><th scope="col">Header 3</th></tr></thead><tbody><tr><td>Data</td><td>Data</td><td>Data</td></tr><tr><td>Data</td><td>Data</td><td>Data</td></tr></tbody></table></figure><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Row</button><button type="button" data-action="remove-row">− Row</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Col</button><button type="button" data-action="remove-col">− Col</button><span class="allo-control-label">Header</span><button type="button" data-action="table-header-default" aria-pressed="true">Light</button><button type="button" data-action="table-header-dark">Dark</button><button type="button" data-action="table-header-accent">Accent</button><button type="button" data-action="table-header-minimal">Minimal</button><span class="allo-control-label">Stripes</span><button type="button" data-action="table-zebra-toggle" aria-pressed="true">Zebra</button></div></div>' },
+                        html: '<div class="allo-block allo-block-table" data-allo-block="table" data-header-style="default" data-zebra="on" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove table" title="Remove">×</button><figure><table aria-label="Data table"><caption>Table Title — Edit Me</caption><thead><tr><th scope="col">Header 1</th><th scope="col">Header 2</th><th scope="col">Header 3</th></tr></thead><tbody><tr><td>Data</td><td>Data</td><td>Data</td></tr><tr><td>Data</td><td>Data</td><td>Data</td></tr></tbody></table></figure><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Row</button><button type="button" data-action="remove-row">− Row</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Col</button><button type="button" data-action="remove-col">− Col</button><span class="allo-control-label">Header</span><button type="button" data-action="table-header-default" aria-pressed="true">Light</button><button type="button" data-action="table-header-dark">Dark</button><button type="button" data-action="table-header-accent">Accent</button><button type="button" data-action="table-header-minimal">Minimal</button><span class="allo-control-label">Stripes</span><button type="button" data-action="table-zebra-toggle" aria-pressed="true">Zebra</button></div></div>' },
 
                       // ── Media ──
                       { label: 'Image', icon: '🖼️', category: 'media', keywords: 'image picture photo media',
-                        html: '<figure class="allo-block allo-block-image" data-allo-block="image" tabindex="0" role="figure" aria-label={t("audit.image_description")}><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_image")} title="Remove">×</button><div class="allo-img-placeholder"><span aria-hidden="true">🖼️</span><br/>Upload a file or paste an image URL below.</div><div class="allo-img-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-img-file-input" style="display:none" /></label><input type="url" class="allo-img-url-input" placeholder="https://image.url" autocomplete="url" aria-label={t("audit.image_url")} /></div><figcaption>Image description for screen readers — edit this caption</figcaption></figure>' },
+                        html: '<figure class="allo-block allo-block-image" data-allo-block="image" tabindex="0" role="figure" aria-label="Image"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove image" title="Remove">×</button><div class="allo-img-placeholder"><span aria-hidden="true">🖼️</span><br/>Upload a file or paste an image URL below.</div><div class="allo-img-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-img-file-input" style="display:none" /></label><input type="url" class="allo-img-url-input" placeholder="https://image.url" autocomplete="url" aria-label="Image URL" /></div><figcaption>Image description for screen readers — edit this caption</figcaption></figure>' },
                       { label: 'Audio', icon: '🔊', category: 'media', keywords: 'audio sound music podcast pronunciation',
-                        html: '<div class="allo-block allo-block-audio" data-allo-block="audio" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_audio")} title="Remove">×</button><div class="allo-audio-label">Audio</div><audio controls aria-label={t("audit.audio_recording")}></audio><div class="allo-audio-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-audio-file-input" style="display:none" /></label><input type="url" class="allo-audio-url-input" placeholder="https://audio.url" autocomplete="url" aria-label={t("audit.audio_url")} /><button type="button" class="allo-audio-tts-btn" aria-label={t("audit.gen_audio_transcript")} title="Generate audio from the transcript text" style="font-size:11px;background:#7c3aed;color:white;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-family:inherit;font-weight:600;">🎤 TTS from transcript</button></div><div class="allo-audio-transcript"><strong>Transcript:</strong> Edit this transcript to match the audio. Always provide a transcript for accessibility.</div></div>' },
+                        html: '<div class="allo-block allo-block-audio" data-allo-block="audio" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove audio" title="Remove">×</button><div class="allo-audio-label">Audio</div><audio controls aria-label="Audio recording"></audio><div class="allo-audio-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-audio-file-input" style="display:none" /></label><input type="url" class="allo-audio-url-input" placeholder="https://audio.url" autocomplete="url" aria-label="Audio URL" /><button type="button" class="allo-audio-tts-btn" aria-label="Generate audio from the transcript" title="Generate audio from the transcript text" style="font-size:11px;background:#7c3aed;color:white;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-family:inherit;font-weight:600;">🎤 TTS from transcript</button></div><div class="allo-audio-transcript"><strong>Transcript:</strong> Edit this transcript to match the audio. Always provide a transcript for accessibility.</div></div>' },
                       { label: 'Video', icon: '📹', category: 'media', keywords: 'video youtube vimeo embed media',
-                        html: '<div class="allo-block allo-block-video" data-allo-block="video" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_video")} title="Remove">×</button><div class="allo-video-frame"><div class="allo-video-placeholder"><span aria-hidden="true">📹</span><br/>Paste a YouTube or Vimeo URL below.<br/><em style="font-size:11px;color:#475569;">Captions and transcript are required for accessibility.</em></div></div><div class="allo-video-controls allo-block-controls" contenteditable="false"><span class="allo-control-label">URL</span><input type="url" class="allo-video-url-input" placeholder="https://youtube.com/watch?v=… or https://vimeo.com/…" autocomplete="url" aria-label={t("audit.video_url")} style="flex:1;min-width:200px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;" /><span class="allo-control-label">Title</span><input type="text" class="allo-video-title-input" placeholder={t("placeholders.audit_title_screen")} aria-label={t("audit.video_title_screen")} style="flex:1;min-width:160px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;" /></div><div class="allo-video-transcript"><strong>Transcript:</strong> Edit this transcript to match the video. Required for accessibility — students who can\'t hear the audio depend on this.</div></div>' },
+                        html: '<div class="allo-block allo-block-video" data-allo-block="video" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove video" title="Remove">×</button><div class="allo-video-frame"><div class="allo-video-placeholder"><span aria-hidden="true">📹</span><br/>Paste a YouTube or Vimeo URL below.<br/><em style="font-size:11px;color:#475569;">Captions and transcript are required for accessibility.</em></div></div><div class="allo-video-controls allo-block-controls" contenteditable="false"><span class="allo-control-label">URL</span><input type="url" class="allo-video-url-input" placeholder="https://youtube.com/watch?v=… or https://vimeo.com/…" autocomplete="url" aria-label="Video URL" style="flex:1;min-width:200px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;" /><span class="allo-control-label">Title</span><input type="text" class="allo-video-title-input" placeholder="Title shown on screen" aria-label="Video title" style="flex:1;min-width:160px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;" /></div><div class="allo-video-transcript"><strong>Transcript:</strong> Edit this transcript to match the video. Required for accessibility — students who can\'t hear the audio depend on this.</div></div>' },
                       { label: 'Math', icon: '➗', category: 'media', keywords: 'math equation latex formula katex',
                         html: (() => {
                           // Build optgroup'd formula library select
@@ -9517,14 +14483,28 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           const optgroups = Object.entries(groups)
                             .map(([g, opts]) => '<optgroup label="' + g + '">' + opts.join('') + '</optgroup>')
                             .join('');
-                          return '<div class="allo-block allo-block-math" data-allo-block="math" tabindex="0" role="math" aria-label={t("audit.math_equation")}><button type="button" class="allo-block-remove" contenteditable="false" aria-label={t("audit.remove_equation")} title="Remove">×</button><div class="allo-math-output">a² + b² = c²</div><div class="allo-math-input-wrap" contenteditable="false"><label>LaTeX</label><input type="text" class="allo-math-input" value="a^2 + b^2 = c^2" placeholder="e.g. \\frac{a}{b} or \\int_0^1 x^2 dx" /><span class="allo-math-status">Loading…</span></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Library</span><select class="allo-math-formula-select" aria-label={t("audit.insert_formula")}><option value="">— Pick a formula —</option>' + optgroups + '</select></div></div>';
+                          return '<div class="allo-block allo-block-math" data-allo-block="math" tabindex="0" role="math" aria-label="Math equation"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove equation" title="Remove">×</button><div class="allo-math-output">a² + b² = c²</div><div class="allo-math-input-wrap" contenteditable="false"><label>LaTeX</label><input type="text" class="allo-math-input" value="a^2 + b^2 = c^2" placeholder="e.g. \\frac{a}{b} or \\int_0^1 x^2 dx" /><span class="allo-math-status">Loading…</span></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Library</span><select class="allo-math-formula-select" aria-label="Insert a formula"><option value="">— Pick a formula —</option>' + optgroups + '</select></div></div>';
                         }) },
                       { label: 'Code', icon: '💻', category: 'media', keywords: 'code syntax programming snippet',
                         html: '<div class="allo-block allo-block-code-wrap" data-allo-block="code" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove code" title="Remove">×</button><div class="allo-code-header" contenteditable="false"><label style="font-size:11px;color:#94a3b8;">Lang:</label><select class="allo-code-lang-select" aria-label="Programming language"><option value="python" selected>Python</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="html">HTML</option><option value="css">CSS</option><option value="java">Java</option><option value="csharp">C#</option><option value="cpp">C++</option><option value="c">C</option><option value="ruby">Ruby</option><option value="go">Go</option><option value="rust">Rust</option><option value="sql">SQL</option><option value="bash">Bash</option><option value="json">JSON</option><option value="markdown">Markdown</option><option value="plaintext">Plain text</option></select><button type="button" class="allo-code-copy-btn" aria-label="Copy code to clipboard" title="Copy code" style="font-size:11px;background:#475569;color:white;border:none;border-radius:4px;padding:3px 10px;cursor:pointer;font-family:inherit;font-weight:600;margin-left:auto;">📋 Copy</button></div><pre><code class="language-python" aria-label="Code example"># Example code\nprint("Hello, world!")</code></pre></div>' },
+                      // ── Footnote (always available) ── inserts a superscript
+                      // anchor; the post-insert handler creates the paired note
+                      // in an end-of-doc <section class="allo-footnotes"> and
+                      // renumbers. Works in HTML/print export with zero changes.
+                      { label: 'Footnote', icon: '🔖', category: 'content', keywords: 'footnote endnote note citation reference superscript',
+                        html: '<sup class="allo-fn-ref" data-allo-block="footnote"><a href="#">?</a></sup>' },
+                      // ── Academic blocks (modeOnly — surface in APA/MLA/Chicago) ──
+                      // Mode-aware: headings + citation format follow DOC_MODES.
+                      { label: 'In-text Citation', icon: '✍️', category: 'academic', modeOnly: true, keywords: 'citation in-text parenthetical author year reference source',
+                        html: () => { const m = DOC_MODES[docMode] || DOC_MODES.apa; return '<span class="allo-citation" contenteditable="true">' + (m.citation || '(Author, Year)') + '</span>'; } },
+                      { label: 'References', icon: '📚', category: 'academic', modeOnly: true, keywords: 'references works cited bibliography sources citation list',
+                        html: () => { const m = DOC_MODES[docMode] || DOC_MODES.apa; const h = m.refHeading || 'References'; return '<section class="allo-references allo-block" data-allo-block="references" tabindex="0" aria-label="' + h + '"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove ' + h + '" title="Remove">×</button><h2>' + h + '</h2><p class="allo-ref-entry" contenteditable="true">Author, A. A. (Year). <em>Title of the work</em>. Publisher or Source. https://doi.org/xxxx</p><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">' + h + '</span><button type="button" data-action="ref-add-entry">+ Entry</button><button type="button" data-action="ref-sort">↕ Sort A–Z</button></div></section>'; } },
+                      { label: 'Title Page', icon: '📃', category: 'academic', modeOnly: true, keywords: 'title page cover heading author affiliation course date',
+                        html: '<section class="allo-titlepage allo-block" data-allo-block="titlepage" tabindex="0" aria-label="Title page" style="text-align:center;padding:3em 1em;"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove title page" title="Remove">×</button><h1 contenteditable="true">Title of Your Paper</h1><p contenteditable="true">Author Name</p><p contenteditable="true">Institutional Affiliation</p><p contenteditable="true">Course &middot; Instructor &middot; Date</p></section><div class="allo-block-pagebreak" contenteditable="false" aria-label="Page break" style="page-break-after:always;break-after:page;height:0;"></div>' },
                     ];
 
-                    const _CAT_LABELS = { layout: '🎨 Layout', content: '📝 Content', educational: '🎓 Educational', interactive: '🖱️ Interactive', media: '📷 Media' };
-                    const _CAT_ORDER = ['layout', 'content', 'educational', 'interactive', 'media'];
+                    const _CAT_LABELS = { layout: '🎨 Layout', content: '📝 Content', educational: '🎓 Educational', interactive: '🖱️ Interactive', media: '📷 Media', academic: '🎓 Academic' };
+                    const _CAT_ORDER = ['layout', 'content', 'educational', 'interactive', 'media', 'academic'];
 
                     const _insertBlock = (block) => {
                       const iframe = pdfPreviewRef.current; if (!iframe) return;
@@ -9580,6 +14560,31 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         } else if (blockType === 'code') {
                           const codeEl = newBlock.querySelector('code');
                           _ensurePrism(doc, 'python', codeEl || undefined);
+                        } else if (blockType === 'footnote') {
+                          // Pair the inserted superscript anchor with a numbered
+                          // note in the end-of-doc footnotes section, then renumber
+                          // every ref/note in document order.
+                          try {
+                            const uid = 'fn' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36);
+                            newBlock.setAttribute('data-fn-uid', uid);
+                            newBlock.removeAttribute('data-allo-block'); // inline anchor, not a draggable block
+                            newBlock.removeAttribute('tabindex');
+                            let sec = doc.querySelector('section.allo-footnotes');
+                            if (!sec) {
+                              sec = doc.createElement('section');
+                              sec.className = 'allo-footnotes';
+                              sec.setAttribute('aria-label', 'Footnotes');
+                              sec.innerHTML = '<hr/><ol></ol>';
+                              (doc.querySelector('main') || doc.body).appendChild(sec);
+                            }
+                            const ol = sec.querySelector('ol');
+                            const li = doc.createElement('li');
+                            li.setAttribute('data-fn-uid', uid);
+                            li.innerHTML = '<span class="allo-fn-text" contenteditable="true">Footnote text — click to edit.</span> <a href="#fnref-' + uid + '" class="allo-fn-back" aria-label="Back to reference">↩</a>';
+                            ol.appendChild(li);
+                            _alloRenumberFootnotes(doc);
+                            setTimeout(() => { try { const tx = li.querySelector('.allo-fn-text'); if (tx) { tx.focus(); doc.getSelection().selectAllChildren(tx); } } catch (_) {} }, 80);
+                          } catch (_) {}
                         }
                       }
                       try {
@@ -9594,7 +14599,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                     // ── Filter logic ──
                     const f = (insertBlockFilter || '').toLowerCase().trim();
-                    const visible = f ? blocks.filter(b => b.label.toLowerCase().includes(f) || (b.keywords && b.keywords.toLowerCase().includes(f))) : blocks;
+                    // modeOnly blocks (the Academic category) surface only when an
+                    // academic document mode is active — Standard hides them.
+                    const _modeAcademic = !!(DOC_MODES[docMode] && DOC_MODES[docMode].academic);
+                    const _modeOk = (b) => !b.modeOnly || _modeAcademic;
+                    const visible = (f ? blocks.filter(b => b.label.toLowerCase().includes(f) || (b.keywords && b.keywords.toLowerCase().includes(f))) : blocks).filter(_modeOk);
 
                     // Translation helper — uses LanguageContext t() with English fallback.
                     // Block label key: lowercased, '_' for spaces and '&'.
@@ -9630,6 +14639,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
                     return (
                       <div ref={insertBlockPickerRef} className="space-y-1.5" onKeyDown={_onPickerKey}>
+                        {/* Document mode — formatting + citation style (generic registry; adding a mode = one DOC_MODES entry) */}
+                        <div className="flex items-center gap-1.5">
+                          <label htmlFor="allo-docmode" className="text-[10px] font-bold text-slate-600 uppercase tracking-wider shrink-0">Mode</label>
+                          <select id="allo-docmode" value={docMode}
+                            onChange={e => { const m = e.target.value; setDocMode(m); _applyDocMode(m); try { if (typeof addToast === 'function') addToast(((DOC_MODES[m] && DOC_MODES[m].label) || 'Standard') + ' mode', 'success'); } catch (_) {} }}
+                            aria-label="Document mode — formatting and citation style"
+                            className="w-full text-[11px] px-2 py-1.5 bg-white border border-slate-400 rounded-lg text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none">
+                            {Object.keys(DOC_MODES).map(k => <option key={k} value={k}>{DOC_MODES[k].icon} {DOC_MODES[k].label}</option>)}
+                          </select>
+                        </div>
+                        {docMode !== 'standard' && DOC_MODES[docMode] && (
+                          <div className="text-[10px] text-slate-500 leading-snug px-0.5">{DOC_MODES[docMode].blurb}</div>
+                        )}
                         <input type="search" value={insertBlockFilter} onChange={e => setInsertBlockFilter(e.target.value)}
                           placeholder={(typeof t === 'function' && t('docbuilder.search_placeholder') !== 'docbuilder.search_placeholder' && t('docbuilder.search_placeholder')) || (`Search ${blocks.length} blocks…`)}
                           aria-label={(typeof t === 'function' && t('docbuilder.search_aria') !== 'docbuilder.search_aria' && t('docbuilder.search_aria')) || 'Search blocks'}
@@ -9967,7 +14989,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </div>
               </details>
 
-              {/* Accessibility Compliance Statement */}
+              {/* Accessibility Statement (features applied — not a certified conformance claim) */}
               <button onClick={() => {
                 const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                 const existing = doc.getElementById('a11y-compliance-statement');
@@ -9986,13 +15008,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
                     <span style="font-size:24px">♿</span>
                     <div>
-                      <div style="font-weight:800;font-size:14px;color:#312e81">Accessibility Compliance Statement</div>
-                      <div style="font-size:11px;color:#6366f1">WCAG 2.1 Level AA · ADA Title II · Section 508</div>
+                      <div style="font-weight:800;font-size:14px;color:#312e81">Accessibility Statement</div>
+                      <div style="font-size:11px;color:#6366f1">Built toward WCAG 2.2 Level AA · ADA Title II · Section 508 (features applied — not an independent conformance audit)</div>
                     </div>
                   </div>
                   <p style="font-size:12px;color:#374151;line-height:1.6;margin-bottom:12px">
                     This document was created with accessibility as a core design principle using AlloFlow's
-                    WCAG-compliant document pipeline. The following accessibility measures have been applied:
+                    accessibility-focused document pipeline. The following accessibility measures have been applied:
                   </p>
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
                     <div style="background:white;padding:8px 12px;border-radius:6px;border:1px solid #e0e7ff;font-size:11px">
@@ -10010,11 +15032,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                   <ul style="font-size:11px;color:#374151;line-height:1.8;padding-left:20px;margin:0 0 12px">
                     <li>Semantic HTML structure with proper heading hierarchy</li>
-                    <li>Color contrast ratios meeting WCAG 2.1 AA (4.5:1 minimum)</li>
+                    <li>Color contrast targeted to WCAG 2.2 AA (4.5:1 minimum)</li>
                     <li>Screen reader compatible with ARIA landmarks where appropriate</li>
                     <li>Keyboard navigable content structure</li>
                     <li>Print-optimized layout preserving reading order</li>
                   </ul>
+                  <p style="font-size:10px;color:#64748b;line-height:1.6;margin:0 0 10px;font-style:italic">This lists accessibility features applied during authoring — it is not an independently validated WCAG, ADA, Section 508, or PDF/UA conformance audit. Validate the exported PDF in veraPDF / PAC, and confirm alt-text quality and reading order by hand, before relying on it for legal compliance.</p>
                   <div style="font-size:10px;color:#6366f1;border-top:1px solid #c7d2fe;padding-top:8px;display:flex;justify-content:space-between">
                     <span>Generated: ${date}</span>
                     <span>AlloFlow Document Pipeline v2.0</span>
@@ -10023,7 +15046,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 (doc.querySelector('main') || doc.body).appendChild(stmt);
                 addToast(t('toasts.accessibility_compliance_statement_added'), 'success');
               }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5">
-                ♿ Insert Compliance Statement
+                ♿ Insert Accessibility Statement
               </button>
 
               {/* Auto Table of Contents */}
@@ -10197,7 +15220,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     try {
                       const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 2);
                       if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
-                        const r = await fetch(url); blobs.push(await r.blob());
+                        const r = await _withTimeout(fetch(url), 20000, 'TTS audio fetch'); blobs.push(await r.blob());
+                        try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
                         consecutiveNull = 0;
                       } else { failed++; consecutiveNull++; }
                     } catch(e) {
@@ -10483,8 +15507,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   plus a confidence chip — 'approx' rects are estimated from
                   character widths and worth a glance in the result. */}
               {pdfFieldCandidates && (
-                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setPdfFieldCandidates(null)}>
-                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.pdf_panel_aria') || 'Review detected PDF form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setPdfFieldCandidates(null)}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.pdf_panel_aria') || 'Review detected PDF form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}
+                    ref={pdfFieldsTrapRef} tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setPdfFieldCandidates(null); } }}>
                     <div className="px-4 py-3 border-b border-slate-200">
                       <div className="text-sm font-black text-slate-800">📝 {(t('pdf_audit.fillable.pdf_panel_heading') || 'Blanks found on the original pages — review before placing fields')}</div>
                       <div className="text-[11px] text-slate-600 mt-0.5">{pdfFieldCandidates.length} {t('pdf_audit.fillable.pdf_found') || 'blanks across'} {new Set(pdfFieldCandidates.map((c) => c.page)).size} {t('pdf_audit.fillable.pdf_pages') || 'page(s)'} — {t('pdf_audit.fillable.pdf_note') || 'fields go exactly where the blanks print. ~ marks position-estimated ones.'}</div>
@@ -10537,8 +15562,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   silent — every detected blank listed, labels editable,
                   each rejectable. */}
               {fillableCandidates && (
-                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setFillableCandidates(null)}>
-                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.panel_aria') || 'Review detected form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setFillableCandidates(null)}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.panel_aria') || 'Review detected form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}
+                    ref={fillableTrapRef} tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setFillableCandidates(null); } }}>
                     <div className="px-4 py-3 border-b border-slate-200">
                       <div className="text-sm font-black text-slate-800">📝 {(t('pdf_audit.fillable.panel_heading') || 'Detected blanks — review before converting')}</div>
                       <div className="text-[11px] text-slate-600 mt-0.5">{fillableCandidates.filter((c) => c.kind === 'text').length} {t('pdf_audit.fillable.text_fields') || 'text fields'} · {fillableCandidates.filter((c) => c.kind === 'checkbox').length} {t('pdf_audit.fillable.checkboxes') || 'checkboxes'} — {t('pdf_audit.fillable.panel_note') || 'uncheck any false positives; edit labels (screen readers announce them).'}</div>
@@ -10576,14 +15602,16 @@ Return ONLY the plain language summary in ${lang}.`, false);
               )}
               {/* Plain-language compare (2026-06-12) */}
               {showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage && (
-                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowPlainCompare(false)}>
-                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.plain.compare_aria') || 'Original and plain-language version, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowPlainCompare(false)}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.plain.compare_aria') || 'Original and plain-language version, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}
+                    ref={plainCompareTrapRef} tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowPlainCompare(false); } }}>
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
                       <span className="text-sm font-black text-slate-800">⚖ {t('pdf_audit.plain.compare_heading') || 'Original ↔ Plain language'}</span>
                       <div className="flex items-center gap-2">
                         {pdfFixResult._plainLanguage.chunksFailed > 0 && (
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._plainLanguage.chunksFailed}/{pdfFixResult._plainLanguage.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
+                        {pdfFixResult._plainLanguage.srcLen != null && pdfFixResult._plainLanguage.srcLen !== (pdfFixResult.accessibleHtml || '').length && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.plain.stale_title') || 'The document changed after this plain-language version was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
                         <button onClick={() => setShowPlainCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>
@@ -10604,14 +15632,16 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   translation, side by side. srcdoc iframes; the translated
                   pane carries its own lang/dir so SRs pronounce correctly. */}
               {showTranslationCompare && pdfFixResult && pdfFixResult._translation && (
-                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowTranslationCompare(false)}>
-                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.translate.compare_aria') || 'Original and translated document, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowTranslationCompare(false)}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.translate.compare_aria') || 'Original and translated document, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}
+                    ref={translateCompareTrapRef} tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowTranslationCompare(false); } }}>
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
                       <span className="text-sm font-black text-slate-800">⚖ {(t('pdf_audit.translate.compare_heading') || 'Original ↔ ') + pdfFixResult._translation.lang}</span>
                       <div className="flex items-center gap-2">
                         {pdfFixResult._translation.chunksFailed > 0 && (
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._translation.chunksFailed}/{pdfFixResult._translation.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
+                        {pdfFixResult._translation.srcLen != null && pdfFixResult._translation.srcLen !== (pdfFixResult.accessibleHtml || '').length && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.translate.stale_title') || 'The document changed after this translation was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
                         <button onClick={() => setShowTranslationCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>
@@ -10649,6 +15679,48 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   </div>
                 </div>
               )}
+              {/* S1 region editor (2026-06-23): appears after a drag-region selection. Scopes an AI edit (or a
+                  hand-edit) to JUST the selected block — same bounded apply + accept/revert as the per-issue
+                  path (keyed off '__region__'). */}
+              {_issueEdit['__region__'] && (() => { const _rgn = _issueEdit['__region__']; return (
+                <div id="allo-region-editor" className="border-b border-indigo-300 bg-indigo-50 p-3 space-y-2" role="region" aria-label={t('pdf_audit.region.editor_aria') || 'Selected-region editor'}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-black text-indigo-800">▭ {t('pdf_audit.region.editor_heading') || 'Selected region'}{_rgn.tag ? (' · <' + _rgn.tag + '>') : ''}</span>
+                    <button onClick={() => _setIssueEdit((prev) => { const n = { ...prev }; delete n['__region__']; return n; })} className="text-indigo-600 hover:text-indigo-900 font-bold px-1" aria-label={t('pdf_audit.region.editor_close') || 'Clear region selection'}>✕</button>
+                  </div>
+                  {_rgn.preview && (<div className="text-[11px] text-indigo-700 bg-white/70 border border-indigo-200 rounded px-2 py-1 truncate" title={_rgn.preview}>“{_rgn.preview}”</div>)}
+                  <input value={_rgn.intent || ''} onChange={(e) => { const v = e.target.value; _setIssueEdit((prev) => ({ ...prev, ['__region__']: { ...prev['__region__'], intent: v } })); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && typeof processExpertCommand === 'function' && (_rgn.intent || '').trim() && !_rgn.saving) { e.preventDefault(); _applyScopedIntent(null, '__region__'); } }}
+                    placeholder={t('pdf_audit.region.intent_ph') || 'Describe the change for this block — e.g. “make this a bulleted list”, “turn this into a callout”, “simplify the wording”'}
+                    className="w-full text-xs border border-indigo-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500" />
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold text-indigo-700">{t('pdf_audit.region.restyle_label') || 'Quick restyle (no-AI edit):'}</span>
+                    <button onClick={() => _restyleRegion('heading')} disabled={!!_rgn.saving} className={'px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold ' + (_rgn.saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-100')} title={t('pdf_audit.region.make_heading_title') || 'Promote this short title-like paragraph to a real heading at an outline-safe level (never skips a level, never an H1). A fixed transform — text unchanged. Re-level with Ctrl+2/3 in the preview if needed.'}>🔠 {t('pdf_audit.region.make_heading') || 'Make a heading'}</button>
+                    <button onClick={() => _restyleRegion('callout')} disabled={!!_rgn.saving} className={'px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold ' + (_rgn.saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-100')} title={t('pdf_audit.region.make_callout_title') || 'Wrap this block as a callout. A fixed transform (the AI never rewrites your content); refused if it would move or drop a word, link, or image. The usual re-check still runs after.'}>📌 {t('pdf_audit.region.make_callout') || 'Make a callout'}</button>
+                    <button onClick={() => _restyleRegion('list')} disabled={!!_rgn.saving} className={'px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold ' + (_rgn.saving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-100')} title={t('pdf_audit.region.make_list_title') || 'Turn line-broken or bulleted text into a real list. A fixed transform (no AI rewrite); refused if it would flatten a link/format or move content. The usual re-check still runs after.'}>• {t('pdf_audit.region.make_list') || 'Make a list'}</button>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {typeof processExpertCommand === 'function' && (
+                      <button onClick={() => _applyScopedIntent(null, '__region__')} disabled={!!_rgn.saving || !((_rgn.intent) || '').trim()}
+                        className={'px-3 py-1 rounded bg-indigo-600 text-white text-xs font-bold ' + ((_rgn.saving || !((_rgn.intent) || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700')}>
+                        {_rgn.saving ? ('⏳ ' + (t('pdf_audit.region.applying') || 'Applying…')) : ('✨ ' + (t('pdf_audit.region.apply_ai') || 'Apply with AI'))}
+                      </button>
+                    )}
+                    <details className="text-[11px]">
+                      <summary className="cursor-pointer text-indigo-700 font-bold">{t('pdf_audit.region.edit_html') || '✏ Or edit the HTML yourself'}</summary>
+                      <div className="mt-1 space-y-1">
+                        <textarea value={_rgn.draft == null ? '' : _rgn.draft} onChange={(e) => { const v = e.target.value; _setIssueEdit((prev) => ({ ...prev, ['__region__']: { ...prev['__region__'], draft: v } })); }} rows={4}
+                          className="w-full text-[11px] font-mono border border-indigo-300 rounded p-2 bg-white text-slate-800" />
+                        <button onClick={() => _saveManualEdit(null, '__region__')} disabled={!!_rgn.saving || (String(_rgn.draft || '').trim() === String(_rgn.original || '').trim())}
+                          className={'px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold ' + ((_rgn.saving || String(_rgn.draft || '').trim() === String(_rgn.original || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-emerald-700')}>
+                          💾 {t('pdf_audit.region.save_recheck') || 'Save (no-AI edit) & re-check'}
+                        </button>
+                      </div>
+                    </details>
+                  </div>
+                  <span className="text-[10px] text-indigo-700 block">{t('pdf_audit.region.honesty') || 'Bounded to this block only — the rest of the document is untouched. Re-checks after applying; one-click revert if you don’t like it.'}</span>
+                </div>
+              ); })()}
               <iframe ref={pdfPreviewRef} title={t('pdf_audit.preview.iframe_title') || 'Accessible document preview'} className="flex-1 w-full border-0"
                 sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
                 onLoad={() => {
@@ -10675,7 +15747,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     });
                     doc.addEventListener('keydown', function(e) {
                       if (e.ctrlKey || e.metaKey) {
-                        if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
+                        if (e.key === '1') { e.preventDefault(); if (!doc.querySelector('h1')) { doc.execCommand('formatBlock', false, '<h1>'); } } /* single-h1 policy: only when none exists */
                         else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
                         else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
                         else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
@@ -10684,6 +15756,34 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
                       }
                     });
+                    // S1 region-select marquee (2026-06-23): when armed (cw.__alloflowRegionArmed, set by the
+                    // toolbar toggle), a drag draws a dashed box INSIDE the iframe (so coords == the iframe's
+                    // own getBoundingClientRect space — no cross-frame mapping) and hands the box to the latest
+                    // React handler (_regionHandlerRef.current). One-shot: it disarms itself on release.
+                    try {
+                      var _rsMarq = null, _rsX = 0, _rsY = 0, _rsDrag = false;
+                      doc.addEventListener('pointerdown', function(e) {
+                        if (!cw || !cw.__alloflowRegionArmed) return;
+                        _rsDrag = true; _rsX = e.clientX; _rsY = e.clientY;
+                        _rsMarq = doc.createElement('div');
+                        _rsMarq.setAttribute('data-allo-region-marquee', '1');
+                        _rsMarq.style.cssText = 'position:fixed;z-index:2147483646;border:2px dashed #4f46e5;background:rgba(79,70,229,0.12);pointer-events:none;left:' + _rsX + 'px;top:' + _rsY + 'px;width:0;height:0;';
+                        try { doc.body.appendChild(_rsMarq); } catch (_) {}
+                        e.preventDefault();
+                      }, true);
+                      doc.addEventListener('pointermove', function(e) {
+                        if (!_rsDrag || !_rsMarq) return;
+                        var l = Math.min(_rsX, e.clientX), tp = Math.min(_rsY, e.clientY), w = Math.abs(e.clientX - _rsX), h = Math.abs(e.clientY - _rsY);
+                        _rsMarq.style.left = l + 'px'; _rsMarq.style.top = tp + 'px'; _rsMarq.style.width = w + 'px'; _rsMarq.style.height = h + 'px';
+                      }, true);
+                      doc.addEventListener('pointerup', function(e) {
+                        if (!_rsDrag) return; _rsDrag = false;
+                        var box = { left: Math.min(_rsX, e.clientX), top: Math.min(_rsY, e.clientY), right: Math.max(_rsX, e.clientX), bottom: Math.max(_rsY, e.clientY) };
+                        if (_rsMarq) { try { _rsMarq.remove(); } catch (_) {} _rsMarq = null; }
+                        try { cw.__alloflowRegionArmed = false; doc.body.style.cursor = ''; } catch (_) {}
+                        if (_regionHandlerRef && typeof _regionHandlerRef.current === 'function') { try { _regionHandlerRef.current(box); } catch (_) {} }
+                      }, true);
+                    } catch (_) {}
                   }
                 }} />
             </div>

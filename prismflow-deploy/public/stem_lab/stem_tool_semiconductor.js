@@ -51,7 +51,7 @@ window.StemLab = window.StemLab || {
   function semiTone(f,d,tp,v) { var ac=getSemiAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxSemiClick() { semiTone(600,0.03,"sine",0.04); }
   function sfxSemiSuccess() { semiTone(523,0.08,"sine",0.07); setTimeout(function(){semiTone(659,0.08,"sine",0.07);},70); setTimeout(function(){semiTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("semi-a11y")){var _s=document.createElement("style");_s.id="semi-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-200{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("semi-a11y")){var _s=document.createElement("style");_s.id="semi-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -87,7 +87,8 @@ window.StemLab = window.StemLab || {
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -242,10 +243,17 @@ window.StemLab = window.StemLab || {
           }});
         });
         // Don't early-return — hooks below must always execute (Rules of Hooks).
-        // Render a loading placeholder at the end instead.
+        // Default values below render the real lab on the first pass.
       }
 
-      var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { semiconductor: Object.assign({}, prev.semiconductor, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })()))}); }); };
+      var upd = function(key, val) {
+        setLabToolData(function(prev) {
+          prev = prev || {};
+          return Object.assign({}, prev, {
+            semiconductor: Object.assign({}, prev.semiconductor || {}, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })()))
+          });
+        });
+      };
       var updMulti = function(obj) { upd(obj); };
 
       // Canvas Narration: Semiconductor Lab init
@@ -277,55 +285,62 @@ window.StemLab = window.StemLab || {
 
       // ═══ MATERIAL DATA ═══
       var MATERIALS = {
-        silicon:    { name: 'Silicon (Si)',     bandGap: 1.12, color: '#4F46E5', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000473, ni: 1.5e10, mobility: 1400 },
-        germanium:  { name: 'Germanium (Ge)',   bandGap: 0.67, color: '#7C3AED', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000377, ni: 2.4e13, mobility: 3900 },
+        silicon:    { name: t('stem.semiconductor.silicon_si', 'Silicon (Si)'),     bandGap: 1.12, color: '#4F46E5', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000473, ni: 1.5e10, mobility: 1400 },
+        germanium:  { name: t('stem.semiconductor.germanium_ge', 'Germanium (Ge)'),   bandGap: 0.67, color: '#7C3AED', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000377, ni: 2.4e13, mobility: 3900 },
         gaas:       { name: 'GaAs',             bandGap: 1.42, color: '#DC2626', lattice: 'Zinc Blende',   electrons: 4, tempCoeff: -0.000540, ni: 1.8e6,  mobility: 8500 },
-        diamond:    { name: 'Diamond (C)',       bandGap: 5.47, color: '#F59E0B', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000050, ni: 1e-27,  mobility: 2200 },
+        diamond:    { name: t('stem.semiconductor.diamond_c', 'Diamond (C)'),       bandGap: 5.47, color: '#F59E0B', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000050, ni: 1e-27,  mobility: 2200 },
         sic:        { name: 'SiC',              bandGap: 3.26, color: '#10B981', lattice: 'Zinc Blende',   electrons: 4, tempCoeff: -0.000330, ni: 6.9e-11,mobility: 900 },
         gan:        { name: 'GaN',              bandGap: 3.40, color: '#06B6D4', lattice: 'Wurtzite',      electrons: 4, tempCoeff: -0.000420, ni: 1.9e-10,mobility: 1000 },
-        copper:     { name: 'Copper (Cu)',       bandGap: 0,    color: '#D97706', lattice: 'FCC',           electrons: 1, tempCoeff: 0,         ni: 8.5e22, mobility: 32 },
-        insulator:  { name: 'Glass (SiO\u2082)', bandGap: 9.0,  color: '#94A3B8', lattice: 'Amorphous',    electrons: 0, tempCoeff: 0,         ni: 0,      mobility: 0 }
+        copper:     { name: t('stem.semiconductor.copper_cu', 'Copper (Cu)'),       bandGap: 0,    color: '#D97706', lattice: 'FCC',           electrons: 1, tempCoeff: 0,         ni: 8.5e22, mobility: 32 },
+        insulator:  { name: t('stem.semiconductor.glass_sio', 'Glass (SiO\u2082)'), bandGap: 9.0,  color: '#94A3B8', lattice: 'Amorphous',    electrons: 0, tempCoeff: 0,         ni: 0,      mobility: 0 }
       };
 
       var DOPANTS = {
-        none:      { name: 'Intrinsic',    type: null,   valence: 4, color: '#9ca3af', symbol: '-' },
-        phosphorus:{ name: 'Phosphorus (P)', type: 'n',   valence: 5, color: '#EF4444', symbol: 'P' },
-        arsenic:   { name: 'Arsenic (As)',  type: 'n',    valence: 5, color: '#F97316', symbol: 'As' },
-        boron:     { name: 'Boron (B)',     type: 'p',    valence: 3, color: '#3B82F6', symbol: 'B' },
-        gallium:   { name: 'Gallium (Ga)', type: 'p',     valence: 3, color: '#8B5CF6', symbol: 'Ga' },
-        antimony:  { name: 'Antimony (Sb)', type: 'n',    valence: 5, color: '#F43F5E', symbol: 'Sb' },
-        indium:    { name: 'Indium (In)',   type: 'p',    valence: 3, color: '#14B8A6', symbol: 'In' }
+        none:      { name: t('stem.semiconductor.intrinsic', 'Intrinsic'),    type: null,   valence: 4, color: '#9ca3af', symbol: '-' },
+        phosphorus:{ name: t('stem.semiconductor.phosphorus_p', 'Phosphorus (P)'), type: 'n',   valence: 5, color: '#EF4444', symbol: 'P' },
+        arsenic:   { name: t('stem.semiconductor.arsenic_as', 'Arsenic (As)'),  type: 'n',    valence: 5, color: '#F97316', symbol: 'As' },
+        boron:     { name: t('stem.semiconductor.boron_b', 'Boron (B)'),     type: 'p',    valence: 3, color: '#3B82F6', symbol: 'B' },
+        gallium:   { name: t('stem.semiconductor.gallium_ga', 'Gallium (Ga)'), type: 'p',     valence: 3, color: '#8B5CF6', symbol: 'Ga' },
+        antimony:  { name: t('stem.semiconductor.antimony_sb', 'Antimony (Sb)'), type: 'n',    valence: 5, color: '#F43F5E', symbol: 'Sb' },
+        indium:    { name: t('stem.semiconductor.indium_in', 'Indium (In)'),   type: 'p',    valence: 3, color: '#14B8A6', symbol: 'In' }
       };
 
       // ═══ SUB-TOOL NAV ═══
       var SUBTOOLS = [
-        { id: 'bandgap',    icon: '\u26A1', label: 'Band Gap',     short: 'Bands' },
-        { id: 'doping',     icon: '\uD83E\uDDEA', label: 'Doping',       short: 'Dope' },
-        { id: 'pnjunction', icon: '\u2194\uFE0F', label: 'P-N Junction', short: 'P-N' },
-        { id: 'transistor', icon: '\uD83D\uDD0C', label: 'Transistor',   short: 'FET' },
-        { id: 'gates',      icon: '\uD83D\uDDA5\uFE0F', label: 'Logic Gates',  short: 'Gates' },
-        { id: 'ivcurve',    icon: '\uD83D\uDCC8', label: 'I-V Curves',   short: 'I-V' },
-        { id: 'sandbox',    icon: '\uD83D\uDD27', label: 'Circuit Lab',  short: 'Circuit' },
-        { id: 'waferfab',   icon: '\uD83C\uDFED', label: 'Wafer Fab',    short: 'Fab' },
-        { id: 'ledspec',    icon: '\uD83C\uDF08', label: 'LED Spectrum',  short: 'LED' },
-        { id: 'solarcell',  icon: '\u2600\uFE0F', label: 'Solar Cell',   short: 'Solar' },
-        { id: 'moorelaw',   icon: '\uD83D\uDCC9', label: 'Moore\'s Law', short: 'Moore' },
-        { id: 'qwell',     icon: '\uD83C\uDF0A', label: 'Quantum Wells', short: 'QWell' },
-        { id: 'memory',    icon: '\uD83D\uDCBE', label: 'Memory Cells',  short: 'Memory' },
-        { id: 'amplifier', icon: '\uD83D\uDD09', label: 'Amplifier',     short: 'Amp' },
-        { id: 'dopeHunt',  icon: '\u2697\uFE0F', label: 'Doping Discovery', short: 'Dope?' }
+        { id: 'bandgap',    icon: '\u26A1', label: t('stem.semiconductor.band_gap', 'Band Gap'),     short: 'Bands' },
+        { id: 'doping',     icon: '\uD83E\uDDEA', label: t('stem.semiconductor.doping', 'Doping'),       short: 'Dope' },
+        { id: 'pnjunction', icon: '\u2194\uFE0F', label: t('stem.semiconductor.p_n_junction', 'P-N Junction'), short: 'P-N' },
+        { id: 'transistor', icon: '\uD83D\uDD0C', label: t('stem.semiconductor.transistor', 'Transistor'),   short: 'FET' },
+        { id: 'gates',      icon: '\uD83D\uDDA5\uFE0F', label: t('stem.semiconductor.logic_gates', 'Logic Gates'),  short: 'Gates' },
+        { id: 'ivcurve',    icon: '\uD83D\uDCC8', label: t('stem.semiconductor.i_v_curves', 'I-V Curves'),   short: 'I-V' },
+        { id: 'sandbox',    icon: '\uD83D\uDD27', label: t('stem.semiconductor.circuit_lab', 'Circuit Lab'),  short: 'Circuit' },
+        { id: 'waferfab',   icon: '\uD83C\uDFED', label: t('stem.semiconductor.wafer_fab', 'Wafer Fab'),    short: 'Fab' },
+        { id: 'ledspec',    icon: '\uD83C\uDF08', label: t('stem.semiconductor.led_spectrum', 'LED Spectrum'),  short: 'LED' },
+        { id: 'solarcell',  icon: '\u2600\uFE0F', label: t('stem.semiconductor.solar_cell', 'Solar Cell'),   short: 'Solar' },
+        { id: 'moorelaw',   icon: '\uD83D\uDCC9', label: t('stem.semiconductor.moore_s_law', 'Moore\'s Law'), short: 'Moore' },
+        { id: 'qwell',     icon: '\uD83C\uDF0A', label: t('stem.semiconductor.quantum_wells', 'Quantum Wells'), short: 'QWell' },
+        { id: 'memory',    icon: '\uD83D\uDCBE', label: t('stem.semiconductor.memory_cells', 'Memory Cells'),  short: 'Memory' },
+        { id: 'amplifier', icon: '\uD83D\uDD09', label: t('stem.semiconductor.amplifier', 'Amplifier'),     short: 'Amp' },
+        { id: 'dopeHunt',  icon: '\u2697\uFE0F', label: t('stem.semiconductor.doping_discovery', 'Doping Discovery'), short: 'Dope?' }
       ];
 
+      function getSubtoolLabel(id) {
+        var st = SUBTOOLS.find(function(item) { return item.id === id; });
+        return st ? st.label : id;
+      }
+
       // ═══ SHARED HELPERS ═══
-      function btn(label, onClick, extraClass) {
+      function btn(label, onClick, extraClass, key) {
         return h('button', Object.assign({
+          key: key != null ? key : label,
           onClick: onClick,
           className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md ' + (extraClass || 'bg-cyan-700 text-white hover:bg-cyan-700')
         }, a11yClick ? a11yClick(onClick) : {}), label);
       }
 
-      function pill(label, active, onClick) {
+      function pill(label, active, onClick, key) {
         return h('button', Object.assign({
+          key: key != null ? key : label,
           onClick: onClick,
           className: 'px-2.5 py-1 text-xs font-semibold rounded-full transition-all ' +
             (active ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -353,8 +368,8 @@ window.StemLab = window.StemLab || {
            'bg-slate-800/60 border-slate-700 text-slate-300') }, text);
       }
 
-      function statBadge(label, value, color) {
-        return h('div', { className: 'flex flex-col items-center px-2 py-1 rounded-lg bg-slate-800/60 border border-slate-700' },
+      function statBadge(label, value, color, key) {
+        return h('div', { key: key != null ? key : label, className: 'flex flex-col items-center px-2 py-1 rounded-lg bg-slate-800/60 border border-slate-700' },
           h('span', { className: 'text-[11px] text-slate-600 uppercase tracking-wider' }, label),
           h('span', { className: 'text-sm font-bold ' + (color || 'text-cyan-400') }, value)
         );
@@ -363,18 +378,26 @@ window.StemLab = window.StemLab || {
       // ═══ AI EXPLAIN (grade-aware) ═══
       function askAI(topic) {
         if (d.aiLoading) return;
+        if (typeof callGemini !== 'function') {
+          updMulti({ aiExplain: 'AI explanation is not available in this session yet.', aiLoading: false });
+          return;
+        }
         updMulti({ aiLoading: true, aiExplain: null });
         var gradeCtx = gradeBand === 'K-2' ? 'kindergarten, very simple with fun analogies'
           : gradeBand === '3-5' ? '3rd-5th grade, simple but accurate'
           : gradeBand === '6-8' ? '6th-8th grade, include basic equations'
           : '9th-12th grade AP Physics, include equations and Fermi level concepts';
         var prompt = 'Explain "' + topic + '" for a ' + gradeCtx + ' student in 3-4 sentences. Focus on semiconductor physics. Be concise.';
-        callGemini(prompt).then(function(resp) {
-          updMulti({ aiExplain: resp, aiLoading: false });
-          if (announceToSR) announceToSR('AI explanation loaded for ' + topic);
-        }).catch(function() {
+        try {
+          Promise.resolve(callGemini(prompt)).then(function(resp) {
+            updMulti({ aiExplain: resp || 'No explanation was returned.', aiLoading: false });
+            if (announceToSR) announceToSR('AI explanation loaded for ' + topic);
+          }).catch(function() {
+            updMulti({ aiExplain: 'Could not load AI explanation.', aiLoading: false });
+          });
+        } catch(e) {
           updMulti({ aiExplain: 'Could not load AI explanation.', aiLoading: false });
-        });
+        }
       }
 
       // ═══ TTS HELPER ═══
@@ -387,7 +410,7 @@ window.StemLab = window.StemLab || {
       // ═══ XP HELPER ═══
       function tryAwardXP(key, amount, reason) {
         if (d.xpAwardedKeys && d.xpAwardedKeys[key]) return;
-        awardStemXP('semi-' + key, amount, reason);
+        if (awardStemXP) awardStemXP('semi-' + key, amount, reason);
         var newKeys = Object.assign({}, d.xpAwardedKeys || {});
         newKeys[key] = true;
         upd('xpAwardedKeys', newKeys);
@@ -399,14 +422,14 @@ window.StemLab = window.StemLab || {
       function aiBox() {
         if (!d.aiExplain && !d.aiLoading) return null;
         return h('div', { className: 'mt-2 p-2 rounded-lg bg-indigo-900/40 border border-indigo-700 text-xs text-indigo-200' },
-          d.aiLoading ? h('span', { className: 'animate-pulse' }, '\u2728 Thinking\u2026') : [
-            d.aiExplain,
+          d.aiLoading ? h('span', { className: 'animate-pulse' }, t('stem.semiconductor.thinking', '\u2728 Thinking\u2026')) : h(React.Fragment, null,
+            h('span', null, d.aiExplain),
             callTTS ? h('button', {
               onClick: function() { speakText(d.aiExplain); },
               className: 'ml-2 px-1.5 py-0.5 text-[11px] bg-indigo-700 rounded hover:bg-indigo-600 transition-colors',
-              'aria-label': 'Read aloud'
+              'aria-label': t('stem.semiconductor.read_aloud', 'Read aloud')
             }, '\uD83D\uDD0A') : null
-          ]
+          )
         );
       }
 
@@ -596,7 +619,7 @@ window.StemLab = window.StemLab || {
           var canvas = document.getElementById('semi-bandgap-canvas');
           if (!canvas) return;
           if (canvasA11yDesc) canvasA11yDesc(canvas, 'Band gap energy diagram. Shows valence and conduction bands for ' + mat.name + '. Band gap is ' + Eg.toFixed(2) + ' electron volts at ' + tempK + ' Kelvin.');
-          function draw() { canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [d.material, d.temperature, d.showPhoton, d.showFermi]);
@@ -611,26 +634,27 @@ window.StemLab = window.StemLab || {
                 tryAwardXP('mat-' + key, 5, 'Explored ' + m.name);
                 if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'materialSelect', 'Selected ' + m.name + '. Band gap: ' + m.bandGap + ' electron volts. Lattice: ' + m.lattice + '.', { debounce: 500 });
                 if (announceToSR) announceToSR('Selected ' + m.name + ', band gap ' + m.bandGap + ' eV');
-              });
+              }, 'mat-' + key);
             })
           ),
           h('canvas', { 
             id: 'semi-bandgap-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
-            role: 'img', 'aria-label': 'Band gap diagram for ' + mat.name + ' at ' + tempK + 'K'
+            tabIndex: 0,
+            role: 'img', 'aria-label': 'Band gap diagram for ' + mat.name + ' at ' + tempK + 'K. Use the material buttons and temperature slider to change this visualization.'
           }),
           sliderRow('Temperature', tempK, 50, 800, 10, function(v) { upd('temperature', v); }, ' K'),
           h('div', { className: 'flex flex-wrap items-center gap-3 mt-2' },
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!d.showPhoton, onChange: function() { upd('showPhoton', !d.showPhoton); }, className: 'accent-amber-500' }),
-              'Photon Excitation'
+              t('stem.semiconductor.photon_excitation', 'Photon Excitation')
             ),
             (gradeBand === '9-12' || gradeBand === '6-8') && h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!d.showFermi, onChange: function() { upd('showFermi', !d.showFermi); }, className: 'accent-orange-500' }),
-              'Fermi Level'
+              t('stem.semiconductor.fermi_level', 'Fermi Level')
             ),
             btn('\uD83E\uDD16 AI Explain', function() { askAI('band gap of ' + mat.name + ' semiconductor'); }),
-            btn('\uD83D\uDD0A Read', function() { speakText(mat.name + ' has a band gap of ' + Eg.toFixed(2) + ' electron volts. ' + (isConductor ? 'It is a conductor.' : isInsulator ? 'It is an insulator.' : 'It is a semiconductor.')); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText(mat.name + ' has a band gap of ' + Eg.toFixed(2) + ' electron volts. ' + (isConductor ? 'It is a conductor.' : isInsulator ? 'It is an insulator.' : 'It is a semiconductor.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           // Stats bar
           h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
@@ -769,7 +793,7 @@ window.StemLab = window.StemLab || {
           // Only loop while there's a moving free carrier to animate (dopant set).
           // The intrinsic (none) lattice is static — paint it once; the effect
           // re-fires and restarts the loop when the student picks a real dopant.
-          function draw() { canvasRef(canvas); if (d.dopant !== 'none') animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (d.dopant !== 'none') animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [d.dopant, d.dopantCount, d.crystalSize]);
@@ -783,7 +807,7 @@ window.StemLab = window.StemLab || {
                 if (key !== 'none') tryAwardXP('dope-' + key, 8, 'Tried ' + dp.name + ' doping');
                 if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'dopantSelect', dp.name + (dp.type ? ', ' + dp.type + '-type doping. Majority carriers: ' + (dp.type === 'n' ? 'electrons' : 'holes') + '.' : '. Intrinsic silicon, no doping.'), { debounce: 500 });
                 if (announceToSR) announceToSR('Selected dopant: ' + dp.name + (dp.type ? ', ' + dp.type + '-type' : ''));
-              });
+              }, 'dop-' + key);
             })
           ),
           h('canvas', { 
@@ -795,7 +819,7 @@ window.StemLab = window.StemLab || {
           sliderRow('Grid size', gridSize, 4, 12, 1, function(v) { upd('crystalSize', v); }),
           // Stats
           d.dopant !== 'none' && h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
-            statBadge('Type', dopant.type + '-type', dopant.type === 'n' ? 'text-red-400' : 'text-blue-400'),
+            statBadge('Type', dopant.type + '-type', dopant.type === 'n' ? 'text-blue-400' : 'text-red-400'),
             statBadge('Valence e\u207B', String(dopant.valence)),
             statBadge('Majority', dopant.type === 'n' ? 'Electrons' : 'Holes'),
             statBadge('Minority', dopant.type === 'n' ? 'Holes' : 'Electrons')
@@ -807,8 +831,8 @@ window.StemLab = window.StemLab || {
             d.dopant === 'none' ? 'Intrinsic Si at 300K: n = p = n\u1D62 = 1.5\u00D710\u00B9\u2070 cm\u207B\u00B3. Fermi level at mid-gap. \u03C3 = q\u00B7n\u1D62\u00B7(\u03BC\u2099 + \u03BC\u209A) \u2248 4.4\u00D710\u207B\u2074 S/cm.' : dopant.type === 'n' ? 'N-type (' + dopant.name + '): n \u2248 N\u2093, p = n\u1D62\u00B2/N\u2093. E\u1DA0 \u2212 E\u1D62 = kT\u00B7ln(N\u2093/n\u1D62). Conductivity \u03C3 \u2248 q\u00B7N\u2093\u00B7\u03BC\u2099. Mass-action law: np = n\u1D62\u00B2.' : 'P-type (' + dopant.name + '): p \u2248 N\u2090, n = n\u1D62\u00B2/N\u2090. E\u1D62 \u2212 E\u1DA0 = kT\u00B7ln(N\u2090/n\u1D62). \u03C3 \u2248 q\u00B7N\u2090\u00B7\u03BC\u209A. Mass-action law: np = n\u1D62\u00B2.'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(d.dopant === 'none' ? 'intrinsic semiconductor crystal lattice' : dopant.type + '-type doping with ' + dopant.name); }, 'bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(d.dopant === 'none' ? 'Intrinsic silicon with 4 valence electrons in covalent bonds.' : dopant.type + '-type doping with ' + dopant.name + '. Majority carriers are ' + (dopant.type === 'n' ? 'electrons' : 'holes') + '.'); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83E\uDD16 AI Explain', function() { askAI(d.dopant === 'none' ? 'intrinsic semiconductor crystal lattice' : dopant.type + '-type doping with ' + dopant.name); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read', function() { speakText(d.dopant === 'none' ? 'Intrinsic silicon with 4 valence electrons in covalent bonds.' : dopant.type + '-type doping with ' + dopant.name + '. Majority carriers are ' + (dopant.type === 'n' ? 'electrons' : 'holes') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           aiBox()
         );
@@ -986,7 +1010,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-pn-canvas');
           if (!canvas) return;
-          function draw() { canvasRef(canvas); animFrameRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animFrameRef.current); return; } canvasRef(canvas); animFrameRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animFrameRef.current); };
         }, [d.pnBias, d.pnShowField, d.pnShowCarriers, d.pnShowDepletion, d.pnShowIV, d.pnLedMode]);
@@ -1007,13 +1031,13 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showField, onChange: function() { upd('pnShowField', !showField); }, className: 'accent-yellow-500' }), 'E-Field'),
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showCarriers, onChange: function() { upd('pnShowCarriers', !showCarriers); }, className: 'accent-blue-500' }), 'Carriers'),
+              h('input', { type: 'checkbox', checked: showCarriers, onChange: function() { upd('pnShowCarriers', !showCarriers); }, className: 'accent-blue-500' }), t('stem.semiconductor.carriers', 'Carriers')),
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showDepletion, onChange: function() { upd('pnShowDepletion', !showDepletion); }, className: 'accent-slate-400' }), 'Depletion'),
+              h('input', { type: 'checkbox', checked: showDepletion, onChange: function() { upd('pnShowDepletion', !showDepletion); }, className: 'accent-slate-400' }), t('stem.semiconductor.depletion', 'Depletion')),
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: !!d.pnShowIV, onChange: function() { upd('pnShowIV', !d.pnShowIV); }, className: 'accent-cyan-500' }), 'I-V Curve'),
+              h('input', { type: 'checkbox', checked: !!d.pnShowIV, onChange: function() { upd('pnShowIV', !d.pnShowIV); }, className: 'accent-cyan-500' }), t('stem.semiconductor.i_v_curve', 'I-V Curve')),
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: !!d.pnLedMode, onChange: function() { upd('pnLedMode', !d.pnLedMode); if (!d.pnLedMode) tryAwardXP('pn-led', 10, 'Explored LED mode'); }, className: 'accent-amber-500' }), 'LED Mode'),
+              h('input', { type: 'checkbox', checked: !!d.pnLedMode, onChange: function() { upd('pnLedMode', !d.pnLedMode); if (!d.pnLedMode) tryAwardXP('pn-led', 10, 'Explored LED mode'); }, className: 'accent-amber-500' }), t('stem.semiconductor.led_mode', 'LED Mode')),
             btn('\uD83E\uDD16 AI', function() {
               askAI(bias > 0.5 ? 'forward biased P-N junction current flow' : bias < -0.3 ? 'reverse biased P-N junction depletion' : 'P-N junction equilibrium');
             })
@@ -1233,7 +1257,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-transistor-canvas');
           if (!canvas) return;
-          function draw() { canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [d.transistorType, d.gateVoltage, d.drainVoltage, d.showCMOS]);
@@ -1274,8 +1298,8 @@ window.StemLab = window.StemLab || {
             showCMOS ? 'CMOS Inverter: P\u209B\u209C\u2090\u209C\u1D62\u209C = 0 (rail-to-rail). P\u2093\u2098\u2099 = C\u2097\u00B7V\u2093\u2093\u00B2\u00B7f. Noise margin: NM\u2097 = V\u1D62\u2097 \u2212 V\u2092\u2097, NM\u2095 = V\u2092\u2095 \u2212 V\u1D62\u2095. Transition at V\u1D62\u2099 \u2248 VDD/2.' : (type.startsWith('mosfet') ? type.toUpperCase() + ': I\u2093 = \u03BC\u2099C\u2092\u2093(W/L)[(V\u2097\u209B\u2212V\u209C\u2095)V\u2093\u209B \u2212 V\u2093\u209B\u00B2/2] (linear). I\u2093 = (\u03BC\u2099C\u2092\u2093/2)(W/L)(V\u2097\u209B\u2212V\u209C\u2095)\u00B2 (sat). g\u2098 = \u22022I\u2093/\u2202V\u2097\u209B.' : 'NPN BJT: I\u1D9C = I\u209B(e^(V\u1D47\u1D49/V\u209C)\u22121). \u03B2 = I\u1D9C/I\u1D47 (current gain). Early effect: I\u1D9C(1+V\u1D9C\u1D49/V\u1D00). f\u209C = g\u2098/(2\u03C0C\u03C0).')
           )),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(showCMOS ? 'CMOS inverter operation' : type + ' transistor'); }, 'bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(showCMOS ? 'CMOS inverter. Input ' + Vg.toFixed(1) + ' volts. Output is ' + (cmosOut ? 'HIGH' : 'LOW') + '.' : type + ' transistor. Gate voltage ' + Vg.toFixed(1) + ' volts. Transistor is ' + (isOn ? 'ON' : 'OFF') + '.'); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83E\uDD16 AI Explain', function() { askAI(showCMOS ? 'CMOS inverter operation' : type + ' transistor'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read', function() { speakText(showCMOS ? 'CMOS inverter. Input ' + Vg.toFixed(1) + ' volts. Output is ' + (cmosOut ? 'HIGH' : 'LOW') + '.' : type + ' transistor. Gate voltage ' + Vg.toFixed(1) + ' volts. Transistor is ' + (isOn ? 'ON' : 'OFF') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           aiBox()
         );
@@ -1290,13 +1314,13 @@ window.StemLab = window.StemLab || {
         var inB = !!d.inputB;
 
         var GATES = {
-          NOT:  { inputs: 1, fn: function(a)    { return !a; },       truth: '0\u21921, 1\u21920', transistors: 2, desc: 'Inverts input. Built from 1 PMOS + 1 NMOS (CMOS inverter).' },
-          AND:  { inputs: 2, fn: function(a, b) { return a && b; },   truth: '00\u21920, 01\u21920, 10\u21920, 11\u21921', transistors: 6, desc: 'Output HIGH only when BOTH inputs are HIGH. NAND + NOT (6 transistors).' },
-          OR:   { inputs: 2, fn: function(a, b) { return a || b; },   truth: '00\u21920, 01\u21921, 10\u21921, 11\u21921', transistors: 6, desc: 'Output HIGH when ANY input is HIGH. NOR + NOT (6 transistors).' },
-          NAND: { inputs: 2, fn: function(a, b) { return !(a && b); },truth: '00\u21921, 01\u21921, 10\u21921, 11\u21920', transistors: 4, desc: 'Universal gate! 2 series NMOS + 2 parallel PMOS. All logic from NANDs.' },
-          NOR:  { inputs: 2, fn: function(a, b) { return !(a || b); },truth: '00\u21921, 01\u21920, 10\u21920, 11\u21920', transistors: 4, desc: 'Universal gate! 2 parallel NMOS + 2 series PMOS.' },
-          XOR:  { inputs: 2, fn: function(a, b) { return a !== b; },  truth: '00\u21920, 01\u21921, 10\u21921, 11\u21920', transistors: 8, desc: 'Output HIGH when inputs differ. Key for adders. Uses ~8 transistors.' },
-          XNOR: { inputs: 2, fn: function(a, b) { return a === b; },  truth: '00\u21921, 01\u21920, 10\u21920, 11\u21921', transistors: 8, desc: 'Output HIGH when inputs match. Used in comparators.' }
+          NOT:  { inputs: 1, fn: function(a)    { return !a; },       truth: '0\u21921, 1\u21920', transistors: 2, desc: t('stem.semiconductor.inverts_input_built_from_1_pmos_1_nmos', 'Inverts input. Built from 1 PMOS + 1 NMOS (CMOS inverter).') },
+          AND:  { inputs: 2, fn: function(a, b) { return a && b; },   truth: '00\u21920, 01\u21920, 10\u21920, 11\u21921', transistors: 6, desc: t('stem.semiconductor.output_high_only_when_both_inputs_are_', 'Output HIGH only when BOTH inputs are HIGH. NAND + NOT (6 transistors).') },
+          OR:   { inputs: 2, fn: function(a, b) { return a || b; },   truth: '00\u21920, 01\u21921, 10\u21921, 11\u21921', transistors: 6, desc: t('stem.semiconductor.output_high_when_any_input_is_high_nor', 'Output HIGH when ANY input is HIGH. NOR + NOT (6 transistors).') },
+          NAND: { inputs: 2, fn: function(a, b) { return !(a && b); },truth: '00\u21921, 01\u21921, 10\u21921, 11\u21920', transistors: 4, desc: t('stem.semiconductor.universal_gate_2_series_nmos_2_paralle', 'Universal gate! 2 series NMOS + 2 parallel PMOS. All logic from NANDs.') },
+          NOR:  { inputs: 2, fn: function(a, b) { return !(a || b); },truth: '00\u21921, 01\u21920, 10\u21920, 11\u21920', transistors: 4, desc: t('stem.semiconductor.universal_gate_2_parallel_nmos_2_serie', 'Universal gate! 2 parallel NMOS + 2 series PMOS.') },
+          XOR:  { inputs: 2, fn: function(a, b) { return a !== b; },  truth: '00\u21920, 01\u21921, 10\u21921, 11\u21920', transistors: 8, desc: t('stem.semiconductor.output_high_when_inputs_differ_key_for', 'Output HIGH when inputs differ. Key for adders. Uses ~8 transistors.') },
+          XNOR: { inputs: 2, fn: function(a, b) { return a === b; },  truth: '00\u21921, 01\u21920, 10\u21920, 11\u21921', transistors: 8, desc: t('stem.semiconductor.output_high_when_inputs_match_used_in_', 'Output HIGH when inputs match. Used in comparators.') }
         };
 
         var gate = GATES[gateType];
@@ -1389,7 +1413,7 @@ window.StemLab = window.StemLab || {
             : [[false, false], [false, true], [true, false], [true, true]];
           truthTableGrid = h('div', { className: 'mt-2 rounded-lg bg-slate-800/60 border border-slate-700 p-2 overflow-x-auto' },
             h('table', { className: 'w-full text-xs' },
-              h('caption', { className: 'sr-only' }, 'Data table: A, B, Q'), h('thead', null, h('tr', null,
+              h('caption', { className: 'sr-only' }, t('stem.semiconductor.data_table_a_b_q', 'Data table: A, B, Q')), h('thead', null, h('tr', null,
                 h('th', { scope: 'col', className: 'text-left text-slate-600 px-2 py-1' }, 'A'),
                 gate.inputs === 2 && h('th', { scope: 'col', className: 'text-left text-slate-600 px-2 py-1' }, 'B'),
                 h('th', { scope: 'col', className: 'text-left text-cyan-400 px-2 py-1' }, 'Q')
@@ -1413,7 +1437,7 @@ window.StemLab = window.StemLab || {
               return pill(key, gateType === key, function() {
                 upd('gateType', key);
                 tryAwardXP('gate-' + key, 5, 'Explored ' + key + ' gate');
-              });
+              }, 'gate-' + key);
             })
           ),
           h('canvas', { 
@@ -1451,8 +1475,8 @@ window.StemLab = window.StemLab || {
             'Modern CPUs contain 10-50+ billion transistors implementing these gates. A64-bit adder chains ~64 full adders, each using ~28 transistors. NAND and NOR are "universal" \u2014 any Boolean function can be built from just one type!', 'amber'
           ),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(gateType + ' logic gate CMOS implementation with transistors'); }, 'bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(gateType + ' gate. Input A is ' + (inA ? '1' : '0') + (gate.inputs === 2 ? ', input B is ' + (inB ? '1' : '0') : '') + '. Output Q is ' + (output ? '1' : '0') + '.'); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83E\uDD16 AI Explain', function() { askAI(gateType + ' logic gate CMOS implementation with transistors'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read', function() { speakText(gateType + ' gate. Input A is ' + (inA ? '1' : '0') + (gate.inputs === 2 ? ', input B is ' + (inB ? '1' : '0') : '') + '. Output Q is ' + (output ? '1' : '0') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           aiBox()
         );
@@ -1597,8 +1621,8 @@ window.StemLab = window.StemLab || {
           sliderRow('Temp', ivTemp, 200, 500, 10, function(v) { upd('ivTemp', v); }, ' K'),
           h('div', { className: 'flex items-center gap-3 mt-2' },
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showIdeal, onChange: function() { upd('ivShowIdeal', !showIdeal); }, className: 'accent-slate-400' }), 'Ohm Reference'),
-            btn('\uD83E\uDD16 AI Explain', function() { askAI('I-V characteristic curve of a ' + device); }, 'bg-indigo-600 text-white hover:bg-indigo-700')
+              h('input', { type: 'checkbox', checked: showIdeal, onChange: function() { upd('ivShowIdeal', !showIdeal); }, className: 'accent-slate-400' }), t('stem.semiconductor.ohm_reference', 'Ohm Reference')),
+            btn('\uD83E\uDD16 AI Explain', function() { askAI('I-V characteristic curve of a ' + device); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
           ),
           // Stats
           h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
@@ -1626,12 +1650,12 @@ window.StemLab = window.StemLab || {
         var simResult = d.circuitSimResult;
 
         var COMP_PALETTE = [
-          { type: 'resistor', icon: '\u2237', label: 'Resistor', value: '1k\u03A9' },
-          { type: 'diode', icon: '\u25B7|', label: 'Diode', value: 'Si' },
+          { type: 'resistor', icon: '\u2237', label: t('stem.semiconductor.resistor', 'Resistor'), value: '1k\u03A9' },
+          { type: 'diode', icon: '\u25B7|', label: t('stem.semiconductor.diode', 'Diode'), value: 'Si' },
           { type: 'led', icon: '\uD83D\uDCA1', label: 'LED', value: 'Red' },
-          { type: 'capacitor', icon: '\u2225', label: 'Capacitor', value: '100\u03BCF' },
-          { type: 'nmos', icon: '\uD83D\uDD0C', label: 'NMOS FET', value: 'N-ch' },
-          { type: 'pmos', icon: '\uD83D\uDD0C', label: 'PMOS FET', value: 'P-ch' }
+          { type: 'capacitor', icon: '\u2225', label: t('stem.semiconductor.capacitor', 'Capacitor'), value: '100\u03BCF' },
+          { type: 'nmos', icon: '\uD83D\uDD0C', label: t('stem.semiconductor.nmos_fet', 'NMOS FET'), value: 'N-ch' },
+          { type: 'pmos', icon: '\uD83D\uDD0C', label: t('stem.semiconductor.pmos_fet', 'PMOS FET'), value: 'P-ch' }
         ];
 
         function addComponent(type) {
@@ -1683,17 +1707,17 @@ window.StemLab = window.StemLab || {
         }
 
         return h('div', null,
-          h('div', { className: 'text-xs text-slate-600 mb-2' }, 'Build a circuit from components. Add parts, then simulate!'),
+          h('div', { className: 'text-xs text-slate-600 mb-2' }, t('stem.semiconductor.build_a_circuit_from_components_add_pa', 'Build a circuit from components. Add parts, then simulate!')),
           // Palette
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             COMP_PALETTE.map(function(comp) {
-              return btn(comp.icon + ' ' + comp.label, function() { addComponent(comp.type); }, 'bg-slate-700 text-slate-200 hover:bg-slate-600');
+              return btn(comp.icon + ' ' + comp.label, function() { addComponent(comp.type); }, 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600', 'comp-' + comp.type);
             })
           ),
           // Circuit board
           h('div', { className: 'rounded-lg bg-slate-900 border border-slate-700 p-3 min-h-[120px] mb-3' },
             components.length === 0
-              ? h('div', { className: 'text-center text-slate-600 py-8' }, 'Click components above to add them')
+              ? h('div', { className: 'text-center text-slate-600 py-8' }, t('stem.semiconductor.click_components_above_to_add_them', 'Click components above to add them'))
               : h('div', { className: 'flex flex-wrap gap-2' },
                   // Supply
                   h('div', { className: 'flex flex-col items-center px-2 py-1 rounded bg-red-900/30 border border-red-700' },
@@ -1727,14 +1751,14 @@ window.StemLab = window.StemLab || {
           // Controls
           h('div', { className: 'flex items-center gap-3 mb-3' },
             sliderRow('Supply', supplyV, 0, 12, 0.5, function(v) { upd('circuitVoltage', v); }, ' V'),
-            btn('\u25B6 Simulate', simulateCircuit, 'bg-emerald-700 text-white hover:bg-emerald-700'),
-            btn('\uD83D\uDDD1 Clear', function() { updMulti({ circuitComponents: [], circuitSimResult: null }); }, 'bg-red-600/80 text-white hover:bg-red-700')
+            btn('\u25B6 Simulate', simulateCircuit, 'transition-colors bg-emerald-700 text-white hover:bg-emerald-700'),
+            btn('\uD83D\uDDD1 Clear', function() { updMulti({ circuitComponents: [], circuitSimResult: null }); }, 'transition-colors bg-red-600/80 text-white hover:bg-red-700')
           ),
           // Simulation results
           simResult && (simResult.error
             ? infoBox(simResult.error, 'red')
             : h('div', { className: 'rounded-lg bg-emerald-900/20 border border-emerald-700 p-3' },
-                h('div', { className: 'text-xs font-bold text-emerald-400 mb-2' }, '\u2713 Simulation Results'),
+                h('div', { className: 'text-xs font-bold text-emerald-400 mb-2' }, t('stem.semiconductor.simulation_results', '\u2713 Simulation Results')),
                 h('div', { className: 'flex flex-wrap gap-2' },
                   statBadge('V\u2092\u1D64\u209C', simResult.voltage + ' V', 'text-cyan-400'),
                   statBadge('Current', simResult.current + ' mA', 'text-emerald-400'),
@@ -1753,7 +1777,7 @@ window.StemLab = window.StemLab || {
           btn('\uD83E\uDD16 AI: Analyze my circuit', function() {
             var desc = components.map(function(c) { return c.label; }).join(', ');
             askAI('circuit analysis with ' + desc + ' at ' + supplyV + 'V supply');
-          }, 'mt-2 bg-indigo-600 text-white hover:bg-indigo-700'),
+          }, 'transition-colors mt-2 bg-indigo-600 text-white hover:bg-indigo-700'),
           aiBox()
         );
       }
@@ -1768,29 +1792,29 @@ window.StemLab = window.StemLab || {
         var fabTime = d.fabTime || 30;
 
         var FAB_STAGES = [
-          { id: 'ingot',    name: 'Crystal Growth',   icon: '\uD83E\uDDCA', color: '#6366F1',
-            desc: 'A silicon ingot is pulled from molten silicon using the Czochralski method at ~1414\u00B0C.',
+          { id: 'ingot',    name: t('stem.semiconductor.crystal_growth', 'Crystal Growth'),   icon: '\uD83E\uDDCA', color: '#6366F1',
+            desc: t('stem.semiconductor.a_silicon_ingot_is_pulled_from_molten_', 'A silicon ingot is pulled from molten silicon using the Czochralski method at ~1414\u00B0C.'),
             detail: gradeText('Melted sand becomes a shiny crystal stick!', 'Molten silicon is slowly pulled upward to form a single crystal cylinder called an ingot.', 'Czochralski process: seed crystal rotated and pulled from 1414\u00B0C melt. Growth rate ~1mm/min. Boule diameter up to 300mm.', 'Czochralski: \u03C9\u209B\u2091\u2091\u2093 ~10-30 rpm, pull rate ~1mm/min. Dopant segregation coefficient k\u2091\u2092 determines initial resistivity. Float-zone for ultra-high purity.') },
-          { id: 'wafer',    name: 'Wafer Slicing',    icon: '\uD83D\uDD2A', color: '#8B5CF6',
-            desc: 'The ingot is sliced into thin wafers (~775\u03BCm thick) using diamond wire saws.',
+          { id: 'wafer',    name: t('stem.semiconductor.wafer_slicing', 'Wafer Slicing'),    icon: '\uD83D\uDD2A', color: '#8B5CF6',
+            desc: t('stem.semiconductor.the_ingot_is_sliced_into_thin_wafers_7', 'The ingot is sliced into thin wafers (~775\u03BCm thick) using diamond wire saws.'),
             detail: gradeText('The crystal stick is cut into thin circles like slicing a cucumber!', 'Diamond wire saws cut the ingot into round wafers. Each wafer is polished mirror-smooth on one side.', 'Inner-diameter or wire saw slicing. CMP (Chemical-Mechanical Polishing) achieves <0.5nm RMS roughness. Wafer flats/notches indicate crystal orientation.', 'Wire saw: ~160\u03BCm kerf loss. Double-side polishing to TTV < 2\u03BCm. Edge profiling prevents chipping. Crystal orientation <100> for CMOS.') },
-          { id: 'oxidation', name: 'Thermal Oxidation', icon: '\uD83D\uDD25', color: '#F59E0B',
-            desc: 'A thin layer of SiO\u2082 is grown on the wafer surface at ~1000\u00B0C in an oxygen furnace.',
+          { id: 'oxidation', name: t('stem.semiconductor.thermal_oxidation', 'Thermal Oxidation'), icon: '\uD83D\uDD25', color: '#F59E0B',
+            desc: t('stem.semiconductor.a_thin_layer_of_sio_is_grown_on_the_wa', 'A thin layer of SiO\u2082 is grown on the wafer surface at ~1000\u00B0C in an oxygen furnace.'),
             detail: gradeText('The wafer gets a glass coat by baking it really hot!', 'Heating silicon in oxygen grows a thin glass (SiO\u2082) layer. This insulating layer protects the silicon underneath.', 'Dry oxidation: Si + O\u2082 \u2192 SiO\u2082 (thin, high quality). Wet: Si + 2H\u2082O \u2192 SiO\u2082 + 2H\u2082 (faster, thicker). Deal-Grove model: x\u2092\u00B2 + Ax\u2092 = B(t+\u03C4).', 'Deal-Grove: x\u2092\u00B2 + Ax\u2092 = B(t+\u03C4). B = parabolic rate (diffusion-limited). B/A = linear rate (reaction-limited). Activation energy ~1.2eV (dry), ~0.7eV (wet). Chlorine added for Na\u207A gettering.') },
-          { id: 'photolith', name: 'Photolithography',  icon: '\uD83D\uDCF7', color: '#EC4899',
-            desc: 'UV light transfers circuit patterns from a mask onto photoresist-coated wafers.',
+          { id: 'photolith', name: t('stem.semiconductor.photolithography', 'Photolithography'),  icon: '\uD83D\uDCF7', color: '#EC4899',
+            desc: t('stem.semiconductor.uv_light_transfers_circuit_patterns_fr', 'UV light transfers circuit patterns from a mask onto photoresist-coated wafers.'),
             detail: gradeText('A special camera prints tiny circuit patterns onto the wafer using light!', 'Photoresist is spread on the wafer, UV light shines through a stencil (mask) to print the pattern, then chemicals wash away the exposed areas.', 'Spin-coat photoresist \u2192 soft bake \u2192 UV exposure through mask \u2192 develop. Resolution \u221D \u03BB/(2\u00B7NA). DUV (193nm) and EUV (13.5nm) for modern nodes.', 'Rayleigh: CD = k\u2081\u03BB/NA, DoF = k\u2082\u03BB/NA\u00B2. Immersion (n=1.44): effective NA > 1. EUV (13.5nm): reflective optics, tin droplet plasma source. OPC + SRAF for sub-wavelength features. Multi-patterning: SADP/SAQP.') },
-          { id: 'etch',      name: 'Etching',           icon: '\u2702\uFE0F', color: '#EF4444',
-            desc: 'Unwanted material is removed by chemical (wet) or plasma (dry) etching.',
+          { id: 'etch',      name: t('stem.semiconductor.etching', 'Etching'),           icon: '\u2702\uFE0F', color: '#EF4444',
+            desc: t('stem.semiconductor.unwanted_material_is_removed_by_chemic', 'Unwanted material is removed by chemical (wet) or plasma (dry) etching.'),
             detail: gradeText('Chemicals eat away the parts we don\'t want, like carving a sculpture!', 'Etching removes the unprotected areas. Wet etching uses chemicals; dry etching uses plasma gas to be more precise.', 'Wet etch: isotropic, high selectivity. Dry (RIE): anisotropic, directional plasma ions. Etch rate, selectivity, and anisotropy are key metrics.', 'RIE: Cl\u2082/HBr for Si, CF\u2084/CHF\u2083 for SiO\u2082. ICP for high-density plasma. Aspect-ratio dependent etching (ARDE). Notching at insulator interfaces. Etch stop layers (SiGe, SiN).') },
-          { id: 'doping',    name: 'Ion Implantation',  icon: '\u2622\uFE0F', color: '#10B981',
-            desc: 'Dopant atoms are shot into the silicon at high energy to change its electrical properties.',
+          { id: 'doping',    name: t('stem.semiconductor.ion_implantation', 'Ion Implantation'),  icon: '\u2622\uFE0F', color: '#10B981',
+            desc: t('stem.semiconductor.dopant_atoms_are_shot_into_the_silicon', 'Dopant atoms are shot into the silicon at high energy to change its electrical properties.'),
             detail: gradeText('Special atoms are shot into the wafer like tiny bullets to give it superpowers!', 'An ion beam accelerates dopant atoms (like boron or phosphorus) into the silicon. This controls where the wafer conducts electricity.', 'Ion implant: 10-400 keV, dose 10\u00B9\u00B2-10\u00B9\u2076 cm\u207B\u00B2. Gaussian profile: R\u209A (projected range), \u0394R\u209A (straggle). Followed by annealing to activate dopants and repair lattice damage.', 'LSS theory: R\u209A = \u222B\u2080\u1D49(dE/dx)\u207B\u00B9dE. Nuclear + electronic stopping. Channeling along <110>. Rapid thermal annealing (RTA): 1000-1100\u00B0C, 1-10s. Transient enhanced diffusion (TED) from interstitials.') },
-          { id: 'deposit',   name: 'Thin Film Deposition', icon: '\uD83C\uDF2B\uFE0F', color: '#06B6D4',
-            desc: 'Metal and insulator layers are deposited by CVD, PVD, or ALD techniques.',
+          { id: 'deposit',   name: t('stem.semiconductor.thin_film_deposition', 'Thin Film Deposition'), icon: '\uD83C\uDF2B\uFE0F', color: '#06B6D4',
+            desc: t('stem.semiconductor.metal_and_insulator_layers_are_deposit', 'Metal and insulator layers are deposited by CVD, PVD, or ALD techniques.'),
             detail: gradeText('Thin coats of metal and glass are sprayed onto the wafer like paint!', 'Chemical vapor deposition (CVD) grows thin films from gas. Physical vapor deposition (PVD/sputtering) shoots metal atoms at the wafer. These create the circuit wires.', 'CVD: SiH\u2084 \u2192 Si + 2H\u2082 (poly-Si), TEOS for SiO\u2082. PVD/Sputtering: Al, Cu, Ti, TaN targets. ALD: atomic layer precision for high-k (HfO\u2082) gate dielectrics.', 'PECVD: lower temp (300-400\u00B0C) using plasma assist. ALD: self-limiting surface reactions, ~1\u00C5/cycle. Cu damascene: deposit barrier (TaN/Ta) \u2192 Cu seed \u2192 electroplate \u2192 CMP. Cobalt replacing Cu at <10nm for via resistance.') },
-          { id: 'metal',     name: 'Metallization & CMP', icon: '\u2699\uFE0F', color: '#D97706',
-            desc: 'Metal interconnects are patterned and polished flat. Multiple layers build up the circuit wiring.',
+          { id: 'metal',     name: t('stem.semiconductor.metallization_cmp', 'Metallization & CMP'), icon: '\u2699\uFE0F', color: '#D97706',
+            desc: t('stem.semiconductor.metal_interconnects_are_patterned_and_', 'Metal interconnects are patterned and polished flat. Multiple layers build up the circuit wiring.'),
             detail: gradeText('Metal wires connect all the tiny switches together, and then we polish it smooth!', 'Copper wires are plated into trenches, then polished perfectly flat. This process repeats for 10+ metal layers to connect all transistors.', 'Dual damascene: trench + via etch \u2192 barrier (TaN) \u2192 Cu seed \u2192 electroplate \u2192 CMP. Preston equation: RR = K\u209A\u00B7P\u00B7V. Modern chips: 10-15 metal layers (BEOL).', 'Cu resistivity increases at <28nm due to electron scattering at grain boundaries and interfaces. R = \u03C1L/A + 2\u03C1\u2097/t. Ruthenium and cobalt for narrow vias. Air gaps for low-k ILD (\u03BA < 2.5). BEOL thermal budget < 400\u00B0C.') }
         ];
 
@@ -1817,10 +1841,10 @@ window.StemLab = window.StemLab || {
           // Build up layers based on stage progress
           var layers = [];
           if (stage >= 2) layers.push({ name: 'SiO\u2082', color: '#94A3B8', h: layerH });
-          if (stage >= 3) layers.push({ name: 'Photoresist', color: '#EC4899', h: layerH * 0.6, pattern: true });
-          if (stage >= 5) layers.push({ name: 'Doped region', color: '#10B981', h: layerH * 0.8, inside: true });
-          if (stage >= 6) layers.push({ name: 'Poly-Si / Metal', color: '#F59E0B', h: layerH });
-          if (stage >= 7) layers.push({ name: 'Cu Interconnect', color: '#D97706', h: layerH });
+          if (stage >= 3) layers.push({ name: t('stem.semiconductor.photoresist', 'Photoresist'), color: '#EC4899', h: layerH * 0.6, pattern: true });
+          if (stage >= 5) layers.push({ name: t('stem.semiconductor.doped_region', 'Doped region'), color: '#10B981', h: layerH * 0.8, inside: true });
+          if (stage >= 6) layers.push({ name: t('stem.semiconductor.poly_si_metal', 'Poly-Si / Metal'), color: '#F59E0B', h: layerH });
+          if (stage >= 7) layers.push({ name: t('stem.semiconductor.cu_interconnect', 'Cu Interconnect'), color: '#D97706', h: layerH });
 
           var yOff = waferY;
           layers.forEach(function(layer) {
@@ -1900,7 +1924,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-fab-canvas');
           if (!canvas) return;
-          function draw() { canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [d.fabStage]);
@@ -1913,7 +1937,7 @@ window.StemLab = window.StemLab || {
           }),
           // Stage navigation
           h('div', { className: 'flex items-center gap-2 mt-3' },
-            btn('\u2190 Prev', function() { if (stage > 0) upd('fabStage', stage - 1); }, 'bg-slate-700 text-slate-300 hover:bg-slate-600' + (stage === 0 ? ' opacity-40' : '')),
+            btn('\u2190 Prev', function() { if (stage > 0) upd('fabStage', stage - 1); }, 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' + (stage === 0 ? ' opacity-40' : '')),
             h('div', { className: 'flex-1 flex gap-1 justify-center' },
               FAB_STAGES.map(function(fs, i) {
                 return h('div', { 
@@ -1936,7 +1960,7 @@ window.StemLab = window.StemLab || {
                 addToast('\uD83C\uDFC6 Fabrication Complete!', 'success');
               }
               if (announceToSR) announceToSR('Advanced to stage ' + (stage + 2));
-            }, 'bg-cyan-600 text-white hover:bg-cyan-700')
+            }, 'transition-colors bg-cyan-600 text-white hover:bg-cyan-700')
           ),
           // Stage info card
           h('div', { className: 'mt-3 p-3 rounded-xl border', style: { borderColor: currentStage.color + '60', backgroundColor: currentStage.color + '10' } },
@@ -1953,8 +1977,8 @@ window.StemLab = window.StemLab || {
             stage === 5 && sliderRow('Implant time', fabTime, 10, 120, 5, function(v) { upd('fabTime', v); }, ' min')
           ),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(currentStage.name + ' step in semiconductor wafer fabrication'); }, 'bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText('Stage ' + (stage + 1) + ': ' + currentStage.name + '. ' + currentStage.desc); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83E\uDD16 AI Explain', function() { askAI(currentStage.name + ' step in semiconductor wafer fabrication'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read', function() { speakText('Stage ' + (stage + 1) + ': ' + currentStage.name + '. ' + currentStage.desc); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           aiBox()
         );
@@ -1965,15 +1989,15 @@ window.StemLab = window.StemLab || {
       // ════════════════════════════════════════════
       function renderLedSpectrum() {
         var LED_MATERIALS = {
-          'infrared':  { name: 'GaAs (Infrared)',   wavelength: 940, bandGap: 1.32, color: '#7F1D1D', rgb: [80,0,0] },
-          'red-gaas':  { name: 'AlGaAs (Red)',      wavelength: 660, bandGap: 1.88, color: '#EF4444', rgb: [255,0,0] },
-          'red-gan':   { name: 'GaAsP (Red)',       wavelength: 630, bandGap: 1.97, color: '#F87171', rgb: [255,30,0] },
-          'orange':    { name: 'GaAsP (Orange)',    wavelength: 605, bandGap: 2.05, color: '#F97316', rgb: [255,140,0] },
-          'yellow':    { name: 'GaP:N (Yellow)',    wavelength: 585, bandGap: 2.12, color: '#EAB308', rgb: [255,230,0] },
-          'green':     { name: 'InGaN (Green)',     wavelength: 525, bandGap: 2.36, color: '#22C55E', rgb: [0,255,0] },
-          'blue':      { name: 'InGaN (Blue)',      wavelength: 470, bandGap: 2.64, color: '#3B82F6', rgb: [0,100,255] },
-          'uv':        { name: 'AlGaN (UV)',        wavelength: 365, bandGap: 3.40, color: '#7C3AED', rgb: [120,0,255] },
-          'white':     { name: 'Blue InGaN + Phosphor', wavelength: 460, bandGap: 2.70, color: '#FAFAFA', rgb: [255,255,230] }
+          'infrared':  { name: t('stem.semiconductor.gaas_infrared', 'GaAs (Infrared)'),   wavelength: 940, bandGap: 1.32, color: '#7F1D1D', rgb: [80,0,0] },
+          'red-gaas':  { name: t('stem.semiconductor.algaas_red', 'AlGaAs (Red)'),      wavelength: 660, bandGap: 1.88, color: '#EF4444', rgb: [255,0,0] },
+          'red-gan':   { name: t('stem.semiconductor.gaasp_red', 'GaAsP (Red)'),       wavelength: 630, bandGap: 1.97, color: '#F87171', rgb: [255,30,0] },
+          'orange':    { name: t('stem.semiconductor.gaasp_orange', 'GaAsP (Orange)'),    wavelength: 605, bandGap: 2.05, color: '#F97316', rgb: [255,140,0] },
+          'yellow':    { name: t('stem.semiconductor.gap_n_yellow', 'GaP:N (Yellow)'),    wavelength: 585, bandGap: 2.12, color: '#EAB308', rgb: [255,230,0] },
+          'green':     { name: t('stem.semiconductor.ingan_green', 'InGaN (Green)'),     wavelength: 525, bandGap: 2.36, color: '#22C55E', rgb: [0,255,0] },
+          'blue':      { name: t('stem.semiconductor.ingan_blue', 'InGaN (Blue)'),      wavelength: 470, bandGap: 2.64, color: '#3B82F6', rgb: [0,100,255] },
+          'uv':        { name: t('stem.semiconductor.algan_uv', 'AlGaN (UV)'),        wavelength: 365, bandGap: 3.40, color: '#7C3AED', rgb: [120,0,255] },
+          'white':     { name: t('stem.semiconductor.blue_ingan_phosphor', 'Blue InGaN + Phosphor'), wavelength: 460, bandGap: 2.70, color: '#FAFAFA', rgb: [255,255,230] }
         };
 
         var mat = LED_MATERIALS[d.ledMaterial] || LED_MATERIALS['red-gan'];
@@ -2072,7 +2096,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-led-canvas');
           if (!canvas) return;
-          function draw() { canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [d.ledMaterial, d.ledCurrent, d.ledMixMode, d.ledMixR, d.ledMixG, d.ledMixB]);
@@ -2118,8 +2142,8 @@ window.StemLab = window.StemLab || {
             'Spectral width: \u0394\u03BB \u2248 1.8kT\u03BB\u00B2\u209A/hc. Internal quantum efficiency: \u03B7\u1D62 = B\u00B7n/(A + B\u00B7n + C\u00B7n\u00B2) where A=SRH, B=radiative, C=Auger. Green gap problem: InGaN efficiency drops 50-60% around 530nm due to piezoelectric fields in c-plane QWs.'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(mixMode ? 'RGB LED color mixing additive colors' : mat.name + ' LED physics and emission wavelength'); }, 'bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(mixMode ? 'RGB color mixer. Red ' + (d.ledMixR || 0) + ', Green ' + (d.ledMixG || 0) + ', Blue ' + (d.ledMixB || 0) + '.' : mat.name + '. Wavelength ' + mat.wavelength + ' nanometers. Band gap ' + mat.bandGap + ' electron volts.'); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83E\uDD16 AI Explain', function() { askAI(mixMode ? 'RGB LED color mixing additive colors' : mat.name + ' LED physics and emission wavelength'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read', function() { speakText(mixMode ? 'RGB color mixer. Red ' + (d.ledMixR || 0) + ', Green ' + (d.ledMixG || 0) + ', Blue ' + (d.ledMixB || 0) + '.' : mat.name + '. Wavelength ' + mat.wavelength + ' nanometers. Band gap ' + mat.bandGap + ' electron volts.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           aiBox()
         );
@@ -2136,12 +2160,12 @@ window.StemLab = window.StemLab || {
         var loadR = d.solarLoadR || 100;
 
         var SOLAR_MATS = {
-          silicon: { name: 'Crystalline Si', eff: 0.22, Voc: 0.72, color: '#4F46E5', record: 26.7 },
-          thinfilm: { name: 'CdTe Thin Film', eff: 0.18, Voc: 0.87, color: '#10B981', record: 22.1 },
-          perovskite: { name: 'Perovskite', eff: 0.25, Voc: 1.18, color: '#F59E0B', record: 25.7 },
-          gaas: { name: 'GaAs (III-V)', eff: 0.29, Voc: 1.12, color: '#EF4444', record: 29.1 },
-          organic: { name: 'Organic PV', eff: 0.12, Voc: 0.85, color: '#8B5CF6', record: 18.2 },
-          tandem: { name: 'Perovskite/Si Tandem', eff: 0.33, Voc: 1.90, color: '#06B6D4', record: 33.7 }
+          silicon: { name: t('stem.semiconductor.crystalline_si', 'Crystalline Si'), eff: 0.22, Voc: 0.72, color: '#4F46E5', record: 26.7 },
+          thinfilm: { name: t('stem.semiconductor.cdte_thin_film', 'CdTe Thin Film'), eff: 0.18, Voc: 0.87, color: '#10B981', record: 22.1 },
+          perovskite: { name: t('stem.semiconductor.perovskite', 'Perovskite'), eff: 0.25, Voc: 1.18, color: '#F59E0B', record: 25.7 },
+          gaas: { name: t('stem.semiconductor.gaas_iii_v', 'GaAs (III-V)'), eff: 0.29, Voc: 1.12, color: '#EF4444', record: 29.1 },
+          organic: { name: t('stem.semiconductor.organic_pv', 'Organic PV'), eff: 0.12, Voc: 0.85, color: '#8B5CF6', record: 18.2 },
+          tandem: { name: t('stem.semiconductor.perovskite_si_tandem', 'Perovskite/Si Tandem'), eff: 0.33, Voc: 1.90, color: '#06B6D4', record: 33.7 }
         };
 
         var sMat = SOLAR_MATS[material] || SOLAR_MATS.silicon;
@@ -2271,7 +2295,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-solar-canvas');
           if (!canvas) return;
-          function draw() { canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [d.solarIrradiance, d.solarTemp, d.solarArea, d.solarMaterial, d.solarShowPV]);
@@ -2283,7 +2307,7 @@ window.StemLab = window.StemLab || {
               return pill(sm.name, material === key, function() {
                 upd('solarMaterial', key);
                 tryAwardXP('solar-' + key, 8, 'Explored ' + sm.name + ' solar cell');
-              });
+              }, 'solar-' + key);
             })
           ),
           h('canvas', { 
@@ -2296,8 +2320,8 @@ window.StemLab = window.StemLab || {
           sliderRow('Area', area, 10, 500, 10, function(v) { upd('solarArea', v); }, ' cm\u00B2'),
           h('div', { className: 'flex items-center gap-3 mt-2' },
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: !!d.solarShowPV, onChange: function() { upd('solarShowPV', !d.solarShowPV); }, className: 'accent-cyan-500' }), 'I-V / P-V Curve'),
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(sMat.name + ' solar cell photovoltaic effect and efficiency'); }, 'bg-indigo-600 text-white hover:bg-indigo-700')
+              h('input', { type: 'checkbox', checked: !!d.solarShowPV, onChange: function() { upd('solarShowPV', !d.solarShowPV); }, className: 'accent-cyan-500' }), t('stem.semiconductor.i_v_p_v_curve', 'I-V / P-V Curve')),
+            btn('\uD83E\uDD16 AI Explain', function() { askAI(sMat.name + ' solar cell photovoltaic effect and efficiency'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
           ),
           // Stats
           h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
@@ -2327,20 +2351,20 @@ window.StemLab = window.StemLab || {
         var logScale = d.mooreLogScale !== false;
 
         var MILESTONES = [
-          { year: 1965, transistors: 64,        node: null,   name: 'Moore\'s paper published', chip: null },
-          { year: 1971, transistors: 2300,      node: '10\u03BCm', name: 'Intel 4004', chip: '4-bit CPU' },
-          { year: 1978, transistors: 29000,     node: '3\u03BCm',  name: 'Intel 8086', chip: '16-bit CPU' },
-          { year: 1985, transistors: 275000,    node: '1.5\u03BCm', name: 'Intel 386', chip: '32-bit CPU' },
-          { year: 1993, transistors: 3100000,   node: '0.8\u03BCm', name: 'Pentium', chip: 'Superscalar' },
-          { year: 1999, transistors: 9500000,   node: '250nm', name: 'Pentium III', chip: 'Deep pipeline' },
-          { year: 2004, transistors: 125000000, node: '90nm',  name: 'Prescott', chip: 'Strained Si' },
-          { year: 2006, transistors: 291000000, node: '65nm',  name: 'Core 2 Duo', chip: 'Multi-core era' },
-          { year: 2010, transistors: 1170000000,node: '32nm',  name: 'Core i7 (Westmere)', chip: 'High-k/Metal gate' },
-          { year: 2014, transistors: 2600000000,node: '14nm',  name: 'Core i7 (Broadwell)', chip: 'FinFET' },
-          { year: 2017, transistors: 19200000000, node: '10nm', name: 'Apple A11', chip: 'Neural engine' },
-          { year: 2020, transistors: 50000000000, node: '5nm',  name: 'Apple M1', chip: 'Arm SoC' },
-          { year: 2022, transistors: 114000000000, node: '3nm', name: 'Apple M2 Ultra', chip: 'Chiplet' },
-          { year: 2024, transistors: 208000000000, node: '3nm', name: 'Apple M4 Ultra', chip: 'Advanced packaging' }
+          { year: 1965, transistors: 64,        node: null,   name: t('stem.semiconductor.moore_s_paper_published', 'Moore\'s paper published'), chip: null },
+          { year: 1971, transistors: 2300,      node: '10\u03BCm', name: t('stem.semiconductor.intel_4004', 'Intel 4004'), chip: '4-bit CPU' },
+          { year: 1978, transistors: 29000,     node: '3\u03BCm',  name: t('stem.semiconductor.intel_8086', 'Intel 8086'), chip: '16-bit CPU' },
+          { year: 1985, transistors: 275000,    node: '1.5\u03BCm', name: t('stem.semiconductor.intel_386', 'Intel 386'), chip: '32-bit CPU' },
+          { year: 1993, transistors: 3100000,   node: '0.8\u03BCm', name: t('stem.semiconductor.pentium', 'Pentium'), chip: 'Superscalar' },
+          { year: 1999, transistors: 9500000,   node: '250nm', name: t('stem.semiconductor.pentium_iii', 'Pentium III'), chip: 'Deep pipeline' },
+          { year: 2004, transistors: 125000000, node: '90nm',  name: t('stem.semiconductor.prescott', 'Prescott'), chip: 'Strained Si' },
+          { year: 2006, transistors: 291000000, node: '65nm',  name: t('stem.semiconductor.core_2_duo', 'Core 2 Duo'), chip: 'Multi-core era' },
+          { year: 2010, transistors: 1170000000,node: '32nm',  name: t('stem.semiconductor.core_i7_westmere', 'Core i7 (Westmere)'), chip: 'High-k/Metal gate' },
+          { year: 2014, transistors: 2600000000,node: '14nm',  name: t('stem.semiconductor.core_i7_broadwell', 'Core i7 (Broadwell)'), chip: 'FinFET' },
+          { year: 2017, transistors: 19200000000, node: '10nm', name: t('stem.semiconductor.apple_a11', 'Apple A11'), chip: 'Neural engine' },
+          { year: 2020, transistors: 50000000000, node: '5nm',  name: t('stem.semiconductor.apple_m1', 'Apple M1'), chip: 'Arm SoC' },
+          { year: 2022, transistors: 114000000000, node: '3nm', name: t('stem.semiconductor.apple_m2_ultra', 'Apple M2 Ultra'), chip: 'Chiplet' },
+          { year: 2024, transistors: 208000000000, node: '3nm', name: t('stem.semiconductor.apple_m4_ultra', 'Apple M4 Ultra'), chip: 'Advanced packaging' }
         ];
 
         // Find nearest milestone
@@ -2447,13 +2471,13 @@ window.StemLab = window.StemLab || {
           h('canvas', { 
             id: 'semi-moore-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
-            role: 'img', 'aria-label': 'Moore\'s Law graph showing transistor counts from 1965 to 2030'
+            role: 'img', 'aria-label': t('stem.semiconductor.moore_s_law_graph_showing_transistor_c', 'Moore\'s Law graph showing transistor counts from 1965 to 2030')
           }),
           sliderRow('Year', year, 1965, 2030, 1, function(v) { upd('mooreYear', v); }, ''),
           h('div', { className: 'flex items-center gap-3 mt-2' },
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showPred, onChange: function() { upd('mooreShowPred', !showPred); }, className: 'accent-amber-500' }), 'Moore Prediction'),
-            btn('\uD83E\uDD16 AI Explain', function() { askAI('Moore\'s Law semiconductor scaling in year ' + year); }, 'bg-indigo-600 text-white hover:bg-indigo-700')
+              h('input', { type: 'checkbox', checked: showPred, onChange: function() { upd('mooreShowPred', !showPred); }, className: 'accent-amber-500' }), t('stem.semiconductor.moore_prediction', 'Moore Prediction')),
+            btn('\uD83E\uDD16 AI Explain', function() { askAI('Moore\'s Law semiconductor scaling in year ' + year); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
           ),
           // Milestone info
           h('div', { className: 'mt-2 p-3 rounded-xl bg-slate-800/60 border border-slate-700' },
@@ -2640,7 +2664,7 @@ window.StemLab = window.StemLab || {
               return pill(m.name, (d.qwMaterial || 'gaas-algaas') === key, function() {
                 upd('qwMaterial', key);
                 tryAwardXP('qw-' + key, 8, 'Explored ' + m.name + ' quantum well');
-              });
+              }, 'qw-' + key);
             })
           ),
           h('canvas', { 
@@ -2654,19 +2678,19 @@ window.StemLab = window.StemLab || {
           (gradeBand === '6-8' || gradeBand === '9-12') && sliderRow('E-field', efield, -50, 50, 5, function(v) { upd('qwElectricField', v); }, ' kV/cm'),
           h('div', { className: 'flex items-center gap-3 mt-2' },
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showWave, onChange: function() { upd('qwShowWave', !showWave); }, className: 'accent-cyan-500' }), '\u03C8(x) Wavefunction'),
+              h('input', { type: 'checkbox', checked: showWave, onChange: function() { upd('qwShowWave', !showWave); }, className: 'accent-cyan-500' }), t('stem.semiconductor.x_wavefunction', '\u03C8(x) Wavefunction')),
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showProb, onChange: function() { upd('qwShowProb', !showProb); }, className: 'accent-amber-500' }), '|\u03C8|\u00B2 Probability')
+              h('input', { type: 'checkbox', checked: showProb, onChange: function() { upd('qwShowProb', !showProb); }, className: 'accent-amber-500' }), t('stem.semiconductor.probability', '|\u03C8|\u00B2 Probability'))
           ),
           // Energy level stats
           h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
             levels.map(function(lev) {
-              return statBadge('E' + lev.n, lev.E.toFixed(3) + ' eV', lev.bound ? 'text-cyan-400' : 'text-slate-200');
+              return statBadge('E' + lev.n, lev.E.toFixed(3) + ' eV', lev.bound ? 'text-cyan-400' : 'text-slate-200', 'level-' + lev.n);
             })
           ),
           // Transition energies
           transitions.length > 0 && h('div', { className: 'mt-2 p-2 rounded-lg bg-slate-800/60 border border-slate-700' },
-            h('div', { className: 'text-[11px] text-slate-600 uppercase tracking-wider mb-1' }, 'Optical Transitions'),
+            h('div', { className: 'text-[11px] text-slate-600 uppercase tracking-wider mb-1' }, t('stem.semiconductor.optical_transitions', 'Optical Transitions')),
             h('div', { className: 'flex flex-wrap gap-2' },
               transitions.filter(function(tr) { return tr.dE > 0; }).slice(0, 4).map(function(tr) {
                 return h('div', { key: tr.from + '-' + tr.to, className: 'text-xs text-slate-300' },
@@ -2683,8 +2707,8 @@ window.StemLab = window.StemLab || {
             'Finite well: transcendental equations tan(kL/2) = \u03BA/k (even) and -cot(kL/2) = \u03BA/k (odd). Stark effect: E-field tilts well \u2192 QCSE (red-shift), used in modulators. Coupled QWs \u2192 minibands in superlattices. 2DEG at heterointerface: \u03BC > 10\u2076 cm\u00B2/Vs at low T.'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI('quantum well confinement in ' + qmat.name + ' with width ' + wellWidth + ' nm'); }, 'bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText('Quantum well in ' + qmat.name + '. Width ' + wellWidth + ' nanometers, depth ' + wellDepth + ' electron volts. ' + levels.length + ' energy levels.'); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83E\uDD16 AI Explain', function() { askAI('quantum well confinement in ' + qmat.name + ' with width ' + wellWidth + ' nm'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read', function() { speakText('Quantum well in ' + qmat.name + '. Width ' + wellWidth + ' nanometers, depth ' + wellDepth + ' electron volts. ' + levels.length + ' energy levels.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           aiBox()
         );
@@ -2701,11 +2725,11 @@ window.StemLab = window.StemLab || {
         var showTiming = !!d.memShowTiming;
 
         var MEM_TYPES = {
-          sram:  { name: 'SRAM (6T)',     transistors: 6,  volatile: true,  speed: 'Very Fast', density: 'Low',     color: '#22D3EE', desc: '6 transistors per bit: 2 cross-coupled inverters + 2 access transistors. Used in CPU caches.' },
-          dram:  { name: 'DRAM (1T1C)',   transistors: 1,  volatile: true,  speed: 'Fast',      density: 'High',    color: '#10B981', desc: '1 transistor + 1 capacitor per bit. Must refresh every ~64ms. Used in main memory (RAM sticks).' },
-          flash: { name: 'Flash (NOR)',    transistors: 1,  volatile: false, speed: 'Medium',    density: 'Medium',  color: '#F59E0B', desc: 'Floating-gate transistor traps charge. NOR: random access, used in firmware/BIOS.' },
-          nand:  { name: 'Flash (NAND)',   transistors: 1,  volatile: false, speed: 'Slow Read', density: 'Very High', color: '#EF4444', desc: 'Series-connected floating gates. Sequential access but extremely dense. SSDs, USB drives, SD cards.' },
-          feram: { name: 'FeRAM',          transistors: 1,  volatile: false, speed: 'Fast',      density: 'Medium',  color: '#8B5CF6', desc: 'Ferroelectric capacitor stores charge with remnant polarization. Non-volatile + fast write. Used in smart cards, automotive.' }
+          sram:  { name: t('stem.semiconductor.sram_6t', 'SRAM (6T)'),     transistors: 6,  volatile: true,  speed: 'Very Fast', density: 'Low',     color: '#22D3EE', desc: t('stem.semiconductor.6_transistors_per_bit_2_cross_coupled_', '6 transistors per bit: 2 cross-coupled inverters + 2 access transistors. Used in CPU caches.') },
+          dram:  { name: t('stem.semiconductor.dram_1t1c', 'DRAM (1T1C)'),   transistors: 1,  volatile: true,  speed: 'Fast',      density: 'High',    color: '#10B981', desc: t('stem.semiconductor.1_transistor_1_capacitor_per_bit_must_', '1 transistor + 1 capacitor per bit. Must refresh every ~64ms. Used in main memory (RAM sticks).') },
+          flash: { name: t('stem.semiconductor.flash_nor', 'Flash (NOR)'),    transistors: 1,  volatile: false, speed: 'Medium',    density: 'Medium',  color: '#F59E0B', desc: t('stem.semiconductor.floating_gate_transistor_traps_charge_', 'Floating-gate transistor traps charge. NOR: random access, used in firmware/BIOS.') },
+          nand:  { name: t('stem.semiconductor.flash_nand', 'Flash (NAND)'),   transistors: 1,  volatile: false, speed: 'Slow Read', density: 'Very High', color: '#EF4444', desc: t('stem.semiconductor.series_connected_floating_gates_sequen', 'Series-connected floating gates. Sequential access but extremely dense. SSDs, USB drives, SD cards.') },
+          feram: { name: 'FeRAM',          transistors: 1,  volatile: false, speed: 'Fast',      density: 'Medium',  color: '#8B5CF6', desc: t('stem.semiconductor.ferroelectric_capacitor_stores_charge_', 'Ferroelectric capacitor stores charge with remnant polarization. Non-volatile + fast write. Used in smart cards, automotive.') }
         };
 
         var mt = MEM_TYPES[memType] || MEM_TYPES.sram;
@@ -2896,7 +2920,7 @@ window.StemLab = window.StemLab || {
               }
               cx.fillStyle = bitVal ? '#EF4444' : '#34D399';
               cx.font = 'bold 11px sans-serif';
-              cx.fillText('Stored: ' + (bitVal ? '0 (charged)' : '1 (erased)'), W / 2, fy + 55);
+              cx.fillText('Stored: ' + (bitVal ? '1 (charged)' : '0 (erased)'), W / 2, fy + 55);
               if (memType === 'nand') {
                 cx.fillStyle = '#94A3B8'; cx.font = '7px sans-serif';
                 cx.fillText('NAND: cells in series \u2192 ultra-dense', W / 2, fy - 45);
@@ -2909,7 +2933,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-mem-canvas');
           if (!canvas) return;
-          function draw() { canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [d.memType, d.memBitValue, d.memWriteEnable, d.memShowArray]);
@@ -2921,7 +2945,7 @@ window.StemLab = window.StemLab || {
               return pill(m.name, memType === key, function() {
                 upd('memType', key);
                 tryAwardXP('mem-' + key, 8, 'Explored ' + m.name + ' memory');
-              });
+              }, 'mem-' + key);
             })
           ),
           h('canvas', { 
@@ -2934,10 +2958,10 @@ window.StemLab = window.StemLab || {
               upd('memBitValue', bitVal ? 0 : 1);
               tryAwardXP('mem-flip', 5, 'Flipped memory bit');
               if (announceToSR) announceToSR('Bit set to ' + (bitVal ? 0 : 1));
-            }, bitVal ? 'bg-emerald-700 text-white hover:bg-emerald-700' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'),
+            }, bitVal ? 'transition-colors bg-emerald-700 text-white hover:bg-emerald-700' : 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600'),
             btn(writeEn ? '\uD83D\uDD13 Write ON' : '\uD83D\uDD12 Write OFF', function() {
               upd('memWriteEnable', !writeEn);
-            }, writeEn ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'),
+            }, writeEn ? 'transition-colors bg-amber-600 text-white hover:bg-amber-700' : 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600'),
             pill(showArray ? '\uD83D\uDD0D Cell' : '\uD83D\uDCCA Array', true, function() { upd('memShowArray', !showArray); })
           ),
           // Stats
@@ -2955,8 +2979,8 @@ window.StemLab = window.StemLab || {
             'SRAM SNM (static noise margin): measured via butterfly curve. DRAM scaling: trench \u2192 stack capacitors, C\u209B \u2265 25 fF. Flash endurance: 10\u00B3-10\u2075 P/E cycles, limited by oxide trap generation. 3D NAND: 100+ layers vertical. Emerging: MRAM (STT/SOT), ReRAM (HfO\u2093 filament), PCM (GST phase change).'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(mt.name + ' memory cell architecture and operation'); }, 'bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(mt.name + '. Uses ' + mt.transistors + ' transistor' + (mt.transistors > 1 ? 's' : '') + ' per bit. Speed: ' + mt.speed + '. ' + (mt.volatile ? 'Volatile, needs power to keep data.' : 'Non-volatile, keeps data without power.')); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83E\uDD16 AI Explain', function() { askAI(mt.name + ' memory cell architecture and operation'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read', function() { speakText(mt.name + '. Uses ' + mt.transistors + ' transistor' + (mt.transistors > 1 ? 's' : '') + ' per bit. Speed: ' + mt.speed + '. ' + (mt.volatile ? 'Volatile, needs power to keep data.' : 'Non-volatile, keeps data without power.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           aiBox()
         );
@@ -2976,11 +3000,11 @@ window.StemLab = window.StemLab || {
         var biasPoint = d.ampBiasPoint || 2.5;
 
         var AMP_TYPES = {
-          'common-source': { name: 'Common Source (MOSFET)', gain: -10, inputZ: 'Very High', outputZ: 'Medium', bandwidth: 'Medium', icon: 'CS', desc: 'Voltage amplifier. High input impedance (\u221E for ideal). Gain = -g\u2098R\u2093. Inverts signal. Most common MOSFET amp.' },
-          'common-drain':  { name: 'Source Follower',        gain: 0.9, inputZ: 'Very High', outputZ: 'Low',    bandwidth: 'Wide',   icon: 'CD', desc: 'Voltage buffer. Gain \u2248 1 (no inversion). Low output impedance \u2192 good for driving loads. Also called source follower.' },
-          'common-gate':   { name: 'Common Gate (MOSFET)',   gain: 10,  inputZ: 'Low',       outputZ: 'High',   bandwidth: 'Wide',   icon: 'CG', desc: 'Current buffer. Low input impedance. Non-inverting. Wide bandwidth \u2192 good for RF applications.' },
-          'common-emitter': { name: 'Common Emitter (BJT)',  gain: -50, inputZ: 'Medium',    outputZ: 'Medium', bandwidth: 'Medium', icon: 'CE', desc: 'BJT voltage amplifier. Gain = -g\u2098R\u1D9C. Inverts signal. Higher gain than MOSFET but lower input impedance.' },
-          'diff-pair':     { name: 'Differential Pair',       gain: 20,  inputZ: 'High',      outputZ: 'Medium', bandwidth: 'Medium', icon: 'DP', desc: 'Amplifies difference of two inputs. Rejects common-mode noise. Foundation of op-amps. CMRR typically >60dB.' }
+          'common-source': { name: t('stem.semiconductor.common_source_mosfet', 'Common Source (MOSFET)'), gain: -10, inputZ: 'Very High', outputZ: 'Medium', bandwidth: 'Medium', icon: 'CS', desc: t('stem.semiconductor.voltage_amplifier_high_input_impedance', 'Voltage amplifier. High input impedance (\u221E for ideal). Gain = -g\u2098R\u2093. Inverts signal. Most common MOSFET amp.') },
+          'common-drain':  { name: t('stem.semiconductor.source_follower', 'Source Follower'),        gain: 0.9, inputZ: 'Very High', outputZ: 'Low',    bandwidth: 'Wide',   icon: 'CD', desc: t('stem.semiconductor.voltage_buffer_gain_1_no_inversion_low', 'Voltage buffer. Gain \u2248 1 (no inversion). Low output impedance \u2192 good for driving loads. Also called source follower.') },
+          'common-gate':   { name: t('stem.semiconductor.common_gate_mosfet', 'Common Gate (MOSFET)'),   gain: 10,  inputZ: 'Low',       outputZ: 'High',   bandwidth: 'Wide',   icon: 'CG', desc: t('stem.semiconductor.current_buffer_low_input_impedance_non', 'Current buffer. Low input impedance. Non-inverting. Wide bandwidth \u2192 good for RF applications.') },
+          'common-emitter': { name: t('stem.semiconductor.common_emitter_bjt', 'Common Emitter (BJT)'),  gain: -50, inputZ: 'Medium',    outputZ: 'Medium', bandwidth: 'Medium', icon: 'CE', desc: t('stem.semiconductor.bjt_voltage_amplifier_gain_g_r_inverts', 'BJT voltage amplifier. Gain = -g\u2098R\u1D9C. Inverts signal. Higher gain than MOSFET but lower input impedance.') },
+          'diff-pair':     { name: t('stem.semiconductor.differential_pair', 'Differential Pair'),       gain: 20,  inputZ: 'High',      outputZ: 'Medium', bandwidth: 'Medium', icon: 'DP', desc: t('stem.semiconductor.amplifies_difference_of_two_inputs_rej', 'Amplifies difference of two inputs. Rejects common-mode noise. Foundation of op-amps. CMRR typically >60dB.') }
         };
 
         var amp = AMP_TYPES[ampType] || AMP_TYPES['common-source'];
@@ -3105,7 +3129,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-amp-canvas');
           if (!canvas) return;
-          function draw() { canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [d.ampType, d.ampVin, d.ampFreq, d.ampVdd, d.ampRd, d.ampShowBode, d.ampBiasPoint]);
@@ -3117,7 +3141,7 @@ window.StemLab = window.StemLab || {
               return pill(a.icon + ' ' + a.name.split(' ')[0], ampType === key, function() {
                 upd('ampType', key);
                 tryAwardXP('amp-' + key, 8, 'Explored ' + a.name + ' amplifier');
-              });
+              }, 'amp-' + key);
             })
           ),
           h('canvas', { 
@@ -3149,8 +3173,8 @@ window.StemLab = window.StemLab || {
             'Small-signal model: hybrid-\u03C0 for BJT, MOSFET small-signal params: g\u2098 = \u2202I\u2093/\u2202V\u2097\u209B, r\u2092 = 1/\u03BB\u00B7I\u2093. Miller effect: C\u2098\u2097 = C\u2097\u2093(1+|A\u1D65|). Cascode: improved bandwidth via reduced Miller effect. Diff pair CMRR = A\u2093\u2098/A\u1D9C\u2098 \u221D g\u2098R\u209B\u209B. Noise figure: NF = 10\u00B7log(1 + v\u2099\u00B2/(4kTR\u209B)).'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(amp.name + ' amplifier gain and frequency response'); }, 'bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(amp.name + '. Voltage gain is ' + amp.gain + ', or ' + gainDB.toFixed(1) + ' decibels. Input impedance: ' + amp.inputZ + '. ' + (inverts ? 'This amplifier inverts the signal.' : 'This amplifier does not invert.')); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83E\uDD16 AI Explain', function() { askAI(amp.name + ' amplifier gain and frequency response'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read', function() { speakText(amp.name + '. Voltage gain is ' + amp.gain + ', or ' + gainDB.toFixed(1) + ' decibels. Input impedance: ' + amp.inputZ + '. ' + (inverts ? 'This amplifier inverts the signal.' : 'This amplifier does not invert.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           aiBox()
         );
@@ -3161,44 +3185,44 @@ window.StemLab = window.StemLab || {
       // ════════════════════════════════════════════
       var CHALLENGES = [
         // Tier 0 — Cadet
-        { q: 'Silicon has a band gap of ~1.12 eV. Is it a conductor, semiconductor, or insulator?', a: 'Semiconductor', opts: ['Conductor', 'Semiconductor', 'Insulator'], xp: 10, tier: 0, hint: 'Band gaps between 0.5 and 3.5 eV are semiconductors.', topic: 'bandgap' },
-        { q: 'Phosphorus has 5 valence electrons. Adding it to silicon creates what type?', a: 'N-type', opts: ['N-type', 'P-type', 'Intrinsic'], xp: 10, tier: 0, hint: 'Extra electrons = N for Negative charge carriers.', topic: 'doping' },
-        { q: 'Which logic gate outputs HIGH only when BOTH inputs are HIGH?', a: 'AND', opts: ['OR', 'AND', 'XOR', 'NAND'], xp: 10, tier: 0, hint: 'Think of it as multiplication: 1\u00D71=1, everything else=0.', topic: 'gates' },
+        { q: 'Silicon has a band gap of ~1.12 eV. Is it a conductor, semiconductor, or insulator?', a: 'Semiconductor', opts: ['Conductor', 'Semiconductor', 'Insulator'], xp: 10, tier: 0, hint: t('stem.semiconductor.band_gaps_between_0_5_and_3_5_ev_are_s', 'Band gaps between 0.5 and 3.5 eV are semiconductors.'), topic: 'bandgap' },
+        { q: 'Phosphorus has 5 valence electrons. Adding it to silicon creates what type?', a: 'N-type', opts: ['N-type', 'P-type', 'Intrinsic'], xp: 10, tier: 0, hint: t('stem.semiconductor.extra_electrons_n_for_negative_charge_', 'Extra electrons = N for Negative charge carriers.'), topic: 'doping' },
+        { q: 'Which logic gate outputs HIGH only when BOTH inputs are HIGH?', a: 'AND', opts: ['OR', 'AND', 'XOR', 'NAND'], xp: 10, tier: 0, hint: t('stem.semiconductor.think_of_it_as_multiplication_1_1_1_ev', 'Think of it as multiplication: 1\u00D71=1, everything else=0.'), topic: 'gates' },
         // Tier 1 — Technician
-        { q: 'In a P-N junction at equilibrium, the depletion region has:', a: 'No free carriers', opts: ['Maximum current', 'No free carriers', 'Only holes'], xp: 15, tier: 1, hint: 'Carriers recombine at the junction leaving fixed ions.', topic: 'pnjunction' },
-        { q: 'To turn ON an N-channel MOSFET, the gate voltage must be:', a: 'Above the threshold voltage', opts: ['Zero', 'Above the threshold voltage', 'Negative'], xp: 15, tier: 1, hint: 'Positive gate attracts electrons to form a channel.', topic: 'transistor' },
-        { q: 'Forward biasing a P-N junction means:', a: 'Positive to P, negative to N', opts: ['Positive to P, negative to N', 'Negative to P, positive to N', 'No voltage'], xp: 15, tier: 1, hint: 'Forward = pushing carriers TOWARD the junction.', topic: 'pnjunction' },
-        { q: 'As temperature increases, a semiconductor\'s conductivity:', a: 'Increases', opts: ['Increases', 'Decreases', 'Stays the same'], xp: 15, tier: 1, hint: 'More thermal energy = more electron-hole pairs.', topic: 'bandgap' },
+        { q: 'In a P-N junction at equilibrium, the depletion region has:', a: 'No free carriers', opts: ['Maximum current', 'No free carriers', 'Only holes'], xp: 15, tier: 1, hint: t('stem.semiconductor.carriers_recombine_at_the_junction_lea', 'Carriers recombine at the junction leaving fixed ions.'), topic: 'pnjunction' },
+        { q: 'To turn ON an N-channel MOSFET, the gate voltage must be:', a: 'Above the threshold voltage', opts: ['Zero', 'Above the threshold voltage', 'Negative'], xp: 15, tier: 1, hint: t('stem.semiconductor.positive_gate_attracts_electrons_to_fo', 'Positive gate attracts electrons to form a channel.'), topic: 'transistor' },
+        { q: 'Forward biasing a P-N junction means:', a: 'Positive to P, negative to N', opts: ['Positive to P, negative to N', 'Negative to P, positive to N', 'No voltage'], xp: 15, tier: 1, hint: t('stem.semiconductor.forward_pushing_carriers_toward_the_ju', 'Forward = pushing carriers TOWARD the junction.'), topic: 'pnjunction' },
+        { q: 'As temperature increases, a semiconductor\'s conductivity:', a: 'Increases', opts: ['Increases', 'Decreases', 'Stays the same'], xp: 15, tier: 1, hint: t('stem.semiconductor.more_thermal_energy_more_electron_hole', 'More thermal energy = more electron-hole pairs.'), topic: 'bandgap' },
         // Tier 2 — Engineer
-        { q: 'A NAND gate is called "universal" because:', a: 'Any logic function can be built from NANDs', opts: ['It is the fastest', 'Any logic function can be built from NANDs', 'It uses fewest transistors'], xp: 20, tier: 2, hint: 'NAND can implement NOT, AND, OR \u2014 everything!', topic: 'gates' },
-        { q: 'In CMOS technology, what does the "C" stand for?', a: 'Complementary', opts: ['Complementary', 'Conductive', 'Capacitive', 'Compound'], xp: 20, tier: 2, hint: 'PMOS + NMOS work as a complementary pair.', topic: 'transistor' },
-        { q: 'GaAs is better than Si for high-frequency applications because:', a: 'Higher electron mobility', opts: ['Larger band gap', 'Higher electron mobility', 'Lower cost'], xp: 20, tier: 2, hint: 'Speed \u221D mobility. GaAs: 8500 vs Si: 1400 cm\u00B2/Vs.', topic: 'bandgap' },
+        { q: 'A NAND gate is called "universal" because:', a: 'Any logic function can be built from NANDs', opts: ['It is the fastest', 'Any logic function can be built from NANDs', 'It uses fewest transistors'], xp: 20, tier: 2, hint: t('stem.semiconductor.nand_can_implement_not_and_or_everythi', 'NAND can implement NOT, AND, OR \u2014 everything!'), topic: 'gates' },
+        { q: 'In CMOS technology, what does the "C" stand for?', a: 'Complementary', opts: ['Complementary', 'Conductive', 'Capacitive', 'Compound'], xp: 20, tier: 2, hint: t('stem.semiconductor.pmos_nmos_work_as_a_complementary_pair', 'PMOS + NMOS work as a complementary pair.'), topic: 'transistor' },
+        { q: 'GaAs is better than Si for high-frequency applications because:', a: 'Higher electron mobility', opts: ['Larger band gap', 'Higher electron mobility', 'Lower cost'], xp: 20, tier: 2, hint: t('stem.semiconductor.speed_mobility_gaas_8500_vs_si_1400_cm', 'Speed \u221D mobility. GaAs: 8500 vs Si: 1400 cm\u00B2/Vs.'), topic: 'bandgap' },
         // Tier 3 — Specialist
-        { q: 'A Zener diode operates in which region?', a: 'Reverse breakdown', opts: ['Forward bias', 'Reverse breakdown', 'Cutoff'], xp: 25, tier: 3, hint: 'Zener diodes are designed to conduct in reverse!', topic: 'ivcurve' },
-        { q: 'In a MOSFET, the gate oxide (SiO\u2082) acts as:', a: 'An insulator between gate and channel', opts: ['A conductor', 'An insulator between gate and channel', 'A semiconductor'], xp: 25, tier: 3, hint: 'The "O" in MOS stands for Oxide (insulator).', topic: 'transistor' },
-        { q: 'Boron doping creates which type of majority carriers?', a: 'Holes', opts: ['Electrons', 'Holes', 'Protons', 'Neutrons'], xp: 20, tier: 3, hint: 'Boron has 3 valence electrons (1 fewer than Si).', topic: 'doping' },
+        { q: 'A Zener diode operates in which region?', a: 'Reverse breakdown', opts: ['Forward bias', 'Reverse breakdown', 'Cutoff'], xp: 25, tier: 3, hint: t('stem.semiconductor.zener_diodes_are_designed_to_conduct_i', 'Zener diodes are designed to conduct in reverse!'), topic: 'ivcurve' },
+        { q: 'In a MOSFET, the gate oxide (SiO\u2082) acts as:', a: 'An insulator between gate and channel', opts: ['A conductor', 'An insulator between gate and channel', 'A semiconductor'], xp: 25, tier: 3, hint: t('stem.semiconductor.the_o_in_mos_stands_for_oxide_insulato', 'The "O" in MOS stands for Oxide (insulator).'), topic: 'transistor' },
+        { q: 'Boron doping creates which type of majority carriers?', a: 'Holes', opts: ['Electrons', 'Holes', 'Protons', 'Neutrons'], xp: 20, tier: 3, hint: t('stem.semiconductor.boron_has_3_valence_electrons_1_fewer_', 'Boron has 3 valence electrons (1 fewer than Si).'), topic: 'doping' },
         // Tier 4 — Master
-        { q: 'The built-in potential of a Si P-N junction at 300K is approximately:', a: '0.6-0.7 V', opts: ['0.1-0.2 V', '0.6-0.7 V', '1.5-2.0 V', '5.0 V'], xp: 30, tier: 4, hint: 'V\u2091\u1D62 = (kT/q)ln(N\u2090N\u2093/n\u1D62\u00B2) for typical doping levels.', topic: 'pnjunction' },
-        { q: 'Which material has the widest band gap?', a: 'Diamond', opts: ['Silicon', 'GaAs', 'Diamond', 'Germanium'], xp: 25, tier: 4, hint: 'Carbon forms very strong bonds.', topic: 'bandgap' },
-        { q: 'In CMOS, static power dissipation is ideally:', a: 'Zero', opts: ['Zero', 'Proportional to frequency', 'Constant', 'Proportional to VDD'], xp: 30, tier: 4, hint: 'In CMOS, one transistor is always OFF blocking current.', topic: 'transistor' },
+        { q: 'The built-in potential of a Si P-N junction at 300K is approximately:', a: '0.6-0.7 V', opts: ['0.1-0.2 V', '0.6-0.7 V', '1.5-2.0 V', '5.0 V'], xp: 30, tier: 4, hint: t('stem.semiconductor.v_kt_q_ln_n_n_n_for_typical_doping_lev', 'V\u2091\u1D62 = (kT/q)ln(N\u2090N\u2093/n\u1D62\u00B2) for typical doping levels.'), topic: 'pnjunction' },
+        { q: 'Which material has the widest band gap?', a: 'Diamond', opts: ['Silicon', 'GaAs', 'Diamond', 'Germanium'], xp: 25, tier: 4, hint: t('stem.semiconductor.carbon_forms_very_strong_bonds', 'Carbon forms very strong bonds.'), topic: 'bandgap' },
+        { q: 'In CMOS, static power dissipation is ideally:', a: 'Zero', opts: ['Zero', 'Proportional to frequency', 'Constant', 'Proportional to VDD'], xp: 30, tier: 4, hint: t('stem.semiconductor.in_cmos_one_transistor_is_always_off_b', 'In CMOS, one transistor is always OFF blocking current.'), topic: 'transistor' },
         // Tier 5+ — Grandmaster
-        { q: 'The Shockley diode equation ideality factor n equals 1 when:', a: 'Diffusion current dominates', opts: ['Recombination dominates', 'Diffusion current dominates', 'Tunneling occurs', 'Avalanche breakdown'], xp: 40, tier: 5, hint: 'n=1 for ideal junction, n=2 for recombination in depletion region.', topic: 'ivcurve' },
-        { q: 'GaN is preferred for power electronics because of its:', a: 'Wide band gap and high breakdown field', opts: ['Low cost', 'Wide band gap and high breakdown field', 'High mobility', 'Small size'], xp: 35, tier: 5, hint: 'E\u2097 = 3.4 eV allows higher voltage operation.', topic: 'bandgap' },
-        { q: 'A half-adder circuit requires which gates?', a: 'XOR + AND', opts: ['OR + NOT', 'XOR + AND', 'NAND + NAND', 'NOR + OR'], xp: 35, tier: 5, hint: 'Sum = A XOR B, Carry = A AND B.', topic: 'gates' },
-        { q: 'The Early effect in BJTs causes:', a: 'Output current to increase with V_CE', opts: ['Output current to decrease', 'Output current to increase with V_CE', 'Base current to double', 'Thermal runaway'], xp: 40, tier: 5, hint: 'Higher V_CE widens the depletion region into the base.', topic: 'transistor' },
+        { q: 'The Shockley diode equation ideality factor n equals 1 when:', a: 'Diffusion current dominates', opts: ['Recombination dominates', 'Diffusion current dominates', 'Tunneling occurs', 'Avalanche breakdown'], xp: 40, tier: 5, hint: t('stem.semiconductor.n_1_for_ideal_junction_n_2_for_recombi', 'n=1 for ideal junction, n=2 for recombination in depletion region.'), topic: 'ivcurve' },
+        { q: 'GaN is preferred for power electronics because of its:', a: 'Wide band gap and high breakdown field', opts: ['Low cost', 'Wide band gap and high breakdown field', 'High mobility', 'Small size'], xp: 35, tier: 5, hint: t('stem.semiconductor.e_3_4_ev_allows_higher_voltage_operati', 'E\u2097 = 3.4 eV allows higher voltage operation.'), topic: 'bandgap' },
+        { q: 'A half-adder circuit requires which gates?', a: 'XOR + AND', opts: ['OR + NOT', 'XOR + AND', 'NAND + NAND', 'NOR + OR'], xp: 35, tier: 5, hint: t('stem.semiconductor.sum_a_xor_b_carry_a_and_b', 'Sum = A XOR B, Carry = A AND B.'), topic: 'gates' },
+        { q: 'The Early effect in BJTs causes:', a: 'Output current to increase with V_CE', opts: ['Output current to decrease', 'Output current to increase with V_CE', 'Base current to double', 'Thermal runaway'], xp: 40, tier: 5, hint: t('stem.semiconductor.higher_v_ce_widens_the_depletion_regio', 'Higher V_CE widens the depletion region into the base.'), topic: 'transistor' },
         // Quantum Wells
-        { q: 'In a quantum well, making the well narrower causes energy levels to:', a: 'Spread further apart', opts: ['Move closer together', 'Spread further apart', 'Disappear', 'Stay the same'], xp: 15, tier: 1, hint: 'E \u221D 1/L\u00B2 \u2014 smaller box = higher energy steps.', topic: 'qwell' },
-        { q: 'Quantum wells are used in which common device?', a: 'Laser diodes', opts: ['Resistors', 'Laser diodes', 'Capacitors', 'Transformers'], xp: 20, tier: 2, hint: 'Telecom lasers use InGaAsP quantum wells for precise wavelength control.', topic: 'qwell' },
-        { q: 'In an infinite potential well, the ground state energy is proportional to:', a: 'n\u00B2/L\u00B2', opts: ['n/L', 'n\u00B2/L\u00B2', 'L/n', 'L\u00B2/n'], xp: 30, tier: 4, hint: 'E\u2099 = n\u00B2\u03C0\u00B2\u0127\u00B2/(2m*L\u00B2).', topic: 'qwell' },
+        { q: 'In a quantum well, making the well narrower causes energy levels to:', a: 'Spread further apart', opts: ['Move closer together', 'Spread further apart', 'Disappear', 'Stay the same'], xp: 15, tier: 1, hint: t('stem.semiconductor.e_1_l_smaller_box_higher_energy_steps', 'E \u221D 1/L\u00B2 \u2014 smaller box = higher energy steps.'), topic: 'qwell' },
+        { q: 'Quantum wells are used in which common device?', a: 'Laser diodes', opts: ['Resistors', 'Laser diodes', 'Capacitors', 'Transformers'], xp: 20, tier: 2, hint: t('stem.semiconductor.telecom_lasers_use_ingaasp_quantum_wel', 'Telecom lasers use InGaAsP quantum wells for precise wavelength control.'), topic: 'qwell' },
+        { q: 'In an infinite potential well, the ground state energy is proportional to:', a: 'n\u00B2/L\u00B2', opts: ['n/L', 'n\u00B2/L\u00B2', 'L/n', 'L\u00B2/n'], xp: 30, tier: 4, hint: t('stem.semiconductor.e_n_2m_l', 'E\u2099 = n\u00B2\u03C0\u00B2\u0127\u00B2/(2m*L\u00B2).'), topic: 'qwell' },
         // Memory
-        { q: 'SRAM uses how many transistors per bit?', a: '6', opts: ['1', '2', '4', '6'], xp: 10, tier: 0, hint: '6T SRAM: 2 cross-coupled inverters (4T) + 2 access transistors.', topic: 'memory' },
-        { q: 'DRAM must be refreshed because:', a: 'The capacitor charge leaks away', opts: ['Transistors overheat', 'The capacitor charge leaks away', 'Wires corrode', 'Power supply fluctuates'], xp: 15, tier: 1, hint: 'DRAM stores bits as charge on a tiny capacitor \u2014 it leaks!', topic: 'memory' },
-        { q: 'Flash memory stores data by trapping electrons on a:', a: 'Floating gate', opts: ['Control gate', 'Floating gate', 'Base region', 'Emitter'], xp: 20, tier: 2, hint: 'The floating gate is electrically isolated by oxide layers.', topic: 'memory' },
-        { q: 'Which memory type is used in CPU L1 cache?', a: 'SRAM', opts: ['DRAM', 'SRAM', 'Flash', 'MRAM'], xp: 20, tier: 3, hint: 'L1 cache needs the fastest possible access time.', topic: 'memory' },
+        { q: 'SRAM uses how many transistors per bit?', a: '6', opts: ['1', '2', '4', '6'], xp: 10, tier: 0, hint: t('stem.semiconductor.6t_sram_2_cross_coupled_inverters_4t_2', '6T SRAM: 2 cross-coupled inverters (4T) + 2 access transistors.'), topic: 'memory' },
+        { q: 'DRAM must be refreshed because:', a: 'The capacitor charge leaks away', opts: ['Transistors overheat', 'The capacitor charge leaks away', 'Wires corrode', 'Power supply fluctuates'], xp: 15, tier: 1, hint: t('stem.semiconductor.dram_stores_bits_as_charge_on_a_tiny_c', 'DRAM stores bits as charge on a tiny capacitor \u2014 it leaks!'), topic: 'memory' },
+        { q: 'Flash memory stores data by trapping electrons on a:', a: 'Floating gate', opts: ['Control gate', 'Floating gate', 'Base region', 'Emitter'], xp: 20, tier: 2, hint: t('stem.semiconductor.the_floating_gate_is_electrically_isol', 'The floating gate is electrically isolated by oxide layers.'), topic: 'memory' },
+        { q: 'Which memory type is used in CPU L1 cache?', a: 'SRAM', opts: ['DRAM', 'SRAM', 'Flash', 'MRAM'], xp: 20, tier: 3, hint: t('stem.semiconductor.l1_cache_needs_the_fastest_possible_ac', 'L1 cache needs the fastest possible access time.'), topic: 'memory' },
         // Amplifiers
-        { q: 'A common-source MOSFET amplifier does what to the signal?', a: 'Amplifies and inverts it', opts: ['Only amplifies', 'Amplifies and inverts it', 'Only inverts', 'Attenuates it'], xp: 15, tier: 1, hint: 'Gain is negative: A\u1D65 = -g\u2098R\u2093.', topic: 'amplifier' },
-        { q: 'What does a source follower (common drain) provide?', a: 'Gain \u2248 1 with low output impedance', opts: ['High voltage gain', 'Gain \u2248 1 with low output impedance', 'Current amplification only', 'Frequency doubling'], xp: 20, tier: 2, hint: 'It\'s a buffer: unity gain, impedance transformation.', topic: 'amplifier' },
-        { q: 'The gain-bandwidth product (GBW) of an amplifier is:', a: 'Constant', opts: ['Constant', 'Proportional to gain', 'Proportional to bandwidth', 'Random'], xp: 30, tier: 4, hint: 'Higher gain = lower bandwidth. A\u1D65 \u00D7 BW = GBW = constant.', topic: 'amplifier' }
+        { q: 'A common-source MOSFET amplifier does what to the signal?', a: 'Amplifies and inverts it', opts: ['Only amplifies', 'Amplifies and inverts it', 'Only inverts', 'Attenuates it'], xp: 15, tier: 1, hint: t('stem.semiconductor.gain_is_negative_a_g_r', 'Gain is negative: A\u1D65 = -g\u2098R\u2093.'), topic: 'amplifier' },
+        { q: 'What does a source follower (common drain) provide?', a: 'Gain \u2248 1 with low output impedance', opts: ['High voltage gain', 'Gain \u2248 1 with low output impedance', 'Current amplification only', 'Frequency doubling'], xp: 20, tier: 2, hint: t('stem.semiconductor.it_s_a_buffer_unity_gain_impedance_tra', 'It\'s a buffer: unity gain, impedance transformation.'), topic: 'amplifier' },
+        { q: 'The gain-bandwidth product (GBW) of an amplifier is:', a: 'Constant', opts: ['Constant', 'Proportional to gain', 'Proportional to bandwidth', 'Random'], xp: 30, tier: 4, hint: t('stem.semiconductor.higher_gain_lower_bandwidth_a_bw_gbw_c', 'Higher gain = lower bandwidth. A\u1D65 \u00D7 BW = GBW = constant.'), topic: 'amplifier' }
       ];
 
       function renderChallenge() {
@@ -3219,7 +3243,7 @@ window.StemLab = window.StemLab || {
         if (!d.challengeActive) {
           return h('div', { className: 'text-center py-6' },
             h('div', { className: 'text-4xl mb-2' }, '\uD83C\uDFC6'),
-            h('div', { className: 'text-lg font-bold text-white mb-1' }, 'Semiconductor Challenge'),
+            h('div', { className: 'text-lg font-bold text-white mb-1' }, t('stem.semiconductor.semiconductor_challenge', 'Semiconductor Challenge')),
             h('div', { className: 'flex justify-center gap-3 mb-3' },
               statBadge('Score', String(score)),
               statBadge('Rank', tierName, tierColor),
@@ -3228,7 +3252,7 @@ window.StemLab = window.StemLab || {
             ),
             // Tier progress bar
             h('div', { className: 'w-48 mx-auto mb-4' },
-              h('div', { className: 'text-[11px] text-slate-600 mb-1' }, 'Progress to next rank'),
+              h('div', { className: 'text-[11px] text-slate-600 mb-1' }, t('stem.semiconductor.progress_to_next_rank', 'Progress to next rank')),
               h('div', { className: 'h-2 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all', style: { width: Math.min(100, (score % 5) * 20) + '%' } })
               )
@@ -3245,7 +3269,7 @@ window.StemLab = window.StemLab || {
               statBadge('Streak', streak > 0 ? '\uD83D\uDD25 ' + streak : '0')
             ),
             h('div', { className: 'text-xs font-bold ' + tierColor }, tierName + ' (Tier ' + (tier + 1) + ')'),
-            btn('Quit', function() { upd('challengeActive', false); }, 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+            btn('Quit', function() { upd('challengeActive', false); }, 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600')
           ),
           // Question card
           h('div', { className: 'p-4 rounded-xl bg-slate-800 border border-slate-700 mb-3' },
@@ -3260,7 +3284,7 @@ window.StemLab = window.StemLab || {
                 if (showResult && isSelected && isCorrect) optClass += 'bg-emerald-700 text-white ring-2 ring-emerald-400';
                 else if (showResult && isSelected && !isCorrect) optClass += 'bg-red-600 text-white';
                 else if (showResult && isCorrect) optClass += 'bg-emerald-600/30 text-emerald-300 border border-emerald-500';
-                else optClass += 'bg-slate-700 text-slate-200 hover:bg-slate-600';
+                else optClass += 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600';
 
                 return h('button', Object.assign({
                   key: opt, disabled: showResult,
@@ -3285,7 +3309,7 @@ window.StemLab = window.StemLab || {
             !d.challengeFeedback && h('div', { className: 'mt-2' },
               d.challengeShowHint
                 ? h('div', { className: 'text-xs text-amber-400 bg-amber-900/20 rounded p-2 border border-amber-800' }, '\uD83D\uDCA1 ' + current.hint)
-                : btn('\uD83D\uDCA1 Hint (-5 XP)', function() { upd('challengeShowHint', true); }, 'bg-amber-700/50 text-amber-300 hover:bg-amber-700/70')
+                : btn('\uD83D\uDCA1 Hint', function() { upd('challengeShowHint', true); }, 'transition-colors bg-amber-700/50 text-amber-300 hover:bg-amber-700/70')
             )
           ),
           // Feedback
@@ -3296,13 +3320,18 @@ window.StemLab = window.StemLab || {
                 : '\u274C The answer is: ' + current.a
             ),
             d.challengeFeedback === 'wrong' && current.hint && h('div', { className: 'text-xs text-amber-400 mt-1' }, '\uD83D\uDCA1 ' + current.hint),
-            h('div', { className: 'mt-2' },
+            h('div', { className: 'mt-2 flex justify-center gap-2 flex-wrap' },
               btn('Next Question \u2192', function() {
                 var newScore = d.challengeFeedback === 'correct' ? score + 1 : score;
                 var newTier = newScore >= 15 ? 5 : newScore >= 11 ? 4 : newScore >= 8 ? 3 : newScore >= 5 ? 2 : newScore >= 3 ? 1 : 0;
                 var newAvailable = CHALLENGES.filter(function(c) { return c.tier <= newTier; });
                 updMulti({ challengeScore: newScore, challengeTier: newTier, challengeFeedback: null, challengeAnswer: null, challengeIdx: Math.floor(Math.random() * newAvailable.length), challengeShowHint: false });
-              })
+              }),
+              current.topic && btn('Open ' + getSubtoolLabel(current.topic), function() {
+                setStemLabTab('explore');
+                updMulti({ subtool: current.topic, challengeActive: false, challengeFeedback: null, challengeAnswer: null, challengeShowHint: false, aiExplain: null });
+                if (announceToSR) announceToSR('Opened ' + getSubtoolLabel(current.topic) + ' simulator');
+              }, 'transition-colors bg-cyan-700 text-white hover:bg-cyan-600')
             )
           )
         );
@@ -3320,25 +3349,25 @@ window.StemLab = window.StemLab || {
         var difficulty = d.battleDifficulty || 'cadet';
 
         var BATTLE_ROUNDS = [
-          { enemy: '\uD83D\uDC1B Bug Swarm', desc: 'A swarm of logic bugs! What gate outputs 1 when A=0?', answer: 'NOT', opts: ['AND', 'NOT', 'OR', 'XOR'], damage: 1, xp: 15 },
-          { enemy: '\u26A1 Voltage Spike', desc: 'A voltage spike is overloading! Which device regulates voltage?', answer: 'Zener diode', opts: ['Resistor', 'Zener diode', 'Capacitor', 'LED'], damage: 1, xp: 15 },
-          { enemy: '\uD83D\uDD25 Thermal Runaway', desc: 'Temperature rising! In a semiconductor, increasing temp does what to conductivity?', answer: 'Increases it', opts: ['Increases it', 'Decreases it', 'No effect', 'Destroys it'], damage: 1, xp: 20 },
-          { enemy: '\uD83D\uDC7E Bit Flipper', desc: 'An enemy flipped all bits! Which gate can invert every signal?', answer: 'NOT', opts: ['AND', 'OR', 'NOT', 'NAND'], damage: 1, xp: 15 },
-          { enemy: '\uD83E\uDDA0 Leakage Virus', desc: 'Carriers are leaking! What narrows the depletion region?', answer: 'Forward bias', opts: ['Forward bias', 'Reverse bias', 'No bias', 'Heating'], damage: 2, xp: 25 },
-          { enemy: '\uD83D\uDCA3 ESD Strike', desc: 'Electrostatic discharge! What protects ICs from ESD?', answer: 'Diode clamps', opts: ['Resistors', 'Diode clamps', 'Capacitors', 'Inductors'], damage: 2, xp: 25 },
-          { enemy: '\uD83C\uDF0A Clock Jitter', desc: 'Clock is unstable! CMOS power dissipation is proportional to:', answer: 'Frequency', opts: ['Voltage only', 'Frequency', 'Temperature', 'Resistance'], damage: 2, xp: 30 },
-          { enemy: '\uD83D\uDC80 BOSS: Short Circuit', desc: 'Direct short! What is the threshold voltage of a typical Si MOSFET?', answer: '~1-2V', opts: ['~0.1V', '~1-2V', '~5V', '~12V'], damage: 3, xp: 50 },
-          { enemy: '\uD83C\uDF0A Quantum Tunneler', desc: 'Electrons are tunneling through the oxide! In a quantum well, narrower well =', answer: 'Wider energy spacing', opts: ['Wider energy spacing', 'Narrower spacing', 'No change', 'Infinite energy'], damage: 2, xp: 25 },
-          { enemy: '\uD83D\uDCBE Memory Corruptor', desc: 'Memory bits are flipping! Which memory type needs refreshing?', answer: 'DRAM', opts: ['SRAM', 'DRAM', 'Flash', 'ROM'], damage: 1, xp: 20 },
-          { enemy: '\uD83D\uDD0A Noise Invader', desc: 'Signal-to-noise ratio dropping! What does a differential amplifier reject?', answer: 'Common-mode noise', opts: ['All signals', 'Common-mode noise', 'Differential signals', 'DC voltage'], damage: 2, xp: 30 },
-          { enemy: '\uD83D\uDC80 BOSS: Quantum Decoherence', desc: 'Final boss! What limits transistor scaling below ~1nm gate oxide?', answer: 'Quantum tunneling', opts: ['Overheating', 'Quantum tunneling', 'Wire resistance', 'Cost'], damage: 3, xp: 60 }
+          { enemy: '\uD83D\uDC1B Bug Swarm', desc: t('stem.semiconductor.a_swarm_of_logic_bugs_what_gate_output', 'A swarm of logic bugs! What gate outputs 1 when A=0?'), answer: 'NOT', opts: ['AND', 'NOT', 'OR', 'XOR'], damage: 1, xp: 15 },
+          { enemy: '\u26A1 Voltage Spike', desc: t('stem.semiconductor.a_voltage_spike_is_overloading_which_d', 'A voltage spike is overloading! Which device regulates voltage?'), answer: t('stem.semiconductor.zener_diode', 'Zener diode'), opts: ['Resistor', 'Zener diode', 'Capacitor', 'LED'], damage: 1, xp: 15 },
+          { enemy: '\uD83D\uDD25 Thermal Runaway', desc: t('stem.semiconductor.temperature_rising_in_a_semiconductor_', 'Temperature rising! In a semiconductor, increasing temp does what to conductivity?'), answer: t('stem.semiconductor.increases_it', 'Increases it'), opts: ['Increases it', 'Decreases it', 'No effect', 'Destroys it'], damage: 1, xp: 20 },
+          { enemy: '\uD83D\uDC7E Bit Flipper', desc: t('stem.semiconductor.an_enemy_flipped_all_bits_which_gate_c', 'An enemy flipped all bits! Which gate can invert every signal?'), answer: 'NOT', opts: ['AND', 'OR', 'NOT', 'NAND'], damage: 1, xp: 15 },
+          { enemy: '\uD83E\uDDA0 Leakage Virus', desc: t('stem.semiconductor.carriers_are_leaking_what_narrows_the_', 'Carriers are leaking! What narrows the depletion region?'), answer: t('stem.semiconductor.forward_bias', 'Forward bias'), opts: ['Forward bias', 'Reverse bias', 'No bias', 'Heating'], damage: 2, xp: 25 },
+          { enemy: '\uD83D\uDCA3 ESD Strike', desc: t('stem.semiconductor.electrostatic_discharge_what_protects_', 'Electrostatic discharge! What protects ICs from ESD?'), answer: t('stem.semiconductor.diode_clamps', 'Diode clamps'), opts: ['Resistors', 'Diode clamps', 'Capacitors', 'Inductors'], damage: 2, xp: 25 },
+          { enemy: '\uD83C\uDF0A Clock Jitter', desc: t('stem.semiconductor.clock_is_unstable_cmos_power_dissipati', 'Clock is unstable! CMOS power dissipation is proportional to:'), answer: t('stem.semiconductor.frequency', 'Frequency'), opts: ['Voltage only', 'Frequency', 'Temperature', 'Resistance'], damage: 2, xp: 30 },
+          { enemy: '\uD83D\uDC80 BOSS: Short Circuit', desc: t('stem.semiconductor.direct_short_what_is_the_threshold_vol', 'Direct short! What is the threshold voltage of a typical Si MOSFET?'), answer: '~1-2V', opts: ['~0.1V', '~1-2V', '~5V', '~12V'], damage: 3, xp: 50 },
+          { enemy: '\uD83C\uDF0A Quantum Tunneler', desc: t('stem.semiconductor.electrons_are_tunneling_through_the_ox', 'Electrons are tunneling through the oxide! In a quantum well, narrower well ='), answer: t('stem.semiconductor.wider_energy_spacing', 'Wider energy spacing'), opts: ['Wider energy spacing', 'Narrower spacing', 'No change', 'Infinite energy'], damage: 2, xp: 25 },
+          { enemy: '\uD83D\uDCBE Memory Corruptor', desc: t('stem.semiconductor.memory_bits_are_flipping_which_memory_', 'Memory bits are flipping! Which memory type needs refreshing?'), answer: 'DRAM', opts: ['SRAM', 'DRAM', 'Flash', 'ROM'], damage: 1, xp: 20 },
+          { enemy: '\uD83D\uDD0A Noise Invader', desc: t('stem.semiconductor.signal_to_noise_ratio_dropping_what_do', 'Signal-to-noise ratio dropping! What does a differential amplifier reject?'), answer: t('stem.semiconductor.common_mode_noise', 'Common-mode noise'), opts: ['All signals', 'Common-mode noise', 'Differential signals', 'DC voltage'], damage: 2, xp: 30 },
+          { enemy: '\uD83D\uDC80 BOSS: Quantum Decoherence', desc: t('stem.semiconductor.final_boss_what_limits_transistor_scal', 'Final boss! What limits transistor scaling below ~1nm gate oxide?'), answer: t('stem.semiconductor.quantum_tunneling', 'Quantum tunneling'), opts: ['Overheating', 'Quantum tunneling', 'Wire resistance', 'Cost'], damage: 3, xp: 60 }
         ];
 
         if (!d.battleActive) {
           return h('div', { className: 'text-center py-6' },
             h('div', { className: 'text-4xl mb-2' }, '\u2694\uFE0F'),
-            h('div', { className: 'text-lg font-bold text-white mb-1' }, 'Chip Defense'),
-            h('div', { className: 'text-sm text-slate-200 mb-3' }, 'Protect your chip from waves of hardware enemies! Use semiconductor knowledge to fight back.'),
+            h('div', { className: 'text-lg font-bold text-white mb-1' }, t('stem.semiconductor.chip_defense', 'Chip Defense')),
+            h('div', { className: 'text-sm text-slate-200 mb-3' }, t('stem.semiconductor.protect_your_chip_from_waves_of_hardwa', 'Protect your chip from waves of hardware enemies! Use semiconductor knowledge to fight back.')),
             h('div', { className: 'flex justify-center gap-3 mb-4' },
               statBadge('Best Score', String(d.battleScore || 0)),
               statBadge('Rounds', String(BATTLE_ROUNDS.length))
@@ -3364,14 +3393,13 @@ window.StemLab = window.StemLab || {
               statBadge('Rounds', round + '/' + BATTLE_ROUNDS.length),
               statBadge('HP Left', String(playerHP))
             ),
-            victory && (function() { tryAwardXP('battle-victory', 100, 'Defeated all enemies in Chip Defense!'); return null; })(),
             // Battle log
             log.length > 0 && h('div', { className: 'max-h-32 overflow-y-auto text-xs text-left bg-slate-800/60 rounded-lg border border-slate-700 p-2 mb-3' },
               log.map(function(entry, i) {
                 return h('div', { key: i, className: 'py-0.5 ' + (entry.hit ? 'text-emerald-400' : 'text-red-400') }, entry.text);
               })
             ),
-            btn('Play Again', function() { updMulti({ battleActive: false }); }, 'bg-cyan-700 text-white hover:bg-cyan-700')
+            btn('Play Again', function() { updMulti({ battleActive: false }); }, 'transition-colors bg-cyan-700 text-white hover:bg-cyan-700')
           );
         }
 
@@ -3379,7 +3407,7 @@ window.StemLab = window.StemLab || {
           // HP bars
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('div', { className: 'flex-1' },
-              h('div', { className: 'text-[11px] text-slate-600 mb-0.5' }, '\uD83D\uDEE1\uFE0F Your Chip'),
+              h('div', { className: 'text-[11px] text-slate-600 mb-0.5' }, t('stem.semiconductor.your_chip', '\uD83D\uDEE1\uFE0F Your Chip')),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-emerald-500 rounded-full transition-all', style: { width: (playerHP / 5 * 100) + '%' } })
               ),
@@ -3414,17 +3442,22 @@ window.StemLab = window.StemLab || {
                   onClick: function() {
                     var hit = opt === currentRound.answer;
                     var newLog = log.concat([{
-                      text: (hit ? '\u2694\uFE0F Hit! ' : '\uD83D\uDCA5 Miss! ') + 'R' + (round + 1) + ': ' + currentRound.enemy + (hit ? ' takes damage!' : ' attacks! -' + currentRound.damage + ' HP'),
+                      text: (hit ? '\u2694\uFE0F Hit! ' : '\uD83D\uDCA5 Miss! ') + 'R' + (round + 1) + ': ' + currentRound.enemy + (hit ? ' neutralized!' : ' attacks! -' + currentRound.damage + ' HP'),
                       hit: hit
                     }]);
                     var newPlayerHP = hit ? playerHP : playerHP - currentRound.damage;
-                    var newEnemyHP = hit ? enemyHP - 1 : enemyHP;
-                    updMulti({
+                    var newEnemyHP = hit ? 0 : enemyHP;
+                    var completedRounds = hit ? round + 1 : round;
+                    var battlePatch = {
                       battleFeedback: hit ? 'correct' : 'wrong-' + opt,
                       battleHP: Math.max(0, newPlayerHP),
                       battleEnemyHP: Math.max(0, newEnemyHP),
                       battleLog: newLog
-                    });
+                    };
+                    if (Math.max(0, newPlayerHP) <= 0 || completedRounds >= BATTLE_ROUNDS.length) {
+                      battlePatch.battleScore = Math.max(d.battleScore || 0, completedRounds);
+                    }
+                    updMulti(battlePatch);
                     if (hit) {
                       tryAwardXP('battle-r' + round, currentRound.xp, 'Defeated ' + currentRound.enemy);
                       if (stemBeep) stemBeep();
@@ -3438,7 +3471,9 @@ window.StemLab = window.StemLab || {
           // Next round
           feedback && h('div', { className: 'text-center' },
             btn('Next Round \u2192', function() {
-              updMulti({ battleRound: round + 1, battleFeedback: null, battleEnemyHP: 5 });
+              var nextRound = round + 1;
+              if (nextRound >= BATTLE_ROUNDS.length) tryAwardXP('battle-victory', 100, 'Survived all rounds in Chip Defense!');
+              updMulti({ battleRound: nextRound, battleFeedback: null, battleEnemyHP: 5, battleScore: Math.max(d.battleScore || 0, nextRound) });
             }, feedback === 'correct' ? 'bg-emerald-700 text-white' : 'bg-red-600 text-white')
           ),
           // Log
@@ -3456,7 +3491,7 @@ window.StemLab = window.StemLab || {
       function renderLearn() {
         var TOPICS = [
           {
-            title: 'What is a Semiconductor?',
+            title: t('stem.semiconductor.what_is_a_semiconductor', 'What is a Semiconductor?'),
             body: gradeText(
               'Some materials let electricity flow (like metal wires), and some don\'t (like rubber). Semiconductors are special \u2014 they\'re in between! We can control when they let electricity through.',
               'Semiconductors have conductivity between metals and insulators. Silicon is the most common. We control their behavior by adding tiny amounts of other elements (doping) or by applying voltage.',
@@ -3465,7 +3500,7 @@ window.StemLab = window.StemLab || {
             )
           },
           {
-            title: 'Band Gap Energy',
+            title: t('stem.semiconductor.band_gap_energy', 'Band Gap Energy'),
             body: gradeText(
               'Think of it like a wall. Electricity needs to jump over the wall. Small wall = easy (conductor). Huge wall = impossible (insulator). Medium wall = controllable (semiconductor)!',
               'The band gap is the energy electrons need to become free. Conductors: no gap. Insulators: very large gap (>4 eV). Semiconductors: moderate gap that can be overcome with heat or light.',
@@ -3474,7 +3509,7 @@ window.StemLab = window.StemLab || {
             )
           },
           {
-            title: 'Doping & Carriers',
+            title: t('stem.semiconductor.doping_carriers', 'Doping & Carriers'),
             body: gradeText(
               'We add special atoms to make semiconductors work! Some atoms bring extra electrons (N-type). Some create empty spots called holes (P-type). It\'s like adding ingredients to a recipe!',
               'N-type: add atoms with 5 electrons (like Phosphorus) to get extra free electrons. P-type: add atoms with 3 electrons (like Boron) to create holes. Majority carriers determine the type.',
@@ -3483,7 +3518,7 @@ window.StemLab = window.StemLab || {
             )
           },
           {
-            title: 'P-N Junction & Diodes',
+            title: t('stem.semiconductor.p_n_junction_diodes', 'P-N Junction & Diodes'),
             body: gradeText(
               'When P-type meets N-type, magic happens! A barrier forms that only lets electricity through one way \u2014 like a one-way door. This is called a diode!',
               'At the P-N junction, electrons and holes combine near the boundary creating a depletion region with an electric field. Forward bias: current flows. Reverse bias: current blocked.',
@@ -3492,7 +3527,7 @@ window.StemLab = window.StemLab || {
             )
           },
           {
-            title: 'MOSFETs & Digital Logic',
+            title: t('stem.semiconductor.mosfets_digital_logic', 'MOSFETs & Digital Logic'),
             body: gradeText(
               'A transistor is an electric switch! Apply a small voltage to the "gate" and it opens or closes a bigger circuit. Billions of these tiny switches make up your computer!',
               'MOSFETs have a gate, source, and drain. Gate voltage above threshold creates a conductive channel. CMOS uses both N and P type MOSFETs paired together for zero standby power.',
@@ -3501,7 +3536,7 @@ window.StemLab = window.StemLab || {
             )
           },
           {
-            title: 'Real-World Applications',
+            title: t('stem.semiconductor.real_world_applications', 'Real-World Applications'),
             body: gradeText(
               'Semiconductors are in everything! Phones, tablets, cars, toys, and even refrigerators. They help computers think, LEDs make light, and solar panels catch sunshine!',
               'CPUs: billions of transistors doing logic. Memory (RAM/Flash): transistors storing 1s and 0s. LEDs: P-N junctions emitting light. Solar cells: P-N junctions converting light to electricity.',
@@ -3510,7 +3545,7 @@ window.StemLab = window.StemLab || {
             )
           },
           {
-            title: 'Quantum Confinement',
+            title: t('stem.semiconductor.quantum_confinement', 'Quantum Confinement'),
             body: gradeText(
               'When spaces are super tiny (just a few atoms wide), electrons act like waves! They can only have certain energy steps, like climbing a special staircase.',
               'Quantum wells trap electrons in ultra-thin semiconductor layers (nanometers). The particle-in-a-box model shows that smaller wells = wider energy steps. This is used in lasers and LEDs.',
@@ -3519,7 +3554,7 @@ window.StemLab = window.StemLab || {
             )
           },
           {
-            title: 'Memory Technologies',
+            title: t('stem.semiconductor.memory_technologies', 'Memory Technologies'),
             body: gradeText(
               'Computer memory is like a notebook for your computer! Some memory forgets when power turns off (volatile). Some remembers forever (non-volatile), like a USB drive!',
               'SRAM (6 transistors/bit) is fastest but biggest \u2192 CPU cache. DRAM (1 transistor + capacitor) is dense but needs refreshing \u2192 main memory. Flash traps electrons on a floating gate \u2192 SSDs and USB drives.',
@@ -3528,7 +3563,7 @@ window.StemLab = window.StemLab || {
             )
           },
           {
-            title: 'Amplifier Circuits',
+            title: t('stem.semiconductor.amplifier_circuits', 'Amplifier Circuits'),
             body: gradeText(
               'Amplifiers make tiny signals bigger! Like a megaphone for electricity. They\'re in your phone, your speakers, and everywhere sound and signals need a boost!',
               'Transistor amplifiers take a small input signal and produce a bigger output. The gain tells you how much bigger. Common types: common-source (MOSFET), common-emitter (BJT). They have tradeoffs between gain, speed, and impedance.',
@@ -3540,7 +3575,7 @@ window.StemLab = window.StemLab || {
 
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'flex items-center justify-between' },
-            h('div', { className: 'text-sm font-bold text-white' }, '\uD83D\uDCDA Semiconductor Concepts'),
+            h('div', { className: 'text-sm font-bold text-white' }, t('stem.semiconductor.semiconductor_concepts', '\uD83D\uDCDA Semiconductor Concepts')),
             h('div', { className: 'text-[11px] text-slate-300 px-2 py-0.5 rounded bg-slate-800' }, 'Grade band: ' + gradeBand)
           ),
           TOPICS.map(function(item) {
@@ -3553,8 +3588,8 @@ window.StemLab = window.StemLab || {
             );
           }),
           h('div', { className: 'flex gap-2 mt-3' },
-            btn('\uD83E\uDD16 AI: Explain all for my level', function() { askAI('comprehensive semiconductor overview for ' + gradeBand + ' student'); }, 'bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read intro', function() { speakText('Semiconductors are materials whose electrical conductivity is between conductors and insulators. Silicon is the most important semiconductor. We control it with doping, temperature, and voltage.'); }, 'bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83E\uDD16 AI: Explain all for my level', function() { askAI('comprehensive semiconductor overview for ' + gradeBand + ' student'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read intro', function() { speakText('Semiconductors are materials whose electrical conductivity is between conductors and insulators. Silicon is the most important semiconductor. We control it with doping, temperature, and voltage.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
           ),
           aiBox()
         );
@@ -3597,22 +3632,22 @@ window.StemLab = window.StemLab || {
         onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR('Returned to STEM Lab tools'); },
         className: 'flex items-center gap-1 text-xs text-slate-200 hover:text-white transition-colors mb-2'
       }, a11yClick ? a11yClick(function() { setStemLabTool(null); }) : {}),
-        h(ArrowLeft, { size: 14 }), ' Back to STEM Lab'
+        h(ArrowLeft, { size: 14 }), t('stem.semiconductor.back_to_stem_lab', ' Back to STEM Lab')
       );
 
       var tabBar = h('div', { className: 'flex gap-1 mb-3 border-b border-slate-700 pb-2', role: 'tablist' },
         ['explore', 'challenge', 'battle', 'learn'].map(function(tb) {
           var labels = { explore: '\uD83D\uDD2C Explore', challenge: '\uD83C\uDFC6 Challenge', battle: '\u2694\uFE0F Battle', learn: '\uD83D\uDCDA Learn' };
-          return pill(labels[tb], tab === tb, function() { setStemLabTab(tb); if (announceToSR) announceToSR(tb + ' tab selected'); });
+          return pill(labels[tb], tab === tb, function() { setStemLabTab(tb); if (announceToSR) announceToSR(tb + ' tab selected'); }, 'tab-' + tb);
         })
       );
 
       // Topic-accent hero band per tab
       var TAB_META = {
-        explore:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: 'Explore \u2014 diodes, transistors, doping',     hint: 'Doping silicon with phosphorus (n-type) or boron (p-type) is the foundation of every chip ever made. The PN junction is the building block of every diode + LED + solar cell + transistor.' },
-        challenge: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: 'Challenge \u2014 graded problems',              hint: 'Bias a transistor, calculate band-gap energy, predict current vs voltage. AP Physics 2 + intro EE problems with step-by-step feedback.' },
-        battle:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: 'Battle \u2014 head-to-head circuit duels',       hint: 'Time-pressure rounds: build a circuit faster than the timer. Tests whether semiconductor reasoning is automatic, not just recognized.' },
-        learn:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCDA', title: 'Learn \u2014 reference + history',               hint: 'Bardeen + Brattain + Shockley invented the transistor at Bell Labs (1947); Nobel 1956. Moore\'s Law: transistor count doubles every ~2 years; held for 50+ years before slowing.' }
+        explore:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: t('stem.semiconductor.explore_diodes_transistors_doping', 'Explore \u2014 diodes, transistors, doping'),     hint: t('stem.semiconductor.doping_silicon_with_phosphorus_n_type_', 'Doping silicon with phosphorus (n-type) or boron (p-type) is the foundation of every chip ever made. The PN junction is the building block of every diode + LED + solar cell + transistor.') },
+        challenge: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: t('stem.semiconductor.challenge_graded_problems', 'Challenge \u2014 graded problems'),              hint: t('stem.semiconductor.bias_a_transistor_calculate_band_gap_e', 'Bias a transistor, calculate band-gap energy, predict current vs voltage. AP Physics 2 + intro EE problems with step-by-step feedback.') },
+        battle:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: t('stem.semiconductor.battle_head_to_head_circuit_duels', 'Battle \u2014 head-to-head circuit duels'),       hint: t('stem.semiconductor.time_pressure_rounds_build_a_circuit_f', 'Time-pressure rounds: build a circuit faster than the timer. Tests whether semiconductor reasoning is automatic, not just recognized.') },
+        learn:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCDA', title: t('stem.semiconductor.learn_reference_history', 'Learn \u2014 reference + history'),               hint: t('stem.semiconductor.bardeen_brattain_shockley_invented_the', 'Bardeen + Brattain + Shockley invented the transistor at Bell Labs (1947); Nobel 1956. Moore\'s Law: transistor count doubles every ~2 years; held for 50+ years before slowing.') }
       };
       var meta = TAB_META[tab] || TAB_META.explore;
       var tabHero = h('div', {
@@ -3633,15 +3668,15 @@ window.StemLab = window.StemLab || {
         )
       );
 
-      var subtoolNav = tab === 'explore' ? h('div', { className: 'flex flex-wrap gap-1.5 mb-4', role: 'navigation', 'aria-label': 'Semiconductor sub-tools' },
+      var subtoolNav = tab === 'explore' ? h('div', { className: 'flex flex-wrap gap-1.5 mb-4', role: 'navigation', 'aria-label': t('stem.semiconductor.semiconductor_sub_tools', 'Semiconductor sub-tools') },
         SUBTOOLS.map(function(st) {
           return pill(st.icon + ' ' + st.short, subtool === st.id, function() {
             updMulti({ subtool: st.id, aiExplain: null });
             if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'subtoolSwitch', 'Switched to ' + st.label + ' simulation.', { debounce: 500 });
             if (announceToSR) announceToSR('Selected ' + st.label + ' tool');
-          });
+          }, 'subtool-' + st.id);
         }),
-        h('span', { className: 'text-[11px] text-slate-600 self-center ml-1' }, '\u2190\u2192 keys')
+        h('span', { className: 'text-[11px] text-slate-600 self-center ml-1' }, t('stem.semiconductor.keys', '\u2190\u2192 keys'))
       ) : null;
 
       var content;
@@ -3673,53 +3708,54 @@ window.StemLab = window.StemLab || {
           else if (iq.conc < 6) state = 'light';
           else if (iq.conc < 11) state = 'moderate';
           else state = 'heavy';
+          // Dark-themed to match the rest of the tool (was a bright white card with light pastels on the dark lab)
           var sm = {
-            intrinsic: { label: '🔘 Intrinsic', color: '#64748b', bg: '#f1f5f9', border: '#cbd5e1', desc: 'Minimal dopant. Pure semiconductor — high resistivity.' },
-            light:     { label: '🟢 Lightly doped', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Some carriers introduced. Typical extrinsic regime.' },
-            moderate:  { label: '🟡 Moderately doped', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Strong conductivity, used in transistors.' },
-            heavy:     { label: '🔴 Heavily doped', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Approaching metallic behavior. Used for contacts.' }
+            intrinsic: { label: t('stem.semiconductor.intrinsic_2', '🔘 Intrinsic'), color: '#94a3b8', bg: 'rgba(148,163,184,0.12)', border: 'rgba(148,163,184,0.4)', desc: t('stem.semiconductor.minimal_dopant_pure_semiconductor_high', 'Minimal dopant. Pure semiconductor — high resistivity.') },
+            light:     { label: t('stem.semiconductor.lightly_doped', '🟢 Lightly doped'), color: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.4)', desc: t('stem.semiconductor.some_carriers_introduced_typical_extri', 'Some carriers introduced. Typical extrinsic regime.') },
+            moderate:  { label: t('stem.semiconductor.moderately_doped', '🟡 Moderately doped'), color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.4)', desc: t('stem.semiconductor.strong_conductivity_used_in_transistor', 'Strong conductivity, used in transistors.') },
+            heavy:     { label: t('stem.semiconductor.heavily_doped', '🔴 Heavily doped'), color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.4)', desc: t('stem.semiconductor.approaching_metallic_behavior_used_for', 'Approaching metallic behavior. Used for contacts.') }
           }[state];
-          return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3' },
-            h('h3', { className: 'text-sm font-black text-amber-700' }, '⚗️ Doping discovery'),
-            h('p', { className: 'text-[12px] text-slate-700' }, 'Adjust dopant concentration, temperature, material. Discrete 4-band regime. No score, no reveal.'),
+          return h('div', { className: 'p-4 rounded-xl bg-slate-800/60 border border-amber-500/40 shadow-sm space-y-3' },
+            h('h3', { className: 'text-sm font-black text-amber-300' }, t('stem.semiconductor.doping_discovery_2', '⚗️ Doping discovery')),
+            h('p', { className: 'text-[12px] text-slate-300' }, t('stem.semiconductor.adjust_dopant_concentration_temperatur', 'Adjust dopant concentration, temperature, material. Discrete 4-band regime. No score, no reveal.')),
             h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
               h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-              h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
-              h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'Carriers ≈ ' + carrierConc.toExponential(1) + ' cm⁻³')
+              h('div', { className: 'text-[11px] text-slate-300 mt-1' }, sm.desc),
+              h('div', { className: 'text-[10px] text-slate-400 mt-1 font-mono' }, 'Carriers ≈ ' + carrierConc.toExponential(1) + ' cm⁻³')
             ),
             h('div', { className: 'flex gap-2' },
               ['Si', 'Ge', 'GaAs'].map(function(m) {
                 var active = iq.material === m;
-                return h('button', { key: m, onClick: function() { setIQ({ material: m }); }, className: 'px-2 py-1 rounded text-[11px] font-bold border ' + (active ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300') }, m);
+                return h('button', { key: m, onClick: function() { setIQ({ material: m }); }, className: 'px-2 py-1 rounded text-[11px] font-bold border ' + (active ? 'bg-amber-300 text-slate-950 border-amber-400' : 'bg-slate-900/70 text-slate-300 border-slate-700') }, m);
               })
             ),
             h('div', { className: 'grid grid-cols-2 gap-3' },
               [{ k: 'conc', l: 'Dopant log10 conc', mn: 0, mx: 15, st: 1 },
                { k: 'tempK', l: 'Temperature (K)', mn: 100, mx: 500, st: 10 }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
+                  h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-300' }, s.l + ': ', h('span', { className: 'font-mono text-amber-300' }, iq[s.k])),
                   h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                     className: 'w-full', 'aria-label': s.l }));
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.conc, t: iq.tempK, m: iq.material, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-              h('button', { onClick: function() { setIQ({ conc: 5, tempK: 300, material: 'Si', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.conc, t: iq.tempK, m: iq.material, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-700 text-[11px] font-bold text-slate-100 border border-slate-600' }, t('stem.semiconductor.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ conc: 5, tempK: 300, material: 'Si', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-slate-900/70 text-[11px] font-semibold text-slate-300 border border-slate-700' }, t('stem.semiconductor.reset', '↺ Reset'))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does temperature affect carrier concentration?',
-              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
-            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.semiconductor.hypothesis_how_does_temperature_affect', 'Hypothesis: How does temperature affect carrier concentration?'),
+              className: 'w-full text-[12px] border border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-900/30 text-[11px] font-bold text-amber-200 border border-amber-700' }, t('stem.semiconductor.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-amber-100 leading-relaxed' },
               h('ul', { className: 'list-disc pl-5 space-y-1' },
-                h('li', null, 'Compare Si and GaAs at same concentration. Why differ?'),
-                h('li', null, 'Find two settings producing same regime.'))),
-            h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                h('li', null, t('stem.semiconductor.compare_si_and_gaas_at_same_concentrat', 'Compare Si and GaAs at same concentration. Why differ?')),
+                h('li', null, t('stem.semiconductor.find_two_settings_producing_same_regim', 'Find two settings producing same regime.')))),
+            h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-              'I understand — explain in own words'),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration, temperature, and material jointly set the regime.',
-              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-            h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.')
+              t('stem.semiconductor.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.semiconductor.explain_how_concentration_temperature_', 'Explain how concentration, temperature, and material jointly set the regime.'),
+              className: 'w-full text-[12px] border border-emerald-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.semiconductor.design_note_discrete_4_state_marker_no', 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.'))
           );
         })();
         else content = renderBandGap();
@@ -3752,20 +3788,102 @@ window.StemLab = window.StemLab || {
           if (announceToSR) announceToSR('Snapshot saved');
         },
         className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full hover:from-cyan-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all'
-      }, '\uD83D\uDCF8 Snapshot');
+      }, t('stem.semiconductor.snapshot', '\uD83D\uDCF8 Snapshot'));
 
-      // Show loading placeholder while state initializes (hooks already called above)
-      if (!_semiInitialized) return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading Semiconductor Lab\u2026');
+      var currentSubtool = SUBTOOLS.find(function(st) { return st.id === subtool; }) || SUBTOOLS[0];
+      var activeMaterial = MATERIALS[d.material] || MATERIALS.silicon;
+      var activeTemp = d.temperature || 300;
+      var activeBandGap = Math.max(0, activeMaterial.bandGap + activeMaterial.tempCoeff * (activeTemp - 300));
+      var chipRoutes = [
+        { label: t('stem.semiconductor.route_band_structure', 'Band structure'), value: activeBandGap.toFixed(2) + ' eV', note: activeMaterial.name, accent: '#38bdf8', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'bandgap', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_doping', 'Doping'), value: (DOPANTS[d.dopant] || DOPANTS.none).name, note: (d.dopantCount || 3) + ' dopants on the lattice', accent: '#f59e0b', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'doping', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_junctions', 'Junctions'), value: ((d.pnBias || 0).toFixed(1)) + ' V', note: t('stem.semiconductor.route_junctions_note', 'Bias a diode or LED'), accent: '#a78bfa', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'pnjunction', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_chip_logic', 'Chip logic'), value: d.gateType || 'NOT', note: t('stem.semiconductor.route_chip_logic_note', 'Build gates and CMOS flow'), accent: '#34d399', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'gates', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_solar_led', 'Solar + LED'), value: (d.ledCurrent || 20) + ' mA', note: t('stem.semiconductor.route_solar_led_note', 'Turn photons into power and color'), accent: '#fb7185', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'ledspec', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_practice', 'Practice'), value: tab === 'challenge' ? t('stem.semiconductor.active', 'Active') : t('stem.semiconductor.ready', 'Ready'), note: t('stem.semiconductor.route_practice_note', 'Challenge or Chip Defense'), accent: '#22d3ee', onClick: function() { setStemLabTab('challenge'); } }
+      ];
+      var commandPanel = h('section', {
+        'data-semiconductor-command': 'true',
+        'aria-labelledby': 'semiconductor-command-title',
+        style: {
+          margin: '0 0 12px',
+          padding: 14,
+          borderRadius: 12,
+          border: '1px solid rgba(56,189,248,0.30)',
+          background: 'radial-gradient(circle at 78% 14%, rgba(56,189,248,0.18), transparent 28%), linear-gradient(135deg, rgba(8,47,73,0.72), rgba(15,23,42,0.96))',
+          boxShadow: '0 18px 40px rgba(2,8,23,0.28)'
+        }
+      },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.15fr) minmax(260px, 0.85fr)', gap: 12, alignItems: 'stretch' } },
+          h('div', null,
+            h('div', { style: { fontSize: 10, fontWeight: 900, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 4 } }, t('stem.semiconductor.command_kicker', 'Chip lab bench')),
+            h('h3', { id: 'semiconductor-command-title', style: { margin: 0, color: '#f8fafc', fontSize: 20, lineHeight: 1.15, fontWeight: 900 } }, currentSubtool.label),
+            h('p', { style: { margin: '6px 0 12px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, maxWidth: '68ch' } }, t('stem.semiconductor.command_copy', 'Start with a physical idea, then jump into the exact simulation: energy bands, dopants, P-N junctions, logic gates, LEDs, solar cells, or a practice challenge.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 8 } },
+              chipRoutes.map(function(route) {
+                return h('button', {
+                  key: route.label,
+                  type: 'button',
+                  onClick: route.onClick,
+                  style: {
+                    minHeight: 82,
+                    padding: '9px 10px',
+                    textAlign: 'left',
+                    borderRadius: 8,
+                    border: '1px solid rgba(148,163,184,0.22)',
+                    borderLeft: '4px solid ' + route.accent,
+                    background: 'rgba(15,23,42,0.62)',
+                    color: '#f8fafc',
+                    cursor: 'pointer'
+                  }
+                },
+                  h('span', { style: { display: 'block', fontSize: 10, color: route.accent, fontWeight: 900, textTransform: 'uppercase', marginBottom: 4 } }, route.label),
+                  h('span', { style: { display: 'block', fontSize: 13, fontWeight: 900, lineHeight: 1.2 } }, route.value),
+                  h('span', { style: { display: 'block', fontSize: 10, color: '#bae6fd', lineHeight: 1.35, marginTop: 4 } }, route.note)
+                );
+              })
+            )
+          ),
+          h('div', { style: { borderRadius: 10, border: '1px solid rgba(125,211,252,0.24)', background: 'rgba(2,6,23,0.36)', padding: 10, minHeight: 190 } },
+            h('div', { style: { height: 112, borderRadius: 8, border: '1px solid rgba(56,189,248,0.24)', background: 'linear-gradient(135deg, rgba(14,165,233,0.12), rgba(15,23,42,0.84))', position: 'relative', overflow: 'hidden', marginBottom: 9 }, 'aria-hidden': 'true' },
+              [18, 32, 46, 60, 74].map(function(x) {
+                return h('span', { key: 'v' + x, style: { position: 'absolute', left: x + '%', top: 12, bottom: 12, width: 1, background: 'rgba(125,211,252,0.22)' } });
+              }),
+              [24, 50, 76].map(function(y) {
+                return h('span', { key: 'h' + y, style: { position: 'absolute', left: 18, right: 18, top: y + '%', height: 1, background: 'rgba(125,211,252,0.18)' } });
+              }),
+              h('span', { style: { position: 'absolute', left: '16%', top: '42%', width: 11, height: 11, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 14px rgba(56,189,248,0.55)' } }),
+              h('span', { style: { position: 'absolute', left: '49%', top: '23%', width: 12, height: 12, borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 14px rgba(245,158,11,0.55)' } }),
+              h('span', { style: { position: 'absolute', left: '71%', top: '61%', width: 11, height: 11, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 14px rgba(52,211,153,0.55)' } }),
+              h('span', { style: { position: 'absolute', left: 24, right: 24, top: '50%', height: 2, background: 'linear-gradient(90deg, #38bdf8, #f59e0b, #34d399)', opacity: 0.75 } })
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 } },
+              [
+                { label: t('stem.semiconductor.status_material', 'Material'), value: activeMaterial.name },
+                { label: t('stem.semiconductor.status_temperature', 'Temperature'), value: activeTemp + ' K' },
+                { label: t('stem.semiconductor.status_workspace', 'Workspace'), value: currentSubtool.short },
+                { label: t('stem.semiconductor.status_xp', 'XP'), value: String(getStemXP ? getStemXP() : 0) }
+              ].map(function(card) {
+                return h('div', { key: card.label, style: { padding: 8, borderRadius: 8, border: '1px solid rgba(148,163,184,0.18)', background: 'rgba(15,23,42,0.58)' } },
+                  h('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 900, textTransform: 'uppercase' } }, card.label),
+                  h('div', { style: { marginTop: 3, fontSize: 12, color: '#f8fafc', fontWeight: 900, lineHeight: 1.2 } }, card.value)
+                );
+              })
+            )
+          )
+        )
+      );
 
-      return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': 'Semiconductor Lab' },
+      return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': t('stem.semiconductor.semiconductor_lab', 'Semiconductor Lab') },
         backBtn,
         h('div', { className: 'flex items-center gap-2 mb-2' },
           h('span', { className: 'text-2xl' }, '\uD83D\uDCA1'),
-          h('h2', { className: 'text-lg font-bold text-white' }, 'Semiconductor Lab'),
+          h('h2', { className: 'text-lg font-bold text-white' }, t('stem.semiconductor.semiconductor_lab_2', 'Semiconductor Lab')),
           h('span', { className: 'text-[11px] text-slate-600 ml-1' }, 'v3.0'),
           h('span', { className: 'ml-auto text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200' }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP')
         ),
         tabBar,
+        commandPanel,
         tabHero,
         subtoolNav,
         h('div', { className: 'flex-1 overflow-y-auto pr-1' }, content),

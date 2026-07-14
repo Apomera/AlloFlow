@@ -1,5 +1,7 @@
 # Translator Handoff — Word Sounds Pass 1 Label Reframe
 
+> **Historical translator handoff (2026-07-09):** This May 2026 note preserves a targeted Word Sounds label-reframe workflow. Verify the current English strings and each current language pack before treating the per-language proposals below as still-needed edits.
+
 **Date:** 2026-05-31
 **Scope:** 4 i18n keys across 6 major hand-translated language packs
 **Languages:** Spanish (LATAM), French, Chinese (Simplified), Vietnamese, Portuguese (Brazil), German

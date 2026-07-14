@@ -15,7 +15,7 @@ const startClassSession = async (deps) => {
     addToast(t('session.creating', { code }), "info");
     try {
         const resourcesToUpload = history.filter(h => h.id);
-        const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload);
+        const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload, code);
         const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', code);
         const sessionPayload = {
             resources: lightweightResources,
@@ -32,7 +32,7 @@ const startClassSession = async (deps) => {
                 console.warn(`[SESSION DEBUG] ⚠️ Payload is ${payloadSizeKB}KB — dangerously close to Firestore 1MB limit!`);
             }
         } catch(sizeErr) {
-            console.log("[SESSION DEBUG] Cannot serialize payload:", sizeErr?.message);
+            console.error("[SESSION DEBUG] Cannot serialize payload:", sizeErr?.message);
         }
         await setDoc(sessionRef, stripUndefined({
             resources: lightweightResources,
@@ -72,21 +72,21 @@ const startClassSession = async (deps) => {
         addToast(t('session.live', { code }), "success");
     } catch (e) {
         warnLog("Session Start Error:", e);
-        console.log("[SESSION DEBUG] Full error object:", e);
-        console.log("[SESSION DEBUG] Error name:", e?.name);
-        console.log("[SESSION DEBUG] Error code:", e?.code);
-        console.log("[SESSION DEBUG] Error message:", e?.message);
-        console.log("[SESSION DEBUG] Resources count:", history?.length, "history items");
+        console.error("[SESSION DEBUG] Full error object:", e);
+        console.error("[SESSION DEBUG] Error name:", e?.name);
+        console.error("[SESSION DEBUG] Error code:", e?.code);
+        console.error("[SESSION DEBUG] Error message:", e?.message);
+        console.error("[SESSION DEBUG] Resources count:", history?.length, "history items");
         try {
             const payloadTest = JSON.stringify(history.filter(h => h.id).map(h => ({type: h.type, id: h.id, title: h.title})));
-            console.log("[SESSION DEBUG] Payload size:", payloadTest?.length, "chars (~", Math.round((payloadTest?.length || 0)/1024), "KB)");
+            console.error("[SESSION DEBUG] Payload size:", payloadTest?.length, "chars (~", Math.round((payloadTest?.length || 0)/1024), "KB)");
         } catch(jsonErr) {
-            console.log("[SESSION DEBUG] JSON.stringify FAILED:", jsonErr?.message);
-            console.log("[SESSION DEBUG] This means non-serializable data in resources");
+            console.error("[SESSION DEBUG] JSON.stringify FAILED:", jsonErr?.message);
+            console.error("[SESSION DEBUG] This means non-serializable data in resources");
             if (false /* lightweightResources out of scope */) {
                 lightweightResources.forEach((r, i) => {
                     try { JSON.stringify(r); } catch(e2) {
-                        console.log(`[SESSION DEBUG] Resource ${i} (${r?.type}/${r?.title}) is NOT serializable:`, e2?.message);
+                        console.error(`[SESSION DEBUG] Resource ${i} (${r?.type}/${r?.title}) is NOT serializable:`, e2?.message);
                     }
                 });
             }
@@ -107,6 +107,9 @@ const startClassSession = async (deps) => {
                 currentResourceId: null,
                 createdAt: new Date().toISOString(),
                 hostId: user?.uid,
+                isLocalOnly: true,
+                transport: 'local-preview',
+                shareUnavailableReason: 'firebase-permission-denied',
                 roster: {},
                 groups: {},
                 democracy: { isActive: false, phase: 'idle', votingContext: 'custom', activeOptions: [], votes: {}, suggestions: {} },
@@ -367,13 +370,38 @@ const handleWizardComplete = (data, deps) => {
               customInstructions: finalData.sourceCustomInstructions
           });
       }, 500);
-    } else if (finalData.sourceMode === 'url' || finalData.sourceMode === 'search') {
+    } else if (finalData.sourceMode === 'url' || finalData.sourceMode === 'search' || finalData.sourceMode === 'storybook') {
       if (finalData.fetchedContent) {
           setInputText(finalData.fetchedContent);
       }
       const topic = finalData.searchQuery || finalData.topic;
       if (topic) setSourceTopic(topic);
       setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']);
+      // A picked catalog resource also becomes a resource-pack entry (same
+      // 'readingBook' item the reader's Save-to-lesson creates), so it rides
+      // along with the lesson and can be reopened from Resources — not just
+      // dumped into the source box.
+      if (finalData.sourceMode === 'storybook' && finalData.storybookRef && finalData.storybookRef.slug) {
+        const ref = finalData.storybookRef;
+        const meta = [
+          ref.sourceName || 'Reading Catalog resource',
+          ref.level ? (t('readinglib_level') || 'Level') + ' ' + ref.level : null,
+          ref.language,
+          ref.hasAudio ? ('🔊 ' + (t('readinglib_narrated') || 'narrated')) : null,
+        ].filter(Boolean).join(' · ');
+        setHistory(prev => {
+          if (prev.some(it => it && it.type === 'readingBook' && it.data && it.data.slug === ref.slug)) return prev;
+          return [...prev, {
+            id: 'readingbook-' + ref.slug + '-' + Date.now(),
+            type: 'readingBook',
+            title: ref.title,
+            meta,
+            timestamp: new Date(),
+            data: ref,
+            config: {},
+          }];
+        });
+      }
     } else if (finalData.sourceMode === 'file' || finalData.materialType === 'file') {
       setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']);
       setTimeout(() => {
@@ -461,11 +489,88 @@ const handleWizardStandardLookup = async (grade, goal, region, deps) => {
       } catch (e) { warnLog("Unhandled error in handleWizardStandardLookup:", e); }
 };
 
+// executeOneBlueprint — run ONE blueprint's resource loop. Extracted verbatim
+// from handleExecuteBlueprint's inner loop (2026-06-14) so it can be reused by
+// the Generate-Unit driver (once per lesson) without duplicating any generation
+// logic. Behavior of the single-blueprint path is unchanged: same handleGenerate
+// call, same lessonDNA carry-forward (analysis→concepts/source, glossary→keyTerms,
+// image→visualContext, lesson-plan→essentialQuestion), same 1s inter-resource pace.
+// `dna` is mutated IN PLACE (faithful to the original) and returned as dnaOut.
+// Additions are inert for the single-blueprint caller: `onResource` (per-item
+// hook) is optional; `signal` (cooperative abort) is null on that path.
+const getBlueprintResourcePlan = (blueprint) => {
+    const toolDirectives = (blueprint && blueprint.toolDirectives) || {};
+    const rawPlan = Array.isArray(blueprint?.resourcePlan) && blueprint.resourcePlan.length > 0
+        ? blueprint.resourcePlan
+        : ((blueprint && blueprint.recommendedResources) || []);
+    return rawPlan.map(item => {
+        const type = typeof item === 'string' ? item : (item && (item.tool || item.type || item.id));
+        if (!type) return null;
+        return {
+            type,
+            directive: typeof item === 'string'
+                ? (toolDirectives[type] || "")
+                : (item.directive || item.instructions || item.customInstructions || toolDirectives[type] || "")
+        };
+    }).filter(Boolean);
+};
+
+const executeOneBlueprint = async (blueprint, ctx) => {
+    const { handleGenerate, historyOverride, dna, initialSourceText, onResource, signal } = ctx || {};
+    const finalResources = getBlueprintResourcePlan(blueprint);
+    const lessonDNA = dna || { grade: "", topic: "", standard: "", concepts: [], keyTerms: [], visualContext: "", essentialQuestion: "" };
+    let currentSourceText = initialSourceText || "";
+    let currentBlueprintHistory = Array.isArray(historyOverride) ? [...historyOverride] : [];
+    const items = [];
+    const nulls = [];
+    for (let i = 0; i < finalResources.length; i++) {
+        if (signal && signal.aborted) break;
+        const { type, directive: aiDirective = "" } = finalResources[i];
+        const resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, {
+            customInstructions: aiDirective,
+            historyOverride: currentBlueprintHistory,
+            lessonDNA: lessonDNA
+        }, false);
+        if (resultItem) {
+            items.push(resultItem);
+            currentBlueprintHistory.push(resultItem);
+            if (resultItem.data) {
+                if (type === 'analysis') {
+                    if (resultItem.data.originalText) {
+                        currentSourceText = resultItem.data.originalText;
+                    }
+                    if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) {
+                        lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
+                    }
+                }
+                if (type === 'glossary' && Array.isArray(resultItem.data) && lessonDNA.keyTerms.length === 0) {
+                    lessonDNA.keyTerms = resultItem.data.slice(0, 8).map(t => t.term).filter(Boolean);
+                }
+                if (type === 'image') {
+                    lessonDNA.visualContext = resultItem.data.prompt || resultItem.data.altText || lessonDNA.visualContext;
+                }
+                if (type === 'lesson-plan' && resultItem.data.essentialQuestion && !lessonDNA.essentialQuestion) {
+                    lessonDNA.essentialQuestion = resultItem.data.essentialQuestion;
+                }
+            }
+            if (typeof onResource === 'function') { try { onResource(type, resultItem); } catch (_) {} }
+        } else {
+            nulls.push(type);
+        }
+        if (i < finalResources.length - 1) await new Promise(r => setTimeout(r, 1000));
+    }
+    return { items: items, dnaOut: lessonDNA, nulls: nulls, finalSourceText: currentSourceText };
+};
+
 const handleExecuteBlueprint = async (deps) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleExecuteBlueprint fired"); } catch(_) {}
     if (!activeBlueprint) return;
-    const finalResources = activeBlueprint.recommendedResources;
+    const finalResources = getBlueprintResourcePlan(activeBlueprint);
+    if (finalResources.length === 0) {
+        addToast("This blueprint does not include any resources yet.", "error");
+        return;
+    }
     if (activeBlueprint.globalSettings) {
         if (activeBlueprint.globalSettings.gradeLevel) setGradeLevel(activeBlueprint.globalSettings.gradeLevel);
         if (activeBlueprint.globalSettings.tone) setSourceTone(activeBlueprint.globalSettings.tone);
@@ -490,41 +595,20 @@ const handleExecuteBlueprint = async (deps) => {
         if (existingAnalysis?.data?.originalText) {
             currentSourceText = existingAnalysis.data.originalText;
         }
-        let currentBlueprintHistory = [...history];
-        for (let i = 0; i < finalResources.length; i++) {
-            const type = finalResources[i];
-            const aiDirective = activeBlueprint.toolDirectives?.[type] || "";
-            const resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, {
-                customInstructions: aiDirective,
-                historyOverride: currentBlueprintHistory,
-                lessonDNA: lessonDNA
-            }, false);
-            if (resultItem) {
-                currentBlueprintHistory.push(resultItem);
-                if (resultItem.data) {
-                    if (type === 'analysis') {
-                        if (resultItem.data.originalText) {
-                            currentSourceText = resultItem.data.originalText;
-                        }
-                        if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) {
-                            lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
-                        }
-                    }
-                    if (type === 'glossary' && Array.isArray(resultItem.data) && lessonDNA.keyTerms.length === 0) {
-                        lessonDNA.keyTerms = resultItem.data.slice(0, 8).map(t => t.term).filter(Boolean);
-                    }
-                    if (type === 'image') {
-                        lessonDNA.visualContext = resultItem.data.prompt || resultItem.data.altText || lessonDNA.visualContext;
-                    }
-                    if (type === 'lesson-plan' && resultItem.data.essentialQuestion && !lessonDNA.essentialQuestion) {
-                        lessonDNA.essentialQuestion = resultItem.data.essentialQuestion;
-                    }
-                }
-            }
-            if (i < finalResources.length - 1) await new Promise(r => setTimeout(r, 1000));
+        const { dnaOut, nulls } = await executeOneBlueprint(activeBlueprint, {
+            handleGenerate,
+            historyOverride: [...history],
+            dna: lessonDNA,                       // mutated in place — faithful to the original loop
+            initialSourceText: currentSourceText
+        });
+        setPersistedLessonDNA(dnaOut);            // dnaOut === lessonDNA (same object)
+        if (Array.isArray(nulls) && nulls.length > 0) {
+            const failedList = nulls.slice(0, 3).join(", ");
+            const extra = nulls.length > 3 ? ` and ${nulls.length - 3} more` : "";
+            addToast(`Blueprint finished, but ${nulls.length} resource${nulls.length === 1 ? "" : "s"} did not generate: ${failedList}${extra}.`, "warning");
+        } else {
+            addToast(t('blueprint.execution_complete'), "success");
         }
-        setPersistedLessonDNA(lessonDNA);
-        addToast(t('blueprint.execution_complete'), "success");
     } catch (e) {
         warnLog("Unhandled error:", e);
         addToast(t('blueprint.execution_error'), "error");
@@ -541,7 +625,8 @@ window.AlloModules.PhaseOHandlers = {
   handleWizardComplete,
   handleWizardStandardLookup,
   handleExecuteBlueprint,
+  executeOneBlueprint,   // exposed for the Generate-Unit driver (runs it once per lesson)
 };
 window.AlloModules.PhaseOHandlersModule = true;
-console.log("[PhaseOHandlers] 6 handlers registered");
+console.log("[PhaseOHandlers] 7 handlers registered");
 })();

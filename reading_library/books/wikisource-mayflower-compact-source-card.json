@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-mayflower-compact-source-card",
+  "title": "Mayflower Compact",
+  "description": "A Wikisource source card for the Mayflower Compact and early colonial governance.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Colonial America",
+    "Self-government",
+    "Primary sources",
+    "Civics"
+  ],
+  "authors": [
+    "Mayflower passengers"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Mayflower_Compact",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Mayflower_Compact"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Mayflower Compact is a short primary source for studying self-government, community agreements, colonial settlement, and historical context."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for a brief close read, paraphrase practice, vocabulary support, and discussion of who was included or excluded from civic decisions."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This historical text is public domain, but check the Wikisource page for transcription and edition notes before mirroring classroom excerpts."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 61
+  }
+}

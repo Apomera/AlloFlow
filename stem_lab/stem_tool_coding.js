@@ -10,11 +10,408 @@
 
   // ── Coding Playground Audio ──
   var _codeAC = null;
+  var _codeRunToken = 0, _codeStepTimer = null, _codeRobotTimer = null;
   function getCodeAC() { if (!_codeAC) { try { _codeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
   function codeTone(f, d, t, v) { var ac = getCodeAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCodeRun() { codeTone(440, 0.06, 'sine', 0.06); setTimeout(function() { codeTone(554, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 100); }
   function sfxCodeError() { codeTone(220, 0.15, 'sawtooth', 0.06); setTimeout(function() { codeTone(180, 0.12, 'sawtooth', 0.05); }, 80); }
   function sfxCodeSuccess() { codeTone(523, 0.08, 'sine', 0.07); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { codeTone(784, 0.1, 'sine', 0.08); }, 140); setTimeout(function() { codeTone(1047, 0.15, 'sine', 0.09); }, 210); }
+
+  /* __CODING_INTERP_START__ */
+  // Pure, testable interpreter core for codingPlayground (extracted 2026-06-14,
+  // roadmap C1). Single source of truth for parse / serialize / execute so the
+  // copy-paste defect class that produced the A3 3D-serializer bug cannot recur
+  // silently. Exercised by tests/coding_interp.test.js.
+  var CodingInterp = (function () {
+    function resolveVal(val, vars) {
+      if (typeof val === 'string' && val.charAt(0) === '$') {
+        var vName = val.substring(1);
+        return vars[vName] != null ? vars[vName] : 0;
+      }
+      return typeof val === 'number' ? val : (parseFloat(val) || 0);
+    }
+    function evalCondition(cond, turtle, vars) {
+      if (!cond) return false;
+      var m;
+      if ((m = cond.match(/^(\$?[\w.]+)\s*(>|<|>=|<=|==|!=)\s*(.+)$/))) {
+        var lhsRaw = m[1].trim(), op = m[2], rhsRaw = m[3].trim();
+        var lhs, rhs;
+        if (lhsRaw === 'x') lhs = turtle.x;
+        else if (lhsRaw === 'y') lhs = turtle.y;
+        else if (lhsRaw === 'angle') lhs = turtle.angle;
+        else if (lhsRaw === 'penDown') lhs = turtle.penDown;
+        else if (lhsRaw.charAt(0) === '$') lhs = vars[lhsRaw.substring(1)] || 0;
+        else lhs = parseFloat(lhsRaw) || 0;
+        if (rhsRaw === 'true') rhs = true;
+        else if (rhsRaw === 'false') rhs = false;
+        else if (rhsRaw.charAt(0) === '$') rhs = vars[rhsRaw.substring(1)] || 0;
+        else rhs = parseFloat(rhsRaw);
+        if (isNaN(rhs) && typeof rhs !== 'boolean') rhs = 0;
+        if (op === '>') return lhs > rhs;
+        if (op === '<') return lhs < rhs;
+        if (op === '>=') return lhs >= rhs;
+        if (op === '<=') return lhs <= rhs;
+        if (op === '==') return lhs == rhs;
+        if (op === '!=') return lhs != rhs;
+      }
+      return false;
+    }
+    function getEndpoints(lines) {
+      if (lines.length === 0) return { closed: false, turns: 0, segments: 0 };
+      var first = lines[0];
+      var last = lines[lines.length - 1];
+      var dist = Math.sqrt(Math.pow(last.x2 - first.x1, 2) + Math.pow(last.y2 - first.y1, 2));
+      var totalAngle = 0;
+      for (var i = 1; i < lines.length; i++) {
+        var a1 = Math.atan2(lines[i - 1].y2 - lines[i - 1].y1, lines[i - 1].x2 - lines[i - 1].x1);
+        var a2 = Math.atan2(lines[i].y2 - lines[i].y1, lines[i].x2 - lines[i].x1);
+        var diff = (a2 - a1) * 180 / Math.PI;
+        while (diff > 180) diff -= 360;
+        while (diff < -180) diff += 360;
+        totalAngle += Math.abs(diff);
+      }
+      return { closed: dist < 15, turns: totalAngle, segments: lines.length };
+    }
+    function blocksToText(blks, indent) {
+      indent = indent || '';
+      var lines = [];
+      for (var i = 0; i < blks.length; i++) {
+        var b = blks[i];
+        if (b.type === 'forward') lines.push(indent + 'forward(' + (b.distance || 50) + ')');
+        else if (b.type === 'backward') lines.push(indent + 'backward(' + (b.distance || 50) + ')');
+        else if (b.type === 'right') lines.push(indent + 'right(' + (b.degrees || 90) + ')');
+        else if (b.type === 'left') lines.push(indent + 'left(' + (b.degrees || 90) + ')');
+        else if (b.type === 'penup') lines.push(indent + 'penUp()');
+        else if (b.type === 'pendown') lines.push(indent + 'penDown()');
+        else if (b.type === 'color') lines.push(indent + 'setColor("' + (b.color || '#6366f1') + '")');
+        else if (b.type === 'width') lines.push(indent + 'setWidth(' + (b.width || 2) + ')');
+        else if (b.type === 'circle') lines.push(indent + 'circle(' + (b.radius || 30) + ')');
+        else if (b.type === 'goto') lines.push(indent + 'goto(' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')');
+        else if (b.type === 'home') lines.push(indent + 'home()');
+        else if (b.type === 'setVar') lines.push(indent + 'setVar("' + (b.varName || 'size') + '", ' + (b.varValue != null ? b.varValue : 50) + ')');
+        else if (b.type === 'changeVar') lines.push(indent + 'changeVar("' + (b.varName || 'size') + '", ' + (b.varDelta != null ? b.varDelta : 10) + ')');
+        else if (b.type === 'repeat') {
+          lines.push(indent + 'repeat(' + (b.times || 4) + ', function() {');
+          if (b.children && b.children.length > 0) lines.push(blocksToText(b.children, indent + '  '));
+          lines.push(indent + '})');
+        }
+        else if (b.type === 'ifelse') {
+          lines.push(indent + 'if (' + (b.condition || 'x > 250') + ') {');
+          if (b.children && b.children.length > 0) lines.push(blocksToText(b.children, indent + '  '));
+          lines.push(indent + '} else {');
+          if (b.elseChildren && b.elseChildren.length > 0) lines.push(blocksToText(b.elseChildren, indent + '  '));
+          lines.push(indent + '}');
+        }
+        else if (b.type === 'while') {
+          lines.push(indent + 'while (' + (b.condition || 'x < 450') + ') {');
+          if (b.children && b.children.length > 0) lines.push(blocksToText(b.children, indent + '  '));
+          lines.push(indent + '}');
+        }
+        else if (b.type === 'function') {
+          lines.push(indent + 'function ' + (b.funcName || 'myShape') + '() {');
+          if (b.children && b.children.length > 0) lines.push(blocksToText(b.children, indent + '  '));
+          lines.push(indent + '}');
+        }
+        else if (b.type === 'callFunction') lines.push(indent + (b.funcName || 'myShape') + '()');
+        else if (b.type === 'random') lines.push(indent + 'random("' + (b.varName || 'r') + '", ' + (b.randomMin || 0) + ', ' + (b.randomMax || 100) + ')');
+        else if (b.type === 'stamp') lines.push(indent + 'stamp()');
+        else if (b.type === 'arc') lines.push(indent + 'arc(' + (b.arcAngle || 180) + ', ' + (b.arcRadius || 30) + ')');
+        else if (b.type === 'playNote') lines.push(indent + 'playNote(' + (b.frequency || 440) + ', ' + (b.duration || 200) + ')');
+        else if (b.type === 'spawnTurtle') lines.push(indent + 'spawnTurtle("' + (b.turtleName || 'bob') + '")');
+        else if (b.type === 'switchTurtle') lines.push(indent + 'switchTurtle("' + (b.turtleName || 'bob') + '")');
+        else if (b.type === 'pitch') lines.push(indent + 'pitch(' + (b.degrees || 30) + ')');
+        else if (b.type === 'yaw') lines.push(indent + 'yaw(' + (b.degrees || 30) + ')');
+        else if (b.type === 'forward3D') lines.push(indent + 'forward3D(' + (b.distance || 50) + ')');
+        else if (b.type === 'roll') lines.push(indent + 'roll(' + (b.degrees || 30) + ')');
+        else if (b.type === 'moveUp') lines.push(indent + 'moveUp(' + (b.distance || 30) + ')');
+        else if (b.type === 'moveDown') lines.push(indent + 'moveDown(' + (b.distance || 30) + ')');
+        else if (b.type) lines.push(indent + '// unsupported: ' + String(b.type));
+      }
+      return lines.join('\n');
+    }
+    function parseWithErrors(code) {
+      var result = [];
+      var lineArr = code.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
+      var i = 0;
+      var errors = [];
+      function parse() {
+        var blks = [];
+        while (i < lineArr.length) {
+          var line = lineArr[i];
+          if (line.match(/^}\)?;?$/) || line.match(/^\} else \{$/)) { i++; return blks; }
+          var m;
+          if ((m = line.match(/^forward\(([\$\w]+)\)/))) { blks.push({ type: 'forward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^backward\(([\$\w]+)\)/))) { blks.push({ type: 'backward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^right\(([\$\w]+)\)/))) { blks.push({ type: 'right', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^left\(([\$\w]+)\)/))) { blks.push({ type: 'left', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if (line.match(/^penUp\(\)/)) { blks.push({ type: 'penup' }); }
+          else if (line.match(/^penDown\(\)/)) { blks.push({ type: 'pendown' }); }
+          else if ((m = line.match(/^setColor\("([^"]+)"\)/))) { blks.push({ type: 'color', color: m[1] }); }
+          else if ((m = line.match(/^setWidth\(([\$\w]+)\)/))) { blks.push({ type: 'width', width: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^circle\(([\$\w]+)\)/))) { blks.push({ type: 'circle', radius: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^goto\((\d+),\s*(\d+)\)/))) { blks.push({ type: 'goto', x: parseInt(m[1]), y: parseInt(m[2]) }); }
+          else if (line.match(/^home\(\)/)) { blks.push({ type: 'home' }); }
+          else if ((m = line.match(/^setVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'setVar', varName: m[1], varValue: parseFloat(m[2]) }); }
+          else if ((m = line.match(/^changeVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'changeVar', varName: m[1], varDelta: parseFloat(m[2]) }); }
+          else if ((m = line.match(/^if\s*\((.+)\)\s*\{/))) {
+            i++;
+            var ifChildren = parse();
+            var elseChildren = [];
+            if (i < lineArr.length && lineArr[i - 1] && lineArr[i - 1].match(/\} else \{/)) { elseChildren = parse(); }
+            blks.push({ type: 'ifelse', condition: m[1].trim(), children: ifChildren, elseChildren: elseChildren });
+            continue;
+          }
+          else if ((m = line.match(/^repeat\((\d+)/))) {
+            i++;
+            var children = parse();
+            blks.push({ type: 'repeat', times: parseInt(m[1]), children: children });
+            continue;
+          }
+          else if ((m = line.match(/^while\s*\((.+)\)\s*\{/))) {
+            i++;
+            var whileChildren = parse();
+            blks.push({ type: 'while', condition: m[1].trim(), children: whileChildren });
+            continue;
+          }
+          else if ((m = line.match(/^function\s+(\w+)\(\)\s*\{/))) {
+            i++;
+            var funcBody = parse();
+            blks.push({ type: 'function', funcName: m[1], children: funcBody });
+            continue;
+          }
+          else if ((m = line.match(/^(\w+)\(\)$/))) { blks.push({ type: 'callFunction', funcName: m[1] }); }
+          else if ((m = line.match(/^random\("([^"]+)",\s*(-?[\d.]+),\s*(-?[\d.]+)\)/))) { blks.push({ type: 'random', varName: m[1], randomMin: parseFloat(m[2]), randomMax: parseFloat(m[3]) }); }
+          else if (line.match(/^stamp\(\)/)) { blks.push({ type: 'stamp' }); }
+          else if ((m = line.match(/^arc\(([\d.]+),\s*([\d.]+)\)/))) { blks.push({ type: 'arc', arcAngle: parseFloat(m[1]), arcRadius: parseFloat(m[2]) }); }
+          else if ((m = line.match(/^playNote\(([\d.]+)(?:,\s*([\d.]+))?\)/))) { blks.push({ type: 'playNote', frequency: parseFloat(m[1]), duration: m[2] ? parseFloat(m[2]) : 200 }); }
+          else if ((m = line.match(/^spawnTurtle\("([^"]+)"\)/))) { blks.push({ type: 'spawnTurtle', turtleName: m[1] }); }
+          else if ((m = line.match(/^switchTurtle\("([^"]+)"\)/))) { blks.push({ type: 'switchTurtle', turtleName: m[1] }); }
+          else if ((m = line.match(/^pitch\((\d+)\)/))) { blks.push({ type: 'pitch', degrees: parseFloat(m[1]) }); }
+          else if ((m = line.match(/^yaw\((\d+)\)/))) { blks.push({ type: 'yaw', degrees: parseFloat(m[1]) }); }
+          else if ((m = line.match(/^forward3D\(([\$\w]+)\)/))) { blks.push({ type: 'forward3D', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^roll\((\d+)\)/))) { blks.push({ type: 'roll', degrees: parseFloat(m[1]) }); }
+          else if ((m = line.match(/^moveUp\((\d+)\)/))) { blks.push({ type: 'moveUp', distance: parseFloat(m[1]) }); }
+          else if ((m = line.match(/^moveDown\((\d+)\)/))) { blks.push({ type: 'moveDown', distance: parseFloat(m[1]) }); }
+          else { errors.push({ line: i + 1, text: line }); }
+          i++;
+        }
+        return blks;
+      }
+      var blocks = parse();
+      return { blocks: blocks, errors: errors };
+    }
+    function textToBlocks(code) { return parseWithErrors(code).blocks; }
+    // Pure execution: returns { frames, finalTurtle, finalLines, finalLines3D,
+    // finalExtraTurtles, vars }. Each frame is the state AFTER one step:
+    //   { turtle, add (2D segs added), add3D, stepIdx, vars, pitchAngle, yawAngle,
+    //     rollAngle, turtleZ, extraTurtles, audio }. No side effects.
+    var MAXSTEPS = 100000; // synchronous backstop vs unbounded recursion
+    function simulate(blocks, startTurtle, opts) {
+      opts = opts || {};
+      var project3D = typeof opts.project3D === 'function' ? opts.project3D : null;
+      var t = Object.assign({}, startTurtle);
+      var allLines = (opts.startLines || []).slice();
+      var lines3D = (opts.startLines3D || []).slice();
+      var extraTurtles = (opts.extraTurtles || []).slice();
+      var vars = {};
+      var pitchAngle = opts.pitchAngle || 0, yawAngle = opts.yawAngle || 0, rollAngle = opts.rollAngle || 0, turtleZ = opts.turtleZ || 0;
+      function flattenBlocks(bArr) {
+        var flat = [];
+        for (var j = 0; j < bArr.length; j++) {
+          var blk = bArr[j];
+          if (blk.type === 'repeat') {
+            var times = blk.times || 4;
+            for (var r = 0; r < times; r++) { flat = flat.concat(flattenBlocks(blk.children || [])); }
+          } else { flat.push(blk); }
+        }
+        return flat;
+      }
+      var flat = flattenBlocks(blocks);
+      var idx = 0;
+      var frames = [];
+      var diag = { cappedWhile: false, cappedSteps: false, unknownCalls: [] };
+      while (idx < flat.length) {
+        if (frames.length >= MAXSTEPS) { diag.cappedSteps = true; break; }
+        var b = flat[idx];
+        var preLen = allLines.length, pre3DLen = lines3D.length, audio = null;
+        if (b.type === 'setVar') {
+          vars[b.varName || 'size'] = b.varValue != null ? b.varValue : 50;
+        } else if (b.type === 'changeVar') {
+          var vn = b.varName || 'size';
+          vars[vn] = (vars[vn] || 0) + (b.varDelta != null ? b.varDelta : 10);
+        } else if (b.type === 'ifelse') {
+          var condResult = evalCondition(b.condition || 'x > 250', t, vars);
+          var branch = condResult ? (b.children || []) : (b.elseChildren || []);
+          var branchFlat = flattenBlocks(branch);
+          flat = flat.slice(0, idx + 1).concat(branchFlat).concat(flat.slice(idx + 1));
+        } else if (b.type === 'forward') {
+          var dist = resolveVal(b.distance != null ? b.distance : 50, vars);
+          var rad = t.angle * Math.PI / 180;
+          var nx = t.x + Math.cos(rad) * dist;
+          var ny = t.y + Math.sin(rad) * dist;
+          if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: nx, y2: ny, color: t.color, width: t.width }); }
+          t.x = nx; t.y = ny;
+        } else if (b.type === 'backward') {
+          var dist2 = resolveVal(b.distance != null ? b.distance : 50, vars);
+          var rad2 = t.angle * Math.PI / 180;
+          var nx2 = t.x - Math.cos(rad2) * dist2;
+          var ny2 = t.y - Math.sin(rad2) * dist2;
+          if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: nx2, y2: ny2, color: t.color, width: t.width }); }
+          t.x = nx2; t.y = ny2;
+        } else if (b.type === 'right') {
+          t.angle = (t.angle + resolveVal(b.degrees != null ? b.degrees : 90, vars)) % 360;
+        } else if (b.type === 'left') {
+          t.angle = (t.angle - resolveVal(b.degrees != null ? b.degrees : 90, vars) + 360) % 360;
+        } else if (b.type === 'penup') {
+          t.penDown = false;
+        } else if (b.type === 'pendown') {
+          t.penDown = true;
+        } else if (b.type === 'color') {
+          t.color = b.color || '#6366f1';
+        } else if (b.type === 'width') {
+          t.width = resolveVal(b.width != null ? b.width : 2, vars);
+        } else if (b.type === 'circle') {
+          var cRadius = resolveVal(b.radius != null ? b.radius : 30, vars);
+          if (t.penDown) {
+            var segs = 36;
+            for (var si = 0; si < segs; si++) {
+              var a1 = t.angle + (si / segs) * 360;
+              var a2 = t.angle + ((si + 1) / segs) * 360;
+              var r1 = a1 * Math.PI / 180;
+              var r2 = a2 * Math.PI / 180;
+              var cx1 = t.x + cRadius * (Math.cos(r1) - Math.cos(t.angle * Math.PI / 180));
+              var cy1 = t.y + cRadius * (Math.sin(r1) - Math.sin(t.angle * Math.PI / 180));
+              var cx2 = t.x + cRadius * (Math.cos(r2) - Math.cos(t.angle * Math.PI / 180));
+              var cy2 = t.y + cRadius * (Math.sin(r2) - Math.sin(t.angle * Math.PI / 180));
+              allLines.push({ x1: cx1, y1: cy1, x2: cx2, y2: cy2, color: t.color, width: t.width });
+            }
+          }
+        } else if (b.type === 'goto') {
+          var gx = b.x != null ? b.x : 250;
+          var gy = b.y != null ? b.y : 250;
+          if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: gx, y2: gy, color: t.color, width: t.width }); }
+          t.x = gx; t.y = gy;
+        } else if (b.type === 'home') {
+          if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: 250, y2: 250, color: t.color, width: t.width }); }
+          t.x = 250; t.y = 250; t.angle = -90;
+        } else if (b.type === 'while') {
+          if (!b._iterCount) b._iterCount = 0;
+          if (b._iterCount < 1000 && evalCondition(b.condition || 'x < 450', t, vars)) {
+            b._iterCount++;
+            var whileBody = flattenBlocks(b.children || []);
+            var whileMarker = Object.assign({}, b);
+            flat = flat.slice(0, idx + 1).concat(whileBody).concat([whileMarker]).concat(flat.slice(idx + 1));
+          } else { if (b._iterCount >= 1000 && evalCondition(b.condition || 'x < 450', t, vars)) diag.cappedWhile = true; b._iterCount = 0; }
+        } else if (b.type === 'function') {
+          vars['__func_' + (b.funcName || 'myShape')] = b.children || [];
+        } else if (b.type === 'callFunction') {
+          var _fn = b.funcName || 'myShape';
+          var funcBody = vars['__func_' + _fn];
+          if (funcBody && funcBody.length > 0) {
+            var callBody = flattenBlocks(JSON.parse(JSON.stringify(funcBody)));
+            flat = flat.slice(0, idx + 1).concat(callBody).concat(flat.slice(idx + 1));
+          } else if (diag.unknownCalls.indexOf(_fn) < 0) { diag.unknownCalls.push(_fn); }
+        } else if (b.type === 'random') {
+          var rMin = b.randomMin != null ? b.randomMin : 0;
+          var rMax = b.randomMax != null ? b.randomMax : 100;
+          vars[b.varName || 'r'] = Math.floor(Math.random() * (rMax - rMin + 1)) + rMin;
+        } else if (b.type === 'stamp') {
+          if (allLines.length > 0) {
+            var stampLines = allLines.slice();
+            var ox = stampLines[0].x1, oy = stampLines[0].y1;
+            var dx = t.x - ox, dy = t.y - oy;
+            for (var sj = 0; sj < stampLines.length; sj++) {
+              allLines.push({ x1: stampLines[sj].x1 + dx, y1: stampLines[sj].y1 + dy, x2: stampLines[sj].x2 + dx, y2: stampLines[sj].y2 + dy, color: stampLines[sj].color, width: stampLines[sj].width });
+            }
+          }
+        } else if (b.type === 'arc') {
+          var arcAngle = resolveVal(b.arcAngle != null ? b.arcAngle : 180, vars);
+          var arcRadius = resolveVal(b.arcRadius != null ? b.arcRadius : 30, vars);
+          if (t.penDown) {
+            var arcSegs = Math.max(8, Math.ceil(Math.abs(arcAngle) / 10));
+            var arcStep = arcAngle / arcSegs;
+            var prevX = t.x, prevY = t.y;
+            for (var ai = 1; ai <= arcSegs; ai++) {
+              var stepDist = (2 * arcRadius * Math.sin(Math.abs(arcStep) * Math.PI / 360));
+              var ax = prevX + Math.cos((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
+              var ay = prevY + Math.sin((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
+              allLines.push({ x1: prevX, y1: prevY, x2: ax, y2: ay, color: t.color, width: t.width });
+              prevX = ax; prevY = ay;
+            }
+            t.x = prevX; t.y = prevY;
+          }
+          t.angle = (t.angle + arcAngle) % 360;
+        } else if (b.type === 'pitch') {
+          pitchAngle = (pitchAngle + resolveVal(b.degrees || 30, vars)) % 360;
+        } else if (b.type === 'yaw') {
+          yawAngle = (yawAngle + resolveVal(b.degrees || 30, vars)) % 360;
+        } else if (b.type === 'forward3D') {
+          var dist3D = resolveVal(b.distance || 50, vars);
+          var radAngle = t.angle * Math.PI / 180;
+          var radPitch = pitchAngle * Math.PI / 180;
+          var dx3 = Math.cos(radAngle) * Math.cos(radPitch) * dist3D;
+          var dy3 = Math.sin(radAngle) * Math.cos(radPitch) * dist3D;
+          var dz3 = Math.sin(radPitch) * dist3D;
+          var nx3 = t.x + dx3, ny3 = t.y + dy3, nz3 = turtleZ + dz3;
+          if (t.penDown) {
+            lines3D.push({ x1: t.x, y1: t.y, z1: turtleZ, x2: nx3, y2: ny3, z2: nz3, color: t.color, width: t.width });
+            if (project3D) {
+              var p1 = project3D(t.x - 250, t.y - 250, turtleZ);
+              var p2 = project3D(nx3 - 250, ny3 - 250, nz3);
+              allLines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, color: t.color, width: Math.max(0.5, t.width * p2.scale) });
+            }
+          }
+          t.x = nx3; t.y = ny3; turtleZ = nz3;
+        } else if (b.type === 'roll') {
+          rollAngle = (rollAngle + resolveVal(b.degrees || 30, vars)) % 360;
+        } else if (b.type === 'moveUp') {
+          var upDist = resolveVal(b.distance || 30, vars);
+          var nzUp = turtleZ + upDist;
+          if (t.penDown) {
+            lines3D.push({ x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzUp, color: t.color, width: t.width });
+            if (project3D) {
+              var pU1 = project3D(t.x - 250, t.y - 250, turtleZ);
+              var pU2 = project3D(t.x - 250, t.y - 250, nzUp);
+              allLines.push({ x1: pU1.x, y1: pU1.y, x2: pU2.x, y2: pU2.y, color: t.color, width: Math.max(0.5, t.width * pU2.scale) });
+            }
+          }
+          turtleZ = nzUp;
+        } else if (b.type === 'moveDown') {
+          var downDist = resolveVal(b.distance || 30, vars);
+          var nzDown = turtleZ - downDist;
+          if (t.penDown) {
+            lines3D.push({ x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzDown, color: t.color, width: t.width });
+            if (project3D) {
+              var pD1 = project3D(t.x - 250, t.y - 250, turtleZ);
+              var pD2 = project3D(t.x - 250, t.y - 250, nzDown);
+              allLines.push({ x1: pD1.x, y1: pD1.y, x2: pD2.x, y2: pD2.y, color: t.color, width: Math.max(0.5, t.width * pD2.scale) });
+            }
+          }
+          turtleZ = nzDown;
+        } else if (b.type === 'spawnTurtle') {
+          var tName = b.turtleName || 'bob';
+          var newT = { name: tName, x: t.x, y: t.y, angle: t.angle, penDown: true, color: '#22c55e', width: 2, skin: '\uD83D\uDC22' };
+          extraTurtles = extraTurtles.filter(function (et) { return et.name !== tName; });
+          extraTurtles.push(newT);
+        } else if (b.type === 'switchTurtle') {
+          var sName = b.turtleName || 'bob';
+          var found = extraTurtles.find(function (et) { return et.name === sName; });
+          if (found) {
+            t.x = found.x; t.y = found.y; t.angle = found.angle;
+            t.penDown = found.penDown; t.color = found.color; t.width = found.width;
+          }
+        } else if (b.type === 'playNote') {
+          audio = { frequency: resolveVal(b.frequency != null ? b.frequency : 440, vars), duration: (b.duration || 200) };
+        }
+        var _uv = {}; for (var vk in vars) { if (vars.hasOwnProperty(vk) && vk.indexOf('__func_') !== 0 && typeof vars[vk] === 'number') _uv[vk] = vars[vk]; }
+        frames.push({ turtle: Object.assign({}, t), add: allLines.slice(preLen), add3D: lines3D.slice(pre3DLen), stepIdx: idx, vars: _uv, pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ, extraTurtles: extraTurtles.slice(), audio: audio });
+        idx++;
+      }
+      return { frames: frames, finalTurtle: t, finalLines: allLines, finalLines3D: lines3D, finalExtraTurtles: extraTurtles, vars: vars, diagnostics: diag };
+    }
+    return { resolveVal: resolveVal, evalCondition: evalCondition, getEndpoints: getEndpoints, blocksToText: blocksToText, textToBlocks: textToBlocks, parseWithErrors: parseWithErrors, simulate: simulate };
+  })();
+  /* __CODING_INTERP_END__ */
 
   window.StemLab.registerTool('codingPlayground', {
     icon: '🔬',
@@ -35,7 +432,8 @@
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -50,6 +448,7 @@
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
+      var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled);
       var gradeLevel = ctx.gradeLevel;
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
@@ -62,6 +461,8 @@
     return (function() {
           // ── State from labToolData ──
           var d = (labToolData && labToolData._codingPlayground) || {};
+          var projectName = d.projectName || '';
+          function slugifyName(nm) { var z = String(nm || '').trim().replace(/[^A-Za-z0-9_ -]+/g, '').replace(/ +/g, '_').slice(0, 40); return z || 'coding'; }
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -93,6 +494,7 @@
           var running = d.running || false;
           var stepIdx = d.stepIdx != null ? d.stepIdx : -1;
           var codeMode = d.codeMode || 'blocks';
+          var workspaceTab = d.workspaceTab || 'build';
           var textCode = d.textCode || '';
           var challengeIdx = d.challengeIdx != null ? d.challengeIdx : -1;
           var completed = d.completed || [];
@@ -164,16 +566,21 @@
               // Depth-based opacity and width
               var opacity = Math.max(0.2, Math.min(1.0, avgScale));
               var lineWidth = Math.max(0.5, (l.width || 2) * avgScale);
+              var strokeCol = l.color || '#6366f1';
               ctx3d.beginPath();
               ctx3d.moveTo(p1.x, p1.y);
               ctx3d.lineTo(p2.x, p2.y);
-              ctx3d.strokeStyle = l.color || '#6366f1';
+              ctx3d.strokeStyle = strokeCol;
               ctx3d.lineWidth = lineWidth;
               ctx3d.globalAlpha = opacity;
               ctx3d.lineCap = 'round';
+              // Neon trail — the turtle's path glows in its own colour (scales with depth)
+              ctx3d.shadowColor = strokeCol;
+              ctx3d.shadowBlur = Math.max(2, 6 * avgScale);
               ctx3d.stroke();
             }
             ctx3d.globalAlpha = 1.0;
+            ctx3d.shadowBlur = 0;
           }
 
           // ── 3D Grid Floor ──
@@ -239,30 +646,30 @@
 
           // ── Turtle Skin Options ──
           var TURTLE_SKINS = [
-            { emoji: '🐢', label: 'Turtle' },
-            { emoji: '🚀', label: 'Rocket' },
-            { emoji: '🦋', label: 'Butterfly' },
+            { emoji: '🐢', label: t('stem.coding.turtle', 'Turtle') },
+            { emoji: '🚀', label: t('stem.coding.rocket', 'Rocket') },
+            { emoji: '🦋', label: t('stem.coding.butterfly', 'Butterfly') },
             { emoji: '🐱', label: 'Cat' },
             { emoji: '🐶', label: 'Dog' },
             { emoji: '🦊', label: 'Fox' },
             { emoji: '🐝', label: 'Bee' },
-            { emoji: '🎃', label: 'Pumpkin' },
-            { emoji: '⭐', label: 'Star' },
+            { emoji: '🎃', label: t('stem.coding.pumpkin', 'Pumpkin') },
+            { emoji: '⭐', label: t('stem.coding.star', 'Star') },
             { emoji: '🛸', label: 'UFO' }
           ];
 
           // ── Achievement Badges ──
           var BADGES = [
-            { id: 'first_program', icon: '🌟', title: 'First Program', desc: 'Run your first program', check: function() { return runHistory.length >= 1; } },
-            { id: 'loop_master', icon: '🔄', title: 'Loop Master', desc: 'Use a Repeat block', check: function() { return blocks.some(function(b) { return b.type === 'repeat'; }); } },
-            { id: 'color_artist', icon: '🎨', title: 'Color Artist', desc: 'Use 3+ different colors', check: function() { var c = {}; drawnLines.forEach(function(l) { c[l.color]=true; }); return Object.keys(c).length >= 3; } },
-            { id: 'century', icon: '💯', title: 'Century Club', desc: 'Draw 100+ line segments', check: function() { return drawnLines.length >= 100; } },
-            { id: 'robot_commander', icon: '🤖', title: 'Robot Commander', desc: 'Complete a robot challenge', check: function() { return robotCompleted.length >= 1; } },
-            { id: 'musician', icon: '🎵', title: 'Digital Musician', desc: 'Use a Play Note block', check: function() { return blocks.some(function(b) { return b.type === 'playNote'; }); } },
-            { id: 'function_pro', icon: '📋', title: 'Function Pro', desc: 'Define and call a function', check: function() { return blocks.some(function(b) { return b.type === 'function'; }) && blocks.some(function(b) { return b.type === 'callFunction'; }); } },
-            { id: 'challenge_5', icon: '🏆', title: 'Puzzle Solver', desc: 'Complete 5 challenges', check: function() { return completed.length >= 5; } },
-            { id: 'efficiency', icon: '⚡', title: 'Efficiency Expert', desc: 'Complete a challenge using fewer than 5 blocks', check: function() { return completed.length >= 1 && blocks.length < 5 && blocks.length > 0; } },
-            { id: 'generative', icon: '🎲', title: 'Generative Artist', desc: 'Use Random block in a Repeat loop', check: function() { return blocks.some(function(b) { return b.type === 'repeat' && (b.children || []).some(function(c) { return c.type === 'random'; }); }); } }
+            { id: 'first_program', icon: '🌟', title: t('stem.coding.first_program', 'First Program'), desc: t('stem.coding.run_your_first_program', 'Run your first program'), check: function() { return runHistory.length >= 1; } },
+            { id: 'loop_master', icon: '🔄', title: t('stem.coding.loop_master', 'Loop Master'), desc: t('stem.coding.use_a_repeat_block', 'Use a Repeat block'), check: function() { return blocks.some(function(b) { return b.type === 'repeat'; }); } },
+            { id: 'color_artist', icon: '🎨', title: t('stem.coding.color_artist', 'Color Artist'), desc: t('stem.coding.use_3_different_colors', 'Use 3+ different colors'), check: function() { var c = {}; drawnLines.forEach(function(l) { c[l.color]=true; }); return Object.keys(c).length >= 3; } },
+            { id: 'century', icon: '💯', title: t('stem.coding.century_club', 'Century Club'), desc: t('stem.coding.draw_100_line_segments', 'Draw 100+ line segments'), check: function() { return drawnLines.length >= 100; } },
+            { id: 'robot_commander', icon: '🤖', title: t('stem.coding.robot_commander', 'Robot Commander'), desc: t('stem.coding.complete_a_robot_challenge', 'Complete a robot challenge'), check: function() { return robotCompleted.length >= 1; } },
+            { id: 'musician', icon: '🎵', title: t('stem.coding.digital_musician', 'Digital Musician'), desc: t('stem.coding.use_a_play_note_block', 'Use a Play Note block'), check: function() { return blocks.some(function(b) { return b.type === 'playNote'; }); } },
+            { id: 'function_pro', icon: '📋', title: t('stem.coding.function_pro', 'Function Pro'), desc: t('stem.coding.define_and_call_a_function', 'Define and call a function'), check: function() { return blocks.some(function(b) { return b.type === 'function'; }) && blocks.some(function(b) { return b.type === 'callFunction'; }); } },
+            { id: 'challenge_5', icon: '🏆', title: t('stem.coding.puzzle_solver', 'Puzzle Solver'), desc: t('stem.coding.complete_5_challenges', 'Complete 5 challenges'), check: function() { return completed.length >= 5; } },
+            { id: 'efficiency', icon: '⚡', title: t('stem.coding.efficiency_expert', 'Efficiency Expert'), desc: t('stem.coding.complete_a_challenge_using_fewer_than_', 'Complete a challenge using fewer than 5 blocks'), check: function() { return completed.length >= 1 && blocks.length < 5 && blocks.length > 0; } },
+            { id: 'generative', icon: '🎲', title: t('stem.coding.generative_artist', 'Generative Artist'), desc: t('stem.coding.use_random_block_in_a_repeat_loop', 'Use Random block in a Repeat loop'), check: function() { return blocks.some(function(b) { return b.type === 'repeat' && (b.children || []).some(function(c) { return c.type === 'random'; }); }); } }
           ];
 
           // Badge check — runs after program execution
@@ -295,49 +702,53 @@
 
           // ── Block definitions ──
           var BLOCK_TYPES = [
-            { type: 'forward', label: '🐢 Move Forward', param: 'distance', defaultVal: 50, unit: 'px', color: '#6366f1' },
-            { type: 'backward', label: '🔙 Move Backward', param: 'distance', defaultVal: 50, unit: 'px', color: '#818cf8' },
-            { type: 'right', label: '↩️ Turn Right', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
-            { type: 'left', label: '↪️ Turn Left', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
-            { type: 'penup', label: '✏️ Pen Up', param: null, defaultVal: null, unit: null, color: 'var(--allo-stem-text-soft, #94a3b8)' },
-            { type: 'pendown', label: '✏️ Pen Down', param: null, defaultVal: null, unit: null, color: '#22c55e' },
-            { type: 'color', label: '🎨 Set Color', param: 'color', defaultVal: '#6366f1', unit: null, color: '#ec4899' },
-            { type: 'width', label: '📏 Set Width', param: 'width', defaultVal: 2, unit: 'px', color: '#14b8a6' },
-            { type: 'circle', label: '⭕ Draw Circle', param: 'radius', defaultVal: 30, unit: 'px', color: '#06b6d4' },
-            { type: 'goto', label: '📍 Go To', param: 'x', defaultVal: 250, unit: null, color: '#a855f7' },
-            { type: 'home', label: '🏠 Go Home', param: null, defaultVal: null, unit: null, color: '#78716c' },
-            { type: 'repeat', label: '🔄 Repeat', param: 'times', defaultVal: 4, unit: '×', color: '#8b5cf6' },
-            { type: 'setVar', label: '📦 Set Variable', param: 'varName', defaultVal: 'size', unit: null, color: '#0ea5e9' },
-            { type: 'changeVar', label: '📦± Change Var', param: 'varName', defaultVal: 'size', unit: null, color: '#0284c7' },
-            { type: 'ifelse', label: '🔀 If / Else', param: 'condition', defaultVal: 'x > 250', unit: null, color: '#d946ef' }
+            { type: 'forward', label: t('stem.coding.move_forward', '🐢 Move Forward'), param: 'distance', defaultVal: 50, unit: 'px', color: '#6366f1' },
+            { type: 'backward', label: t('stem.coding.move_backward', '🔙 Move Backward'), param: 'distance', defaultVal: 50, unit: 'px', color: '#818cf8' },
+            { type: 'right', label: t('stem.coding.turn_right', '↩️ Turn Right'), param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
+            { type: 'left', label: t('stem.coding.turn_left', '↪️ Turn Left'), param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
+            { type: 'penup', label: t('stem.coding.pen_up', '✏️ Pen Up'), param: null, defaultVal: null, unit: null, color: 'var(--allo-stem-text-soft, #94a3b8)' },
+            { type: 'pendown', label: t('stem.coding.pen_down', '✏️ Pen Down'), param: null, defaultVal: null, unit: null, color: '#22c55e' },
+            { type: 'color', label: t('stem.coding.set_color', '🎨 Set Color'), param: 'color', defaultVal: '#6366f1', unit: null, color: '#ec4899' },
+            { type: 'width', label: t('stem.coding.set_width', '📏 Set Width'), param: 'width', defaultVal: 2, unit: 'px', color: '#14b8a6' },
+            { type: 'circle', label: t('stem.coding.draw_circle', '⭕ Draw Circle'), param: 'radius', defaultVal: 30, unit: 'px', color: '#06b6d4' },
+            { type: 'goto', label: t('stem.coding.go_to', '📍 Go To'), param: 'x', defaultVal: 250, unit: null, color: '#a855f7' },
+            { type: 'home', label: t('stem.coding.go_home', '🏠 Go Home'), param: null, defaultVal: null, unit: null, color: '#78716c' },
+            { type: 'repeat', label: t('stem.coding.repeat', '🔄 Repeat'), param: 'times', defaultVal: 4, unit: '×', color: '#8b5cf6' },
+            { type: 'setVar', label: t('stem.coding.set_variable', '📦 Set Variable'), param: 'varName', defaultVal: 'size', unit: null, color: '#0ea5e9' },
+            { type: 'changeVar', label: t('stem.coding.change_var', '📦± Change Var'), param: 'varName', defaultVal: 'size', unit: null, color: '#0284c7' },
+            { type: 'ifelse', label: t('stem.coding.if_else', '🔀 If / Else'), param: 'condition', defaultVal: 'x > 250', unit: null, color: '#d946ef' }
           ];
 
           // ── Challenges ──
           var CHALLENGES = [
-            { id: 'hello', title: '1. Hello, Turtle!', desc: 'Add a "Move Forward" block and run it.', concept: 'Sequencing', hint: 'Drag a Move Forward block to your program and click Run!', check: function (lines) { return lines.length >= 1; } },
-            { id: 'square', title: '2. Draw a Square', desc: 'Draw a square using Move and Turn blocks.', concept: 'Sequencing', hint: 'You need 4× Move Forward + 4× Turn Right 90°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && Math.abs(ex.turns - 360) < 10 && ex.segments >= 4; } },
-            { id: 'loop_square', title: '3. Loop It!', desc: 'Draw the same square using a Repeat block.', concept: 'Loops', hint: 'Use Repeat 4× with Move Forward and Turn Right 90° inside.', check: function (lines, blks) { return blks.some(function (b) { return b.type === 'repeat'; }) && lines.length >= 4; } },
-            { id: 'triangle', title: '4. Triangle Time', desc: 'Draw an equilateral triangle.', concept: 'Loops + Angles', hint: 'Repeat 3×: Move Forward, Turn Right 120°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 3 && Math.abs(ex.turns - 360) < 15; } },
-            { id: 'rainbow', title: '5. Rainbow Line', desc: 'Draw 3+ lines, each a different color.', concept: 'Variables', hint: 'Use Set Color blocks between your Move Forward blocks.', check: function (lines) { var colors = {}; lines.forEach(function (l) { colors[l.color] = true; }); return Object.keys(colors).length >= 3; } },
-            { id: 'star', title: '6. Star Power', desc: 'Draw a 5-pointed star.', concept: 'Math + Patterns', hint: 'Repeat 5×: Move Forward 100, Turn Right 144°', check: function (lines) { return lines.length >= 5; } },
-            { id: 'spiral', title: '7. Spiral', desc: 'Create a spiral that grows outward.', concept: 'Variables in Loops', hint: 'This is tricky! Try increasing the distance each time.', check: function (lines) { return lines.length >= 10; } },
-            { id: 'hexagon', title: '8. Hexagon Hero', desc: 'Draw a perfect regular hexagon.', concept: 'Math + Patterns', hint: 'Repeat 6×: Move Forward 60, Turn Right 60°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 6 && Math.abs(ex.turns - 360) < 15; } },
-            { id: 'freestyle', title: '9. Freestyle!', desc: 'Create any drawing with 20+ line segments.', concept: 'Creativity', hint: 'Combine everything you\'ve learned!', check: function (lines) { return lines.length >= 20; } },
-            { id: 'house', title: '10. Build a House', desc: 'Draw a house: a square base with a triangle roof on top.', concept: 'Decomposition', hint: 'Draw a square, then use Pen Up to move, then draw a triangle for the roof. Think about angles: square = 90°, triangle = 120°.', check: function (lines) { return lines.length >= 7 && getEndpoints(lines.slice(0, 4)).segments >= 4; } }
+            { id: 'hello', title: t('stem.coding.1_hello_turtle', '1. Hello, Turtle!'), desc: t('stem.coding.add_a_move_forward_block_and_run_it', 'Add a "Move Forward" block and run it.'), concept: 'Sequencing', hint: t('stem.coding.drag_a_move_forward_block_to_your_prog', 'Drag a Move Forward block to your program and click Run!'), check: function (lines) { return lines.length >= 1; } },
+            { id: 'square', title: t('stem.coding.2_draw_a_square', '2. Draw a Square'), desc: t('stem.coding.draw_a_square_using_move_and_turn_bloc', 'Draw a square using Move and Turn blocks.'), concept: 'Sequencing', hint: t('stem.coding.you_need_4_move_forward_4_turn_right_9', 'You need 4× Move Forward + 4× Turn Right 90°'), check: function (lines) { var ex = getEndpoints(lines); return ex.closed && Math.abs(ex.turns - 360) < 10 && ex.segments >= 4; } },
+            { id: 'loop_square', title: t('stem.coding.3_loop_it', '3. Loop It!'), desc: t('stem.coding.draw_the_same_square_using_a_repeat_bl', 'Draw the same square using a Repeat block.'), concept: 'Loops', hint: t('stem.coding.use_repeat_4_with_move_forward_and_tur', 'Use Repeat 4× with Move Forward and Turn Right 90° inside.'), check: function (lines, blks) { return blks.some(function (b) { return b.type === 'repeat'; }) && lines.length >= 4; } },
+            { id: 'triangle', title: t('stem.coding.4_triangle_time', '4. Triangle Time'), desc: t('stem.coding.draw_an_equilateral_triangle', 'Draw an equilateral triangle.'), concept: 'Loops + Angles', hint: t('stem.coding.repeat_3_move_forward_turn_right_120', 'Repeat 3×: Move Forward, Turn Right 120°'), check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 3 && Math.abs(ex.turns - 360) < 15; } },
+            { id: 'rainbow', title: t('stem.coding.5_rainbow_line', '5. Rainbow Line'), desc: t('stem.coding.draw_3_lines_each_a_different_color', 'Draw 3+ lines, each a different color.'), concept: 'Variables', hint: t('stem.coding.use_set_color_blocks_between_your_move', 'Use Set Color blocks between your Move Forward blocks.'), check: function (lines) { var colors = {}; lines.forEach(function (l) { colors[l.color] = true; }); return Object.keys(colors).length >= 3; } },
+            { id: 'star', title: t('stem.coding.6_star_power', '6. Star Power'), desc: t('stem.coding.draw_a_5_pointed_star', 'Draw a 5-pointed star.'), concept: 'Math + Patterns', hint: t('stem.coding.repeat_5_move_forward_100_turn_right_1', 'Repeat 5×: Move Forward 100, Turn Right 144°'), check: function (lines) { return lines.length >= 5; } },
+            { id: 'spiral', title: t('stem.coding.7_spiral', '7. Spiral'), desc: t('stem.coding.create_a_spiral_that_grows_outward', 'Create a spiral that grows outward.'), concept: 'Variables in Loops', hint: t('stem.coding.this_is_tricky_try_increasing_the_dist', 'This is tricky! Try increasing the distance each time.'), check: function (lines) { return lines.length >= 10; } },
+            { id: 'hexagon', title: t('stem.coding.8_hexagon_hero', '8. Hexagon Hero'), desc: t('stem.coding.draw_a_perfect_regular_hexagon', 'Draw a perfect regular hexagon.'), concept: 'Math + Patterns', hint: t('stem.coding.repeat_6_move_forward_60_turn_right_60', 'Repeat 6×: Move Forward 60, Turn Right 60°'), check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 6 && Math.abs(ex.turns - 360) < 15; } },
+            { id: 'freestyle', title: t('stem.coding.9_freestyle', '9. Freestyle!'), desc: t('stem.coding.create_any_drawing_with_20_line_segmen', 'Create any drawing with 20+ line segments.'), concept: 'Creativity', hint: t('stem.coding.combine_everything_you_ve_learned', 'Combine everything you\'ve learned!'), check: function (lines) { return lines.length >= 20; } },
+            { id: 'house', title: t('stem.coding.10_build_a_house', '10. Build a House'), desc: t('stem.coding.draw_a_house_a_square_base_with_a_tria', 'Draw a house: a square base with a triangle roof on top.'), concept: 'Decomposition', hint: t('stem.coding.draw_a_square_then_use_pen_up_to_move_', 'Draw a square, then use Pen Up to move, then draw a triangle for the roof. Think about angles: square = 90°, triangle = 120°.'), check: function (lines) { return lines.length >= 7 && getEndpoints(lines.slice(0, 4)).segments >= 4; } },
+            { id: 'w_square', kind: 'worked', title: t('stem.coding.worked_square', '\uD83D\uDCD6 Worked: Square'), desc: t('stem.coding.study_this_finished_square_then_click_', 'Study this finished square, then click Run to watch it draw.'), concept: 'Sequencing', hint: t('stem.coding.notice_the_pattern_move_turn_repeated_', 'Notice the pattern: move, turn, repeated four times.'), seedBlocks: [{ type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }], check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 4; } },
+            { id: 'f_loopsquare', kind: 'faded', title: t('stem.coding.fix_loop_square', '\uD83E\uDDE9 Fix: Loop Square'), desc: t('stem.coding.this_loop_should_draw_a_square_but_it_', 'This loop should draw a square but it is missing the turn. Add a Turn Right 90 inside the Repeat.'), concept: 'Loops', hint: t('stem.coding.add_turn_right_90_after_the_move_forwa', 'Add Turn Right 90 after the Move Forward, inside the Repeat block.'), seedBlocks: [{ type: 'repeat', times: 4, children: [{ type: 'forward', distance: 100 }] }], check: function (lines, blks) { return blks.some(function (b) { return b.type === 'repeat'; }) && getEndpoints(lines).closed && lines.length >= 4; } },
+            { id: 'w_triangle', kind: 'worked', title: t('stem.coding.worked_triangle', '\uD83D\uDCD6 Worked: Triangle'), desc: t('stem.coding.a_finished_triangle_made_with_a_loop_r', 'A finished triangle made with a loop. Run it, then read how it works.'), concept: 'Loops + Angles', hint: t('stem.coding.repeat_three_times_move_forward_then_t', 'Repeat three times: move forward, then turn 120.'), seedBlocks: [{ type: 'repeat', times: 3, children: [{ type: 'forward', distance: 120 }, { type: 'right', degrees: 120 }] }], check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 3 && Math.abs(ex.turns - 360) < 15; } },
+            { id: 'f_hexagon', kind: 'faded', title: t('stem.coding.fix_hexagon', '\uD83E\uDDE9 Fix: Hexagon'), desc: t('stem.coding.almost_a_hexagon_add_the_missing_turn_', 'Almost a hexagon. Add the missing turn inside the loop to close it.'), concept: 'Patterns', hint: t('stem.coding.add_turn_right_60_after_the_move_forwa', 'Add Turn Right 60 after the Move Forward, inside the Repeat block.'), seedBlocks: [{ type: 'repeat', times: 6, children: [{ type: 'forward', distance: 60 }] }], check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 6; } }
           ];
 
           // ── Starter Templates ──
           var TEMPLATES = [
-            { name: 'Five-Point Star', icon: '⭐', desc: 'A classic 5-pointed star', blocks: [{ type: 'color', color: '#f59e0b' }, { type: 'repeat', times: 5, children: [{ type: 'forward', distance: 100 }, { type: 'right', degrees: 144 }] }] },
-            { name: 'Square Spiral', icon: '🌀', desc: 'A growing square spiral', blocks: [{ type: 'forward', distance: 20 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 40 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 60 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 80 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 120 }, { type: 'right', degrees: 90 }] },
-            { name: 'Flower', icon: '🌸', desc: 'A 6-petal flower pattern', blocks: [{ type: 'color', color: '#ec4899' }, { type: 'repeat', times: 6, children: [{ type: 'forward', distance: 60 }, { type: 'right', degrees: 60 }, { type: 'forward', distance: 60 }, { type: 'right', degrees: 120 }] }] },
-            { name: 'Hexagon', icon: '⬡', desc: 'A perfect regular hexagon', blocks: [{ type: 'color', color: '#06b6d4' }, { type: 'width', width: 3 }, { type: 'repeat', times: 6, children: [{ type: 'forward', distance: 60 }, { type: 'right', degrees: 60 }] }] },
-            { name: 'Triangle', icon: '🔺', desc: 'An equilateral triangle', blocks: [{ type: 'color', color: '#22c55e' }, { type: 'width', width: 3 }, { type: 'repeat', times: 3, children: [{ type: 'forward', distance: 120 }, { type: 'right', degrees: 120 }] }] },
-            { name: 'Staircase', icon: '🪜', desc: 'A step-by-step staircase', blocks: [{ type: 'color', color: '#8b5cf6' }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 30 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 30 }, { type: 'left', degrees: 90 }] }] },
-            { name: 'Zigzag', icon: '⚡', desc: 'A sharp zigzag pattern', blocks: [{ type: 'color', color: '#ef4444' }, { type: 'width', width: 3 }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 40 }, { type: 'right', degrees: 120 }, { type: 'forward', distance: 40 }, { type: 'left', degrees: 120 }] }] },
-            { name: 'Circle Art', icon: '🎯', desc: 'Concentric circles', blocks: [{ type: 'color', color: '#6366f1' }, { type: 'circle', radius: 20 }, { type: 'penup' }, { type: 'forward', distance: 25 }, { type: 'pendown' }, { type: 'color', color: '#ec4899' }, { type: 'circle', radius: 25 }, { type: 'penup' }, { type: 'forward', distance: 30 }, { type: 'pendown' }, { type: 'color', color: '#f59e0b' }, { type: 'circle', radius: 30 }] },
-            { name: 'Octagon', icon: '🛑', desc: 'A regular octagon', blocks: [{ type: 'color', color: '#dc2626' }, { type: 'width', width: 3 }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 50 }, { type: 'right', degrees: 45 }] }] },
-            { name: 'Windmill', icon: '🎡', desc: 'A spinning windmill', blocks: [{ type: 'color', color: '#7c3aed' }, { type: 'repeat', times: 12, children: [{ type: 'forward', distance: 80 }, { type: 'backward', distance: 80 }, { type: 'right', degrees: 30 }] }] }
+            { name: t('stem.coding.five_point_star', 'Five-Point Star'), icon: '⭐', desc: t('stem.coding.a_classic_5_pointed_star', 'A classic 5-pointed star'), blocks: [{ type: 'color', color: '#f59e0b' }, { type: 'repeat', times: 5, children: [{ type: 'forward', distance: 100 }, { type: 'right', degrees: 144 }] }] },
+            { name: t('stem.coding.square_spiral', 'Square Spiral'), icon: '🌀', desc: t('stem.coding.a_growing_square_spiral', 'A growing square spiral'), blocks: [{ type: 'forward', distance: 20 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 40 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 60 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 80 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 120 }, { type: 'right', degrees: 90 }] },
+            { name: t('stem.coding.flower', 'Flower'), icon: '🌸', desc: t('stem.coding.a_6_petal_flower_pattern', 'A 6-petal flower pattern'), blocks: [{ type: 'color', color: '#ec4899' }, { type: 'repeat', times: 6, children: [{ type: 'forward', distance: 60 }, { type: 'right', degrees: 60 }, { type: 'forward', distance: 60 }, { type: 'right', degrees: 120 }] }] },
+            { name: t('stem.coding.hexagon', 'Hexagon'), icon: '⬡', desc: t('stem.coding.a_perfect_regular_hexagon', 'A perfect regular hexagon'), blocks: [{ type: 'color', color: '#06b6d4' }, { type: 'width', width: 3 }, { type: 'repeat', times: 6, children: [{ type: 'forward', distance: 60 }, { type: 'right', degrees: 60 }] }] },
+            { name: t('stem.coding.triangle', 'Triangle'), icon: '🔺', desc: t('stem.coding.an_equilateral_triangle', 'An equilateral triangle'), blocks: [{ type: 'color', color: '#22c55e' }, { type: 'width', width: 3 }, { type: 'repeat', times: 3, children: [{ type: 'forward', distance: 120 }, { type: 'right', degrees: 120 }] }] },
+            { name: t('stem.coding.staircase', 'Staircase'), icon: '🪜', desc: t('stem.coding.a_step_by_step_staircase', 'A step-by-step staircase'), blocks: [{ type: 'color', color: '#8b5cf6' }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 30 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 30 }, { type: 'left', degrees: 90 }] }] },
+            { name: t('stem.coding.zigzag', 'Zigzag'), icon: '⚡', desc: t('stem.coding.a_sharp_zigzag_pattern', 'A sharp zigzag pattern'), blocks: [{ type: 'color', color: '#ef4444' }, { type: 'width', width: 3 }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 40 }, { type: 'right', degrees: 120 }, { type: 'forward', distance: 40 }, { type: 'left', degrees: 120 }] }] },
+            { name: t('stem.coding.circle_art', 'Circle Art'), icon: '🎯', desc: t('stem.coding.concentric_circles', 'Concentric circles'), blocks: [{ type: 'color', color: '#6366f1' }, { type: 'circle', radius: 20 }, { type: 'penup' }, { type: 'forward', distance: 25 }, { type: 'pendown' }, { type: 'color', color: '#ec4899' }, { type: 'circle', radius: 25 }, { type: 'penup' }, { type: 'forward', distance: 30 }, { type: 'pendown' }, { type: 'color', color: '#f59e0b' }, { type: 'circle', radius: 30 }] },
+            { name: t('stem.coding.octagon', 'Octagon'), icon: '🛑', desc: t('stem.coding.a_regular_octagon', 'A regular octagon'), blocks: [{ type: 'color', color: '#dc2626' }, { type: 'width', width: 3 }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 50 }, { type: 'right', degrees: 45 }] }] },
+            { name: t('stem.coding.windmill', 'Windmill'), icon: '🎡', desc: t('stem.coding.a_spinning_windmill', 'A spinning windmill'), blocks: [{ type: 'color', color: '#7c3aed' }, { type: 'repeat', times: 12, children: [{ type: 'forward', distance: 80 }, { type: 'backward', distance: 80 }, { type: 'right', degrees: 30 }] }] }
           ];
 
           // ══════════════════════════════════════════════════
@@ -345,15 +756,15 @@
           // ══════════════════════════════════════════════════
 
           var ROBOT_BLOCKS = [
-            { type: 'moveForward', label: '🤖 Move Forward', color: '#6366f1', desc: 'Move robot one cell forward' },
-            { type: 'turnRight', label: '↩️ Turn Right', color: '#f59e0b', desc: 'Rotate 90° clockwise' },
-            { type: 'turnLeft', label: '↪️ Turn Left', color: '#f59e0b', desc: 'Rotate 90° counter-clockwise' },
-            { type: 'repeatR', label: '🔄 Repeat', color: '#8b5cf6', desc: 'Repeat commands N times', param: 'times', defaultVal: 3 },
-            { type: 'ifWall', label: '🧱 If Wall Ahead', color: '#ef4444', desc: 'Check if a wall is in front' },
-            { type: 'ifGem', label: '💎 If On Gem', color: '#22c55e', desc: 'Check if standing on a gem' },
-            { type: 'collectGem', label: '💎 Collect Gem', color: '#14b8a6', desc: 'Pick up the gem at current position' },
-            { type: 'paintCell', label: '🎨 Paint Cell', color: '#ec4899', desc: 'Paint the current cell' },
-            { type: 'whileNotGoal', label: '🏁 While Not At Goal', color: '#d946ef', desc: 'Repeat until reaching the goal' }
+            { type: 'moveForward', label: t('stem.coding.move_forward_2', '🤖 Move Forward'), color: '#6366f1', desc: t('stem.coding.move_robot_one_cell_forward', 'Move robot one cell forward') },
+            { type: 'turnRight', label: t('stem.coding.turn_right_2', '↩️ Turn Right'), color: '#f59e0b', desc: t('stem.coding.rotate_90_clockwise', 'Rotate 90° clockwise') },
+            { type: 'turnLeft', label: t('stem.coding.turn_left_2', '↪️ Turn Left'), color: '#f59e0b', desc: t('stem.coding.rotate_90_counter_clockwise', 'Rotate 90° counter-clockwise') },
+            { type: 'repeatR', label: t('stem.coding.repeat_2', '🔄 Repeat'), color: '#8b5cf6', desc: t('stem.coding.repeat_commands_n_times', 'Repeat commands N times'), param: 'times', defaultVal: 3 },
+            { type: 'ifWall', label: t('stem.coding.if_wall_ahead', '🧱 If Wall Ahead'), color: '#ef4444', desc: t('stem.coding.check_if_a_wall_is_in_front', 'Check if a wall is in front') },
+            { type: 'ifGem', label: t('stem.coding.if_on_gem', '💎 If On Gem'), color: '#22c55e', desc: t('stem.coding.check_if_standing_on_a_gem', 'Check if standing on a gem') },
+            { type: 'collectGem', label: t('stem.coding.collect_gem', '💎 Collect Gem'), color: '#14b8a6', desc: t('stem.coding.pick_up_the_gem_at_current_position', 'Pick up the gem at current position') },
+            { type: 'paintCell', label: t('stem.coding.paint_cell', '🎨 Paint Cell'), color: '#ec4899', desc: t('stem.coding.paint_the_current_cell', 'Paint the current cell') },
+            { type: 'whileNotGoal', label: t('stem.coding.while_not_at_goal', '🏁 While Not At Goal'), color: '#d946ef', desc: t('stem.coding.repeat_until_reaching_the_goal', 'Repeat until reaching the goal') }
           ];
 
           // Grid generator — creates level maps
@@ -375,26 +786,26 @@
 
           var ROBOT_CHALLENGES = [
             {
-              id: 'r1', title: '1. First Steps', desc: 'Move the robot forward 3 spaces to reach the goal!',
-              concept: 'Sequencing', hint: 'Add 3 "Move Forward" blocks.',
+              id: 'r1', title: t('stem.coding.1_first_steps', '1. First Steps'), desc: t('stem.coding.move_the_robot_forward_3_spaces_to_rea', 'Move the robot forward 3 spaces to reach the goal!'),
+              concept: 'Sequencing', hint: t('stem.coding.add_3_move_forward_blocks', 'Add 3 "Move Forward" blocks.'),
               size: 5, start: [0, 2], startDir: 1, goal: [3, 2], walls: [], gems: [],
               check: function(rp, trail, grid) { return rp.x === 3 && rp.y === 2; }
             },
             {
-              id: 'r2', title: '2. Turn the Corner', desc: 'Navigate around the corner to reach the goal.',
-              concept: 'Sequencing', hint: 'Move forward, then turn, then move forward again.',
+              id: 'r2', title: t('stem.coding.2_turn_the_corner', '2. Turn the Corner'), desc: t('stem.coding.navigate_around_the_corner_to_reach_th', 'Navigate around the corner to reach the goal.'),
+              concept: 'Sequencing', hint: t('stem.coding.move_forward_then_turn_then_move_forwa', 'Move forward, then turn, then move forward again.'),
               size: 5, start: [0, 0], startDir: 2, goal: [2, 2], walls: [[1, 1], [2, 0], [2, 1]], gems: [],
               check: function(rp) { return rp.x === 2 && rp.y === 2; }
             },
             {
-              id: 'r3', title: '3. Repeat Yourself', desc: 'Use a Repeat block to reach the goal efficiently.',
-              concept: 'Loops', hint: 'Use "Repeat 4" with "Move Forward" inside.',
+              id: 'r3', title: t('stem.coding.3_repeat_yourself', '3. Repeat Yourself'), desc: t('stem.coding.use_a_repeat_block_to_reach_the_goal_e', 'Use a Repeat block to reach the goal efficiently.'),
+              concept: 'Loops', hint: t('stem.coding.use_repeat_4_with_move_forward_inside', 'Use "Repeat 4" with "Move Forward" inside.'),
               size: 6, start: [0, 3], startDir: 1, goal: [4, 3], walls: [], gems: [],
               check: function(rp) { return rp.x === 4 && rp.y === 3; }
             },
             {
-              id: 'r4', title: '4. Gem Collector', desc: 'Move through the path and collect all 3 gems!',
-              concept: 'Sequencing + Actions', hint: 'Move to each gem and use "Collect Gem" on each one.',
+              id: 'r4', title: t('stem.coding.4_gem_collector', '4. Gem Collector'), desc: t('stem.coding.move_through_the_path_and_collect_all_', 'Move through the path and collect all 3 gems!'),
+              concept: 'Sequencing + Actions', hint: t('stem.coding.move_to_each_gem_and_use_collect_gem_o', 'Move to each gem and use "Collect Gem" on each one.'),
               size: 5, start: [0, 2], startDir: 1, goal: [4, 2], walls: [[1, 1], [1, 3], [3, 1], [3, 3]], gems: [[1, 2], [2, 2], [3, 2]],
               check: function(rp, trail, grid) {
                 var allCollected = true;
@@ -403,16 +814,16 @@
               }
             },
             {
-              id: 'r5', title: '5. Wall Detective', desc: 'Use "If Wall Ahead" to navigate a maze with turns!',
-              concept: 'Conditionals', hint: 'Combine "While Not At Goal" with "If Wall Ahead" → Turn Right, else → Move Forward.',
+              id: 'r5', title: t('stem.coding.5_wall_detective', '5. Wall Detective'), desc: t('stem.coding.use_if_wall_ahead_to_navigate_a_maze_w', 'Use "If Wall Ahead" to navigate a maze with turns!'),
+              concept: 'Conditionals', hint: t('stem.coding.combine_while_not_at_goal_with_if_wall', 'Combine "While Not At Goal" with "If Wall Ahead" → Turn Right, else → Move Forward.'),
               size: 6, start: [0, 0], startDir: 1, goal: [5, 5],
               walls: [[2, 0], [2, 1], [2, 2], [4, 2], [4, 3], [4, 4], [1, 4], [2, 4], [0, 2], [0, 3]],
               gems: [],
               check: function(rp) { return rp.x === 5 && rp.y === 5; }
             },
             {
-              id: 'r6', title: '6. Painter Bot', desc: 'Paint all the unpainted cells in the row!',
-              concept: 'Loops + Actions', hint: 'Use Repeat with "Move Forward" and "Paint Cell".',
+              id: 'r6', title: t('stem.coding.6_painter_bot', '6. Painter Bot'), desc: t('stem.coding.paint_all_the_unpainted_cells_in_the_r', 'Paint all the unpainted cells in the row!'),
+              concept: 'Loops + Actions', hint: t('stem.coding.use_repeat_with_move_forward_and_paint', 'Use Repeat with "Move Forward" and "Paint Cell".'),
               size: 5, start: [0, 2], startDir: 1, goal: [4, 2], walls: [], gems: [],
               check: function(rp, trail, grid) {
                 for (var px = 0; px <= 4; px++) { if (!grid[2][px].painted) return false; }
@@ -420,8 +831,8 @@
               }
             },
             {
-              id: 'r7', title: '7. Spiral Maze', desc: 'Navigate the spiral maze using loops and conditionals!',
-              concept: 'Conditionals + Loops', hint: 'Try "While Not At Goal": If Wall → Turn Right, else → Move Forward.',
+              id: 'r7', title: t('stem.coding.7_spiral_maze', '7. Spiral Maze'), desc: t('stem.coding.navigate_the_spiral_maze_using_loops_a', 'Navigate the spiral maze using loops and conditionals!'),
+              concept: 'Conditionals + Loops', hint: t('stem.coding.try_while_not_at_goal_if_wall_turn_rig', 'Try "While Not At Goal": If Wall → Turn Right, else → Move Forward.'),
               size: 7, start: [0, 0], startDir: 2, goal: [3, 3],
               walls: [[2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6],
                       [0, 6], [1, 6], [2, 6], [3, 6], [4, 6], [5, 6],
@@ -431,8 +842,8 @@
               check: function(rp) { return rp.x === 3 && rp.y === 3; }
             },
             {
-              id: 'r8', title: '8. Gem Sweep', desc: 'Collect ALL gems and reach the goal! Use everything you learned.',
-              concept: 'Algorithm Design', hint: 'Plan your path carefully. You may need nested loops!',
+              id: 'r8', title: t('stem.coding.8_gem_sweep', '8. Gem Sweep'), desc: t('stem.coding.collect_all_gems_and_reach_the_goal_us', 'Collect ALL gems and reach the goal! Use everything you learned.'),
+              concept: 'Algorithm Design', hint: t('stem.coding.plan_your_path_carefully_you_may_need_', 'Plan your path carefully. You may need nested loops!'),
               size: 6, start: [0, 0], startDir: 1, goal: [5, 5],
               walls: [[2, 1], [3, 1], [1, 3], [2, 3], [4, 3], [3, 5]],
               gems: [[1, 0], [4, 0], [0, 2], [5, 2], [3, 4], [2, 5]],
@@ -444,7 +855,7 @@
           ];
 
           // ── Robot Execution Engine ──
-          function executeRobotBlocks(rBlocks, startPos, startDir, grid, cb) {
+          function executeRobotBlocks(rBlocks, startPos, startDir, grid, cb, runToken) {
             var pos = { x: startPos[0], y: startPos[1], dir: startDir };
             var gridCopy = JSON.parse(JSON.stringify(grid));
             var trail = [{ x: pos.x, y: pos.y }];
@@ -492,6 +903,7 @@
             var reachedGoal = false;
 
             function step() {
+              if (runToken != null && runToken !== _codeRunToken) { return; }
               stepCount++;
               if (stepCount > maxSteps || idx >= flat.length || reachedGoal) {
                 cb(pos, trail, gridCopy, reachedGoal);
@@ -501,6 +913,7 @@
               if (b.type === '_checkGoal') {
                 if (gridCopy[pos.y] && gridCopy[pos.y][pos.x] && gridCopy[pos.y][pos.x].goal) {
                   reachedGoal = true;
+                  if (typeof announceToSR === 'function') { try { announceToSR('Reached the goal!'); } catch (e) {} }
                   cb(pos, trail, gridCopy, true);
                   return;
                 }
@@ -509,13 +922,13 @@
                 if (nx >= 0 && ny >= 0 && nx < size && ny < size && !gridCopy[ny][nx].wall) {
                   pos.x = nx; pos.y = ny;
                   trail.push({ x: pos.x, y: pos.y });
-                }
+                } else { if (typeof announceToSR === 'function') { try { announceToSR('Blocked by a wall'); } catch (e) {} } }
               } else if (b.type === 'turnRight') {
                 pos.dir = (pos.dir + 1) % 4;
               } else if (b.type === 'turnLeft') {
                 pos.dir = (pos.dir + 3) % 4;
               } else if (b.type === 'collectGem') {
-                if (gridCopy[pos.y] && gridCopy[pos.y][pos.x]) gridCopy[pos.y][pos.x].gem = false;
+                if (gridCopy[pos.y] && gridCopy[pos.y][pos.x] && gridCopy[pos.y][pos.x].gem) { gridCopy[pos.y][pos.x].gem = false; if (typeof announceToSR === 'function') { try { announceToSR('Gem collected'); } catch (e) {} } }
               } else if (b.type === 'paintCell') {
                 if (gridCopy[pos.y] && gridCopy[pos.y][pos.x]) gridCopy[pos.y][pos.x].painted = true;
               } else if (b.type === 'ifWall') {
@@ -536,12 +949,13 @@
               // Update state for animation
               updMulti({ robotPos: Object.assign({}, pos), robotTrail: trail.slice(), robotGrid: gridCopy, robotRunning: true });
               idx++;
-              setTimeout(step, 250);
+              _codeRobotTimer = setTimeout(step, 250);
             }
             step();
           }
 
           function handleRobotRun() {
+            var _myToken = ++_codeRunToken;
             var ch = robotChallengeIdx >= 0 && robotChallengeIdx < ROBOT_CHALLENGES.length ? ROBOT_CHALLENGES[robotChallengeIdx] : null;
             if (!ch) return;
             var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
@@ -571,7 +985,7 @@
                 } else {
                   if (addToast) addToast('\uD83E\uDD14 Not quite! Check your logic and try again.', 'warning');
                 }
-              });
+              }, _myToken);
             }, 100);
           }
 
@@ -588,6 +1002,81 @@
             upd('robotBlocks', robotBlocks.filter(function(_, i) { return i !== idx; }));
           }
 
+          // ── Robot tree ops by PATH (B4). path = [i] | [i,"children",j] |
+          //    [i,"elseChildren",j] | nested. Immutable; depth capped at 2 in the UI. ──
+          function robotRemoveAt(path) {
+            function rec(arr, p) {
+              if (p.length === 1) return arr.filter(function (_, i) { return i !== p[0]; });
+              return arr.map(function (b, i) {
+                if (i !== p[0]) return b;
+                var nb = Object.assign({}, b); var key = p[1];
+                nb[key] = rec(nb[key] || [], p.slice(2)); return nb;
+              });
+            }
+            upd('robotBlocks', rec(robotBlocks, path));
+          }
+          function robotAddChild(parentPath, key, type) {
+            var nbk = { type: type };
+            if (type === 'repeatR') { nbk.times = 3; nbk.children = []; }
+            if (type === 'ifWall' || type === 'ifGem') { nbk.children = []; nbk.elseChildren = []; }
+            function rec(arr, p) {
+              return arr.map(function (b, i) {
+                if (i !== p[0]) return b;
+                var nb = Object.assign({}, b);
+                if (p.length === 1) { nb[key] = (nb[key] || []).concat([nbk]); return nb; }
+                var ck = p[1]; nb[ck] = rec(nb[ck] || [], p.slice(2)); return nb;
+              });
+            }
+            upd('robotBlocks', rec(robotBlocks, parentPath));
+          }
+          function robotSetTimes(path, n) {
+            function rec(arr, p) {
+              return arr.map(function (b, i) {
+                if (i !== p[0]) return b;
+                var nb = Object.assign({}, b);
+                if (p.length === 1) { nb.times = n; return nb; }
+                var ck = p[1]; nb[ck] = rec(nb[ck] || [], p.slice(2)); return nb;
+              });
+            }
+            upd('robotBlocks', rec(robotBlocks, path));
+          }
+          var ROBOT_LEAF = ["moveForward", "turnRight", "turnLeft", "collectGem", "paintCell"];
+          function renderRobotNode(block, path, depth) {
+            var bdef = ROBOT_BLOCKS.find(function (rb) { return rb.type === block.type; });
+            var isLoop = block.type === 'repeatR' || block.type === 'whileNotGoal';
+            var isCond = block.type === 'ifWall' || block.type === 'ifGem';
+            var isControl = isLoop || isCond;
+            // conditionals may be added only as direct children of a top-level loop
+            var addTypes = (isLoop && depth === 0) ? ROBOT_LEAF.concat(["ifWall", "ifGem"]) : ROBOT_LEAF;
+            function addToolbox(key) {
+              return h("div", { className: "flex gap-1 flex-wrap mt-1" },
+                ROBOT_BLOCKS.filter(function (rb) { return addTypes.indexOf(rb.type) >= 0; }).map(function (rb) {
+                  return h("button", { "aria-label": "Add " + (key === "elseChildren" ? "else " : "") + rb.label, key: key + rb.type,
+                    onClick: function () { robotAddChild(path, key, rb.type); },
+                    className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
+                    style: { backgroundColor: rb.color + "80" } }, "+ " + rb.label.split(" ").slice(1).join(" "));
+                })
+              );
+            }
+            return h("div", { key: path.join("-") },
+              h("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color : "var(--allo-stem-text-soft, #94a3b8)" } },
+                h("span", { className: "flex-1" }, bdef ? bdef.label : block.type),
+                block.type === 'repeatR' && h("input", { type: "number", min: 1, max: 20, value: block.times || 3, "aria-label": t('stem.coding.repeat_count', "Repeat count"),
+                  onChange: function (e) { robotSetTimes(path, parseInt(e.target.value) || 3); },
+                  className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[11px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400" }),
+                h("button", { "aria-label": t('stem.coding.remove_robot_block', "Remove robot block"), onClick: function () { robotRemoveAt(path); }, className: "text-white/60 hover:text-white text-xs px-1" }, "\u2715")
+              ),
+              isControl && depth < 2 && h("div", { className: "ml-4 mt-1 space-y-1 border-l-2 pl-2", style: { borderColor: bdef ? bdef.color + "60" : "#475569" } },
+                (block.children || []).map(function (child, ci) { return renderRobotNode(child, path.concat(["children", ci]), depth + 1); }),
+                addToolbox("children"),
+                isCond && h("div", null,
+                  h("div", { className: "text-[11px] font-bold text-slate-400 mt-1" }, "ELSE:"),
+                  (block.elseChildren || []).map(function (child, ci) { return renderRobotNode(child, path.concat(["elseChildren", ci]), depth + 1); }),
+                  addToolbox("elseChildren")
+                )
+              )
+            );
+          }
           function addRobotChildBlock(parentIdx, type, isElse) {
             var def = ROBOT_BLOCKS.find(function(b) { return b.type === type; });
             var newBlock = { type: type };
@@ -613,542 +1102,93 @@
           }
 
           // ── Helper: analyze drawn lines for challenge checking ──
-          function getEndpoints(lines) {
-            if (lines.length === 0) return { closed: false, turns: 0, segments: 0 };
-            var first = lines[0];
-            var last = lines[lines.length - 1];
-            var dist = Math.sqrt(Math.pow(last.x2 - first.x1, 2) + Math.pow(last.y2 - first.y1, 2));
-            var totalAngle = 0;
-            for (var i = 1; i < lines.length; i++) {
-              var a1 = Math.atan2(lines[i - 1].y2 - lines[i - 1].y1, lines[i - 1].x2 - lines[i - 1].x1);
-              var a2 = Math.atan2(lines[i].y2 - lines[i].y1, lines[i].x2 - lines[i].x1);
-              var diff = (a2 - a1) * 180 / Math.PI;
-              while (diff > 180) diff -= 360;
-              while (diff < -180) diff += 360;
-              totalAngle += Math.abs(diff);
-            }
-            return { closed: dist < 15, turns: totalAngle, segments: lines.length };
-          }
+          var getEndpoints = CodingInterp.getEndpoints;
+          var blocksToText = CodingInterp.blocksToText;
+          var textToBlocks = CodingInterp.textToBlocks;
+          var resolveVal = CodingInterp.resolveVal;
+          var evalCondition = CodingInterp.evalCondition;
 
-          // ── Generate text code from blocks ──
-          function blocksToText(blks, indent) {
-            indent = indent || '';
-            var lines = [];
-            for (var i = 0; i < blks.length; i++) {
-              var b = blks[i];
-              if (b.type === 'forward') lines.push(indent + 'forward(' + (b.distance || 50) + ')');
-              else if (b.type === 'backward') lines.push(indent + 'backward(' + (b.distance || 50) + ')');
-              else if (b.type === 'right') lines.push(indent + 'right(' + (b.degrees || 90) + ')');
-              else if (b.type === 'left') lines.push(indent + 'left(' + (b.degrees || 90) + ')');
-              else if (b.type === 'penup') lines.push(indent + 'penUp()');
-              else if (b.type === 'pendown') lines.push(indent + 'penDown()');
-              else if (b.type === 'color') lines.push(indent + 'setColor("' + (b.color || '#6366f1') + '")');
-              else if (b.type === 'width') lines.push(indent + 'setWidth(' + (b.width || 2) + ')');
-              else if (b.type === 'circle') lines.push(indent + 'circle(' + (b.radius || 30) + ')');
-              else if (b.type === 'goto') lines.push(indent + 'goto(' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')');
-              else if (b.type === 'home') lines.push(indent + 'home()');
-              else if (b.type === 'setVar') lines.push(indent + 'setVar("' + (b.varName || 'size') + '", ' + (b.varValue != null ? b.varValue : 50) + ')');
-              else if (b.type === 'changeVar') lines.push(indent + 'changeVar("' + (b.varName || 'size') + '", ' + (b.varDelta != null ? b.varDelta : 10) + ')');
-              else if (b.type === 'repeat') {
-                lines.push(indent + 'repeat(' + (b.times || 4) + ', function() {');
-                if (b.children && b.children.length > 0) {
-                  lines.push(blocksToText(b.children, indent + '  '));
-                }
-                lines.push(indent + '})');
-              } else if (b.type === 'ifelse') {
-                lines.push(indent + 'if (' + (b.condition || 'x > 250') + ') {');
-                if (b.children && b.children.length > 0) {
-                  lines.push(blocksToText(b.children, indent + '  '));
-                }
-                lines.push(indent + '} else {');
-                if (b.elseChildren && b.elseChildren.length > 0) {
-                  lines.push(blocksToText(b.elseChildren, indent + '  '));
-                }
-                lines.push(indent + '}');
-              } else if (b.type === 'while') {
-                lines.push(indent + 'while (' + (b.condition || 'x < 450') + ') {');
-                if (b.children && b.children.length > 0) {
-                  lines.push(blocksToText(b.children, indent + '  '));
-                }
-                lines.push(indent + '}');
-              } else if (b.type === 'function') {
-                lines.push(indent + 'function ' + (b.funcName || 'myShape') + '() {');
-                if (b.children && b.children.length > 0) {
-                  lines.push(blocksToText(b.children, indent + '  '));
-                }
-                lines.push(indent + '}');
-              } else if (b.type === 'callFunction') {
-                lines.push(indent + (b.funcName || 'myShape') + '()');
-              } else if (b.type === 'random') {
-                lines.push(indent + 'random("' + (b.varName || 'r') + '", ' + (b.randomMin || 0) + ', ' + (b.randomMax || 100) + ')');
-              } else if (b.type === 'stamp') {
-                lines.push(indent + 'stamp()');
-              } else if (b.type === 'arc') {
-                lines.push(indent + 'arc(' + (b.arcAngle || 180) + ', ' + (b.arcRadius || 30) + ')');
-              } else if (b.type === 'playNote') {
-                lines.push(indent + 'playNote(' + (b.frequency || 440) + ', ' + (b.duration || 200) + ')');
-              } else if (b.type === 'pitch') {
-                pitchAngle = (pitchAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('pitchAngle', pitchAngle);
-              } else if (b.type === 'yaw') {
-                yawAngle = (yawAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('yawAngle', yawAngle);
-              } else if (b.type === 'forward3D') {
-                var dist3D = resolveVal(b.distance || 50, vars);
-                var radAngle = t.angle * Math.PI / 180;
-                var radPitch = pitchAngle * Math.PI / 180;
-                var radRoll = rollAngle * Math.PI / 180;
-                // Full 3D direction vector
-                var dx3 = Math.cos(radAngle) * Math.cos(radPitch) * dist3D;
-                var dy3 = Math.sin(radAngle) * Math.cos(radPitch) * dist3D;
-                var dz3 = Math.sin(radPitch) * dist3D;
-                var nx3 = t.x + dx3;
-                var ny3 = t.y + dy3;
-                var nz3 = turtleZ + dz3;
-                if (t.penDown) {
-                  // Store as 3D line for perspective rendering
-                  var l3d = { x1: t.x, y1: t.y, z1: turtleZ, x2: nx3, y2: ny3, z2: nz3, color: t.color, width: t.width };
-                  lines3D.push(l3d);
-                  upd('lines3D', lines3D.slice());
-                  // Also project to 2D for compatibility
-                  var p1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var p2 = project3D(nx3 - 250, ny3 - 250, nz3);
-                  allLines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, color: t.color, width: Math.max(0.5, t.width * p2.scale) });
-                }
-                t.x = nx3; t.y = ny3; turtleZ = nz3;
-                upd('turtleZ', turtleZ);
-              } else if (b.type === 'roll') {
-                rollAngle = (rollAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('rollAngle', rollAngle);
-              } else if (b.type === 'moveUp') {
-                var upDist = resolveVal(b.distance || 30, vars);
-                var nzUp = turtleZ + upDist;
-                if (t.penDown) {
-                  var l3dU = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzUp, color: t.color, width: t.width };
-                  lines3D.push(l3dU); upd('lines3D', lines3D.slice());
-                  var pU1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pU2 = project3D(t.x - 250, t.y - 250, nzUp);
-                  allLines.push({ x1: pU1.x, y1: pU1.y, x2: pU2.x, y2: pU2.y, color: t.color, width: Math.max(0.5, t.width * pU2.scale) });
-                }
-                turtleZ = nzUp; upd('turtleZ', turtleZ);
-              } else if (b.type === 'moveDown') {
-                var downDist = resolveVal(b.distance || 30, vars);
-                var nzDown = turtleZ - downDist;
-                if (t.penDown) {
-                  var l3dD = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzDown, color: t.color, width: t.width };
-                  lines3D.push(l3dD); upd('lines3D', lines3D.slice());
-                  var pD1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pD2 = project3D(t.x - 250, t.y - 250, nzDown);
-                  allLines.push({ x1: pD1.x, y1: pD1.y, x2: pD2.x, y2: pD2.y, color: t.color, width: Math.max(0.5, t.width * pD2.scale) });
-                }
-                turtleZ = nzDown; upd('turtleZ', turtleZ);
-              } else if (b.type === 'spawnTurtle') {
-                lines.push(indent + 'spawnTurtle("' + (b.turtleName || 'bob') + '")');
-              } else if (b.type === 'switchTurtle') {
-                lines.push(indent + 'switchTurtle("' + (b.turtleName || 'bob') + '")');
-              } else if (b.type === 'pitch') {
-                lines.push(indent + 'pitch(' + (b.degrees || 30) + ')');
-              } else if (b.type === 'yaw') {
-                lines.push(indent + 'yaw(' + (b.degrees || 30) + ')');
-              } else if (b.type === 'forward3D') {
-                lines.push(indent + 'forward3D(' + (b.distance || 50) + ')');
-              } else if (b.type === 'roll') {
-                lines.push(indent + 'roll(' + (b.degrees || 30) + ')');
-              } else if (b.type === 'moveUp') {
-                lines.push(indent + 'moveUp(' + (b.distance || 30) + ')');
-              } else if (b.type === 'moveDown') {
-                lines.push(indent + 'moveDown(' + (b.distance || 30) + ')');
-              }
-            }
-            return lines.join('\n');
-          }
-
-          // ── Parse text code to blocks ──
-          function textToBlocks(code) {
-            var result = [];
-            var lineArr = code.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
-            var i = 0;
-            function parse() {
-              var blks = [];
-              while (i < lineArr.length) {
-                var line = lineArr[i];
-                if (line.match(/^}\)?;?$/) || line.match(/^\} else \{$/)) { i++; return blks; }
-                var m;
-                if ((m = line.match(/^forward\(([\$\w]+)\)/))) { blks.push({ type: 'forward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^backward\(([\$\w]+)\)/))) { blks.push({ type: 'backward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^right\(([\$\w]+)\)/))) { blks.push({ type: 'right', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^left\(([\$\w]+)\)/))) { blks.push({ type: 'left', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if (line.match(/^penUp\(\)/)) { blks.push({ type: 'penup' }); }
-                else if (line.match(/^penDown\(\)/)) { blks.push({ type: 'pendown' }); }
-                else if ((m = line.match(/^setColor\("([^"]+)"\)/))) { blks.push({ type: 'color', color: m[1] }); }
-                else if ((m = line.match(/^setWidth\(([\$\w]+)\)/))) { blks.push({ type: 'width', width: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^circle\(([\$\w]+)\)/))) { blks.push({ type: 'circle', radius: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^goto\((\d+),\s*(\d+)\)/))) { blks.push({ type: 'goto', x: parseInt(m[1]), y: parseInt(m[2]) }); }
-                else if (line.match(/^home\(\)/)) { blks.push({ type: 'home' }); }
-                else if ((m = line.match(/^setVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'setVar', varName: m[1], varValue: parseFloat(m[2]) }); }
-                else if ((m = line.match(/^changeVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'changeVar', varName: m[1], varDelta: parseFloat(m[2]) }); }
-                else if ((m = line.match(/^if\s*\((.+)\)\s*\{/))) {
-                  i++;
-                  var ifChildren = parse();
-                  // After parse returns, current line should be '} else {' or '}'
-                  var elseChildren = [];
-                  if (i < lineArr.length && lineArr[i - 1] && lineArr[i - 1].match(/\} else \{/)) {
-                    elseChildren = parse();
-                  }
-                  blks.push({ type: 'ifelse', condition: m[1].trim(), children: ifChildren, elseChildren: elseChildren });
-                  continue;
-                }
-                else if ((m = line.match(/^repeat\((\d+)/))) {
-                  i++;
-                  var children = parse();
-                  blks.push({ type: 'repeat', times: parseInt(m[1]), children: children });
-                  continue;
-                }
-                else if ((m = line.match(/^while\s*\((.+)\)\s*\{/))) {
-                  i++;
-                  var whileChildren = parse();
-                  blks.push({ type: 'while', condition: m[1].trim(), children: whileChildren });
-                  continue;
-                }
-                else if ((m = line.match(/^function\s+(\w+)\(\)\s*\{/))) {
-                  i++;
-                  var funcBody = parse();
-                  blks.push({ type: 'function', funcName: m[1], children: funcBody });
-                  continue;
-                }
-                else if ((m = line.match(/^(\w+)\(\)$/))) { blks.push({ type: 'callFunction', funcName: m[1] }); }
-                else if ((m = line.match(/^random\("([^"]+)",\s*(-?[\d.]+),\s*(-?[\d.]+)\)/))) { blks.push({ type: 'random', varName: m[1], randomMin: parseFloat(m[2]), randomMax: parseFloat(m[3]) }); }
-                else if (line.match(/^stamp\(\)/)) { blks.push({ type: 'stamp' }); }
-                else if ((m = line.match(/^arc\(([\d.]+),\s*([\d.]+)\)/))) { blks.push({ type: 'arc', arcAngle: parseFloat(m[1]), arcRadius: parseFloat(m[2]) }); }
-                else if ((m = line.match(/^playNote\(([\d.]+)(?:,\s*([\d.]+))?\)/))) { blks.push({ type: 'playNote', frequency: parseFloat(m[1]), duration: m[2] ? parseFloat(m[2]) : 200 }); }
-                else if ((m = line.match(/^spawnTurtle\("([^"]+)"\)/))) { blks.push({ type: 'spawnTurtle', turtleName: m[1] }); }
-                else if ((m = line.match(/^switchTurtle\("([^"]+)"\)/))) { blks.push({ type: 'switchTurtle', turtleName: m[1] }); }
-                else if ((m = line.match(/^pitch\((\d+)\)/))) { blks.push({ type: 'pitch', degrees: parseFloat(m[1]) }); }
-                else if ((m = line.match(/^yaw\((\d+)\)/))) { blks.push({ type: 'yaw', degrees: parseFloat(m[1]) }); }
-                else if ((m = line.match(/^forward3D\(([\$\w]+)\)/))) { blks.push({ type: 'forward3D', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^roll\((\d+)\)/))) { blks.push({ type: 'roll', degrees: parseFloat(m[1]) }); }
-                else if ((m = line.match(/^moveUp\((\d+)\)/))) { blks.push({ type: 'moveUp', distance: parseFloat(m[1]) }); }
-                else if ((m = line.match(/^moveDown\((\d+)\)/))) { blks.push({ type: 'moveDown', distance: parseFloat(m[1]) }); }
-                i++;
-              }
-              return blks;
-            }
-            return parse();
-          }
-
-          // ── Resolve variable values ──
-          function resolveVal(val, vars) {
-            if (typeof val === 'string' && val.charAt(0) === '$') {
-              var vName = val.substring(1);
-              return vars[vName] != null ? vars[vName] : 0;
-            }
-            return typeof val === 'number' ? val : (parseFloat(val) || 0);
-          }
-
-          // ── Evaluate condition against turtle state + vars ──
-          function evalCondition(cond, turtle, vars) {
-            if (!cond) return false;
-            var m;
-            // Pattern: lhs op rhs
-            if ((m = cond.match(/^(\$?[\w.]+)\s*(>|<|>=|<=|==|!=)\s*(.+)$/))) {
-              var lhsRaw = m[1].trim(), op = m[2], rhsRaw = m[3].trim();
-              var lhs, rhs;
-              // Resolve lhs
-              if (lhsRaw === 'x') lhs = turtle.x;
-              else if (lhsRaw === 'y') lhs = turtle.y;
-              else if (lhsRaw === 'angle') lhs = turtle.angle;
-              else if (lhsRaw === 'penDown') lhs = turtle.penDown;
-              else if (lhsRaw.charAt(0) === '$') lhs = vars[lhsRaw.substring(1)] || 0;
-              else lhs = parseFloat(lhsRaw) || 0;
-              // Resolve rhs
-              if (rhsRaw === 'true') rhs = true;
-              else if (rhsRaw === 'false') rhs = false;
-              else if (rhsRaw.charAt(0) === '$') rhs = vars[rhsRaw.substring(1)] || 0;
-              else rhs = parseFloat(rhsRaw);
-              if (isNaN(rhs) && typeof rhs !== 'boolean') rhs = 0;
-              if (op === '>') return lhs > rhs;
-              if (op === '<') return lhs < rhs;
-              if (op === '>=') return lhs >= rhs;
-              if (op === '<=') return lhs <= rhs;
-              if (op === '==') return lhs == rhs;
-              if (op === '!=') return lhs != rhs;
-            }
-            return false;
-          }
-
-          // ── Execute blocks (async with animation) ──
-          function executeBlocks(blks, turtle, lines, cb, spd, stepCb) {
-            var t = Object.assign({}, turtle);
-            var allLines = lines.slice();
-            var vars = {};
-
-            function flattenBlocks(bArr) {
-              var flat = [];
-              for (var j = 0; j < bArr.length; j++) {
-                var blk = bArr[j];
-                if (blk.type === 'repeat') {
-                  var times = blk.times || 4;
-                  for (var r = 0; r < times; r++) {
-                    flat = flat.concat(flattenBlocks(blk.children || []));
-                  }
-                } else if (blk.type === 'while') {
-                  // While — push as marker for deferred evaluation in step()
-                  flat.push(blk);
-                } else if (blk.type === 'function') {
-                  // Function definition — push as marker to register in step()
-                  flat.push(blk);
-                } else if (blk.type === 'ifelse') {
-                  // defer evaluation — push a marker
-                  flat.push(blk);
-                } else {
-                  flat.push(blk);
-                }
-              }
-              return flat;
-            }
-            var flat = flattenBlocks(blks);
+          // ── Execute blocks (single source: replays CodingInterp.simulate) ──
+                    function executeBlocks(blks, turtle, lines, cb, spd, stepCb, runToken, simOverride) {
+            // Thin animation driver: compute the whole run once via the pure
+            // CodingInterp.simulate, then replay its frames on a timer. Single
+            // source of truth for execution; cancellation honors the run token.
+            var sim = simOverride || CodingInterp.simulate(blks, turtle, {
+              startLines: lines, startLines3D: lines3D, extraTurtles: extraTurtles,
+              pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ,
+              project3D: project3D
+            });
+            var frames = sim.frames;
+            var replayLines = lines.slice();
+            var replay3D = lines3D.slice();
             var idx = 0;
-
+            function fireAudio(a) {
+              if (!a) return;
+              try {
+                var audioCtx = window.__codingAudioCtx || (window.__codingAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = a.frequency;
+                gain.gain.value = 0.15;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                var noteDur = (a.duration || 200) / 1000;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + noteDur);
+                osc.stop(audioCtx.currentTime + noteDur + 0.05);
+              } catch (e) { /* Audio not available */ }
+            }
             function step() {
-              if (idx >= flat.length) {
-                if (cb) cb(t, allLines);
+              if (runToken != null && runToken !== _codeRunToken) { return; }
+              if (idx >= frames.length) {
+                if (cb) cb(sim.finalTurtle, replayLines);
                 return;
               }
-              var b = flat[idx];
+              var fr = frames[idx];
               if (stepCb) stepCb(idx);
-
-              if (b.type === 'setVar') {
-                vars[b.varName || 'size'] = b.varValue != null ? b.varValue : 50;
-              } else if (b.type === 'changeVar') {
-                var vn = b.varName || 'size';
-                vars[vn] = (vars[vn] || 0) + (b.varDelta != null ? b.varDelta : 10);
-              } else if (b.type === 'ifelse') {
-                var condResult = evalCondition(b.condition || 'x > 250', t, vars);
-                var branch = condResult ? (b.children || []) : (b.elseChildren || []);
-                var branchFlat = flattenBlocks(branch);
-                // Insert branch blocks right after the current position
-                var before = flat.slice(0, idx + 1);
-                var after = flat.slice(idx + 1);
-                flat = before.concat(branchFlat).concat(after);
-              } else if (b.type === 'forward') {
-                var dist = resolveVal(b.distance != null ? b.distance : 50, vars);
-                var rad = t.angle * Math.PI / 180;
-                var nx = t.x + Math.cos(rad) * dist;
-                var ny = t.y + Math.sin(rad) * dist;
-                if (t.penDown) {
-                  allLines.push({ x1: t.x, y1: t.y, x2: nx, y2: ny, color: t.color, width: t.width });
-                }
-                t.x = nx; t.y = ny;
-              } else if (b.type === 'backward') {
-                var dist2 = resolveVal(b.distance != null ? b.distance : 50, vars);
-                var rad2 = t.angle * Math.PI / 180;
-                var nx2 = t.x - Math.cos(rad2) * dist2;
-                var ny2 = t.y - Math.sin(rad2) * dist2;
-                if (t.penDown) {
-                  allLines.push({ x1: t.x, y1: t.y, x2: nx2, y2: ny2, color: t.color, width: t.width });
-                }
-                t.x = nx2; t.y = ny2;
-              } else if (b.type === 'right') {
-                t.angle = (t.angle + resolveVal(b.degrees != null ? b.degrees : 90, vars)) % 360;
-              } else if (b.type === 'left') {
-                t.angle = (t.angle - resolveVal(b.degrees != null ? b.degrees : 90, vars) + 360) % 360;
-              } else if (b.type === 'penup') {
-                t.penDown = false;
-              } else if (b.type === 'pendown') {
-                t.penDown = true;
-              } else if (b.type === 'color') {
-                t.color = b.color || '#6366f1';
-              } else if (b.type === 'width') {
-                t.width = resolveVal(b.width != null ? b.width : 2, vars);
-              } else if (b.type === 'circle') {
-                var cRadius = resolveVal(b.radius != null ? b.radius : 30, vars);
-                if (t.penDown) {
-                  var segs = 36;
-                  for (var si = 0; si < segs; si++) {
-                    var a1 = t.angle + (si / segs) * 360;
-                    var a2 = t.angle + ((si + 1) / segs) * 360;
-                    var r1 = a1 * Math.PI / 180;
-                    var r2 = a2 * Math.PI / 180;
-                    var cx1 = t.x + cRadius * (Math.cos(r1) - Math.cos(t.angle * Math.PI / 180));
-                    var cy1 = t.y + cRadius * (Math.sin(r1) - Math.sin(t.angle * Math.PI / 180));
-                    var cx2 = t.x + cRadius * (Math.cos(r2) - Math.cos(t.angle * Math.PI / 180));
-                    var cy2 = t.y + cRadius * (Math.sin(r2) - Math.sin(t.angle * Math.PI / 180));
-                    allLines.push({ x1: cx1, y1: cy1, x2: cx2, y2: cy2, color: t.color, width: t.width });
-                  }
-                }
-              } else if (b.type === 'goto') {
-                var gx = b.x != null ? b.x : 250;
-                var gy = b.y != null ? b.y : 250;
-                if (t.penDown) {
-                  allLines.push({ x1: t.x, y1: t.y, x2: gx, y2: gy, color: t.color, width: t.width });
-                }
-                t.x = gx; t.y = gy;
-              } else if (b.type === 'home') {
-                if (t.penDown) {
-                  allLines.push({ x1: t.x, y1: t.y, x2: 250, y2: 250, color: t.color, width: t.width });
-                }
-                t.x = 250; t.y = 250; t.angle = -90;
-              } else if (b.type === 'while') {
-                // While loop: evaluate condition and insert children + self if true (with safety cap)
-                if (!b._iterCount) b._iterCount = 0;
-                if (b._iterCount < 1000 && evalCondition(b.condition || 'x < 450', t, vars)) {
-                  b._iterCount++;
-                  var whileBody = flattenBlocks(b.children || []);
-                  var whileMarker = Object.assign({}, b); // re-evaluate on next pass
-                  var beforeW = flat.slice(0, idx + 1);
-                  var afterW = flat.slice(idx + 1);
-                  flat = beforeW.concat(whileBody).concat([whileMarker]).concat(afterW);
-                } else {
-                  b._iterCount = 0; // reset for next run
-                }
-              } else if (b.type === 'function') {
-                // Function definition — store in registry, don't execute
-                vars['__func_' + (b.funcName || 'myShape')] = b.children || [];
-              } else if (b.type === 'callFunction') {
-                // Call function — insert its body into execution stream
-                var funcBody = vars['__func_' + (b.funcName || 'myShape')];
-                if (funcBody && funcBody.length > 0) {
-                  var callBody = flattenBlocks(JSON.parse(JSON.stringify(funcBody)));
-                  var beforeC = flat.slice(0, idx + 1);
-                  var afterC = flat.slice(idx + 1);
-                  flat = beforeC.concat(callBody).concat(afterC);
-                }
-              } else if (b.type === 'random') {
-                // Random — set variable to random value in [min, max]
-                var rMin = b.randomMin != null ? b.randomMin : 0;
-                var rMax = b.randomMax != null ? b.randomMax : 100;
-                vars[b.varName || 'r'] = Math.floor(Math.random() * (rMax - rMin + 1)) + rMin;
-              } else if (b.type === 'stamp') {
-                // Stamp — duplicate all current lines at current position (creates a "stamp")
-                if (allLines.length > 0) {
-                  var stampLines = allLines.slice();
-                  var ox = stampLines[0].x1, oy = stampLines[0].y1;
-                  var dx = t.x - ox, dy = t.y - oy;
-                  for (var si = 0; si < stampLines.length; si++) {
-                    allLines.push({ x1: stampLines[si].x1 + dx, y1: stampLines[si].y1 + dy, x2: stampLines[si].x2 + dx, y2: stampLines[si].y2 + dy, color: stampLines[si].color, width: stampLines[si].width });
-                  }
-                }
-              } else if (b.type === 'arc') {
-                // Arc — draw a portion of a circle (arcAngle degrees, arcRadius pixels)
-                var arcAngle = resolveVal(b.arcAngle != null ? b.arcAngle : 180, vars);
-                var arcRadius = resolveVal(b.arcRadius != null ? b.arcRadius : 30, vars);
-                if (t.penDown) {
-                  var arcSegs = Math.max(8, Math.ceil(Math.abs(arcAngle) / 10));
-                  var arcStep = arcAngle / arcSegs;
-                  var prevX = t.x, prevY = t.y;
-                  for (var ai = 1; ai <= arcSegs; ai++) {
-                    var curAngle = t.angle + arcStep * ai;
-                    var curRad = curAngle * Math.PI / 180;
-                    var stepDist = (2 * arcRadius * Math.sin(Math.abs(arcStep) * Math.PI / 360));
-                    var ax = prevX + Math.cos((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
-                    var ay = prevY + Math.sin((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
-                    allLines.push({ x1: prevX, y1: prevY, x2: ax, y2: ay, color: t.color, width: t.width });
-                    prevX = ax; prevY = ay;
-                  }
-                  t.x = prevX; t.y = prevY;
-                }
-                t.angle = (t.angle + arcAngle) % 360;
-              } else if (b.type === 'pitch') {
-                pitchAngle = (pitchAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('pitchAngle', pitchAngle);
-              } else if (b.type === 'yaw') {
-                yawAngle = (yawAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('yawAngle', yawAngle);
-              } else if (b.type === 'forward3D') {
-                var dist3D = resolveVal(b.distance || 50, vars);
-                var radAngle = t.angle * Math.PI / 180;
-                var radPitch = pitchAngle * Math.PI / 180;
-                var radRoll = rollAngle * Math.PI / 180;
-                // Full 3D direction vector
-                var dx3 = Math.cos(radAngle) * Math.cos(radPitch) * dist3D;
-                var dy3 = Math.sin(radAngle) * Math.cos(radPitch) * dist3D;
-                var dz3 = Math.sin(radPitch) * dist3D;
-                var nx3 = t.x + dx3;
-                var ny3 = t.y + dy3;
-                var nz3 = turtleZ + dz3;
-                if (t.penDown) {
-                  // Store as 3D line for perspective rendering
-                  var l3d = { x1: t.x, y1: t.y, z1: turtleZ, x2: nx3, y2: ny3, z2: nz3, color: t.color, width: t.width };
-                  lines3D.push(l3d);
-                  upd('lines3D', lines3D.slice());
-                  // Also project to 2D for compatibility
-                  var p1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var p2 = project3D(nx3 - 250, ny3 - 250, nz3);
-                  allLines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, color: t.color, width: Math.max(0.5, t.width * p2.scale) });
-                }
-                t.x = nx3; t.y = ny3; turtleZ = nz3;
-                upd('turtleZ', turtleZ);
-              } else if (b.type === 'roll') {
-                rollAngle = (rollAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('rollAngle', rollAngle);
-              } else if (b.type === 'moveUp') {
-                var upDist = resolveVal(b.distance || 30, vars);
-                var nzUp = turtleZ + upDist;
-                if (t.penDown) {
-                  var l3dU = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzUp, color: t.color, width: t.width };
-                  lines3D.push(l3dU); upd('lines3D', lines3D.slice());
-                  var pU1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pU2 = project3D(t.x - 250, t.y - 250, nzUp);
-                  allLines.push({ x1: pU1.x, y1: pU1.y, x2: pU2.x, y2: pU2.y, color: t.color, width: Math.max(0.5, t.width * pU2.scale) });
-                }
-                turtleZ = nzUp; upd('turtleZ', turtleZ);
-              } else if (b.type === 'moveDown') {
-                var downDist = resolveVal(b.distance || 30, vars);
-                var nzDown = turtleZ - downDist;
-                if (t.penDown) {
-                  var l3dD = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzDown, color: t.color, width: t.width };
-                  lines3D.push(l3dD); upd('lines3D', lines3D.slice());
-                  var pD1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pD2 = project3D(t.x - 250, t.y - 250, nzDown);
-                  allLines.push({ x1: pD1.x, y1: pD1.y, x2: pD2.x, y2: pD2.y, color: t.color, width: Math.max(0.5, t.width * pD2.scale) });
-                }
-                turtleZ = nzDown; upd('turtleZ', turtleZ);
-              } else if (b.type === 'spawnTurtle') {
-                // Spawn a named turtle at current position
-                var tName = b.turtleName || 'bob';
-                var newT = { name: tName, x: t.x, y: t.y, angle: t.angle, penDown: true, color: '#22c55e', width: 2, skin: '🐢' };
-                var existing = extraTurtles.filter(function(et) { return et.name !== tName; });
-                existing.push(newT);
-                upd('extraTurtles', existing);
-              } else if (b.type === 'switchTurtle') {
-                // Switch to a named turtle
-                var sName = b.turtleName || 'bob';
-                var found = extraTurtles.find(function(et) { return et.name === sName; });
-                if (found) {
-                  // Save current main turtle state, load the named one
-                  var mainTurtle = Object.assign({}, t);
-                  t.x = found.x; t.y = found.y; t.angle = found.angle;
-                  t.penDown = found.penDown; t.color = found.color; t.width = found.width;
-                }
-              } else if (b.type === 'playNote') {
-                // Play Note — use Web Audio API for sound
-                try {
-                  var audioCtx = window.__codingAudioCtx || (window.__codingAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
-                  var osc = audioCtx.createOscillator();
-                  var gain = audioCtx.createGain();
-                  osc.type = 'sine';
-                  osc.frequency.value = resolveVal(b.frequency != null ? b.frequency : 440, vars);
-                  gain.gain.value = 0.15;
-                  osc.connect(gain);
-                  gain.connect(audioCtx.destination);
-                  var noteDur = (b.duration || 200) / 1000;
-                  osc.start();
-                  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + noteDur);
-                  osc.stop(audioCtx.currentTime + noteDur + 0.05);
-                } catch(e) { /* Audio not available */ }
-              }
-              updMulti({ turtle: Object.assign({}, t), lines: allLines.slice(), stepIdx: idx, running: true });
-              recordFrame(t, allLines, idx);
+              if (fr.add && fr.add.length) replayLines = replayLines.concat(fr.add);
+              if (fr.add3D && fr.add3D.length) replay3D = replay3D.concat(fr.add3D);
+              fireAudio(fr.audio);
+              updMulti({ turtle: fr.turtle, lines: replayLines.slice(), stepIdx: idx, running: true, _vars: fr.vars, pitchAngle: fr.pitchAngle, yawAngle: fr.yawAngle, rollAngle: fr.rollAngle, turtleZ: fr.turtleZ, lines3D: replay3D.slice(), extraTurtles: fr.extraTurtles });
+              recordFrame(fr.turtle, replayLines, idx);
               idx++;
-              setTimeout(step, spd || 200);
+              _codeStepTimer = setTimeout(step, spd || 200);
             }
             step();
           }
 
           // ── Run handler ──
+          function buildCodeErrors(parseErrs, diag) {
+            var msgs = [];
+            (parseErrs || []).forEach(function (e) { msgs.push('Line ' + e.line + ': could not understand "' + e.text + '".'); });
+            if (diag) {
+              (diag.unknownCalls || []).forEach(function (n) { msgs.push('You called ' + n + '() but never defined a function named ' + n + '.'); });
+              if (diag.cappedWhile) msgs.push('A while loop hit the 1000-repeat safety limit (its condition stayed true).');
+              if (diag.cappedSteps) msgs.push('The program got very long and was stopped early.');
+            }
+            return msgs;
+          }
+          // ── Canvas text alternatives (C2, WCAG 1.1.1) ──
+          function describeTurtleCanvas() {
+            if (!drawnLines || drawnLines.length === 0) return "Turtle drawing canvas, currently empty. Build a program and press Run to draw.";
+            var ep = CodingInterp.getEndpoints(drawnLines);
+            return "Turtle drawing: " + drawnLines.length + " line segment" + (drawnLines.length === 1 ? "" : "s") + (ep.closed ? ", forming a closed shape" : "") + ". Turtle is at x " + Math.round(turtleState.x) + ", y " + Math.round(turtleState.y) + ".";
+          }
+          function describeRobotGrid() {
+            if (!robotGrid || !robotGrid.length) return "Robot grid. Select a challenge to begin.";
+            var DIRS = ["up", "right", "down", "left"];
+            var size = robotGrid.length, goal = null, gems = 0, walls = 0;
+            for (var ry = 0; ry < size; ry++) { var row = robotGrid[ry] || []; for (var rx = 0; rx < row.length; rx++) { var c = row[rx]; if (!c) continue; if (c.goal) goal = { x: rx, y: ry }; if (c.gem) gems++; if (c.wall) walls++; } }
+            return "Robot grid, " + size + " by " + size + ". Robot at row " + (robotPos.y + 1) + ", column " + (robotPos.x + 1) + ", facing " + (DIRS[robotPos.dir] || "up") + "." + (goal ? " Goal at row " + (goal.y + 1) + ", column " + (goal.x + 1) + "." : "") + (gems ? " " + gems + " gem" + (gems === 1 ? "" : "s") + " remaining." : "") + (walls ? " " + walls + " wall" + (walls === 1 ? "" : "s") + "." : "");
+          }
           function handleRun() {
             sfxCodeRun();
-            var blks = codeMode === 'text' ? textToBlocks(textCode) : blocks;
+            var _myToken = ++_codeRunToken;
+            var _parseErrs = [];
+            var blks;
+            if (codeMode === 'text') { var _pr = CodingInterp.parseWithErrors(textCode); blks = _pr.blocks; _parseErrs = _pr.errors; }
+            else { blks = blocks; }
             var startTurtle, startLines;
             if (cumulativeMode) {
               // In cumulative mode, start from current turtle state and keep existing lines
@@ -1158,7 +1198,10 @@
               startTurtle = { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
               startLines = [];
             }
-            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: 0, lines3D: [], rollAngle: 0 });
+            var _sim = CodingInterp.simulate(blks, startTurtle, { startLines: startLines, startLines3D: lines3D, extraTurtles: extraTurtles, pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ, project3D: project3D });
+            var _codeErrs = buildCodeErrors(_parseErrs, _sim.diagnostics);
+            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: 0, lines3D: [], rollAngle: 0, _vars: {}, _codeErrors: _codeErrs.length ? _codeErrs : null });
+            if (_codeErrs.length && typeof announceToSR === 'function') { try { announceToSR(_codeErrs.length + ' issue' + (_codeErrs.length > 1 ? 's' : '') + ' in your code. ' + _codeErrs.slice(0, 3).join(' ')); } catch (e) {} }
             setTimeout(function () {
               executeBlocks(blks, startTurtle, startLines, function (finalTurtle, finalLines) {
                 var newHistory = runHistory.concat([{
@@ -1195,7 +1238,7 @@
                 }
               }, speed, function (si) {
                 upd('stepIdx', si);
-              });
+              }, _myToken, _sim);
             }, 50);
           }
 
@@ -1205,6 +1248,16 @@
 
           function handleReset() {
             updMulti({ blocks: [], turtle: { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 }, lines: [], running: false, stepIdx: -1, textCode: '', challengeIdx: -1, history: [], cumulativeMode: false, showTurtle: true });
+          }
+
+          // Halt a running turtle OR robot program: invalidate the run token,
+          // clear the pending animation timer, flip the running flags off.
+          function stopRun() {
+            _codeRunToken++;
+            if (_codeStepTimer) { clearTimeout(_codeStepTimer); _codeStepTimer = null; }
+            if (_codeRobotTimer) { clearTimeout(_codeRobotTimer); _codeRobotTimer = null; }
+            updMulti({ running: false, robotRunning: false, stepIdx: -1 });
+            if (typeof announceToSR === 'function') { try { announceToSR('Program stopped'); } catch (e) {} }
           }
 
           // ── Undo/Redo helpers ──
@@ -1233,7 +1286,7 @@
 
           // ── AI Assistant Functions ──
           function handleExplainCode() {
-            if (!callGemini || blocks.length === 0) {
+            if (!callGemini || !aiHintsEnabled || blocks.length === 0) {
               if (addToast) addToast('Add some blocks first!', 'info');
               return;
             }
@@ -1242,7 +1295,7 @@
             var code = blocksToText(blocks);
             var prompt = 'You are a friendly coding tutor for kids. The student wrote this turtle graphics program:\n\n' + code + '\n\nExplain in 2-3 simple sentences what this program does and what shape it will draw. Use encouraging language and emojis.';
             callGemini(prompt).then(function(result) {
-              upd('aiExplanation', result || 'I could not analyze this code right now.');
+              upd('aiExplanation', result ? (result + '\n\n\u2014 AI tip; it can be wrong, so check it against your code.') : 'I could not analyze this code right now.');
               upd('aiLoading', false);
             }).catch(function() {
               upd('aiExplanation', 'Oops! AI is not available right now. Try again later.');
@@ -1251,7 +1304,7 @@
           }
 
           function handleSuggestNext() {
-            if (!callGemini) {
+            if (!callGemini || !aiHintsEnabled) {
               if (addToast) addToast('AI not available', 'info');
               return;
             }
@@ -1260,7 +1313,7 @@
             var code = blocks.length > 0 ? blocksToText(blocks) : '(empty program)';
             var prompt = 'You are a friendly coding tutor. The student has this turtle graphics program so far:\n\n' + code + '\n\nSuggest ONE specific next step they could try to make their drawing more interesting. Be encouraging, use emojis, and keep it to 1-2 sentences. Mention the exact block name they should add.';
             callGemini(prompt).then(function(result) {
-              upd('aiExplanation', '💡 ' + (result || 'Try adding a Repeat block to create a pattern!'));
+              upd('aiExplanation', '💡 ' + (result ? (result + '\n\n\u2014 AI suggestion; double-check it.') : 'Try adding a Repeat block to create a pattern!'));
               upd('aiLoading', false);
             }).catch(function() {
               upd('aiExplanation', '💡 Try adding a Repeat block around your moves to create a pattern!');
@@ -1269,7 +1322,7 @@
           }
 
           function handleDebugHelp() {
-            if (!callGemini || challengeIdx < 0) {
+            if (!callGemini || !aiHintsEnabled || challengeIdx < 0) {
               if (addToast) addToast('Select a challenge first!', 'info');
               return;
             }
@@ -1279,7 +1332,7 @@
             var ch = CHALLENGES[challengeIdx];
             var prompt = 'You are a friendly coding tutor. The student is trying to solve this challenge:\n\nTitle: ' + ch.title + '\nGoal: ' + ch.desc + '\nHint: ' + ch.hint + '\n\nTheir current code:\n' + code + '\n\nGive them a specific, encouraging hint about what might be wrong or what to try next. Do NOT give the full solution. Use emojis and keep it to 2-3 sentences.';
             callGemini(prompt).then(function(result) {
-              upd('aiExplanation', '🐛 ' + (result || ch.hint));
+              upd('aiExplanation', '🐛 ' + (result ? (result + '\n\n\u2014 AI hint; it may be off, so test your idea.') : ch.hint));
               upd('aiLoading', false);
             }).catch(function() {
               upd('aiExplanation', '🐛 Hint: ' + ch.hint);
@@ -1300,7 +1353,7 @@
             var blob = new Blob([svg], { type: 'image/svg+xml' });
             var url = URL.createObjectURL(blob);
             var link = document.createElement('a');
-            link.download = 'coding_playground_' + Date.now() + '.svg';
+            link.download = slugifyName(projectName) + '_' + Date.now() + '.svg';
             link.href = url;
             document.body.appendChild(link);
             link.click();
@@ -1330,10 +1383,10 @@
           // ── Import/Export JSON ──
           function handleExportJSON() {
             if (blocks.length === 0) { if (addToast) addToast('Add some blocks first!', 'info'); return; }
-            var data = JSON.stringify({ blocks: blocks, version: 2, skin: turtleSkin }, null, 2);
+            var data = JSON.stringify({ projectName: projectName, title: projectName, blocks: blocks, version: 2, skin: turtleSkin }, null, 2);
             var blob = new Blob([data], { type: 'application/json' });
             var link = document.createElement('a');
-            link.download = 'coding_program_' + Date.now() + '.json';
+            link.download = slugifyName(projectName) + '_' + Date.now() + '.json';
             link.href = URL.createObjectURL(blob);
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
@@ -1443,7 +1496,7 @@
             if (!canvasRef || !canvasRef.current) return;
             var dataURL = canvasRef.current.toDataURL('image/png');
             var link = document.createElement('a');
-            link.download = 'coding_playground_' + Date.now() + '.png';
+            link.download = slugifyName(projectName) + '_' + Date.now() + '.png';
             link.href = dataURL;
             document.body.appendChild(link);
             link.click();
@@ -1452,6 +1505,14 @@
           }
 
           // ── Load template ──
+          function seedChallenge(ch, ci) {
+            if (blocks.length > 0 && typeof confirm === 'function' && !confirm('Replace your current program with this example?')) return;
+            pushUndo();
+            var sb = JSON.parse(JSON.stringify(ch.seedBlocks || []));
+            updMulti({ blocks: sb, challengeIdx: ci });
+            if (codeMode === 'text') upd('textCode', blocksToText(sb));
+            if (addToast) addToast((ch.kind === 'worked' ? 'Study this example, then click Run: ' : 'Finish this one: ') + ch.title, 'info');
+          }
           function loadTemplate(tmpl) {
             if (blocks.length > 0 && !confirm('Replace current program with template?')) return;
             pushUndo();
@@ -1590,11 +1651,11 @@
 
           // ── Tutorial steps ──
           var TUTORIAL_STEPS = [
-            { target: '.coding-toolbox', title: 'Welcome!', text: 'Add coding blocks from this Toolbox to build your program.' },
-            { target: '.coding-program', title: 'Your Program', text: 'Each block is a command. Set values with the number inputs. Drag blocks to reorder!' },
-            { target: '.coding-run-btn', title: 'Run It!', text: 'Click Run to watch your program execute step by step on the canvas.' },
-            { target: '.coding-challenges', title: 'Challenges', text: 'Try Challenges to learn CS concepts like loops and earn XP! 🏆' },
-            { target: '.coding-mode-toggle', title: 'Code Mode', text: 'Switch to Code mode for JavaScript-like syntax. Everything stays in sync!' }
+            { target: '.coding-toolbox', title: 'Welcome!', text: t('stem.coding.add_coding_blocks_from_this_toolbox_to', 'Add coding blocks from this Toolbox to build your program.') },
+            { target: '.coding-program', title: t('stem.coding.your_program', 'Your Program'), text: t('stem.coding.each_block_is_a_command_set_values_wit', 'Each block is a command. Set values with the number inputs. Drag blocks to reorder!') },
+            { target: '.coding-run-btn', title: t('stem.coding.run_it', 'Run It!'), text: t('stem.coding.click_run_to_watch_your_program_execut', 'Click Run to watch your program execute step by step on the canvas.') },
+            { target: '.coding-challenges', title: t('stem.coding.challenges', 'Challenges'), text: t('stem.coding.try_challenges_to_learn_cs_concepts_li', 'Try Challenges to learn CS concepts like loops and earn XP! 🏆') },
+            { target: '.coding-mode-toggle', title: t('stem.coding.code_mode', 'Code Mode'), text: t('stem.coding.switch_to_code_mode_for_javascript_lik', 'Switch to Code mode for JavaScript-like syntax. Everything stays in sync!') }
           ];
 
 
@@ -1602,10 +1663,10 @@
           if (typeof document !== 'undefined') {
             // Re-point to this render's handlers — the once-attached listener
             // otherwise fires first-render closures (stale undo/redo/run/running).
-            window.__codingKB = { undo: handleUndo, redo: handleRedo, run: handleRun, running: running, stop: function() { updMulti({ running: false, stepIdx: -1 }); } };
+            window.__codingKB = { undo: handleUndo, redo: handleRedo, run: handleRun, running: running || robotRunning, stop: stopRun };
             var _kbHandler = function(e) {
               // Only handle if Coding Playground is active
-              if (!document.querySelector('.coding-run-btn')) return;
+              if (!document.querySelector('.coding-run-btn') && !document.querySelector('.coding-robot-run-btn')) return;
               var kb = window.__codingKB || {};
               if (e.ctrlKey && e.key === 'z') { e.preventDefault(); if (kb.undo) kb.undo(); }
               else if (e.ctrlKey && e.key === 'y') { e.preventDefault(); if (kb.redo) kb.redo(); }
@@ -1672,6 +1733,12 @@
               var tp = project3D(turtleState.x - 250, turtleState.y - 250, turtleZ);
               ctx.save();
               ctx.translate(tp.x, tp.y);
+              // Soft glow halo under the turtle "pen" so it reads as the active drawing point
+              var tGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, 16 * tp.scale);
+              tGlow.addColorStop(0, 'rgba(94,234,212,0.45)');
+              tGlow.addColorStop(1, 'rgba(94,234,212,0)');
+              ctx.fillStyle = tGlow;
+              ctx.beginPath(); ctx.arc(0, 0, 16 * tp.scale, 0, Math.PI * 2); ctx.fill();
               ctx.rotate((turtleState.angle + 90) * Math.PI / 180);
               ctx.font = (18 * tp.scale).toFixed(0) + 'px sans-serif';
               ctx.textAlign = 'center';
@@ -1716,7 +1783,7 @@
                 cdef ? cdef.label : child.type,
                 cdef && cdef.param && child.type !== 'color' ? ' ' + (child[cdef.param] || cdef.defaultVal) + (cdef.unit || '') : ''
               ),
-              React.createElement("button", { "aria-label": "Remove child block", onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
+              React.createElement("button", { "aria-label": t('stem.coding.remove_child_block', "Remove child block"), onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
             );
           }
 
@@ -1724,7 +1791,7 @@
           function renderQuickAdd(parentIdx, isElse) {
             return React.createElement("div", { className: "flex flex-wrap gap-1 mt-1" },
               ['forward', 'backward', 'right', 'left', 'circle', 'color', 'playNote', 'random'].map(function (ct) {
-                return React.createElement("button", { "aria-label": "Add Child Block",
+                return React.createElement("button", { "aria-label": t('stem.coding.add_child_block', "Add Child Block"),
                   key: ct, onClick: function () { addChildBlock(parentIdx, ct, isElse); },
                   className: "px-2 py-0.5 rounded text-[11px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
                 }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : ct === 'playNote' ? '+🎵' : ct === 'random' ? '+🎲' : '+🎨');
@@ -1742,8 +1809,8 @@
               style: { position: 'relative' }
             },
               React.createElement("div", { className: "flex items-center justify-between mb-3" },
-                React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, "📂 Starter Templates"),
-                React.createElement("button", { "aria-label": "Close templates panel",
+                React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, t('stem.coding.starter_templates', "📂 Starter Templates")),
+                React.createElement("button", { "aria-label": t('stem.coding.close_templates_panel', "Close templates panel"),
                   onClick: function () { upd('showTemplates', false); },
                   className: "text-slate-200 hover:text-white text-lg px-2"
                 }, "×")
@@ -1753,7 +1820,7 @@
                 style: { gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }
               },
                 TEMPLATES.map(function (tmpl, ti) {
-                  return React.createElement("button", { "aria-label": "Load Template",
+                  return React.createElement("button", { "aria-label": t('stem.coding.load_template', "Load Template"),
                     key: ti,
                     onClick: function () { loadTemplate(tmpl); },
                     className: "flex flex-col items-center gap-1 p-3 rounded-lg bg-slate-700/80 hover:bg-slate-600 border border-slate-600 hover:border-amber-500/50 transition-all text-left group"
@@ -1774,7 +1841,7 @@
               React.createElement("div", { className: "flex items-start gap-3" },
                 React.createElement("span", { className: "text-3xl" }, "🎓"),
                 React.createElement("div", { className: "flex-1" },
-                  React.createElement("h3", { className: "text-sm font-bold text-white mb-2" }, "Welcome to the Coding Playground!"),
+                  React.createElement("h3", { className: "text-sm font-bold text-white mb-2" }, t('stem.coding.welcome_to_the_coding_playground', "Welcome to the Coding Playground!")),
                   React.createElement("div", { className: "grid gap-2", style: { gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' } },
                     TUTORIAL_STEPS.map(function (step, si) {
                       return React.createElement("div", {
@@ -1790,24 +1857,49 @@
                     })
                   )
                 ),
-                React.createElement("button", { "aria-label": "Got it!",
+                React.createElement("button", { "aria-label": t('stem.coding.got_it', "Got it!"),
                   onClick: function () { upd('tutorialDismissed', true); },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-400 transition-all shrink-0"
-                }, "Got it! ✕")
+                }, t('stem.coding.got_it_2', "Got it! ✕"))
               )
             ),
 
             // ══ COMPLEXITY INQUIRY widget (H7b'') ══
-            (function() {
+            React.createElement("div", {
+              className: "col-span-2 flex flex-wrap items-center gap-1 p-1 rounded-xl bg-slate-900/70 border border-slate-700/70",
+              role: "group",
+              "aria-label": t('stem.coding.workspace_view', 'Workspace view')
+            },
+              [
+                { key: 'build', icon: '\uD83E\uDDE9', label: t('stem.coding.build', 'Build') },
+                { key: 'inquiry', icon: '\uD83D\uDD2C', label: t('stem.coding.inquiry_lab', 'Inquiry Lab') }
+              ].map(function(tab) {
+                var active = workspaceTab === tab.key;
+                return React.createElement("button", {
+                  key: tab.key,
+                  type: "button",
+                  "aria-pressed": active,
+                  "aria-controls": tab.key === 'inquiry' ? 'coding-inquiry-panel' : undefined,
+                  onClick: function() { upd('workspaceTab', tab.key); },
+                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                    (active ? "bg-white text-indigo-700 shadow-sm" : "bg-white/10 text-white/75 hover:bg-white/20 hover:text-white")
+                },
+                  React.createElement("span", { "aria-hidden": "true" }, tab.icon),
+                  React.createElement("span", null, tab.label)
+                );
+              })
+            ),
+
+            workspaceTab === 'inquiry' && (function() {
               var iq = d.complexityIQ || { n: 100, loopDepth: 1, dataStruct: 'array', recursion: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
               function setIQ(patch) { upd('complexityIQ', Object.assign({}, iq, patch)); }
               function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
               var dsLookup = ({
-                array: { name: 'Array index', big: 'O(1)', factor: 1 },
-                arrayScan: { name: 'Array scan', big: 'O(n)', factor: iq.n },
-                hash: { name: 'Hash map', big: 'O(1)', factor: 1 },
-                bst: { name: 'Balanced BST', big: 'O(log n)', factor: Math.log2(Math.max(1, iq.n)) },
-                linkedList: { name: 'Linked list scan', big: 'O(n)', factor: iq.n }
+                array: { name: t('stem.coding.array_index', 'Array index'), big: 'O(1)', factor: 1 },
+                arrayScan: { name: t('stem.coding.array_scan', 'Array scan'), big: 'O(n)', factor: iq.n },
+                hash: { name: t('stem.coding.hash_map', 'Hash map'), big: 'O(1)', factor: 1 },
+                bst: { name: t('stem.coding.balanced_bst', 'Balanced BST'), big: 'O(log n)', factor: Math.log2(Math.max(1, iq.n)) },
+                linkedList: { name: t('stem.coding.linked_list_scan', 'Linked list scan'), big: 'O(n)', factor: iq.n }
               });
               var ds = dsLookup[iq.dataStruct] || dsLookup.array;
               var loopOps = Math.pow(iq.n, iq.loopDepth);
@@ -1816,15 +1908,15 @@
               var msAt1GHz = totalOps / 1e9 * 1000;
               var state = totalOps < 1e3 ? 'instant' : totalOps < 1e6 ? 'fast' : totalOps < 1e9 ? 'noticeable' : totalOps < 1e12 ? 'slow' : 'intractable';
               var sm = ({
-                instant: { label: 'Instant', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Sub-millisecond. Imperceptible to user. Safe for hot inner loops.' },
-                fast: { label: 'Fast', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: '< 1 ms. Well within frame-rate budget; safe for UI event handlers.' },
-                noticeable: { label: 'Noticeable', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: '1ms–1s. Will visibly lag UI; needs progress bar or move off main thread.' },
-                slow: { label: 'Slow', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Seconds to minutes. Batch-job territory; user gets coffee.' },
-                intractable: { label: 'Intractable', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Practically infinite at this scale. Need a better algorithm or smaller input.' }
+                instant: { label: t('stem.coding.instant', 'Instant'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.coding.sub_millisecond_imperceptible_to_user_', 'Sub-millisecond. Imperceptible to user. Safe for hot inner loops.') },
+                fast: { label: t('stem.coding.fast', 'Fast'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.coding.1_ms_well_within_frame_rate_budget_saf', '< 1 ms. Well within frame-rate budget; safe for UI event handlers.') },
+                noticeable: { label: t('stem.coding.noticeable', 'Noticeable'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.coding.1ms_1s_will_visibly_lag_ui_needs_progr', '1ms–1s. Will visibly lag UI; needs progress bar or move off main thread.') },
+                slow: { label: t('stem.coding.slow', 'Slow'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.coding.seconds_to_minutes_batch_job_territory', 'Seconds to minutes. Batch-job territory; user gets coffee.') },
+                intractable: { label: t('stem.coding.intractable', 'Intractable'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.coding.practically_infinite_at_this_scale_nee', 'Practically infinite at this scale. Need a better algorithm or smaller input.') }
               })[state];
-              return React.createElement("div", { className: "col-span-2 rounded-xl p-3", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-                React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Big-O Inquiry — Predict the Slowdown'),
-                React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, 'Set input size, loop depth, data structure, and recursion shape. Predict how fast (or slow) your code will run before testing it. No score, no reveal.'),
+              return React.createElement("div", { id: "coding-inquiry-panel", role: "region", "aria-label": t('stem.coding.inquiry_lab', 'Inquiry Lab'), className: "col-span-2 rounded-xl p-3", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, t('stem.coding.big_o_inquiry_predict_the_slowdown', '🔬 Big-O Inquiry — Predict the Slowdown')),
+                React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, t('stem.coding.set_input_size_loop_depth_data_structu', 'Set input size, loop depth, data structure, and recursion shape. Predict how fast (or slow) your code will run before testing it. No score, no reveal.')),
                 React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · ~' + totalOps.toExponential(1) + ' ops · ~' + (msAt1GHz < 1 ? (msAt1GHz * 1000).toFixed(2) + ' µs' : msAt1GHz < 1000 ? msAt1GHz.toFixed(1) + ' ms' : (msAt1GHz / 1000).toFixed(1) + ' s')),
                 React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
                 React.createElement("svg", { width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
@@ -1851,26 +1943,26 @@
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                   React.createElement("label", { className: "text-[10px]" },
-                    React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Input size n'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.n)),
+                    React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, t('stem.coding.input_size_n', 'Input size n')), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.n)),
                     React.createElement("input", { type: 'range', min: 1, max: 100, step: 1, value: iq.n, onChange: function(e) { setKey('n', parseInt(e.target.value, 10)); }, className: "w-full" })
                   ),
                   React.createElement("label", { className: "text-[10px]" },
-                    React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Nested loop depth'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.loopDepth)),
+                    React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, t('stem.coding.nested_loop_depth', 'Nested loop depth')), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.loopDepth)),
                     React.createElement("input", { type: 'range', min: 0, max: 4, step: 1, value: iq.loopDepth, onChange: function(e) { setKey('loopDepth', parseInt(e.target.value, 10)); }, className: "w-full" })
                   ),
                   React.createElement("label", { className: "text-[10px]" },
-                    React.createElement("div", { className: "mb-0.5" }, 'Data structure access'),
+                    React.createElement("div", { className: "mb-0.5" }, t('stem.coding.data_structure_access', 'Data structure access')),
                     React.createElement("select", { value: iq.dataStruct, onChange: function(e) { setKey('dataStruct', e.target.value); }, className: "w-full p-1 rounded text-[10px]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5' } },
                       Object.keys(dsLookup).map(function(k) { return React.createElement("option", { key: k, value: k }, dsLookup[k].name + ' ' + dsLookup[k].big); })
                     )
                   ),
                   React.createElement("label", { className: "text-[10px]" },
-                    React.createElement("div", { className: "mb-0.5" }, 'Recursion shape'),
+                    React.createElement("div", { className: "mb-0.5" }, t('stem.coding.recursion_shape', 'Recursion shape')),
                     React.createElement("select", { value: iq.recursion, onChange: function(e) { setKey('recursion', parseInt(e.target.value, 10)); }, className: "w-full p-1 rounded text-[10px]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5' } },
                       React.createElement("option", { value: 0 }, 'none'),
-                      React.createElement("option", { value: 1 }, 'linear (×n)'),
-                      React.createElement("option", { value: 2 }, 'divide & conquer (×n log n)'),
-                      React.createElement("option", { value: 3 }, 'exponential (×2ⁿ)')
+                      React.createElement("option", { value: 1 }, t('stem.coding.linear_n', 'linear (×n)')),
+                      React.createElement("option", { value: 2 }, t('stem.coding.divide_conquer_n_log_n', 'divide & conquer (×n log n)')),
+                      React.createElement("option", { value: 3 }, t('stem.coding.exponential_2', 'exponential (×2ⁿ)'))
                     )
                   )
                 ),
@@ -1878,30 +1970,30 @@
                   React.createElement("button", { onClick: function() {
                     var t = new Date().toISOString().slice(11, 19);
                     setIQ({ log: iq.log.concat([{ t: t, n: iq.n, ld: iq.loopDepth, ds: iq.dataStruct, rec: iq.recursion, ops: totalOps.toExponential(1), state: sm.label }]) });
-                  }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this complexity'),
-                  React.createElement("button", { onClick: function() { setIQ({ n: 100, loopDepth: 1, dataStruct: 'array', recursion: 0 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                  }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.coding.log_this_complexity', '📋 Log this complexity')),
+                  React.createElement("button", { onClick: function() { setIQ({ n: 100, loopDepth: 1, dataStruct: 'array', recursion: 0 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.coding.reset', 'Reset'))
                 ),
                 iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                   iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · n' + e.n + ' ld' + e.ld + ' ' + e.ds + ' rec' + e.rec + ' → ' + e.ops + ' ops'); })
                 ),
-                React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (which change buys the biggest speedup — smaller n, fewer loops, or different data structure?)'),
-                React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., swapping array scan for hash lookup drops outer-loop cost by a factor of n...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+                React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, t('stem.coding.your_hypothesis_which_change_buys_the_', 'Your hypothesis (which change buys the biggest speedup — smaller n, fewer loops, or different data structure?)')),
+                React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.coding.e_g_swapping_array_scan_for_hash_looku', 'e.g., swapping array scan for hash lookup drops outer-loop cost by a factor of n...'), className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.coding.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
                 iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
-                  React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
+                  React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, t('stem.coding.open_questions_no_answer_key', 'Open questions (no answer key)')),
                   React.createElement("ul", { className: "pl-4 m-0" },
-                    React.createElement("li", null, 'Why does loop depth multiply rather than add to operation count?'),
-                    React.createElement("li", null, 'When does it matter that hash lookup is O(1) — at n=10? n=1,000? n=1,000,000?'),
-                    React.createElement("li", null, 'Exponential recursion explodes after roughly what n? Where exactly does the wall hit?'),
-                    React.createElement("li", null, 'For very small n, sometimes O(n²) BEATS O(n log n). Why?')
+                    React.createElement("li", null, t('stem.coding.why_does_loop_depth_multiply_rather_th', 'Why does loop depth multiply rather than add to operation count?')),
+                    React.createElement("li", null, t('stem.coding.when_does_it_matter_that_hash_lookup_i', 'When does it matter that hash lookup is O(1) — at n=10? n=1,000? n=1,000,000?')),
+                    React.createElement("li", null, t('stem.coding.exponential_recursion_explodes_after_r', 'Exponential recursion explodes after roughly what n? Where exactly does the wall hit?')),
+                    React.createElement("li", null, t('stem.coding.for_very_small_n_sometimes_o_n_beats_o', 'For very small n, sometimes O(n²) BEATS O(n log n). Why?'))
                   )
                 ),
                 React.createElement("label", { className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
                   React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                  React.createElement("span", null, 'I can explain why this combination of n, depth, data structure, and recursion lands here.')
+                  React.createElement("span", null, t('stem.coding.i_can_explain_why_this_combination_of_', 'I can explain why this combination of n, depth, data structure, and recursion lands here.'))
                 ),
-                iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget — no score, no reveal, no answer dump. Ops counts are illustrative pedagogical estimates assuming ~1 GHz effective throughput; real performance depends on cache, branch prediction, JIT, and constants in front of the Big-O term.')
+                iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.coding.explain_in_your_own_words', 'Explain in your own words...'), className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, t('stem.coding.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Ops counts are illustrative pedagogical estimates assuming ~1 GHz effective throughput; real performance depends on cache, branch prediction, JIT, and constants in front of the Big-O term.'))
               );
             })(),
 
@@ -1909,10 +2001,10 @@
             React.createElement("div", {
               className: "col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
             },
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-white/20 rounded-lg transition-all", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 20, className: "text-white" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-white/20 rounded-lg transition-all", 'aria-label': t('stem.coding.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 20, className: "text-white" })),
               React.createElement("span", { className: "text-2xl" }, playgroundMode === 'robot' ? "\uD83E\uDD16" : "\uD83D\uDDA5\uFE0F"),
               React.createElement("div", { className: "flex-1" },
-                React.createElement("h2", { className: "text-white font-bold text-lg" }, "Coding Playground"),
+                React.createElement("h2", { className: "text-white font-bold text-lg" }, t('stem.coding.coding_playground', "Coding Playground")),
                 React.createElement("p", { className: "text-indigo-200 text-xs" },
                   playgroundMode === 'robot' ? (robotChallengeIdx >= 0 ? '\uD83C\uDFAF ' + ROBOT_CHALLENGES[robotChallengeIdx].title + ' — ' + ROBOT_CHALLENGES[robotChallengeIdx].desc : 'Program a robot to navigate mazes, collect gems, and solve puzzles!') :
                   (challengeIdx >= 0 ? '\uD83C\uDFAF ' + CHALLENGES[challengeIdx].title + ' — ' + CHALLENGES[challengeIdx].desc :
@@ -1921,7 +2013,7 @@
               ),
               // Playground Mode Tabs (Turtle / Robot)
               React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20 mr-2" },
-                [{ key: 'turtle', icon: '\uD83D\uDC22', label: 'Turtle' }, { key: 'robot', icon: '\uD83E\uDD16', label: 'Robot' }].map(function(tab) {
+                [{ key: 'turtle', icon: '\uD83D\uDC22', label: t('stem.coding.turtle_2', 'Turtle') }, { key: 'robot', icon: '\uD83E\uDD16', label: t('stem.coding.robot', 'Robot') }].map(function(tab) {
                   return React.createElement("button", { "aria-label": "Switch to " + tab.label + " playground mode",
                     key: tab.key,
                     onClick: function() { upd('playgroundMode', tab.key); },
@@ -1931,7 +2023,7 @@
                 })
               ),
               // Mode toggle
-              React.createElement("button", { "aria-label": "Toggle Mode",
+              React.createElement("button", { "aria-label": t('stem.coding.toggle_mode', "Toggle Mode"),
                 onClick: toggleMode,
                 className: "coding-mode-toggle flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
                   (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-700 text-white hover:bg-amber-600')
@@ -1941,27 +2033,27 @@
               ),
               // Speed
               React.createElement("select", {
-                'aria-label': 'Execution speed',
+                'aria-label': t('stem.coding.execution_speed', 'Execution speed'),
                 value: speed,
                 onChange: function (e) { upd('speed', parseInt(e.target.value)); },
                 className: "px-2 py-1 rounded-lg bg-indigo-900/50 text-indigo-200 text-xs border border-indigo-400/30"
               },
-                React.createElement("option", { value: 50 }, "⚡ Fast"),
-                React.createElement("option", { value: 200 }, "🐢 Normal"),
-                React.createElement("option", { value: 500 }, "🐌 Slow")
+                React.createElement("option", { value: 50 }, t('stem.coding.fast_2', "⚡ Fast")),
+                React.createElement("option", { value: 200 }, t('stem.coding.normal', "🐢 Normal")),
+                React.createElement("option", { value: 500 }, t('stem.coding.slow_2', "🐌 Slow"))
               ),
               // Undo / Redo
               React.createElement("button", {
                 onClick: handleUndo, disabled: undoStack.length === 0,
-                title: 'Undo (Ctrl+Z)',
-                'aria-label': 'Undo',
+                title: t('stem.coding.undo_ctrl_z', 'Undo (Ctrl+Z)'),
+                'aria-label': t('stem.coding.undo', 'Undo'),
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (undoStack.length > 0 ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-white/5 text-white/30 cursor-not-allowed')
               }, "↩"),
               React.createElement("button", {
                 onClick: handleRedo, disabled: redoStack.length === 0,
-                title: 'Redo (Ctrl+Y)',
-                'aria-label': 'Redo',
+                title: t('stem.coding.redo_ctrl_y', 'Redo (Ctrl+Y)'),
+                'aria-label': t('stem.coding.redo', 'Redo'),
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (redoStack.length > 0 ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-white/5 text-white/30 cursor-not-allowed')
               }, "↪"),
@@ -1969,51 +2061,51 @@
               React.createElement("button", { "aria-label": "PNG",
                 onClick: handleExportPNG,
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
-              }, "📥 PNG"),
+              }, t('stem.coding.png', "📥 PNG")),
               // Templates
-              React.createElement("button", { "aria-label": "Templates",
+              React.createElement("button", { "aria-label": t('stem.coding.templates', "Templates"),
                 onClick: function () { upd('showTemplates', !showTemplates); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showTemplates ? 'bg-amber-700 text-white' : 'bg-white/15 text-white hover:bg-white/25')
-              }, "📂 Templates"),
+              }, t('stem.coding.templates_2', "📂 Templates")),
 
 
-              // AI Assistant buttons
-              callGemini && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
+              // AI Assistant buttons (default-OFF; gated on the host teacher AI toggle)
+              callGemini && aiHintsEnabled && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
                 React.createElement("button", { onClick: handleExplainCode,
                   disabled: aiLoading || blocks.length === 0,
-                  title: "AI explains what your code does",
+                  title: t('stem.coding.ai_explains_what_your_code_does', "AI explains what your code does"),
                   className: "px-2.5 py-1.5 text-[11px] font-bold transition-all " +
                     (aiLoading ? "bg-white/5 text-white/30 cursor-wait" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, aiLoading ? "⏳" : "🤖 Explain"),
-                React.createElement("button", { "aria-label": "Suggest",
+                React.createElement("button", { "aria-label": t('stem.coding.suggest', "Suggest"),
                   onClick: handleSuggestNext,
                   disabled: aiLoading,
-                  title: "AI suggests what to try next",
+                  title: t('stem.coding.ai_suggests_what_to_try_next', "AI suggests what to try next"),
                   className: "px-2.5 py-1.5 text-[11px] font-bold transition-all border-l border-white/20 " +
                     (aiLoading ? "bg-white/5 text-white/30" : "bg-white/10 text-white/80 hover:bg-white/20")
-                }, "💡 Suggest"),
-                React.createElement("button", { "aria-label": "Debug",
+                }, t('stem.coding.suggest_2', "💡 Suggest")),
+                React.createElement("button", { "aria-label": t('stem.coding.debug', "Debug"),
                   onClick: handleDebugHelp,
                   disabled: aiLoading || challengeIdx < 0,
-                  title: "AI helps debug your challenge attempt",
+                  title: t('stem.coding.ai_helps_debug_your_challenge_attempt', "AI helps debug your challenge attempt"),
                   className: "px-2.5 py-1.5 text-[11px] font-bold transition-all border-l border-white/20 " +
                     (aiLoading || challengeIdx < 0 ? "bg-white/5 text-white/30" : "bg-white/10 text-white/80 hover:bg-white/20")
-                }, "🐛 Debug")
+                }, t('stem.coding.debug_2', "🐛 Debug"))
               ),
               // SVG Export + Share
               React.createElement("button", { "aria-label": "SVG",
                 onClick: handleExportSVG,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
-              }, "📐 SVG"),
-              React.createElement("button", { "aria-label": "Share",
+              }, t('stem.coding.svg', "📐 SVG")),
+              React.createElement("button", { "aria-label": t('stem.coding.share', "Share"),
                 onClick: handleShareLink,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
-              }, "🔗 Share"),
+              }, t('stem.coding.share_2', "🔗 Share")),
 
 
               // 3D Mode toggle
-              React.createElement("button", { "aria-label": "Toggle 3D rendering mode",
+              React.createElement("button", { "aria-label": t('stem.coding.toggle_3d_rendering_mode', "Toggle 3D rendering mode"),
                 onClick: function() { upd('show3D', !show3D); if (!show3D) { upd('pitchAngle', 0); upd('yawAngle', 0); } },
                 title: show3D ? 'Switch to 2D mode' : 'Switch to 3D isometric mode',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
@@ -2023,8 +2115,8 @@
               React.createElement("select", {
                 value: turtleSkin,
                 onChange: function(e) { upd('turtleSkin', e.target.value); },
-                title: 'Turtle Skin',
-                'aria-label': 'Turtle skin',
+                title: t('stem.coding.turtle_skin', 'Turtle Skin'),
+                'aria-label': t('stem.coding.turtle_skin_2', 'Turtle skin'),
                 className: "px-1.5 py-1 rounded-lg bg-indigo-900/50 text-white text-xs border border-indigo-400/30 cursor-pointer"
               },
                 TURTLE_SKINS.map(function(sk) {
@@ -2032,54 +2124,54 @@
                 })
               ),
               // Import/Export
-              React.createElement("button", { "aria-label": "Save",
+              React.createElement("button", { "aria-label": t('stem.coding.save', "Save"),
                 onClick: handleExportJSON,
-                title: 'Export program as JSON',
+                title: t('stem.coding.export_program_as_json', 'Export program as JSON'),
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
-              }, "💾 Save"),
-              React.createElement("button", { "aria-label": "Load",
+              }, t('stem.coding.save_2', "💾 Save")),
+              React.createElement("button", { "aria-label": t('stem.coding.load', "Load"),
                 onClick: handleImportJSON,
-                title: 'Import program from JSON',
+                title: t('stem.coding.import_program_from_json', 'Import program from JSON'),
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
-              }, "📂 Load"),
+              }, t('stem.coding.load_2', "📂 Load")),
               // Coordinate Picker
-              React.createElement("button", { "aria-label": "Pick",
+              React.createElement("button", { "aria-label": t('stem.coding.pick', "Pick"),
                 onClick: function() { upd('showCoordPicker', !showCoordPicker); },
                 title: showCoordPicker ? 'Cancel coordinate picker' : 'Click canvas to add goto(x,y)',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showCoordPicker ? "bg-amber-700 text-white animate-pulse" : "bg-white/15 text-white hover:bg-white/25")
-              }, "📌 Pick"),
+              }, t('stem.coding.pick_2', "📌 Pick")),
               // Background Music toggle
-              React.createElement("button", { "aria-label": "Toggle Bg Music",
+              React.createElement("button", { "aria-label": t('stem.coding.toggle_bg_music', "Toggle Bg Music"),
                 onClick: toggleBgMusic,
                 title: bgMusicPlaying ? 'Stop background music' : 'Play background music loop',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (bgMusicPlaying ? "bg-green-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, bgMusicPlaying ? "🔊 Music" : "🔇 Music"),
               // Canvas Layer toggle
-              React.createElement("button", { "aria-label": "Toggle drawing layer (foreground or background)",
+              React.createElement("button", { "aria-label": t('stem.coding.toggle_drawing_layer_foreground_or_bac', "Toggle drawing layer (foreground or background)"),
                 onClick: function() { upd('canvasLayer', canvasLayer === 'foreground' ? 'background' : 'foreground'); },
                 title: 'Drawing layer: ' + canvasLayer,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (canvasLayer === 'background' ? "bg-purple-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, canvasLayer === 'background' ? "🎨 BG" : "🎨 FG"),
               // Canvas controls
-              React.createElement("button", { "aria-label": "Toggle canvas grid overlay",
+              React.createElement("button", { "aria-label": t('stem.coding.toggle_canvas_grid_overlay', "Toggle canvas grid overlay"),
                 onClick: function () { upd('showGrid', !showGrid); },
                 title: showGrid ? 'Hide grid' : 'Show grid',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showGrid ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "⊞"),
-              React.createElement("button", { "aria-label": "Toggle canvas coordinate display",
+              React.createElement("button", { "aria-label": t('stem.coding.toggle_canvas_coordinate_display', "Toggle canvas coordinate display"),
                 onClick: function () { upd('showCoords', !showCoords); },
                 title: showCoords ? 'Hide coordinates' : 'Show coordinates',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showCoords ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "📐"),
               // Tutorial help button
-              tutorialDismissed && React.createElement("button", { "aria-label": "Reopen coding tutorial",
+              tutorialDismissed && React.createElement("button", { "aria-label": t('stem.coding.reopen_coding_tutorial', "Reopen coding tutorial"),
                 onClick: function () { upd('tutorialDismissed', false); },
-                title: 'Show tutorial',
+                title: t('stem.coding.show_tutorial', 'Show tutorial'),
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
               }, "❓")
             ),
@@ -2087,8 +2179,8 @@
             // ── Topic-accent hero band per playground mode ──
             (function() {
               var MODE_META = {
-                turtle: { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)', icon: '\uD83D\uDC22', title: 'Turtle \u2014 LOGO\u2019s drawing robot, born 1967',           hint: 'Move forward, turn, pen down: a few primitives \u2192 fractals, spirals, polygons. Seymour Papert\u2019s Mindstorms (1980) showed kids could BUILD intuition for math by teaching the turtle, not the other way round.' },
-                robot:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83E\uDD16', title: 'Robot \u2014 navigate the grid, collect, solve',           hint: 'Sequencing \u2192 conditionals \u2192 loops \u2192 functions, wrapped in a maze you can SEE. Mirrors Karel the Robot (Stanford 1981) and modern code.org puzzles. Errors become spatial: \u201Cit walked into a wall.\u201D' }
+                turtle: { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)', icon: '\uD83D\uDC22', title: t('stem.coding.turtle_logo_s_drawing_robot_born_1967', 'Turtle \u2014 LOGO\u2019s drawing robot, born 1967'),           hint: t('stem.coding.move_forward_turn_pen_down_a_few_primi', 'Move forward, turn, pen down: a few primitives \u2192 fractals, spirals, polygons. Seymour Papert\u2019s Mindstorms (1980) showed kids could BUILD intuition for math by teaching the turtle, not the other way round.') },
+                robot:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83E\uDD16', title: t('stem.coding.robot_navigate_the_grid_collect_solve', 'Robot \u2014 navigate the grid, collect, solve'),           hint: t('stem.coding.sequencing_conditionals_loops_function', 'Sequencing \u2192 conditionals \u2192 loops \u2192 functions, wrapped in a maze you can SEE. Mirrors Karel the Robot (Stanford 1981) and modern code.org puzzles. Errors become spatial: \u201Cit walked into a wall.\u201D') }
               };
               var meta = MODE_META[playgroundMode] || MODE_META.turtle;
               return React.createElement('div', {
@@ -2117,7 +2209,7 @@
             playgroundMode === 'robot' && React.createElement("div", { className: "col-span-2 grid gap-4", style: { gridTemplateColumns: "200px 1fr 260px" } },
               // Robot Toolbox
               React.createElement("div", { className: "coding-toolbox bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-slate-700/60 shadow-lg", style: { maxHeight: '500px', overflowY: 'auto' } },
-                React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
+                React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" }, t('stem.coding.robot_commands', "\uD83E\uDD16 Robot Commands")),
                 React.createElement("div", { className: "space-y-1" },
                   ROBOT_BLOCKS.map(function(rb) {
                     return React.createElement("button", { "aria-label": "Add robot command: " + rb.label,
@@ -2134,8 +2226,8 @@
                   })
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
-                  React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
-                    "\uD83D\uDCA1 Drag commands into your program. Use If/While blocks for smart navigation!"
+                  React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
+                    t('stem.coding.drag_commands_into_your_program_use_if', "\uD83D\uDCA1 Drag commands into your program. Use If/While blocks for smart navigation!")
                   )
                 )
               ),
@@ -2143,8 +2235,9 @@
               React.createElement("div", { className: "flex flex-col gap-3" },
                 // Grid Canvas
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-emerald-500/30 bg-[#0f172a]", style: { height: '380px' } },
-                  React.createElement("canvas", {
+                  React.createElement("canvas", { tabIndex: 0,
                     "data-robot-canvas": "true",
+                    role: "img", "aria-label": describeRobotGrid(),
                     style: { width: '100%', height: '100%', display: 'block' },
                     ref: function(cvEl) {
                       if (!cvEl) return;
@@ -2225,12 +2318,12 @@
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
                     React.createElement("div", { className: "flex gap-1" },
-                      React.createElement("button", { "aria-label": "Clear",
+                      React.createElement("button", { "aria-label": t('stem.coding.clear', "Clear"),
                         onClick: function() { upd('robotBlocks', []); },
                         disabled: robotBlocks.length === 0,
                         className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
-                      }, "\uD83D\uDDD1 Clear"),
-                      React.createElement("button", { "aria-label": "Reset robot grid",
+                      }, t('stem.coding.clear_2', "\uD83D\uDDD1 Clear")),
+                      React.createElement("button", { "aria-label": t('stem.coding.reset_robot_grid', "Reset robot grid"),
                         onClick: function() {
                           if (robotChallengeIdx >= 0) {
                             var ch = ROBOT_CHALLENGES[robotChallengeIdx];
@@ -2239,92 +2332,32 @@
                           }
                         },
                         className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
-                      }, "\u21BA Reset"),
+                      }, t('stem.coding.reset_2', "\u21BA Reset")),
                       React.createElement("button", { onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
-                        className: "px-3 py-1 rounded text-[11px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-600 cursor-not-allowed")
-                      }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
+                        className: "coding-robot-run-btn px-3 py-1 rounded text-[11px] font-bold transition-all " +
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-300 cursor-not-allowed")
+                      }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run"),
+                      robotRunning && React.createElement("button", { "aria-label": t('stem.coding.stop', "Stop"), onClick: stopRun,
+                        className: "px-3 py-1 rounded text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 transition-all"
+                      }, t('stem.coding.stop_2', "\u25A0 Stop"))
                     )
                   ),
                   robotBlocks.length === 0 ?
-                    React.createElement("p", { className: "text-[11px] text-slate-600 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
+                    React.createElement("p", { className: "text-[11px] text-slate-300 text-center py-3 italic" }, t('stem.coding.click_commands_from_the_toolbox_to_bui', "Click commands from the toolbox to build your program!")) :
                     React.createElement("div", { className: "space-y-1" },
-                      robotBlocks.map(function(b, bi) {
-                        var bdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === b.type; });
-                        return React.createElement("div", { key: bi },
-                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                            React.createElement("span", { className: "flex-1" }, bdef ? bdef.label : b.type),
-                            b.type === 'repeatR' && React.createElement("input", {
-                              type: "number", min: 1, max: 20, value: b.times || 3,
-                              'aria-label': 'Repeat count',
-                              onChange: function(e) { var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { return Object.assign({}, rb2, { times: parseInt(e.target.value) || 3 }); } return rb2; }); upd('robotBlocks', updated); },
-                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[11px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
-                            }),
-                            React.createElement("button", { "aria-label": "Remove robot block",
-                              onClick: function() { removeRobotBlock(bi); },
-                              className: "text-white/60 hover:text-white text-xs px-1"
-                            }, "\u2715")
-                          ),
-                          (b.type === 'repeatR' || b.type === 'ifWall' || b.type === 'ifGem' || b.type === 'whileNotGoal') &&
-                            React.createElement("div", { className: "ml-4 mt-1 space-y-1 border-l-2 pl-2", style: { borderColor: bdef ? bdef.color + '60' : '#475569' } },
-                              (b.children || []).map(function(child, ci) {
-                                var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #475569)' } },
-                                  React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                  React.createElement("button", { "aria-label": "Remove child block", onClick: function() {
-                                    var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.children = (nb.children || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
-                                    upd('robotBlocks', updated);
-                                  }, className: "text-white/60 hover:text-white text-[11px]" }, "\u2715")
-                                );
-                              }),
-                              React.createElement("div", { className: "flex gap-1 flex-wrap" },
-                                ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                  return React.createElement("button", { "aria-label": "Add child command: " + rb.label,
-                                    key: rb.type,
-                                    onClick: function() { addRobotChildBlock(bi, rb.type, false); },
-                                    className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
-                                    style: { backgroundColor: rb.color + '80' }
-                                  }, "+ " + rb.label.split(' ').slice(1).join(' '));
-                                })
-                              ),
-                              (b.type === 'ifWall' || b.type === 'ifGem') && React.createElement("div", null,
-                                React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mt-1" }, "ELSE:"),
-                                (b.elseChildren || []).map(function(child, ci) {
-                                  var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                  return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #475569)' } },
-                                    React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                    React.createElement("button", { "aria-label": "Remove else block", onClick: function() {
-                                      var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.elseChildren = (nb.elseChildren || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
-                                      upd('robotBlocks', updated);
-                                    }, className: "text-white/60 hover:text-white text-[11px]" }, "\u2715")
-                                  );
-                                }),
-                                React.createElement("div", { className: "flex gap-1 flex-wrap mt-1" },
-                                  ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                    return React.createElement("button", { "aria-label": "Add else block: " + rb.label,
-                                      key: 'e' + rb.type,
-                                      onClick: function() { addRobotChildBlock(bi, rb.type, true); },
-                                      className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
-                                      style: { backgroundColor: rb.color + '60' }
-                                    }, "+ " + rb.label.split(' ').slice(1).join(' '));
-                                  })
-                                )
-                              )
-                            )
-                        );
-                      })
+                      robotBlocks.map(function (b, bi) { return renderRobotNode(b, [bi], 0); })
                     )
                 )
               ),
               // Right sidebar — Robot Challenges
               React.createElement("div", { className: "bg-slate-800/60 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '600px', overflowY: 'auto' } },
-                React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Robot Challenges"),
+                React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" }, t('stem.coding.robot_challenges', "\uD83C\uDFAF Robot Challenges")),
                 React.createElement("div", { className: "space-y-1.5" },
                   ROBOT_CHALLENGES.map(function(ch, ci) {
                     var done = robotCompleted.indexOf(ch.id) >= 0;
                     var active = robotChallengeIdx === ci;
-                    return React.createElement("button", { "aria-label": "Load Robot Challenge",
+                    return React.createElement("button", { "aria-label": t('stem.coding.load_robot_challenge', "Load Robot Challenge"),
                       key: ch.id,
                       onClick: function() { loadRobotChallenge(ci); },
                       className: "w-full text-left p-2.5 rounded-lg border transition-all " +
@@ -2349,7 +2382,7 @@
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
                   React.createElement("div", { className: "flex items-center justify-between text-[11px]" },
-                    React.createElement("span", { className: "text-slate-200 font-bold" }, "Progress"),
+                    React.createElement("span", { className: "text-slate-200 font-bold" }, t('stem.coding.progress', "Progress")),
                     React.createElement("span", { className: "text-emerald-400 font-bold" }, robotCompleted.length + "/" + ROBOT_CHALLENGES.length)
                   ),
                   React.createElement("div", { className: "w-full h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden" },
@@ -2357,8 +2390,8 @@
                   )
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-gradient-to-r from-violet-900/30 to-indigo-900/30 border border-violet-500/20" },
-                  React.createElement("p", { className: "text-[11px] text-violet-300 font-bold" }, "\uD83C\uDF93 CS Standards"),
-                  React.createElement("p", { className: "text-[11px] text-violet-400/70 mt-0.5" }, "CSTA K-12 \u2022 ISTE CT \u2022 Sequencing, Loops, Conditionals, Algorithms")
+                  React.createElement("p", { className: "text-[11px] text-violet-300 font-bold" }, t('stem.coding.cs_standards', "\uD83C\uDF93 CS Standards")),
+                  React.createElement("p", { className: "text-[11px] text-violet-400/70 mt-0.5" }, t('stem.coding.csta_k_12_iste_ct_sequencing_loops_con', "CSTA K-12 \u2022 ISTE CT \u2022 Sequencing, Loops, Conditionals, Algorithms"))
                 )
               )
             ),
@@ -2367,10 +2400,10 @@
             playgroundMode === 'turtle' && React.createElement("div", { className: "coding-toolbox flex flex-col gap-3 max-h-[600px] overflow-y-auto" },
               // Toolbox
               React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
-                React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" }, "🧰 Toolbox"),
+                React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" }, t('stem.coding.toolbox', "🧰 Toolbox")),
                 React.createElement("div", { className: "flex flex-col gap-1" },
                   BLOCK_TYPES.map(function (bt) {
-                    return React.createElement("button", { "aria-label": "Add Block",
+                    return React.createElement("button", { "aria-label": t('stem.coding.add_block', "Add Block"),
                       key: bt.type,
                       onClick: function () { addBlock(bt.type); },
                       disabled: running,
@@ -2387,7 +2420,7 @@
                   "📋 Program (" + blocks.length + " blocks)"
                 ),
                 blocks.length === 0 && React.createElement("p", { className: "text-slate-200 text-xs italic text-center py-4" },
-                  'Click blocks above or load a template to start'
+                  t('stem.coding.click_blocks_above_or_load_a_template_', 'Click blocks above or load a template to start')
                 ),
                 React.createElement("div", { className: "flex flex-col gap-1" },
                   blocks.map(function (b, idx) {
@@ -2411,7 +2444,7 @@
                         // Drag handle
                         React.createElement("span", {
                           className: "text-white/40 text-[11px] cursor-grab mr-0.5 select-none",
-                          title: "Drag to reorder"
+                          title: t('stem.coding.drag_to_reorder', "Drag to reorder")
                         }, "⠿"),
                         React.createElement("span", { className: "flex-1 truncate" },
                           def ? def.label : b.type,
@@ -2436,7 +2469,7 @@
                           React.createElement("span", { className: "text-[11px] text-white/60" }, "x"),
                           React.createElement("input", {
                             type: "number", value: b.x != null ? b.x : 250,
-                            'aria-label': 'Goto X coordinate',
+                            'aria-label': t('stem.coding.goto_x_coordinate', 'Goto X coordinate'),
                             onChange: function (e) { updateBlockParam(idx, 'x', parseInt(e.target.value) || 0); },
                             className: "w-10 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2444,7 +2477,7 @@
                           React.createElement("span", { className: "text-[11px] text-white/60" }, "y"),
                           React.createElement("input", {
                             type: "number", value: b.y != null ? b.y : 250,
-                            'aria-label': 'Goto Y coordinate',
+                            'aria-label': t('stem.coding.goto_y_coordinate', 'Goto Y coordinate'),
                             onChange: function (e) { updateBlockParam(idx, 'y', parseInt(e.target.value) || 0); },
                             className: "w-10 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2453,7 +2486,7 @@
                         // Color picker
                         b.type === 'color' && React.createElement("input", {
                           type: "color", value: b.color || '#6366f1',
-                          'aria-label': 'Pen color',
+                          'aria-label': t('stem.coding.pen_color', 'Pen color'),
                           onChange: function (e) { updateBlockParam(idx, 'color', e.target.value); },
                           className: "w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
                         }),
@@ -2461,7 +2494,7 @@
                         b.type === 'setVar' && React.createElement("span", { className: "flex items-center gap-0.5" },
                           React.createElement("input", {
                             type: "text", value: b.varName || 'size',
-                            'aria-label': 'Variable name',
+                            'aria-label': t('stem.coding.variable_name', 'Variable name'),
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
                             className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             placeholder: "name"
@@ -2469,7 +2502,7 @@
                           React.createElement("span", { className: "text-[11px] text-white/60" }, "="),
                           React.createElement("input", {
                             type: "number", value: b.varValue != null ? b.varValue : 50,
-                            'aria-label': 'Variable value',
+                            'aria-label': t('stem.coding.variable_value', 'Variable value'),
                             onChange: function (e) { updateBlockParam(idx, 'varValue', parseFloat(e.target.value) || 0); },
                             className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2479,7 +2512,7 @@
                         b.type === 'changeVar' && React.createElement("span", { className: "flex items-center gap-0.5" },
                           React.createElement("input", {
                             type: "text", value: b.varName || 'size',
-                            'aria-label': 'Variable name to change',
+                            'aria-label': t('stem.coding.variable_name_to_change', 'Variable name to change'),
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
                             className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             placeholder: "name"
@@ -2495,15 +2528,15 @@
                         // ── ifelse condition editor ──
                         b.type === 'ifelse' && React.createElement("input", {
                           type: "text", value: b.condition || 'x > 250',
-                          'aria-label': 'If-else condition',
+                          'aria-label': t('stem.coding.if_else_condition', 'If-else condition'),
                           onChange: function (e) { updateBlockParam(idx, 'condition', e.target.value); },
                           className: "w-24 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center font-mono",
-                          placeholder: "x > 250"
+                          placeholder: t('stem.coding.x_250', "x > 250")
                         }),
                         // Move / Remove buttons
                         React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === 0 }, "▲"),
                         React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === blocks.length - 1 }, "▼"),
-                        React.createElement("button", { "aria-label": "Remove block", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
+                        React.createElement("button", { "aria-label": t('stem.coding.remove_block', "Remove block"), onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
                       ),
                       // ── Repeat children ──
                       b.type === 'repeat' && React.createElement("div", { className: "ml-4 mt-1 pl-2 border-l-2 border-purple-400/50 flex flex-col gap-1" },
@@ -2514,15 +2547,15 @@
                       b.type === 'ifelse' && React.createElement("div", { className: "ml-3 mt-1 flex flex-col gap-1" },
                         // IF branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-fuchsia-400/50" },
-                          React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-300 uppercase tracking-wider" }, "✔ If true"),
-                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-600 italic py-1" }, "No blocks yet"),
+                          React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-300 uppercase tracking-wider" }, t('stem.coding.if_true', "✔ If true")),
+                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-300 italic py-1" }, t('stem.coding.no_blocks_yet', "No blocks yet")),
                           (b.children || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, false); }),
                           renderQuickAdd(idx, false)
                         ),
                         // ELSE branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-slate-500/50 mt-1" },
-                          React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "✖ Else"),
-                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-600 italic py-1" }, "No blocks yet"),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider" }, t('stem.coding.else', "✖ Else")),
+                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-300 italic py-1" }, t('stem.coding.no_blocks_yet_2', "No blocks yet")),
                           (b.elseChildren || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, true); }),
                           renderQuickAdd(idx, true)
                         )
@@ -2534,7 +2567,7 @@
 
               // Code editor (text mode)
               codeMode === 'text' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
-                React.createElement("h3", { className: "text-xs font-bold text-amber-400 uppercase tracking-wider mb-2" }, "📝 Code Editor"),
+                React.createElement("h3", { className: "text-xs font-bold text-amber-400 uppercase tracking-wider mb-2" }, t('stem.coding.code_editor', "📝 Code Editor")),
                 React.createElement("div", { style: { display: 'flex', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' } },
                   // Line numbers
                   React.createElement("div", {
@@ -2542,10 +2575,10 @@
                     style: { background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text-soft, #475569)', fontFamily: 'monospace', fontSize: '11px', padding: '12px 8px 12px 6px', textAlign: 'right', lineHeight: '1.5', userSelect: 'none', borderRight: '1px solid var(--allo-stem-border, #1e293b)', minWidth: '28px' }
                   }, (textCode || '').split('\n').map(function(_, i) { return React.createElement('div', { key: i }, i + 1); })),
                   React.createElement("textarea", {
-                    'aria-label': 'Code editor',
+                    'aria-label': t('stem.coding.code_editor_2', 'Code editor'),
                     value: textCode,
                     onChange: function (e) { handleTextChange(e.target.value); },
-                    placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
+                    placeholder: t('stem.coding.forward_50_right_90_backward_30_repeat', "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})"),
                     style: { flex: 1, minHeight: '240px', padding: '12px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
                     spellCheck: false,
                     onKeyDown: function(e) {
@@ -2562,7 +2595,7 @@
                   })
                 ),
                 React.createElement("p", { className: "text-slate-200 text-[11px] mt-1" },
-                  "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(r), goto(x,y), home(), repeat(n, fn), setVar('name', val), changeVar('name', delta), if(condition, ifFn, elseFn)"
+                  t('stem.coding.commands_forward_n_backward_n_right_de', "Commands: forward(n) backward(n) right(deg) left(deg) penUp() penDown() setColor(\"#hex\") setWidth(n) circle(r) goto(x,y) home() arc(angle,radius) stamp() playNote(freq,dur). Variables: setVar(\"name\",value) changeVar(\"name\",delta) random(\"name\",min,max) \u2014 use a variable with $ (e.g. forward($name)). Loops & logic use braces: repeat(n){ ... }  while (x < 450){ ... }  if (x > 250){ ... } else { ... }. Functions: function myShape(){ ... } then call it with myShape(). Conditions compare x, y, angle, or $var using > < >= <= == != .")
                 )
               )
             ),
@@ -2571,14 +2604,20 @@
             playgroundMode === 'turtle' && React.createElement("div", { className: "flex flex-col gap-3" },
               // Canvas
               React.createElement("div", { className: "bg-slate-900 rounded-xl p-2 border border-slate-700 shadow-inner" },
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
                   ref: canvasRef, width: 500, height: 500,
+                  role: "img", "aria-label": describeTurtleCanvas(),
                   onClick: canvasClickHandler,
                   className: "w-full rounded-lg" + (showCoordPicker ? " cursor-crosshair" : ""),
                   style: { maxWidth: '500px', aspectRatio: '1/1', imageRendering: 'auto' }
                 })
               ),
 
+              // Code diagnostics banner (parse + runtime; only when present)
+              d._codeErrors && d._codeErrors.length > 0 && React.createElement("div", { role: "alert", className: "mb-1 p-2 rounded-lg bg-amber-900/40 border border-amber-600/50 text-[11px] text-amber-100" },
+                React.createElement("div", { className: "font-bold mb-0.5 text-amber-200" }, "\u26A0\uFE0F " + d._codeErrors.length + " thing" + (d._codeErrors.length > 1 ? "s" : "") + " to fix:"),
+                React.createElement("ul", { className: "list-disc list-inside space-y-0.5" }, d._codeErrors.slice(0, 6).map(function (msg, ei) { return React.createElement("li", { key: ei }, msg); }))
+              ),
               // Controls
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
                 React.createElement("button", { "aria-label": "Run",
@@ -2586,15 +2625,18 @@
                   disabled: running || (codeMode === 'blocks' ? blocks.length === 0 : !textCode.trim()),
                   className: "coding-run-btn flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
                     (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 active:scale-95 shadow-lg hover:shadow-green-500/30')
-                }, "▶ Run"),
-                React.createElement("button", { "aria-label": "Clear Canvas",
+                }, t('stem.coding.run', "▶ Run")),
+                running && React.createElement("button", { "aria-label": t('stem.coding.stop_3', "Stop"), onClick: stopRun,
+                  className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 active:scale-95 shadow-lg"
+                }, t('stem.coding.stop_4', "\u25A0 Stop")),
+                React.createElement("button", { "aria-label": t('stem.coding.clear_canvas', "Clear Canvas"),
                   onClick: handleClear,
                   className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition-all"
-                }, "🗑️ Clear Canvas"),
-                React.createElement("button", { "aria-label": "Reset All",
+                }, t('stem.coding.clear_canvas_2', "🗑️ Clear Canvas")),
+                React.createElement("button", { "aria-label": t('stem.coding.reset_all', "Reset All"),
                   onClick: handleReset,
                   className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-red-600/80 text-white hover:bg-red-600 transition-all"
-                }, "⏪ Reset All"),
+                }, t('stem.coding.reset_all_2', "⏪ Reset All")),
                 running && React.createElement("span", { className: "text-xs text-yellow-400 animate-pulse font-medium" },
                   "🔄 Running... step " + (stepIdx + 1)
                 )
@@ -2602,12 +2644,12 @@
 
               // Options bar (turtle toggle + cumulative mode)
               React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
-                React.createElement("button", { "aria-label": "Toggle turtle cursor visibility",
+                React.createElement("button", { "aria-label": t('stem.coding.toggle_turtle_cursor_visibility', "Toggle turtle cursor visibility"),
                   onClick: function () { upd('showTurtle', !showTurtle); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-600' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
-                React.createElement("button", { "aria-label": "Toggle cumulative drawing mode",
+                React.createElement("button", { "aria-label": t('stem.coding.toggle_cumulative_drawing_mode', "Toggle cumulative drawing mode"),
                   onClick: function () { upd('cumulativeMode', !cumulativeMode); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-600 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -2629,7 +2671,7 @@
                     var active = challengeIdx === ci;
                     return React.createElement("button", { "aria-label": "Select challenge: " + ch.title,
                       key: ch.id,
-                      onClick: function () { upd('challengeIdx', active ? -1 : ci); },
+                      onClick: function () { if (active) { upd('challengeIdx', -1); } else if (ch.seedBlocks) { seedChallenge(ch, ci); } else { upd('challengeIdx', ci); } },
                       className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-all " +
                         (done ? 'bg-green-900/40 text-green-300 border border-green-700/50' :
                           active ? 'bg-indigo-900/60 text-indigo-200 border border-indigo-500/50 ring-1 ring-indigo-400' :
@@ -2656,17 +2698,17 @@
               // ── 3D Camera Controls ──
               show3D && React.createElement("div", { className: "bg-gradient-to-br from-teal-900/50 to-cyan-900/50 rounded-xl p-3 border border-teal-500/30" },
                 React.createElement("h4", { className: "text-xs font-bold text-teal-300 mb-2 flex items-center gap-1" },
-                  React.createElement("span", null, "\u{1F3A5}"), " 3D Camera"
+                  React.createElement("span", null, "\u{1F3A5}"), t('stem.coding.3d_camera', " 3D Camera")
                 ),
                 // Camera Elevation
                 React.createElement("div", { className: "mb-2" },
                   React.createElement("label", { className: "text-[11px] text-slate-300 flex justify-between" },
-                    React.createElement("span", null, "Elevation"),
+                    React.createElement("span", null, t('stem.coding.elevation', "Elevation")),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotX) + "\u00b0")
                   ),
                   React.createElement("input", {
                     type: "range", min: -90, max: 90, value: cameraRotX,
-                    'aria-label': 'Camera elevation',
+                    'aria-label': t('stem.coding.camera_elevation', 'Camera elevation'),
                     onChange: function(e) { upd('cameraRotX', parseInt(e.target.value)); },
                     className: "w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer",
                     style: { accentColor: '#14b8a6' }
@@ -2675,12 +2717,12 @@
                 // Camera Azimuth
                 React.createElement("div", { className: "mb-2" },
                   React.createElement("label", { className: "text-[11px] text-slate-300 flex justify-between" },
-                    React.createElement("span", null, "Rotation"),
+                    React.createElement("span", null, t('stem.coding.rotation', "Rotation")),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotZ) + "\u00b0")
                   ),
                   React.createElement("input", {
                     type: "range", min: 0, max: 360, value: cameraRotZ,
-                    'aria-label': 'Camera rotation',
+                    'aria-label': t('stem.coding.camera_rotation', 'Camera rotation'),
                     onChange: function(e) { upd('cameraRotZ', parseInt(e.target.value)); },
                     className: "w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer",
                     style: { accentColor: '#14b8a6' }
@@ -2689,12 +2731,12 @@
                 // Zoom
                 React.createElement("div", { className: "mb-2" },
                   React.createElement("label", { className: "text-[11px] text-slate-300 flex justify-between" },
-                    React.createElement("span", null, "Zoom"),
+                    React.createElement("span", null, t('stem.coding.zoom', "Zoom")),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, (cameraZoom * 100).toFixed(0) + "%")
                   ),
                   React.createElement("input", {
                     type: "range", min: 30, max: 300, value: Math.round(cameraZoom * 100),
-                    'aria-label': 'Camera zoom',
+                    'aria-label': t('stem.coding.camera_zoom', 'Camera zoom'),
                     onChange: function(e) { upd('cameraZoom', parseInt(e.target.value) / 100); },
                     className: "w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer",
                     style: { accentColor: '#14b8a6' }
@@ -2702,20 +2744,20 @@
                 ),
                 // Toggle buttons
                 React.createElement("div", { className: "flex gap-1" },
-                  React.createElement("button", { "aria-label": "Grid",
+                  React.createElement("button", { "aria-label": t('stem.coding.grid', "Grid"),
                     onClick: function() { upd('show3DGrid', !show3DGrid); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
-                  }, "\u{2B1C} Grid"),
-                  React.createElement("button", { "aria-label": "Axes",
+                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-300")
+                  }, t('stem.coding.grid_2', "\u{2B1C} Grid")),
+                  React.createElement("button", { "aria-label": t('stem.coding.axes', "Axes"),
                     onClick: function() { upd('show3DAxes', !show3DAxes); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
-                  }, "\u{1F4CD} Axes"),
-                  React.createElement("button", { "aria-label": "Reset 3D camera view",
+                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-300")
+                  }, t('stem.coding.axes_2', "\u{1F4CD} Axes")),
+                  React.createElement("button", { "aria-label": t('stem.coding.reset_3d_camera_view', "Reset 3D camera view"),
                     onClick: function() { updMulti({ cameraRotX: 30, cameraRotZ: 45, cameraZoom: 1.0 }); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold bg-slate-700/50 text-slate-300 hover:text-white transition-all"
-                  }, "\u{1F504} Reset")
+                  }, t('stem.coding.reset_3', "\u{1F504} Reset"))
                 ),
                 // 3D coordinates display
                 React.createElement("div", { className: "mt-2 grid gap-1", style: { gridTemplateColumns: '1fr 1fr 1fr' } },
@@ -2740,13 +2782,13 @@
                   min: 0,
                   max: Math.max(0, timelineFrames.length - 1),
                   value: timelinePos >= 0 ? timelinePos : 0,
-                  'aria-label': 'Animation timeline position',
+                  'aria-label': t('stem.coding.animation_timeline_position', 'Animation timeline position'),
                   onChange: function(e) { seekTimeline(parseInt(e.target.value)); },
                   className: "w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500",
                   style: { accentColor: '#6366f1' }
                 }),
-                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-1" },
-                  React.createElement("span", null, "Frame 0"),
+                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-300 mt-1" },
+                  React.createElement("span", null, t('stem.coding.frame_0', "Frame 0")),
                   React.createElement("span", { className: "text-indigo-400 font-bold" }, timelinePos >= 0 ? "Frame " + timelinePos : "—"),
                   React.createElement("span", null, "Frame " + (timelineFrames.length - 1))
                 )
@@ -2772,7 +2814,7 @@
 
               // ── Accessibility Controls ──
               React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("button", { "aria-label": "Toggle high contrast mode",
+                React.createElement("button", { "aria-label": t('stem.coding.toggle_high_contrast_mode', "Toggle high contrast mode"), "aria-pressed": highContrastMode,
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
                   className: "flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " +
                     (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-200 hover:text-white")
@@ -2782,9 +2824,9 @@
               showAIPanel && React.createElement("div", { className: "bg-gradient-to-br from-blue-900/50 to-indigo-900/50 rounded-xl p-3 border border-blue-500/30 shadow-lg" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("h4", { className: "text-xs font-bold text-blue-300 flex items-center gap-1" },
-                    React.createElement("span", null, "🤖"), " AI Assistant"
+                    React.createElement("span", null, "🤖"), t('stem.coding.ai_assistant', " AI Assistant")
                   ),
-                  React.createElement("button", { "aria-label": "Close AI assistant panel",
+                  React.createElement("button", { "aria-label": t('stem.coding.close_ai_assistant_panel', "Close AI assistant panel"),
                     onClick: function() { updMulti({ showAIPanel: false, aiExplanation: '' }); },
                     className: "text-slate-200 hover:text-white text-sm px-1"
                   }, "×")
@@ -2799,32 +2841,32 @@
               // ── Variable Inspector / Debug Panel ──
               React.createElement("div", { className: "bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl p-3 border border-slate-600/40" },
                 React.createElement("h4", { className: "text-xs font-bold text-emerald-300 mb-2 flex items-center gap-1" },
-                  React.createElement("span", null, "🔍"), " Variable Inspector"
+                  React.createElement("span", null, "🔍"), t('stem.coding.variable_inspector', " Variable Inspector")
                 ),
                 React.createElement("div", { className: "grid gap-1", style: { gridTemplateColumns: '1fr 1fr' } },
                   // Turtle State
                   React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
-                    "🐢 x: ", React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.x))
+                    t('stem.coding.x', "🐢 x: "), React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.x))
                   ),
                   React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
-                    "🐢 y: ", React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.y))
+                    t('stem.coding.y', "🐢 y: "), React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.y))
                   ),
                   React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
-                    "🧭 angle: ", React.createElement("span", { className: "text-amber-300 font-bold" }, Math.round(turtleState.angle) + "°")
+                    t('stem.coding.angle', "🧭 angle: "), React.createElement("span", { className: "text-amber-300 font-bold" }, Math.round(turtleState.angle) + "°")
                   ),
                   React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
-                    "✏️ pen: ", React.createElement("span", { className: turtleState.penDown ? "text-green-400 font-bold" : "text-red-400 font-bold" }, turtleState.penDown ? "down" : "up")
+                    t('stem.coding.pen', "✏️ pen: "), React.createElement("span", { className: turtleState.penDown ? "text-green-400 font-bold" : "text-red-400 font-bold" }, turtleState.penDown ? "down" : "up")
                   ),
                   React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
-                    "📐 lines: ", React.createElement("span", { className: "text-purple-300 font-bold" }, drawnLines.length)
+                    t('stem.coding.lines', "📐 lines: "), React.createElement("span", { className: "text-purple-300 font-bold" }, drawnLines.length)
                   ),
                   React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
-                    "⚡ step: ", React.createElement("span", { className: "text-orange-300 font-bold" }, stepIdx >= 0 ? stepIdx : "—")
+                    t('stem.coding.step', "⚡ step: "), React.createElement("span", { className: "text-orange-300 font-bold" }, stepIdx >= 0 ? stepIdx : "—")
                   )
                 ),
                 // User-defined variables
                 d._vars && Object.keys(d._vars).length > 0 && React.createElement("div", { className: "mt-2 border-t border-slate-600/30 pt-2" },
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "User Variables"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider" }, t('stem.coding.user_variables', "User Variables")),
                   React.createElement("div", { className: "grid gap-1 mt-1", style: { gridTemplateColumns: '1fr 1fr' } },
                     Object.keys(d._vars || {}).filter(function(k) { return k.indexOf('__func_') !== 0; }).map(function(vk) {
                       return React.createElement("div", { key: vk, className: "text-[11px] font-mono text-slate-300 bg-emerald-900/30 rounded px-2 py-1 border border-emerald-700/20" },
@@ -2837,21 +2879,25 @@
 
               // CS concepts panel
               React.createElement("div", { className: "bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-xl p-3 border border-indigo-700/30" },
-                React.createElement("h4", { className: "text-xs font-bold text-indigo-300 mb-1" }, "🔬 CS Concepts"),
+                React.createElement("h4", { className: "text-xs font-bold text-indigo-300 mb-1" }, t('stem.coding.cs_concepts', "🔬 CS Concepts")),
                 React.createElement("p", { className: "text-[11px] text-indigo-200/70 leading-relaxed" },
                   challengeIdx >= 0 ? '📖 This challenge teaches: ' + CHALLENGES[challengeIdx].concept + '. ' + CHALLENGES[challengeIdx].desc :
                     'Computational thinking is the foundation of all computer science. Sequencing puts steps in order. Loops repeat steps efficiently. Variables store data. Conditionals make decisions. Together they let you create anything!'
                 )
               ),
 
+              // Name your creation (only when a program exists)
+              blocks.length > 0 && React.createElement("input", { "aria-label": t('stem.coding.name_your_creation', "Name your creation"), type: "text", value: projectName, placeholder: t('stem.coding.name_your_creation_2', "Name your creation"), maxLength: 40,
+                onChange: function (e) { upd('projectName', e.target.value); },
+                className: "px-3 py-1.5 text-xs rounded-full border border-slate-300 bg-white text-slate-700 placeholder-slate-400 w-44" }),
               // Snapshot button
-              React.createElement("button", { "aria-label": "Snapshot",
+              React.createElement("button", { "aria-label": t('stem.coding.snapshot', "Snapshot"),
                 onClick: function () {
-                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
+                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: projectName || 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
                   if (addToast) addToast('📸 Code snapshot saved!', 'success');
                 },
                 className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
-              }, "📸 Snapshot")
+              }, t('stem.coding.snapshot_2', "📸 Snapshot"))
             )
           );
     })();

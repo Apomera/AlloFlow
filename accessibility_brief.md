@@ -135,12 +135,12 @@ We want the work to actually be right. Not a rubber stamp — real scrutiny from
 | Document | Description |
 |---|---|
 | [Interactive Accessibility Demo](https://apomera.github.io/AlloFlow/accessibility_demo.html) | Live, interactive showcase — try keyboard navigation, scanning modes, high contrast, and screen reader simulation directly in your browser |
-| [VPAT 2.5 (Full Platform)](VPAT-2.5-WCAG-AlloFlow.md) | Voluntary Product Accessibility Template covering all 80+ AlloFlow tools against WCAG 2.1 Level A & AA |
+| [VPAT 2.5 (Full Platform)](VPAT-2.5-WCAG-AlloFlow.md) | Voluntary Product Accessibility Template for the May 2026 evaluated snapshot; see the VPAT currency note before applying it to newer tools |
 | [Letter to Knowbility](letter_to_knowbility.md) | Partnership inquiry letter |
 
 ---
 
 **Contact:** Aaron Pomeranz, PsyD — School Psychologist & Creator of AlloFlow
-**Platform:** Open-source, privacy-first, FERPA-compliant by architecture
-**Deployment:** Firebase Hosting (production) | Docker (air-gapped) | Canvas LMS integration
+**Platform:** Open-source, privacy-first, designed to support FERPA-aligned deployments
+**Deployment:** Gemini Canvas | AlloFlow Desktop | Firebase Hosting | optional School Box Server stack
 **Website:** [apomera.github.io/AlloFlow](https://apomera.github.io/AlloFlow/)

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CheerpJ + veraPDF feasibility spike</title>
+<!--
+  ============================================================================
+  CheerpJ + veraPDF in-browser feasibility spike (2026-06-19)
+  ============================================================================
+  GOAL: find out whether veraPDF (a Java / PDFBox app) can run ENTIRELY in the
+  browser via CheerpJ (a WASM JVM), so AlloFlow could run a *real, independent*
+  ISO 14289-1 (PDF/UA-1) validation on the user's actual exported PDF — no
+  server — and surface the verdict. Today the only on-output check is AlloFlow's
+  own ~14-rule self-check; veraPDF runs only in dev/CI on golden files.
+
+  HOW TO USE
+  1. Serve this folder over http (CheerpJ needs http(s), not file://):
+       cd dev-tools/demo && python -m http.server 8013
+     then open  http://localhost:8013/cheerpj_verapdf_spike.html
+  2. Run STAGE 1 first. That is the make-or-break test: does the CheerpJ WASM
+     JVM initialize and execute Java in THIS environment? Note the download size
+     (DevTools > Network) and the time. If Stage 1 fails, the idea is dead for
+     this surface and we stop.
+  3. The REAL target is the Gemini Canvas sandboxed (opaque-origin) iframe.
+     Other heavy things (Chrome's PDF viewer, blob: URLs) have failed there, so
+     once Stage 1 works in a normal browser, the next question is whether it also
+     works inside Canvas — paste/host this there to confirm.
+  4. STAGE 2 (advanced) actually loads veraPDF's jars and validates a PDF. It
+     needs the veraPDF "greenfield" release jars provisioned (see that section).
+
+  HONEST CAVEATS
+  - CheerpJ version/loader URL below may have advanced — verify against
+    https://cheerpj.com/docs/ and bump if Stage 1 errors on load.
+  - veraPDF is a large multi-jar Java app on PDFBox; it may hit a Java API
+    CheerpJ doesn't support, or be too heavy/slow. That's exactly what this
+    spike is for — don't assume, measure.
+  - This is a THROWAWAY probe, not production code. Nothing here ships.
+  ============================================================================
+-->
+<style>
+  :root { color-scheme: light; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 820px; margin: 24px auto; padding: 0 16px; color: #0f172a; line-height: 1.5; }
+  h1 { font-size: 20px; } h2 { font-size: 16px; margin-top: 28px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; }
+  .card { border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px 16px; margin: 12px 0; background: #f8fafc; }
+  button { background: #4f46e5; color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 700; cursor: pointer; }
+  button:disabled { background: #94a3b8; cursor: not-allowed; }
+  button.secondary { background: #0f766e; }
+  input[type="text"] { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 12px; box-sizing: border-box; }
+  label { font-size: 12px; font-weight: 700; display: block; margin: 8px 0 2px; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; overflow: auto; max-height: 320px; font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+  .ok { color: #15803d; font-weight: 700; } .bad { color: #b91c1c; font-weight: 700; } .muted { color: #64748b; font-size: 12px; }
+  code { background: #e2e8f0; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>CheerpJ + veraPDF — in-browser PDF/UA validation feasibility spike</h1>
+<p class="muted">Throwaway probe. Goal: can veraPDF (Java) validate a PDF entirely in the browser via the CheerpJ WASM JVM? Run Stage 1 first — it's the make-or-break.</p>
+
+<div class="card">
+  <label for="cjLoader">CheerpJ loader URL (verify/bump against cheerpj.com/docs if Stage 1 fails to load):</label>
+  <input id="cjLoader" type="text" value="https://cjrtnc.leaningtech.com/3.0/cj3loader.js" />
+</div>
+
+<h2>Stage 1 — Does the CheerpJ WASM JVM boot + run Java here?</h2>
+<div class="card">
+  <button id="btnStage1">Run Stage 1 (load CheerpJ + execute Java)</button>
+  <p class="muted">Watch DevTools → Network for the total WASM/runtime download size, and note the time below. This proves (or kills) the whole approach for this environment.</p>
+  <pre id="logStage1">(not run yet)</pre>
+</div>
+
+<h2>Stage 2 — Run veraPDF on a real PDF (advanced; needs jars)</h2>
+<div class="card">
+  <p class="muted">
+    Provision the jars first: download the veraPDF <strong>greenfield</strong> release
+    (<code>https://github.com/veraPDF/veraPDF-apps/releases</code> → the <code>greenfield-apps-*.jar</code> or the
+    full <code>verapdf</code> install's <code>bin/*.jar</code>), put them next to this file (e.g. <code>./verapdf/</code>),
+    and list them in the classpath box below (colon-separated, CheerpJ-FS paths like <code>/app/verapdf/greenfield-apps.jar</code>).
+    Files served from this origin appear under <code>/app/</code> in CheerpJ's FS.
+  </p>
+  <label for="cpBox">Classpath (colon-separated CheerpJ FS paths):</label>
+  <input id="cpBox" type="text" value="/app/verapdf/greenfield-apps.jar" />
+  <label for="mainClass">Main class (veraPDF greenfield CLI — adjust if it errors "class not found"):</label>
+  <input id="mainClass" type="text" value="org.verapdf.apps.GreenfieldCliWrapper" />
+  <label for="argsBox">Args (the PDF you pick is written to <code>/files/input.pdf</code>; <code>-f ua1</code> forces the PDF/UA-1 flavour):</label>
+  <input id="argsBox" type="text" value="-f ua1 --format text /files/input.pdf" />
+  <label for="pdfFile">PDF to validate:</label>
+  <input id="pdfFile" type="file" accept="application/pdf,.pdf" />
+  <p></p>
+  <button id="btnStage2" class="secondary" disabled>Run Stage 2 (validate PDF with veraPDF)</button>
+  <pre id="logStage2">(run Stage 1 first)</pre>
+</div>
+
+<script>
+  // ── tiny logging helpers ──
+  const $ = (id) => document.getElementById(id);
+  const now = () => (performance.now() / 1000).toFixed(2) + 's';
+  let _t0 = 0;
+  function logTo(el, msg, cls) {
+    const line = '[' + now() + '] ' + msg;
+    el.textContent = (el.textContent === '(not run yet)' || el.textContent === '(run Stage 1 first)') ? line : el.textContent + '\n' + line;
+    if (cls) { const span = document.createElement('span'); }
+  }
+  let cheerpjReady = false;
+
+  // Load the CheerpJ loader script on demand (so a bad URL is an honest, isolated failure).
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector('script[data-cj]')) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = src; s.dataset.cj = '1';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load CheerpJ loader: ' + src + ' (check the URL / network / CORS)'));
+      document.head.appendChild(s);
+    });
+  }
+
+  // ── Stage 1 ──
+  $('btnStage1').addEventListener('click', async () => {
+    const L = $('logStage1'); L.textContent = '';
+    $('btnStage1').disabled = true;
+    try {
+      logTo(L, 'Loading CheerpJ loader script…');
+      _t0 = performance.now();
+      await loadScript($('cjLoader').value.trim());
+      logTo(L, 'Loader script loaded (' + Math.round(performance.now() - _t0) + 'ms). cheerpjInit type: ' + typeof window.cheerpjInit);
+      if (typeof window.cheerpjInit !== 'function') throw new Error('cheerpjInit not found — loader URL/version mismatch. Check cheerpj.com/docs for the current loader + API.');
+
+      logTo(L, 'Calling cheerpjInit() — downloading + starting the WASM JVM (watch Network tab for size)…');
+      const initT = performance.now();
+      await window.cheerpjInit();
+      logTo(L, '✅ cheerpjInit() succeeded in ' + Math.round(performance.now() - initT) + 'ms. The WASM JVM RUNS in this environment.');
+      cheerpjReady = true;
+
+      // Bonus: actually EXECUTE Java to prove bytecode runs (not just init). API is
+      // version-specific; failure here doesn't change the core result (init worked).
+      try {
+        if (typeof window.cheerpjRunLibrary === 'function') {
+          logTo(L, 'Executing Java (System.getProperty("java.version")) via cheerpjRunLibrary…');
+          const lib = await window.cheerpjRunLibrary('');
+          const System = await lib.java.lang.System;
+          const ver = await System.getProperty('java.version');
+          logTo(L, '✅ Java executed. Reported java.version = ' + ver);
+        } else {
+          logTo(L, 'ℹ cheerpjRunLibrary not present in this CheerpJ build — init alone still proves the JVM loads. (Adjust per current docs to run a class.)');
+        }
+      } catch (e2) {
+        logTo(L, 'ℹ Java-exec probe failed (' + (e2 && e2.message || e2) + ') — but cheerpjInit() succeeding is the key signal; Stage 2 can still be attempted.');
+      }
+
+      logTo(L, '— STAGE 1 VERDICT: CheerpJ boots here. ▶ Note the runtime download size from the Network tab, then try Stage 2, and re-run this inside Gemini Canvas to confirm the sandboxed iframe also allows it.');
+      $('btnStage2').disabled = false;
+    } catch (e) {
+      logTo(L, '❌ STAGE 1 FAILED: ' + (e && e.message || e));
+      logTo(L, '— If this is a load/CORS/WASM error, the approach likely won\'t work in this environment. Capture the exact error for the writeup.');
+    } finally {
+      $('btnStage1').disabled = false;
+    }
+  });
+
+  // ── Stage 2 ──
+  $('btnStage2').addEventListener('click', async () => {
+    const L = $('logStage2'); L.textContent = '';
+    if (!cheerpjReady) { logTo(L, 'Run Stage 1 first.'); return; }
+    const file = $('pdfFile').files && $('pdfFile').files[0];
+    if (!file) { logTo(L, 'Pick a PDF first.'); return; }
+    $('btnStage2').disabled = true;
+    try {
+      logTo(L, 'Reading PDF (' + file.name + ', ' + Math.round(file.size / 1024) + ' KB) into the CheerpJ filesystem…');
+      const buf = new Uint8Array(await file.arrayBuffer());
+      // Write the PDF into CheerpJ's writable /files mount. The exact API varies by
+      // version — try the documented ones in order; report which worked.
+      let wrote = false;
+      try {
+        if (typeof window.cheerpjAddStringFile === 'function') {
+          window.cheerpjAddStringFile('/str/input.pdf', buf); // some builds accept Uint8Array
+          logTo(L, 'Wrote PDF via cheerpjAddStringFile → /str/input.pdf (update args path to /str/input.pdf if needed).'); wrote = true;
+        }
+      } catch (_) {}
+      if (!wrote && window.cheerpOSAddStringFile) {
+        try { window.cheerpOSAddStringFile('/files/input.pdf', buf); logTo(L, 'Wrote PDF via cheerpOSAddStringFile → /files/input.pdf'); wrote = true; } catch (_) {}
+      }
+      if (!wrote) logTo(L, 'ℹ Could not write the PDF via the known FS APIs — check the current CheerpJ docs for the file-mount call and update this harness. (This is the most version-fragile part.)');
+
+      const cp = $('cpBox').value.trim();
+      const main = $('mainClass').value.trim();
+      const args = $('argsBox').value.trim().split(/\s+/).filter(Boolean);
+      logTo(L, 'Running veraPDF: cheerpjRunMain("' + main + '", "' + cp + '", ' + JSON.stringify(args) + ') …');
+      logTo(L, '(stdout/stderr go to the browser console — open DevTools to see the veraPDF report.)');
+      const runT = performance.now();
+      const code = await window.cheerpjRunMain(main, cp, ...args);
+      logTo(L, '✅ veraPDF main returned exit code ' + code + ' in ' + Math.round(performance.now() - runT) + 'ms. Check the console for the validation report.');
+      logTo(L, '— STAGE 2 VERDICT: if you see a real PDF/UA-1 report above, CheerpJ+veraPDF in-browser is FEASIBLE. Note the size + time to judge whether it\'s practical.');
+    } catch (e) {
+      logTo(L, '❌ STAGE 2 error: ' + (e && e.message || e));
+      logTo(L, '— Common causes: wrong main class (try the class the verapdf shell script invokes), missing jars in the classpath, an unsupported Java API, or the FS write path mismatching the args. Adjust the fields above and retry.');
+    } finally {
+      $('btnStage2').disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

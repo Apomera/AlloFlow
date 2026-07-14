@@ -450,6 +450,7 @@
     color: 'amber',
     category: 'science',
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -458,10 +459,36 @@
       var awardXP = ctx.awardXP;
       var callGemini = ctx.callGemini;
 
+      // ── Web Audio API Sound Effects Engine (ref) ──
+      // This hook MUST run before the loading-gate early return below, so the
+      // hook count stays stable across the empty→seeded mount transition
+      // (Rules of Hooks — otherwise React throws "Rendered more hooks than
+      // during the previous render" the first time the lab opens).
+      var _bridgeACRef = React.useRef ? React.useRef(null) : { current: null };
+
+      var DEFAULT_BRIDGE_LAB_STATE = {
+        tab: 'build',
+        showBridgeLibrary: false,
+        span: 30, height: 6, nBays: 4, loadPerJoint: 50, materialId: 'steel',
+        crossSectionMm2: 5000,
+        bridgeType: 'truss',
+        trussStyle: 'warren',
+        loadMode: 'uniform',
+        vehiclePos: 0.5,
+        vehicleLoad: 150,
+        selectedForce: 'tension',
+        selectedCase: 'tacoma',
+        selectedStep: 'define',
+        quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0,
+        designName: '', designNotes: '',
+        autoDriving: false
+      };
+
       if (!labToolData || !labToolData.bridgeLab) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { bridgeLab: {
             tab: 'build',
+            showBridgeLibrary: false,
             span: 30, height: 6, nBays: 4, loadPerJoint: 50, materialId: 'steel',
             crossSectionMm2: 5000, // member cross-section in mm² (default 50 cm²)
             bridgeType: 'truss',
@@ -473,12 +500,85 @@
             selectedCase: 'tacoma',
             selectedStep: 'define',
             quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0,
-            designName: '', designNotes: ''
+            designName: '', designNotes: '',
+            autoDriving: false
           }});
         });
-        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } }, '🌉 Initializing Bridge Lab...');
       }
-      var d = labToolData.bridgeLab;
+      var d = Object.assign({}, DEFAULT_BRIDGE_LAB_STATE, (labToolData && labToolData.bridgeLab) || {});
+
+      // ── Web Audio API Sound Effects Engine ──
+      // (_bridgeACRef is declared above the loading gate — Rules of Hooks.)
+      function getBridgeAC() {
+        if (!_bridgeACRef.current) {
+          try { _bridgeACRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+        }
+        if (_bridgeACRef.current && _bridgeACRef.current.state === 'suspended') {
+          try { _bridgeACRef.current.resume(); } catch(e) {}
+        }
+        return _bridgeACRef.current;
+      }
+      function playBridgeTone(freq, dur, type, vol) {
+        var ac = getBridgeAC(); if (!ac) return;
+        try {
+          var osc = ac.createOscillator(); var gain = ac.createGain();
+          osc.type = type || 'sine'; osc.frequency.value = freq;
+          gain.gain.setValueAtTime(vol || 0.08, ac.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.12));
+          osc.connect(gain); gain.connect(ac.destination);
+          osc.start(); osc.stop(ac.currentTime + (dur || 0.12));
+        } catch(e) {}
+      }
+      var playBridgeSound = function(type) {
+        try {
+          switch (type) {
+            case 'click':
+              playBridgeTone(600, 0.04, 'sine', 0.06);
+              break;
+            case 'drive':
+              playBridgeTone(140, 0.06, 'triangle', 0.05);
+              setTimeout(function() { playBridgeTone(180, 0.05, 'triangle', 0.04); }, 40);
+              break;
+            case 'creak':
+              playBridgeTone(220, 0.1, 'sawtooth', 0.05);
+              setTimeout(function() { playBridgeTone(260, 0.08, 'sawtooth', 0.04); }, 50);
+              break;
+            case 'collapse':
+              playBridgeTone(120, 0.25, 'sawtooth', 0.1);
+              playBridgeTone(90, 0.3, 'square', 0.08);
+              break;
+            case 'success':
+              playBridgeTone(523, 0.08, 'sine', 0.08);
+              setTimeout(function() { playBridgeTone(659, 0.08, 'sine', 0.08); }, 70);
+              setTimeout(function() { playBridgeTone(784, 0.12, 'sine', 0.1); }, 140);
+              break;
+            default:
+              playBridgeTone(440, 0.06, 'sine', 0.05);
+          }
+          if (window._alloHaptic) {
+            if (type === 'collapse') window._alloHaptic('wrong');
+            else if (type === 'success') window._alloHaptic('correct');
+            else window._alloHaptic('tap');
+          }
+        } catch(e) {}
+      };
+
+      // WCAG 4.1.3 Live Region announcement helper
+      var announceStatus = function(msg) {
+        try {
+          var lr = document.getElementById('allo-live-bridgelab');
+          if (!lr) {
+            lr = document.createElement('div');
+            lr.id = 'allo-live-bridgelab';
+            lr.setAttribute('aria-live', 'polite');
+            lr.setAttribute('aria-atomic', 'true');
+            lr.className = 'sr-only';
+            lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+            document.body.appendChild(lr);
+          }
+          lr.textContent = msg;
+        } catch(e) {}
+      };
 
       function upd(patch) {
         setLabToolData(function(prev) {
@@ -491,22 +591,50 @@
       var BG = '#0f172a';
 
       var TABS = [
-        { id: 'build',     icon: '🔨', label: 'Stress Test' },
-        { id: 'types',     icon: '🌉', label: 'Bridge Types' },
-        { id: 'materials', icon: '🧱', label: 'Materials' },
-        { id: 'forces',    icon: '⚖️', label: 'Forces' },
-        { id: 'cases',     icon: '📚', label: 'Case Studies' },
-        { id: 'cycle',     icon: '🔁', label: 'Design Cycle' },
-        { id: 'quiz',      icon: '📝', label: 'Quiz' },
-        { id: 'print',     icon: '🖨', label: 'Print' },
-        { id: 'inquiry',   icon: '🔬', label: 'Inquiry' }
+        { id: 'build',     icon: '🔨', label: __alloT('stem.bridgelab.stress_test', 'Stress Test') },
+        { id: 'types',     icon: '🌉', label: __alloT('stem.bridgelab.bridge_types', 'Bridge Types') },
+        { id: 'materials', icon: '🧱', label: __alloT('stem.bridgelab.materials', 'Materials') },
+        { id: 'forces',    icon: '⚖️', label: __alloT('stem.bridgelab.forces', 'Forces') },
+        { id: 'cases',     icon: '📚', label: __alloT('stem.bridgelab.case_studies', 'Case Studies') },
+        { id: 'cycle',     icon: '🔁', label: __alloT('stem.bridgelab.design_cycle', 'Design Cycle') },
+        { id: 'quiz',      icon: '📝', label: __alloT('stem.bridgelab.quiz', 'Quiz') },
+        { id: 'print',     icon: '🖨', label: __alloT('stem.bridgelab.print', 'Print') },
+        { id: 'inquiry',   icon: '🔬', label: __alloT('stem.bridgelab.inquiry', 'Inquiry') }
       ];
 
+      var BRIDGE_CORE_TABS = ['build', 'types', 'materials', 'forces', 'cycle', 'quiz'];
+      var showFullBridgeNav = !!d.showBridgeLibrary || BRIDGE_CORE_TABS.indexOf(d.tab) === -1;
+      var visibleBridgeTabs = showFullBridgeNav ? TABS : TABS.filter(function(tab) { return BRIDGE_CORE_TABS.indexOf(tab.id) !== -1; });
+      var currentBridgeTab = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
+      var bridgeRoutes = [
+        { id: 'build', label: __alloT('stem.bridgelab.route_stress', 'Stress test'), hint: __alloT('stem.bridgelab.route_stress_hint', 'Change span, loads, and truss style.') },
+        { id: 'materials', label: __alloT('stem.bridgelab.route_materials', 'Materials'), hint: __alloT('stem.bridgelab.route_materials_hint', 'Compare strength, cost, and density.') },
+        { id: 'forces', label: __alloT('stem.bridgelab.route_forces', 'Forces'), hint: __alloT('stem.bridgelab.route_forces_hint', 'Read tension, compression, shear, and torsion.') },
+        { id: 'cycle', label: __alloT('stem.bridgelab.route_cycle', 'Design cycle'), hint: __alloT('stem.bridgelab.route_cycle_hint', 'Plan, test, revise, and document.') }
+      ];
+      var bridgeBriefMat = MATERIALS.find(function(m) { return m.id === d.materialId; }) || MATERIALS[3];
+      var bridgeBriefLoad = d.loadMode === 'vehicle'
+        ? Math.max(1, (d.vehicleLoad || 150) / Math.max(1, d.nBays || 4))
+        : d.loadPerJoint;
+      var bridgeBriefAnalysis = analyzeTruss(d.span, d.height, d.nBays, bridgeBriefLoad);
+      var bridgeBriefAreaM2 = d.crossSectionMm2 / 1e6;
+      var bridgeBriefVolumeM3 = bridgeBriefAnalysis.totalLen * bridgeBriefAreaM2;
+      var bridgeBriefStress = Math.max(bridgeBriefAnalysis.maxChord, bridgeBriefAnalysis.maxDiag) * 1000 / Math.max(1, d.crossSectionMm2);
+      var bridgeBriefSF = bridgeBriefMat.yieldMPa / Math.max(0.001, bridgeBriefStress);
+      var bridgeBriefStatus = bridgeBriefSF >= 2 ? 'safe' : bridgeBriefSF >= 1 ? 'marginal' : 'failed';
+      var bridgeBriefStatusCopy = bridgeBriefStatus === 'safe'
+        ? __alloT('stem.bridgelab.brief_safe', 'Ready for testing')
+        : bridgeBriefStatus === 'marginal'
+          ? __alloT('stem.bridgelab.brief_marginal', 'Needs revision')
+          : __alloT('stem.bridgelab.brief_failed', 'Redesign needed');
+      var bridgeBriefStatusColor = bridgeBriefStatus === 'safe' ? '#22c55e' : bridgeBriefStatus === 'marginal' ? '#f59e0b' : '#ef4444';
+      var bridgeBriefStyle = ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren');
+
       var tabBar = h('div', {
-        role: 'tablist', 'aria-label': 'Bridge Engineering sections',
+        role: 'tablist', 'aria-label': __alloT('stem.bridgelab.bridge_engineering_sections', 'Bridge Engineering sections'),
         style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', overflowX: 'auto', flexShrink: 0, background: '#0a0e1a' }
       },
-        TABS.map(function(t) {
+        visibleBridgeTabs.map(function(t) {
           var active = d.tab === t.id;
           return h('button', {
             key: t.id, role: 'tab', 'aria-selected': active,
@@ -576,13 +704,38 @@
         var sideMm = Math.sqrt(d.crossSectionMm2);
         var I_mm4 = (sideMm * sideMm * sideMm * sideMm) / 12;
         var E_MPa = mat.modulusGPa * 1000;
-        var L_top_mm = (d.span / d.nBays) * 1000; // top chord member length
-        var P_cr_top_kN = (Math.PI * Math.PI * E_MPa * I_mm4) / (L_top_mm * L_top_mm) / 1000;
-        var bucklingMargin = P_cr_top_kN / Math.max(0.001, analysis.maxChord);
+        var compressionCases = [];
+        if (moj.ok && spec) {
+          var jointByIdBuckling = {};
+          spec.joints.forEach(function(joint) { jointByIdBuckling[joint.id] = joint; });
+          spec.members.forEach(function(member) {
+            var forceKN = moj.memberForces[member.id];
+            if (!(forceKN < -0.001)) return;
+            var j1 = jointByIdBuckling[member.j1];
+            var j2 = jointByIdBuckling[member.j2];
+            if (!j1 || !j2) return;
+            var dx = j2.x - j1.x;
+            var dy = j2.y - j1.y;
+            compressionCases.push({ id: member.id, forceKN: Math.abs(forceKN), lengthMm: Math.sqrt(dx * dx + dy * dy) * 1000 });
+          });
+        }
+        if (!compressionCases.length) {
+          compressionCases.push({ id: 'top chord (approx.)', forceKN: Math.max(0.001, analysis.maxChord), lengthMm: (d.span / d.nBays) * 1000 });
+        }
+        var governingCompression = null;
+        compressionCases.forEach(function(memberCase) {
+          var pcr = (Math.PI * Math.PI * E_MPa * I_mm4) / (memberCase.lengthMm * memberCase.lengthMm) / 1000;
+          var margin = pcr / Math.max(0.001, memberCase.forceKN);
+          if (!governingCompression || margin < governingCompression.margin) {
+            governingCompression = { id: memberCase.id, forceKN: memberCase.forceKN, lengthMm: memberCase.lengthMm, pcrKN: pcr, margin: margin };
+          }
+        });
+        var P_cr_top_kN = governingCompression.pcrKN;
+        var bucklingMargin = governingCompression.margin;
         var buckles = bucklingMargin < 1;
         var bucklingMarginal = bucklingMargin >= 1 && bucklingMargin < 2;
-        var slenderness = L_top_mm / (sideMm / Math.sqrt(12));
-
+        var governingLengthMm = governingCompression.lengthMm;
+        var slenderness = governingLengthMm / (sideMm / Math.sqrt(12));
         // Status combines yield + buckling
         var yieldStatus = safetyFactor >= 2 ? 'safe' : safetyFactor >= 1 ? 'marginal' : 'failed';
         var bucklingStatus = !buckles && !bucklingMarginal ? 'safe' : bucklingMarginal ? 'marginal' : 'failed';
@@ -730,19 +883,37 @@
             );
           };
           var styleLabel = { warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[style] || 'Warren';
-          return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'trussSvgT trussSvgD' },
+          return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'trussSvgT trussSvgD', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
             h('title', { id: 'trussSvgT' }, styleLabel + ' truss diagram'),
             h('desc', { id: 'trussSvgD' }, styleLabel + ' truss with ' + n + ' bays, span ' + d.span + ' meters, height ' + d.height + ' meters. Red members are in tension; blue members are in compression. Thickness shows magnitude of force.'),
+            h('defs', null,
+              h('linearGradient', { id: 'riverGrad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                h('stop', { offset: '0%', stopColor: '#0284c7', stopOpacity: 0.2 }),
+                h('stop', { offset: '50%', stopColor: '#38bdf8', stopOpacity: 0.45 }),
+                h('stop', { offset: '100%', stopColor: '#0284c7', stopOpacity: 0.2 })
+              ),
+              h('linearGradient', { id: 'headlightGrad', x1: '0%', y1: '50%', x2: '100%', y2: '50%' },
+                h('stop', { offset: '0%', stopColor: '#fef08a', stopOpacity: 0.7 }),
+                h('stop', { offset: '100%', stopColor: '#fef08a', stopOpacity: 0 })
+              ),
+              h('filter', { id: 'nodeGlow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
+                h('feGaussianBlur', { stdDeviation: '2', result: 'blur' }),
+                h('feComposite', { in: 'SourceGraphic', in2: 'blur', operator: 'over' })
+              )
+            ),
+            // Background Environment (Valley & River)
+            h('path', { d: 'M 0,' + ty(0) + ' L ' + (tx(0) - 15) + ',' + ty(0) + ' L ' + (tx(0) - 40) + ',' + svgH + ' L 0,' + svgH + ' Z', fill: '#1e293b' }),
+            h('path', { d: 'M ' + svgW + ',' + ty(0) + ' L ' + (tx(d.span) + 15) + ',' + ty(0) + ' L ' + (tx(d.span) + 40) + ',' + svgH + ' L ' + svgW + ',' + svgH + ' Z', fill: '#1e293b' }),
+            h('rect', { x: tx(0) - 15, y: ty(0), width: d.span * scale + 30, height: svgH - ty(0), fill: 'url(#riverGrad)' }),
+            // Water ripples
+            h('path', { d: 'M ' + tx(0) + ',' + (ty(0) + 18) + ' Q ' + (tx(d.span*0.25)) + ',' + (ty(0) + 14) + ' ' + (tx(d.span*0.5)) + ',' + (ty(0) + 18) + ' T ' + tx(d.span) + ',' + (ty(0) + 18), stroke: 'rgba(56,189,248,0.3)', strokeWidth: 1, fill: 'none' }),
             // Ground line
-            h('line', { x1: 0, y1: ty(0), x2: svgW, y2: ty(0), stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }),
+            h('line', { x1: 0, y1: ty(0), x2: svgW, y2: ty(0), stroke: '#475569', strokeWidth: 1.5, strokeDasharray: '4 4' }),
             // Members — pass member id so MOJ-exact coloring works
             bottomChord.map(function(m, i) { return renderMember(m, i, bottomChord.length, 'chord', 'BC' + i); }),
             topChord.map(function(m, i) { return renderMember(m, i, topChord.length, 'chord', 'TC' + i); }),
             verticals.map(function(m, i) { return renderMember(m, i, verticals.length, 'vert', 'V' + i); }),
             diagonals.map(function(m, i) {
-              // Diagonal IDs differ by truss style:
-              //   warren: DL0/DR0/DL1/DR1/... alternating (i even = DL{i/2}, i odd = DR{(i-1)/2})
-              //   pratt/howe: ED0, ED1, ID0, ID1, ... (we push ED0 first, then ED1, then IDs)
               var midDiag = null;
               if (style === 'warren') {
                 var di = Math.floor(i / 2);
@@ -754,59 +925,86 @@
               }
               return renderMember(m, i, diagonals.length, 'diag', midDiag);
             }),
-            // Joints
+            // Joints with metallic glow
             bottoms.concat(tops).map(function(j, i) {
-              return h('circle', { key: 'jt_' + i, cx: tx(j.x), cy: ty(j.y), r: 4, fill: '#fbbf24', stroke: '#78350f', strokeWidth: 1 });
+              return h('g', { key: 'jt_' + i, filter: 'url(#nodeGlow)' },
+                h('circle', { cx: tx(j.x), cy: ty(j.y), r: 4.5, fill: '#fbbf24', stroke: '#78350f', strokeWidth: 1.2 }),
+                h('circle', { cx: tx(j.x), cy: ty(j.y), r: 1.5, fill: '#ffffff' })
+              );
             }),
             // Support symbols at B0 and Bn
             (function() {
               var b0x = tx(0), bnx = tx(d.span), gy = ty(0);
               return [
-                h('polygon', { key: 'sup0', points: (b0x - 8) + ',' + (gy + 12) + ' ' + (b0x + 8) + ',' + (gy + 12) + ' ' + b0x + ',' + (gy + 2), fill: '#94a3b8' }),
-                h('polygon', { key: 'supN', points: (bnx - 8) + ',' + (gy + 12) + ' ' + (bnx + 8) + ',' + (gy + 12) + ' ' + bnx + ',' + (gy + 2), fill: '#94a3b8' })
+                // Pin support (fixed) at B0
+                h('polygon', { key: 'sup0', points: (b0x - 10) + ',' + (gy + 14) + ' ' + (b0x + 10) + ',' + (gy + 14) + ' ' + b0x + ',' + (gy + 2), fill: '#64748b', stroke: '#334155', strokeWidth: 1 }),
+                // Roller support at Bn
+                h('polygon', { key: 'supN', points: (bnx - 10) + ',' + (gy + 10) + ' ' + (bnx + 10) + ',' + (gy + 10) + ' ' + bnx + ',' + (gy + 2), fill: '#64748b', stroke: '#334155', strokeWidth: 1 }),
+                h('circle', { key: 'supNr1', cx: bnx - 5, cy: gy + 14, r: 2.5, fill: '#cbd5e1' }),
+                h('circle', { key: 'supNr2', cx: bnx + 5, cy: gy + 14, r: 2.5, fill: '#cbd5e1' })
               ];
             })(),
-            // Load indicators
+            // Load indicators / Dynamic illuminated vehicle
             loadMode === 'vehicle' ? (function() {
               var vx = (d.vehiclePos != null ? d.vehiclePos : 0.5) * d.span;
               var vxScreen = tx(vx);
               var vTop = ty(d.height) - 14;
               return h('g', { key: 'vehicle' },
-                // Truck silhouette
-                h('rect', { x: vxScreen - 18, y: vTop - 10, width: 36, height: 12, rx: 2, fill: '#10b981', stroke: '#064e3b', strokeWidth: 1 }),
-                h('rect', { x: vxScreen - 14, y: vTop - 7, width: 14, height: 6, fill: '#0a0e1a' }),
-                h('circle', { cx: vxScreen - 10, cy: vTop + 4, r: 3, fill: '#0a0e1a' }),
-                h('circle', { cx: vxScreen + 10, cy: vTop + 4, r: 3, fill: '#0a0e1a' }),
-                h('line', { x1: vxScreen, y1: vTop + 2, x2: vxScreen, y2: ty(d.height) - 2, stroke: '#22c55e', strokeWidth: 1.5, strokeDasharray: '3 2' }),
-                h('text', { x: vxScreen, y: vTop - 14, textAnchor: 'middle', fill: '#86efac', fontSize: 10, fontWeight: 700 }, (d.vehicleLoad || 150) + ' kN')
+                // Headlight Beam Cone
+                h('polygon', { points: (vxScreen + 18) + ',' + (vTop - 3) + ' ' + (vxScreen + 60) + ',' + (vTop - 12) + ' ' + (vxScreen + 60) + ',' + (vTop + 8), fill: 'url(#headlightGrad)' }),
+                // Truck Body
+                h('rect', { x: vxScreen - 20, y: vTop - 12, width: 38, height: 14, rx: 3, fill: '#10b981', stroke: '#34d399', strokeWidth: 1.2 }),
+                // Cab window
+                h('rect', { x: vxScreen + 2, y: vTop - 9, width: 14, height: 6, rx: 1, fill: '#38bdf8', opacity: 0.9 }),
+                // Metallic Wheels
+                h('g', null,
+                  h('circle', { cx: vxScreen - 12, cy: vTop + 4, r: 3.5, fill: '#0f172a', stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('circle', { cx: vxScreen - 12, cy: vTop + 4, r: 1, fill: '#ffffff' }),
+                  h('circle', { cx: vxScreen + 12, cy: vTop + 4, r: 3.5, fill: '#0f172a', stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('circle', { cx: vxScreen + 12, cy: vTop + 4, r: 1, fill: '#ffffff' })
+                ),
+                // Load line down to bridge deck
+                h('line', { x1: vxScreen, y1: vTop + 4, x2: vxScreen, y2: ty(d.height) - 2, stroke: '#facc15', strokeWidth: 2, strokeDasharray: '3 2' }),
+                // Load Badge
+                h('g', null,
+                  h('rect', { x: vxScreen - 30, y: vTop - 28, width: 60, height: 16, rx: 8, fill: 'rgba(16,185,129,0.9)', stroke: '#34d399', strokeWidth: 1 }),
+                  h('text', { x: vxScreen, y: vTop - 16, textAnchor: 'middle', fill: '#ffffff', fontSize: 10, fontWeight: 800 }, (d.vehicleLoad || 150) + ' kN')
+                )
               );
             })() : tops.map(function(j, i) {
-              // Only show on actual TOP joints (not midJoints of K-truss)
               if (style === 'ktruss' && j.y < d.height) return null;
-              var jx = tx(j.x), jy = ty(j.y) - 20;
+              var jx = tx(j.x), jy = ty(j.y) - 22;
               return h('g', { key: 'load_' + i },
                 h('line', { x1: jx, y1: jy, x2: jx, y2: ty(j.y) - 2, stroke: '#22c55e', strokeWidth: 2 }),
-                h('polygon', { points: (jx - 4) + ',' + (ty(j.y) - 6) + ' ' + (jx + 4) + ',' + (ty(j.y) - 6) + ' ' + jx + ',' + (ty(j.y) - 1), fill: '#22c55e' }),
-                h('text', { x: jx, y: jy - 4, textAnchor: 'middle', fill: '#86efac', fontSize: 9 }, d.loadPerJoint + 'kN')
+                h('polygon', { points: (jx - 5) + ',' + (ty(j.y) - 7) + ' ' + (jx + 5) + ',' + (ty(j.y) - 7) + ' ' + jx + ',' + (ty(j.y) - 1), fill: '#22c55e' }),
+                h('text', { x: jx, y: jy - 4, textAnchor: 'middle', fill: '#86efac', fontSize: 9.5, fontWeight: 700 }, d.loadPerJoint + 'kN')
               );
             }),
             // Span dim line
             h('line', { x1: tx(0), y1: ty(0) + 28, x2: tx(d.span), y2: ty(0) + 28, stroke: '#64748b', strokeWidth: 1 }),
-            h('text', { x: (tx(0) + tx(d.span)) / 2, y: ty(0) + 40, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, 'Span = ' + d.span + ' m')
+            h('text', { x: (tx(0) + tx(d.span)) / 2, y: ty(0) + 40, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 600 }, 'Span = ' + d.span + ' m')
           );
         }
 
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            'Warren truss bridge stress test. Adjust the parameters below and see how force distribution changes. ',
-            h('strong', { style: { color: '#fbbf24' } }, 'Red = tension'), ', ',
-            h('strong', { style: { color: '#7dd3fc' } }, 'blue = compression'),
-            ', thickness shows magnitude. Forces calculated using the deep-beam approximation (real analysis would use method of joints or matrix structural analysis).'
+            ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren') + ' truss bridge stress test. Adjust the parameters below and see how force distribution changes. ',
+            h('strong', { style: { color: '#f87171' } }, __alloT('stem.bridgelab.red_tension', 'Red = tension')), ', ',
+            h('strong', { style: { color: '#7dd3fc' } }, __alloT('stem.bridgelab.blue_compression', 'blue = compression')),
+            __alloT('stem.bridgelab.thickness_shows_magnitude_forces_calcu', ', thickness shows magnitude. Forces calculated using the deep-beam approximation (real analysis would use method of joints or matrix structural analysis).')
           ),
 
           // SVG
-          h('div', { style: { padding: 12, borderRadius: 12, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 14, overflowX: 'auto' } },
+          h('div', { style: { padding: 12, borderRadius: 12, background: 'var(--allo-stem-deeper, #0a0e1a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8, overflowX: 'auto' } },
             trussSvg()
+          ),
+
+          // Force-color legend (the colors were only described in prose above)
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', marginBottom: 14, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } }, h('span', { style: { width: 16, height: 4, borderRadius: 2, background: '#f87171', display: 'inline-block' } }), __alloT('stem.bridgelab.tension', 'Tension')),
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } }, h('span', { style: { width: 16, height: 4, borderRadius: 2, background: '#7dd3fc', display: 'inline-block' } }), __alloT('stem.bridgelab.compression', 'Compression')),
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } }, h('span', { style: { width: 16, height: 8, borderRadius: 2, background: '#94a3b8', display: 'inline-block' } }), __alloT('stem.bridgelab.thicker_larger_force', 'Thicker = larger force')),
+            h('span', null, __alloT('stem.bridgelab.supports_pin_left_roller_right', 'Supports: pin (left) ▲  ·  roller (right) ▲⊙'))
           ),
 
           // Load mode toggle
@@ -814,8 +1012,8 @@
             h('div', null,
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
                 [
-                  { id: 'uniform', name: 'Uniform load', sub: 'distributed across all top joints (dead load equivalent)' },
-                  { id: 'vehicle', name: 'Moving vehicle', sub: 'single point load you can drag across the span' }
+                  { id: 'uniform', name: __alloT('stem.bridgelab.uniform_load', 'Uniform load'), sub: 'distributed across all top joints (dead load equivalent)' },
+                  { id: 'vehicle', name: __alloT('stem.bridgelab.moving_vehicle', 'Moving vehicle'), sub: 'single point load you can drag across the span' }
                 ].map(function(o) {
                   var active = loadMode === o.id;
                   return h('button', { key: o.id,
@@ -828,11 +1026,24 @@
                 })
               ),
               loadMode === 'vehicle'
-                ? h('div', { style: { fontSize: 11.5, color: '#fde68a', lineHeight: 1.6, padding: 8, background: 'rgba(245,158,11,0.10)', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)' } },
-                    h('strong', null, 'Moving-load analysis: '),
-                    'real bridges are designed by sliding the worst possible vehicle across every point on the span and recording the maximum force in each member. The "influence line" of a member is how its force varies with the load\'s position. Each member has its own worst case — usually NOT in the same place as the worst case for any other member.'
+                ? h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6, padding: 8, background: 'rgba(245,158,11,0.10)', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 6 } },
+                      h('strong', null, __alloT('stem.bridgelab.moving_load_analysis', 'Moving-load analysis: ')),
+                      h('button', {
+                        onClick: function() {
+                          var next = !d.autoDriving;
+                          upd({ autoDriving: next, vehiclePos: next ? 0 : d.vehiclePos });
+                          if (next) {
+                            playBridgeSound('drive');
+                            announceStatus('Vehicle starting automated drive across bridge span');
+                          }
+                        },
+                        style: { padding: '5px 12px', borderRadius: 6, background: d.autoDriving ? '#dc2626' : '#10b981', border: 'none', color: '#ffffff', fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }
+                      }, d.autoDriving ? '⏸ Stop Drive' : '🚗 Auto-Drive Vehicle Across Bridge')
+                    ),
+                    __alloT('stem.bridgelab.real_bridges_are_designed_by_sliding_t', 'real bridges are designed by sliding the worst possible vehicle across every point on the span and recording the maximum force in each member. The "influence line" of a member is how its force varies with the load\'s position. Each member has its own worst case — usually NOT in the same place as the worst case for any other member.')
                   )
-                : h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, padding: 8 } }, 'Uniform mode treats the load as equally distributed across all top joints — useful for studying the bridge under its own weight + typical dead loads.')
+                : h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, padding: 8 } }, __alloT('stem.bridgelab.uniform_mode_treats_the_load_as_equall', 'Uniform mode treats the load as equally distributed across all top joints — useful for studying the bridge under its own weight + typical dead loads.'))
             )
           ),
 
@@ -857,9 +1068,9 @@
             h('div', null,
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 } },
                 [
-                  { id: 'warren', name: 'Warren', sub: 'alternating diagonals, no verticals' },
-                  { id: 'pratt',  name: 'Pratt',  sub: 'verticals + inward diagonals (in tension)' },
-                  { id: 'howe',   name: 'Howe',   sub: 'verticals + outward diagonals (in compression)' },
+                  { id: 'warren', name: __alloT('stem.bridgelab.warren', 'Warren'), sub: 'alternating diagonals, no verticals' },
+                  { id: 'pratt',  name: __alloT('stem.bridgelab.pratt', 'Pratt'),  sub: 'verticals + inward diagonals (in tension)' },
+                  { id: 'howe',   name: __alloT('stem.bridgelab.howe', 'Howe'),   sub: 'verticals + outward diagonals (in compression)' },
                   { id: 'ktruss', name: 'K-truss', sub: 'K-shaped pattern, shorter diagonals' }
                 ].map(function(s) {
                   var active = (d.trussStyle || 'warren') === s.id;
@@ -898,7 +1109,7 @@
           ),
 
           // Analysis results — combined yield + buckling
-          h('div', { style: { padding: 14, borderRadius: 12, background: status === 'safe' ? 'rgba(34,197,94,0.10)' : status === 'marginal' ? 'rgba(245,158,11,0.15)' : 'rgba(220,38,38,0.15)', border: '1px solid ' + (status === 'safe' ? 'rgba(34,197,94,0.4)' : status === 'marginal' ? 'rgba(245,158,11,0.4)' : 'rgba(220,38,38,0.4)'), borderLeft: '4px solid ' + (status === 'safe' ? '#22c55e' : status === 'marginal' ? '#f59e0b' : '#dc2626'), marginBottom: 12 } },
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 12, background: status === 'safe' ? 'rgba(34,197,94,0.10)' : status === 'marginal' ? 'rgba(245,158,11,0.15)' : 'rgba(220,38,38,0.15)', border: '1px solid ' + (status === 'safe' ? 'rgba(34,197,94,0.4)' : status === 'marginal' ? 'rgba(245,158,11,0.4)' : 'rgba(220,38,38,0.4)'), borderLeft: '4px solid ' + (status === 'safe' ? '#22c55e' : status === 'marginal' ? '#f59e0b' : '#dc2626'), marginBottom: 12 } },
             h('div', { style: { fontSize: 16, fontWeight: 900, color: status === 'safe' ? '#86efac' : status === 'marginal' ? '#fbbf24' : '#fca5a5', marginBottom: 10 } },
               status === 'safe' ? '✓ SAFE — passes both yield and buckling checks' :
               status === 'marginal' ? '⚠ MARGINAL — passes but below code-recommended safety factor (2.0)' :
@@ -916,10 +1127,10 @@
               h('strong', { style: { color: bucklingStatus === 'safe' ? '#86efac' : bucklingStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 110 } },
                 bucklingStatus === 'safe' ? '✓ Buckling' : bucklingStatus === 'marginal' ? '⚠ Buckling' : '✗ Buckling'
               ),
-              h('span', null, 'P_cr ' + P_cr_top_kN.toFixed(0) + ' kN vs chord ' + analysis.maxChord.toFixed(0) + ' kN · slenderness ratio ' + slenderness.toFixed(0))
+              h('span', null, 'Governing member ' + governingCompression.id + ': P_cr ' + P_cr_top_kN.toFixed(0) + ' kN vs compression ' + governingCompression.forceKN.toFixed(0) + ' kN; length ' + (governingLengthMm / 1000).toFixed(1) + ' m; slenderness ' + slenderness.toFixed(0) + ' (pinned ends K=1; solid square section)')
             ),
             h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-              buckles ? 'BUCKLING FAILURE: the top chord (longest compression member) will buckle before reaching yield. Long, thin compression members buckle at loads much lower than their crushing strength. Either thicken the cross-section (raises I quadratically), shorten the bay (more bays), or use bracing.' :
+              buckles ? 'BUCKLING FAILURE: member ' + governingCompression.id + ' reaches its Euler buckling load before material yield. Long, thin compression members can buckle far below crushing strength. Thicken the section, shorten the unbraced length, add bracing, or revise the geometry.' :
               bucklingMarginal ? 'Buckling margin is thin. A real engineer would add lateral bracing or thicken the chord. Buckling sneaks up on long slender members and is the failure mode that brought down the Quebec Bridge in 1907.' :
               yieldStatus !== 'safe' ? 'The top chord buckles fine, but stress exceeds yield. Increase cross-section, decrease load, increase truss height, or pick a stronger material.' :
               'Both yield and buckling have adequate margin. Code typically requires safety factor 2-4 for buildings and 2-6 for bridges. Brooklyn Bridge was designed with 6x for yield.'
@@ -931,7 +1142,8 @@
             statBox('Max diagonal force', analysis.maxDiag.toFixed(0) + ' kN', '#2563eb'),
             statBox('Max stress', maxStress.toFixed(0) + ' MPa', '#f59e0b'),
             statBox('Material yield', mat.yieldMPa + ' MPa', '#94a3b8'),
-            statBox('Euler P_cr (top chord)', P_cr_top_kN.toFixed(0) + ' kN', '#a78bfa'),
+            statBox('Governing Euler P_cr', P_cr_top_kN.toFixed(0) + ' kN', '#a78bfa'),
+            statBox('Governing compression member', governingCompression.id, '#a78bfa'),
             statBox('Slenderness ratio (L/r)', slenderness.toFixed(0), '#a78bfa'),
             statBox('Reaction at each support', analysis.reactions.toFixed(0) + ' kN', '#94a3b8'),
             statBox('Diagonal angle', analysis.diagAngleDeg.toFixed(0) + '°', '#94a3b8'),
@@ -945,12 +1157,12 @@
             h('div', null,
               h('input', { type: 'text', value: d.designName || '',
                 onChange: function(e) { upd({ designName: e.target.value }); },
-                placeholder: 'Design name (e.g., "Marie\'s pedestrian bridge over Back Cove")',
+                placeholder: __alloT('stem.bridgelab.design_name_e_g_marie_s_pedestrian_bri', 'Design name (e.g., "Marie\'s pedestrian bridge over Back Cove")'),
                 style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, marginBottom: 8, fontFamily: 'inherit' }
               }),
               h('textarea', { value: d.designNotes || '',
                 onChange: function(e) { upd({ designNotes: e.target.value }); },
-                placeholder: 'Why this material? What are the constraints? What would you improve?',
+                placeholder: __alloT('stem.bridgelab.why_this_material_what_are_the_constra', 'Why this material? What are the constraints? What would you improve?'),
                 rows: 3,
                 style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, resize: 'vertical', fontFamily: 'inherit' }
               })
@@ -970,13 +1182,17 @@
                   // Compute peak chord force using current MOJ or approximation. We'll re-use analysis but
                   // just substitute cross-section + material for the safety calc.
                   var stress = analysis.maxChord * 1000 / crossMm2; // MPa
-                  // Buckling
+                  // Buckling: evaluate every compressed member with its own force and length.
                   var side = Math.sqrt(crossMm2);
                   var I = (side * side * side * side) / 12;
-                  var L_mm = (d.span / d.nBays) * 1000;
-                  var Pcr = (Math.PI * Math.PI * matCandidate.modulusGPa * 1000 * I) / (L_mm * L_mm) / 1000;
                   var sfYield = matCandidate.yieldMPa / stress;
-                  var sfBuck = Pcr / Math.max(0.001, analysis.maxChord);
+                  var sfBuck = Infinity;
+                  compressionCases.forEach(function(memberCase) {
+                    var pcrCandidate = (Math.PI * Math.PI * matCandidate.modulusGPa * 1000 * I) /
+                      (memberCase.lengthMm * memberCase.lengthMm) / 1000;
+                    var memberSF = pcrCandidate / Math.max(0.001, memberCase.forceKN);
+                    if (memberSF < sfBuck) sfBuck = memberSF;
+                  });
                   var sfMin = Math.min(sfYield, sfBuck);
                   if (sfMin >= targetSF) {
                     var areaM2 = crossMm2 / 1e6;
@@ -999,23 +1215,23 @@
 
               return h('div', null,
                 h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'Real engineering is not just "does it work?" — it is "what\'s the cheapest design that works?" This optimizer sweeps every combination of material + cross-section, keeps only those that pass your target safety factor for BOTH yield AND buckling, and ranks them by material cost. Span, height, number of bays, and load remain at your current settings.'
+                  __alloT('stem.bridgelab.real_engineering_is_not_just_does_it_w', 'Real engineering is not just "does it work?" — it is "what\'s the cheapest design that works?" This optimizer sweeps every combination of material + cross-section, keeps only those that pass your target safety factor for BOTH yield AND buckling, and ranks them by material cost. Span, height, number of bays, and load remain at your current settings.')
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 12 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                    h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'Target safety factor'),
+                    h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, __alloT('stem.bridgelab.target_safety_factor', 'Target safety factor')),
                     h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, targetSF.toFixed(1))
                   ),
-                  h('input', { type: 'range', min: 1.5, max: 6, step: 0.5, value: targetSF,
+                  h('input', { type: 'range', 'aria-valuetext': targetSF.toFixed(1) + ' safety factor', min: 1.5, max: 6, step: 0.5, value: targetSF,
                     onChange: function(e) { upd({ optTargetSF: parseFloat(e.target.value) }); },
-                    'aria-label': 'Target safety factor',
+                    'aria-label': __alloT('stem.bridgelab.target_safety_factor_2', 'Target safety factor'),
                     style: { width: '100%', accentColor: AMBER }
                   }),
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } },
-                    h('span', null, '1.5 (very thin margin)'),
-                    h('span', null, '2.0 (code minimum)'),
-                    h('span', null, '4.0+ (conservative)'),
-                    h('span', null, '6.0 (Brooklyn Bridge)')
+                    h('span', null, __alloT('stem.bridgelab.1_5_very_thin_margin', '1.5 (very thin margin)')),
+                    h('span', null, __alloT('stem.bridgelab.2_0_code_minimum', '2.0 (code minimum)')),
+                    h('span', null, __alloT('stem.bridgelab.4_0_conservative', '4.0+ (conservative)')),
+                    h('span', null, __alloT('stem.bridgelab.6_0_brooklyn_bridge', '6.0 (Brooklyn Bridge)'))
                   )
                 ),
                 top5.length === 0
@@ -1025,10 +1241,10 @@
                   : h('div', null,
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: '#86efac', marginBottom: 8 } }, '✓ ' + results.length + ' combinations pass. Top 5 by cost:'),
                       h('div', { style: { overflowX: 'auto' } },
-                        h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 580 } },
+                        h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 0 } },
                           h('thead', null, h('tr', null,
                             ['Rank', 'Material', 'Cross-section', 'SF yield', 'SF buckling', 'Mass', 'Cost (USD)'].map(function(c, i) {
-                              return h('th', { key: i, style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontWeight: 800 } }, c);
+                              return h('th', { key: i, style: { padding: 6, textAlign: 'left', background: 'var(--allo-stem-deeper, #0a0e1a)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontWeight: 800 } }, c);
                             })
                           )),
                           h('tbody', null,
@@ -1049,14 +1265,14 @@
                       ),
                       h('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11, color: '#c7d2fe', lineHeight: 1.6 } },
                         h('strong', null, 'Note: '),
-                        'Cost estimate is material-only — doesn\'t include labor, fabrication, transport, fastening, or maintenance over the bridge\'s lifetime. Real bridge economics also factor in durability (steel maintenance vs concrete) + replacement cycle. But raw material cost is the starting line.'
+                        __alloT('stem.bridgelab.cost_estimate_is_material_only_doesn_t', 'Cost estimate is material-only — doesn\'t include labor, fabrication, transport, fastening, or maintenance over the bridge\'s lifetime. Real bridge economics also factor in durability (steel maintenance vs concrete) + replacement cycle. But raw material cost is the starting line.')
                       ),
-                      h('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, color: '#fde68a', lineHeight: 1.6 } },
-                        h('strong', null, 'Click the winner: '),
+                      h('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6 } },
+                        h('strong', null, __alloT('stem.bridgelab.click_the_winner', 'Click the winner: ')),
                         h('button', {
                           onClick: function() { upd({ materialId: top5[0].material.id, crossSectionMm2: top5[0].crossMm2 }); },
                           style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #fbbf24', background: 'rgba(245,158,11,0.20)', color: '#fbbf24', fontSize: 11, fontWeight: 700, cursor: 'pointer', marginLeft: 6 }
-                        }, 'Apply this design to my bridge')
+                        }, __alloT('stem.bridgelab.apply_this_design_to_my_bridge', 'Apply this design to my bridge'))
                       )
                     )
               );
@@ -1070,13 +1286,13 @@
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 useExact
                   ? h('span', null,
-                      h('strong', { style: { color: '#86efac' } }, '✓ Exact analysis (Method of Joints). '),
-                      'Forces are computed from 2D pin-jointed equilibrium: for each joint, sum of forces in x and sum of forces in y both equal zero. ',
+                      h('strong', { style: { color: '#86efac' } }, __alloT('stem.bridgelab.exact_analysis_method_of_joints', '✓ Exact analysis (Method of Joints). ')),
+                      __alloT('stem.bridgelab.forces_are_computed_from_2d_pin_jointe', 'Forces are computed from 2D pin-jointed equilibrium: for each joint, sum of forces in x and sum of forces in y both equal zero. '),
                       'The resulting linear system (' + (2 * spec.joints.length) + ' equations, ' + (spec.members.length + Object.keys(spec.supports).reduce(function(acc, jid) { return acc + (spec.supports[jid] === 'pin' ? 2 : 1); }, 0)) + ' unknowns) is solved by Gaussian elimination with partial pivoting. Hover over any member in the diagram to see its exact tension or compression force. The maximum chord force (' + analysis.maxChord.toFixed(0) + ' kN) and maximum diagonal force (' + analysis.maxDiag.toFixed(0) + ' kN) are now the actual peak member forces, not deep-beam approximations.'
                     )
                   : h('span', null,
-                      h('strong', { style: { color: '#fbbf24' } }, '⚠ Deep-beam approximation. '),
-                      'K-trusses use the deep-beam approximation: the truss is treated like a single beam carrying the same total load. Maximum chord force ≈ M / h, where M is the bending moment and h is the truss height. The qualitative pattern (max chord at center, max diagonal force at ends) is correct, but per-member forces are not exact. Warren, Pratt, and Howe trusses use the exact Method of Joints solver.'
+                      h('strong', { style: { color: '#fbbf24' } }, __alloT('stem.bridgelab.deep_beam_approximation', '⚠ Deep-beam approximation. ')),
+                      __alloT('stem.bridgelab.k_trusses_use_the_deep_beam_approximat', 'K-trusses use the deep-beam approximation: the truss is treated like a single beam carrying the same total load. Maximum chord force ≈ M / h, where M is the bending moment and h is the truss height. The qualitative pattern (max chord at center, max diagonal force at ends) is correct, but per-member forces are not exact. Warren, Pratt, and Howe trusses use the exact Method of Joints solver.')
                     )
               )
             );
@@ -1127,61 +1343,77 @@
           var angleAtSupport = Math.atan2(V, H) * 180 / Math.PI;
 
           // Sweet-spot guidance: real bridge sag/span ratios are usually 1/8 to 1/12
-          var sagRatioGood = sagRatio >= 1/14 && sagRatio <= 1/6;
-
           function catenarySvg() {
             var svgW = 600, svgH = 220;
             var padL = 40, padR = 40, padT = 30, padB = 50;
             var plotW = svgW - padL - padR;
             var plotH = svgH - padT - padB;
-            // Scale: x = 0..cSpan, y = 0..cSag (downward)
             function tx(x) { return padL + (x / cSpan) * plotW; }
             function ty(y) { return padT + (y / Math.max(cSag, 1)) * plotH; }
-            // Build cable points (parabola y = (4s/L²) x(L-x))
             var pts = [];
             for (var i = 0; i <= 50; i++) {
               var xx = (i / 50) * cSpan;
               var yy = (4 * cSag / (cSpan * cSpan)) * xx * (cSpan - xx);
               pts.push(tx(xx) + ',' + ty(yy));
             }
-            return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'catTitle catDesc' },
-              h('title', { id: 'catTitle' }, 'Suspension bridge cable shape'),
+            return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'catTitle catDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
+              h('title', { id: 'catTitle' }, __alloT('stem.bridgelab.suspension_bridge_cable_shape', 'Suspension bridge cable shape')),
               h('desc', { id: 'catDesc' }, 'A parabolic cable hanging between two towers over a span of ' + cSpan + ' meters with a sag of ' + cSag + ' meters. Maximum tension at supports is ' + Tmax.toFixed(0) + ' kN per meter of bridge width.'),
-              // Towers
-              h('rect', { x: tx(0) - 6, y: padT - 10, width: 12, height: plotH + 15, fill: '#475569' }),
-              h('rect', { x: tx(cSpan) - 6, y: padT - 10, width: 12, height: plotH + 15, fill: '#475569' }),
-              h('text', { x: tx(0), y: 18, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, 'Tower'),
-              h('text', { x: tx(cSpan), y: 18, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, 'Tower'),
-              // Anchorages (ground)
+              h('defs', null,
+                h('linearGradient', { id: 'catWaterGrad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                  h('stop', { offset: '0%', stopColor: '#0284c7', stopOpacity: 0.25 }),
+                  h('stop', { offset: '50%', stopColor: '#38bdf8', stopOpacity: 0.5 }),
+                  h('stop', { offset: '100%', stopColor: '#0284c7', stopOpacity: 0.25 })
+                ),
+                h('filter', { id: 'cableGlow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
+                  h('feGaussianBlur', { stdDeviation: '1.5', result: 'blur' }),
+                  h('feComposite', { in: 'SourceGraphic', in2: 'blur', operator: 'over' })
+                )
+              ),
+              // River background
+              h('rect', { x: 0, y: ty(cSag) + 6, width: svgW, height: svgH - (ty(cSag) + 6), fill: 'url(#catWaterGrad)' }),
+              // Towers with metallic caps
+              h('rect', { x: tx(0) - 8, y: padT - 10, width: 16, height: plotH + 16, fill: '#334155', stroke: '#475569', strokeWidth: 1.5, rx: 2 }),
+              h('rect', { x: tx(0) - 10, y: padT - 12, width: 20, height: 4, fill: '#f8fafc', rx: 1 }),
+              h('rect', { x: tx(cSpan) - 8, y: padT - 10, width: 16, height: plotH + 16, fill: '#334155', stroke: '#475569', strokeWidth: 1.5, rx: 2 }),
+              h('rect', { x: tx(cSpan) - 10, y: padT - 12, width: 20, height: 4, fill: '#f8fafc', rx: 1 }),
+              h('text', { x: tx(0), y: 16, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, __alloT('stem.bridgelab.tower', 'Tower')),
+              h('text', { x: tx(cSpan), y: 16, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, __alloT('stem.bridgelab.tower_2', 'Tower')),
+              // Anchorages (ground blocks)
+              h('rect', { x: 4, y: padT + plotH, width: 30, height: 20, rx: 3, fill: '#475569', stroke: '#64748b', strokeWidth: 1 }),
+              h('rect', { x: svgW - 34, y: padT + plotH, width: 30, height: 20, rx: 3, fill: '#475569', stroke: '#64748b', strokeWidth: 1 }),
               h('line', { x1: 0, y1: padT + plotH + 12, x2: svgW, y2: padT + plotH + 12, stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }),
-              h('text', { x: 8, y: padT + plotH + 28, fill: '#94a3b8', fontSize: 10 }, 'Anchor'),
-              h('text', { x: svgW - 50, y: padT + plotH + 28, fill: '#94a3b8', fontSize: 10 }, 'Anchor'),
-              // Cable
-              h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5 }),
+              h('text', { x: 19, y: padT + plotH + 14, textAnchor: 'middle', fill: '#f1f5f9', fontSize: 9, fontWeight: 700 }, __alloT('stem.bridgelab.anchor', 'Anchor')),
+              h('text', { x: svgW - 19, y: padT + plotH + 14, textAnchor: 'middle', fill: '#f1f5f9', fontSize: 9, fontWeight: 700 }, __alloT('stem.bridgelab.anchor_2', 'Anchor')),
+              // Glowing Main Cable
+              h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#facc15', strokeWidth: 3, filter: 'url(#cableGlow)' }),
+              // Backstay cables to anchorages
+              h('line', { x1: tx(0), y1: padT - 10, x2: 19, y2: padT + plotH, stroke: '#facc15', strokeWidth: 2 }),
+              h('line', { x1: tx(cSpan), y1: padT - 10, x2: svgW - 19, y2: padT + plotH, stroke: '#facc15', strokeWidth: 2 }),
               // Hangers (verticals from cable to deck)
               [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9].map(function(t, i) {
                 var xx = t * cSpan;
                 var yy = (4 * cSag / (cSpan * cSpan)) * xx * (cSpan - xx);
-                return h('line', { key: 'hg' + i, x1: tx(xx), y1: ty(yy), x2: tx(xx), y2: ty(cSag), stroke: '#64748b', strokeWidth: 0.7 });
+                return h('line', { key: 'hg' + i, x1: tx(xx), y1: ty(yy), x2: tx(xx), y2: ty(cSag), stroke: '#94a3b8', strokeWidth: 1 });
               }),
-              // Deck
-              h('rect', { x: tx(0), y: ty(cSag), width: plotW, height: 6, fill: '#475569' }),
-              h('text', { x: padL + plotW / 2, y: ty(cSag) + 18, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10 }, 'Deck (load: ' + cLoad + ' kN/m)'),
+              // Reinforced Deck
+              h('rect', { x: tx(0) - 10, y: ty(cSag), width: plotW + 20, height: 8, rx: 2, fill: '#334155', stroke: '#64748b', strokeWidth: 1 }),
+              h('text', { x: padL + plotW / 2, y: ty(cSag) + 20, textAnchor: 'middle', fill: '#38bdf8', fontSize: 10, fontWeight: 700 }, 'Deck (load: ' + cLoad + ' kN/m)'),
               // Tension force vectors at left tower
               (function() {
                 var fx = tx(0), fy = ty(0);
-                var scale = 30; // pixels per kN magnitude unit
+                var scale = 30;
                 var Hpx = Math.min(scale, scale * (H / Tmax));
                 var Vpx = Math.min(scale, scale * (V / Tmax));
                 return h('g', null,
                   // Horizontal H (pulling left, away from bridge)
-                  h('line', { x1: fx, y1: fy, x2: fx - Hpx, y2: fy, stroke: '#ef4444', strokeWidth: 2 }),
+                  h('line', { x1: fx, y1: fy, x2: fx - Hpx, y2: fy, stroke: '#ef4444', strokeWidth: 2.5 }),
                   h('polygon', { points: (fx - Hpx) + ',' + (fy - 3) + ' ' + (fx - Hpx) + ',' + (fy + 3) + ' ' + (fx - Hpx - 5) + ',' + fy, fill: '#ef4444' }),
-                  h('text', { x: fx - Hpx - 10, y: fy + 4, textAnchor: 'end', fill: '#fca5a5', fontSize: 10, fontWeight: 700 }, 'H'),
+                  h('text', { x: fx - Hpx - 10, y: fy + 4, textAnchor: 'end', fill: '#fca5a5', fontSize: 10, fontWeight: 800 }, 'H'),
                   // Vertical V (pulling up)
-                  h('line', { x1: fx, y1: fy, x2: fx, y2: fy - Vpx, stroke: '#3b82f6', strokeWidth: 2 }),
+                  h('line', { x1: fx, y1: fy, x2: fx, y2: fy - Vpx, stroke: '#3b82f6', strokeWidth: 2.5 }),
                   h('polygon', { points: (fx - 3) + ',' + (fy - Vpx) + ' ' + (fx + 3) + ',' + (fy - Vpx) + ' ' + fx + ',' + (fy - Vpx - 5), fill: '#3b82f6' }),
-                  h('text', { x: fx + 6, y: fy - Vpx, fill: '#93c5fd', fontSize: 10, fontWeight: 700 }, 'V')
+                  h('text', { x: fx + 6, y: fy - Vpx, fill: '#93c5fd', fontSize: 10, fontWeight: 800 }, 'V')
                 );
               })()
             );
@@ -1189,23 +1421,23 @@
 
           return h('div', null,
             h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-              'Suspension bridges work differently from trusses. The deck hangs from cables; cables hang in a curve between towers; towers transfer the load down. The cables are in PURE TENSION, the towers in PURE COMPRESSION. Anchorages resist the horizontal pull of the cables — they\'re typically massive concrete blocks buried in bedrock at each end of the bridge.'
+              __alloT('stem.bridgelab.suspension_bridges_work_differently_fr', 'Suspension bridges work differently from trusses. The deck hangs from cables; cables hang in a curve between towers; towers transfer the load down. The cables are in PURE TENSION, the towers in PURE COMPRESSION. Anchorages resist the horizontal pull of the cables — they\'re typically massive concrete blocks buried in bedrock at each end of the bridge.')
             ),
 
             catenarySvg(),
 
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginTop: 12, marginBottom: 12 } },
               [
-                { label: 'Span (m)', value: cSpan, min: 200, max: 2200, step: 50, key: 'suspSpan' },
-                { label: 'Sag (m)', value: cSag, min: 10, max: 300, step: 5, key: 'suspSag' },
-                { label: 'Deck load (kN/m)', value: cLoad, min: 1, max: 50, step: 1, key: 'suspLoad' }
+                { label: __alloT('stem.bridgelab.span_m', 'Span (m)'), value: cSpan, min: 200, max: 2200, step: 50, key: 'suspSpan' },
+                { label: __alloT('stem.bridgelab.sag_m', 'Sag (m)'), value: cSag, min: 10, max: 300, step: 5, key: 'suspSag' },
+                { label: __alloT('stem.bridgelab.deck_load_kn_m', 'Deck load (kN/m)'), value: cLoad, min: 1, max: 50, step: 1, key: 'suspLoad' }
               ].map(function(s, i) {
                 return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                     h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                     h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                   ),
-                  h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                  h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                     onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                     'aria-label': s.label,
                     style: { width: '100%', accentColor: AMBER }
@@ -1216,12 +1448,12 @@
 
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 10 } },
               [
-                { label: 'Horizontal H', value: H.toFixed(0) + ' kN/m', color: '#fca5a5', sub: 'Pulled into anchorages' },
-                { label: 'Vertical V', value: V.toFixed(0) + ' kN/m', color: '#93c5fd', sub: 'Half the deck load (each)' },
-                { label: 'Max tension T', value: Tmax.toFixed(0) + ' kN/m', color: '#fbbf24', sub: 'At the tower top' },
-                { label: 'Cable length', value: cableLen.toFixed(1) + ' m', color: '#86efac', sub: '~' + ((cableLen / cSpan - 1) * 100).toFixed(1) + '% > span' },
-                { label: 'Angle at support', value: angleAtSupport.toFixed(1) + '°', color: '#c7d2fe', sub: 'From horizontal' },
-                { label: 'Sag/span ratio', value: '1:' + (1 / sagRatio).toFixed(1), color: sagRatioGood ? '#86efac' : '#fca5a5', sub: sagRatioGood ? 'real-bridge sweet spot' : 'outside typical 1/14-1/6 range' }
+                { label: __alloT('stem.bridgelab.horizontal_h', 'Horizontal H'), value: H.toFixed(0) + ' kN/m', color: '#fca5a5', sub: 'Pulled into anchorages' },
+                { label: __alloT('stem.bridgelab.vertical_v', 'Vertical V'), value: V.toFixed(0) + ' kN/m', color: '#93c5fd', sub: 'Half the deck load (each)' },
+                { label: __alloT('stem.bridgelab.max_tension_t', 'Max tension T'), value: Tmax.toFixed(0) + ' kN/m', color: '#fbbf24', sub: 'At the tower top' },
+                { label: __alloT('stem.bridgelab.cable_length', 'Cable length'), value: cableLen.toFixed(1) + ' m', color: '#86efac', sub: '~' + ((cableLen / cSpan - 1) * 100).toFixed(1) + '% > span' },
+                { label: __alloT('stem.bridgelab.angle_at_support', 'Angle at support'), value: angleAtSupport.toFixed(1) + '°', color: '#c7d2fe', sub: 'From horizontal' },
+                { label: __alloT('stem.bridgelab.sag_span_ratio', 'Sag/span ratio'), value: '1:' + (1 / sagRatio).toFixed(1), color: sagRatioGood ? '#86efac' : '#fca5a5', sub: sagRatioGood ? 'real-bridge sweet spot' : 'outside typical 1/14-1/6 range' }
               ].map(function(s, i) {
                 return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
                   h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
@@ -1231,21 +1463,21 @@
               })
             ),
 
-            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
-              h('strong', null, 'Why sag matters: '),
-              'Shallower sag (less drop in the cable) means the cable is more horizontal, which means MORE horizontal tension is needed to support the same deck weight. Cable tension scales as 1/sag — halving the sag doubles the cable force. Real suspension bridges use sag/span ratios around 1:8 to 1:12 to balance cable cost (more sag = lower force = thinner cable) against tower height (more sag = taller towers needed to clear the deck above water/road). Golden Gate sag ratio: 1:11. Akashi-Kaikyō: 1:10.'
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
+              h('strong', null, __alloT('stem.bridgelab.why_sag_matters', 'Why sag matters: ')),
+              __alloT('stem.bridgelab.shallower_sag_less_drop_in_the_cable_m', 'Shallower sag (less drop in the cable) means the cable is more horizontal, which means MORE horizontal tension is needed to support the same deck weight. Cable tension scales as 1/sag — halving the sag doubles the cable force. Real suspension bridges use sag/span ratios around 1:8 to 1:12 to balance cable cost (more sag = lower force = thinner cable) against tower height (more sag = taller towers needed to clear the deck above water/road). Golden Gate sag ratio: 1:11. Akashi-Kaikyō: 1:10.')
             ),
 
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#a7f3d0', lineHeight: 1.65, marginTop: 8 } },
-              h('strong', null, 'Catenary vs parabola: '),
-              'A free cable under its own weight hangs in a CATENARY (cosh) shape. A cable supporting a uniformly distributed load (like a bridge deck) hangs in a PARABOLA. Real suspension cables are close to parabolic because the deck mass dominates the cable mass. The tool uses the parabolic approximation. Galileo first proposed a parabola; Huygens (1646, age 17) proved it was wrong for a free chain; Bernoulli + Leibniz + Huygens worked out the true catenary in 1691.'
+              h('strong', null, __alloT('stem.bridgelab.catenary_vs_parabola', 'Catenary vs parabola: ')),
+              __alloT('stem.bridgelab.a_free_cable_under_its_own_weight_hang', 'A free cable under its own weight hangs in a CATENARY (cosh) shape. A cable supporting a uniformly distributed load (like a bridge deck) hangs in a PARABOLA. Real suspension cables are close to parabolic because the deck mass dominates the cable mass. The tool uses the parabolic approximation. Galileo first proposed a parabola; Huygens (1646, age 17) proved it was wrong for a free chain; Bernoulli + Leibniz + Huygens worked out the true catenary in 1691.')
             )
           );
         }
 
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            'Bridge type depends on span, environment, material, and budget. Engineers pick the right form for the constraints — not a favorite.'
+            __alloT('stem.bridgelab.bridge_type_depends_on_span_environmen', 'Bridge type depends on span, environment, material, and budget. Engineers pick the right form for the constraints — not a favorite.')
           ),
           (function() {
             // Arch thrust analyzer — parabolic arch under uniform load
@@ -1282,8 +1514,8 @@
                   var yy = (4 * aRise / (aSpan * aSpan)) * xx * (aSpan - xx);
                   pts.push(tx(xx) + ',' + ty(yy));
                 }
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'archTitle archDesc' },
-                  h('title', { id: 'archTitle' }, 'Arch bridge thrust diagram'),
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'archTitle archDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
+                  h('title', { id: 'archTitle' }, __alloT('stem.bridgelab.arch_bridge_thrust_diagram', 'Arch bridge thrust diagram')),
                   h('desc', { id: 'archDesc' }, 'A parabolic arch with span ' + aSpan + ' meters and rise ' + aRise + ' meters under uniform load. Horizontal thrust at each abutment is ' + H.toFixed(0) + ' kN per meter of bridge width. Maximum axial compression at supports is ' + Cmax.toFixed(0) + ' kN per meter.'),
                   // Ground line at top (deck-level baseline)
                   h('line', { x1: 0, y1: padT, x2: svgW, y2: padT, stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }),
@@ -1309,8 +1541,8 @@
                   // Abutment / ground at base
                   h('rect', { x: 0, y: ty(0), width: tx(0) + 4, height: padB, fill: '#475569' }),
                   h('rect', { x: tx(aSpan) - 4, y: ty(0), width: svgW - tx(aSpan), height: padB, fill: '#475569' }),
-                  h('text', { x: 18, y: ty(0) + 30, fill: '#cbd5e1', fontSize: 10 }, 'Abutment'),
-                  h('text', { x: svgW - 60, y: ty(0) + 30, fill: '#cbd5e1', fontSize: 10 }, 'Abutment'),
+                  h('text', { x: 18, y: ty(0) + 30, fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.bridgelab.abutment', 'Abutment')),
+                  h('text', { x: svgW - 60, y: ty(0) + 30, fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.bridgelab.abutment_2', 'Abutment')),
                   // Force arrows at left springing (showing outward thrust H and upward V)
                   (function() {
                     var fx = tx(0), fy = ty(0);
@@ -1321,7 +1553,7 @@
                       // Horizontal H (outward, into abutment)
                       h('line', { x1: fx, y1: fy, x2: fx - Hpx, y2: fy, stroke: '#ef4444', strokeWidth: 2 }),
                       h('polygon', { points: (fx - Hpx) + ',' + (fy - 3) + ' ' + (fx - Hpx) + ',' + (fy + 3) + ' ' + (fx - Hpx - 5) + ',' + fy, fill: '#ef4444' }),
-                      h('text', { x: fx - Hpx - 10, y: fy + 4, textAnchor: 'end', fill: '#fca5a5', fontSize: 10, fontWeight: 700 }, 'H (out)'),
+                      h('text', { x: fx - Hpx - 10, y: fy + 4, textAnchor: 'end', fill: '#fca5a5', fontSize: 10, fontWeight: 700 }, __alloT('stem.bridgelab.h_out', 'H (out)')),
                       // Vertical V (downward into ground)
                       h('line', { x1: fx, y1: fy, x2: fx, y2: fy + Vpx, stroke: '#3b82f6', strokeWidth: 2 }),
                       h('polygon', { points: (fx - 3) + ',' + (fy + Vpx) + ' ' + (fx + 3) + ',' + (fy + Vpx) + ' ' + fx + ',' + (fy + Vpx + 5), fill: '#3b82f6' }),
@@ -1333,21 +1565,21 @@
 
               return h('div', null,
                 h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'Arches do the opposite of suspension bridges: a load on top pushes the curve OUTWARD into the abutments rather than pulling them inward. The entire arch is in compression — there is no tension in a true arch under design loads. This is why stone arches work (stone is excellent in compression). The horizontal thrust at the supports is the design challenge — abutments must resist it without sliding or tipping.'
+                  __alloT('stem.bridgelab.arches_do_the_opposite_of_suspension_b', 'Arches do the opposite of suspension bridges: a load on top pushes the curve OUTWARD into the abutments rather than pulling them inward. The entire arch is in compression — there is no tension in a true arch under design loads. This is why stone arches work (stone is excellent in compression). The horizontal thrust at the supports is the design challenge — abutments must resist it without sliding or tipping.')
                 ),
                 archSvg(),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginTop: 12, marginBottom: 12 } },
                   [
-                    { label: 'Span (m)', value: aSpan, min: 10, max: 200, step: 5, key: 'archSpan' },
-                    { label: 'Rise (m)', value: aRise, min: 3, max: 100, step: 1, key: 'archRise' },
-                    { label: 'Deck load (kN/m)', value: aLoad, min: 5, max: 100, step: 5, key: 'archLoad' }
+                    { label: __alloT('stem.bridgelab.span_m_2', 'Span (m)'), value: aSpan, min: 10, max: 200, step: 5, key: 'archSpan' },
+                    { label: __alloT('stem.bridgelab.rise_m', 'Rise (m)'), value: aRise, min: 3, max: 100, step: 1, key: 'archRise' },
+                    { label: __alloT('stem.bridgelab.deck_load_kn_m_2', 'Deck load (kN/m)'), value: aLoad, min: 5, max: 100, step: 5, key: 'archLoad' }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -1357,11 +1589,11 @@
                 ),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 10 } },
                   [
-                    { label: 'Horizontal thrust H', value: H.toFixed(0) + ' kN/m', color: '#fca5a5', sub: 'pushes outward — abutments must resist' },
-                    { label: 'Vertical reaction V', value: V.toFixed(0) + ' kN/m', color: '#93c5fd', sub: 'half the deck load each side' },
-                    { label: 'Max compression', value: Cmax.toFixed(0) + ' kN/m', color: '#fbbf24', sub: 'at the springings (supports)' },
-                    { label: 'Min compression', value: Cmin.toFixed(0) + ' kN/m', color: '#86efac', sub: 'at the crown (top of arch)' },
-                    { label: 'Rise/span ratio', value: '1:' + (1 / riseRatio).toFixed(1), color: goodRatio ? '#86efac' : '#fca5a5', sub: goodRatio ? 'within typical 1/2 to 1/8 range' : 'outside typical range' }
+                    { label: __alloT('stem.bridgelab.horizontal_thrust_h', 'Horizontal thrust H'), value: H.toFixed(0) + ' kN/m', color: '#fca5a5', sub: 'pushes outward — abutments must resist' },
+                    { label: __alloT('stem.bridgelab.vertical_reaction_v', 'Vertical reaction V'), value: V.toFixed(0) + ' kN/m', color: '#93c5fd', sub: 'half the deck load each side' },
+                    { label: __alloT('stem.bridgelab.max_compression', 'Max compression'), value: Cmax.toFixed(0) + ' kN/m', color: '#fbbf24', sub: 'at the springings (supports)' },
+                    { label: __alloT('stem.bridgelab.min_compression', 'Min compression'), value: Cmin.toFixed(0) + ' kN/m', color: '#86efac', sub: 'at the crown (top of arch)' },
+                    { label: __alloT('stem.bridgelab.rise_span_ratio', 'Rise/span ratio'), value: '1:' + (1 / riseRatio).toFixed(1), color: goodRatio ? '#86efac' : '#fca5a5', sub: goodRatio ? 'within typical 1/2 to 1/8 range' : 'outside typical range' }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
@@ -1371,12 +1603,12 @@
                   })
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.3)', fontSize: 11.5, color: '#bfdbfe', lineHeight: 1.65 } },
-                  h('strong', null, 'Why arches stand for centuries: '),
-                  'Compression is what stone, brick, and concrete handle best. Roman arch bridges from 100 BCE are still in use because: (1) they are entirely in compression, no tension anywhere; (2) the abutments resist the horizontal thrust through sheer mass; (3) compressive forces have no fatigue limit in the way that bending or tension do — stone under steady compression effectively lasts forever.'
+                  h('strong', null, __alloT('stem.bridgelab.why_arches_stand_for_centuries', 'Why arches stand for centuries: ')),
+                  __alloT('stem.bridgelab.compression_is_what_stone_brick_and_co', 'Compression is what stone, brick, and concrete handle best. Roman arch bridges from 100 BCE are still in use because: (1) they are entirely in compression, no tension anywhere; (2) the abutments resist the horizontal thrust through sheer mass; (3) compressive forces have no fatigue limit in the way that bending or tension do — stone under steady compression effectively lasts forever.')
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65, marginTop: 8 } },
-                  h('strong', null, 'Why high thrust matters: '),
-                  'Flatter arches (smaller rise) need much more horizontal thrust. Roman arches were typically semicircular (rise = half the span) for that reason — the thrust is moderate and easily resisted. Modern shallow steel arches need enormous engineered abutments anchored into rock, or tied-arch designs where horizontal tie rods at deck level absorb the thrust (so the abutments only resist vertical load). Sydney Harbour Bridge and New River Gorge are tied-arch designs.'
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65, marginTop: 8 } },
+                  h('strong', null, __alloT('stem.bridgelab.why_high_thrust_matters', 'Why high thrust matters: ')),
+                  __alloT('stem.bridgelab.flatter_arches_smaller_rise_need_much_', 'Flatter arches (smaller rise) need much more horizontal thrust. Roman arches were typically semicircular (rise = half the span) for that reason — the thrust is moderate and easily resisted. Modern shallow steel arches need enormous engineered abutments anchored into rock, or tied-arch designs where horizontal tie rods at deck level absorb the thrust (so the abutments only resist vertical load). Sydney Harbour Bridge and New River Gorge are tied-arch designs.')
                 )
               );
             }
@@ -1445,8 +1677,8 @@
                   deflPts.push(tx(xf * L) + ',' + (baseY + deflPx));
                 }
 
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'beamTitle beamDesc' },
-                  h('title', { id: 'beamTitle' }, 'Beam bending diagram'),
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'beamTitle beamDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
+                  h('title', { id: 'beamTitle' }, __alloT('stem.bridgelab.beam_bending_diagram', 'Beam bending diagram')),
                   h('desc', { id: 'beamDesc' }, 'A simply-supported beam of length ' + L + ' meters with a ' + P + ' kN load applied. Max bending stress ' + sigmaMax_MPa.toFixed(0) + ' MPa, max deflection ' + delta_mm.toFixed(1) + ' mm.'),
                   // Ground / supports
                   h('line', { x1: 0, y1: baseY + 20, x2: svgW, y2: baseY + 20, stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }),
@@ -1487,23 +1719,23 @@
 
               return h('div', null,
                 h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'Most modern bridges over short spans (< 80 m) are simply beams sitting on two supports. The internal forces are very different from trusses: members carry BENDING + SHEAR (not just tension/compression along their axis). The bottom of a loaded beam stretches; the top compresses. This is the simplest structural analysis, the foundation of every other one.'
+                  __alloT('stem.bridgelab.most_modern_bridges_over_short_spans_8', 'Most modern bridges over short spans (< 80 m) are simply beams sitting on two supports. The internal forces are very different from trusses: members carry BENDING + SHEAR (not just tension/compression along their axis). The bottom of a loaded beam stretches; the top compresses. This is the simplest structural analysis, the foundation of every other one.')
                 ),
                 beamSvg(),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 12, marginBottom: 12 } },
                   [
-                    { label: 'Span (m)', value: bSpan, min: 2, max: 30, step: 1, key: 'beamSpan' },
-                    { label: 'Depth (mm)', value: bDepth, min: 200, max: 1500, step: 50, key: 'beamDepth' },
-                    { label: 'Width (mm)', value: bWidth, min: 100, max: 600, step: 25, key: 'beamWidth' },
-                    { label: 'Point load (kN)', value: bLoad, min: 10, max: 500, step: 10, key: 'beamLoad' },
-                    { label: 'Load position (0..1)', value: bLoadPos, min: 0.05, max: 0.95, step: 0.05, key: 'beamLoadPos' }
+                    { label: __alloT('stem.bridgelab.span_m_3', 'Span (m)'), value: bSpan, min: 2, max: 30, step: 1, key: 'beamSpan' },
+                    { label: __alloT('stem.bridgelab.depth_mm', 'Depth (mm)'), value: bDepth, min: 200, max: 1500, step: 50, key: 'beamDepth' },
+                    { label: __alloT('stem.bridgelab.width_mm', 'Width (mm)'), value: bWidth, min: 100, max: 600, step: 25, key: 'beamWidth' },
+                    { label: __alloT('stem.bridgelab.point_load_kn', 'Point load (kN)'), value: bLoad, min: 10, max: 500, step: 10, key: 'beamLoad' },
+                    { label: __alloT('stem.bridgelab.load_position_0_1', 'Load position (0..1)'), value: bLoadPos, min: 0.05, max: 0.95, step: 0.05, key: 'beamLoadPos' }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, typeof s.value === 'number' && s.step < 1 ? s.value.toFixed(2) : s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -1513,7 +1745,7 @@
                 ),
                 // Material selector
                 h('div', { style: { marginBottom: 12 } },
-                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, marginBottom: 6 } }, 'Material'),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, marginBottom: 6 } }, __alloT('stem.bridgelab.material', 'Material')),
                   h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                     MATERIALS.map(function(m) {
                       var active = bMatId === m.id;
@@ -1526,14 +1758,14 @@
                 ),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 10 } },
                   [
-                    { label: 'R_A (left)', value: R_A.toFixed(1) + ' kN', color: '#93c5fd', sub: 'farther load = larger' },
-                    { label: 'R_B (right)', value: R_B.toFixed(1) + ' kN', color: '#93c5fd', sub: '' },
-                    { label: 'Max moment M', value: M_max.toFixed(1) + ' kN·m', color: '#fbbf24', sub: 'at load point' },
-                    { label: 'Max shear V', value: V_max.toFixed(1) + ' kN', color: '#fbbf24', sub: 'at support' },
-                    { label: 'Bending stress σ', value: sigmaMax_MPa.toFixed(0) + ' MPa', color: sf_yield >= 2 ? '#86efac' : sf_yield >= 1 ? '#fbbf24' : '#fca5a5', sub: 'yield ' + bMat.yieldMPa + ' MPa' },
-                    { label: 'Shear stress τ', value: tauMax_MPa.toFixed(1) + ' MPa', color: '#c7d2fe', sub: '1.5V/A for rectangle' },
-                    { label: 'Section mod. S', value: (S_mm3 / 1000).toFixed(0) + ' ×10³ mm³', color: 'var(--allo-stem-text-soft, #94a3b8)', sub: 'I/c, larger = stiffer' },
-                    { label: 'Deflection δ', value: delta_mm.toFixed(1) + ' mm', color: deflectionOK ? '#86efac' : '#fbbf24', sub: 'L/' + (deflectionRatio).toFixed(0) }
+                    { label: __alloT('stem.bridgelab.r_a_left', 'R_A (left)'), value: R_A.toFixed(1) + ' kN', color: '#93c5fd', sub: 'farther load = larger' },
+                    { label: __alloT('stem.bridgelab.r_b_right', 'R_B (right)'), value: R_B.toFixed(1) + ' kN', color: '#93c5fd', sub: '' },
+                    { label: __alloT('stem.bridgelab.max_moment_m', 'Max moment M'), value: M_max.toFixed(1) + ' kN·m', color: '#fbbf24', sub: 'at load point' },
+                    { label: __alloT('stem.bridgelab.max_shear_v', 'Max shear V'), value: V_max.toFixed(1) + ' kN', color: '#fbbf24', sub: 'at support' },
+                    { label: __alloT('stem.bridgelab.bending_stress', 'Bending stress σ'), value: sigmaMax_MPa.toFixed(0) + ' MPa', color: sf_yield >= 2 ? '#86efac' : sf_yield >= 1 ? '#fbbf24' : '#fca5a5', sub: 'yield ' + bMat.yieldMPa + ' MPa' },
+                    { label: __alloT('stem.bridgelab.shear_stress', 'Shear stress τ'), value: tauMax_MPa.toFixed(1) + ' MPa', color: '#c7d2fe', sub: '1.5V/A for rectangle' },
+                    { label: __alloT('stem.bridgelab.section_mod_s', 'Section mod. S'), value: (S_mm3 / 1000).toFixed(0) + ' ×10³ mm³', color: 'var(--allo-stem-text-soft, #94a3b8)', sub: 'I/c, larger = stiffer' },
+                    { label: __alloT('stem.bridgelab.deflection', 'Deflection δ'), value: delta_mm.toFixed(1) + ' mm', color: deflectionOK ? '#86efac' : '#fbbf24', sub: 'L/' + (deflectionRatio).toFixed(0) }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
@@ -1554,8 +1786,8 @@
                   )
                 ),
                 h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
-                  h('strong', null, 'Why I-beams: '),
-                  'Bending stress is highest at the top + bottom (far from the neutral axis), zero at the center. So material in the middle of the cross-section is wasted. The I-shape concentrates material as top + bottom flanges where it carries the bending, leaving a thin web in the middle that handles only shear. Same depth gets 3-5× more bending capacity than a solid rectangle of equal weight. This insight (Galileo, 1638) is the foundation of every steel beam ever made.'
+                  h('strong', null, __alloT('stem.bridgelab.why_i_beams', 'Why I-beams: ')),
+                  __alloT('stem.bridgelab.bending_stress_is_highest_at_the_top_b', 'Bending stress is highest at the top + bottom (far from the neutral axis), zero at the center. So material in the middle of the cross-section is wasted. The I-shape concentrates material as top + bottom flanges where it carries the bending, leaving a thin web in the middle that handles only shear. Same depth gets 3-5× more bending capacity than a solid rectangle of equal weight. This insight (Galileo, 1638) is the foundation of every steel beam ever made.')
                 )
               );
             }
@@ -1600,8 +1832,8 @@
                 var twrX = padL + plotW / 2;
                 var twrTop = deckY - (csTowerH / 200) * plotH;
                 var stayMaxLen = Math.sqrt(halfSpan * halfSpan + csTowerH * csTowerH);
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'csTitle csDesc' },
-                  h('title', { id: 'csTitle' }, 'Cable-stayed bridge diagram'),
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'csTitle csDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
+                  h('title', { id: 'csTitle' }, __alloT('stem.bridgelab.cable_stayed_bridge_diagram', 'Cable-stayed bridge diagram')),
                   h('desc', { id: 'csDesc' }, 'A cable-stayed bridge with span ' + csSpan + ' meters, tower height ' + csTowerH + ' meters, and ' + csNStays + ' stays per side. Each stay carries part of the deck load directly to the tower.'),
                   // Ground
                   h('line', { x1: 0, y1: deckY + 16, x2: svgW, y2: deckY + 16, stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }),
@@ -1634,29 +1866,29 @@
                     );
                   }),
                   h('text', { x: 8, y: 20, fill: '#86efac', fontSize: 10 }, 'Load: ' + csLoad + ' kN/m'),
-                  h('text', { x: twrX, y: twrTop - 5, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, 'Tower'),
-                  h('text', { x: svgW - 8, y: deckY - 6, textAnchor: 'end', fill: '#fde68a', fontSize: 10 }, 'Stays in tension')
+                  h('text', { x: twrX, y: twrTop - 5, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, __alloT('stem.bridgelab.tower_3', 'Tower')),
+                  h('text', { x: svgW - 8, y: deckY - 6, textAnchor: 'end', fill: '#fde68a', fontSize: 10 }, __alloT('stem.bridgelab.stays_in_tension', 'Stays in tension'))
                 );
               }
 
               return h('div', null,
                 h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'A cable-stayed bridge uses cables running directly from a tower (or pylons) to the deck — unlike a suspension bridge, which has a main draped cable + vertical hangers. Each stay is in tension; the tower is in compression. Faster + cheaper to build than a suspension bridge of comparable span, and noticeably stiffer in wind. The Millau Viaduct, Russky Bridge, + Sundial Bridge are all cable-stayed.'
+                  __alloT('stem.bridgelab.a_cable_stayed_bridge_uses_cables_runn', 'A cable-stayed bridge uses cables running directly from a tower (or pylons) to the deck — unlike a suspension bridge, which has a main draped cable + vertical hangers. Each stay is in tension; the tower is in compression. Faster + cheaper to build than a suspension bridge of comparable span, and noticeably stiffer in wind. The Millau Viaduct, Russky Bridge, + Sundial Bridge are all cable-stayed.')
                 ),
                 csSvg(),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginTop: 12, marginBottom: 12 } },
                   [
-                    { label: 'Main span (m)', value: csSpan, min: 100, max: 1500, step: 50, key: 'csSpan' },
-                    { label: 'Tower height (m)', value: csTowerH, min: 30, max: 350, step: 10, key: 'csTowerH' },
-                    { label: 'Stays per side', value: csNStays, min: 4, max: 30, step: 1, key: 'csNStays' },
-                    { label: 'Deck load (kN/m)', value: csLoad, min: 5, max: 80, step: 5, key: 'csLoad' }
+                    { label: __alloT('stem.bridgelab.main_span_m', 'Main span (m)'), value: csSpan, min: 100, max: 1500, step: 50, key: 'csSpan' },
+                    { label: __alloT('stem.bridgelab.tower_height_m', 'Tower height (m)'), value: csTowerH, min: 30, max: 350, step: 10, key: 'csTowerH' },
+                    { label: __alloT('stem.bridgelab.stays_per_side', 'Stays per side'), value: csNStays, min: 4, max: 30, step: 1, key: 'csNStays' },
+                    { label: __alloT('stem.bridgelab.deck_load_kn_m_3', 'Deck load (kN/m)'), value: csLoad, min: 5, max: 80, step: 5, key: 'csLoad' }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -1666,11 +1898,11 @@
                 ),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 10 } },
                   [
-                    { label: 'Max stay force (longest)', value: fMax.toFixed(0) + ' kN', color: '#fbbf24', sub: 'shallowest, farthest from tower' },
-                    { label: 'Min stay force (steepest)', value: fMin.toFixed(0) + ' kN', color: '#86efac', sub: 'closest to tower' },
-                    { label: 'Tributary per stay', value: tribLen.toFixed(1) + ' m', color: '#c7d2fe', sub: 'deck length per stay' },
-                    { label: 'Tower compression', value: towerComp.toFixed(0) + ' kN', color: '#fca5a5', sub: 'sum of all stay verticals' },
-                    { label: 'Avg stay angle (to horiz.)', value: (stays.reduce(function(a, s) { return a + s.angle; }, 0) / stays.length).toFixed(0) + '°', color: 'var(--allo-stem-text-soft, #94a3b8)', sub: 'steeper = lower force' }
+                    { label: __alloT('stem.bridgelab.max_stay_force_longest', 'Max stay force (longest)'), value: fMax.toFixed(0) + ' kN', color: '#fbbf24', sub: 'shallowest, farthest from tower' },
+                    { label: __alloT('stem.bridgelab.min_stay_force_steepest', 'Min stay force (steepest)'), value: fMin.toFixed(0) + ' kN', color: '#86efac', sub: 'closest to tower' },
+                    { label: __alloT('stem.bridgelab.tributary_per_stay', 'Tributary per stay'), value: tribLen.toFixed(1) + ' m', color: '#c7d2fe', sub: 'deck length per stay' },
+                    { label: __alloT('stem.bridgelab.tower_compression', 'Tower compression'), value: towerComp.toFixed(0) + ' kN', color: '#fca5a5', sub: 'sum of all stay verticals' },
+                    { label: __alloT('stem.bridgelab.avg_stay_angle_to_horiz', 'Avg stay angle (to horiz.)'), value: (stays.reduce(function(a, s) { return a + s.angle; }, 0) / stays.length).toFixed(0) + '°', color: 'var(--allo-stem-text-soft, #94a3b8)', sub: 'steeper = lower force' }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
@@ -1680,12 +1912,12 @@
                   })
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
-                  h('strong', null, 'Cable-stayed vs suspension — the trade: '),
-                  'A SUSPENSION bridge has ONE main cable carrying everything; very long spans possible but the deck is more flexible. A CABLE-STAYED bridge has many independent stays each handling its tributary load; stiffer in wind, easier to build (no main-cable spinning + no separate anchorages — the tower handles compression directly), but maximum economic span is ~1,100 m (vs ~2,000 m for suspension). Most new long bridges built since 1990 are cable-stayed.'
+                  h('strong', null, __alloT('stem.bridgelab.cable_stayed_vs_suspension_the_trade', 'Cable-stayed vs suspension — the trade: ')),
+                  __alloT('stem.bridgelab.a_suspension_bridge_has_one_main_cable', 'A SUSPENSION bridge has ONE main cable carrying everything; very long spans possible but the deck is more flexible. A CABLE-STAYED bridge has many independent stays each handling its tributary load; stiffer in wind, easier to build (no main-cable spinning + no separate anchorages — the tower handles compression directly), but maximum economic span is ~1,100 m (vs ~2,000 m for suspension). Most new long bridges built since 1990 are cable-stayed.')
                 ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
-                  h('strong', null, 'Why longer stays carry MORE force: '),
-                  'A stay near the tower is steep (mostly vertical). It carries its tributary load mostly along its axis with a small horizontal component. A stay farther from the tower is shallow (mostly horizontal). To support the same vertical load with a low angle, it needs a HUGE total tension force. Hence the longest stays at the far ends of the span are the most heavily loaded — usually visibly thicker on real bridges.'
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
+                  h('strong', null, __alloT('stem.bridgelab.why_longer_stays_carry_more_force', 'Why longer stays carry MORE force: ')),
+                  __alloT('stem.bridgelab.a_stay_near_the_tower_is_steep_mostly_', 'A stay near the tower is steep (mostly vertical). It carries its tributary load mostly along its axis with a small horizontal component. A stay farther from the tower is shallow (mostly horizontal). To support the same vertical load with a low angle, it needs a HUGE total tension force. Hence the longest stays at the far ends of the span are the most heavily loaded — usually visibly thicker on real bridges.')
                 )
               );
             }
@@ -1701,34 +1933,34 @@
                 h('h3', { style: { margin: 0, color: '#fbbf24', fontSize: 18 } }, t.name),
                 h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Typical span: ' + t.span)
               ),
-              h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, t.desc),
+              h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, __alloT('stem.bridgelab.' + (t.id) + '_desc', t.desc)),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Strength'),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.strength', 'Strength')),
                   h('div', { style: { fontSize: 12, color: '#dcfce7', lineHeight: 1.55 } }, t.strength)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)' } },
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Weakness'),
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.weakness', 'Weakness')),
                   h('div', { style: { fontSize: 12, color: '#fee2e2', lineHeight: 1.55 } }, t.weakness)
                 )
               ),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: includeSuspensionAnalyzer ? 12 : 0 } },
                 h('strong', null, 'Examples: '), t.examples
               ),
-              includeSuspensionAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
-                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⌣ Interactive catenary cable analyzer'),
+              includeSuspensionAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, #0a0e1a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.bridgelab.interactive_catenary_cable_analyzer', '⌣ Interactive catenary cable analyzer')),
                 suspensionAnalyzer()
               ) : null,
-              includeArchAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
-                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '∩ Interactive arch thrust analyzer'),
+              includeArchAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, #0a0e1a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.bridgelab.interactive_arch_thrust_analyzer', '∩ Interactive arch thrust analyzer')),
                 archAnalyzer()
               ) : null,
-              includeBeamAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
-                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '═ Interactive beam bending analyzer'),
+              includeBeamAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, #0a0e1a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.bridgelab.interactive_beam_bending_analyzer', '═ Interactive beam bending analyzer')),
                 beamAnalyzer()
               ) : null,
-              includeCableStayedAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
-                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '✦ Interactive cable-stayed analyzer'),
+              includeCableStayedAnalyzer ? h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, #0a0e1a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER, marginTop: 8 } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, __alloT('stem.bridgelab.interactive_cable_stayed_analyzer', '✦ Interactive cable-stayed analyzer')),
                 cableStayedAnalyzer()
               ) : null
             );
@@ -1742,37 +1974,37 @@
 
         function railwayBridgesSection() {
           var RAIL = [
-            { id: 'loads', name: 'Railway bridge loading is different', emoji: '🚂',
+            { id: 'loads', name: __alloT('stem.bridgelab.railway_bridge_loading_is_different', 'Railway bridge loading is different'), emoji: '🚂',
               what: 'Highway bridges carry distributed traffic (many small light vehicles). Railway bridges carry CONCENTRATED, HEAVY, REPEATED loads (locomotive + cars in tight succession). The typical AASHTO highway design truck is ~ 320 kN (HS-20). The Cooper E-80 railway design load is ~ 1,800 kN per locomotive axle — about 6× heavier. Railway loads happen in tight axle spacing (~ 1.5 m), so the stress pattern is concentrated. The dynamic impact factor from a train can be 30-100% of static load vs ~15% for highway.',
               how: 'AREMA (American Railway Engineering + Maintenance-of-Way Association) provides the standard for US railway bridges; Eurocodes EN 1991-2 cover European practice. Design uses Cooper E-80 (US freight standard) + lighter loads (Cooper E-70, E-60) for older lines. Modern rapid transit + high-speed rail use different load classes — typically lighter axles but higher speeds + tighter geometry constraints. Eurocode 1991-2 Load Model 71 + HSLM (high-speed load model) for European freight + passenger lines.',
               limit: 'Highway-bridge engineers transitioning to rail work need significant retraining. Load magnitudes + fatigue cycles are very different. A rail-bridge fatigue calculation may consider tens of millions of cycles over the service life; a highway bridge typically considers ~ 1-10 million.'
             },
-            { id: 'fatigue', name: 'Fatigue is the dominant concern', emoji: '🔁',
+            { id: 'fatigue', name: __alloT('stem.bridgelab.fatigue_is_the_dominant_concern', 'Fatigue is the dominant concern'), emoji: '🔁',
               what: 'A freight locomotive crossing a bridge applies a load spike + then removes it. Over a century of service, a busy freight line sees ~ 100,000-1,000,000+ train passages — each one a fatigue cycle. Railway bridges are designed for FATIGUE first + ultimate strength second. The Cooper-design load is in essence a fatigue-equivalent stress pattern. AREMA fatigue categories are stricter than AASHTO\'s for the same connection details. Welded joints that are fine for highway bridges may fail in fatigue under railway service.',
               how: 'Modern design uses MINER\'S RULE (linear damage accumulation): each fatigue cycle uses up some fraction of the connection\'s fatigue life; cumulative damage > 1.0 = expected failure. The Cooper E-80 design fatigue load applies for ~ 80% of design life; more severe occasional events apply for the remaining 20%. Railway bridge inspections focus heavily on fatigue-prone details: web-stiffener gaps, gusset-plate edges, riveted-joint corrosion, welded connection details.',
               limit: 'Older riveted bridges (pre-1950s) have surprisingly good fatigue performance — riveted joints have multiple load paths + the rivet-tension prestress can be re-tensioned. Modern bolted + welded joints can have worse fatigue performance if details are wrong. The Hassanlu Bridge collapse (Iran, 2024) + earlier collapses of relatively-recent welded bridges have prompted re-examination of fatigue design assumptions.'
             },
-            { id: 'famous', name: 'Iconic + tragic railway bridges', emoji: '🌉',
+            { id: 'famous', name: __alloT('stem.bridgelab.iconic_tragic_railway_bridges', 'Iconic + tragic railway bridges'), emoji: '🌉',
               what: '(a) FORTH BRIDGE (Scotland, 1890) — cantilever truss with 521-m main spans, built deliberately massive to restore public confidence after the Tay Bridge disaster; the most-recognizable railway bridge in the world + still carrying ~ 200 trains/day. (b) ÖRESUND BRIDGE (Denmark-Sweden, 2000) — cable-stayed + tunnel combination carrying both road + rail across the strait; demonstrated successful multi-modal cross-border infrastructure. (c) BROOKLYN BRIDGE (1883) was originally rail+pedestrian; the rail tracks were removed in 1944 + the bridge is now pedestrian + vehicle. (d) LANDWASSER VIADUCT (Switzerland, 1902) — limestone-arch railway bridge curving into a tunnel; an icon of Swiss railway engineering. (e) HUEY P. LONG BRIDGE (Louisiana, 1935) — combination rail + highway over the Mississippi; rail decks above + below the road. TRAGIC: the TAY BRIDGE (1879, collapsed) killed ~75 people + reshaped Victorian engineering standards.',
               how: 'Railway-bridge construction has often been ambitious because railway construction itself was the major capital project of an era. The first transcontinental railroad in the US (1869) required hundreds of bridges; the Trans-Siberian (1916) similarly transformed Russian engineering. Major engineering disasters (Tay 1879) had outsized influence because public + political attention focused on the new infrastructure.',
               limit: 'Many historic railway bridges are now under-loaded by modern standards (slower trains, longer spacing) + over-loaded by modern weight (modern locomotives are heavier than 1900s ones). Each historic bridge is a unique fatigue-management problem. Some are preserved at lower load classes; others get re-railed with carbon-fiber or steel reinforcement.'
             },
-            { id: 'hsr', name: 'High-speed rail bridges', emoji: '⚡',
+            { id: 'hsr', name: __alloT('stem.bridgelab.high_speed_rail_bridges', 'High-speed rail bridges'), emoji: '⚡',
               what: 'Trains running at 200-350+ km/h impose UNIQUE design requirements. The vehicle-bridge interaction at high speed can excite resonance modes the bridge would not feel at lower speeds. The "second bending mode" (the deck flexing in an S-shape) is particularly relevant. Design must ensure that NO operating speed corresponds to a resonance with the train\'s axle-pattern frequency. SHINKANSEN bridges (Japan, since 1964) + TGV bridges (France, since 1981) + CHINESE HSR bridges (since 2008, now 45,000+ km of network including thousands of HSR bridges) have established the modern standards. The Danyang-Kunshan Grand Bridge (China, 165 km long, opened 2011, world\'s longest bridge of any kind) is a high-speed-rail viaduct.',
               how: 'Modern HSR bridge design uses BALLASTLESS TRACK + RIGID TRACK STRUCTURE with very tight geometric tolerances (track alignment must remain within mm over the service life). Pre-stressed concrete + steel-composite designs dominate. Deck stiffness + damping is calibrated through dynamic analysis software + verified by track-recording vehicles. Acceptance criteria: train acceleration < 0.5 m/s² (passenger comfort), deck acceleration < 0.35g (track stability), deflection limits ~ L/2500 (very stiff vs L/800 for typical highway bridges).',
               limit: 'HSR bridges are extraordinarily expensive — China spends ~ $20-30M per km on HSR viaduct, vs ~ $5-10M for highway. The US has limited HSR (the Acela in the Northeast Corridor uses upgraded conventional rail, not true HSR). California HSR has been under construction since 2015 with major cost + schedule issues; some bridges have been built but the full route is not operational. The economics + politics of HSR bridges in the US are challenging.'
             },
-            { id: 'modern', name: 'Modern railway bridge engineering', emoji: '⚙️',
+            { id: 'modern', name: __alloT('stem.bridgelab.modern_railway_bridge_engineering', 'Modern railway bridge engineering'), emoji: '⚙️',
               what: 'Modern railway bridges combine elements from highway + tunnel engineering. Common types: PRESTRESSED-CONCRETE BOX GIRDERS (most common for medium spans, 30-100 m), STEEL-CONCRETE COMPOSITE GIRDERS (for medium-large spans), CABLE-STAYED RAIL BRIDGES (for longer spans + dramatic appearance), TRUSS BRIDGES (still used for major freight crossings + when steel cost is favorable), ARCH BRIDGES (Sydney Harbour Bridge 1932 is famous; the Caiyuanba Bridge in China is the world\'s longest steel arch carrying rail). For very long crossings: combined rail + highway bridges (Storebælt Denmark, Yantai-Dalian China, planned crossings worldwide).',
               how: 'AREMA + AAR (Association of American Railroads) cover US standards. The big freight railroads (BNSF, Union Pacific, CSX, Norfolk Southern) maintain their own design + engineering departments + work with consultants for major bridges. Internationally, government rail operators (SNCF France, DB Germany, JR Japan, China Railway, Network Rail UK) similarly drive bridge design.',
               limit: 'Railway bridges have less PUBLIC visibility than highway bridges + much less academic literature. Bridge engineering at top US universities is heavily oriented toward highway practice. This has created a knowledge-transfer challenge — railway practitioners often have to develop expertise through industry training rather than university curriculum.'
             },
-            { id: 'maine', name: 'Maine railway bridges', emoji: '🌲',
+            { id: 'maine', name: __alloT('stem.bridgelab.maine_railway_bridges', 'Maine railway bridges'), emoji: '🌲',
               what: 'Maine has ~ 1,170 miles of active rail + many historic railway bridges. Major freight routes: PAN AM RAILWAYS (now CSX) Boston-to-Portland-to-Brownville corridor, MONTREAL MAINE + ATLANTIC line (closed after the 2013 Lac-Mégantic disaster), CANADIAN PACIFIC for the Maine Eastern division. Most lines are 286,000-pound (130-tonne) per car capacity — the modern North American freight standard. NOTABLE BRIDGES: Penobscot Narrows Bridge (2006) carries highway, not rail, but is parallel to historic Waldo-Hancock Bridge. Sarah Mildred Long Bridge (Portsmouth-Kittery, replaced 2018) carries highway + rail combination. The 1907 Vauban-style Hartland Trestle (Hartland to Pittsfield) is one of the oldest active railway viaducts in northern New England.',
               how: 'Maine\'s railway bridge infrastructure has been under-invested compared to highway. Many bridges are 100+ years old, originally built for Cooper E-60 loads + later strengthened or downgraded for current service. The state has been working with the Maine DOT + private rail operators on capital programs since the late 2000s, with mixed progress. The Maine Northern Railway + the Maine Eastern Railroad have both had bridge-related operational restrictions.',
               limit: 'New England rail revival (especially passenger rail expansion under the Northeast Corridor Connections Plan) depends on bridge upgrades to many older crossings. Most Maine rail bridges were built for slower 19th-century operations; modernizing for 90+ mph passenger service requires either major upgrades or new construction. Funding has been incremental + uncertain. Citizens who want passenger rail expansion in Maine should engage with the MaineDOT Active Transportation Advisory Committee + the New England Passenger Rail Authority.'
             },
-            { id: 'maglev', name: 'Maglev + the future', emoji: '🚄',
+            { id: 'maglev', name: __alloT('stem.bridgelab.maglev_the_future', 'Maglev + the future'), emoji: '🚄',
               what: 'Magnetic-levitation trains do not roll on rails — they float on a magnetic guideway. JAPAN\'S CHUO SHINKANSEN (Tokyo-to-Nagoya-to-Osaka, partial operation 2027, full ~2037) is the most ambitious maglev project, with bridges + tunnels designed to support trains at 500 km/h. China\'s Shanghai maglev (operational 2004) was an earlier commercial demonstration. Maglev bridges have unique requirements: the guideway must be precisely aligned (mm-level over km lengths), the magnetic field tolerances must be tight, and the dynamic loads from the maglev train differ from conventional rail (concentrated electromagnetic forces at fixed points along the guideway).',
               how: 'Most large-scale maglev bridges to date are viaduct structures supporting precast guideway segments. Construction precision rivals semiconductor manufacturing in some respects (the guideway alignment tolerances are sub-millimeter over distances). The technology has not displaced conventional HSR economically — maglev infrastructure is substantially more expensive per km — but Japan + Korea + China continue to develop it.',
               limit: 'Maglev has been "10 years away" for 40+ years. The Shanghai system operates but has not been duplicated. The Chuo Shinkansen Tokyo-Nagoya segment is delayed from original 2027 to ~2034. Whether maglev will scale to global infrastructure or remain a specialty technology is unclear. For US planning purposes, betting on conventional HSR (or even staying with conventional rail) is currently the lower-risk choice.'
@@ -1781,9 +2013,9 @@
           var sel = d.selectedRail || 'loads';
           var topic = RAIL.find(function(t) { return t.id === sel; }) || RAIL[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🚂 Railway bridges + freight engineering'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.railway_bridges_freight_engineering', '🚂 Railway bridges + freight engineering')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Railway bridges are a distinct discipline from highway bridges. Loads are heavier, concentrated, and repeated. Fatigue dominates design. Speeds for modern high-speed rail require dynamic considerations highway engineers rarely see. Railway-bridge practice has a smaller academic footprint than highway practice but the engineering depth is at least equivalent. For passenger + freight rail revival, every region\'s railway bridges are infrastructure-renewal frontline.'
+              __alloT('stem.bridgelab.railway_bridges_are_a_distinct_discipl', 'Railway bridges are a distinct discipline from highway bridges. Loads are heavier, concentrated, and repeated. Fatigue dominates design. Speeds for modern high-speed rail require dynamic considerations highway engineers rarely see. Railway-bridge practice has a smaller academic footprint than highway practice but the engineering depth is at least equivalent. For passenger + freight rail revival, every region\'s railway bridges are infrastructure-renewal frontline.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               RAIL.map(function(t) {
@@ -1798,15 +2030,15 @@
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it is'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.what_it_is', 'What it is')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works in practice'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.how_it_works_in_practice', 'How it works in practice')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.honest_limit', 'Honest limit')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             )
@@ -1815,42 +2047,42 @@
 
         function tunnelsAndUnderwaterSection() {
           var TUN = [
-            { id: 'cutcover', name: 'Cut-and-cover tunnel', emoji: '⛏️', era: '1850s-present',
+            { id: 'cutcover', name: __alloT('stem.bridgelab.cut_and_cover_tunnel', 'Cut-and-cover tunnel'), emoji: '⛏️', era: '1850s-present',
               how: 'The simplest tunnel method. Dig an open trench, build the tunnel structure inside it (cast-in-place concrete box, precast segments, or arched masonry), then backfill on top to restore the surface. Used for shallow tunnels (typically <15 m deep), urban subway lines, utility tunnels, and stormwater systems. Most early subways (London Metropolitan 1863, NYC IRT 1904) were built cut-and-cover.',
               forces: 'The completed tunnel box must resist VERTICAL load from the fill + traffic above (compressive arch action or beam-bending in the roof slab) + LATERAL earth pressure on the side walls + uplift if groundwater rises. Box-section reinforced-concrete construction is standard. The trench walls during construction need temporary support (sheet piles, soldier-pile + lagging, slurry walls).',
               limit: 'Massively disruptive to the surface during construction. Cut-and-cover for the Boston Big Dig (1991-2007) caused decades of construction nightmare + cost overruns from ~$2.6B to ~$15B. Used today only when (a) the depth is shallow + the surface is available, (b) no alternative method works (cross-streets, soft river fill, very large bore diameters).'
             },
-            { id: 'tbm', name: 'Tunnel Boring Machine (TBM)', emoji: '⚙️', era: '1850s-present',
+            { id: 'tbm', name: __alloT('stem.bridgelab.tunnel_boring_machine_tbm', 'Tunnel Boring Machine (TBM)'), emoji: '⚙️', era: '1850s-present',
               how: 'A massive cylindrical machine that bores through rock or soil, lining the tunnel behind it with precast concrete segments. The cutterhead at the front rotates with hardened picks or disk cutters; excavated spoil is conveyed back through the machine + out of the tunnel. Modern TBMs are 5-20 m diameter, 100-200 m long with all support equipment, and can advance 10-40 m per day depending on geology. The Channel Tunnel (1988-1994) used 11 TBMs to bore three parallel 50-km tunnels under the English Channel.',
               forces: 'The tunnel lining (typically precast concrete bolted segments forming a circular ring) carries hoop compression from the surrounding earth + groundwater pressure. The cutterhead must resist the reaction torque + thrust from cutting forces. Shield-type TBMs (slurry or Earth-Pressure-Balance, EPB) pressurize the cutter chamber against soil + water inflow.',
               limit: 'TBMs are expensive ($30-100M+ for a major one) + slow to set up. Once excavating, they are essentially one-way: turning around or backing up is impractical. They CAN encounter unexpected ground conditions (boulders, hard inclusions, fault zones, voids) that stop progress for weeks. The Bertha TBM in Seattle (Highway 99 tunnel, 2013-2017) stalled for 2 years after damaging its seals on an unidentified pipe; recovery was a major engineering project.'
             },
-            { id: 'natm', name: 'New Austrian Tunneling Method (NATM)', emoji: '⛰️', era: '1960s-present',
+            { id: 'natm', name: __alloT('stem.bridgelab.new_austrian_tunneling_method_natm', 'New Austrian Tunneling Method (NATM)'), emoji: '⛰️', era: '1960s-present',
               how: 'A philosophy + technique for rock tunneling that uses the surrounding rock mass itself as part of the structural support. Excavate small sections; immediately install shotcrete + rock bolts to support the rock + let it reach equilibrium; monitor deformation; install final concrete lining only after the rock stabilizes. NATM allows non-circular tunnel cross-sections (useful for road tunnels with wide flat ceilings) + works well in moderately weak rock. The Mont Blanc Tunnel + Gotthard Base Tunnel + many alpine + urban road tunnels use NATM.',
               forces: 'NATM treats the rock as an active structural element rather than a passive load. The shotcrete layer (a thin reinforced-concrete shell) carries some load while the rock arches its own load to either side. Rock bolts (steel rods grouted into drilled holes) tie loose rock to deeper stable rock. Continuous monitoring (extensometers, convergence pins) tracks deformation; deformation matches predicted curve = the system is stable.',
               limit: 'NATM requires highly skilled geotechnical + structural engineering. Misreading the rock behavior or being too aggressive with excavation sequencing can cause catastrophic collapse. The 1994 Heathrow Express tunnel collapse during construction was attributed to NATM misapplication. The technique is excellent when done right + dangerous when done wrong.'
             },
-            { id: 'immersed', name: 'Immersed-tube tunnel', emoji: '🌊', era: '1910s-present',
+            { id: 'immersed', name: __alloT('stem.bridgelab.immersed_tube_tunnel', 'Immersed-tube tunnel'), emoji: '🌊', era: '1910s-present',
               how: 'A submerged tunnel built in segments at a dry dock + then floated, sunk, and connected end-to-end in a trench dredged into the riverbed or seabed. Each segment is a reinforced-concrete or steel box ~100-200 m long, 30-50 m wide, with end bulkheads sealed shut for floating. After positioning, the bulkheads are removed underwater + the segments connected with watertight joints. Used for Boston Sumner + Callahan + Ted Williams tunnels, the BART Transbay Tube (San Francisco), the Øresund Tunnel (Denmark-Sweden), and others.',
               forces: 'When submerged + connected, the tunnel is BUOYANT (most of its weight is concrete + air-filled rooms inside; surrounding water is denser overall). It must be ballasted to stay seated on the trench bottom + protected from uplift by an earth cover of typically 1-3 m of fill. Joints between segments are flexible to accommodate seismic + thermal motion.',
               limit: 'Limited to relatively shallow depths (rare immersed tunnels exceed 60 m below water surface). Requires a clear dredgeable trench, which is hard in rocky seabeds + impossible in deep oceans. The Channel Tunnel could NOT have been built as immersed-tube because the geology + currents made dredging impractical; that\'s why TBMs were used.'
             },
-            { id: 'subsea', name: 'Subsea bored tunnel', emoji: '🏊', era: '1990s-present',
+            { id: 'subsea', name: __alloT('stem.bridgelab.subsea_bored_tunnel', 'Subsea bored tunnel'), emoji: '🏊', era: '1990s-present',
               how: 'A tunnel bored deep below the seabed using TBMs, often used for major sub-aqueous crossings. Distinct from immersed tube — the bored subsea tunnel goes well below the seabed in deep rock, while immersed tube sits on or in the seabed surface. The Channel Tunnel is the most famous example (50 km long, 75 m below seabed in chalk marl). The Eiksund Tunnel (Norway, 2008) is 287 m deep at its lowest point. The undersea portion of the Tokyo Bay Aqua-Line combines an immersed tube section (Kawasaki side) with a bored tunnel section (Kisarazu side).',
               forces: 'Hydrostatic water pressure at depth is enormous (~10 bar per 100 m of water depth above the tunnel). The tunnel lining must resist this through hoop compression. Groundwater inflow can be catastrophic; subsea tunnels use heavy waterproofing + drainage systems + sometimes inert-gas pressurization during construction.',
               limit: 'Geology is everything. If the rock turns out softer or more fractured than predicted, projects can stall for years. The Channel Tunnel\'s chalk marl was ideal; many less-favorable proposed sub-aqueous crossings (Bering Strait, Atlantic Tunnel) face huge geological + economic obstacles that make them currently impractical.'
             },
-            { id: 'ventilation', name: 'Ventilation + fire safety', emoji: '🌬️', era: 'Universal',
+            { id: 'ventilation', name: __alloT('stem.bridgelab.ventilation_fire_safety', 'Ventilation + fire safety'), emoji: '🌬️', era: 'Universal',
               how: 'Long road tunnels must remove vehicle exhaust + smoke. The two main approaches: LONGITUDINAL VENTILATION (jet fans push air along the tunnel axis, exhaust at portals — economic + works for tunnels <3 km) + TRANSVERSE VENTILATION (parallel supply + exhaust ducts run the tunnel length, with vertical shafts to surface vent buildings — necessary for long tunnels + tunnels with poor portal positions). Fire safety adds smoke-extraction systems, fire-resistant linings (typically 2-4 hour rating), emergency egress passages, cross-passage doors between parallel tunnels, deluge sprinklers in critical zones, and water-mist suppression.',
               forces: 'Ventilation must handle peak vehicle-emission scenarios + worst-case fire scenarios. Modern road-tunnel fire-design temperatures reach 1300°C (the RWS curve, Rijkswaterstaat, Dutch standard) — far hotter than typical building fires (~600°C cellulosic). Concrete linings spall explosively at these temperatures unless designed with polypropylene fibers that melt out + relieve vapor pressure.',
               limit: 'Tunnel fires have killed dozens to hundreds at once when ventilation + suppression failed: Mont Blanc Tunnel 1999 (39 dead), Tauern Tunnel 1999 (12 dead), Gotthard 2001 (11 dead). Modern fire-safety design for new tunnels is far more conservative; retrofitting old tunnels to current standards is costly + sometimes impossible. The Boring Company\'s LA + Las Vegas tunnels have notably weaker fire safety than transit-tunnel standards — a tradeoff that has drawn engineering criticism.'
             },
-            { id: 'channel', name: 'Channel Tunnel — the big one', emoji: '🚇', era: '1988-1994',
+            { id: 'channel', name: __alloT('stem.bridgelab.channel_tunnel_the_big_one', 'Channel Tunnel — the big one'), emoji: '🚇', era: '1988-1994',
               how: 'Three parallel tunnels (two running, one service) connecting the UK + France under the English Channel. Total length 50.45 km, with 38 km under sea. Bored using 11 TBMs (one for each tunnel section, working from both ends + meeting in the middle). The geology — Cenomanian chalk marl — was extremely favorable: soft enough to bore quickly, impermeable enough that water inflow was manageable. The two TBMs that met in the middle in 1990 achieved an alignment accuracy of better than 30 cm laterally + 60 cm vertically over the 38 km undersea distance.',
               forces: 'Each running tunnel is ~7.6 m internal diameter, lined with 500-mm precast reinforced-concrete segments. Service tunnel is 4.8 m. The tunnels run 30-65 m below seabed; total length submerged about 38 km. Trains run at 160 km/h (passenger Eurostar) or 140 km/h (Le Shuttle vehicle trains). Loading from the trains + temperature changes + tunnel curvature all considered in fatigue design.',
               limit: 'The Channel Tunnel\'s cost overran ~80% (£4.65B vs £2.6B original); the original Eurotunnel company went through several restructurings before becoming financially viable. The 1996 + 2008 + 2015 + 2022 fires all damaged sections of tunnel that required months of repair + reduced capacity. Recovery is slow because the tunnel cannot easily be closed for maintenance without disrupting major international transit.'
             },
-            { id: 'limits', name: 'When NOT to tunnel', emoji: '🚫', era: 'Engineering judgment',
+            { id: 'limits', name: __alloT('stem.bridgelab.when_not_to_tunnel', 'When NOT to tunnel'), emoji: '🚫', era: 'Engineering judgment',
               how: 'Tunnels are extraordinarily expensive + slow to build. A 5-km road tunnel typically costs $500M-2B+. Construction usually takes 5-10+ years. Lifetime maintenance costs (ventilation, pumping, fire safety, lining inspection) far exceed those of a bridge of equivalent capacity. Tunnels also have HIGHER fatality rates per vehicle-mile than equivalent surface roads (fires + crashes + emergency egress challenges).',
               forces: 'The right structure depends on the obstacle. SHORT spans (< 200 m) over land or shallow water: bridge almost always wins. MEDIUM spans (200 m-2 km) over deep water or busy navigation: bridge or immersed tube. LONG crossings (>5 km) under deep water or through mountains: tunnels are sometimes the only option. ALWAYS NEEDED: when surface land must be preserved (urban districts, ecological + cultural protection), tunnels become attractive despite their cost.',
               limit: 'The honest engineering answer: tunnels are often built for political or aesthetic reasons rather than cost-optimal ones. The Big Dig + the now-permanent Embarcadero Freeway removal + the Sydney Harbour Tunnel parallel to its bridge all have advocates who consider them money well spent. They are large interventions in the urban fabric + deserve scrutiny on the same terms as bridges — beauty, utility, public benefit, distributional equity. Tunnels are not automatically "better" because they are underground.'
@@ -1859,9 +2091,9 @@
           var sel = d.selectedTunnel || 'cutcover';
           var topic = TUN.find(function(t) { return t.id === sel; }) || TUN[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🚇 Tunnels + underwater bridges'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.tunnels_underwater_bridges', '🚇 Tunnels + underwater bridges')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Tunnels are the siblings of bridges in transportation engineering — used to cross when going OVER won\'t work. They share many fundamentals (forces, fatigue, foundations) + have their own demanding specifics (ventilation, fire safety, hydrostatic pressure, ground behavior). Understanding tunnels alongside bridges gives the full picture of how engineers move people + freight across geographical obstacles.'
+              __alloT('stem.bridgelab.tunnels_are_the_siblings_of_bridges_in', 'Tunnels are the siblings of bridges in transportation engineering — used to cross when going OVER won\'t work. They share many fundamentals (forces, fatigue, foundations) + have their own demanding specifics (ventilation, fire safety, hydrostatic pressure, ground behavior). Understanding tunnels alongside bridges gives the full picture of how engineers move people + freight across geographical obstacles.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               TUN.map(function(t) {
@@ -1877,15 +2109,15 @@
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Era: ' + topic.era),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.how_it_works', 'How it works')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Forces + design logic'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.forces_design_logic', 'Forces + design logic')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.forces)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.honest_limits', 'Honest limits')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             )
@@ -1894,37 +2126,37 @@
 
         function movableBridgesSection() {
           var MOV = [
-            { id: 'bascule', name: 'Bascule (drawbridge)', emoji: '⚖️',
+            { id: 'bascule', name: __alloT('stem.bridgelab.bascule_drawbridge', 'Bascule (drawbridge)'), emoji: '⚖️',
               how: 'A bascule bridge has one or two leaves that pivot upward around a horizontal axis at the abutment. The deck is balanced by a heavy counterweight on the opposite side of the pivot, so the actual lifting force required is small. The Tower Bridge in London (1894) is the most famous example; the Pelham Bay Park Bridge + the McCarter Highway lift bridges in the US are more typical municipal examples. Double-leaf bascules meet in the middle when closed; single-leaf bascules pivot from one end.',
               forces: 'When raised, the deck cantilevers from the pivot, putting enormous bending moment on the trunnion (pivot bearing). The counterweight is sized to exactly balance the deck weight, so the gear motor only fights friction + wind + ice. Modern bascules use anti-friction roller bearings; older bridges used plain bronze sleeve bearings that required regular lubrication.',
               fail: 'Counterweight failure is the main concern. If a counterweight pin shears or its support cracks, the deck either crashes down (if more than half-open) or flies open uncontrollably (if less than half-open). The 1988 Sgt. Daniel Faulkner Memorial Bridge counterweight failure in Philadelphia destroyed the lifting machinery + closed the bridge for months. Modern bascule design requires redundant counterweight retention + emergency hand-cranks.'
             },
-            { id: 'swing', name: 'Swing bridge', emoji: '🔄',
+            { id: 'swing', name: __alloT('stem.bridgelab.swing_bridge', 'Swing bridge'), emoji: '🔄',
               how: 'A swing bridge rotates horizontally around a central pivot pier (or sometimes an asymmetric pivot near one end). When closed, it spans the channel; when open, it sits parallel to the channel, allowing boats through. Swing bridges were the dominant movable type in the 19th century; the Steel Bridge in Portland Oregon (1912) + the Sault Ste Marie railroad bridge are classic surviving examples. Most railroad movable bridges over navigable rivers are swing bridges.',
               forces: 'When closed, the swing bridge acts as a continuous beam over the pivot + two end supports. When open, it cantilevers from the pivot pier in BOTH directions (the deck on both sides of the pivot). This puts heavy load on the central pier; the pier itself is usually a massive masonry or concrete structure carrying the bridge weight + traffic load + the rotational mechanism (a big circular bearing or a "rim-bearing" track).',
               fail: 'Swing bridges are vulnerable to BARGE STRIKES because the central pier sits in the navigation channel, exactly where boats are passing close by. The 1993 Big Bayou Canot rail disaster in Alabama (Amtrak Sunset Limited derailed after a barge struck the bridge approaches in fog, 47 dead) is the deadliest US railroad disaster in 50 years. Modern navigation regulations + pier fenders are partial answers; replacement with vertical-lift or bascule designs is increasingly common.'
             },
-            { id: 'lift', name: 'Vertical lift bridge', emoji: '⬆️',
+            { id: 'lift', name: __alloT('stem.bridgelab.vertical_lift_bridge', 'Vertical lift bridge'), emoji: '⬆️',
               how: 'A vertical lift bridge has a deck that rises straight up between two tall towers, raised by cables + counterweights at each tower. The deck remains horizontal throughout the lift; only its elevation changes. The Aerial Lift Bridge in Duluth Minnesota (1929, the city\'s iconic landmark) and the Arthur Kill Vertical Lift Bridge between Staten Island + New Jersey (1959, the world\'s longest vertical-lift span at 558 ft) are well-known US examples. Lift bridges work well where the navigation channel is wide (no central pier wanted) + the air-draft requirement is moderate (not so tall that the lift towers become unreasonable).',
               forces: 'The lift towers experience the full weight of the deck PLUS the counterweights (suspended at the tower tops). The cables are huge — typically 6-8 cables per corner, each rated for many tons. Cable inspection + replacement is a major maintenance item; cables stretch over time + must be re-tensioned. Wind loading on a raised deck is significant (much larger sail area than the closed configuration).',
               fail: 'Cable failure is the dominant catastrophic risk. The Mianus River Bridge in Connecticut (1983) failed because of pin failure in a suspended span, not because of lift operation, but the lesson generalizes: hidden corrosion in heavily-loaded steel connections is hard to detect. Modern lift bridges require ultrasonic + acoustic monitoring of cables + pins. Vertical lift bridges also accumulate ICE on the underside of the deck in winter, which can throw off the carefully-tuned counterweight balance + jam the mechanism.'
             },
-            { id: 'retract', name: 'Retractable (rolling) bridge', emoji: '↩️',
+            { id: 'retract', name: __alloT('stem.bridgelab.retractable_rolling_bridge', 'Retractable (rolling) bridge'), emoji: '↩️',
               how: 'A retractable bridge slides horizontally along its own axis to clear the navigation channel, like a giant drawer. The Pegasus Bridge variant + the Inner Harbor Navigation Canal Bridge (New Orleans, demolished 2014) are examples. The Rolling Bridge in Paddington Basin London (Heatherwick, 2004) curls up into an octagon — a pedestrian-only sculptural example. Retractables are rare today because they require space for the deck to retract INTO, which is hard to find at most water crossings.',
               forces: 'When retracted, the bridge cantilevers from the abutment on one side — putting bending moment on the retracted-position support. The rolling track must be precisely aligned + level over its entire length; settlement or thermal expansion that moves the track even slightly can cause jamming. Hydraulic rams or rack-and-pinion drives provide motion.',
               fail: 'Retractable bridges are sensitive to debris in the rolling track. A fallen leaf or a piece of trash can stop a multi-ton bridge motion. Track ice in winter is a persistent problem. The mechanism wears more than a bascule or swing (more sliding contact area). Most retractable bridges built before 1950 have been replaced; the type is mostly a historical curiosity now.'
             },
-            { id: 'transporter', name: 'Transporter bridge', emoji: '🚠',
+            { id: 'transporter', name: __alloT('stem.bridgelab.transporter_bridge', 'Transporter bridge'), emoji: '🚠',
               how: 'A transporter bridge is a permanent high-level truss span with a "gondola" suspended from a trolley that runs along the underside of the truss, carrying passengers + vehicles across the channel. The bridge itself never moves; only the gondola moves. Air clearance for shipping is provided by the bridge\'s permanent high deck, ~70+ meters above water. About 25 transporter bridges have ever been built worldwide; ~8 still operate (Newport UK, Middlesbrough UK, Rendsburg Germany, Osten Germany, Bizerte Tunisia, Buenos Aires Argentina, Bilbao Spain — the Vizcaya Bridge, UNESCO World Heritage Site).',
               forces: 'The high-level truss is essentially a long-span steel truss with a hanging trolley track on its underside. Loading is unusual: the moving gondola creates a CONCENTRATED moving load that sweeps the entire span. The truss is designed for this asymmetric loading + for the dynamic effects of acceleration + braking. Wind loading on the high truss is significant.',
               fail: 'Transporter bridges are slow + low-capacity. They carry maybe 5-10 cars at a time; a single round trip takes 5-10 minutes. They cannot scale to handle modern traffic. The reason most have been demolished or replaced is not failure — they simply could not move the volume of vehicles required as cities grew. Those that remain are usually preserved as heritage + tourist attractions.'
             },
-            { id: 'submarine', name: 'Submersible (submerged-floating) bridges', emoji: '🌊',
+            { id: 'submarine', name: __alloT('stem.bridgelab.submersible_submerged_floating_bridges', 'Submersible (submerged-floating) bridges'), emoji: '🌊',
               how: 'A submersible or "submerged floating tunnel" bridge is partially or fully underwater, supported by buoyancy + held in place by anchors or tension legs to the seabed (or hanging from pontoons floating on the surface). No examples are yet in service for full road traffic, but Norway has approved an SFT for the Sognefjord crossing (E39 coastal highway) — the world\'s first planned submerged floating bridge for highway use, estimated 2030s completion. China + Korea + Italy have also studied designs.',
               forces: 'The bridge experiences buoyancy (upward) + the weight of the tunnel + traffic load. Wave + current loads are the design driver — particularly the SLOW oscillation of long structures in waves (resonance). Earthquake response is complex (the structure moves with the surrounding water rather than with the seabed). The technology challenge is high; no SFT has been built at full road scale yet.',
               fail: 'The risks are real + not fully characterized. A sunken-tunnel rupture below the waterline is a fundamentally different evacuation scenario from a traditional bridge collapse. Fire + smoke trapping is a major concern. SFT designs include emergency-pump-out systems, redundant tunnel cells, and high-spec fire suppression — but the failure modes have not been tested at scale by operating examples.'
             },
-            { id: 'pontoon', name: 'Floating (pontoon) bridge', emoji: '🛟',
+            { id: 'pontoon', name: __alloT('stem.bridgelab.floating_pontoon_bridge', 'Floating (pontoon) bridge'), emoji: '🛟',
               how: 'A floating bridge rests directly on the water — typically on hollow concrete pontoons connected to form a continuous deck. The pontoons are anchored to the lakebed by cables or piles. The Evergreen Point + Lacey V. Murrow bridges in Washington State (Lake Washington, Seattle) are the world\'s longest floating bridges. The Hood Canal Bridge has a movable section that opens for naval submarine traffic. Floating bridges work where the water is too deep or too soft-bottomed for conventional piers (Lake Washington is 200+ ft deep with mud bottom).',
               forces: 'The pontoons support the deck by buoyancy. Wind + waves are the design driver. Lake Washington bridges have storm-failure history: the original Lacey V. Murrow Bridge sank in a storm in 1990 (pontoons that had been opened for repair filled with water + lost buoyancy). The replacement design includes much more redundancy. Modern floating bridges are designed for 100-year storms + can withstand significant wave loading without losing buoyancy reserves.',
               fail: 'Floating bridges are vulnerable to over-wash (waves coming over the deck), tow-line failure (an unattended barge drifts into the bridge), and the slow-cumulative-damage of years of mild wave action. They also have a finite design life (~50-75 years for the pontoons) because concrete in continuous contact with water eventually deteriorates. Replacement is a major civic event.'
@@ -1933,9 +2165,9 @@
           var sel = d.selectedMov || 'bascule';
           var topic = MOV.find(function(t) { return t.id === sel; }) || MOV[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🚧 Movable + unusual bridge types'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.movable_unusual_bridge_types', '🚧 Movable + unusual bridge types')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Most bridges are fixed structures. But where waterborne traffic must pass + a low fixed bridge would block tall ships, engineers have developed a whole family of movable + unusual bridge types. Each one is a specific solution to a specific geometric constraint, with its own forces, failure modes, and historical contexts.'
+              __alloT('stem.bridgelab.most_bridges_are_fixed_structures_but_', 'Most bridges are fixed structures. But where waterborne traffic must pass + a low fixed bridge would block tall ships, engineers have developed a whole family of movable + unusual bridge types. Each one is a specific solution to a specific geometric constraint, with its own forces, failure modes, and historical contexts.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               MOV.map(function(t) {
@@ -1950,15 +2182,15 @@
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.how_it_works_2', 'How it works')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Forces + structural logic'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.forces_structural_logic', 'Forces + structural logic')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.forces)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Failure modes + history'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.failure_modes_history', 'Failure modes + history')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.fail)
               )
             )
@@ -1967,42 +2199,42 @@
 
         function pedestrianAccessibleBridgesSection() {
           var ACC = [
-            { id: 'slope', name: 'Slope + grade', emoji: '⬆️',
+            { id: 'slope', name: __alloT('stem.bridgelab.slope_grade', 'Slope + grade'), emoji: '⬆️',
               spec: 'Maximum running slope 1:20 (5%) for any pedestrian-only bridge per Public Right-of-Way Accessibility Guidelines (PROWAG). If a steeper grade is used (up to 1:12 / 8.3%), the bridge becomes a RAMP and must have handrails on both sides + level rest landings every 30 ft (9.1 m) of run + 5 ft × 5 ft (1.5 m) landings at top + bottom. Cross-slope (camber for drainage) max 1:48 (2%) anywhere a person walks or rolls.',
               why: 'A 1:20 slope is climbable by most ambulatory users + most manual wheelchair users without assistance. Beyond that, the energy cost rises sharply for wheelchair users + becomes impassable for many. People with mobility-related fatigue (MS, post-stroke, chronic pain, cardiovascular conditions) may exhaust on grades that seem trivial to others. The 1:48 cross-slope is critical: anything steeper makes a manual wheelchair veer downhill + makes uneven gait painful + risky.',
               gotcha: 'Many older "ADA-compliant" pedestrian bridges built in the 1990s-2000s have approach ramps at 1:12 with no rest landings. That technically met the early ADA Accessibility Guidelines but is exhausting + unsafe in practice. Modern best practice (since the 2010 ADA refresh + PROWAG 2023) is 1:20 wherever space allows, with 1:12 only as a last resort.'
             },
-            { id: 'width', name: 'Clear width + passing zones', emoji: '↔️',
+            { id: 'width', name: __alloT('stem.bridgelab.clear_width_passing_zones', 'Clear width + passing zones'), emoji: '↔️',
               spec: 'Minimum 5 ft (1.5 m) clear width on a pedestrian-only bridge, 8-10 ft (2.4-3 m) on a shared-use path (pedestrian + bicycle), 12-14 ft (3.7-4.3 m) for high-volume shared-use. Two wheelchairs MUST be able to pass; that requires 5 ft minimum. Add 6 in (15 cm) clear next to any handrail (people\'s knuckles + cane tips must not collide with the rail). Standing landings every 200 ft (60 m) on long bridges allow people to pause without obstructing traffic.',
               why: 'A wheelchair is ~28-32 in wide. Add a person walking the other direction. Add a guide dog. Add a kid on a scooter. Add an Olmsted-tradition wide pram. The minimum is calculated for typical use, NOT for events, fair days, or seasonal traffic. Building tight to the minimum saves cost today + creates a problem permanently.',
               gotcha: 'Snow + ice + fallen leaves shrink the effective width. In winter climates, plan widths that REMAIN compliant after typical snow accumulation + plowed-aside snow piles. The High Trestle Trail (Iowa) + the Big Four Bridge (Louisville) have winter-maintenance budgets that exceed initial-construction snow-loading estimates.'
             },
-            { id: 'surface', name: 'Surface materials', emoji: '🛣️',
+            { id: 'surface', name: __alloT('stem.bridgelab.surface_materials', 'Surface materials'), emoji: '🛣️',
               spec: 'Stable, firm, slip-resistant in all weather. Static coefficient of friction (SCOF) ≥ 0.42 dry, ≥ 0.40 wet (more conservative figures than older codes; matches modern ADA + ANSI A137.1 guidance). Open-grate decks (steel grating, glued grit, etc.) must have openings < 0.5 in (13 mm) in the direction of travel — otherwise cane tips, wheelchair caster wheels + high heels can drop through. Joints + gaps less than 0.5 in wide + 0.25 in (6 mm) tall transitions max.',
               why: 'Slip + fall is the leading cause of pedestrian injury on bridges. People using canes + walkers have less recovery margin. People with low vision rely on cane tips for surface feedback; a metal grate can hide depth cues. Wood decking (popular on pedestrian bridges) loses grip when wet + grows algae unless treated.',
               gotcha: 'Polished metal grates LOOK industrial-chic in design renderings + are catastrophic in practice. Stamped concrete patterns can be slippery when wet. Cobblestone bridges (historic preservation) are essentially impossible for wheelchair users. Sometimes preservation + accessibility conflict, and there is no easy answer — but the question must be ASKED, not skipped.'
             },
-            { id: 'wayfinding', name: 'Wayfinding + sensory cues', emoji: '🧭',
+            { id: 'wayfinding', name: __alloT('stem.bridgelab.wayfinding_sensory_cues', 'Wayfinding + sensory cues'), emoji: '🧭',
               spec: 'Tactile attention strips (detectable warnings) at both ends marking the bridge entry. Tactile direction indicators at decision points. High-contrast edge markings (typically luminance contrast ≥ 70%) along the deck edge + at rail transitions. Audio crossing signals at any traffic intersection at the bridge ends. Trail signage at 4-7 ft (1.2-2.1 m) height (the readable range for both standing + seated users), with sans-serif type, high contrast, simple icons.',
               why: 'A pedestrian bridge with no contrast + no signs is a hostile environment for blind + low-vision users, people with cognitive disabilities, kids, tourists, and anyone navigating in fog or low light. Tactile + auditory cues are not extras; they are the navigation system for users who cannot rely on visual cues.',
               gotcha: 'Designers sometimes treat sensory wayfinding as a checklist (one tactile strip, one sign, done). Useful wayfinding is SYSTEMIC — the strip means something only if a user trusts there will be one at every entry, every decision point, every danger zone. Inconsistency is almost worse than absence, because it teaches users not to rely on the cues at all.'
             },
-            { id: 'rails', name: 'Handrails + guardrails', emoji: '🛡️',
+            { id: 'rails', name: __alloT('stem.bridgelab.handrails_guardrails', 'Handrails + guardrails'), emoji: '🛡️',
               spec: 'Handrails 34-38 in (86-97 cm) high, continuous along the full length, returning to wall or post at both ends (no abrupt protruding endings — they catch sleeves, bags, leashes). Cross-section graspable, typically 1.25-2 in (32-51 mm) diameter, with 1.5 in (38 mm) clearance to any wall. Guardrail required where the deck is more than 30 in (76 cm) above the surrounding grade, ≥ 42 in (107 cm) high, with pickets spaced so a 4-in (10 cm) sphere cannot pass. For pedestrian bridges over busy roadways, anti-throw fencing extends ≥ 8 ft (2.4 m) above the deck.',
               why: 'Handrails support the body weight of people losing balance — common with vertigo, MS gait, vestibular conditions, low blood pressure, elderly users, kids. The 34-38 in height was set after extensive ergonomic studies for the most usable range across body sizes. The picket spacing prevents kids\' heads from getting stuck (an actual recurring injury before the 4 in standard).',
               gotcha: 'Some "sculptural" architectural handrails (cable rails, glass rails, very thin pipe rails) meet code BARELY + fail to give a confident grip to many users. A handrail you can\'t close your hand around isn\'t serving the user it\'s built for. Always test a handrail design with people who actually depend on handrails — not with able-bodied engineers + architects.'
             },
-            { id: 'lighting', name: 'Lighting + visibility', emoji: '💡',
+            { id: 'lighting', name: __alloT('stem.bridgelab.lighting_visibility', 'Lighting + visibility'), emoji: '💡',
               spec: 'Average illuminance 0.5-1.0 footcandle (5-10 lux) on pedestrian-only bridges; 1.0-2.0 footcandles (10-20 lux) on shared-use paths; 2.0+ footcandles (20+ lux) at decision zones (entries, turns, transitions). Uniformity ratio (max:min) ≤ 4:1 to avoid bright-dark patches that defeat night-adapted vision. Color temperature 3000-4500 K for accurate visual perception. Light fixtures shielded against direct glare into pedestrians\' eyes.',
               why: 'Pedestrian bridges are heavily used at night (commutes, recreation, dog walks, exercise) + suffer high accident + assault rates when dark. Adequate uniform lighting reduces both falls + crime. Color temperature matters: very cool (>5000 K) light flattens contrast + worsens night vision for older users; very warm (<2700 K) makes signs hard to read at distance.',
               gotcha: 'Astronomical dark-sky rules + accessibility lighting standards CAN conflict. The honest answer is: priority pedestrian + bicycle bridges generally need the lighting; pure recreational trail bridges in remote areas can use lower levels + reflective wayfinding. Don\'t make every bridge a stadium + don\'t make every bridge a tomb.'
             },
-            { id: 'rest', name: 'Rest stops + seating', emoji: '🪑',
+            { id: 'rest', name: __alloT('stem.bridgelab.rest_stops_seating', 'Rest stops + seating'), emoji: '🪑',
               spec: 'Bench or rest area every 200 ft (60 m) on long pedestrian bridges, every 100 ft (30 m) on grades. Bench seat height 17-19 in (43-48 cm), back support, armrest on at least one side (helps users stand up). Clear floor area beside the bench for a wheelchair user to PAUSE next to a companion without leaving the path. Shade or wind shelter wherever climate justifies. Drinking fountain at trailheads (with both standing + accessible heights) is best practice on bridges > 1/4 mile.',
               why: 'A bridge that is technically accessible but offers no place to rest excludes users with limited stamina (cardiac, pulmonary, chronic-fatigue, post-injury rehab, elderly, pregnant). The bench every 200 ft turns "I can\'t cross that bridge" into "I can cross it with a stop." This is one of the lowest-cost + highest-impact accessibility additions to a bridge design.',
               gotcha: 'Many "iconic" pedestrian bridges (Brooklyn Bridge promenade, Manhattan Bridge walkway) have ZERO benches on the bridge itself, which excludes a significant population from using them. Retrofitting is structurally + politically hard. Build it in from day one.'
             },
-            { id: 'highline', name: 'Case study: The High Line', emoji: '🌿',
+            { id: 'highline', name: __alloT('stem.bridgelab.case_study_the_high_line', 'Case study: The High Line'), emoji: '🌿',
               spec: '1.45 mile (2.3 km) elevated linear park in Manhattan, opened 2009-2014 in three phases. Reused an abandoned NY Central Railroad elevated viaduct. The deck is concrete plank with planter beds; ADA-compliant ramped access at multiple entry points; benches throughout. Annual visitation 8 million+, has driven $2+ billion in adjacent real estate investment.',
               why: 'Demonstrates what a "bridge as park" can do. Repurposes infrastructure that would otherwise be demolished. Has been HUGELY influential globally (Atlanta Beltline, Promenade Plantée Paris, Seoullo 7017 Seoul, the Lowline + others have followed). Showed that pedestrian-only elevated infrastructure can pay for itself + generate enormous social value.',
               gotcha: 'The High Line is also a textbook case study in INDUCED GENTRIFICATION. The neighborhoods it passes through (Chelsea, Hell\'s Kitchen, Hudson Yards) have seen rent + property values rise 300%+ since the project opened, displacing many longtime low-income residents. The bridge succeeded as architecture + as accessibility infrastructure + as a gentrification engine, all simultaneously. The High Line\'s designers are now publicly working on the Friends of the High Line equity programs to address this. Honest accessibility design considers WHO will still be in the neighborhood to use the bridge a decade later.'
@@ -2011,9 +2243,9 @@
           var sel = d.selectedAcc || 'slope';
           var topic = ACC.find(function(t) { return t.id === sel; }) || ACC[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '♿ Pedestrian + accessible bridge design'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.pedestrian_accessible_bridge_design', '♿ Pedestrian + accessible bridge design')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'A bridge that excludes people is half-built. Modern pedestrian + accessible bridge design is governed by the ADA Accessibility Guidelines, PROWAG (Public Right-of-Way Accessibility Guidelines, 2023), AASHTO\'s Guide for the Development of Bicycle Facilities, and (in many states) more stringent local codes. The goal is not "minimum compliance." The goal is a bridge ANYONE can use, comfortably, in all weather.'
+              __alloT('stem.bridgelab.a_bridge_that_excludes_people_is_half_', 'A bridge that excludes people is half-built. Modern pedestrian + accessible bridge design is governed by the ADA Accessibility Guidelines, PROWAG (Public Right-of-Way Accessibility Guidelines, 2023), AASHTO\'s Guide for the Development of Bicycle Facilities, and (in many states) more stringent local codes. The goal is not "minimum compliance." The goal is a bridge ANYONE can use, comfortably, in all weather.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               ACC.map(function(t) {
@@ -2028,7 +2260,7 @@
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Spec'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.spec', 'Spec')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.spec)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
@@ -2036,17 +2268,17 @@
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.why)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Common gotcha'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.common_gotcha', 'Common gotcha')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.gotcha)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
-              h('strong', null, 'The framing that matters: '),
-              'Accessibility is not a special-needs accommodation. About 1 in 4 US adults has a disability (CDC 2024). Add older adults, pregnant women, parents with strollers, people pulling luggage, kids on scooters, bike commuters, and the temporary injuries everyone has — and "accessible" design serves a clear MAJORITY of users. The "able-bodied adult on foot" the older codes were written for is the minority case, not the standard case.'
+              h('strong', null, __alloT('stem.bridgelab.the_framing_that_matters', 'The framing that matters: ')),
+              __alloT('stem.bridgelab.accessibility_is_not_a_special_needs_a', 'Accessibility is not a special-needs accommodation. About 1 in 4 US adults has a disability (CDC 2024). Add older adults, pregnant women, parents with strollers, people pulling luggage, kids on scooters, bike commuters, and the temporary injuries everyone has — and "accessible" design serves a clear MAJORITY of users. The "able-bodied adult on foot" the older codes were written for is the minority case, not the standard case.')
             ),
             h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', fontSize: 11.5, color: '#fca5a5', lineHeight: 1.65 } },
-              h('strong', null, 'Test with the people who depend on it: '),
-              'No accessibility design should ship without USER TESTING by people who actually use mobility devices, white canes, hearing aids, AAC devices. A design reviewed only by able-bodied engineers + architects will always miss something. The disability community has been clear for decades: "Nothing about us without us." Apply it to bridge design.'
+              h('strong', null, __alloT('stem.bridgelab.test_with_the_people_who_depend_on_it', 'Test with the people who depend on it: ')),
+              __alloT('stem.bridgelab.no_accessibility_design_should_ship_wi', 'No accessibility design should ship without USER TESTING by people who actually use mobility devices, white canes, hearing aids, AAC devices. A design reviewed only by able-bodied engineers + architects will always miss something. The disability community has been clear for decades: "Nothing about us without us." Apply it to bridge design.')
             )
           );
         }
@@ -2058,10 +2290,10 @@
       function renderMaterials() {
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            'Every material has tradeoffs. Strength, weight, cost, durability, environmental impact. The right material depends on the structure and the context.'
+            __alloT('stem.bridgelab.every_material_has_tradeoffs_strength_', 'Every material has tradeoffs. Strength, weight, cost, durability, environmental impact. The right material depends on the structure and the context.')
           ),
           h('div', { style: { overflowX: 'auto', marginBottom: 14 } },
-            h('table', { style: { width: '100%', minWidth: 600, borderCollapse: 'collapse', fontSize: 12 } },
+            h('table', { style: { width: '100%', minWidth: 0, borderCollapse: 'collapse', fontSize: 12 } },
               h('thead', null, h('tr', null,
                 ['Material', 'Yield (MPa)', 'Density (kg/m³)', 'Modulus E (GPa)', 'Cost (rel.)'].map(function(c, i) {
                   return h('th', { key: i, style: { padding: 8, textAlign: 'left', background: 'var(--allo-stem-panel, #1e293b)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontSize: 11, fontWeight: 800 } }, c);
@@ -2083,7 +2315,7 @@
           MATERIALS.map(function(m) {
             return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8 } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, m.name),
-              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, marginBottom: 6 } }, m.desc),
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, marginBottom: 6 } }, __alloT('stem.bridgelab.' + (m.id) + '_desc', m.desc)),
               h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
                 h('strong', null, 'Use: '), m.use
               )
@@ -2091,53 +2323,53 @@
           }),
           sectionCard('Key terms',
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-              h('li', null, h('strong', null, 'Yield strength: '), 'Force per unit area at which a material starts to deform permanently. Above this, the material is damaged even after the load is removed. In MPa (megapascals = N/mm²).'),
-              h('li', null, h('strong', null, 'Modulus of elasticity (E): '), 'How stiff the material is. Higher E = less deformation under the same force. Stress = E * strain. In GPa (gigapascals = 1000 MPa).'),
-              h('li', null, h('strong', null, 'Density: '), 'Mass per unit volume. Determines self-weight of the structure. A heavy material requires bigger members to support its own weight before any external load.'),
-              h('li', null, h('strong', null, 'Ductility: '), 'How much a material deforms before breaking. Ductile (steel) gives warning. Brittle (cast iron, stone) breaks suddenly.')
+              h('li', null, h('strong', null, __alloT('stem.bridgelab.yield_strength', 'Yield strength: ')), __alloT('stem.bridgelab.force_per_unit_area_at_which_a_materia', 'Force per unit area at which a material starts to deform permanently. Above this, the material is damaged even after the load is removed. In MPa (megapascals = N/mm²).')),
+              h('li', null, h('strong', null, __alloT('stem.bridgelab.modulus_of_elasticity_e', 'Modulus of elasticity (E): ')), __alloT('stem.bridgelab.how_stiff_the_material_is_higher_e_les', 'How stiff the material is. Higher E = less deformation under the same force. Stress = E * strain. In GPa (gigapascals = 1000 MPa).')),
+              h('li', null, h('strong', null, 'Density: '), __alloT('stem.bridgelab.mass_per_unit_volume_determines_self_w', 'Mass per unit volume. Determines self-weight of the structure. A heavy material requires bigger members to support its own weight before any external load.')),
+              h('li', null, h('strong', null, 'Ductility: '), __alloT('stem.bridgelab.how_much_a_material_deforms_before_bre', 'How much a material deforms before breaking. Ductile (steel) gives warning. Brittle (cast iron, stone) breaks suddenly.'))
             )
           ),
 
           sectionCard('🔧 Repair + retrofit — extending bridge life',
             (function() {
               var TECHNIQUES = [
-                { id: 'patch', name: 'Concrete patch repair', color: '#fbbf24',
+                { id: 'patch', name: __alloT('stem.bridgelab.concrete_patch_repair', 'Concrete patch repair'), color: '#fbbf24',
                   what: 'Spalled or delaminated concrete is removed back to sound material, the rebar is cleaned, then new concrete (or modified mortar) is placed. Surface coatings may be added to slow future chloride penetration.',
                   when: 'Common after deicing-salt damage on northern bridges; localized impact damage; freeze-thaw deterioration.',
                   limits: 'Bond between old + new concrete is a recurring weak point. Repairs typically last 10-25 years before themselves needing repair. Surface coatings extend life but don\'t address rebar already corroding deeply.',
                   cost: 'Low-to-medium'
                 },
-                { id: 'cfrp', name: 'CFRP (carbon-fiber) strengthening', color: '#0ea5e9',
+                { id: 'cfrp', name: __alloT('stem.bridgelab.cfrp_carbon_fiber_strengthening', 'CFRP (carbon-fiber) strengthening'), color: '#0ea5e9',
                   what: 'Carbon-fiber-reinforced polymer sheets or strips are epoxy-bonded to the outside of existing beams or columns. The CFRP adds tensile capacity without adding weight or removing material.',
                   when: 'When a bridge needs more capacity (heavier trucks, code update) but full replacement is impractical. Also for seismic retrofit of columns (wrapping in CFRP confines the concrete + dramatically improves ductility).',
                   limits: 'Bond can fail under fire (epoxy softens at ~80°C) — many designs add a fire-protective coating. Premium cost. UV degradation if exposed. Cannot help if the original member is severely corroded.',
                   cost: 'Medium-high'
                 },
-                { id: 'jacket', name: 'Steel + concrete jacketing', color: '#a855f7',
+                { id: 'jacket', name: __alloT('stem.bridgelab.steel_concrete_jacketing', 'Steel + concrete jacketing'), color: '#a855f7',
                   what: 'A new layer of steel plate or reinforced concrete is built around an existing column or pier. The jacket carries new load, confines the original section, dramatically increases capacity + ductility.',
                   when: 'Seismic retrofit (the most common reason — almost every pre-1971 California highway column has been jacketed). Bridge widening that puts new loads on old columns.',
                   limits: 'Increases column size, which may not fit. Adds weight (concrete jacket especially) — may need foundation upgrades too.',
                   cost: 'High'
                 },
-                { id: 'deck', name: 'Deck replacement', color: '#22c55e',
+                { id: 'deck', name: __alloT('stem.bridgelab.deck_replacement', 'Deck replacement'), color: '#22c55e',
                   what: 'The bridge deck (the road surface + slab) is the most stressed + most exposed component. Many bridges last 100+ years by replacing the deck once or twice in their lifetime. Replaced under traffic in stages, or during a closure.',
                   when: 'Deck deterioration (cracking, spalling, rebar corrosion) typically appears at 30-50 years for unprotected decks; longer for epoxy-coated rebar or stainless steel. Replacement uses higher-spec materials than the original.',
                   limits: 'Major disruption. The substructure (piers, abutments) must be inspected + may need its own work during deck replacement.',
                   cost: 'High'
                 },
-                { id: 'cathodic', name: 'Cathodic protection', color: '#86efac',
+                { id: 'cathodic', name: __alloT('stem.bridgelab.cathodic_protection', 'Cathodic protection'), color: '#86efac',
                   what: 'A small electrical current is impressed across the concrete, making the rebar slightly negative — preventing the electrochemistry that causes corrosion. Either sacrificial anode (zinc strip wears out) or impressed-current (rectifier powered).',
                   when: 'Concrete bridges with active rebar corrosion that hasn\'t yet caused major spalling. Marine bridges especially. Common in Europe + the UK since the 1980s; increasingly used in US.',
                   limits: 'Requires monitoring + maintenance. Power supply or anode replacement on a cycle. Effective if installed before too much damage has occurred.',
                   cost: 'Medium'
                 },
-                { id: 'scour', name: 'Scour countermeasures', color: '#dc2626',
+                { id: 'scour', name: __alloT('stem.bridgelab.scour_countermeasures', 'Scour countermeasures'), color: '#dc2626',
                   what: 'Riprap (large rocks placed around piers), sheet piles, concrete collars, deeper foundations, or stream-channel work to prevent flowing water from eroding soil from around bridge piers. Real-time scour monitoring sensors increasingly added.',
                   when: 'All bridges over water now require scour evaluation (FHWA 1995). Older bridges retrofitted with countermeasures as funding allows.',
                   limits: 'Riprap can wash out in extreme floods. Sheet piles + deeper foundations are expensive. Some bridges with chronic scour eventually need replacement.',
                   cost: 'Medium'
                 },
-                { id: 'replace', name: 'Full replacement', color: 'var(--allo-stem-text-soft, #94a3b8)',
+                { id: 'replace', name: __alloT('stem.bridgelab.full_replacement', 'Full replacement'), color: 'var(--allo-stem-text-soft, #94a3b8)',
                   what: 'When repair + retrofit are uneconomic or technically inadequate, the bridge is replaced. Often built alongside the existing structure (so traffic is maintained), then traffic is shifted + old bridge demolished.',
                   when: 'Severe structural deterioration; obsolete capacity (modern trucks much heavier than 1950s); functionally obsolete (lanes too narrow); damaged beyond repair (collision, flood, earthquake).',
                   limits: '5-10× the cost of major repair. Long construction time. Environmental + community impact.',
@@ -2147,7 +2379,7 @@
               var sel = TECHNIQUES.find(function(t) { return t.id === d.selectedRepair; }) || TECHNIQUES[0];
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'About 90% of bridge engineering work is on EXISTING bridges, not new ones. Repair + retrofit extend life at a fraction of replacement cost. The right intervention depends on what\'s deteriorating + how badly.'
+                  __alloT('stem.bridgelab.about_90_of_bridge_engineering_work_is', 'About 90% of bridge engineering work is on EXISTING bridges, not new ones. Repair + retrofit extend life at a fraction of replacement cost. The right intervention depends on what\'s deteriorating + how badly.')
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   TECHNIQUES.map(function(t) {
@@ -2164,25 +2396,25 @@
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Cost: ' + sel.cost)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it works'),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.how_it_works_3', 'How it works')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.what)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'When to use it'),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.when_to_use_it', 'When to use it')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.when)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.08)', borderLeft: '3px solid #dc2626' } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Limits + honest caveats'),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.limits_honest_caveats', 'Limits + honest caveats')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.limits)
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
-                  h('strong', null, 'The US infrastructure picture: '),
-                  'About 1 in 13 US bridges (~46,000 of 619,000) is in "poor" condition according to FHWA. Average bridge age is ~44 years; many were built in the 1950s-1970s federal highway expansion + are now reaching the end of their original design life. The 2021 Infrastructure Investment and Jobs Act allocated $40 billion specifically for bridge repair + replacement — the largest US bridge investment since 1956. Done well: substantial life-extension via repair + retrofit. Done poorly: replace-everything cycles that miss the opportunity to keep historic structures functioning longer.'
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
+                  h('strong', null, __alloT('stem.bridgelab.the_us_infrastructure_picture', 'The US infrastructure picture: ')),
+                  __alloT('stem.bridgelab.about_1_in_13_us_bridges_46_000_of_619', 'About 1 in 13 US bridges (~46,000 of 619,000) is in "poor" condition according to FHWA. Average bridge age is ~44 years; many were built in the 1950s-1970s federal highway expansion + are now reaching the end of their original design life. The 2021 Infrastructure Investment and Jobs Act allocated $40 billion specifically for bridge repair + replacement — the largest US bridge investment since 1956. Done well: substantial life-extension via repair + retrofit. Done poorly: replace-everything cycles that miss the opportunity to keep historic structures functioning longer.')
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
-                  h('strong', null, 'Seismic retrofit success — the California program: '),
-                  'After the 1971 San Fernando + 1989 Loma Prieta earthquakes, California undertook a massive bridge retrofit program. CFRP wrapping + steel jacketing + isolation bearings + restrainer cables added to thousands of pre-1971 bridges. The 1994 Northridge + 2014 South Napa earthquakes both showed that retrofitted bridges performed far better than non-retrofitted ones — many would have collapsed had the retrofit work not been done. One of the most successful infrastructure investments in US history.'
+                  h('strong', null, __alloT('stem.bridgelab.seismic_retrofit_success_the_californi', 'Seismic retrofit success — the California program: ')),
+                  __alloT('stem.bridgelab.after_the_1971_san_fernando_1989_loma_', 'After the 1971 San Fernando + 1989 Loma Prieta earthquakes, California undertook a massive bridge retrofit program. CFRP wrapping + steel jacketing + isolation bearings + restrainer cables added to thousands of pre-1971 bridges. The 1994 Northridge + 2014 South Napa earthquakes both showed that retrofitted bridges performed far better than non-retrofitted ones — many would have collapsed had the retrofit work not been done. One of the most successful infrastructure investments in US history.')
                 )
               );
             })(),
@@ -2198,7 +2430,7 @@
               var cracking = netStress > 3;  // concrete cracks at ~3 MPa tension
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'Concrete is great in COMPRESSION but useless in TENSION — it cracks at about 3 MPa. Reinforced concrete adds steel rebar to handle tension, but the concrete still cracks (tiny cracks at "service" loads that don\'t affect strength but let water + chlorides reach the rebar over decades). PRESTRESSED concrete is different: high-strength steel tendons are tensioned + permanently compress the concrete BEFORE any external load. The concrete never sees tension under service loads → no cracks → much longer life.'
+                  __alloT('stem.bridgelab.concrete_is_great_in_compression_but_u', 'Concrete is great in COMPRESSION but useless in TENSION — it cracks at about 3 MPa. Reinforced concrete adds steel rebar to handle tension, but the concrete still cracks (tiny cracks at "service" loads that don\'t affect strength but let water + chlorides reach the rebar over decades). PRESTRESSED concrete is different: high-strength steel tendons are tensioned + permanently compress the concrete BEFORE any external load. The concrete never sees tension under service loads → no cracks → much longer life.')
                 ),
 
                 // Visualization
@@ -2207,8 +2439,8 @@
                   var beamY = 70;
                   var beamH = 35;
                   // Show three states: rest (precompressed), under load (net tension or net compression)
-                  return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'preTitle preDesc' },
-                    h('title', { id: 'preTitle' }, 'Prestressed beam stress diagram'),
+                  return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'preTitle preDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
+                    h('title', { id: 'preTitle' }, __alloT('stem.bridgelab.prestressed_beam_stress_diagram', 'Prestressed beam stress diagram')),
                     h('desc', { id: 'preDesc' }, 'A concrete beam with internal compression from prestressing tendons. Bending from external load adds tension at the bottom — but the precompression ' + (cracking ? 'is not enough to prevent cracking.' : 'cancels it, keeping the bottom in compression.')),
                     // Beam outline
                     h('rect', { x: 50, y: beamY, width: 500, height: beamH, fill: '#475569', stroke: '#cbd5e1', strokeWidth: 1 }),
@@ -2232,7 +2464,7 @@
                         h('polygon', { points: (lx - 2) + ',' + (beamY - 6) + ' ' + (lx + 2) + ',' + (beamY - 6) + ' ' + lx + ',' + (beamY - 1), fill: '#22c55e' })
                       );
                     }),
-                    h('text', { x: 50 + 250, y: 20, textAnchor: 'middle', fill: '#86efac', fontSize: 11 }, 'External load (causes bending)'),
+                    h('text', { x: 50 + 250, y: 20, textAnchor: 'middle', fill: '#86efac', fontSize: 11 }, __alloT('stem.bridgelab.external_load_causes_bending', 'External load (causes bending)')),
                     // Result label
                     h('rect', { x: 50, y: beamY + beamH + 6, width: 500, height: 16, fill: cracking ? '#7f1d1d' : '#14532d', rx: 2 }),
                     h('text', { x: 300, y: beamY + beamH + 18, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 800 },
@@ -2245,15 +2477,15 @@
 
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginTop: 12, marginBottom: 12 } },
                   [
-                    { label: 'Precompression from tendons (MPa)', value: compStress, min: 0, max: 25, step: 1, key: 'preCompStress' },
-                    { label: 'Bending stress from external load (MPa)', value: loadStress, min: 0, max: 30, step: 1, key: 'preLoadStress' }
+                    { label: __alloT('stem.bridgelab.precompression_from_tendons_mpa', 'Precompression from tendons (MPa)'), value: compStress, min: 0, max: 25, step: 1, key: 'preCompStress' },
+                    { label: __alloT('stem.bridgelab.bending_stress_from_external_load_mpa', 'Bending stress from external load (MPa)'), value: loadStress, min: 0, max: 30, step: 1, key: 'preLoadStress' }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -2263,26 +2495,26 @@
                 ),
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65, marginBottom: 8 } },
-                  h('strong', null, 'Two methods of prestressing: '),
+                  h('strong', null, __alloT('stem.bridgelab.two_methods_of_prestressing', 'Two methods of prestressing: ')),
                   h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
-                    h('li', null, h('strong', null, 'Pre-tensioning: '), 'Tendons are tensioned BEFORE concrete is poured + before it cures. Once concrete hardens + bonds to the tendons, anchors are released; the tendons pull inward through friction. Used for FACTORY-MADE beams (highway girders, double-tees, hollow-core planks).'),
-                    h('li', null, h('strong', null, 'Post-tensioning: '), 'Concrete is poured first WITH HOLLOW DUCTS through it. After curing, tendons are threaded through, tensioned hydraulically, and anchored at the ends. Used for IN-PLACE construction (bridges, slabs, dams, nuclear reactor containment).')
+                    h('li', null, h('strong', null, 'Pre-tensioning: '), __alloT('stem.bridgelab.tendons_are_tensioned_before_concrete_', 'Tendons are tensioned BEFORE concrete is poured + before it cures. Once concrete hardens + bonds to the tendons, anchors are released; the tendons pull inward through friction. Used for FACTORY-MADE beams (highway girders, double-tees, hollow-core planks).')),
+                    h('li', null, h('strong', null, 'Post-tensioning: '), __alloT('stem.bridgelab.concrete_is_poured_first_with_hollow_d', 'Concrete is poured first WITH HOLLOW DUCTS through it. After curing, tendons are threaded through, tensioned hydraulically, and anchored at the ends. Used for IN-PLACE construction (bridges, slabs, dams, nuclear reactor containment).'))
                   )
                 ),
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65, marginBottom: 8 } },
                   h('strong', null, 'History: '),
-                  'Eugène Freyssinet (France, 1928) + Gustave Magnel (Belgium, 1940s) developed prestressed concrete. The technique required high-strength steel wire (developed 1900-30) — earlier "low-carbon" steel relaxed under sustained load + lost the precompression. Now standard worldwide for medium-span bridges (30-200 m). The Confederation Bridge (Canada, 12.9 km of prestressed concrete) + most US highway overpasses are prestressed.'
+                  __alloT('stem.bridgelab.eug_ne_freyssinet_france_1928_gustave_', 'Eugène Freyssinet (France, 1928) + Gustave Magnel (Belgium, 1940s) developed prestressed concrete. The technique required high-strength steel wire (developed 1900-30) — earlier "low-carbon" steel relaxed under sustained load + lost the precompression. Now standard worldwide for medium-span bridges (30-200 m). The Confederation Bridge (Canada, 12.9 km of prestressed concrete) + most US highway overpasses are prestressed.')
                 ),
 
-                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
-                  h('strong', null, 'Why this matters: '),
-                  'A reinforced concrete beam cracks under service load → the cracks are tiny + don\'t reduce strength, but they let water + chloride ions reach the rebar → rebar corrosion is the #1 cause of premature concrete bridge deterioration. A prestressed beam stays in compression under service loads → no cracks → no chloride ingress → much longer life. Prestressed bridges often last 100+ years; reinforced concrete bridges often need major repair at 50-70.'
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
+                  h('strong', null, __alloT('stem.bridgelab.why_this_matters', 'Why this matters: ')),
+                  __alloT('stem.bridgelab.a_reinforced_concrete_beam_cracks_unde', 'A reinforced concrete beam cracks under service load → the cracks are tiny + don\'t reduce strength, but they let water + chloride ions reach the rebar → rebar corrosion is the #1 cause of premature concrete bridge deterioration. A prestressed beam stays in compression under service loads → no cracks → no chloride ingress → much longer life. Prestressed bridges often last 100+ years; reinforced concrete bridges often need major repair at 50-70.')
                 ),
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: '#fecaca', lineHeight: 1.65, marginTop: 8 } },
-                  h('strong', null, 'Honest caveat — when prestressing fails: '),
-                  'The Morandi Bridge (Genoa, Italy) collapsed in August 2018, killing 43. Built 1967 as a prestressed cable-stayed design with concrete-encased stays. Decades of corrosion ate the steel wires inside the concrete encasement — invisible from outside. The encasement (the very feature meant to protect the steel) prevented inspection from detecting the deterioration. Modern designs use replaceable stays + non-encased prestressing where possible.'
+                  h('strong', null, __alloT('stem.bridgelab.honest_caveat_when_prestressing_fails', 'Honest caveat — when prestressing fails: ')),
+                  __alloT('stem.bridgelab.the_morandi_bridge_genoa_italy_collaps', 'The Morandi Bridge (Genoa, Italy) collapsed in August 2018, killing 43. Built 1967 as a prestressed cable-stayed design with concrete-encased stays. Decades of corrosion ate the steel wires inside the concrete encasement — invisible from outside. The encasement (the very feature meant to protect the steel) prevented inspection from detecting the deterioration. Modern designs use replaceable stays + non-encased prestressing where possible.')
                 )
               );
             })(),
@@ -2292,33 +2524,33 @@
           sectionCard('🏗️ Foundations + soil mechanics — what the bridge stands on',
             (function() {
               var SOILS = [
-                { id: 'rock', name: 'Solid rock (bedrock)', bearingMPa: 10, color: 'var(--allo-stem-text-soft, #475569)',
-                  desc: 'Granite, basalt, sound limestone. The strongest natural foundation. Allowable bearing 5-15 MPa (and much higher with engineered anchors).',
+                { id: 'rock', name: __alloT('stem.bridgelab.solid_rock_bedrock', 'Solid rock (bedrock)'), bearingMPa: 10, color: 'var(--allo-stem-text-soft, #475569)',
+                  desc: __alloT('stem.bridgelab.granite_basalt_sound_limestone_the_str', 'Granite, basalt, sound limestone. The strongest natural foundation. Allowable bearing 5-15 MPa (and much higher with engineered anchors).'),
                   good: 'Tower bridges + heavy load points anchored into rock are the gold standard. Akashi-Kaikyō tower foundations are anchored 60 m into bedrock.',
                   watch: 'Weathered or fractured rock can be much weaker than fresh. Karst limestone has hidden voids. Always borehole-test, never assume.'
                 },
-                { id: 'gravel', name: 'Dense sand + gravel', bearingMPa: 0.5, color: '#a16207',
-                  desc: 'Glacial outwash, well-graded compacted gravel. Allowable bearing typically 200-600 kPa.',
+                { id: 'gravel', name: __alloT('stem.bridgelab.dense_sand_gravel', 'Dense sand + gravel'), bearingMPa: 0.5, color: '#a16207',
+                  desc: __alloT('stem.bridgelab.glacial_outwash_well_graded_compacted_', 'Glacial outwash, well-graded compacted gravel. Allowable bearing typically 200-600 kPa.'),
                   good: 'Good drainage, doesn\'t expand or shrink. Predictable behavior. Easy to compact.',
                   watch: 'Liquefies in earthquakes if saturated. The 1964 Niigata earthquake liquefied saturated sand under apartment buildings, tipping them over without collapse.'
                 },
-                { id: 'clay', name: 'Stiff clay', bearingMPa: 0.2, color: 'var(--allo-stem-text-soft, #a3a3a3)',
-                  desc: 'Cohesive, fine-grained. Allowable bearing typically 100-300 kPa for stiff clay; much lower for soft clay.',
+                { id: 'clay', name: __alloT('stem.bridgelab.stiff_clay', 'Stiff clay'), bearingMPa: 0.2, color: 'var(--allo-stem-text-soft, #a3a3a3)',
+                  desc: __alloT('stem.bridgelab.cohesive_fine_grained_allowable_bearin', 'Cohesive, fine-grained. Allowable bearing typically 100-300 kPa for stiff clay; much lower for soft clay.'),
                   good: 'Low permeability — good for retaining walls. Cohesive (sticks together).',
                   watch: 'Settles for DECADES under load (consolidation). The Tower of Pisa\'s famous lean comes from differential consolidation in soft clay.'
                 },
-                { id: 'soft', name: 'Soft clay / silt', bearingMPa: 0.05, color: '#a3a3a3',
-                  desc: 'Marine deposits, lake bed, recently-deposited mud. Allowable bearing 25-100 kPa.',
+                { id: 'soft', name: __alloT('stem.bridgelab.soft_clay_silt', 'Soft clay / silt'), bearingMPa: 0.05, color: '#a3a3a3',
+                  desc: __alloT('stem.bridgelab.marine_deposits_lake_bed_recently_depo', 'Marine deposits, lake bed, recently-deposited mud. Allowable bearing 25-100 kPa.'),
                   good: 'Few benefits — usually a problem soil. Common in coastal + river-delta regions where bridges are most needed.',
                   watch: 'Bearing capacity often inadequate for shallow foundations. Requires deep piles or ground improvement (vibroflotation, soil mixing, preloading). Boston\'s Big Dig + the Bay Area\'s reclaimed land are full of soft clays.'
                 },
-                { id: 'fill', name: 'Loose fill / made ground', bearingMPa: 0.05, color: '#a3a3a3',
-                  desc: 'Man-made fill, demolition rubble, uncontrolled placement. Highly variable.',
+                { id: 'fill', name: __alloT('stem.bridgelab.loose_fill_made_ground', 'Loose fill / made ground'), bearingMPa: 0.05, color: '#a3a3a3',
+                  desc: __alloT('stem.bridgelab.man_made_fill_demolition_rubble_uncont', 'Man-made fill, demolition rubble, uncontrolled placement. Highly variable.'),
                   good: '(Not a foundation material on its own. Always investigate + treat.)',
                   watch: 'Heterogeneous, may contain voids, decomposable materials (wood, plastic). Will settle unpredictably + can liquefy. Best practice: remove + replace with engineered fill or install deep piles to a competent layer below.'
                 },
-                { id: 'water', name: 'Underwater (river bed, ocean floor)', bearingMPa: 0.1, color: '#1e40af',
-                  desc: 'Saturated sand, mud, or gravel. Bearing depends on the specific material.',
+                { id: 'water', name: __alloT('stem.bridgelab.underwater_river_bed_ocean_floor', 'Underwater (river bed, ocean floor)'), bearingMPa: 0.1, color: '#1e40af',
+                  desc: __alloT('stem.bridgelab.saturated_sand_mud_or_gravel_bearing_d', 'Saturated sand, mud, or gravel. Bearing depends on the specific material.'),
                   good: 'Modern caisson + cofferdam construction allows building below water. Many of the world\'s biggest bridges (Akashi-Kaikyō, Verrazzano, Tappan Zee) have underwater foundations.',
                   watch: 'SCOUR is the dominant risk. Flowing water erodes soil from around piers. The 1987 Schoharie Creek bridge collapse in New York (10 dead) was caused by scour during a flood. Modern bridges include scour countermeasures: riprap, sheet piles, monitoring instruments.'
                 }
@@ -2334,15 +2566,15 @@
               var footingArea = reaction / allowable_kPa; // m²
               var footingSide = Math.sqrt(footingArea); // square footing
               var FOUNDATION_TYPES = [
-                { name: 'Spread footing', use: 'Shallow, when good soil is within a few meters. Square or rectangular concrete pad spreads load.', cost: 'Cheap' },
-                { name: 'Mat foundation', use: 'Large continuous slab for multiple columns or when load is too concentrated. Common for skyscrapers and large bridge piers.', cost: 'Medium' },
-                { name: 'Driven piles', use: 'Steel or concrete columns hammered down to bearing layer. Sound was the warning bell of soundness for medieval pile driving — Venice is built on millions of wooden piles still functioning after 1500+ years.', cost: 'Medium-high' },
-                { name: 'Drilled shafts (caissons)', use: 'Holes drilled to bearing layer + filled with reinforced concrete. Used where soils are too hard for driving but require deep foundation.', cost: 'High' },
-                { name: 'Spread caisson', use: 'A large hollow box sunk into the soil + filled with concrete. Brooklyn Bridge caissons (1869-72) were among the first. Workers inside got "caisson disease" (decompression sickness) — the bridge cost many lives.', cost: 'Very high' }
+                { name: __alloT('stem.bridgelab.spread_footing', 'Spread footing'), use: 'Shallow, when good soil is within a few meters. Square or rectangular concrete pad spreads load.', cost: 'Cheap' },
+                { name: __alloT('stem.bridgelab.mat_foundation', 'Mat foundation'), use: 'Large continuous slab for multiple columns or when load is too concentrated. Common for skyscrapers and large bridge piers.', cost: 'Medium' },
+                { name: __alloT('stem.bridgelab.driven_piles', 'Driven piles'), use: 'Steel or concrete columns hammered down to bearing layer. Sound was the warning bell of soundness for medieval pile driving — Venice is built on millions of wooden piles still functioning after 1500+ years.', cost: 'Medium-high' },
+                { name: __alloT('stem.bridgelab.drilled_shafts_caissons', 'Drilled shafts (caissons)'), use: 'Holes drilled to bearing layer + filled with reinforced concrete. Used where soils are too hard for driving but require deep foundation.', cost: 'High' },
+                { name: __alloT('stem.bridgelab.spread_caisson', 'Spread caisson'), use: 'A large hollow box sunk into the soil + filled with concrete. Brooklyn Bridge caissons (1869-72) were among the first. Workers inside got "caisson disease" (decompression sickness) — the bridge cost many lives.', cost: 'Very high' }
               ];
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'Every bridge stands on something. The strongest member designed by the best engineer fails if the FOUNDATION does. The 1907 Quebec Bridge, 1967 Silver Bridge, 1987 Schoharie Creek, and many others are partly foundation/anchorage failures. Soil mechanics + foundation engineering are as important as the superstructure design.'
+                  __alloT('stem.bridgelab.every_bridge_stands_on_something_the_s', 'Every bridge stands on something. The strongest member designed by the best engineer fails if the FOUNDATION does. The 1907 Quebec Bridge, 1967 Silver Bridge, 1987 Schoharie Creek, and many others are partly foundation/anchorage failures. Soil mechanics + foundation engineering are as important as the superstructure design.')
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   SOILS.map(function(s) {
@@ -2361,24 +2593,24 @@
                   h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.desc),
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 } },
                     h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', borderLeft: '3px solid #22c55e' } },
-                      h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Good for'),
+                      h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.good_for', 'Good for')),
                       h('div', { style: { fontSize: 11.5, color: '#dcfce7', lineHeight: 1.5 } }, sel.good)
                     ),
                     h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.10)', borderLeft: '3px solid #dc2626' } },
-                      h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Watch out for'),
+                      h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.watch_out_for', 'Watch out for')),
                       h('div', { style: { fontSize: 11.5, color: '#fee2e2', lineHeight: 1.5 } }, sel.watch)
                     )
                   )
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 12 } },
-                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Your current bridge\'s required footing'),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.bridgelab.your_current_bridge_s_required_footing', 'Your current bridge\'s required footing')),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
-                    'Reaction at each support: ', h('strong', { style: { color: '#93c5fd' } }, reaction.toFixed(0) + ' kN'),
-                    ' · On ', h('strong', { style: { color: '#fbbf24' } }, sel.name.toLowerCase()),
+                    __alloT('stem.bridgelab.reaction_at_each_support', 'Reaction at each support: '), h('strong', { style: { color: '#93c5fd' } }, reaction.toFixed(0) + ' kN'),
+                    __alloT('stem.bridgelab.on', ' · On '), h('strong', { style: { color: '#fbbf24' } }, sel.name.toLowerCase()),
                     ' (bearing ' + (sel.bearingMPa < 1 ? (sel.bearingMPa * 1000).toFixed(0) + ' kPa' : sel.bearingMPa + ' MPa') + ') requires footing area ≈ ',
                     h('strong', { style: { color: '#fbbf24' } }, footingArea.toFixed(2) + ' m²'),
-                    ' (or a square footing of ≈ ', h('strong', { style: { color: '#fbbf24' } }, footingSide.toFixed(1) + ' m'),
-                    ' on each side).'
+                    __alloT('stem.bridgelab.or_a_square_footing_of', ' (or a square footing of ≈ '), h('strong', { style: { color: '#fbbf24' } }, footingSide.toFixed(1) + ' m'),
+                    __alloT('stem.bridgelab.on_each_side', ' on each side).')
                   )
                 ),
                 sectionCard('Foundation types',
@@ -2392,9 +2624,9 @@
                     })
                   )
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65, marginTop: 10 } },
-                  h('strong', null, 'Why scour kills bridges: '),
-                  'Flowing water erodes soil from around bridge piers. As scour deepens, the foundation loses bearing area. Eventually it tips or the pier sinks. Schoharie Creek (1987, NY) collapsed during a flood from scour. The 2001 Hatchie River bridge (Tennessee) failure also. About 60% of US bridge failures involve scour. Modern bridges include scour-monitoring instruments + countermeasures (riprap, sheet piles, deeper foundations). The 1995 Federal Highway Administration requires every bridge over water to have a scour evaluation.'
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65, marginTop: 10 } },
+                  h('strong', null, __alloT('stem.bridgelab.why_scour_kills_bridges', 'Why scour kills bridges: ')),
+                  __alloT('stem.bridgelab.flowing_water_erodes_soil_from_around_', 'Flowing water erodes soil from around bridge piers. As scour deepens, the foundation loses bearing area. Eventually it tips or the pier sinks. Schoharie Creek (1987, NY) collapsed during a flood from scour. The 2001 Hatchie River bridge (Tennessee) failure also. About 60% of US bridge failures involve scour. Modern bridges include scour-monitoring instruments + countermeasures (riprap, sheet piles, deeper foundations). The 1995 Federal Highway Administration requires every bridge over water to have a scour evaluation.')
                 )
               );
             })(),
@@ -2405,12 +2637,12 @@
             (function() {
               // Embodied carbon per material (kg CO₂e per kg of material) — approximate, from Inventory of Carbon and Energy + EPDs
               var EC_DATA = {
-                wood:     { kgCO2perKg: 0.43, recycle: '~80% reclaimed or burned for energy', durability: '50-100 yr w/ treatment + maintenance', note: 'Treated wood has higher EC; sustainably-managed forest wood has near-zero net EC over its lifetime (CO₂ sequestered while growing).' },
-                stone:    { kgCO2perKg: 0.07, recycle: '~100% can be reused as crushed aggregate', durability: '500-2000+ yr', note: 'Lowest embodied carbon of any building material if quarried near use. But quarrying disturbs ecosystems + transport costs energy.' },
-                iron:     { kgCO2perKg: 2.0,  recycle: '~75% recycled', durability: '50-100 yr', note: 'Cast iron is brittle + has been largely phased out for structural use. Lower embodied carbon than steel but worse mechanical properties.' },
-                steel:    { kgCO2perKg: 1.99, recycle: '~88% recycled globally (highest of any material)', durability: '100-150+ yr', note: 'New steel production is carbon-intensive (most via blast furnace + coking coal). Recycled steel via electric-arc furnace cuts emissions by 70%+. "Green steel" via hydrogen is being deployed (HYBRIT in Sweden, ArcelorMittal in Spain).' },
-                concrete: { kgCO2perKg: 0.13, recycle: '~30% recycled, mostly as aggregate', durability: '50-100 yr', note: 'Concrete itself has low embodied carbon per kg, but bridges use VAST amounts. Cement production alone is ~8% of global CO₂ emissions. Supplementary cementitious materials (fly ash, slag, calcined clay) cut this by 30-50%.' },
-                composite:{ kgCO2perKg: 8.0,  recycle: '<10% recycled (hard to separate fibers + resin)', durability: '50-75 yr', note: 'High embodied carbon per kg + difficult end-of-life. But weight savings can reduce total material. Best for retrofits + specialty applications, not yet competitive for primary structure.' }
+                wood:     { kgCO2perKg: 0.43, recycle: '~80% reclaimed or burned for energy', durability: '50-100 yr w/ treatment + maintenance', note: __alloT('stem.bridgelab.treated_wood_has_higher_ec_sustainably', 'Treated wood has higher EC; sustainably-managed forest wood has near-zero net EC over its lifetime (CO₂ sequestered while growing).') },
+                stone:    { kgCO2perKg: 0.07, recycle: '~100% can be reused as crushed aggregate', durability: '500-2000+ yr', note: __alloT('stem.bridgelab.lowest_embodied_carbon_of_any_building', 'Lowest embodied carbon of any building material if quarried near use. But quarrying disturbs ecosystems + transport costs energy.') },
+                iron:     { kgCO2perKg: 2.0,  recycle: '~75% recycled', durability: '50-100 yr', note: __alloT('stem.bridgelab.cast_iron_is_brittle_has_been_largely_', 'Cast iron is brittle + has been largely phased out for structural use. Lower embodied carbon than steel but worse mechanical properties.') },
+                steel:    { kgCO2perKg: 1.99, recycle: '~88% recycled globally (highest of any material)', durability: '100-150+ yr', note: __alloT('stem.bridgelab.new_steel_production_is_carbon_intensi', 'New steel production is carbon-intensive (most via blast furnace + coking coal). Recycled steel via electric-arc furnace cuts emissions by 70%+. "Green steel" via hydrogen is being deployed (HYBRIT in Sweden, ArcelorMittal in Spain).') },
+                concrete: { kgCO2perKg: 0.13, recycle: '~30% recycled, mostly as aggregate', durability: '50-100 yr', note: __alloT('stem.bridgelab.concrete_itself_has_low_embodied_carbo', 'Concrete itself has low embodied carbon per kg, but bridges use VAST amounts. Cement production alone is ~8% of global CO₂ emissions. Supplementary cementitious materials (fly ash, slag, calcined clay) cut this by 30-50%.') },
+                composite:{ kgCO2perKg: 8.0,  recycle: '<10% recycled (hard to separate fibers + resin)', durability: '50-75 yr', note: __alloT('stem.bridgelab.high_embodied_carbon_per_kg_difficult_', 'High embodied carbon per kg + difficult end-of-life. But weight savings can reduce total material. Best for retrofits + specialty applications, not yet competitive for primary structure.') }
               };
 
               var mat = MATERIALS.find(function(m) { return m.id === d.materialId; }) || MATERIALS[3];
@@ -2427,16 +2659,16 @@
               var equivPersonYears = embCO2 / 14000;
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'Modern bridge design considers ENVIRONMENTAL cost alongside dollar cost. Cement is ~8% of global CO₂ emissions; steel ~7%. A typical bridge uses thousands of tons of these materials. Sustainable design = lower embodied carbon + longer life + end-of-life recyclability.'
+                  __alloT('stem.bridgelab.modern_bridge_design_considers_environ', 'Modern bridge design considers ENVIRONMENTAL cost alongside dollar cost. Cement is ~8% of global CO₂ emissions; steel ~7%. A typical bridge uses thousands of tons of these materials. Sustainable design = lower embodied carbon + longer life + end-of-life recyclability.')
                 ),
                 h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #22c55e', marginBottom: 12 } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 8 } }, 'Your current design: ' + mat.name),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 8 } },
                     [
-                      { label: 'Mass', value: (massKg / 1000).toFixed(1) + ' metric tons', color: 'var(--allo-stem-text, #cbd5e1)' },
-                      { label: 'Embodied CO₂', value: (embCO2 / 1000).toFixed(2) + ' metric tons CO₂e', color: '#fca5a5' },
-                      { label: '= person-years of emissions', value: equivPersonYears.toFixed(1) + ' US person-years', color: '#fbbf24' },
-                      { label: 'EC factor', value: data.kgCO2perKg + ' kg CO₂e/kg', color: 'var(--allo-stem-text-soft, #94a3b8)' }
+                      { label: __alloT('stem.bridgelab.mass', 'Mass'), value: (massKg / 1000).toFixed(1) + ' metric tons', color: 'var(--allo-stem-text, #cbd5e1)' },
+                      { label: __alloT('stem.bridgelab.embodied_co', 'Embodied CO₂'), value: (embCO2 / 1000).toFixed(2) + ' metric tons CO₂e', color: '#fca5a5' },
+                      { label: __alloT('stem.bridgelab.person_years_of_emissions', '= person-years of emissions'), value: equivPersonYears.toFixed(1) + ' US person-years', color: '#fbbf24' },
+                      { label: __alloT('stem.bridgelab.ec_factor', 'EC factor'), value: data.kgCO2perKg + ' kg CO₂e/kg', color: 'var(--allo-stem-text-soft, #94a3b8)' }
                     ].map(function(s, i) {
                       return h('div', { key: i, style: { padding: 6, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)' } },
                         h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label),
@@ -2448,22 +2680,22 @@
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, fontWeight: 700 } }, 'End-of-life'),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, h('strong', null, 'Recyclability: '), data.recycle),
-                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, h('strong', null, 'Typical durability: '), data.durability),
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, h('strong', null, __alloT('stem.bridgelab.typical_durability', 'Typical durability: ')), data.durability),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.55, marginTop: 6 } }, data.note)
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65 } },
-                  h('strong', null, 'Sustainable design strategies: '),
+                  h('strong', null, __alloT('stem.bridgelab.sustainable_design_strategies', 'Sustainable design strategies: ')),
                   h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
-                    h('li', null, h('strong', null, 'Optimize for the LIFETIME: '), 'A bridge that lasts 150 years has lower per-year carbon than one rebuilt at 60. Long-term durability planning matters.'),
-                    h('li', null, h('strong', null, 'Use less material: '), 'High-strength steel + advanced cross-sections + optimized geometry can cut material 10-30% with no loss of capacity. The cost-optimizer in the Build tab is doing this.'),
-                    h('li', null, h('strong', null, 'Recycled content: '), 'Specify minimum recycled steel content (typically 70-90% achievable). Replace 30-50% of cement with fly ash, slag, or calcined clay.'),
-                    h('li', null, h('strong', null, 'Design for disassembly: '), 'Bolted + modular connections enable salvage at end of life. Older welded + rusted bridges get scrapped; modular ones get repurposed.'),
-                    h('li', null, h('strong', null, 'Local sourcing: '), 'Transport adds embodied carbon. Sourcing materials within 500 km can cut total emissions 15-25%.')
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.optimize_for_the_lifetime', 'Optimize for the LIFETIME: ')), __alloT('stem.bridgelab.a_bridge_that_lasts_150_years_has_lowe', 'A bridge that lasts 150 years has lower per-year carbon than one rebuilt at 60. Long-term durability planning matters.')),
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.use_less_material', 'Use less material: ')), __alloT('stem.bridgelab.high_strength_steel_advanced_cross_sec', 'High-strength steel + advanced cross-sections + optimized geometry can cut material 10-30% with no loss of capacity. The cost-optimizer in the Build tab is doing this.')),
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.recycled_content', 'Recycled content: ')), __alloT('stem.bridgelab.specify_minimum_recycled_steel_content', 'Specify minimum recycled steel content (typically 70-90% achievable). Replace 30-50% of cement with fly ash, slag, or calcined clay.')),
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.design_for_disassembly', 'Design for disassembly: ')), __alloT('stem.bridgelab.bolted_modular_connections_enable_salv', 'Bolted + modular connections enable salvage at end of life. Older welded + rusted bridges get scrapped; modular ones get repurposed.')),
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.local_sourcing', 'Local sourcing: ')), __alloT('stem.bridgelab.transport_adds_embodied_carbon_sourcin', 'Transport adds embodied carbon. Sourcing materials within 500 km can cut total emissions 15-25%.'))
                   )
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
-                  h('strong', null, 'Why this matters now: '),
-                  'Infrastructure construction accounts for ~25-30% of global emissions. The 1971 National Bridge Inspection Standards (post-Silver-Bridge) created a database showing about 1 in 13 US bridges is in poor condition; thousands need replacement in the next 20 years. The Infrastructure Investment and Jobs Act (2021) funds bridge replacement at scale. Done well: lower-carbon materials + longer service life. Done poorly: same emissions, repeating the same mistakes.'
+                  h('strong', null, __alloT('stem.bridgelab.why_this_matters_now', 'Why this matters now: ')),
+                  __alloT('stem.bridgelab.infrastructure_construction_accounts_f', 'Infrastructure construction accounts for ~25-30% of global emissions. The 1971 National Bridge Inspection Standards (post-Silver-Bridge) created a database showing about 1 in 13 US bridges is in poor condition; thousands need replacement in the next 20 years. The Infrastructure Investment and Jobs Act (2021) funds bridge replacement at scale. Done well: lower-carbon materials + longer service life. Done poorly: same emissions, repeating the same mistakes.')
                 )
               );
             })(),
@@ -2514,8 +2746,8 @@
                 // Current operating point
                 var opX = stress < enduranceLimit ? xOf(1e9) : xOf(Ncrit);
                 var opY = yOf(stress);
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'snTitle snDesc' },
-                  h('title', { id: 'snTitle' }, 'S-N curve (stress vs cycles to failure)'),
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'snTitle snDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
+                  h('title', { id: 'snTitle' }, __alloT('stem.bridgelab.s_n_curve_stress_vs_cycles_to_failure', 'S-N curve (stress vs cycles to failure)')),
                   h('desc', { id: 'snDesc' }, 'A logarithmic plot of cycle count on the x-axis vs stress amplitude on the y-axis. Operating at ' + stress + ' MPa, the predicted cycles to failure is ' + (Ncrit === Infinity ? 'infinite (below endurance limit)' : Ncrit.toExponential(2)) + '.'),
                   h('rect', { x: padL, y: padT, width: plotW, height: plotH, fill: '#0a0e1a', stroke: '#334155', strokeWidth: 1 }),
                   // Y axis ticks
@@ -2542,27 +2774,27 @@
                   h('circle', { cx: opX, cy: opY, r: 6, fill: '#ef4444', stroke: '#fff', strokeWidth: 1.5, style: { filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.7))' } }),
                   h('text', { x: opX + 10, y: opY + 4, fill: '#fca5a5', fontSize: 11, fontWeight: 700 }, 'operating'),
                   // Axis labels
-                  h('text', { x: padL + plotW / 2, y: svgH - 8, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'Cycles to failure (log scale)'),
-                  h('text', { x: 14, y: padT + plotH / 2, transform: 'rotate(-90 14 ' + (padT + plotH / 2) + ')', textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'Stress amplitude')
+                  h('text', { x: padL + plotW / 2, y: svgH - 8, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, __alloT('stem.bridgelab.cycles_to_failure_log_scale', 'Cycles to failure (log scale)')),
+                  h('text', { x: 14, y: padT + plotH / 2, transform: 'rotate(-90 14 ' + (padT + plotH / 2) + ')', textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, __alloT('stem.bridgelab.stress_amplitude', 'Stress amplitude'))
                 );
               }
 
               return h('div', null,
                 h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'A bridge that handles its design load just fine on day one can still fail decades later from FATIGUE: tiny cracks that grow microscopically with every load cycle, until one final cycle propagates a crack to failure. Every truck crossing, every wind gust, every temperature swing is a cycle. A heavily-trafficked highway bridge sees 5,000-50,000 cycles per day; over 50 years that\'s ~10⁸-10⁹ cycles.'
+                  __alloT('stem.bridgelab.a_bridge_that_handles_its_design_load_', 'A bridge that handles its design load just fine on day one can still fail decades later from FATIGUE: tiny cracks that grow microscopically with every load cycle, until one final cycle propagates a crack to failure. Every truck crossing, every wind gust, every temperature swing is a cycle. A heavily-trafficked highway bridge sees 5,000-50,000 cycles per day; over 50 years that\'s ~10⁸-10⁹ cycles.')
                 ),
                 snCurveSvg(),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginTop: 12, marginBottom: 12 } },
                   [
-                    { label: 'Stress amplitude (MPa)', value: stress, min: 50, max: 250, step: 10, key: 'fatigueStressMPa' },
-                    { label: 'Cycles per day', value: cycles, min: 100, max: 100000, step: 100, key: 'fatigueCyclesPerDay' }
+                    { label: __alloT('stem.bridgelab.stress_amplitude_mpa', 'Stress amplitude (MPa)'), value: stress, min: 50, max: 250, step: 10, key: 'fatigueStressMPa' },
+                    { label: __alloT('stem.bridgelab.cycles_per_day', 'Cycles per day'), value: cycles, min: 100, max: 100000, step: 100, key: 'fatigueCyclesPerDay' }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value.toLocaleString())
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -2583,12 +2815,12 @@
                   )
                 ),
                 h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
-                  h('strong', null, 'Endurance limit (steel only): '),
-                  'Some steels have a special property — below a stress threshold (~100 MPa for typical structural steel), fatigue cracks essentially don\'t grow. This "endurance limit" lets steel bridges last centuries IF designed conservatively below it. Aluminum and most non-ferrous metals have NO endurance limit — they always fatigue eventually.'
+                  h('strong', null, __alloT('stem.bridgelab.endurance_limit_steel_only', 'Endurance limit (steel only): ')),
+                  __alloT('stem.bridgelab.some_steels_have_a_special_property_be', 'Some steels have a special property — below a stress threshold (~100 MPa for typical structural steel), fatigue cracks essentially don\'t grow. This "endurance limit" lets steel bridges last centuries IF designed conservatively below it. Aluminum and most non-ferrous metals have NO endurance limit — they always fatigue eventually.')
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 11.5, color: '#fecaca', lineHeight: 1.65 } },
-                  h('strong', null, 'Silver Bridge 1967 — fatigue + corrosion: '),
-                  'One eyebar of the Silver Bridge (Ohio River) had a tiny 2.5 mm defect from manufacturing 40 years earlier. Stress-corrosion-cracking grew it to critical size over decades of traffic cycles. On December 15 1967 it snapped during rush hour; the bridge had no redundancy + the entire structure collapsed into the river. 46 dead. Led directly to the 1971 National Bridge Inspection Standards — every public bridge in the US now gets inspected every 2 years.'
+                  h('strong', null, __alloT('stem.bridgelab.silver_bridge_1967_fatigue_corrosion', 'Silver Bridge 1967 — fatigue + corrosion: ')),
+                  __alloT('stem.bridgelab.one_eyebar_of_the_silver_bridge_ohio_r', 'One eyebar of the Silver Bridge (Ohio River) had a tiny 2.5 mm defect from manufacturing 40 years earlier. Stress-corrosion-cracking grew it to critical size over decades of traffic cycles. On December 15 1967 it snapped during rush hour; the bridge had no redundancy + the entire structure collapsed into the river. 46 dead. Led directly to the 1971 National Bridge Inspection Standards — every public bridge in the US now gets inspected every 2 years.')
                 )
               );
             })(),
@@ -2601,42 +2833,42 @@
 
         function demolitionAndDecommissioningSection() {
           var DEMO = [
-            { id: 'why', name: 'When + why bridges end', emoji: '⌛',
+            { id: 'why', name: __alloT('stem.bridgelab.when_why_bridges_end', 'When + why bridges end'), emoji: '⌛',
               what: 'Bridges have finite service lives. Most modern bridges are designed for 75-100 years; in practice, deterioration + obsolescence often shorten this. A bridge is retired when: (a) STRUCTURAL CONDITION drops below repair economics (extensive corrosion, fatigue, foundation failure); (b) FUNCTIONAL OBSOLESCENCE — too narrow for current traffic, insufficient overhead clearance, inadequate seismic capacity, no pedestrian + bicycle access; (c) STRATEGIC redirection — community needs change, traffic patterns shift, the bridge no longer serves its purpose; (d) CATASTROPHIC damage from collision, fire, flood, or earthquake forces retirement.',
               how: 'The retirement decision usually unfolds over decades. State DOTs maintain rolling 20-year asset plans. Inspections (covered in the SHM section) feed into the decision. A bridge typically goes from "good condition" through "fair" + "poor" + "structurally deficient" before being replaced. The Fern Hollow Bridge in Pittsburgh (collapsed January 2022, fortunately without fatalities) had been rated "poor" for years; it collapsed before its scheduled replacement.',
               limit: 'The hardest political decisions involve old-but-beloved bridges. The Memorial Bridge in Portsmouth NH (1923 lift bridge over the Piscataqua) was a historic icon; replacement (2013) was opposed by preservationists + needed substantive consultation. Same with the original Tappan Zee, the original Goethals, the Bay Bridge eastern span. The new structure must serve modern needs; the old often had cultural meaning that cannot be replicated.'
             },
-            { id: 'explosive', name: 'Explosive (controlled) demolition', emoji: '💥',
+            { id: 'explosive', name: __alloT('stem.bridgelab.explosive_controlled_demolition', 'Explosive (controlled) demolition'), emoji: '💥',
               what: 'For steel + concrete bridges in unconstrained sites, EXPLOSIVE DEMOLITION is sometimes the fastest + cheapest approach. Engineers attach shaped charges to specific load-bearing points (truss panel-point connections, pier bases, cable saddles); the sequence of detonation collapses the structure in a controlled direction. The original Bay Bridge eastern span (2013-2018 piece-by-piece removal but anchor pier blown in 2015), the I-35W bridge replacement (the surviving sections demolished mostly by saw-cutting + selective blasting), the original Tappan Zee main span (2018 controlled explosive demolition watched by ~ 250,000 spectators live + streamed). Explosive demolition typically takes seconds; site preparation + cleanup take months.',
               how: 'Specialized demolition contractors (Controlled Demolition Inc. + Demtech + others) plan + execute. A typical bridge explosive demo: 200-1500 pounds of explosives placed at 50-200 points, fired in a programmed sequence (millisecond precision) over 5-30 seconds. The collapse direction is controlled by which charges fire first + how connections are pre-weakened. Marine bridges + river-spanning bridges drop INTO the waterway, then are recovered by barge cranes + cut into pieces for recycling.',
               limit: 'Explosive demolition is highly visible + politically sensitive. Environmental concerns: noise, dust, river-impact, debris recovery, archaeological + biological habitat. The Maslon Tappan Zee demolition had multi-year environmental review + dispersed-debris-recovery plans. Some communities prefer slower mechanical demolition even at higher cost to avoid the spectacle + risk.'
             },
-            { id: 'sawcut', name: 'Mechanical + saw-cut demolition', emoji: '🪚',
+            { id: 'sawcut', name: __alloT('stem.bridgelab.mechanical_saw_cut_demolition', 'Mechanical + saw-cut demolition'), emoji: '🪚',
               what: 'For bridges in URBAN settings — over occupied buildings, active roads, water utilities, or sensitive environments — explosive demolition is unacceptable. Engineers cut the bridge into pieces using DIAMOND-WIRE SAWS (for cable-stayed bridges + suspension cables), HYDRAULIC SHEARS (for steel girders + plates), EXCAVATOR-MOUNTED concrete-crushing JAWS, JACKHAMMERS + IMPACT BREAKERS (for piers + abutments). Each piece is lowered to the ground via crane or truck-mounted lifts. Crews work segment by segment, sometimes for years on a long bridge. The Bay Bridge eastern span demolition (2014-2018) was largely a mechanical operation; the new bridge was already in service alongside.',
               how: 'Sequence matters. Demolition typically begins at one end + progresses across, with the still-standing portion supporting itself in a stable configuration at each step. Cable suspension bridges are particularly tricky: removing the deck transfers load to the cables in ways that must remain stable. The Verrazzano-Narrows suspender-rope replacement (2017-2019) was a partial-demolition example — one suspender at a time, with adjacent suspenders carrying the redistributed load.',
               limit: 'Mechanical demolition is slower + costs more per ton than explosive. For complex urban projects, it can take 2-4× longer than the original bridge construction. Worker safety is a constant concern; demolition is statistically more dangerous than construction. The OSHA fatality rate for demolition is ~ 3× the construction average.'
             },
-            { id: 'piecemeal', name: 'Piece-by-piece + decking removal', emoji: '🧱',
+            { id: 'piecemeal', name: __alloT('stem.bridgelab.piece_by_piece_decking_removal', 'Piece-by-piece + decking removal'), emoji: '🧱',
               what: 'For BRIDGES IN ACTIVE SERVICE during partial demolition, work happens in carefully sequenced stages. Common pattern: close one half of the bridge to traffic, demolish that half\'s deck while load goes through the other half, replace it with new construction (slide it in laterally if using ABC), switch traffic to the new half, demolish + replace the other side. This was the I-90 floating-bridge replacement (Seattle Lake Washington, 1990-2018, multiple bridges), the I-95 Bridge replacements in NJ + DC, the Tappan Zee transition. The bridge is essentially RE-BUILT in place over years.',
               how: 'Piece-by-piece demolition requires precise load-flow analysis (which connections are still load-bearing when one section is gone). A field engineer with up-to-date FEA models is on site for major movements. Mistakes have caused collapses: the Florida International University pedestrian-bridge collapse (March 2018, 6 dead) happened during a re-tensioning operation when the contractor proceeded under load conditions that the design did not support. Demolition is engineering, not just destruction.',
               limit: 'In-service demolition multiplies cost + duration vs full closure but maintains traffic capacity throughout. The economic calculation: USER COSTS of full closure (driver time, business loss, detour fuel) vs CONTRACTOR COSTS of phased demolition. For high-traffic interstate bridges, phased demolition usually wins despite ~ 2-5× higher direct construction cost.'
             },
-            { id: 'recycle', name: 'Recycling + material recovery', emoji: '♻️',
+            { id: 'recycle', name: __alloT('stem.bridgelab.recycling_material_recovery', 'Recycling + material recovery'), emoji: '♻️',
               what: 'Modern bridge demolition is largely a RECYCLING operation. STRUCTURAL STEEL (a high-quality alloy + relatively easy to identify) typically recovers ~ 90-95% by weight, melted down + re-rolled into new structural shapes or rebar. CONCRETE is crushed + reused as aggregate (low-grade use, but ~70-90% recovery for road base + non-structural fill). REBAR is separated magnetically from crushed concrete + smelted. CABLES + WIRE are recovered separately + recycled as steel. The Bay Bridge eastern span demolition recovered ~ 58,000 tons of steel + 245,000 tons of concrete; ~ 95% by weight was recycled.',
               how: 'Demolition contractors specify recycling targets in bids; environmental review documents typically require ~ 75-90% recycling minimums. Steel goes to local mills (Nucor in Plymouth, Utah; Gerdau in many locations). Concrete goes to nearby road construction or development sites. Embedded materials (lead paint, asbestos in older bridges) require hazardous-waste handling separately. Wood from older trestle + timber bridges goes through processing for re-use or biomass energy.',
               limit: 'Truly closed-loop recycling is impossible — there is always some loss (sludge, fines, contamination). LEAD-PAINTED steel (common pre-1980) must be sandblasted with full containment + the lead-bearing waste handled as hazardous; this adds significant cost ($5-10/sq ft of painted surface). PCB-contaminated bearings (also common pre-1980) require special handling. Modern bridges with proper coating systems + low-toxicity materials are easier to recycle when their time comes.'
             },
-            { id: 'environment', name: 'Environmental + community impact', emoji: '🌊',
+            { id: 'environment', name: __alloT('stem.bridgelab.environmental_community_impact', 'Environmental + community impact'), emoji: '🌊',
               what: 'Demolition affects MORE than just the bridge site. WATERWAY impacts: debris falling into rivers + estuaries disturbs sediment, releases contaminants, affects fish + wildlife. The Tappan Zee debris recovery was a major operation with specialized barge-based netting + diving. AIR QUALITY: dust + (for explosive demolition) overpressure + smoke. NEIGHBORHOOD impacts: vibration damage to nearby buildings, traffic detours, noise. CULTURAL + HISTORIC sites near demolition need protection. Indigenous consultation: many waterways + bridges sit on tribal traditional territories.',
               how: 'Environmental review under NEPA + ESA happens for major demolition. Coast Guard permits required for navigable waterways. Air-quality permits from state EPA. Site-specific mitigation: debris-catch systems, dust suppression, monitoring stations. Tribal consultation may take years for sites with cultural significance. Even with full review + mitigation, demolitions have surprises — the Tappan Zee unexpectedly released sub-bottom contamination that required dredging cleanup.',
               limit: 'Environmental reviews are stronger than they were 50 years ago but still uneven. Major federal-funded demolitions get full NEPA process; smaller state + local jobs may get streamlined review that can miss issues. Community advisory boards + ongoing monitoring are best practice but resource-constrained. Some demolition impacts are not fully knowable until they happen.'
             },
-            { id: 'famous', name: 'Famous demolitions', emoji: '🎬',
+            { id: 'famous', name: __alloT('stem.bridgelab.famous_demolitions', 'Famous demolitions'), emoji: '🎬',
               what: '(a) ORIGINAL TAPPAN ZEE (NY, 2018) — 3.1-mile bridge demolished over 5 years; main span dropped via explosive demolition January 2019, watched by ~250,000 in person + millions online. (b) OLD CHESAPEAKE BAY BRIDGE (Maryland, planned 2030-2040) — the original 1952 + 1973 spans are reaching end of service; replacement is in active planning. (c) BAY BRIDGE EASTERN SPAN (CA, 2013-2018) — demolished alongside the new bridge already in service; ~ $200M cleanup contract. (d) ORIGINAL I-94 BRIDGE (St. Cloud MN, 2019) — explosive demolition of a 1962 truss bridge after replacement built parallel. (e) HAMMERSMITH FLYOVER (London, in service 1961, demolition discussed since 2015, fragmentary work begun 2023) — an iconic urban motorway-bridge whose retirement is technically + politically complex.',
               how: 'Public engagement around demolitions has changed. Major demolitions now include public viewing areas, livestreams, documentary partnerships, educational materials. Demolition has become a form of public art — Christo + Jeanne-Claude\'s tradition of treating infrastructure events as cultural moments. Most demolitions are filmed + studied by engineering students. The IS-35 bridge in Minneapolis remains studied by engineering ethics + structural-failure-investigation courses.',
               limit: 'Spectacle can overshadow story. The community displaced by a 50-year-old bridge\'s original construction is often invisible by the time of demolition. Equity-aware demolition planning asks: who benefited from the original bridge? Who paid the costs? Who should benefit from + design the replacement? These questions are not always asked, but they should be.'
             },
-            { id: 'cycle', name: 'Demolition as engineering education', emoji: '🎓',
+            { id: 'cycle', name: __alloT('stem.bridgelab.demolition_as_engineering_education', 'Demolition as engineering education'), emoji: '🎓',
               what: 'Bridge demolition is a teaching laboratory. Engineers + students learn about: structural redundancy (what happens when load paths are removed), connection mechanics (how joints actually fail), material durability (which corrosion patterns predicted future failure), construction-era practices (revealed by what is found inside the bridge). Demolition projects often produce engineering papers + dissertations. The post-mortem on the I-35W collapse (NTSB 2008 report) is required reading in structural engineering programs; the analyzable carcass of a demolished bridge offers similar lessons without the human cost.',
               how: 'Education partnerships: state DOTs often invite universities to study bridges during demolition. Pieces are saved for forensic analysis; testing of fatigue cracks + corrosion progression informs future inspection. The Bay Bridge eastern-span pieces are still being studied by Berkeley + Stanford labs for fatigue + corrosion data. Modern demolition is more than destruction; it is a research opportunity if scheduled + funded right.',
               limit: 'Most demolitions are NOT research opportunities — they are time-pressured contractor jobs with the bridge gone in weeks. The few that become study sites (Tappan Zee, Bay Bridge, I-35W) require advance planning + funding partnerships that smaller projects cannot afford. The research-opportunity case for selective preservation of demolition specimens is being made + slowly accepted.'
@@ -2645,9 +2877,9 @@
           var sel = d.selectedDemo || 'why';
           var topic = DEMO.find(function(t) { return t.id === sel; }) || DEMO[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '💣 Bridge demolition + decommissioning'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.bridge_demolition_decommissioning', '💣 Bridge demolition + decommissioning')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Every bridge eventually retires. The how + why is its own engineering discipline — explosive demolition for unconstrained sites, mechanical saw-cut work in dense urban settings, piece-by-piece retirement of bridges that must stay in service during their own replacement. Environmental recycling, community impact, historical significance, + research opportunities all factor in. A bridge\'s last project is rarely simpler than its first.'
+              __alloT('stem.bridgelab.every_bridge_eventually_retires_the_ho', 'Every bridge eventually retires. The how + why is its own engineering discipline — explosive demolition for unconstrained sites, mechanical saw-cut work in dense urban settings, piece-by-piece retirement of bridges that must stay in service during their own replacement. Environmental recycling, community impact, historical significance, + research opportunities all factor in. A bridge\'s last project is rarely simpler than its first.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               DEMO.map(function(t) {
@@ -2662,15 +2894,15 @@
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What happens'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.what_happens', 'What happens')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.how_it_works_4', 'How it works')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.honest_limit_2', 'Honest limit')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             )
@@ -2679,35 +2911,35 @@
 
         function shmAndInspectionSection() {
           var SHM = [
-            { id: 'visual', name: 'Visual inspection (NBIS)', emoji: '👁️',
+            { id: 'visual', name: __alloT('stem.bridgelab.visual_inspection_nbis', 'Visual inspection (NBIS)'), emoji: '👁️',
               tech: 'A trained inspector physically examines every accessible surface of the bridge, recording observed defects (cracks, spalls, corrosion, deformation, scour, debris) with photographs + notes + sketches. Findings get rated on a 0-9 scale (Federal Highway Administration NBI rating: 9 = excellent, 0 = failed) for each major component (deck, superstructure, substructure, channel). The full inspection becomes part of the National Bridge Inventory. Frequency: every 24 months for typical bridges, more often for fracture-critical or substandard structures. The 1971 National Bridge Inspection Standards (NBIS) was enacted directly in response to the 1967 Silver Bridge collapse.',
               limit: 'Visual inspection only catches surface defects. Hidden corrosion inside steel members, internal voids in concrete, post-tensioning tendon failures, fatigue cracks beneath paint, and deterioration on the underside of decks all easily get missed. A 2008 FHWA study found that two different inspectors rating the same bridge often disagreed by 1-2 NBI grades. Inspection is necessary but not sufficient.'
             },
-            { id: 'access', name: 'Hands-on access', emoji: '🪜',
+            { id: 'access', name: __alloT('stem.bridgelab.hands_on_access', 'Hands-on access'), emoji: '🪜',
               tech: 'Many bridge components are not viewable from the deck. Inspectors need physical access via: snooper trucks (cherry-picker booms hanging out over the side), rope-access teams (rappelling specialists from the deck edge), boats (under-bridge inspection of piers + abutments over water), underwater divers (for submerged piers + piles), confined-space teams (inside box girders + cells), and bucket trucks. Major fracture-critical bridges (where the failure of one member could collapse the structure) require hands-on close inspection of every weld + connection.',
               limit: 'Hands-on inspection is expensive, slow, and dangerous. Snooper-truck closures cost ~$10-50K per day in traffic disruption alone. Underwater diving on a cold turbid river is genuinely hazardous; inspector fatalities, while rare, do happen. Smaller agencies skip components they cannot afford to access, accepting the inspection gap.'
             },
-            { id: 'drone', name: 'Drone-based inspection', emoji: '🛸',
+            { id: 'drone', name: __alloT('stem.bridgelab.drone_based_inspection', 'Drone-based inspection'), emoji: '🛸',
               tech: 'Drones (UAVs) equipped with high-resolution cameras, thermal infrared, and lidar can survey bridge surfaces from positions inspectors cannot easily reach: the underside of deep girders, the tops of tall pylons, the soffits of long-span structures, and the cliff faces beneath arch bridges. Photogrammetry software reconstructs millimeter-accurate 3D models from drone-captured photos. AI-assisted defect detection (trained on crack + spall image datasets) can flag suspected defects for human review. The Minnesota DOT + several state agencies have integrated drones into routine inspection workflows since around 2018.',
               limit: 'Drones are now a useful supplement to visual inspection, NOT a replacement. They cannot strike-test concrete (sounding for delamination), cannot smell hot oil from a stressed bearing, cannot feel a vibration cycle that warns of impending fatigue. AI defect-detection works for the failures it was trained on; it misses categories not in the training data. Regulations + airspace rules + weather + battery life all constrain drone use.'
             },
-            { id: 'sensor', name: 'Strain gauges + accelerometers', emoji: '📊',
+            { id: 'sensor', name: __alloT('stem.bridgelab.strain_gauges_accelerometers', 'Strain gauges + accelerometers'), emoji: '📊',
               tech: 'Strain gauges (foil resistance or fiber-optic) glued to steel members measure tiny length changes (microstrains, parts per million) caused by load. Accelerometers measure vibration acceleration. Tilt meters, displacement transducers, temperature sensors round out the suite. Data is transmitted by wireless or fiber-optic cables to a data-acquisition system. A typical large bridge SHM installation has 100-500 sensors continuously logging data; some monitor for decades. The Tsing Ma Bridge (Hong Kong) has had ~800 sensors operating since opening in 1997.',
               limit: 'Sensors fail. The harshest environment for an electronic sensor is sometimes the harshest environment for the bridge itself (wet, cold, vibrating, salt-laden). Sensor lifespan is often shorter than bridge lifespan; replacing failed sensors mid-life is expensive. Wireless protocols change; data formats from a 1995 installation may not be readable by 2025 software. Maintaining the SHM system is its own ongoing engineering project.'
             },
-            { id: 'fiber', name: 'Distributed fiber-optic sensing', emoji: '〰️',
+            { id: 'fiber', name: __alloT('stem.bridgelab.distributed_fiber_optic_sensing', 'Distributed fiber-optic sensing'), emoji: '〰️',
               tech: 'A single optical fiber, glued or embedded along a structural member, becomes thousands of distributed sensors. Brillouin or Rayleigh scattering analysis of the light passing through can measure strain + temperature at every point along the fiber (typically 1 m spatial resolution, mm-strain accuracy). Distributed fiber sensing is now used to monitor cracks in long-span girders, post-tensioning duct integrity, pile foundation settlement, and tunnel deformation. The Stonecutters Bridge (Hong Kong) + Russky Bridge (Russia) have both used distributed fiber sensing extensively.',
               limit: 'Distributed sensing is data-rich; interpretation is hard. A single distributed fiber installation can generate gigabytes of data per day. Pattern recognition + machine learning are needed to extract actionable information from the noise. False alarms are common. The technology is mature but the analytical software + workflows are still maturing.'
             },
-            { id: 'gpr', name: 'Ground-penetrating radar + ultrasonics', emoji: '📡',
+            { id: 'gpr', name: __alloT('stem.bridgelab.ground_penetrating_radar_ultrasonics', 'Ground-penetrating radar + ultrasonics'), emoji: '📡',
               tech: 'Ground-penetrating radar (GPR) sends microwave pulses into concrete, listening for reflections from voids, rebar, post-tensioning ducts, and delaminated layers. Ultrasonic pulse-echo + impact-echo tests do the same with sound waves. Both produce sub-surface "B-scan" images showing internal defects without physical excavation. Magnetic flux leakage (MFL) testing of post-tensioning strands can detect broken wires inside ducts. Acoustic emission monitoring can listen for active crack growth in real time. These nondestructive testing (NDT) methods have largely replaced destructive coring for routine internal-condition assessment.',
               limit: 'NDT requires expertise to interpret. A GPR scan of a concrete deck looks like a noisy radar image; interpreting it correctly requires specific training + experience. False positives + false negatives both occur. NDT results should always be cross-checked against visual + physical evidence; treating them as oracle answers is a known way to make wrong calls.'
             },
-            { id: 'genoa', name: 'When SHM fails — the Genoa case', emoji: '⚠️',
+            { id: 'genoa', name: __alloT('stem.bridgelab.when_shm_fails_the_genoa_case', 'When SHM fails — the Genoa case'), emoji: '⚠️',
               tech: 'The Morandi Bridge in Genoa, Italy collapsed on August 14, 2018, killing 43 people. The bridge had been monitored, including with sensors. Prior structural studies had identified deterioration of the post-tensioning tendons. Yet the collapse came suddenly, with little public warning. Subsequent investigations revealed: (1) some sensors were broken + not replaced, (2) interpretation of the data was compartmentalized + no single team had the full picture, (3) ownership disputes between the operator + the government delayed repair work, (4) the FRACTURE-CRITICAL nature of the bridge (cable-stayed with very few redundant load paths) was not adequately accounted for in inspection rigor.',
               limit: 'SHM is not a substitute for judgment, redundancy, or accountability. A bridge with broken sensors + administrative paralysis is a bridge no SHM system can save. The lesson from Genoa is institutional + political, not technical. Italy has since passed legislation mandating SHM + clearer responsibility chains, but similar institutional fragmentation exists in many countries with aging infrastructure.'
             },
-            { id: 'ml', name: 'AI + machine learning in inspection', emoji: '🤖',
+            { id: 'ml', name: __alloT('stem.bridgelab.ai_machine_learning_in_inspection', 'AI + machine learning in inspection'), emoji: '🤖',
               tech: 'Deep-learning models trained on hundreds of thousands of labeled bridge defect images can now identify cracks, spalls, corrosion, and other defects in drone footage at accuracies approaching expert human inspectors for common defect types. Vision-transformer models + foundation models have improved sensitivity since ~2022. Several state DOTs are piloting AI-augmented inspection pipelines: drones capture imagery; an AI pre-screens for suspected defects; human inspectors review flagged regions in detail. This can multiply inspector productivity 5-10× for routine surface-defect scanning.',
               limit: 'AI inspection has well-documented blind spots. Models trained on US bridges generalize poorly to European or Asian bridges with different concrete formulations + paint colors. Rare or novel defect types (the ones that cause unexpected failures) are exactly what AI under-trained on. Adversarial conditions (low light, wet surfaces, unusual angles) produce false positives + false negatives at unpredictable rates. The honest framing: AI is a productivity tool for routine inspection; humans remain accountable for the safety call.'
             }
@@ -2715,9 +2947,9 @@
           var sel = d.selectedSHM || 'visual';
           var topic = SHM.find(function(t) { return t.id === sel; }) || SHM[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🔍 Bridge inspection + Structural Health Monitoring (SHM)'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.bridge_inspection_structural_health_mo', '🔍 Bridge inspection + Structural Health Monitoring (SHM)')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'A bridge is not designed once + left alone. It is inspected on a defined cycle, and increasingly, it is monitored continuously through sensors, drones, and AI-assisted analysis. The shift from "inspect every 2 years" to "monitor in real time" is one of the major operational changes in infrastructure engineering of the past 30 years. The technology is genuinely powerful + has clear limits.'
+              __alloT('stem.bridgelab.a_bridge_is_not_designed_once_left_alo', 'A bridge is not designed once + left alone. It is inspected on a defined cycle, and increasingly, it is monitored continuously through sensors, drones, and AI-assisted analysis. The shift from "inspect every 2 years" to "monitor in real time" is one of the major operational changes in infrastructure engineering of the past 30 years. The technology is genuinely powerful + has clear limits.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               SHM.map(function(t) {
@@ -2732,54 +2964,54 @@
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Technique + how it works'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.technique_how_it_works', 'Technique + how it works')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.tech)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.honest_limit_3', 'Honest limit')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
-              h('strong', null, 'The institutional reality: '),
-              'The technical tools for bridge monitoring have advanced enormously in the past 20 years. The institutional capacity to USE them — funding for sensor installation, trained personnel for data analysis, clear chains of responsibility, political will to close + repair structures when warning signs appear — has advanced less. Most major bridge tragedies of the past 50 years (Silver, Mianus, I-35W, Morandi/Genoa, Pittsburgh Fern Hollow) have been institutional failures as much as technical ones.'
+              h('strong', null, __alloT('stem.bridgelab.the_institutional_reality', 'The institutional reality: ')),
+              __alloT('stem.bridgelab.the_technical_tools_for_bridge_monitor', 'The technical tools for bridge monitoring have advanced enormously in the past 20 years. The institutional capacity to USE them — funding for sensor installation, trained personnel for data analysis, clear chains of responsibility, political will to close + repair structures when warning signs appear — has advanced less. Most major bridge tragedies of the past 50 years (Silver, Mianus, I-35W, Morandi/Genoa, Pittsburgh Fern Hollow) have been institutional failures as much as technical ones.')
             )
           );
         }
 
         function extremeEnvironmentsSection() {
           var EXT = [
-            { id: 'permafrost', name: 'Permafrost + thaw', emoji: '❄️', where: 'Alaska, Yukon, Siberia, Northern Quebec',
+            { id: 'permafrost', name: __alloT('stem.bridgelab.permafrost_thaw', 'Permafrost + thaw'), emoji: '❄️', where: 'Alaska, Yukon, Siberia, Northern Quebec',
               challenge: 'Foundations rest on permanently-frozen soil. If the soil warms enough to thaw, it loses 80-90% of its bearing strength and turns into mud. Heat conducted DOWN from the bridge (warm asphalt, bridge deck, even electric lines) can locally thaw the permafrost beneath a foundation that was originally designed in stable frozen ground. Climate warming is increasing average ground temperatures across the Arctic faster than at lower latitudes; ~30% of Alaskan infrastructure is now reporting some thaw-related distress.',
               solutions: 'Thermosyphons — sealed steel pipes filled with CO₂ or ammonia, buried with the foundation, that passively pump heat OUT of the ground in winter. No moving parts, no power, works for ~30+ years. Now standard on the Trans-Alaska Pipeline (~124,000 thermosyphons in service) and on major Alaskan bridge approaches. Insulating layers (polystyrene boards under road approaches). Refrigerated foundations for the most critical structures. Site-selection rules avoid ice-rich permafrost wherever possible.',
               caveat: 'Climate change is making this problem worse faster than design lifespans assume. Many Alaskan bridges + airport runways built in the 1970s assumed permafrost would remain stable; they are now showing differential settlement that requires expensive retrofitting. This is one of the clearest cases where climate change has already invalidated engineering assumptions in service.'
             },
-            { id: 'ice', name: 'Ice loads + ice impact', emoji: '🧊', where: 'Saint Lawrence, Great Lakes, Baltic, Northern Norway',
+            { id: 'ice', name: __alloT('stem.bridgelab.ice_loads_ice_impact', 'Ice loads + ice impact'), emoji: '🧊', where: 'Saint Lawrence, Great Lakes, Baltic, Northern Norway',
               challenge: 'Sea ice + river ice can apply enormous lateral loads on bridge piers, both static (pack ice slowly squeezing) and dynamic (ice floes ramming piers during breakup). The Confederation Bridge across the Northumberland Strait (Canada, 1997, 13 km, the longest bridge over ice-covered water) was designed for ice loads up to 200,000 tonnes-force per pier. Each pier is shaped as a cone with a steeply inclined face designed to break advancing ice in BENDING rather than CRUSHING (bending requires much less force, and the broken ice rides up and over the cone).',
               solutions: 'Ice-breaking pier geometries (cones, wedges, slopes). Heated concrete in critical zones to weaken adhered ice. Choice of breakup-season construction shutdowns. Ice booms upstream (large floating barriers that pre-fragment incoming ice). Real-time ice-monitoring radar feeding closure decisions. Submerged piers below the maximum ice draft are an option for very deep water.',
               caveat: 'Ice loading is well-understood for steady ice, less so for dynamic events. The 2018 winter saw atypically large ice floes on the Hudson + the St. Lawrence after a warm-then-cold sequence; several smaller bridges sustained pier damage that triggered emergency closures. Climate is making winter ice behavior more variable, which is harder to design for than a steady cold climate.'
             },
-            { id: 'wind', name: 'Sustained high-wind sites', emoji: '🌪️', where: 'Strait of Magellan, Scottish coasts, Hokkaido, Patagonia, Bering Strait proposals',
+            { id: 'wind', name: __alloT('stem.bridgelab.sustained_high_wind_sites', 'Sustained high-wind sites'), emoji: '🌪️', where: 'Strait of Magellan, Scottish coasts, Hokkaido, Patagonia, Bering Strait proposals',
               challenge: 'Some sites have routine wind speeds where ordinary bridges are unsafe even when there is no storm. The Beauly Firth (Scotland) gets 50+ knot sustained winds dozens of days per year. Strong sustained side wind makes a bridge unsafe for high-profile vehicles (semi-trucks, buses, motorcycles); operators must close it for hours or days, disconnecting communities. Some proposed crossings (Bering Strait, ~85 km) face nearly continuous high winds + ice + winter darkness + remote location.',
               solutions: 'Aerodynamic deck profiles (open trusses, slotted decks, twin-box girders with central gap) that LET wind through rather than fight it. Mass dampers tuned for low-frequency wind buffet. Wind monitoring stations every few kilometers along long spans, automatically lowering speed limits or closing lanes when sustained winds exceed thresholds. Vertical wind shields (transparent or louvered baffles along the deck edge) for the worst stretches. The Akashi Kaikyō Bridge has performed extensive on-site wind tunnel testing of its eventual design at full Reynolds number.',
               caveat: 'Closure is itself a community-impact issue. The Mackinac Bridge (Michigan) closes occasionally for sustained high winds, stranding travelers in the Upper Peninsula. For a community whose only road link is closed, even safety-driven shutdowns are a quality-of-life issue. Honest engineering names this tradeoff rather than hiding it.'
             },
-            { id: 'seismic', name: 'High-seismic zones', emoji: '⚠️', where: 'California, Japan, Taiwan, Iran, Chile, New Zealand',
+            { id: 'seismic', name: __alloT('stem.bridgelab.high_seismic_zones', 'High-seismic zones'), emoji: '⚠️', where: 'California, Japan, Taiwan, Iran, Chile, New Zealand',
               challenge: 'Bridges in high-seismicity regions must survive ground motions exceeding 1 g (1× gravity) horizontally without collapse, while ideally remaining functional for emergency response. The 1989 Loma Prieta earthquake collapsed a 50-foot section of the upper deck of the Bay Bridge + the Cypress Viaduct (42 dead). The 1995 Kobe earthquake collapsed the Hanshin Expressway (200+ dead). Both led to extensive retrofit programs.',
               solutions: 'Base isolation (rubber + steel bearings or sliding pendulum bearings that decouple the deck from horizontal ground motion). Lock-up devices for spans (steel devices that act as fuses, allowing slow thermal motion but locking up during sudden seismic motion). Restrainer cables between adjacent spans to prevent unseating. Capacity-design philosophy: design specific elements as fuses that yield ductilely (absorbing energy) while protecting other elements from failing brittlely. Retrofit programs systematically upgrade thousands of older bridges to modern seismic codes.',
               caveat: 'Seismic retrofit is enormously expensive. Caltrans (California Department of Transportation) has spent $20+ billion on bridge seismic retrofit since 1989; not all bridges are fully retrofit even now. There is always a question of cost vs probability: spending $50M to retrofit a rural bridge that might experience a major quake once in 500 years is a real tradeoff. Decisions are usually risk-prioritized by traffic + lifeline status + replacement cost.'
             },
-            { id: 'corrosion', name: 'Coastal + salt corrosion', emoji: '🌊', where: 'Florida Keys, Caribbean, Persian Gulf, Maine coast, Gulf coast',
+            { id: 'corrosion', name: __alloT('stem.bridgelab.coastal_salt_corrosion', 'Coastal + salt corrosion'), emoji: '🌊', where: 'Florida Keys, Caribbean, Persian Gulf, Maine coast, Gulf coast',
               challenge: 'Salt-laden air + seawater spray drive aggressive corrosion of steel + reinforced concrete. Chloride ions penetrate concrete, reach embedded rebar, and cause the rebar to corrode + expand, fracturing the concrete from inside (spalling). Once spalling begins, the protective layer is gone and degradation accelerates. The Florida Keys overseas bridges + the New Jersey shore bridges + the Pulaski Skyway have all undergone major chloride-driven retrofit programs.',
               solutions: 'Epoxy-coated rebar + glass-fiber-reinforced polymer (GFRP) rebar (no corrosion at all, since not iron). Cathodic protection (running a small electric current that biases the rebar so it can\'t lose electrons + corrode). Stainless-steel rebar in the most exposed splash zones. High-performance concrete (very low permeability, silica fume + slag additives). Marine-grade coatings + recoat schedules. Eventually, full deck replacement is sometimes cheaper than continued patching.',
               caveat: 'Sea-level rise is steadily increasing the splash zone. The Florida Keys overseas bridges were not designed for 2050 sea levels; they will need ongoing reassessment. The Surfside condominium collapse (2021, Miami) was not a bridge failure, but the root cause (decades of unaddressed chloride-driven rebar corrosion + spalling at the pool deck) is the same disease pattern that affects coastal bridges.'
             },
-            { id: 'wildfire', name: 'Wildfire-exposed crossings', emoji: '🔥', where: 'California, Australia, Mediterranean Europe, parts of the western US',
+            { id: 'wildfire', name: __alloT('stem.bridgelab.wildfire_exposed_crossings', 'Wildfire-exposed crossings'), emoji: '🔥', where: 'California, Australia, Mediterranean Europe, parts of the western US',
               challenge: 'Wildfires can reach high enough intensity to compromise steel + concrete bridge structures, particularly older timber + steel-truss bridges in forested settings. Steel loses about half its strength at 600°C; a forest fire fully engulfing a bridge can reach 800-1100°C for hours. The 2018 Camp Fire (Paradise, CA) destroyed multiple small bridges + severely damaged others, blocking evacuation routes. Concrete spalls explosively when heated rapidly (water in the pore structure flashes to steam).',
               solutions: 'Vegetation clearance + fuel-break management around critical bridge sites. Spray-on intumescent fire coatings (used in tunnels + some bridges). Fire-rated concrete mix designs (with polypropylene fibers that melt out + provide vapor channels, preventing explosive spalling). Multiple evacuation routes (redundancy at the network level, not just the bridge level). Post-fire inspection protocols + temporary load restrictions.',
               caveat: 'Wildfire exposure is a relatively new bridge-design problem. Most current codes do not require detailed fire-engineering for highway bridges (tunnels are a different story). As wildfire frequency increases with climate change, this is likely to become a more formal design requirement, especially in the western US, southern Europe, and Australia.'
             },
-            { id: 'remote', name: 'Remote + Indigenous-territory crossings', emoji: '🛤️', where: 'Northern Canada, Alaska, Greenland, Russian Far North, Tibet',
+            { id: 'remote', name: __alloT('stem.bridgelab.remote_indigenous_territory_crossings', 'Remote + Indigenous-territory crossings'), emoji: '🛤️', where: 'Northern Canada, Alaska, Greenland, Russian Far North, Tibet',
               challenge: 'Far-from-supply-chain sites multiply every challenge. The construction window may be only a few months per year. Heavy equipment + steel + concrete must be brought in by ice road, barge, or aircraft. Local labor capacity may be limited. Indigenous communities at the site have land, treaty, ecological, and self-determination claims that must be substantively respected, not checklist-checked. Some routes (e.g., Mackenzie Valley winter ice roads) themselves become un-usable infrastructure as climate change shortens the cold season.',
               solutions: 'Modular construction (precast components shipped + assembled). Helicopter-deliverable units for the most remote sites. Long planning + consultation timelines that include real Indigenous co-design from year ZERO of the project, not after the design is fixed. Designs that minimize disturbance to caribou migration, fish runs, traditional gathering grounds. Working WITH local knowledge of seasonal flow, ice behavior, animal patterns rather than overriding it.',
               caveat: 'Many older Arctic + Northern bridges were designed without meaningful Indigenous consultation. Some are now being retrofit or replaced with much more substantive co-design (the new Inuvik-Tuktoyaktuk Highway crossings are an example of modern practice; results have been mixed but the direction is right). The respectful framing: Indigenous communities are not stakeholders to be consulted, they are rights-holders + governments in their own right.'
@@ -2788,9 +3020,9 @@
           var sel = d.selectedExt || 'permafrost';
           var topic = EXT.find(function(t) { return t.id === sel; }) || EXT[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌡️ Bridges in extreme environments'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.bridges_in_extreme_environments', '🌡️ Bridges in extreme environments')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Most bridge-engineering education assumes a temperate climate, stable soil, modest wind, and a willing nearby supplier. Real bridges get built in conditions that violate all of those assumptions. Permafrost. Sea ice. Sustained high winds. Earthquake faults. Salt spray. Wildfire-prone forests. Remote sites a thousand kilometers from the nearest steel mill. Each one demands specific design responses + an honest reckoning with the limits.'
+              __alloT('stem.bridgelab.most_bridge_engineering_education_assu', 'Most bridge-engineering education assumes a temperate climate, stable soil, modest wind, and a willing nearby supplier. Real bridges get built in conditions that violate all of those assumptions. Permafrost. Sea ice. Sustained high winds. Earthquake faults. Salt spray. Wildfire-prone forests. Remote sites a thousand kilometers from the nearest steel mill. Each one demands specific design responses + an honest reckoning with the limits.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               EXT.map(function(t) {
@@ -2806,15 +3038,15 @@
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Examples: ' + topic.where),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'The challenge'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.the_challenge', 'The challenge')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.challenge)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Engineering responses'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.engineering_responses', 'Engineering responses')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.solutions)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', borderLeft: '3px solid #a78bfa' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.honest_limits_2', 'Honest limits')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.caveat)
               )
             )
@@ -2829,19 +3061,19 @@
         var selected = FORCES.find(function(f) { return f.id === d.selectedForce; }) || FORCES[0];
         var conn = d.selectedConnection || 'bolted';
         var CONNECTIONS = [
-          { id: 'rivet', name: 'Rivets',
+          { id: 'rivet', name: __alloT('stem.bridgelab.rivets', 'Rivets'),
             history: 'The bridge engineering standard from the 1840s through World War II. Heated red-hot, inserted, hammered into a head while still hot, then cooling created a tight clamp.',
             mechanism: 'Carries shear by friction (initial clamp) and bearing (force pressing against the hole edge). Cannot easily carry tension.',
             failure: 'Loose rivets are difficult to detect without removing them. Aging riveted structures (most pre-1950 bridges) require systematic inspection. The Silver Bridge eyebar (1967) was a connection failure adjacent to riveted construction.',
             still: 'Still used for replica historic restorations; almost never new construction. Eiffel Tower (1889) has ~2.5 million rivets, hammered by hand.'
           },
-          { id: 'bolted', name: 'High-strength bolts',
+          { id: 'bolted', name: __alloT('stem.bridgelab.high_strength_bolts', 'High-strength bolts'),
             history: 'Largely replaced rivets after about 1950. High-strength steel bolts in pre-drilled holes, tightened to specified torque to create clamping force.',
             mechanism: 'Two modes: SLIP-CRITICAL (friction from clamping carries the entire load — preferred for fatigue loading like bridges) and BEARING (bolt pushes against the hole edge).',
             failure: 'Failure modes: bolt shear, plate bearing yielding, plate tear-out, bolt tension failure (in tension-only joints), inadequate torque (the Hyatt Regency walkway, 1981, was a torque + design change failure on a tension-type bolted connection).',
             still: 'The dominant connection in modern steel bridges. Inspectable, replaceable, code-controlled. ASTM A325 + A490 are the standard grades.'
           },
-          { id: 'weld', name: 'Welds',
+          { id: 'weld', name: __alloT('stem.bridgelab.welds', 'Welds'),
             history: 'Came into wide bridge use after about 1940 (welded WWII Liberty Ships had famous fatigue + brittle-fracture failures that taught the field hard lessons).',
             mechanism: 'Two pieces of steel are fused with molten filler metal. Continuous joint. No fasteners.',
             failure: 'Welds have a fatigue limit lower than the base steel. Internal voids + lack-of-fusion defects are invisible without ultrasonic or X-ray inspection. Cold-weather brittle fracture initiated cracks in welded Liberty Ships (1942 Schenectady tanker split in two while moored).',
@@ -2852,7 +3084,7 @@
 
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            'Five types of force matter for structural engineering. Every part of every bridge experiences some combination of these.'
+            __alloT('stem.bridgelab.five_types_of_force_matter_for_structu', 'Five types of force matter for structural engineering. Every part of every bridge experiences some combination of these.')
           ),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             FORCES.map(function(f) {
@@ -2868,11 +3100,11 @@
             h('p', { style: { margin: '0 0 10px', fontSize: 13.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, selected.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
               h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Materials that handle it well'),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.materials_that_handle_it_well', 'Materials that handle it well')),
                 h('div', { style: { fontSize: 12, color: '#dcfce7', lineHeight: 1.55 } }, selected.good)
               ),
               h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)' } },
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Watch out for'),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.watch_out_for_2', 'Watch out for')),
                 h('div', { style: { fontSize: 12, color: '#fee2e2', lineHeight: 1.55 } }, selected.bad)
               )
             )
@@ -2903,21 +3135,21 @@
 
               return h('div', null,
                 h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'In seismic regions (Pacific Rim, much of the western US, Japan, Chile, New Zealand), bridges must survive earthquakes. The ground SHAKES horizontally and vertically; the bridge\'s mass becomes a hammer driven against itself by inertia. Modern seismic design uses three main strategies: STRENGTH (don\'t break), DUCTILITY (deform plastically without breaking), and ISOLATION (decouple the bridge from the ground motion).'
+                  __alloT('stem.bridgelab.in_seismic_regions_pacific_rim_much_of', 'In seismic regions (Pacific Rim, much of the western US, Japan, Chile, New Zealand), bridges must survive earthquakes. The ground SHAKES horizontally and vertically; the bridge\'s mass becomes a hammer driven against itself by inertia. Modern seismic design uses three main strategies: STRENGTH (don\'t break), DUCTILITY (deform plastically without breaking), and ISOLATION (decouple the bridge from the ground motion).')
                 ),
 
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 12 } },
                   [
-                    { label: 'Earthquake magnitude (M_w)', value: magnitude, min: 4.0, max: 9.5, step: 0.1, key: 'seismicMag' },
-                    { label: 'Distance from epicenter (km)', value: distance, min: 5, max: 300, step: 5, key: 'seismicDist' },
-                    { label: 'Bridge weight (kN)', value: weight, min: 200, max: 10000, step: 100, key: 'seismicWeight' }
+                    { label: __alloT('stem.bridgelab.earthquake_magnitude_m_w', 'Earthquake magnitude (M_w)'), value: magnitude, min: 4.0, max: 9.5, step: 0.1, key: 'seismicMag' },
+                    { label: __alloT('stem.bridgelab.distance_from_epicenter_km', 'Distance from epicenter (km)'), value: distance, min: 5, max: 300, step: 5, key: 'seismicDist' },
+                    { label: __alloT('stem.bridgelab.bridge_weight_kn', 'Bridge weight (kN)'), value: weight, min: 200, max: 10000, step: 100, key: 'seismicWeight' }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
                         h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, s.label),
                         h('span', { style: { fontSize: 13, color: AMBER, fontWeight: 800 } }, s.value)
                       ),
-                      h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
+                      h('input', { type: 'range', 'aria-valuetext': (s.value + ' ' + ((String(s.label).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.min, max: s.max, step: s.step, value: s.value,
                         onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                         'aria-label': s.label,
                         style: { width: '100%', accentColor: AMBER }
@@ -2928,10 +3160,10 @@
 
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 12 } },
                   [
-                    { label: 'Peak ground acceleration (PGA)', value: pga.toFixed(3) + ' g', color: pga > 0.3 ? '#fca5a5' : pga > 0.1 ? '#fbbf24' : '#86efac', sub: 'fraction of gravity' },
-                    { label: 'MMI intensity', value: mmi, color: '#c7d2fe', sub: 'Modified Mercalli' },
-                    { label: 'Lateral force on bridge', value: lateralForce.toFixed(0) + ' kN', color: '#fca5a5', sub: 'F = m·a (inertia)' },
-                    { label: 'Energy release', value: '×' + Math.pow(10, 1.5 * (magnitude - 6)).toFixed(1), color: '#a78bfa', sub: 'vs M6 reference (each magnitude = 32× energy)' }
+                    { label: __alloT('stem.bridgelab.peak_ground_acceleration_pga', 'Peak ground acceleration (PGA)'), value: pga.toFixed(3) + ' g', color: pga > 0.3 ? '#fca5a5' : pga > 0.1 ? '#fbbf24' : '#86efac', sub: 'fraction of gravity' },
+                    { label: __alloT('stem.bridgelab.mmi_intensity', 'MMI intensity'), value: mmi, color: '#c7d2fe', sub: 'Modified Mercalli' },
+                    { label: __alloT('stem.bridgelab.lateral_force_on_bridge', 'Lateral force on bridge'), value: lateralForce.toFixed(0) + ' kN', color: '#fca5a5', sub: 'F = m·a (inertia)' },
+                    { label: __alloT('stem.bridgelab.energy_release', 'Energy release'), value: '×' + Math.pow(10, 1.5 * (magnitude - 6)).toFixed(1), color: '#a78bfa', sub: 'vs M6 reference (each magnitude = 32× energy)' }
                   ].map(function(s, i) {
                     return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
                       h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
@@ -2942,22 +3174,22 @@
                 ),
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65, marginBottom: 10 } },
-                  h('strong', null, 'Three seismic design strategies: '),
+                  h('strong', null, __alloT('stem.bridgelab.three_seismic_design_strategies', 'Three seismic design strategies: ')),
                   h('ol', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
-                    h('li', null, h('strong', null, 'Strength: '), 'Design the structure to elastically resist seismic forces. Works for moderate quakes but becomes uneconomic for major ones — a strength-only bridge would need to be extraordinarily massive.'),
-                    h('li', null, h('strong', null, 'Ductility (the modern approach): '), 'Design specific elements to YIELD + DEFORM plastically during major quakes — absorbing energy without rupturing. Plastic hinges in columns are common. Steel works wonderfully here; brittle materials (cast iron, plain concrete) do NOT. The bridge sustains damage but doesn\'t collapse.'),
-                    h('li', null, h('strong', null, 'Base isolation: '), 'Place the bridge superstructure on lead-rubber bearings or sliding bearings. The ground shakes; the bearings absorb most of the motion; the bridge above moves much less. Most aggressive new approach. Common in Japanese + Chilean + California bridges.')
+                    h('li', null, h('strong', null, 'Strength: '), __alloT('stem.bridgelab.design_the_structure_to_elastically_re', 'Design the structure to elastically resist seismic forces. Works for moderate quakes but becomes uneconomic for major ones — a strength-only bridge would need to be extraordinarily massive.')),
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.ductility_the_modern_approach', 'Ductility (the modern approach): ')), __alloT('stem.bridgelab.design_specific_elements_to_yield_defo', 'Design specific elements to YIELD + DEFORM plastically during major quakes — absorbing energy without rupturing. Plastic hinges in columns are common. Steel works wonderfully here; brittle materials (cast iron, plain concrete) do NOT. The bridge sustains damage but doesn\'t collapse.')),
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.base_isolation', 'Base isolation: ')), __alloT('stem.bridgelab.place_the_bridge_superstructure_on_lea', 'Place the bridge superstructure on lead-rubber bearings or sliding bearings. The ground shakes; the bearings absorb most of the motion; the bridge above moves much less. Most aggressive new approach. Common in Japanese + Chilean + California bridges.'))
                   )
                 ),
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65, marginBottom: 8 } },
-                  h('strong', null, 'Akashi-Kaikyō (1995 Kobe earthquake mid-construction): '),
-                  'The Akashi-Kaikyō Bridge was being built when the M6.9 Hyogoken-Nanbu (Kobe) earthquake hit on January 17, 1995. The two towers moved 1 METER farther apart. Engineers redesigned the deck mid-construction to accommodate the new geometry. The bridge survived + opened in 1998. A real-world case study in seismic resilience under extreme + unpredictable conditions.'
+                  h('strong', null, __alloT('stem.bridgelab.akashi_kaiky_1995_kobe_earthquake_mid_', 'Akashi-Kaikyō (1995 Kobe earthquake mid-construction): ')),
+                  __alloT('stem.bridgelab.the_akashi_kaiky_bridge_was_being_buil', 'The Akashi-Kaikyō Bridge was being built when the M6.9 Hyogoken-Nanbu (Kobe) earthquake hit on January 17, 1995. The two towers moved 1 METER farther apart. Engineers redesigned the deck mid-construction to accommodate the new geometry. The bridge survived + opened in 1998. A real-world case study in seismic resilience under extreme + unpredictable conditions.')
                 ),
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
-                  h('strong', null, 'Cypress Street Viaduct (1989 Loma Prieta): '),
-                  'A double-decker freeway in Oakland built in the 1950s lacked the ductile detailing required by modern codes. When the M6.9 Loma Prieta earthquake hit, columns sheared, the upper deck collapsed onto the lower deck. 42 people died — the deadliest individual structural failure of the quake. The disaster accelerated retrofitting + replacement of pre-1971 California bridges. Many similar viaducts have since been demolished + replaced (or extensively retrofitted with steel jackets around columns + base isolators).'
+                  h('strong', null, __alloT('stem.bridgelab.cypress_street_viaduct_1989_loma_priet', 'Cypress Street Viaduct (1989 Loma Prieta): ')),
+                  __alloT('stem.bridgelab.a_double_decker_freeway_in_oakland_bui', 'A double-decker freeway in Oakland built in the 1950s lacked the ductile detailing required by modern codes. When the M6.9 Loma Prieta earthquake hit, columns sheared, the upper deck collapsed onto the lower deck. 42 people died — the deadliest individual structural failure of the quake. The disaster accelerated retrofitting + replacement of pre-1971 California bridges. Many similar viaducts have since been demolished + replaced (or extensively retrofitted with steel jackets around columns + base isolators).')
                 )
               );
             })(),
@@ -2967,37 +3199,37 @@
           sectionCard('📡 Smart bridges + structural health monitoring (SHM)',
             (function() {
               var SENSORS = [
-                { id: 'strain', name: 'Strain gauges', color: '#fbbf24',
+                { id: 'strain', name: __alloT('stem.bridgelab.strain_gauges', 'Strain gauges'), color: '#fbbf24',
                   measures: 'Elongation / compression of a member at the point of attachment.',
                   how: 'A foil resistor on a thin substrate, bonded to the member. As the member stretches, the foil stretches, increasing its resistance. Measured by a Wheatstone bridge circuit. Sensitivity: ~1 microstrain.',
                   examples: 'Akashi-Kaikyō Bridge (~1,000+ strain gauges). I-35W Saint Anthony Falls replacement (Minneapolis, 323 sensors installed after the 2007 collapse).',
                   benefit: 'Real-time stress data on critical members. Detects unexpected loads, fatigue accumulation, anomalous behavior.'
                 },
-                { id: 'fbg', name: 'Fiber Bragg gratings (FBG)', color: '#7dd3fc',
+                { id: 'fbg', name: __alloT('stem.bridgelab.fiber_bragg_gratings_fbg', 'Fiber Bragg gratings (FBG)'), color: '#7dd3fc',
                   measures: 'Strain + temperature along the length of an optical fiber.',
                   how: 'Periodic refractive-index changes etched into an optical fiber. Each grating reflects a specific wavelength; strain shifts that wavelength. A single fiber can host hundreds of gratings — DISTRIBUTED sensing, not just points.',
                   examples: 'Sutong Bridge (China). Tsing Ma Bridge (Hong Kong). Embedded in concrete during construction → reports for the bridge\'s lifetime.',
                   benefit: 'Long lifespans (decades, no corrosion). Immune to electromagnetic interference. Many measurement points per cable.'
                 },
-                { id: 'accel', name: 'Accelerometers', color: '#a855f7',
+                { id: 'accel', name: __alloT('stem.bridgelab.accelerometers', 'Accelerometers'), color: '#a855f7',
                   measures: 'Vibration, dynamic response to loads + wind + seismic events.',
                   how: 'MEMS or piezoelectric devices that detect motion. Cheap (a smartphone has 3); reliable; can sample at hundreds or thousands of Hz.',
                   examples: 'Bay Bridge (San Francisco-Oakland). Sutong + Stonecutters Bridges. Most modern long-span bridges have ~50-200 accelerometers across the structure.',
                   benefit: 'Detects loose connections, develops cracks, unusual vibration modes. The first sign of trouble often shows up in vibration BEFORE visible damage.'
                 },
-                { id: 'gps', name: 'GPS displacement sensors', color: '#86efac',
+                { id: 'gps', name: __alloT('stem.bridgelab.gps_displacement_sensors', 'GPS displacement sensors'), color: '#86efac',
                   measures: 'Absolute 3D position of points on the bridge, accurate to a few mm.',
                   how: 'Survey-grade GPS receivers at known points report position continuously. Differential GPS achieves mm-level precision.',
                   examples: 'Akashi-Kaikyō (tower-top GPS tracks how much the bridge sways in wind). Pasco-Kennewick Cable Bridge.',
                   benefit: 'Tracks settlement, long-term creep, thermal expansion. Detects whether the bridge is staying in its design envelope.'
                 },
-                { id: 'corrosion', name: 'Corrosion sensors', color: '#dc2626',
+                { id: 'corrosion', name: __alloT('stem.bridgelab.corrosion_sensors', 'Corrosion sensors'), color: '#dc2626',
                   measures: 'Rebar corrosion in concrete; cable corrosion under wrap; coating breaches.',
                   how: 'Electrical-resistance probes embedded in concrete; acoustic emission detectors for breaking rebar wires; impedance spectroscopy.',
                   examples: 'Bay Bridge eastern span. Most new prestressed concrete bridges include corrosion monitoring as part of construction.',
                   benefit: 'Rebar corrosion is the #1 cause of premature concrete bridge deterioration. Catching it early enables targeted repair vs full replacement.'
                 },
-                { id: 'temp', name: 'Temperature sensors', color: '#0ea5e9',
+                { id: 'temp', name: __alloT('stem.bridgelab.temperature_sensors', 'Temperature sensors'), color: '#0ea5e9',
                   measures: 'Steel + concrete temperatures across the bridge.',
                   how: 'Thermocouples, RTDs, or embedded fiber-optic temperature sensors.',
                   examples: 'Standard on nearly every major modern bridge.',
@@ -3007,7 +3239,7 @@
               var sel = SENSORS.find(function(s) { return s.id === d.selectedSensor; }) || SENSORS[0];
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  'Modern bridges are increasingly INSTRUMENTED — equipped with hundreds or thousands of sensors that report condition continuously. "Structural Health Monitoring" (SHM) catches early signs of trouble that human inspection would miss. Sensors don\'t replace inspectors; they augment them with 24/7 measurements of forces, motions, temperatures, corrosion that visible inspection can\'t reach.'
+                  __alloT('stem.bridgelab.modern_bridges_are_increasingly_instru', 'Modern bridges are increasingly INSTRUMENTED — equipped with hundreds or thousands of sensors that report condition continuously. "Structural Health Monitoring" (SHM) catches early signs of trouble that human inspection would miss. Sensors don\'t replace inspectors; they augment them with 24/7 measurements of forces, motions, temperatures, corrosion that visible inspection can\'t reach.')
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   SENSORS.map(function(s) {
@@ -3021,29 +3253,29 @@
                 h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'What it measures'),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.what_it_measures', 'What it measures')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.measures)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it works'),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.how_it_works_5', 'How it works')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.how)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Real-world examples'),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.real_world_examples', 'Real-world examples')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.examples)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Why it matters'),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.why_it_matters', 'Why it matters')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.benefit)
                   )
                 ),
                 h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
-                  h('strong', null, 'From data to decisions: '),
-                  'Raw sensor data is useless without analysis. Modern SHM systems use machine-learning models trained on the bridge\'s "normal" behavior to flag anomalies — e.g., a particular vibration mode shifting frequency, suggesting a connection is loosening. The data pipeline: sensors → edge computing on bridge → cloud database → AI analysis → maintenance team alerts. Several startups (Resensys, Bridge Diagnostics, others) sell SHM-as-a-service.'
+                  h('strong', null, __alloT('stem.bridgelab.from_data_to_decisions', 'From data to decisions: ')),
+                  __alloT('stem.bridgelab.raw_sensor_data_is_useless_without_ana', 'Raw sensor data is useless without analysis. Modern SHM systems use machine-learning models trained on the bridge\'s "normal" behavior to flag anomalies — e.g., a particular vibration mode shifting frequency, suggesting a connection is loosening. The data pipeline: sensors → edge computing on bridge → cloud database → AI analysis → maintenance team alerts. Several startups (Resensys, Bridge Diagnostics, others) sell SHM-as-a-service.')
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
-                  h('strong', null, 'I-35W Mississippi River Bridge collapse (2007): '),
-                  'The Minneapolis bridge collapsed during evening rush hour, killing 13 + injuring 145. Investigation showed a design flaw (undersized gusset plates) combined with construction loads (resurfacing materials piled on the deck). The replacement bridge (St. Anthony Falls Bridge, 2008) was instrumented with 323 sensors during construction — strain gauges, accelerometers, temperature sensors, corrosion sensors. It is one of the most heavily-monitored bridges in the world. Lessons from the collapse drove federal investment in SHM technology across US bridges.'
+                  h('strong', null, __alloT('stem.bridgelab.i_35w_mississippi_river_bridge_collaps', 'I-35W Mississippi River Bridge collapse (2007): ')),
+                  __alloT('stem.bridgelab.the_minneapolis_bridge_collapsed_durin', 'The Minneapolis bridge collapsed during evening rush hour, killing 13 + injuring 145. Investigation showed a design flaw (undersized gusset plates) combined with construction loads (resurfacing materials piled on the deck). The replacement bridge (St. Anthony Falls Bridge, 2008) was instrumented with 323 sensors during construction — strain gauges, accelerometers, temperature sensors, corrosion sensors. It is one of the most heavily-monitored bridges in the world. Lessons from the collapse drove federal investment in SHM technology across US bridges.')
                 )
               );
             })(),
@@ -3054,7 +3286,7 @@
           sectionCard('🔩 Connections — where most failures actually happen',
             h('div', null,
               h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                'The members are usually not what fails — the connections between them are. Hyatt Regency (1981), Silver Bridge (1967), Tay Bridge (1879) were all connection failures, not material failures. Modern bridge engineering pays as much attention to joints as to members.'
+                __alloT('stem.bridgelab.the_members_are_usually_not_what_fails', 'The members are usually not what fails — the connections between them are. Hyatt Regency (1981), Silver Bridge (1967), Tay Bridge (1879) were all connection failures, not material failures. Modern bridge engineering pays as much attention to joints as to members.')
               ),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
                 CONNECTIONS.map(function(c) {
@@ -3068,25 +3300,25 @@
               h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + AMBER } },
                 h('h4', { style: { margin: '0 0 8px', color: '#fbbf24', fontSize: 15 } }, sel.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'History'),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.history', 'History')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, sel.history)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', borderLeft: '3px solid ' + AMBER, marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it works'),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.how_it_works_6', 'How it works')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, sel.mechanism)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.10)', borderLeft: '3px solid #dc2626', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'How it fails'),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.how_it_fails', 'How it fails')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, sel.failure)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Still used'),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.still_used', 'Still used')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, sel.still)
                 )
               ),
               h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.6 } },
-                h('strong', null, 'The Hyatt Regency lesson: '),
-                'The 1981 walkway collapse was a connection failure. A late design change replaced one long rod (suspending both walkways) with two shorter rods (each walkway hung from the next). The change DOUBLED the load on the upper connection. No one re-engineered. 114 dead, 216 injured. Engineer of record carries final responsibility — both lead engineers lost their licenses. Now required reading in engineering ethics curricula.'
+                h('strong', null, __alloT('stem.bridgelab.the_hyatt_regency_lesson', 'The Hyatt Regency lesson: ')),
+                __alloT('stem.bridgelab.the_1981_walkway_collapse_was_a_connec', 'The 1981 walkway collapse was a connection failure. A late design change replaced one long rod (suspending both walkways) with two shorter rods (each walkway hung from the next). The change DOUBLED the load on the upper connection. No one re-engineered. 114 dead, 216 injured. Engineer of record carries final responsibility — both lead engineers lost their licenses. Now required reading in engineering ethics curricula.')
               )
             ),
             AMBER
@@ -3098,39 +3330,39 @@
 
         function seismicEngineeringSection() {
           var SEIS = [
-            { id: 'why', name: 'Why bridges are seismic-hard', emoji: '⚠️',
+            { id: 'why', name: __alloT('stem.bridgelab.why_bridges_are_seismic_hard', 'Why bridges are seismic-hard'), emoji: '⚠️',
               what: 'A bridge is supported on PIERS (separate foundations) connected by a DECK (continuous span). During an earthquake, each pier moves with its own piece of ground; the deck has to follow them all. Differential ground motion can shear the deck off its supports. Pier-deck connections experience huge cyclic loads. The 1989 Loma Prieta + the 1995 Kobe + the 2010 Maule earthquakes all caused bridge failures of types that pre-1980s codes did not anticipate. Seismic engineering for bridges is a relatively young discipline (~ 40 years of intensive development).',
               limit: 'Many existing bridges worldwide were designed before modern seismic codes existed. Retrofit is expensive but often required. Cost-benefit decisions are political: spend $50M retrofitting a rural bridge that might experience a 500-year earthquake, or accept the risk + spend the money elsewhere? Every state DOT in earthquake-prone areas faces this tradeoff continuously.'
             },
-            { id: 'ground', name: 'How ground motion works', emoji: '〰️',
+            { id: 'ground', name: __alloT('stem.bridgelab.how_ground_motion_works', 'How ground motion works'), emoji: '〰️',
               what: 'An earthquake sends seismic waves through the ground. P-waves (primary, compressional) arrive first + cause less damage. S-waves (secondary, shear) arrive seconds later + do most damage to structures. SURFACE WAVES (Rayleigh + Love) cause rolling + side-to-side motion in shallow soils. Peak Ground Acceleration (PGA) is the headline number, but Peak Ground Velocity (PGV) + duration + frequency content matter more for tall structures. Soft soils AMPLIFY low-frequency motion (the basin effect, seen catastrophically in 1985 Mexico City + 1989 Marina District San Francisco). Liquefaction in saturated sandy soils turns the ground temporarily liquid + bridges sink or topple.',
               limit: 'Site-specific ground motion prediction is hard. Two bridges 1 km apart can experience very different motions in the same earthquake due to soil + topography. Engineers use response-spectrum analyses + occasionally site-specific seismic hazard analysis (PSHA) but predictive accuracy is limited. Engineering judgment remains central.'
             },
-            { id: 'caltrans', name: 'Loma Prieta + Caltrans response', emoji: '🌉',
+            { id: 'caltrans', name: __alloT('stem.bridgelab.loma_prieta_caltrans_response', 'Loma Prieta + Caltrans response'), emoji: '🌉',
               what: 'The 1989 Loma Prieta earthquake (M 6.9) collapsed a 50-foot section of the upper deck of the Bay Bridge (eastern span) + the entire 1.4-mile Cypress Viaduct double-deck in Oakland (42 dead). Both structures had been built before modern seismic codes. The response: Caltrans (California Department of Transportation) launched the largest bridge-retrofit program in history, eventually spending $20+ billion to retrofit thousands of bridges + replace the Bay Bridge eastern span entirely (new bridge opened 2013, total cost $6.5B). The 1995 Kobe earthquake (M 6.9) collapsed the Hanshin Expressway in Japan (200+ dead) + drove parallel Japanese retrofit programs.',
               limit: 'Even after $20B+ + 30 years of work, not all California bridges meet current standards. The "lifeline" bridges (Bay, Golden Gate, San Diego-Coronado, etc.) have been fully retrofit; smaller bridges are still being prioritized. The Loma Prieta + Kobe lessons drove EVERY major seismic-zone state\'s retrofit programs (Washington, Oregon, Alaska, Hawaii, plus Japan + Turkey + Greece + Italy + New Zealand + Chile).'
             },
-            { id: 'isolation', name: 'Base isolation', emoji: '🛏️',
+            { id: 'isolation', name: __alloT('stem.bridgelab.base_isolation_2', 'Base isolation'), emoji: '🛏️',
               what: 'Base isolation puts SPECIAL BEARINGS between the deck + the piers that decouple horizontal ground motion from the structure above. A rubber + steel laminated bearing (lead-rubber bearing, LRB) flexes laterally up to ~ 30 cm during an earthquake while the structure essentially floats. Friction-pendulum bearings work by gravity: a curved sliding surface returns the structure to center after motion. The Benicia-Martinez Bridge (California, 2007) + many Japanese highway bridges use base isolation. The technology dramatically reduces forces transmitted to the superstructure — typically by 50-80%.',
               limit: 'Base isolation requires lateral movement room (bridges need expansion joints + flexible utility connections at every isolated joint). It performs best for STIFF structures over MEDIUM ground motions — for very long-period structures or near-fault impulsive motions, isolation may not help or could amplify response. Maintenance is non-trivial: bearings need regular inspection + occasional replacement.'
             },
-            { id: 'damping', name: 'Energy dissipation + dampers', emoji: '🔥',
+            { id: 'damping', name: __alloT('stem.bridgelab.energy_dissipation_dampers', 'Energy dissipation + dampers'), emoji: '🔥',
               what: 'Even with isolation, seismic energy must go somewhere. Modern bridges use VISCOUS DAMPERS (oil-filled cylinders, similar to car shock absorbers but at huge scale — multi-ton capacity) connected between deck + piers. They convert kinetic energy to heat. The 1.8-mile San Francisco-Oakland Bay Bridge eastern span uses 200+ viscous dampers each rated at 280 tons. Friction dampers + steel hysteretic dampers ("fuses" engineered to yield ductilely + absorb energy) are alternatives. Combined with base isolation, dampers can reduce design forces by 75-90% on the critical structural elements.',
               limit: 'Dampers ARE active structural elements that need to function during the earthquake or the design fails. Their condition + responsiveness must be verified periodically. Many bridges have hundreds of dampers — making the inspection + maintenance regime its own significant ongoing cost.'
             },
-            { id: 'capacity', name: 'Capacity design (fuses)', emoji: '🔌',
+            { id: 'capacity', name: __alloT('stem.bridgelab.capacity_design_fuses', 'Capacity design (fuses)'), emoji: '🔌',
               what: 'Capacity design (developed by Tom Paulay + Bob Park at Canterbury, NZ, 1970s-80s) is the philosophy that BIG earthquakes are unavoidable + the goal is to make sure the bridge FAILS GRACEFULLY when overloaded. Engineers designate specific elements as "fuses" — they are designed to yield DUCTILELY in a known mode, absorbing energy + protecting OTHER elements that must remain elastic. Pier-base plastic hinging is the typical fuse for highway bridges: the pier is allowed to yield + form a plastic hinge at its base under a major earthquake, but it must not COLLAPSE. Steel jacketing of older concrete piers makes them ductile enough to do this.',
               limit: 'After a major earthquake, fuse elements may need repair. The bridge survives but is damaged. The acceptable damage level + repairability defines the "limit state" — different bridges have different requirements (essential lifelines must remain operational; ordinary bridges may close for repair).'
             },
-            { id: 'restrainers', name: 'Restrainer cables + seat extensions', emoji: '🔗',
+            { id: 'restrainers', name: __alloT('stem.bridgelab.restrainer_cables_seat_extensions', 'Restrainer cables + seat extensions'), emoji: '🔗',
               what: 'Many older bridge collapses involve UNSEATING: the deck slides off the top of its supporting pier. To prevent this, modern designs include RESTRAINER CABLES (steel cables tying adjacent deck sections together) + LONGER SEAT WIDTHS at piers + ABUTMENTS. The 1971 San Fernando earthquake collapsed sections of I-5 + I-405 due to short seats; California immediately mandated wider seats + restrainer retrofit. Modern Caltrans details require 24-inch minimum seat width + multiple restrainer cables across every expansion joint.',
               limit: 'Restrainer cables provide a backup but are not designed to be the primary lateral-resisting system. They are heavily redundant + relatively cheap; they are also one of the most impactful retrofit upgrades for older bridges in seismic zones.'
             },
-            { id: 'liquefaction', name: 'Liquefaction + foundation engineering', emoji: '🪨',
+            { id: 'liquefaction', name: __alloT('stem.bridgelab.liquefaction_foundation_engineering', 'Liquefaction + foundation engineering'), emoji: '🪨',
               what: 'LIQUEFACTION happens when saturated, loose, sandy soils briefly behave as a liquid during strong shaking. Bridges founded on liquefiable soils can sink, tilt, or topple. The 1964 Niigata earthquake (Japan) + the 1995 Kobe earthquake both caused massive liquefaction. Engineers mitigate by: STONE COLUMNS (compacted gravel piers in the soil), VIBRO-COMPACTION (densifying loose sand by vibration), DEEP SOIL MIXING (injecting cement-soil mixtures), or piles extending below liquefiable layers. The Bay Bridge replacement pier foundations + the Tappan Zee replacement (Mario M. Cuomo Bridge, 2017) both required extensive liquefaction mitigation.',
               limit: 'Site investigation is expensive + sometimes incomplete. Liquefaction risk is best characterized by Cone Penetration Test (CPT) soundings + Shear Wave Velocity measurements. Some bridges built in earlier eras have liquefiable foundations that were not recognized at design time + present serious retrofit challenges.'
             },
-            { id: 'codes', name: 'Codes + their limits', emoji: '📋',
+            { id: 'codes', name: __alloT('stem.bridgelab.codes_their_limits', 'Codes + their limits'), emoji: '📋',
               what: 'AASHTO LRFD Bridge Design Specifications (the US standard) + the AASHTO Guide Specifications for Seismic Bridge Design provide comprehensive seismic-design rules. Bridges are designed for two earthquake scenarios: the 7% in 75 years event (1000-year return period, ESSENTIAL for lifeline bridges) + the 50% in 75 years event (no collapse). California, Washington, Oregon have ADDITIONAL state-specific seismic requirements that exceed AASHTO. Japan + New Zealand + Chile have parallel + sometimes more stringent national codes.',
               limit: 'Codes embody our current best understanding. They will be revised after the NEXT major earthquake reveals what they missed. The 2011 Tohoku tsunami exposed serious gaps in tsunami-bridge interaction; codes are now incorporating tsunami-load provisions. Code compliance is necessary but not sufficient — engineering judgment beyond code minimums has prevented several near-failures.'
             }
@@ -3138,9 +3370,9 @@
           var sel = d.selectedSeis || 'why';
           var topic = SEIS.find(function(t) { return t.id === sel; }) || SEIS[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌎 Seismic engineering for bridges'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.seismic_engineering_for_bridges', '🌎 Seismic engineering for bridges')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Bridges in seismic zones are designed to survive earthquakes that would destroy ordinary buildings. The discipline developed mostly after the 1971 San Fernando earthquake + matured after Loma Prieta 1989 + Kobe 1995 made the problem unmissable. Modern seismic bridge engineering combines base isolation, energy dissipation, capacity design, and foundation engineering — all calibrated to specific seismic-hazard predictions for the site.'
+              __alloT('stem.bridgelab.bridges_in_seismic_zones_are_designed_', 'Bridges in seismic zones are designed to survive earthquakes that would destroy ordinary buildings. The discipline developed mostly after the 1971 San Fernando earthquake + matured after Loma Prieta 1989 + Kobe 1995 made the problem unmissable. Modern seismic bridge engineering combines base isolation, energy dissipation, capacity design, and foundation engineering — all calibrated to specific seismic-hazard predictions for the site.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               SEIS.map(function(t) {
@@ -3155,52 +3387,52 @@
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.how_it_works_7', 'How it works')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.honest_limit_4', 'Honest limit')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
-              h('strong', null, 'A Maine note: '),
-              'Maine is in a LOW seismic-hazard zone but not zero. The 1755 Cape Ann earthquake (estimated M 6.0-6.3) shook Boston + Maine; magnetic-anomaly + paleoseismic studies suggest similar events recur every few centuries. Maine + New England bridges use the AASHTO Seismic Zone 1 provisions (minimal seismic design). The Bridge to Treasure Island in Portland + the Casco Bay Bridge are designed for the local Zone 1 hazard. If you want to see major seismic engineering up close, the Penobscot Narrows Bridge (1996) + the recent I-295 over the Kennebec used some seismic-resistant detailing but at much lower intensity than California or Cascadia subduction zone designs would require.'
+              h('strong', null, __alloT('stem.bridgelab.a_maine_note', 'A Maine note: ')),
+              __alloT('stem.bridgelab.maine_is_in_a_low_seismic_hazard_zone_', 'Maine is in a LOW seismic-hazard zone but not zero. The 1755 Cape Ann earthquake (estimated M 6.0-6.3) shook Boston + Maine; magnetic-anomaly + paleoseismic studies suggest similar events recur every few centuries. Maine + New England bridges use the AASHTO Seismic Zone 1 provisions (minimal seismic design). The Bridge to Treasure Island in Portland + the Casco Bay Bridge are designed for the local Zone 1 hazard. If you want to see major seismic engineering up close, the Penobscot Narrows Bridge (1996) + the recent I-295 over the Kennebec used some seismic-resistant detailing but at much lower intensity than California or Cascadia subduction zone designs would require.')
             )
           );
         }
 
         function windTunnelTestingSection() {
           var WT = [
-            { id: 'why', name: 'Why bridges need wind testing', emoji: '🌬️',
+            { id: 'why', name: __alloT('stem.bridgelab.why_bridges_need_wind_testing', 'Why bridges need wind testing'), emoji: '🌬️',
               what: 'Long-span bridges interact with wind in complex ways. STATIC loading (a constant push against the side of the deck) is easy to calculate from drag coefficients. DYNAMIC loading is what causes failures. Vortex shedding produces alternating side-pressure that can drive lateral oscillation. Flutter (the Tacoma failure mode, also called aeroelastic flutter or galloping in some forms) couples vertical + torsional motion with wind energy in a self-reinforcing feedback. Buffet from gusts excites resonance at natural frequencies. None of these can be predicted from first-principle aerodynamics for a real bridge cross-section; you have to TEST.',
               limit: 'CFD (computational fluid dynamics) has improved enough that some preliminary studies can be done in simulation. But for a major long-span project, regulatory authorities REQUIRE physical wind-tunnel testing on a scale model of the actual deck. Skipping this is professional malpractice + a code violation in most jurisdictions.'
             },
-            { id: 'history', name: 'A field forged by failure', emoji: '🏚️',
+            { id: 'history', name: __alloT('stem.bridgelab.a_field_forged_by_failure', 'A field forged by failure'), emoji: '🏚️',
               what: 'Bridge wind-engineering as a discipline was created by the Tacoma Narrows failure of 1940. Before Tacoma, engineers knew about static wind loads but did not seriously analyze aerodynamic instability for long spans. Theodore von Karman + others applied aeronautical aeroelasticity (a field developed for aircraft wings) to bridge decks in the late 1940s. Robert Scanlan + Alan Davenport in the 1960s-1970s developed the modern wind-tunnel test protocols + the AERODYNAMIC DERIVATIVE framework (flutter coefficients h*, p*, a*) that engineers still use. Davenport\'s Boundary Layer Wind Tunnel Laboratory at Western Ontario remains a leading test facility for long-span bridges.',
               limit: 'The discipline is mature but still evolving. New deck shapes (especially curved + asymmetric decks for cable-stayed bridges, plus the very-long-span suspension proposals that approach the Akashi 1991m record) require testing because their behavior cannot be reliably extrapolated from existing experience. Every new long-span design faces real wind-engineering risk.'
             },
-            { id: 'section', name: 'Section model tests', emoji: '📦',
+            { id: 'section', name: __alloT('stem.bridgelab.section_model_tests', 'Section model tests'), emoji: '📦',
               what: 'The most common bridge wind-tunnel test uses a SECTION MODEL — a rigid scale model of a typical cross-section of the bridge deck (5-10 m long at 1:30 to 1:50 scale), suspended in a wind tunnel on springs that match the natural vibration modes of the actual bridge. Wind is blown across at various angles + speeds. The model is instrumented with strain gauges + force balances + sometimes optical tracking. The data tells you the flutter coefficients, vortex-shedding frequency, drag/lift coefficients, and (most importantly) the CRITICAL FLUTTER SPEED — the wind speed at which the deck would begin self-amplifying oscillation.',
               limit: 'Section model tests assume the bridge behaves the same along its length (the typical-section assumption). This is reasonable for long, prismatic suspension bridges. It is NOT reasonable for cable-stayed bridges where the deck stiffness varies, for asymmetric pylons, or for bridges with complex 3D mode shapes. For those, fuller models are needed.'
             },
-            { id: 'aeroelastic', name: 'Full-bridge aeroelastic models', emoji: '🏗️',
+            { id: 'aeroelastic', name: __alloT('stem.bridgelab.full_bridge_aeroelastic_models', 'Full-bridge aeroelastic models'), emoji: '🏗️',
               what: 'For the most demanding designs, engineers build a FULL AEROELASTIC MODEL — a scale replica of the entire bridge, towers + cables + deck, with springs + masses tuned so the model\'s natural frequencies match the prototype\'s natural frequencies. The Tsing Ma + Akashi Kaikyo + Storebaelt + (most recently) the Çanakkale 1915 Bridge (2022 opening, Turkey, world\'s longest main span until eclipsed) were all tested with full aeroelastic models. The model can be 20-50 m long + costs millions of dollars to build + test. Wind comes from many angles + over many speed ranges; the model is observed for divergence, flutter, buffet response, vortex-induced vibration, parametric excitation.',
               limit: 'Aeroelastic modeling is the most accurate test, but every model is an approximation. Reynolds number cannot be matched (the model is small + the wind speeds are different); turbulence intensity of the natural wind has to be simulated; the testing of one cross-section variant takes weeks. Decisions to build still rely on engineering judgment + safety factors, not pure measurement.'
             },
-            { id: 'cfd', name: 'Computational + LES validation', emoji: '💻',
+            { id: 'cfd', name: __alloT('stem.bridgelab.computational_les_validation', 'Computational + LES validation'), emoji: '💻',
               what: 'Computational Fluid Dynamics (CFD) — Large Eddy Simulation (LES), Detached Eddy Simulation (DES) — is now used alongside wind-tunnel testing. CFD allows parameter sweeps that would take months in a physical wind tunnel: try 50 minor variations of a deck shape, find the most aerodynamically stable, then build a physical model of THAT design. The Hong Kong-Zhuhai-Macao Bridge (2018 opening, 55 km world\'s longest sea crossing) used extensive CFD alongside physical wind tunnels in its design process.',
               limit: 'CFD is necessary + insufficient. Reynolds-Averaged Navier-Stokes (RANS) is too coarse for vortex-shedding + flutter prediction; LES + DES are computationally expensive + still have grid + turbulence-model sensitivities. CFD that "predicts" Tacoma flutter retroactively does not mean CFD can predict the next flutter case without physical validation. The industry consensus: use CFD to OPTIMIZE, use physical wind tunnels to VERIFY.'
             },
-            { id: 'mods', name: 'Aerodynamic countermeasures', emoji: '🔧',
+            { id: 'mods', name: __alloT('stem.bridgelab.aerodynamic_countermeasures', 'Aerodynamic countermeasures'), emoji: '🔧',
               what: 'When wind testing reveals a problem, engineers can add aerodynamic modifications. STREAMLINE THE DECK SHAPE (a streamlined box girder cross-section, with sloped edges + chamfered corners, is far more aerodynamically stable than the open-truss Tacoma deck). FAIRINGS at the deck edges break up vortex shedding. EDGE BAFFLES guide flow. TUNED MASS DAMPERS (TMDs) physically counteract specific modes of vibration. AERO-CONTROL SURFACES (deployable winglets) are an experimental approach for very long spans. The Verrazzano-Narrows + the Akashi Kaikyo both have multiple TMDs + edge fairings as standard aerodynamic countermeasures.',
               limit: 'Adding aerodynamic countermeasures after testing reveals problems is expensive + can compromise other design goals (deck depth, drainage, lighting, maintenance access). The integration of aerodynamics with structural + functional design needs to happen early, not at the testing stage. Late-stage retrofitting was the Millennium Bridge story (post-opening); long-span bridges cannot afford that mistake at scale.'
             },
-            { id: 'sites', name: 'Test facilities around the world', emoji: '🌐',
+            { id: 'sites', name: __alloT('stem.bridgelab.test_facilities_around_the_world', 'Test facilities around the world'), emoji: '🌐',
               what: 'Major bridge wind-tunnel facilities: Boundary Layer Wind Tunnel Laboratory at Western Ontario (Canada, the discipline\'s leading site), CSTB at Nantes (France), Polytechnic of Milan, FORCE Technology in Denmark, BMT Fluid Mechanics in the UK, the Tongji University tunnel in Shanghai, the Japan Wind Engineering Institute. The biggest of these can test bridge decks at near-full Reynolds number; most are at reduced Reynolds. Some have movable floors + walls to simulate boundary-layer flow + topographic effects.',
               limit: 'Wind-tunnel testing is a small industry by total revenue (perhaps $50-100M globally per year). The facilities are expensive to build + maintain. As fewer engineering schools train bridge wind specialists, the field faces succession concerns. New long-span designs increasingly come from a handful of design firms (Aas-Jakobsen, COWI, Ove Arup, Parsons Brinckerhoff) who keep this specialty alive.'
             },
-            { id: 'maine', name: 'When local bridges need testing', emoji: '🌉',
+            { id: 'maine', name: __alloT('stem.bridgelab.when_local_bridges_need_testing', 'When local bridges need testing'), emoji: '🌉',
               what: 'Wind-tunnel testing is mostly for long-span suspension + cable-stayed bridges (typical threshold: spans >250 m). For ordinary girder + truss bridges (which is most bridges in Maine + most US states), the standard AASHTO design code provides sufficient wind-load formulas without testing. Pedestrian bridges, footbridges, and very lightly-built structures sometimes need testing for their specific dynamic-response issues (Millennium Bridge syndrome — see the cases tab) even if not for aerodynamic flutter.',
               limit: 'Code-based wind loading is conservative for typical bridges + sometimes UNCONSERVATIVE for unusual geometries. Engineers should not assume "small bridge = no wind problem" — many small pedestrian + bicycle bridges with low natural frequencies have surprised their designers. When in doubt, run a dynamic analysis or, for high-profile bridges, a wind-tunnel test even at smaller scales.'
             }
@@ -3208,9 +3440,9 @@
           var sel = d.selectedWT || 'why';
           var topic = WT.find(function(t) { return t.id === sel; }) || WT[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌪️ Wind tunnel testing of long-span bridges'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.wind_tunnel_testing_of_long_span_bridg', '🌪️ Wind tunnel testing of long-span bridges')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'A long-span bridge that has never been in a wind tunnel is a long-span bridge that has skipped a fundamental design check. The discipline was forged in the wake of the 1940 Tacoma Narrows collapse + has matured into one of the most distinctive specialties in civil engineering. Every major suspension + cable-stayed bridge built since the 1970s has been wind-tunnel tested before construction.'
+              __alloT('stem.bridgelab.a_long_span_bridge_that_has_never_been', 'A long-span bridge that has never been in a wind tunnel is a long-span bridge that has skipped a fundamental design check. The discipline was forged in the wake of the 1940 Tacoma Narrows collapse + has matured into one of the most distinctive specialties in civil engineering. Every major suspension + cable-stayed bridge built since the 1970s has been wind-tunnel tested before construction.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               WT.map(function(t) {
@@ -3225,52 +3457,52 @@
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it is + how it works'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.what_it_is_how_it_works', 'What it is + how it works')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.honest_limit_5', 'Honest limit')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
-              h('strong', null, 'A classroom demonstration: '),
-              'Students can build a simple section-model wind tunnel from a box fan, a length of cardboard for an airfoil-like deck cross-section, and rubber bands as springs. Hang the cross-section on rubber bands in the airflow + slowly increase the fan speed. Bluff-shaped sections (rectangular cardboard) flutter at relatively low wind speeds; streamlined sections (curved + tapered) remain stable at higher speeds. This is exactly the same principle that distinguished the original Tacoma deck from modern long-span bridge cross-sections. The Khan Academy + Bridge Design + Engineering YouTube channels have demonstrations.'
+              h('strong', null, __alloT('stem.bridgelab.a_classroom_demonstration', 'A classroom demonstration: ')),
+              __alloT('stem.bridgelab.students_can_build_a_simple_section_mo', 'Students can build a simple section-model wind tunnel from a box fan, a length of cardboard for an airfoil-like deck cross-section, and rubber bands as springs. Hang the cross-section on rubber bands in the airflow + slowly increase the fan speed. Bluff-shaped sections (rectangular cardboard) flutter at relatively low wind speeds; streamlined sections (curved + tapered) remain stable at higher speeds. This is exactly the same principle that distinguished the original Tacoma deck from modern long-span bridge cross-sections. The Khan Academy + Bridge Design + Engineering YouTube channels have demonstrations.')
             )
           );
         }
 
         function cableSpinningSection() {
           var STEPS = [
-            { id: 'anchor', name: '1. Anchorages first', emoji: '⚓', when: 'Months 1-12',
+            { id: 'anchor', name: __alloT('stem.bridgelab.1_anchorages_first', '1. Anchorages first'), emoji: '⚓', when: 'Months 1-12',
               what: 'Before any cable can be spun, the ENDS need to be anchored. Suspension-bridge anchorages are huge concrete monoliths cast into bedrock at each shore — for the Akashi Kaikyō (1991 m main span) each anchorage required 350,000+ m³ of concrete + reinforced steel. The cable splay-saddle (where the main cable fans out into individual strands) sits at the top of the anchorage. Each cable strand will be ANCHORED individually inside the concrete via shoes + steel girders + bond.',
               physics: 'The anchorage must resist the full HORIZONTAL component of cable tension — for a long-span bridge, that is tens of thousands of tons per anchor. Failure mode: the anchorage shears off + slides toward the river, slacking the cable + collapsing the deck. Design is extremely conservative (often safety factor 3+ on anchorage shear capacity).'
             },
-            { id: 'towers', name: '2. Towers + saddles', emoji: '🗼', when: 'Months 6-18',
+            { id: 'towers', name: __alloT('stem.bridgelab.2_towers_saddles', '2. Towers + saddles'), emoji: '🗼', when: 'Months 6-18',
               what: 'The towers (pylons) are built next, founded on deep piers usually socketed into bedrock. Tower height for major suspension bridges: 80-300 m. At the top of each tower sits a CABLE SADDLE — a curved steel casting that supports the main cable as it crosses the tower. The saddle is on rollers so it can slide horizontally during cable spinning (when cable tension is unequal between sides) + then be fixed in its final position.',
               physics: 'Towers carry the VERTICAL component of cable tension — pure compression for free-standing towers, plus some bending from wind + thermal motion of the cable. Modern suspension towers are slender steel boxes or composite steel-concrete. The slenderness ratio is high; buckling check during construction (when the cable is partly installed) is a critical design case.'
             },
-            { id: 'catwalk', name: '3. Catwalks + pilot ropes', emoji: '🚶', when: 'Month 18-24',
+            { id: 'catwalk', name: __alloT('stem.bridgelab.3_catwalks_pilot_ropes', '3. Catwalks + pilot ropes'), emoji: '🚶', when: 'Month 18-24',
               what: 'Before cables can be spun, workers need a way to access the path the cable will take. A series of PILOT ROPES is shot or laid across the gap (sometimes by helicopter, traditionally by floating across on a boat, historically by rocket or kite). These are progressively replaced with thicker ropes + finally with the CATWALK — a temporary suspended walkway hung from temporary catwalk ropes, running across the entire main span + side spans. The catwalk is suspended below where the main cable will sit + provides the working surface for spinning crew.',
               physics: 'Catwalk loading is essentially the live load of workers + equipment + the catwalk itself. The catwalk follows roughly the same shape as the future main cable (a catenary). Catwalk construction is among the most dangerous moments in suspension-bridge building; high winds can shut it down for weeks.'
             },
-            { id: 'spinning', name: '4. Cable spinning (the magic)', emoji: '🕷️', when: 'Months 24-30',
+            { id: 'spinning', name: __alloT('stem.bridgelab.4_cable_spinning_the_magic', '4. Cable spinning (the magic)'), emoji: '🕷️', when: 'Months 24-30',
               what: 'A SPINNING WHEEL travels back and forth across the catwalk, carrying loops of high-strength steel wire (5 mm diameter, ~1700 MPa yield strength). At each pass, the wheel deposits two wires (the loop) into temporary "strand shoes" at each anchorage. After ~400-500 round trips, ~400-500 wires are bundled into a STRAND. A typical major suspension bridge has 30-100+ strands per main cable, each containing 300-500 wires; the total cable contains ~10,000-40,000 individual wires. Spinning rate: ~10-50 mph of wire per minute. Total spinning time: months to a year.',
               physics: 'Each wire shares the load roughly equally because they all hang in the same catenary curve. After spinning, the strands are bundled, compressed by hydraulic squeeze, and wrapped with helical wrapping wire + corrosion-protection sheath. The completed cable diameter on the Akashi Kaikyō is 1.12 m, containing 36,830 wires + carrying ~50,000 tons.'
             },
-            { id: 'aerial', name: '5. Aerial Spun vs PPWS', emoji: '⚙️', when: 'Variable',
+            { id: 'aerial', name: __alloT('stem.bridgelab.5_aerial_spun_vs_ppws', '5. Aerial Spun vs PPWS'), emoji: '⚙️', when: 'Variable',
               what: 'Two methods of cable construction: AERIAL SPUN (the historic method described above, used on Brooklyn Bridge through Golden Gate through modern bridges) + PARALLEL-WIRE STRAND (PPWS), where pre-fabricated strands of 100+ parallel wires are shop-coiled, then unspooled across the catwalk + anchored. PPWS is faster + reduces on-site labor; aerial spinning gives slightly more uniform wire tension. Most modern major suspension bridges use PPWS (Akashi, Great Belt, Storebælt). Some still use aerial spinning (Verrazzano-Narrows replacement cables, 2017-2019, used aerial spinning).',
               physics: 'PPWS strands are shop-fabricated under controlled tension, leading to slightly different mechanical behavior than aerial-spun cables (aerial-spun wires are tensioned individually on-site). Connection between PPWS strands + anchorage uses different shoe geometry than aerial spinning.'
             },
-            { id: 'hangers', name: '6. Hangers + suspenders', emoji: '🎯', when: 'Month 30-36',
+            { id: 'hangers', name: __alloT('stem.bridgelab.6_hangers_suspenders', '6. Hangers + suspenders'), emoji: '🎯', when: 'Month 30-36',
               what: 'With the main cable now in place + tensioned, vertical HANGER CABLES are attached at regular intervals (typically every 10-20 m along the main span) connecting the main cable down to the eventual deck. Hangers are stranded wire ropes or parallel-wire stays, typically 50-100 mm diameter. The number of hangers on a major suspension bridge is 200-400 per side of the span. Each hanger has its own connection sockets at top (to main cable) + bottom (to deck).',
               physics: 'Each hanger carries the live + dead load of its tributary segment of deck. The hanger spacing is chosen to keep individual hanger forces manageable + to avoid resonance with wind-induced deck motions. Hangers are individually replaceable; cable replacement happens periodically over the bridge\'s life (Verrazzano replaced all suspender ropes 2017-2019).'
             },
-            { id: 'deck', name: '7. Deck erection', emoji: '🚛', when: 'Month 36-48',
+            { id: 'deck', name: __alloT('stem.bridgelab.7_deck_erection', '7. Deck erection'), emoji: '🚛', when: 'Month 36-48',
               what: 'The deck (girder + roadway) is erected in segments, typically beginning at the towers + working outward toward midspan in both directions, hanging each segment from the previously-completed segment + the hangers above. For long spans, the deck segments are typically prefabricated steel-orthotropic-deck sections (10-40 m long, ~500-2000 tons each), barged out + lifted into place by gantry cranes traveling along the partly-completed deck. As more deck is added, the load on the cable + towers grows; the saddle position is monitored + sometimes adjusted.',
               physics: 'During deck erection, the cable + tower stresses are CONTINUOUSLY changing. Stress monitoring during construction is essential. The final geometric form of the bridge (cable sag, tower top position, deck profile) is "tuned" by careful sequencing of deck segments. Errors in sequencing can leave the bridge with permanent unwanted deformations.'
             },
-            { id: 'tuning', name: '8. Final tensioning + acceptance', emoji: '🎚️', when: 'Month 48+',
+            { id: 'tuning', name: __alloT('stem.bridgelab.8_final_tensioning_acceptance', '8. Final tensioning + acceptance'), emoji: '🎚️', when: 'Month 48+',
               what: 'After deck completion, the bridge is tensioned to final geometry. Cable saddles are fixed in place. Hanger lengths are fine-tuned. Wind-tunnel testing is reviewed against actual measured wind response. Load testing applies known truck loads (often a coordinated parade of dump trucks) to verify deck deflections match design predictions within tolerances. SHM systems are activated (see Materials tab). The bridge is opened to traffic.',
               physics: 'Acceptance testing typically loads the bridge to ~125% of design service load (NOT to the ultimate capacity, which would risk damage). Measured deflections should agree with calculations within ~5-10%. The very first traffic crossing — often a ceremonial walk for invited dignitaries + the public — is a tradition older than steel suspension bridges themselves.'
             }
@@ -3278,9 +3510,9 @@
           var sel = d.selectedSpin || 'anchor';
           var topic = STEPS.find(function(t) { return t.id === sel; }) || STEPS[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🏗️ How a long-span suspension bridge is actually built'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.how_a_long_span_suspension_bridge_is_a', '🏗️ How a long-span suspension bridge is actually built')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'You can hold a piece of cable in your hand: it is a few millimeters of high-tensile steel wire. A long-span suspension bridge\'s main cable contains tens of thousands of such wires, bundled, compressed, wrapped, and tensioned to carry 50,000+ tons. The CONSTRUCTION SEQUENCE is one of the most remarkable choreographies in modern engineering — each step depending on the previous + impossible without it.'
+              __alloT('stem.bridgelab.you_can_hold_a_piece_of_cable_in_your_', 'You can hold a piece of cable in your hand: it is a few millimeters of high-tensile steel wire. A long-span suspension bridge\'s main cable contains tens of thousands of such wires, bundled, compressed, wrapped, and tensioned to carry 50,000+ tons. The CONSTRUCTION SEQUENCE is one of the most remarkable choreographies in modern engineering — each step depending on the previous + impossible without it.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               STEPS.map(function(t) {
@@ -3296,17 +3528,17 @@
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Timeline: ' + topic.when),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What happens'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.what_happens_2', 'What happens')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Physics + structural logic'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.physics_structural_logic', 'Physics + structural logic')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.physics)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
-              h('strong', null, 'The Roebling lineage: '),
-              'John A. Roebling invented the aerial-spinning method while building the 1855 Niagara Falls railroad suspension bridge — the technique remains essentially unchanged 170 years later. He died in 1869 from injuries sustained during early construction of the Brooklyn Bridge; his son Washington took over + suffered decompression sickness ("caisson disease") supervising the pier sinking. His wife Emily Roebling effectively managed the project for the next decade. The Brooklyn Bridge opened in 1883 + still carries traffic today.'
+              h('strong', null, __alloT('stem.bridgelab.the_roebling_lineage', 'The Roebling lineage: ')),
+              __alloT('stem.bridgelab.john_a_roebling_invented_the_aerial_sp', 'John A. Roebling invented the aerial-spinning method while building the 1855 Niagara Falls railroad suspension bridge — the technique remains essentially unchanged 170 years later. He died in 1869 from injuries sustained during early construction of the Brooklyn Bridge; his son Washington took over + suffered decompression sickness ("caisson disease") supervising the pier sinking. His wife Emily Roebling effectively managed the project for the next decade. The Brooklyn Bridge opened in 1883 + still carries traffic today.')
             )
           );
         }
@@ -3338,15 +3570,16 @@
         );
 
         return h('div', { style: { padding: 14, borderRadius: 12, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)', marginTop: 10, borderLeft: '3px solid #ef4444' } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, '💨 Aerodynamic flutter demo'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, __alloT('stem.bridgelab.aerodynamic_flutter_demo', '💨 Aerodynamic flutter demo')),
           h('p', { style: { margin: '0 0 10px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-            'Move the wind speed slider. Watch how the deck behaves. The open H-shaped cross-section of the original Tacoma deck caused alternating lift forces, and the bridge tore itself apart at moderate wind speeds. Modern bridges use closed or aerodynamic cross-sections that don\'t flutter.'
+            __alloT('stem.bridgelab.move_the_wind_speed_slider_watch_how_t', 'Move the wind speed slider. Watch how the deck behaves. The open H-shaped cross-section of the original Tacoma deck caused alternating lift forces, and the bridge tore itself apart at moderate wind speeds. Modern bridges use closed or aerodynamic cross-sections that don\'t flutter.')
           ),
           styleBlock,
 
           // SVG of the deck
-          h('svg', { viewBox: '0 0 400 180', width: '100%', height: 180, role: 'img', 'aria-labelledby': 'flutterTitle flutterDesc' },
-            h('title', { id: 'flutterTitle' }, 'Tacoma Narrows flutter animation'),
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, 'Tacoma flutter: wind ' + windSpeed + ' miles per hour, deck ' + (safe ? 'stable' : resonance ? 'in resonant flutter' : 'failing') + ', oscillation amplitude ' + amplitude.toFixed(0) + ' degrees.'),
+          h('svg', { viewBox: '0 0 400 180', width: '100%', height: 180, role: 'img', 'aria-labelledby': 'flutterTitle flutterDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
+            h('title', { id: 'flutterTitle' }, __alloT('stem.bridgelab.tacoma_narrows_flutter_animation', 'Tacoma Narrows flutter animation')),
             h('desc', { id: 'flutterDesc' }, 'A schematic bridge deck oscillating in wind. Amplitude grows with wind speed. At ' + windSpeed + ' miles per hour, the deck is ' + (safe ? 'stable' : resonance ? 'in resonant flutter' : 'failing') + '.'),
             // Towers (fixed)
             h('rect', { x: 50, y: 30, width: 12, height: 130, fill: '#475569' }),
@@ -3364,7 +3597,7 @@
               }
               return arrows;
             })(),
-            h('text', { x: 8, y: 25, fill: '#94a3b8', fontSize: 10 }, 'Wind →'),
+            h('text', { x: 8, y: 25, fill: '#94a3b8', fontSize: 10 }, __alloT('stem.bridgelab.wind', 'Wind →')),
 
             // Cables (catenary, fixed)
             h('path', { d: 'M 56,38 Q 200,80 344,38', stroke: '#94a3b8', strokeWidth: 1.5, fill: 'none' }),
@@ -3390,25 +3623,25 @@
           // Wind speed slider
           h('div', { style: { marginTop: 12 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'Wind speed'),
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, __alloT('stem.bridgelab.wind_speed', 'Wind speed')),
               h('span', { style: { fontSize: 13, color: failing ? '#fca5a5' : resonance ? '#fbbf24' : '#86efac', fontWeight: 800 } }, windSpeed + ' mph')
             ),
-            h('input', { type: 'range', min: 0, max: 80, step: 1, value: windSpeed,
+            h('input', { type: 'range', 'aria-valuetext': windSpeed + ' mph', min: 0, max: 80, step: 1, value: windSpeed,
               onChange: function(e) { upd({ windSpeedMph: parseInt(e.target.value, 10) }); },
-              'aria-label': 'Wind speed in miles per hour',
+              'aria-label': __alloT('stem.bridgelab.wind_speed_in_miles_per_hour', 'Wind speed in miles per hour'),
               style: { width: '100%', accentColor: '#ef4444' }
             }),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } },
-              h('span', null, '0 mph'),
+              h('span', null, __alloT('stem.bridgelab.0_mph', '0 mph')),
               h('span', null, 'Critical: ~' + critical + ' mph'),
-              h('span', null, '80 mph')
+              h('span', null, __alloT('stem.bridgelab.80_mph', '80 mph'))
             )
           ),
 
           h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: failing ? 'rgba(239,68,68,0.10)' : resonance ? 'rgba(245,158,11,0.10)' : 'rgba(34,197,94,0.10)', border: '1px solid ' + (failing ? '#7f1d1d' : resonance ? '#92400e' : '#14532d'), fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
             failing ? h('span', null, h('strong', null, 'Failing: '), 'At ' + windSpeed + ' mph the historical Tacoma deck would have torn itself apart. The actual collapse happened at ~42 mph wind. The bridge had been oscillating in lower winds for months — locals called it "Galloping Gertie" and tourists drove across for the thrill.') :
-            resonance ? h('span', null, h('strong', null, 'Resonant flutter: '), 'The deck has entered an aeroelastic flutter mode. Each oscillation creates lift forces that amplify the next oscillation — a positive feedback loop. Unrestrained, it grows until structural failure. The historical Tacoma Narrows collapsed at ~42 mph in 1940.') :
-            h('span', null, h('strong', null, 'Stable: '), 'Below the critical flutter speed. Modern bridges have streamlined or trussed cross-sections that prevent flutter at any wind speed they\'re likely to encounter. Wind tunnel testing is now mandatory for major bridges.')
+            resonance ? h('span', null, h('strong', null, __alloT('stem.bridgelab.resonant_flutter', 'Resonant flutter: ')), __alloT('stem.bridgelab.the_deck_has_entered_an_aeroelastic_fl', 'The deck has entered an aeroelastic flutter mode. Each oscillation creates lift forces that amplify the next oscillation — a positive feedback loop. Unrestrained, it grows until structural failure. The historical Tacoma Narrows collapsed at ~42 mph in 1940.')) :
+            h('span', null, h('strong', null, 'Stable: '), __alloT('stem.bridgelab.below_the_critical_flutter_speed_moder', 'Below the critical flutter speed. Modern bridges have streamlined or trussed cross-sections that prevent flutter at any wind speed they\'re likely to encounter. Wind tunnel testing is now mandatory for major bridges.'))
           )
         );
       }
@@ -3439,15 +3672,16 @@
         );
 
         return h('div', { style: { padding: 14, borderRadius: 12, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)', marginTop: 10, borderLeft: '3px solid #ef4444' } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, '🚶 Pedestrian synchronization demo'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, __alloT('stem.bridgelab.pedestrian_synchronization_demo', '🚶 Pedestrian synchronization demo')),
           h('p', { style: { margin: '0 0 10px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-            'Move the pedestrian-count slider. Each walker on the bridge applies a small lateral push at ~1 Hz (half their step rate). At low density, the pushes are randomly phased + cancel out. Above the critical density (~160 on the London north span), walkers UNCONSCIOUSLY synchronize their steps with the swaying bridge, amplifying the motion.'
+            __alloT('stem.bridgelab.move_the_pedestrian_count_slider_each_', 'Move the pedestrian-count slider. Each walker on the bridge applies a small lateral push at ~1 Hz (half their step rate). At low density, the pushes are randomly phased + cancel out. Above the critical density (~160 on the London north span), walkers UNCONSCIOUSLY synchronize their steps with the swaying bridge, amplifying the motion.')
           ),
           styleBlock,
 
           // SVG of the bridge with pedestrians
-          h('svg', { viewBox: '0 0 400 160', width: '100%', height: 160, role: 'img', 'aria-labelledby': 'millTitle millDesc' },
-            h('title', { id: 'millTitle' }, 'Millennium Bridge pedestrian synchronization animation'),
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, 'Millennium bridge: ' + nPeds + ' pedestrians, ' + status + ', lateral amplitude ' + amplitude.toFixed(0) + ' pixels.'),
+          h('svg', { viewBox: '0 0 400 160', width: '100%', height: 160, role: 'img', 'aria-labelledby': 'millTitle millDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
+            h('title', { id: 'millTitle' }, __alloT('stem.bridgelab.millennium_bridge_pedestrian_synchroni', 'Millennium Bridge pedestrian synchronization animation')),
             h('desc', { id: 'millDesc' }, 'A schematic pedestrian bridge with ' + nPeds + ' people. Lateral amplitude is ' + amplitude.toFixed(0) + ' pixels — ' + status + '.'),
             // Towers (fixed)
             h('rect', { x: 50, y: 30, width: 8, height: 110, fill: '#475569' }),
@@ -3482,25 +3716,25 @@
           // Pedestrian slider
           h('div', { style: { marginTop: 12 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'Pedestrians on the bridge'),
+              h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, __alloT('stem.bridgelab.pedestrians_on_the_bridge', 'Pedestrians on the bridge')),
               h('span', { style: { fontSize: 13, color: status === 'locked' ? '#fca5a5' : status === 'synchronizing' ? '#fbbf24' : '#86efac', fontWeight: 800 } }, nPeds + ' people · ' + amplMm.toFixed(0) + ' mm amplitude · ' + (syncFrac * 100).toFixed(0) + '% synchronized')
             ),
-            h('input', { type: 'range', min: 0, max: 600, step: 10, value: nPeds,
+            h('input', { type: 'range', 'aria-valuetext': nPeds + ' pedestrians', min: 0, max: 600, step: 10, value: nPeds,
               onChange: function(e) { upd({ millenniumPeds: parseInt(e.target.value, 10) }); },
-              'aria-label': 'Number of pedestrians',
+              'aria-label': __alloT('stem.bridgelab.number_of_pedestrians', 'Number of pedestrians'),
               style: { width: '100%', accentColor: '#ef4444' }
             }),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } },
-              h('span', null, '0 people'),
+              h('span', null, __alloT('stem.bridgelab.0_people', '0 people')),
               h('span', null, 'Critical: ~' + critical + ' people'),
-              h('span', null, '600 people')
+              h('span', null, __alloT('stem.bridgelab.600_people', '600 people'))
             )
           ),
 
           h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: status === 'locked' ? 'rgba(239,68,68,0.10)' : status === 'synchronizing' ? 'rgba(245,158,11,0.10)' : 'rgba(34,197,94,0.10)', border: '1px solid ' + (status === 'locked' ? '#7f1d1d' : status === 'synchronizing' ? '#92400e' : '#14532d'), fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
-            status === 'locked' ? h('span', null, h('strong', null, 'Locked synchronization: '), 'Pedestrians are now unconsciously phase-locked with the bridge\'s natural lateral mode. Each step adds to the swaying. The bridge wobbles violently. At 8-10 mm visible amplitude, panicked pedestrians grip the railing + slow down — actually making it worse by sustaining synchronization. London opening day reached ~70 mm amplitude.') :
-            status === 'synchronizing' ? h('span', null, h('strong', null, 'Synchronization beginning: '), 'Bridge motion is becoming perceptible. Some pedestrians are unconsciously adjusting their gait. If more people arrive or stay, locked synchronization will develop.') :
-            h('span', null, h('strong', null, 'Stable: '), 'Below the critical pedestrian density. Random gait phasing cancels out laterally. Modern pedestrian bridges include tuned mass dampers + lateral viscous dampers to suppress this even at high density — the Millennium retrofit added ~87 dampers total.')
+            status === 'locked' ? h('span', null, h('strong', null, __alloT('stem.bridgelab.locked_synchronization', 'Locked synchronization: ')), __alloT('stem.bridgelab.pedestrians_are_now_unconsciously_phas', 'Pedestrians are now unconsciously phase-locked with the bridge\'s natural lateral mode. Each step adds to the swaying. The bridge wobbles violently. At 8-10 mm visible amplitude, panicked pedestrians grip the railing + slow down — actually making it worse by sustaining synchronization. London opening day reached ~70 mm amplitude.')) :
+            status === 'synchronizing' ? h('span', null, h('strong', null, __alloT('stem.bridgelab.synchronization_beginning', 'Synchronization beginning: ')), __alloT('stem.bridgelab.bridge_motion_is_becoming_perceptible_', 'Bridge motion is becoming perceptible. Some pedestrians are unconsciously adjusting their gait. If more people arrive or stay, locked synchronization will develop.')) :
+            h('span', null, h('strong', null, 'Stable: '), __alloT('stem.bridgelab.below_the_critical_pedestrian_density_', 'Below the critical pedestrian density. Random gait phasing cancels out laterally. Modern pedestrian bridges include tuned mass dampers + lateral viscous dampers to suppress this even at high density — the Millennium retrofit added ~87 dampers total.'))
           )
         );
       }
@@ -3509,7 +3743,7 @@
         var selected = CASES.find(function(c) { return c.id === d.selectedCase; }) || CASES[0];
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            'Engineering is learned at least as much from failures as from successes. The collapse of Tacoma Narrows changed how every bridge in the world is designed; the success of Brooklyn proved suspension bridges could last centuries.'
+            __alloT('stem.bridgelab.engineering_is_learned_at_least_as_muc', 'Engineering is learned at least as much from failures as from successes. The collapse of Tacoma Narrows changed how every bridge in the world is designed; the success of Brooklyn proved suspension bridges could last centuries.')
           ),
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
             CASES.map(function(c) {
@@ -3542,42 +3776,42 @@
 
         function ancientEngineeringSection() {
           var ANC = [
-            { id: 'roman', name: 'Roman stone arch', emoji: '🏛️', when: '~300 BCE-400 CE',
+            { id: 'roman', name: __alloT('stem.bridgelab.roman_stone_arch', 'Roman stone arch'), emoji: '🏛️', when: '~300 BCE-400 CE',
               what: 'The Romans inherited the arch from the Etruscans + Mesopotamians but turned it into a systematic engineering technology. A Roman stone arch consists of wedge-shaped voussoirs that lock together via gravity + friction; the keystone at the apex holds everything in compression. The Romans built ~900 arch bridges across their empire, of which dozens still stand + are in active use 2000 years later. The Pont du Gard (France, ~50 CE) is a three-tier aqueduct bridge 49 m tall + 275 m long. The Alcantara Bridge (Spain, 106 CE) spans the Tagus river with arches up to 28.6 m + continues to carry vehicle traffic.',
               how: 'Roman concrete (opus caementicium — pozzolanic ash + lime + water + aggregate) is a remarkable material. The pozzolanic component (volcanic ash from Pozzuoli near Naples) reacts with lime to form calcium-aluminum-silicate hydrates similar to modern concrete, but with self-healing properties: hairline cracks fill in over centuries as seawater drives further reactions. The Pantheon in Rome (118-128 CE) has a 43.4 m unreinforced concrete dome still standing. The Romans built without iron rebar; modern reinforced concrete typically lasts 75-150 years before rebar corrosion destroys it.',
               legacy: 'Roman bridge + concrete engineering was lost during the early medieval period in Western Europe + partially preserved + extended in the Byzantine + Islamic worlds. The technical knowledge was substantially re-discovered during the Renaissance. Modern engineers studying Roman concrete (notably MIT\'s Admir Masic in the 2020s) have found that the hot-mixed quicklime technique gives Roman concrete its self-healing property + are using it to develop greener concretes today.'
             },
-            { id: 'mesopotamian', name: 'Mesopotamian + earliest bridges', emoji: '⛲', when: '~4000-300 BCE',
+            { id: 'mesopotamian', name: __alloT('stem.bridgelab.mesopotamian_earliest_bridges', 'Mesopotamian + earliest bridges'), emoji: '⛲', when: '~4000-300 BCE',
               what: 'The earliest known constructed bridges were in Mesopotamia + the Indus Valley. The Sumerians built brick-arch culverts ~3500 BCE. The Persian Royal Road (built under Darius I ~500 BCE, running 2700 km from Susa to Sardis) included multiple stone-pier bridges + pontoon crossings. Herodotus describes Xerxes\' pontoon bridge across the Hellespont (480 BCE) — 674 boats lashed together with flax + papyrus cables tensioned across the strait, decked over with brushwood + earth.',
               how: 'Early Mesopotamian bridges used mud-brick arches that limited their span (typically <10 m) + service life (frequent rebuilding required after floods). Persian engineers introduced fired-brick + stone construction for greater durability. The Xerxes pontoon used a quintessentially "good engineering" technique even for a military expedition: redundant cables (two cable lines), distributed load (many small boats), repairable in segments, and replaceable after the campaign.',
               legacy: 'Most early Mesopotamian + Persian bridges have eroded or been replaced. Their direct material legacy is small but the engineering vocabulary they developed (arches, abutments, pontoons, retaining walls, paved road approaches) was inherited via the Persian + Hellenistic worlds + ultimately by Rome. Some surviving Persian-era bridges in Iran (Khaju Bridge in Isfahan, 1650 — late Safavid rather than ancient Persian) preserve the architectural genre.'
             },
-            { id: 'inca', name: 'Inca rope suspension bridges', emoji: '🪢', when: '~1200-1533 CE',
+            { id: 'inca', name: __alloT('stem.bridgelab.inca_rope_suspension_bridges', 'Inca rope suspension bridges'), emoji: '🪢', when: '~1200-1533 CE',
               what: 'The Inca empire connected its Andean territory with a road system (Qhapaq Nan) ~40000 km long, traversing terrain that included deep gorges where conventional stone arches were impractical. Their solution: grass-rope suspension bridges, woven from ichu grass into massive cables 30-40 cm thick + spans up to ~50 m. The bridge at Q\'eswachaka, near Cusco, is rebuilt annually by local communities (Quehue, Huinchiri, Ccollana Quehue, Choccayhua) as both functional infrastructure + cultural ceremony — recognized by UNESCO as Intangible Cultural Heritage of Humanity.',
               how: 'The annual Q\'eswachaka rebuild uses ~700 villagers over 4 days. Women braid small ropes from ichu grass; men twist these into thicker strands, then six main cables. The old cables are cut down + the new ones strung across the gorge using a simple traction system. The bridge then receives a deck of mats + safety ropes. The whole structure is held by stone abutments + relies entirely on tension in the rope cables.',
               legacy: 'The Q\'eswachaka tradition is one of the oldest continuously-practiced engineering traditions in the world. The communities are working to extend it: similar bridges elsewhere in Peru + Bolivia have been revived in the past 30 years as cultural + tourist projects. Engineering schools (including MIT + Cornell) have studied the bridge as an example of sustainable indigenous engineering — local materials, distributed labor, integrated community ownership, end-of-life biodegradability.'
             },
-            { id: 'chinese', name: 'Chinese ancient bridges', emoji: '🐉', when: '~600 BCE-1400 CE',
+            { id: 'chinese', name: __alloT('stem.bridgelab.chinese_ancient_bridges', 'Chinese ancient bridges'), emoji: '🐉', when: '~600 BCE-1400 CE',
               what: 'Chinese bridge engineering developed independently + produced sophisticated stone-arch + cantilever structures. The Anji Bridge (Zhao Zhou Bridge, c. 605 CE, Hebei) is a STONE SEGMENTAL ARCH — the arch is a section of a circle rather than a semicircle, giving a flatter + much wider span (37 m) with less rise. It is the world\'s oldest segmental-arch bridge + still in active use after 1400+ years. The Anping Bridge in Fujian (1138 CE) is 2 km long, the longest stone bridge of its time. Chinese covered wooden cantilever bridges in the mountains of southern China are unique surviving examples of medieval timber engineering.',
               how: 'The Anji Bridge\'s innovation: SPANDREL openings (smaller arches above the main arch) reduce dead weight + provide flood relief without compromising the main load path. Designer Li Chun (~605 CE) appears to have intuited stress-flow optimization centuries before formal structural mechanics. Chinese builders also pioneered iron bracing within stone arches + used dovetailed stone joints that resist tension across the joint — a refinement that allowed flatter, longer spans than European Roman-tradition arches.',
               legacy: 'Chinese bridge engineering was independently sophisticated + parallel to (sometimes ahead of) European traditions. Joseph Needham\'s "Science + Civilisation in China" (1954-present, ongoing multi-volume) documents this in encyclopedic detail. Modern Chinese long-span bridges (the world\'s longest + tallest + most numerous as of 2024) reflect continuing investment in the tradition.'
             },
-            { id: 'islamic', name: 'Islamic Golden Age bridges', emoji: '☪️', when: '~750-1500 CE',
+            { id: 'islamic', name: __alloT('stem.bridgelab.islamic_golden_age_bridges', 'Islamic Golden Age bridges'), emoji: '☪️', when: '~750-1500 CE',
               what: 'Throughout the Islamic Golden Age, engineers from Iberia to Persia + India built sophisticated bridges that combined Roman, Persian, + indigenous traditions with innovations of their own. The Pol-e Khaju (Khaju Bridge, Isfahan, Iran, 1650) is a 132 m two-tier bridge + dam combining bridge + water-management functions. The Pul-i Khishti (Brick Bridge) of Kabul, the Mostar Bridge (Bosnia, 1566, an Ottoman commission by architect Mimar Hayruddin, destroyed during the Balkan War 1993 + faithfully rebuilt 2004) all reflect this design tradition.',
               how: 'Islamic-period engineers built advanced stone arches with refined hydraulic mortars + decorative elements that did not compromise structural integrity. The Mostar Bridge\'s single 28.7 m pointed arch is a masterpiece of stone construction: a tenon-and-mortice joint system within the masonry, lead-jointed iron pins reinforcing the keystone, and a precisely-tapered arch shape that minimizes lateral thrust. The reconstruction (1996-2004, UNESCO-supervised) used identical methods + materials, including the same stone quarry.',
               legacy: 'Many Islamic-era bridges remain in service or have been restored. The technical literature (in Arabic) of this period included substantial discussion of bridge engineering, hydraulics, surveying, + materials. This work transmitted Roman + Greek engineering knowledge to medieval + Renaissance Europe via Arabic translations + the libraries of Cordoba, Toledo, Sicily, and Baghdad.'
             },
-            { id: 'pontvieux', name: 'Medieval European bridges', emoji: '🏰', when: '~1100-1500 CE',
+            { id: 'pontvieux', name: __alloT('stem.bridgelab.medieval_european_bridges', 'Medieval European bridges'), emoji: '🏰', when: '~1100-1500 CE',
               what: 'After the collapse of Roman engineering knowledge in Western Europe, bridge building was rebuilt over several centuries. The Pont d\'Avignon (1185 CE, France, partially destroyed by flood + warfare), the Pont Saint-Bénézet (also Avignon), the Old London Bridge (1209-1831 CE, a multi-arch stone bridge famously covered with houses + shops), and the Charles Bridge in Prague (1357 CE) are major surviving examples. Many medieval bridges were also FORTIFIED — gatehouses, tower defenses, drawbridges integrated into the bridge itself for military purposes.',
               how: 'Medieval European bridges relied on stone arches, often supported by massive cut-water piers projecting upstream + downstream. The piers themselves restricted the river\'s flow, sometimes creating dangerous rapids beneath the bridge (Old London Bridge\'s arches were so narrow that "shooting the bridge" by boat was famously dangerous). Construction methods were often slower than Roman techniques + required generations to complete. Religious orders (Frères Pontifes — "bridge-building brothers") sponsored many medieval bridges as acts of charity + infrastructure.',
               legacy: 'Many medieval European bridges remained in service for centuries; some still are. The integrated bridge-as-community pattern (residences + shops on the bridge) survives at the Ponte Vecchio in Florence (1345 CE) + the Rialto Bridge in Venice (1591 CE). These structures shaped how medieval cities used + organized riverine space.'
             },
-            { id: 'mughal', name: 'Mughal India bridges + waterworks', emoji: '🕌', when: '~1500-1700 CE',
+            { id: 'mughal', name: __alloT('stem.bridgelab.mughal_india_bridges_waterworks', 'Mughal India bridges + waterworks'), emoji: '🕌', when: '~1500-1700 CE',
               what: 'The Mughal Empire built sophisticated bridges + waterworks combining Islamic, Persian, + South Asian traditions. The Shahi Bridge at Jaunpur (1568 CE) crosses the Gomti River with 10 arches over 200 m. The Lakkad Pul (wooden bridge) tradition + the masonry-arch tradition coexisted. Mughal canal + qanat systems (extending from the older Persian model) integrated water management with bridge crossings + were a major imperial concern.',
               how: 'Mughal stone-arch construction used sophisticated lime-pozzolan mortars (similar in chemistry to Roman concrete) + interlocking masonry techniques. Decorative elements — calligraphic friezes, arched panels — were integrated with structure rather than added afterward, reflecting the strong design tradition that also produced the Taj Mahal + Red Fort.',
               legacy: 'Many Mughal bridges remain in use after 400+ years. The integration of bridge engineering with broader water-management systems (irrigation, drinking water, defense) is a model still influential in contemporary South Asian infrastructure design.'
             },
-            { id: 'lessons', name: 'What the ancients knew', emoji: '🎓', when: 'Across traditions',
+            { id: 'lessons', name: __alloT('stem.bridgelab.what_the_ancients_knew', 'What the ancients knew'), emoji: '🎓', when: 'Across traditions',
               what: 'Ancient bridges that are still standing have several lessons: (a) MASSIVE redundancy — Roman stone arches typically have safety factors of 5-10× modern design loads, intentional over-design vs imprecise material knowledge. (b) HEAVY foundations — most ancient bridges that fail do so at the foundations (scour, settlement), not in the superstructure. The Romans dredged + replaced soil under their piers; later traditions did the same. (c) STONE + LIME chemistry — pozzolanic mortar self-heals; Portland cement does not. (d) MAINTENANCE traditions — the Q\'eswachaka rebuild model treats infrastructure as a recurring community obligation, not a one-time capital investment. (e) HONEST acknowledgment of impermanence — many ancient bridges had successors built next door + the old structures were retired with respect rather than insisted-upon perpetually.',
               how: 'Modern engineering has rediscovered some of these principles: self-healing concrete research, life-cycle cost accounting, indigenous + traditional ecological knowledge integration in infrastructure design. The Anji Bridge segmental arch was rediscovered in Europe centuries later as the "depressed arch." Roman concrete chemistry is informing modern sustainable concrete research. Q\'eswachaka-style community-engineering models are studied as alternatives to extractive infrastructure procurement.',
               legacy: 'The "ancients had primitive technology" framing is wrong + condescending. They had different priorities, different materials, different labor systems, + sometimes deeper knowledge than we credit. A Roman aqueduct that delivered clean water to 1 million people for 500 years arguably outperforms many 20th-century equivalents. Honoring ancient engineering means studying it, not displaying it as a curiosity.'
@@ -3586,9 +3820,9 @@
           var sel = d.selectedAnc || 'roman';
           var topic = ANC.find(function(t) { return t.id === sel; }) || ANC[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🏛️ Ancient + traditional bridge engineering'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.ancient_traditional_bridge_engineering', '🏛️ Ancient + traditional bridge engineering')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Modern bridge engineering is the inheritor of at least 4000 years of trial-and-error + cultural transmission. Several pre-modern bridge traditions produced structures that still carry traffic, span rivers, + serve communities today — sometimes outperforming their 20th-century successors. Honoring these traditions is intellectual honesty AND practical: ancient engineering has lessons modern engineering is rediscovering.'
+              __alloT('stem.bridgelab.modern_bridge_engineering_is_the_inher', 'Modern bridge engineering is the inheritor of at least 4000 years of trial-and-error + cultural transmission. Several pre-modern bridge traditions produced structures that still carry traffic, span rivers, + serve communities today — sometimes outperforming their 20th-century successors. Honoring these traditions is intellectual honesty AND practical: ancient engineering has lessons modern engineering is rediscovering.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               ANC.map(function(t) {
@@ -3604,15 +3838,15 @@
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Period: ' + topic.when),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What was built'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.what_was_built', 'What was built')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it worked'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.how_it_worked', 'How it worked')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', borderLeft: '3px solid #a78bfa' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Legacy + lessons'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.legacy_lessons', 'Legacy + lessons')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.legacy)
               )
             )
@@ -3621,43 +3855,43 @@
 
         function militaryAndEmergencyBridgesSection() {
           var MIL = [
-            { id: 'bailey', name: 'Bailey bridge', emoji: '🔩', year: '1941',
+            { id: 'bailey', name: __alloT('stem.bridgelab.bailey_bridge', 'Bailey bridge'), emoji: '🔩', year: '1941',
               who: 'Donald Bailey (UK), Royal Engineers',
               tech: 'A modular truss bridge system using prefabricated steel panels (each ~10 ft × 5 ft × 200 lb) that bolt together by hand into a Pratt-truss configuration. Two parallel trusses + transom + chess + ribbon assembly + ramp panels. By stacking panels in 1, 2, or 3 layers + adding 1 or 2 trusses side-by-side, the same kit can build bridges from 30 to 220 ft (and longer with intermediate piers). 8 men can assemble a 100-ft bridge in 12-24 hours; no heavy crane needed because the bridge is launched by cantilever extension from one bank.',
               use: 'Originally for WWII military: replacing demolished bridges to keep advancing armies supplied. Now used worldwide for civilian emergencies: floods, earthquakes, structural collapse. The UK alone built ~2,500 Bailey bridges during WWII. After Hurricane Maria (2017) destroyed dozens of Puerto Rico\'s bridges, US Army Corps of Engineers + civilian contractors deployed Baileys to restore access within weeks. Maine + Vermont DOTs maintain Bailey stockpiles for spring flood season.',
               caveat: 'Bailey bridges are temporary in concept + sometimes left in place for decades. Many "temporary" Bailey bridges built in the 1940s + 1950s on rural US + UK roads are still in service. The original Bailey design carries about 70 tons (military class 70) but maintenance + load monitoring matter — bolted truss panels need periodic re-tensioning + corrosion inspection. The Bailey system has been improved (acrow-panel, the modern derivative is essentially a stronger Bailey) + the concept remains the gold standard for emergency steel bridging.'
             },
-            { id: 'pontoon', name: 'Military pontoon (ribbon) bridge', emoji: '🌉', year: '1950s-current',
+            { id: 'pontoon', name: __alloT('stem.bridgelab.military_pontoon_ribbon_bridge', 'Military pontoon (ribbon) bridge'), emoji: '🌉', year: '1950s-current',
               who: 'US Army Corps + various NATO equivalents',
               tech: 'A floating bridge built of standardized aluminum or steel floating bays that link together along a riverbank. The Improved Ribbon Bridge (IRB, US) uses bays ~22 ft long, each pre-folded into a small road-transportable package + unfolded automatically on water. A typical IRB crew of ~30 soldiers can lay a 200 m bridge across a river in 60-90 minutes. Carries military class 70-90 (heavy main battle tanks).',
               use: 'Standard for crossing rivers wider than ~100 m where building a fixed bridge would take too long. Used by US Army in Iraq + Afghanistan, by Ukrainian + Russian forces in the 2022-2024 war (with high losses on both sides — pontoon bridges are attractive artillery + drone targets). Also used in disaster response — the 1993 Mississippi floods + Hurricane Katrina (2005) both involved military pontoon-bridge deployments to restore civilian access.',
               caveat: 'Pontoon bridges are slow (vehicles move ~10 mph), vulnerable (any pontoon failure can collapse the whole bridge), and require constant maintenance during use (anchoring against current, ice, debris, flood-level changes). They are a stopgap, not a long-term solution. Modern fixed-bridge construction has gotten fast enough (ABC techniques, see Design Cycle tab) that pontoon usefulness has narrowed.'
             },
-            { id: 'mab', name: 'Medium Girder Bridge (MGB)', emoji: '🛡️', year: '1971-current',
+            { id: 'mab', name: __alloT('stem.bridgelab.medium_girder_bridge_mgb', 'Medium Girder Bridge (MGB)'), emoji: '🛡️', year: '1971-current',
               who: 'British military, manufactured by Williams Fairey Engineering',
               tech: 'A through-truss bridge system made of welded aluminum-alloy panels, lighter than Bailey + faster to assemble. The basic kit builds bridges 9-31 m (single span) carrying military class 70. Variants with linked panels reach 49 m. Assembled by hand by 8-12 soldiers in 30-60 minutes for a 20 m span. Lighter than Bailey, faster to deploy, more standardized fittings — currently the British Army\'s main bridging system, also used by Canada, Australia, India, many NATO armies.',
               use: 'Replaces Bailey in most military applications. Civilian use rarer than Bailey because civilian stockpiles tend to be Bailey-derived. The Stockport rail bridge failure (1972, UK) was bridged by a temporary MGB while the permanent replacement was built. Disaster response in Pakistan + Bangladesh has used MGB for cyclone-damaged bridges.',
               caveat: 'MGB is designed for military traffic patterns (predictable + low volume). It is not ideal for sustained civilian commuter traffic; the deck wears + connection fittings loosen under repeated loading. After ~2-5 years of civilian use, replacement is usually preferable to ongoing maintenance.'
             },
-            { id: 'logsfloating', name: 'Floating-log + improvised bridges', emoji: '🪵', year: 'Throughout history',
+            { id: 'logsfloating', name: __alloT('stem.bridgelab.floating_log_improvised_bridges', 'Floating-log + improvised bridges'), emoji: '🪵', year: 'Throughout history',
               who: 'Various — civilian + military',
               tech: 'In the absence of prefab systems, soldiers + civilians have always built emergency bridges from local materials: lashed logs across a stream (Roman + Greek armies), boats lashed side-by-side with planking laid across (Persian crossing of the Hellespont, 480 BCE, by Xerxes — Herodotus describes the engineering in detail), rope suspension bridges (Inca + Tibetan traditions). The Inca built rope suspension bridges across Andean canyons using twisted ichu grass; the last surviving one, Q\'eswachaka, is rebuilt annually by local communities (~30 m span, replaced by hand by ~700 villagers over 4 days).',
               use: 'Disaster response in low-resource settings where prefab kits are unavailable + the gap is small enough to span with local materials. Indigenous traditional knowledge of bridge construction is often more contextually appropriate than imported military kits — locally-sourced, repairable with local skills, integrated with cultural practices.',
               caveat: 'Improvised bridges have load + durability limits that should not be ignored. Wooden logs decay within 1-3 years; rope rots faster; lashed-log bridges fail without warning when supporting beams crack. The Inca rope-bridge tradition works because of the annual rebuild + the community ownership; it is not a "let it stand" system. Modern engineering should respect + sometimes learn from indigenous bridge traditions without romanticizing what they cannot do.'
             },
-            { id: 'pucvr', name: 'PUC-VR (Pont à Utilisation Civile / civil-use pontoon)', emoji: '🚧', year: '1990s-current',
+            { id: 'pucvr', name: __alloT('stem.bridgelab.puc_vr_pont_utilisation_civile_civil_u', 'PUC-VR (Pont à Utilisation Civile / civil-use pontoon)'), emoji: '🚧', year: '1990s-current',
               who: 'Various civilian + civil-protection agencies',
               tech: 'A simplified civilian-grade pontoon system, lighter than military pontoons + designed for vehicle traffic up to about class 35 (school buses + medium trucks, not heavy military vehicles). Used by FEMA + state emergency-management agencies. Vermont, Maine, + NH stockpile pontoon segments for flood season. French civil protection (Sécurité Civile) maintains a national stockpile for European flood response.',
               use: 'Spring flood response. The 2011 Vermont Tropical Storm Irene flooding washed out over 200 bridges + culverts; civilian pontoons + Bailey-derived kits + temporary fords kept communities connected for the 12-18 months until permanent replacements could be designed + built.',
               caveat: 'Stockpiles only work if they are actually maintained. Bridge kits sitting in warehouses for 30+ years often have rusted hardware, missing parts, corroded fittings. Some state agencies have discovered (the hard way, during an actual emergency) that their stockpile is non-functional. Annual or biennial deployment exercises with the actual kit are the only way to verify readiness.'
             },
-            { id: 'tactical', name: 'Tactical Floating Causeway / INLS', emoji: '⚓', year: '2000s-current',
+            { id: 'tactical', name: __alloT('stem.bridgelab.tactical_floating_causeway_inls', 'Tactical Floating Causeway / INLS'), emoji: '⚓', year: '2000s-current',
               who: 'US Navy + USACE',
               tech: 'A floating dock + causeway system used to land military vehicles + supplies from ship to shore where no port exists. The Improved Navy Lighterage System (INLS) uses standardized barges connected end-to-end to form a 600-1500 ft causeway running from a deep-water roadstead to the beach. Joint Logistics Over-the-Shore (JLOTS) is the doctrine name. In 2024 the US deployed JLOTS in the eastern Mediterranean to deliver humanitarian aid to Gaza; the operation faced multiple breakages from sea state + was widely critiqued for its costs vs delivered tonnage.',
               use: 'Emergency humanitarian delivery + military beach landings where port infrastructure is destroyed or inaccessible. Civilian disaster equivalent: the 2010 Haiti earthquake response used USACE INLS-derived causeways at Port-au-Prince when the main port was destroyed.',
               caveat: 'JLOTS-style operations are vulnerable to weather + cost a fortune per ton of delivered aid. The 2024 Gaza pier operation became a high-profile example: about $230M for a pier that delivered roughly 20 million pounds of food before being damaged by sea state + abandoned. For most disaster response, restoring existing port + airport infrastructure is more efficient than running a parallel maritime supply chain.'
             },
-            { id: 'lessons', name: 'What emergency bridges teach engineers', emoji: '🎓',
+            { id: 'lessons', name: __alloT('stem.bridgelab.what_emergency_bridges_teach_engineers', 'What emergency bridges teach engineers'), emoji: '🎓',
               who: 'The integrated lesson',
               tech: 'Bailey + MGB + pontoon bridges are not separate categories from civilian bridge engineering. They share the same fundamentals (trusses, buoyancy, load paths, fatigue) but optimize differently: SPEED of assembly over LONG-TERM elegance, REPAIRABILITY over MINIMUM maintenance, MODULARITY over CUSTOMIZATION. Many modern civilian techniques (Accelerated Bridge Construction, prefab elements, SPMT moves, modular foundations) descend directly from military bridging research. The 100-year arc of military bridge engineering — from Roman cribwork to Bailey to MGB to current modular composite systems — has had outsized influence on civilian practice.',
               use: 'School engineering programs can use Bailey-bridge models as design exercises: students can prototype small Bailey-style panel systems with cardboard, paper, balsa wood + analyze the truss math. The K\'NEX Bridge Building Kit + similar educational products lean on this lineage. Maine\'s Project Lead The Way bridging modules use military-bridging-influenced kits.',
@@ -3667,9 +3901,9 @@
           var sel = d.selectedMil || 'bailey';
           var topic = MIL.find(function(t) { return t.id === sel; }) || MIL[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '⚒️ Military + emergency bridges'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.military_emergency_bridges', '⚒️ Military + emergency bridges')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Most of the world\'s bridge engineering research between 1900 + 1990 happened in military contexts. The Bailey, Medium Girder, and ribbon-pontoon systems were designed to keep armies supplied across destroyed rivers — and now keep civilian communities connected after floods, earthquakes, hurricanes, and infrastructure failures. The modular + accelerated-construction techniques that dominate modern civilian bridge work descend directly from this lineage.'
+              __alloT('stem.bridgelab.most_of_the_world_s_bridge_engineering', 'Most of the world\'s bridge engineering research between 1900 + 1990 happened in military contexts. The Bailey, Medium Girder, and ribbon-pontoon systems were designed to keep armies supplied across destroyed rivers — and now keep civilian communities connected after floods, earthquakes, hurricanes, and infrastructure failures. The modular + accelerated-construction techniques that dominate modern civilian bridge work descend directly from this lineage.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               MIL.map(function(t) {
@@ -3685,15 +3919,15 @@
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Origin: ' + topic.who + ' · ' + topic.year),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Technical design'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.technical_design', 'Technical design')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.tech)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Operational use'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.operational_use', 'Operational use')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.use)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits + ethics'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.honest_limits_ethics', 'Honest limits + ethics')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.caveat)
               )
             )
@@ -3702,37 +3936,37 @@
 
         function aestheticsAndIconicBridges() {
           var ICONIC = [
-            { id: 'salginatobel', name: 'Salginatobel Bridge', year: 1930, where: 'Schiers, Switzerland', engineer: 'Robert Maillart',
+            { id: 'salginatobel', name: __alloT('stem.bridgelab.salginatobel_bridge', 'Salginatobel Bridge'), year: 1930, where: 'Schiers, Switzerland', engineer: 'Robert Maillart',
               what: 'A concrete three-hinged arch spanning 90 m across an Alpine gorge. The deck is so slim it appears almost too thin to carry trucks. Declared an International Historic Civil Engineering Landmark by ASCE in 1991 — the first concrete bridge to receive that honor.',
               why: 'Maillart treated form and structure as inseparable. He used the bending moment diagram itself as the SHAPE of the bridge, varying the depth of the deck so it is thickest where bending forces are greatest and thinnest where they are not. Material follows force. Almost a century later it still serves the same village it was built for.',
               lesson: 'Beauty in engineering is not added afterward; it is the visible expression of honest structural behavior. A bridge that looks elegant usually IS elegant, because there is no spare material doing nothing.'
             },
-            { id: 'fortgewone', name: 'Forth Bridge', year: 1890, where: 'Firth of Forth, Scotland', engineer: 'Benjamin Baker + John Fowler',
+            { id: 'fortgewone', name: __alloT('stem.bridgelab.forth_bridge', 'Forth Bridge'), year: 1890, where: 'Firth of Forth, Scotland', engineer: 'Benjamin Baker + John Fowler',
               what: 'A cantilever railway bridge with two main spans of 521 m each — held the world span record for 17 years and was the first major British structure built entirely in steel (open-hearth, not wrought iron). UNESCO World Heritage Site since 2015.',
               why: 'Built directly after the Tay Bridge collapse (1879, 75 dead). The engineers deliberately overdesigned everything visible — massive tubular compression members, X-braced wind frames — to restore public confidence in iron-and-steel bridges. The famous "human cantilever" demonstration (two men, a stick, and a brick) by Baker is still used to teach the principle today.',
               lesson: 'Aesthetics include feeling safe. After a disaster, a bridge may need to LOOK substantial as well as BE substantial. The Forth has been called "ugly" by some critics; pilots and passengers have always called it reassuring.'
             },
-            { id: 'firth', name: 'Akashi Kaikyō Bridge', year: 1998, where: 'Kobe to Awaji Island, Japan', engineer: 'Honshu-Shikoku Bridge Authority',
+            { id: 'firth', name: __alloT('stem.bridgelab.akashi_kaiky_bridge', 'Akashi Kaikyō Bridge'), year: 1998, where: 'Kobe to Awaji Island, Japan', engineer: 'Honshu-Shikoku Bridge Authority',
               what: 'Suspension bridge with the longest central span ever built: 1,991 m. Towers stand 297 m above sea level. Designed for typhoons (winds up to 286 km/h) and to survive a magnitude-8.5 earthquake. The 1995 Kobe earthquake (M 6.9) actually struck mid-construction; the towers shifted 1 m apart but engineers compensated rather than restart.',
               why: 'Pure scale handled with restraint. The towers taper gently rather than ornamenting. Cable shape is the catenary — the natural curve of a hanging chain (Hooke 1675, Bernoulli + Leibniz + Huygens 1690-1691). The aesthetic IS the physics of cables in tension.',
               lesson: 'The longest spans on Earth are designed by listening to natural curves (catenary, parabola, arch thrust line). Imposing a non-natural shape requires extra material, which then needs more cable, which needs more material — a runaway loop. Form follows force.'
             },
-            { id: 'sundial', name: 'Sundial Bridge', year: 2004, where: 'Redding, California', engineer: 'Santiago Calatrava',
+            { id: 'sundial', name: __alloT('stem.bridgelab.sundial_bridge', 'Sundial Bridge'), year: 2004, where: 'Redding, California', engineer: 'Santiago Calatrava',
               what: 'A cable-stayed pedestrian bridge with a single asymmetric pylon 66 m tall, leaning back at 42°. The pylon casts a shadow on a sundial-calibrated walkway — accurate on the summer solstice. The bridge crosses the Sacramento River without touching it (to protect spawning salmon habitat).',
               why: 'A statement project. Calatrava is famous (and divisive) for treating bridges as sculpture. Cost overruns and maintenance issues have plagued several of his bridges. The Sundial cost ~$23M, well over original estimate. But the bridge is genuinely beloved locally, and it succeeded at its conservation goal (zero in-water piers).',
               lesson: 'A signature aesthetic can drive cost. The honest engineering question is: did the community get the bridge they paid for, or the architect they paid for? Reasonable people disagree on the Sundial; on some other Calatrava bridges (Constitution, Venice; Petach Tikva, Israel), public opinion has been harsher.'
             },
-            { id: 'menai', name: 'Menai Suspension Bridge', year: 1826, where: 'Wales, UK', engineer: 'Thomas Telford',
+            { id: 'menai', name: __alloT('stem.bridgelab.menai_suspension_bridge', 'Menai Suspension Bridge'), year: 1826, where: 'Wales, UK', engineer: 'Thomas Telford',
               what: 'Wrought-iron chain suspension bridge spanning 176 m, the first major suspension bridge for vehicular traffic in the world. Held the world span record until 1834. Still in active service after almost 200 years (with cables replaced 1939; deck rebuilt 1940).',
               why: 'Telford designed it so the deck height (30 m above the strait) would not interfere with the Royal Navy\'s tall ships — a practical requirement that produced an iconic silhouette. Built using the lightest possible chain system because wrought iron in compression buckles under its own weight. Form follows the LIMITS of the material, not just its strengths.',
               lesson: 'Long service life is itself an aesthetic. A bridge that ages well — one whose silhouette people grew up with, whose stones have weathered, whose iron has patinaed — earns a kind of beauty that no new bridge can replicate. Heritage IS performance.'
             },
-            { id: 'erasmus', name: 'Erasmusbrug', year: 1996, where: 'Rotterdam, Netherlands', engineer: 'Ben van Berkel (UNStudio) + others',
+            { id: 'erasmus', name: __alloT('stem.bridgelab.erasmusbrug', 'Erasmusbrug'), year: 1996, where: 'Rotterdam, Netherlands', engineer: 'Ben van Berkel (UNStudio) + others',
               what: 'Asymmetric cable-stayed bridge with a 139 m kinked pylon nicknamed "the Swan" (de Zwaan). Total length 802 m. Combines a cable-stayed main span with a Scherzer-style bascule (lifting) span at the south end for shipping.',
               why: 'Designed to be a CITY symbol. Rotterdam was rebuilt after WW2 bombing destroyed the medieval city center; the city deliberately commissioned bold contemporary architecture as a statement of identity. The bridge\'s sweeping pylon now appears on Rotterdam tourism logos and beer cans.',
               lesson: 'Bridges sometimes do work beyond engineering. They can be civic art, regional identity, even healing-after-trauma symbols. That is not "wasted" cost — but it should be a community decision, not slipped in by an architect afterward.'
             },
-            { id: 'iron', name: 'The Iron Bridge', year: 1779, where: 'Shropshire, England', engineer: 'Abraham Darby III + Thomas Pritchard',
+            { id: 'iron', name: __alloT('stem.bridgelab.the_iron_bridge', 'The Iron Bridge'), year: 1779, where: 'Shropshire, England', engineer: 'Abraham Darby III + Thomas Pritchard',
               what: 'The first major bridge built of cast iron — 30.6 m arch span across the River Severn. Has been in service for 245+ years (now pedestrian-only). UNESCO World Heritage Site since 1986 as the symbolic birthplace of the Industrial Revolution.',
               why: 'Engineers had no prior experience with cast iron as a structural material, so they copied wooden-bridge joinery (mortise + tenon + dovetail joints, sized for timber). The result is structurally inefficient — far more iron than needed — but it was a public proof-of-concept that changed civilization. Every steel bridge that exists descends from this experiment.',
               lesson: 'First-of-a-kind structures are SUPPOSED to be over-engineered. You do not yet know how the material behaves in service, so you add margin. The Iron Bridge is honored not for elegance but for COURAGE — building in a brand-new material at full civic scale.'
@@ -3741,9 +3975,9 @@
           var sel = d.selectedIcon || 'salginatobel';
           var topic = ICONIC.find(function(t) { return t.id === sel; }) || ICONIC[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌉 Bridge aesthetics — iconic designs through history'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.bridge_aesthetics_iconic_designs_throu', '🌉 Bridge aesthetics — iconic designs through history')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'A bridge can be ugly and still work. A bridge can be beautiful and still fail. The most-loved bridges in history tend to do BOTH: they earn their beauty by making their structural logic legible, by serving for generations, and by carrying meaning beyond their crossing function.'
+              __alloT('stem.bridgelab.a_bridge_can_be_ugly_and_still_work_a_', 'A bridge can be ugly and still work. A bridge can be beautiful and still fail. The most-loved bridges in history tend to do BOTH: they earn their beauty by making their structural logic legible, by serving for generations, and by carrying meaning beyond their crossing function.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               ICONIC.map(function(t) {
@@ -3763,12 +3997,12 @@
               sectionInfo('Aesthetic lesson', topic.lesson, '#a78bfa')
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
-              h('strong', null, 'A working definition of bridge beauty: '),
-              'A bridge is beautiful when its form makes its forces visible, when it suits its place, when it serves its community for generations, and when it ages without shame. None of those are decoration. They are all structural, social, and ethical decisions made at the design table.'
+              h('strong', null, __alloT('stem.bridgelab.a_working_definition_of_bridge_beauty', 'A working definition of bridge beauty: ')),
+              __alloT('stem.bridgelab.a_bridge_is_beautiful_when_its_form_ma', 'A bridge is beautiful when its form makes its forces visible, when it suits its place, when it serves its community for generations, and when it ages without shame. None of those are decoration. They are all structural, social, and ethical decisions made at the design table.')
             ),
             h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', fontSize: 11.5, color: '#fca5a5', lineHeight: 1.65 } },
-              h('strong', null, 'The honest critique: '),
-              'Some "iconic" bridges win awards for the architect and burden the community with maintenance costs the original budget did not contain (several Calatrava bridges have faced lawsuits over this). The reverse is also true: many beloved century-old bridges were not considered beautiful when new (the Eiffel Tower was originally hated by Parisian artists). Time, use, and care are part of what makes a bridge become iconic — not just the original sketch.'
+              h('strong', null, __alloT('stem.bridgelab.the_honest_critique', 'The honest critique: ')),
+              __alloT('stem.bridgelab.some_iconic_bridges_win_awards_for_the', 'Some "iconic" bridges win awards for the architect and burden the community with maintenance costs the original budget did not contain (several Calatrava bridges have faced lawsuits over this). The reverse is also true: many beloved century-old bridges were not considered beautiful when new (the Eiffel Tower was originally hated by Parisian artists). Time, use, and care are part of what makes a bridge become iconic — not just the original sketch.')
             )
           );
         }
@@ -3788,7 +4022,7 @@
         var selected = DESIGN_STEPS.find(function(s) { return s.id === d.selectedStep; }) || DESIGN_STEPS[0];
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            'Engineering is iterative. You design, test, fail, learn, redesign. Failure is information, not defeat. Every working bridge in the world is the descendant of many failures.'
+            __alloT('stem.bridgelab.engineering_is_iterative_you_design_te', 'Engineering is iterative. You design, test, fail, learn, redesign. Failure is information, not defeat. Every working bridge in the world is the descendant of many failures.')
           ),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             DESIGN_STEPS.map(function(s, i) {
@@ -3805,12 +4039,12 @@
           ),
           sectionCard('Apply this to your bridge design',
             h('ol', { style: { margin: 0, padding: '0 0 0 22px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12.5, lineHeight: 1.7 } },
-              h('li', null, h('strong', null, 'Define: '), 'What span do you need to cross? What load (pedestrians? cars? trains?)? What materials are available locally? What\'s your budget?'),
-              h('li', null, h('strong', null, 'Imagine: '), 'Sketch 3 different bridge types you could use. Don\'t commit yet.'),
-              h('li', null, h('strong', null, 'Plan: '), 'Pick the most promising. Use the Stress Test tab to size it. Calculate cost. Identify what could go wrong (wind, ice, overload, fatigue, foundation problems).'),
-              h('li', null, h('strong', null, 'Create: '), 'In the simulation, build it. In real life, a physical model from cardboard, popsicle sticks, or 3D-printed parts.'),
-              h('li', null, h('strong', null, 'Test: '), 'Apply loads in the simulation. For physical models: weights, books, water. Where does it fail first? Why?'),
-              h('li', null, h('strong', null, 'Improve: '), 'Use what you saw to redesign. Add material where stress is highest; reduce where stress is low. Iterate.')
+              h('li', null, h('strong', null, 'Define: '), __alloT('stem.bridgelab.what_span_do_you_need_to_cross_what_lo', 'What span do you need to cross? What load (pedestrians? cars? trains?)? What materials are available locally? What\'s your budget?')),
+              h('li', null, h('strong', null, 'Imagine: '), __alloT('stem.bridgelab.sketch_3_different_bridge_types_you_co', 'Sketch 3 different bridge types you could use. Don\'t commit yet.')),
+              h('li', null, h('strong', null, 'Plan: '), __alloT('stem.bridgelab.pick_the_most_promising_use_the_stress', 'Pick the most promising. Use the Stress Test tab to size it. Calculate cost. Identify what could go wrong (wind, ice, overload, fatigue, foundation problems).')),
+              h('li', null, h('strong', null, 'Create: '), __alloT('stem.bridgelab.in_the_simulation_build_it_in_real_lif', 'In the simulation, build it. In real life, a physical model from cardboard, popsicle sticks, or 3D-printed parts.')),
+              h('li', null, h('strong', null, 'Test: '), __alloT('stem.bridgelab.apply_loads_in_the_simulation_for_phys', 'Apply loads in the simulation. For physical models: weights, books, water. Where does it fail first? Why?')),
+              h('li', null, h('strong', null, 'Improve: '), __alloT('stem.bridgelab.use_what_you_saw_to_redesign_add_mater', 'Use what you saw to redesign. Add material where stress is highest; reduce where stress is low. Iterate.'))
             )
           ),
           feaBasics(),
@@ -3820,35 +4054,35 @@
 
         function bridgeFinancingSection() {
           var FIN = [
-            { id: 'fundlines', name: 'Where the money comes from', emoji: '💵',
+            { id: 'fundlines', name: __alloT('stem.bridgelab.where_the_money_comes_from', 'Where the money comes from'), emoji: '💵',
               what: 'US bridges are funded from multiple sources, in roughly this proportion: FEDERAL HIGHWAY TRUST FUND (gas tax revenue, ~ 50-60% of major-bridge funding) which has been chronically underfunded since federal gas tax has not increased since 1993; STATE motor-fuel taxes + DMV fees + tolls (~ 25-35%); LOCAL property + sales taxes for municipal bridges; FEDERAL ONE-TIME programs (TIGER, BUILD, RAISE, INFRA grants, $1.2T Bipartisan Infrastructure Law of 2021); STATE BOND ISSUES requiring voter approval; TOLL AUTHORITIES (NY MTA, PA Turnpike, etc.) which fund their own capital programs.',
               limit: 'Federal gas tax = $0.184/gallon, unchanged since 1993. Adjusted for inflation + better fuel efficiency, the trust fund has lost ~ 60% of its real purchasing power. EVs pay zero gas tax. The honest accounting: we underfund our infrastructure system + then we patch with periodic large bills like IIJA. This is not sustainable + has been the bipartisan diagnosis for 20+ years.'
             },
-            { id: 'fed', name: 'Federal funding mechanics', emoji: '🏛️',
+            { id: 'fed', name: __alloT('stem.bridgelab.federal_funding_mechanics', 'Federal funding mechanics'), emoji: '🏛️',
               what: 'Most federal bridge money flows through STATE DOTs via the Federal Highway Administration. Each state gets an annual allocation based on a formula (lane miles, population, fuel use). The state DOT chooses projects, designs them, hires contractors, manages construction. The Federal Highway Bridge Program (HBP) funds bridge replacement + rehabilitation; the Highway Safety Improvement Program (HSIP) funds safety improvements; the Surface Transportation Block Grant (STBG) funds general work. The IIJA created the dedicated Bridge Investment Program + Bridge Formula Program ($40+ billion for bridges over 5 years), the largest bridge funding push in US history.',
               limit: 'States have wide discretion in how to spend this money. Some states (Pennsylvania, Texas, California) focus heavily on rural bridges + maintenance; others prioritize urban capacity expansion. Federal money is NEVER enough to fix the backlog — the FHWA estimates ~ $125 billion of US bridges are structurally deficient or functionally obsolete. The annual fix-rate is slower than the deterioration rate.'
             },
-            { id: 'tolls', name: 'Toll bridges + revenue', emoji: '🪙',
+            { id: 'tolls', name: __alloT('stem.bridgelab.toll_bridges_revenue', 'Toll bridges + revenue'), emoji: '🪙',
               what: 'Tolling lets bridges pay for themselves over time. NYC\'s MTA bridges + tunnels generate ~ $2 billion annually in tolls + subsidize transit. The Verrazzano-Narrows Bridge collects ~ $500M/year. The Golden Gate Bridge ($9.55 base toll 2024) generates ~ $200M+/year, fully funding its operation + maintenance. New construction increasingly uses PUBLIC-PRIVATE PARTNERSHIPS (P3): a private consortium designs + builds + finances + operates a tolled bridge under long-term concession contracts. The Goethals Bridge replacement (NJ, 2017) was the first US P3 toll-bridge replacement.',
               limit: 'Tolls are regressive (flat fees burden lower-income drivers more). They are also politically toxic in many regions — even when economically obvious. Maine has resisted highway tolling outside the Maine Turnpike, with the result that bridges + non-Turnpike highways depend heavily on state + federal funds. Toll-supported bridges work where there is a captive market with no equivalent free route; otherwise, traffic diverts + toll revenue collapses.'
             },
-            { id: 'procurement', name: 'Procurement models', emoji: '📋',
+            { id: 'procurement', name: __alloT('stem.bridgelab.procurement_models', 'Procurement models'), emoji: '📋',
               what: 'The traditional model is DESIGN-BID-BUILD: the owner hires an engineer to design, then puts the design out to bid, then a contractor builds it. Slow + adversarial. DESIGN-BUILD packages design + construction with one entity, faster + better-coordinated but with less owner control. CMGC (Construction Manager / General Contractor) hires the contractor during design, getting their input on constructibility. P3 + DBOM (Design-Build-Operate-Maintain) push further by including long-term operation. Each model has tradeoffs in cost, schedule, quality, risk allocation.',
               limit: 'Procurement reform is a major theme in modern infrastructure delivery. Design-build is now the dominant model for major US bridges (~ 50%+ of large-bridge spending). P3s remain controversial — they shift risk to private operators but often at higher cost-of-capital + sometimes with reduced transparency. The Indiana Toll Road P3 (2006, $3.8B 75-year lease to Cintra-Macquarie) is a cautionary tale: the consortium went bankrupt in 2014, the state had to renegotiate, the toll rates rose substantially. Procurement model matters a lot for outcomes.'
             },
-            { id: 'envjustice', name: 'Environmental justice + community impact', emoji: '⚖️',
+            { id: 'envjustice', name: __alloT('stem.bridgelab.environmental_justice_community_impact', 'Environmental justice + community impact'), emoji: '⚖️',
               what: 'Where bridges + highways get built has massive equity implications. Mid-20th-century interstate construction routinely demolished thriving Black + Latino + immigrant + working-class neighborhoods (the I-95 Cross-Bronx Expressway, I-10 in New Orleans through the historic Tremé, I-75 through Black Bottom in Detroit). Modern projects must undergo NEPA + Section 106 reviews to consider impacts on minority + low-income communities, historic sites, environmental resources. The Federal "Justice40" initiative (2021) requires 40% of climate + infrastructure investment to benefit disadvantaged communities. The Reconnecting Communities Pilot Program funds removal of urban highways that divided neighborhoods.',
               limit: 'Implementation is uneven. NEPA + Section 106 reviews can be performative — boxes checked rather than substantive consultation. Community input often happens AFTER major design decisions, not before. Indigenous communities + minority neighborhoods have been the most frequent losers. Modern best practice (genuine tribal consultation, community-led design, alternatives analysis with community participation) is gradually replacing older "decide then announce" patterns; progress is genuine + uneven.'
             },
-            { id: 'lifecycle', name: 'Life-cycle cost analysis', emoji: '📊',
+            { id: 'lifecycle', name: __alloT('stem.bridgelab.life_cycle_cost_analysis', 'Life-cycle cost analysis'), emoji: '📊',
               what: 'A bridge is a 75-150 year asset. Modern accounting considers TOTAL LIFE-CYCLE COST: initial construction + 75 years of maintenance + ultimate decommissioning. A bridge that costs 10% more initially but lasts 50% longer with half the maintenance is the obvious better investment — except that political cycles are 2-4 years + budget pressure is annual. Engineers + budget officers often see different right answers. Modern practice uses 75-year present-value calculations, but the discount rate (how much to weight future costs) drives the conclusion + is genuinely uncertain.',
               limit: 'Life-cycle cost analysis is intellectually compelling + politically difficult. Building a more expensive but longer-lasting bridge requires explaining decade-out savings to voters + legislators who change every few years. Stainless-steel rebar, prestressed concrete, or extra corrosion protection that adds $10M today + saves $50M over 50 years may not pencil in a tight budget cycle. The best-managed agencies (NY DOT, Wisconsin DOT, Florida DOT for certain bridge classes) have institutional memory + the political support to make these tradeoffs; many do not.'
             },
-            { id: 'collapse', name: 'Why bridges collapse from neglect', emoji: '⚠️',
+            { id: 'collapse', name: __alloT('stem.bridgelab.why_bridges_collapse_from_neglect', 'Why bridges collapse from neglect'), emoji: '⚠️',
               what: 'Recent prominent US collapses: I-35W Mississippi River Bridge, Minneapolis (2007, 13 dead, gusset plate fatigue + deck-load growth); Fern Hollow Bridge, Pittsburgh (2022, no deaths, corrosion + deferred inspection); Francis Scott Key Bridge, Baltimore (2024, 6 dead, ship strike — not a maintenance issue, but exposes how few bridges have pier-protection systems). The common pattern: deferred maintenance + chronic underfunding + warning signs ignored. Most bridges that ultimately collapse have been "structurally deficient" or "poor condition" rated for years.',
               limit: 'Bridge maintenance is unsexy + politically invisible until something fails. The US has ~ 47,000 structurally deficient bridges (FHWA 2023, down from ~ 56,000 in 2018 thanks to IIJA + state programs). Deficient does not mean "about to collapse" — but it does mean the safety margin has eroded + ongoing monitoring is essential. The honest message for civic education: vote for + advocate for infrastructure funding even when individual projects are not exciting; quiet maintenance saves lives that loud ribbon-cuttings cannot.'
             },
-            { id: 'politics', name: 'Who decides + who benefits', emoji: '🗳️',
+            { id: 'politics', name: __alloT('stem.bridgelab.who_decides_who_benefits', 'Who decides + who benefits'), emoji: '🗳️',
               what: 'Bridge decisions involve: ENGINEERS who recommend technical solutions, MPOs (Metropolitan Planning Organizations) who prioritize regional projects, STATE DOTs who manage delivery, ELECTED OFFICIALS (governors, legislatures, mayors) who set policy + appoint commissioners, FEDERAL AGENCIES (FHWA, FTA) who set standards + provide funding, PRIVATE FIRMS who design + build, COMMUNITY GROUPS who advocate + sometimes litigate, MEDIA who cover (selectively), VOTERS who approve bonds + elect the people making decisions. The system has many veto points + uneven information access. Wealthier communities navigate it better + tend to get more + better bridges.',
               limit: 'Civic engagement in bridge decisions is genuinely possible + genuinely difficult. Attend MPO + state DOT public hearings (legally required, attended mostly by professional advocates). Read TIPs (Transportation Improvement Programs, published annually). Engage state legislators + governors on transportation policy. Vote in primary elections where bridge-relevant policy is sometimes decided. School psychologists + counselors are sometimes the most-trusted civic figures in a community + may be asked to lend professional voice to local infrastructure debates; doing so thoughtfully is part of civic professional responsibility.'
             }
@@ -3856,9 +4090,9 @@
           var sel = d.selectedFin || 'fundlines';
           var topic = FIN.find(function(t) { return t.id === sel; }) || FIN[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '💰 Bridge financing, politics, + procurement'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.bridge_financing_politics_procurement', '💰 Bridge financing, politics, + procurement')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Every bridge has an engineering story + a money story. Where the dollars come from, who decides what gets built, how contracts are awarded, who benefits from the project, who pays the maintenance — these questions shape what bridges actually exist + which communities get to use them. Engineering does not happen in a political vacuum + students who understand only the technical side will struggle to advocate for the bridges their communities need.'
+              __alloT('stem.bridgelab.every_bridge_has_an_engineering_story_', 'Every bridge has an engineering story + a money story. Where the dollars come from, who decides what gets built, how contracts are awarded, who benefits from the project, who pays the maintenance — these questions shape what bridges actually exist + which communities get to use them. Engineering does not happen in a political vacuum + students who understand only the technical side will struggle to advocate for the bridges their communities need.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               FIN.map(function(t) {
@@ -3873,62 +4107,62 @@
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.how_it_works_8', 'How it works')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.what)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.bridgelab.honest_limit_6', 'Honest limit')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
-              h('strong', null, 'For Maine students + families: '),
-              'Maine spends about $700M/year on transportation infrastructure across all modes; bridges are a major slice of that. The Maine DOT publishes its annual Work Plan + 3-Year Transportation Improvement Program online (maine.gov/mdot). Major recent projects: the Penobscot Narrows Bridge replacement (2006, $85M), the Memorial Bridge / Sarah Mildred Long Bridge replacements in Portsmouth-Kittery (~$170M each), ongoing Maine Turnpike widenings + bridge replacements. Maine resisted highway tolling outside the Turnpike + has relied on federal + state gas-tax funding plus IIJA money. Students who care about Maine infrastructure can engage at MPO public meetings (Portland Area Comprehensive Transportation System, Greater Portland Council of Governments) + by writing to the Maine DOT Commissioner.'
+              h('strong', null, __alloT('stem.bridgelab.for_maine_students_families', 'For Maine students + families: ')),
+              __alloT('stem.bridgelab.maine_spends_about_700m_year_on_transp', 'Maine spends about $700M/year on transportation infrastructure across all modes; bridges are a major slice of that. The Maine DOT publishes its annual Work Plan + 3-Year Transportation Improvement Program online (maine.gov/mdot). Major recent projects: the Penobscot Narrows Bridge replacement (2006, $85M), the Memorial Bridge / Sarah Mildred Long Bridge replacements in Portsmouth-Kittery (~$170M each), ongoing Maine Turnpike widenings + bridge replacements. Maine resisted highway tolling outside the Turnpike + has relied on federal + state gas-tax funding plus IIJA money. Students who care about Maine infrastructure can engage at MPO public meetings (Portland Area Comprehensive Transportation System, Greater Portland Council of Governments) + by writing to the Maine DOT Commissioner.')
             )
           );
         }
 
         function abcAndPrefabSection() {
           var ABC = [
-            { id: 'why', name: 'Why ABC exists', emoji: '⏱️',
-              body: 'Conventional cast-in-place bridge construction takes months to years and closes a road or rail line for the entire duration. Long closures wreck communities (longer commutes, lost business, blocked emergency response, increased emissions from detours). The Federal Highway Administration (FHWA) coined the term "Accelerated Bridge Construction" (ABC) in the mid-2000s to capture techniques that compress the on-site closure to days or sometimes hours. The motivating insight: most of the bridge can be built OFF-site, in parallel with traffic continuing on-site, and then installed in a single short closure window.',
+            { id: 'why', name: __alloT('stem.bridgelab.why_abc_exists', 'Why ABC exists'), emoji: '⏱️',
+              body: __alloT('stem.bridgelab.conventional_cast_in_place_bridge_cons', 'Conventional cast-in-place bridge construction takes months to years and closes a road or rail line for the entire duration. Long closures wreck communities (longer commutes, lost business, blocked emergency response, increased emissions from detours). The Federal Highway Administration (FHWA) coined the term "Accelerated Bridge Construction" (ABC) in the mid-2000s to capture techniques that compress the on-site closure to days or sometimes hours. The motivating insight: most of the bridge can be built OFF-site, in parallel with traffic continuing on-site, and then installed in a single short closure window.'),
               caveat: 'ABC is more expensive PER BRIDGE than conventional construction (typically 10-30% higher direct cost, sometimes more). But the savings in user costs (driver time, business disruption, detour fuel) often exceed the extra construction cost by 5-10×. For a high-traffic interstate bridge, ABC pays for itself many times over. For a remote low-traffic rural bridge, conventional construction is usually the right answer. The choice should be driven by the WHOLE cost, including users.'
             },
-            { id: 'prefab', name: 'Prefabricated bridge elements (PBES)', emoji: '🏭',
-              body: 'Prefabricated Bridge Elements + Systems (PBES) are the building blocks of ABC. Common elements: prestressed precast deck panels, full-depth precast deck slabs, precast concrete pier caps, precast piers + columns, prefabricated steel girders with deck panels already attached, modular abutment systems, even entire prefabricated short-span bridges. They are manufactured in factory conditions (controlled temperature + humidity, full quality control, tight tolerances), then shipped to site on flatbed trucks or rail cars. Field work becomes assembly + connection rather than form-pouring-curing.',
+            { id: 'prefab', name: __alloT('stem.bridgelab.prefabricated_bridge_elements_pbes', 'Prefabricated bridge elements (PBES)'), emoji: '🏭',
+              body: __alloT('stem.bridgelab.prefabricated_bridge_elements_systems_', 'Prefabricated Bridge Elements + Systems (PBES) are the building blocks of ABC. Common elements: prestressed precast deck panels, full-depth precast deck slabs, precast concrete pier caps, precast piers + columns, prefabricated steel girders with deck panels already attached, modular abutment systems, even entire prefabricated short-span bridges. They are manufactured in factory conditions (controlled temperature + humidity, full quality control, tight tolerances), then shipped to site on flatbed trucks or rail cars. Field work becomes assembly + connection rather than form-pouring-curing.'),
               caveat: 'Factory-quality construction beats field-quality almost every time. Concrete cured at 70°F in 50% humidity, with controlled curing time + zero rain, is far more consistent than concrete poured on a windy 95°F day with rain incoming. Steel welded inside a fabricator\'s shop has fewer defects than steel welded on a scaffold over a river. The cost premium of factory construction is partly paid back by better long-term durability.'
             },
-            { id: 'sps', name: 'Self-propelled modular transporters (SPMTs)', emoji: '🚛',
-              body: 'SPMTs are massive multi-axle hydraulically-leveled platforms that can carry entire bridge spans — sometimes thousands of tons — and roll them into place along a highway closure. Each axle has its own steering + hydraulic suspension, so the SPMT can crab sideways, rotate in place, and self-level over uneven ground. Multiple SPMT trailers can be linked together. The Massena Bridge replacement (Massachusetts, 2014) used SPMTs to roll a 416-ton bridge span ~5 miles from a staging area + lower it onto its piers in a single 55-hour weekend closure. Total bridge replacement: 4 days. Conventional construction would have taken 6+ months of partial closure.',
+            { id: 'sps', name: __alloT('stem.bridgelab.self_propelled_modular_transporters_sp', 'Self-propelled modular transporters (SPMTs)'), emoji: '🚛',
+              body: __alloT('stem.bridgelab.spmts_are_massive_multi_axle_hydraulic', 'SPMTs are massive multi-axle hydraulically-leveled platforms that can carry entire bridge spans — sometimes thousands of tons — and roll them into place along a highway closure. Each axle has its own steering + hydraulic suspension, so the SPMT can crab sideways, rotate in place, and self-level over uneven ground. Multiple SPMT trailers can be linked together. The Massena Bridge replacement (Massachusetts, 2014) used SPMTs to roll a 416-ton bridge span ~5 miles from a staging area + lower it onto its piers in a single 55-hour weekend closure. Total bridge replacement: 4 days. Conventional construction would have taken 6+ months of partial closure.'),
               caveat: 'SPMT moves are spectacular + heavily filmed. They are also high-risk events — once the move starts, you cannot stop midway. Every conceivable failure mode (axle failure, hydraulic leak, weather, traffic incident on the route) must be pre-planned. Failed SPMT moves are rare but extremely expensive when they happen.'
             },
-            { id: 'slide', name: 'Lateral slide-in construction', emoji: '↔️',
-              body: 'Instead of using SPMTs, the new bridge is built alongside the existing bridge on temporary supports. During a short closure, the old bridge is demolished + the new bridge is slid sideways into its final position on hydraulic jacks or rollers, typically 20-40 feet. The Wells Avenue Bridge replacement (Newton, MA, 2009) was one of the first US slide-ins; the Pulaski Skyway in NJ used a slide-in for one span in 2014. The Massachusetts I-93 fast-14 project (2011) replaced 14 bridges in 14 weekends using slide-in + other ABC techniques, saving an estimated 4+ years of conventional construction time.',
+            { id: 'slide', name: __alloT('stem.bridgelab.lateral_slide_in_construction', 'Lateral slide-in construction'), emoji: '↔️',
+              body: __alloT('stem.bridgelab.instead_of_using_spmts_the_new_bridge_', 'Instead of using SPMTs, the new bridge is built alongside the existing bridge on temporary supports. During a short closure, the old bridge is demolished + the new bridge is slid sideways into its final position on hydraulic jacks or rollers, typically 20-40 feet. The Wells Avenue Bridge replacement (Newton, MA, 2009) was one of the first US slide-ins; the Pulaski Skyway in NJ used a slide-in for one span in 2014. The Massachusetts I-93 fast-14 project (2011) replaced 14 bridges in 14 weekends using slide-in + other ABC techniques, saving an estimated 4+ years of conventional construction time.'),
               caveat: 'Lateral slide requires temporary support structures that are themselves substantial engineering projects. The geometry needs to allow space alongside the existing bridge. Slide-ins work best in interstate-highway corridors with wide right-of-ways; they are difficult in urban canyons or constrained sites.'
             },
-            { id: 'gpr', name: 'Geosynthetic Reinforced Soil (GRS-IBS)', emoji: '🪨',
-              body: 'GRS-IBS (Geosynthetic Reinforced Soil — Integrated Bridge System) replaces conventional reinforced-concrete abutments + piles with alternating layers of compacted granular fill + geosynthetic reinforcement (essentially industrial-strength plastic mesh). The result is a stable abutment that supports the bridge directly, with no pile foundations needed. GRS abutments can be built in days using standard earthwork crews. They cost 25-60% less than conventional abutments, eliminate the joint between superstructure + approach (a major maintenance headache), and are particularly well-suited to short-span single-lane bridges. FHWA reports 200+ GRS-IBS bridges built in the US since 2005, with very low maintenance costs.',
+            { id: 'gpr', name: __alloT('stem.bridgelab.geosynthetic_reinforced_soil_grs_ibs', 'Geosynthetic Reinforced Soil (GRS-IBS)'), emoji: '🪨',
+              body: __alloT('stem.bridgelab.grs_ibs_geosynthetic_reinforced_soil_i', 'GRS-IBS (Geosynthetic Reinforced Soil — Integrated Bridge System) replaces conventional reinforced-concrete abutments + piles with alternating layers of compacted granular fill + geosynthetic reinforcement (essentially industrial-strength plastic mesh). The result is a stable abutment that supports the bridge directly, with no pile foundations needed. GRS abutments can be built in days using standard earthwork crews. They cost 25-60% less than conventional abutments, eliminate the joint between superstructure + approach (a major maintenance headache), and are particularly well-suited to short-span single-lane bridges. FHWA reports 200+ GRS-IBS bridges built in the US since 2005, with very low maintenance costs.'),
               caveat: 'GRS-IBS works best for shorter spans (typically under 130 feet) with light-to-moderate truck traffic. It is not appropriate for long spans, heavy-haul freight routes, or sites with unstable soils. The design is conservative + heavily standardized (FHWA published design guides + standard details) — a practical bridge solution rather than a fancy one.'
             },
-            { id: 'designs', name: 'Standard ABC bridge designs', emoji: '📋',
-              body: 'Several states have developed pre-engineered standard bridges for the most common short-span applications. The Vermont Agency of Transportation\'s ABC standard plans cover spans from 25-80 feet, with detailed precast deck + abutment specs that any local contractor can build. The Federal Lands Highway Program has similar plans for remote sites. The advantage: instead of paying for a custom design ($100K+ engineering), a small-town bridge replacement can use a standard plan ($5-10K design fee) + standard precast pieces. Lead time drops from 18 months to 6 months for a typical rural bridge.',
+            { id: 'designs', name: __alloT('stem.bridgelab.standard_abc_bridge_designs', 'Standard ABC bridge designs'), emoji: '📋',
+              body: __alloT('stem.bridgelab.several_states_have_developed_pre_engi', 'Several states have developed pre-engineered standard bridges for the most common short-span applications. The Vermont Agency of Transportation\'s ABC standard plans cover spans from 25-80 feet, with detailed precast deck + abutment specs that any local contractor can build. The Federal Lands Highway Program has similar plans for remote sites. The advantage: instead of paying for a custom design ($100K+ engineering), a small-town bridge replacement can use a standard plan ($5-10K design fee) + standard precast pieces. Lead time drops from 18 months to 6 months for a typical rural bridge.'),
               caveat: 'Standard designs work because they cover the most common cases conservatively. They do NOT work for unusual sites (skewed crossings, complex traffic, environmentally-sensitive locations). Engineering judgment is still needed to decide whether the standard applies. Some communities have had bad experiences using standard plans inappropriately, then blaming the standard rather than the design choice.'
             },
-            { id: 'success', name: 'Success cases', emoji: '🎯',
-              body: '(a) Massachusetts Fast-14 (I-93, 2011): replaced 14 bridges over 14 consecutive weekend closures. Each weekend: Friday 11 PM close, Monday 5 AM open. Total project: 10 weeks vs estimated 4 years conventional. Massive media coverage; widely cited as the proof-of-concept event for US ABC. (b) Utah Riverdale Road bridge over I-84 (2007): first US use of SPMTs to slide an entire bridge into place. (c) Iowa Lower Mud River bridge (2010): demonstrator GRS-IBS bridge built in 23 working days at 30% lower cost. (d) Florida 17th Street Causeway Bridge approaches (2009-2011): SPMT-installed bridge segments with overnight closures. ABC has shipped at scale in the US for nearly 20 years now.',
+            { id: 'success', name: __alloT('stem.bridgelab.success_cases', 'Success cases'), emoji: '🎯',
+              body: __alloT('stem.bridgelab.a_massachusetts_fast_14_i_93_2011_repl', '(a) Massachusetts Fast-14 (I-93, 2011): replaced 14 bridges over 14 consecutive weekend closures. Each weekend: Friday 11 PM close, Monday 5 AM open. Total project: 10 weeks vs estimated 4 years conventional. Massive media coverage; widely cited as the proof-of-concept event for US ABC. (b) Utah Riverdale Road bridge over I-84 (2007): first US use of SPMTs to slide an entire bridge into place. (c) Iowa Lower Mud River bridge (2010): demonstrator GRS-IBS bridge built in 23 working days at 30% lower cost. (d) Florida 17th Street Causeway Bridge approaches (2009-2011): SPMT-installed bridge segments with overnight closures. ABC has shipped at scale in the US for nearly 20 years now.'),
               caveat: 'ABC works best where someone in the owner agency genuinely champions it + accepts the upfront design + coordination effort. It is not magic: it shifts construction risk + complexity from on-site to off-site + adds the move-day risk. Projects with poor early planning can fail just like any other.'
             },
-            { id: 'limits', name: 'What ABC cannot do well', emoji: '🚫',
-              body: 'ABC is NOT a universal answer. Limitations: (a) Cost. The direct construction cost is higher. For rural bridges with low traffic, the user-cost savings may not justify the premium. (b) Lead time. Precast elements need to be ordered + manufactured. ABC saves on-site time but adds front-end time. Emergency bridge replacement (after a hurricane or earthquake) may not have time for prefab. (c) Geometry. Many old bridges have unusual skews, super-elevations, or non-standard cross-sections that don\'t match factory-standard products. Heavy customization erodes the ABC cost advantage. (d) Maintenance access. Some ABC connections (UHPC closure pours, grouted shear keys) are difficult to inspect + maintain in service. The connection details matter as much as the elements.',
+            { id: 'limits', name: __alloT('stem.bridgelab.what_abc_cannot_do_well', 'What ABC cannot do well'), emoji: '🚫',
+              body: __alloT('stem.bridgelab.abc_is_not_a_universal_answer_limitati', 'ABC is NOT a universal answer. Limitations: (a) Cost. The direct construction cost is higher. For rural bridges with low traffic, the user-cost savings may not justify the premium. (b) Lead time. Precast elements need to be ordered + manufactured. ABC saves on-site time but adds front-end time. Emergency bridge replacement (after a hurricane or earthquake) may not have time for prefab. (c) Geometry. Many old bridges have unusual skews, super-elevations, or non-standard cross-sections that don\'t match factory-standard products. Heavy customization erodes the ABC cost advantage. (d) Maintenance access. Some ABC connections (UHPC closure pours, grouted shear keys) are difficult to inspect + maintain in service. The connection details matter as much as the elements.'),
               caveat: 'ABC is one tool in a kit, not a replacement for thinking. The honest engineering answer is: every bridge is unique. ABC works beautifully for certain bridge types + sites + traffic profiles. For others, conventional construction remains the right choice. Designers who treat ABC as the default for everything will sometimes ship inferior + more expensive bridges than the boring conventional answer would have produced.'
             }
           ];
           var sel = d.selectedABC || 'why';
           var topic = ABC.find(function(t) { return t.id === sel; }) || ABC[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🏭 Accelerated Bridge Construction (ABC) + prefab'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.accelerated_bridge_construction_abc_pr', '🏭 Accelerated Bridge Construction (ABC) + prefab')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Modern bridges do not have to take years to build. Accelerated Bridge Construction — using prefabricated factory-made elements installed during short on-site closures — has matured into a mainstream practice in the past 20 years. A bridge that would have closed a road for 6 months can now be replaced in a single weekend. The cost premium is real; the user-cost savings are typically larger.'
+              __alloT('stem.bridgelab.modern_bridges_do_not_have_to_take_yea', 'Modern bridges do not have to take years to build. Accelerated Bridge Construction — using prefabricated factory-made elements installed during short on-site closures — has matured into a mainstream practice in the past 20 years. A bridge that would have closed a road for 6 months can now be replaced in a single weekend. The cost premium is real; the user-cost savings are typically larger.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               ABC.map(function(t) {
@@ -3944,7 +4178,7 @@
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
               h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
-                h('strong', null, 'Honest limit: '), topic.caveat
+                h('strong', null, __alloT('stem.bridgelab.honest_limit_7', 'Honest limit: ')), topic.caveat
               )
             )
           );
@@ -3952,45 +4186,45 @@
 
         function feaBasics() {
           var FEA_TOPICS = [
-            { id: 'idea', name: 'The big idea', emoji: '🧩',
-              body: 'You cannot solve the exact equations of elasticity for a real bridge — the geometry is too complicated. So you do something clever: cut the bridge into thousands or millions of small simple pieces (the "elements"), each of which you CAN solve. Triangles and tetrahedra are the most common. Each element has nodes at its corners, and the displacement inside the element is interpolated linearly (or quadratically) from the node displacements. Force balance at each node gives one equation per degree of freedom. The result is a giant system of linear equations: [K]{u} = {F}, where K is the global stiffness matrix, u is the unknown nodal displacements, and F is the applied loads. Solve it (numerically, on a computer) and you have approximate displacement everywhere — and from there, approximate strain and stress.',
+            { id: 'idea', name: __alloT('stem.bridgelab.the_big_idea', 'The big idea'), emoji: '🧩',
+              body: __alloT('stem.bridgelab.you_cannot_solve_the_exact_equations_o', 'You cannot solve the exact equations of elasticity for a real bridge — the geometry is too complicated. So you do something clever: cut the bridge into thousands or millions of small simple pieces (the "elements"), each of which you CAN solve. Triangles and tetrahedra are the most common. Each element has nodes at its corners, and the displacement inside the element is interpolated linearly (or quadratically) from the node displacements. Force balance at each node gives one equation per degree of freedom. The result is a giant system of linear equations: [K]{u} = {F}, where K is the global stiffness matrix, u is the unknown nodal displacements, and F is the applied loads. Solve it (numerically, on a computer) and you have approximate displacement everywhere — and from there, approximate strain and stress.'),
               caveat: 'FEA gives an APPROXIMATE answer. The approximation gets better as the mesh gets finer (more, smaller elements). But finer meshes cost more computer time. A real FEA workflow is: start coarse, refine where stress gradients are sharp (around bolt holes, weld toes, supports), check convergence by halving element size and seeing if the answer changes.'
             },
-            { id: 'history', name: 'How FEA was invented', emoji: '📜',
-              body: 'The conceptual foundations come from Richard Courant\'s variational methods (1943) and earlier matrix structural analysis (the Slope-Deflection method, 1915). The modern form of FEA was developed in the 1950s-60s primarily for AIRCRAFT analysis (Boeing 707, supersonic transport designs). Key figures: Ray Clough at Berkeley (who coined the term "finite element method" in 1960), John Argyris at Imperial College London + Stuttgart, Olek Zienkiewicz at Swansea (who wrote the foundational textbook in 1967, still cited). Bridge engineering adopted FEA in the 1970s once mainframe computers became affordable. By 2000, every major bridge in the world was designed using FEA software (ANSYS, ABAQUS, SAP2000, MIDAS, LUSAS).',
+            { id: 'history', name: __alloT('stem.bridgelab.how_fea_was_invented', 'How FEA was invented'), emoji: '📜',
+              body: __alloT('stem.bridgelab.the_conceptual_foundations_come_from_r', 'The conceptual foundations come from Richard Courant\'s variational methods (1943) and earlier matrix structural analysis (the Slope-Deflection method, 1915). The modern form of FEA was developed in the 1950s-60s primarily for AIRCRAFT analysis (Boeing 707, supersonic transport designs). Key figures: Ray Clough at Berkeley (who coined the term "finite element method" in 1960), John Argyris at Imperial College London + Stuttgart, Olek Zienkiewicz at Swansea (who wrote the foundational textbook in 1967, still cited). Bridge engineering adopted FEA in the 1970s once mainframe computers became affordable. By 2000, every major bridge in the world was designed using FEA software (ANSYS, ABAQUS, SAP2000, MIDAS, LUSAS).'),
               caveat: 'FEA democratized analysis. A method that once required a research mainframe now runs on a laptop in minutes. This is enormous progress — and a hazard. A college sophomore can now run an FEA analysis they cannot interpret, get a colorful stress plot, and believe it. The software does not catch unit errors, bad meshes, or wrong boundary conditions. Garbage in, beautiful colorful garbage out.'
             },
-            { id: 'mesh', name: 'The mesh matters', emoji: '🕸️',
-              body: 'Meshing is the engineering judgment in FEA. Bad meshes give bad answers — sometimes catastrophically wrong, sometimes subtly wrong, both dangerous. (a) Element shape: very thin "sliver" triangles introduce numerical error. Aspect ratios should be modest (ideally <5:1, never >20:1). (b) Mesh density: needs to be fine where stress changes quickly (corners, holes, contact zones) and can be coarse where stress is uniform. (c) Singularities: at sharp re-entrant corners (90° internal corners with zero fillet radius), stress is theoretically infinite. Refining the mesh forever produces ever-larger stress, not convergence. This is a real trap — students sometimes refine indefinitely chasing a number that has no physical meaning.',
+            { id: 'mesh', name: __alloT('stem.bridgelab.the_mesh_matters', 'The mesh matters'), emoji: '🕸️',
+              body: __alloT('stem.bridgelab.meshing_is_the_engineering_judgment_in', 'Meshing is the engineering judgment in FEA. Bad meshes give bad answers — sometimes catastrophically wrong, sometimes subtly wrong, both dangerous. (a) Element shape: very thin "sliver" triangles introduce numerical error. Aspect ratios should be modest (ideally <5:1, never >20:1). (b) Mesh density: needs to be fine where stress changes quickly (corners, holes, contact zones) and can be coarse where stress is uniform. (c) Singularities: at sharp re-entrant corners (90° internal corners with zero fillet radius), stress is theoretically infinite. Refining the mesh forever produces ever-larger stress, not convergence. This is a real trap — students sometimes refine indefinitely chasing a number that has no physical meaning.'),
               caveat: 'Mesh convergence study: cut element size in half. If the answer changes by less than 5%, your mesh is fine. If it keeps changing as you refine, you may have a real singularity that needs geometric design change (add a fillet), not more meshing.'
             },
-            { id: 'bcs', name: 'Boundary conditions = the model', emoji: '⚓',
-              body: 'A bridge model has fixed supports (pinned, roller, fixed), applied loads (point, distributed, gravity), and possibly contact / friction / pre-stress. Most FEA errors trace back to boundary conditions. Common mistakes: (a) Over-constraining: clamping every direction at one end forces the model to resist temperature expansion that wouldn\'t exist in reality. Result: huge artificial thermal stress. (b) Under-constraining: forgetting to fix translation in one direction. The solver fails or gives a rigid-body answer. (c) Applying loads at single nodes: a "point load" at one node creates an infinite stress spike (the singularity above). Better: distribute over a small area. (d) Wrong load combinations: dead + live + wind + thermal + seismic, in the wrong combination, can over- or under-predict the critical case.',
+            { id: 'bcs', name: __alloT('stem.bridgelab.boundary_conditions_the_model', 'Boundary conditions = the model'), emoji: '⚓',
+              body: __alloT('stem.bridgelab.a_bridge_model_has_fixed_supports_pinn', 'A bridge model has fixed supports (pinned, roller, fixed), applied loads (point, distributed, gravity), and possibly contact / friction / pre-stress. Most FEA errors trace back to boundary conditions. Common mistakes: (a) Over-constraining: clamping every direction at one end forces the model to resist temperature expansion that wouldn\'t exist in reality. Result: huge artificial thermal stress. (b) Under-constraining: forgetting to fix translation in one direction. The solver fails or gives a rigid-body answer. (c) Applying loads at single nodes: a "point load" at one node creates an infinite stress spike (the singularity above). Better: distribute over a small area. (d) Wrong load combinations: dead + live + wind + thermal + seismic, in the wrong combination, can over- or under-predict the critical case.'),
               caveat: 'In professional bridge practice, every FEA result is checked against a hand calculation — beam-bending formula, simple truss analysis, equilibrium check — somewhere in the design. The hand calculation catches gross errors. Anyone running FEA without backup hand checks is one bad input away from a wrong answer that looks right.'
             },
-            { id: 'types', name: 'Element types you will meet', emoji: '🔣',
-              body: '(1) BEAM elements: 1D line elements with bending + axial + sometimes torsion. Use for truss members, beams, frames. Fast. Best for slender members where length >> cross-section. (2) SHELL elements: 2D surface elements with bending. Use for plates, decks, walls, the body of a box girder. Captures both in-plane and out-of-plane behavior. (3) SOLID elements: full 3D bricks or tetrahedra. Use for chunky parts: bearings, pylon bases, weld details, foundations. Most accurate, most expensive. (4) CONTACT elements: model surfaces sliding or separating. Used for bearings, bolted joints, expansion joints. (5) SPRING / LINK elements: model stiffness without geometry — e.g., soil under a footing, cable in a stay.',
+            { id: 'types', name: __alloT('stem.bridgelab.element_types_you_will_meet', 'Element types you will meet'), emoji: '🔣',
+              body: __alloT('stem.bridgelab.1_beam_elements_1d_line_elements_with_', '(1) BEAM elements: 1D line elements with bending + axial + sometimes torsion. Use for truss members, beams, frames. Fast. Best for slender members where length >> cross-section. (2) SHELL elements: 2D surface elements with bending. Use for plates, decks, walls, the body of a box girder. Captures both in-plane and out-of-plane behavior. (3) SOLID elements: full 3D bricks or tetrahedra. Use for chunky parts: bearings, pylon bases, weld details, foundations. Most accurate, most expensive. (4) CONTACT elements: model surfaces sliding or separating. Used for bearings, bolted joints, expansion joints. (5) SPRING / LINK elements: model stiffness without geometry — e.g., soil under a footing, cable in a stay.'),
               caveat: 'Mixing element types correctly is its own art. A beam element connected to a solid element needs a "rigid link" or "MPC" to enforce that the cross-section stays plane. Get this wrong and the connection is artificially flexible.'
             },
-            { id: 'linear', name: 'Linear vs nonlinear', emoji: '↗️',
-              body: 'A LINEAR FEA assumes (a) small displacements, (b) elastic material (stress proportional to strain, no permanent deformation), (c) boundary conditions don\'t change during loading. Doubles the load, doubles the displacement and stress everywhere. Most bridge-design work is linear, by code. NONLINEAR FEA relaxes these. Material nonlinearity (plastic yielding, concrete cracking). Geometric nonlinearity (large deflections — e.g., cable-stayed bridges where cable sag changes as load increases). Contact nonlinearity (bearings opening + closing). Time-dependent nonlinearity (concrete creep, steel relaxation). Nonlinear analysis is honest about post-yield behavior but is slower, sensitive to solver settings, and harder to interpret.',
+            { id: 'linear', name: __alloT('stem.bridgelab.linear_vs_nonlinear', 'Linear vs nonlinear'), emoji: '↗️',
+              body: __alloT('stem.bridgelab.a_linear_fea_assumes_a_small_displacem', 'A LINEAR FEA assumes (a) small displacements, (b) elastic material (stress proportional to strain, no permanent deformation), (c) boundary conditions don\'t change during loading. Doubles the load, doubles the displacement and stress everywhere. Most bridge-design work is linear, by code. NONLINEAR FEA relaxes these. Material nonlinearity (plastic yielding, concrete cracking). Geometric nonlinearity (large deflections — e.g., cable-stayed bridges where cable sag changes as load increases). Contact nonlinearity (bearings opening + closing). Time-dependent nonlinearity (concrete creep, steel relaxation). Nonlinear analysis is honest about post-yield behavior but is slower, sensitive to solver settings, and harder to interpret.'),
               caveat: 'For most code-based design checks, linear FEA + a safety factor is enough. For seismic analysis, blast analysis, and progressive-collapse studies, nonlinear is required. The classic mistake: running a linear analysis past the yield point of the material and reporting impossible stress numbers because the model never knew to yield.'
             },
-            { id: 'verify', name: 'How to trust an FEA result', emoji: '✅',
-              body: 'Professional verification: (1) Sanity check magnitudes — does the maximum stress match a hand calculation within ~20%? (2) Reaction sum — do the support reactions equal the applied loads (force balance)? (3) Symmetry check — if loading + geometry are symmetric, the answer must be symmetric. (4) Mesh convergence — halve the element size; does the answer move <5%? (5) Energy check — is strain energy a smooth function of load (not jumping)? (6) Independent re-analysis — run the model in a second software package. (7) Physical correlation — load test the actual structure; sensors at critical points should match FEA within ~10%.',
+            { id: 'verify', name: __alloT('stem.bridgelab.how_to_trust_an_fea_result', 'How to trust an FEA result'), emoji: '✅',
+              body: __alloT('stem.bridgelab.professional_verification_1_sanity_che', 'Professional verification: (1) Sanity check magnitudes — does the maximum stress match a hand calculation within ~20%? (2) Reaction sum — do the support reactions equal the applied loads (force balance)? (3) Symmetry check — if loading + geometry are symmetric, the answer must be symmetric. (4) Mesh convergence — halve the element size; does the answer move <5%? (5) Energy check — is strain energy a smooth function of load (not jumping)? (6) Independent re-analysis — run the model in a second software package. (7) Physical correlation — load test the actual structure; sensors at critical points should match FEA within ~10%.'),
               caveat: 'Most production bridge FEA models are NOT physically validated. They are validated by code conformance + hand-check cross-references. A small percentage of bridges (long-span, unusual, retrofitted) get full instrumentation + monitoring; almost everything else relies on the analyst\'s judgment + the code\'s safety factors.'
             },
-            { id: 'limits', name: 'What FEA cannot tell you', emoji: '🚫',
-              body: '(a) Whether your design is GOOD. FEA tells you stress; you decide if it is acceptable. (b) Whether your materials behave as modeled. Real concrete varies in strength batch-to-batch by 15-25%. Real welds have unknown internal defects. FEA assumes idealized homogeneous material. (c) What will happen at the limit. FEA does not know how the bridge fails — that comes from material science, fracture mechanics, and engineering experience. (d) Long-term behavior. Creep, fatigue, corrosion, weather, traffic patterns, climate change — FEA alone does not capture these; you bolt extra analyses on top. (e) The "unknown unknown." FEA cannot model failure modes you didn\'t think to include. Tacoma Narrows would not have shown flutter in 1940s FEA because the aerodynamic-elastic coupling wasn\'t in the model. Every famous bridge collapse has involved a failure mode the designers did not think to analyze.',
+            { id: 'limits', name: __alloT('stem.bridgelab.what_fea_cannot_tell_you', 'What FEA cannot tell you'), emoji: '🚫',
+              body: __alloT('stem.bridgelab.a_whether_your_design_is_good_fea_tell', '(a) Whether your design is GOOD. FEA tells you stress; you decide if it is acceptable. (b) Whether your materials behave as modeled. Real concrete varies in strength batch-to-batch by 15-25%. Real welds have unknown internal defects. FEA assumes idealized homogeneous material. (c) What will happen at the limit. FEA does not know how the bridge fails — that comes from material science, fracture mechanics, and engineering experience. (d) Long-term behavior. Creep, fatigue, corrosion, weather, traffic patterns, climate change — FEA alone does not capture these; you bolt extra analyses on top. (e) The "unknown unknown." FEA cannot model failure modes you didn\'t think to include. Tacoma Narrows would not have shown flutter in 1940s FEA because the aerodynamic-elastic coupling wasn\'t in the model. Every famous bridge collapse has involved a failure mode the designers did not think to analyze.'),
               caveat: 'FEA is the most powerful structural-analysis tool ever invented. It is also the easiest tool to MISUSE. Healthy bridge engineering treats FEA as a thinking aid, not an oracle. Designers who let the colored stress plot decide the design — without judgment, hand checks, code knowledge, and skepticism — are the ones who eventually have a problem.'
             }
           ];
           var sel = d.selectedFea || 'idea';
           var topic = FEA_TOPICS.find(function(t) { return t.id === sel; }) || FEA_TOPICS[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🧠 Finite Element Analysis — how modern bridges actually get analyzed'),
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.finite_element_analysis_how_modern_bri', '🧠 Finite Element Analysis — how modern bridges actually get analyzed')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              'Every bridge built today is analyzed with FEA somewhere in its design. It is the workhorse method, the reason engineers can design structures the hand-calculation generation could not. It is also the easiest tool in engineering to use badly. Both are worth understanding.'
+              __alloT('stem.bridgelab.every_bridge_built_today_is_analyzed_w', 'Every bridge built today is analyzed with FEA somewhere in its design. It is the workhorse method, the reason engineers can design structures the hand-calculation generation could not. It is also the easiest tool in engineering to use badly. Both are worth understanding.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               FEA_TOPICS.map(function(t) {
@@ -4006,12 +4240,12 @@
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
               h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
-                h('strong', null, 'What we should not overstate: '), topic.caveat
+                h('strong', null, __alloT('stem.bridgelab.what_we_should_not_overstate', 'What we should not overstate: ')), topic.caveat
               )
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
-              h('strong', null, 'Try it free: '),
-              'CalculiX (open-source FEA, runs on any laptop), Onshape with SimScale plugin (browser-based, free for students), LISA-FEA (free Windows tool with great tutorials for beginners). You can model a simple truss bridge in any of these in an afternoon. Start with the 1D beam elements, hand-check every result, build up from there.'
+              h('strong', null, __alloT('stem.bridgelab.try_it_free', 'Try it free: ')),
+              __alloT('stem.bridgelab.calculix_open_source_fea_runs_on_any_l', 'CalculiX (open-source FEA, runs on any laptop), Onshape with SimScale plugin (browser-based, free for students), LISA-FEA (free Windows tool with great tutorials for beginners). You can model a simple truss bridge in any of these in an afternoon. Start with the 1D beam elements, hand-check every result, build up from there.')
             )
           );
         }
@@ -4051,11 +4285,11 @@
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: got ? '#86efac' : '#fca5a5', marginBottom: 4 } }, (got ? '✓ ' : '✗ ') + 'Q' + (i + 1)),
                 h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6 } }, q.q),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Correct: ', h('strong', null, q.choices[q.answer])),
-                !got ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Your answer: ', q.choices[answers[i] != null ? answers[i] : 0]) : null,
+                !got ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, __alloT('stem.bridgelab.your_answer', 'Your answer: '), q.choices[answers[i] != null ? answers[i] : 0]) : null,
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain)
               );
             }),
-            h('button', { onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: AMBER, color: '#fff', fontWeight: 700, cursor: 'pointer' } }, 'Retake quiz')
+            h('button', { onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: AMBER, color: '#0f172a', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.bridgelab.retake_quiz', 'Retake quiz'))
           );
         }
 
@@ -4077,7 +4311,7 @@
           h('button', {
             onClick: submit,
             disabled: !allAnswered,
-            style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: allAnswered ? AMBER : '#475569', color: '#fff', fontWeight: 800, fontSize: 14, cursor: allAnswered ? 'pointer' : 'not-allowed' }
+            style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: allAnswered ? AMBER : '#475569', color: allAnswered ? '#0f172a' : '#fff', fontWeight: 800, fontSize: 14, cursor: allAnswered ? 'pointer' : 'not-allowed' }
           }, allAnswered ? 'Submit quiz' : 'Answer all questions (' + answers.filter(function(a) { return a != null; }).length + '/' + QUIZ_QUESTIONS.length + ')')
         );
       }
@@ -4088,7 +4322,7 @@
       // hypothesis + opt-in open questions + self-mark. No scoring.
       // ──────────────────────────────────────────────────────────────
       function renderInquiry() {
-        var iq = d.inquiry || { spanM: 18, areaMm2: 1500, materialId: d.materialId || 'steel_a36', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = d.inquiry || { spanM: 18, areaMm2: 1500, materialId: d.materialId || 'steel', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { upd({ inquiry: Object.assign({}, iq, patch) }); }
         var mat = MATERIALS.find(function(m) { return m.id === iq.materialId; }) || MATERIALS[3];
         // Use existing analyzeTruss with this inquiry's spans
@@ -4106,7 +4340,7 @@
         }
         return h('div', { style: { padding: 16 } },
           h('div', { style: { background: '#0a1525', borderRadius: 12, padding: 16, border: '1px solid rgba(245,158,11,0.3)' } },
-            h('h3', { style: { margin: '0 0 6px 0', color: '#fbbf24', fontSize: 16, fontWeight: 800 } }, '🔬 Load-bearing discovery'),
+            h('h3', { style: { margin: '0 0 6px 0', color: '#fbbf24', fontSize: 16, fontWeight: 800 } }, __alloT('stem.bridgelab.load_bearing_discovery', '🔬 Load-bearing discovery')),
             h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 14 } },
               'You are designing a truss bridge. Adjust span, cross-section area, and material. The bridge will show you whether it SAFE, MARGINAL, or FAILS (three discrete states — no numeric score). There is no right answer and no reveal. Sweep the sliders. Log observations. Type what you discover about the trade-offs.'),
             // Discrete state badge — large, prominent
@@ -4121,15 +4355,15 @@
             // Sliders
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 } },
               h('div', null,
-                h('label', { htmlFor: 'iq-span', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, 'Span length: ', h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.spanM + ' m')),
-                h('input', { id: 'iq-span', type: 'range', min: 6, max: 60, step: 1, value: iq.spanM,
+                h('label', { htmlFor: 'iq-span', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, __alloT('stem.bridgelab.span_length', 'Span length: '), h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.spanM + ' m')),
+                h('input', { id: 'iq-span', type: 'range', 'aria-valuetext': iq.spanM + ' meters', min: 6, max: 60, step: 1, value: iq.spanM,
                   onChange: function(e) { setIQ({ spanM: parseInt(e.target.value, 10) }); },
-                  style: { width: '100%' }, 'aria-label': 'Span length in meters' })),
+                  style: { width: '100%' }, 'aria-label': __alloT('stem.bridgelab.span_length_in_meters', 'Span length in meters') })),
               h('div', null,
-                h('label', { htmlFor: 'iq-area', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, 'Cross-section area: ', h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.areaMm2 + ' mm²')),
-                h('input', { id: 'iq-area', type: 'range', min: 200, max: 8000, step: 100, value: iq.areaMm2,
+                h('label', { htmlFor: 'iq-area', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } }, __alloT('stem.bridgelab.cross_section_area', 'Cross-section area: '), h('span', { style: { color: '#fbbf24', fontFamily: 'monospace' } }, iq.areaMm2 + ' mm²')),
+                h('input', { id: 'iq-area', type: 'range', 'aria-valuetext': iq.areaMm2 + ' square millimeters', min: 200, max: 8000, step: 100, value: iq.areaMm2,
                   onChange: function(e) { setIQ({ areaMm2: parseInt(e.target.value, 10) }); },
-                  style: { width: '100%' }, 'aria-label': 'Cross-section area in square millimeters' }))
+                  style: { width: '100%' }, 'aria-label': __alloT('stem.bridgelab.cross_section_area_in_square_millimete', 'Cross-section area in square millimeters') }))
             ),
             // Material picker (discrete environment, not answer)
             h('div', { style: { marginBottom: 14 } },
@@ -4145,9 +4379,9 @@
             ),
             // Log + reset
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 } },
-              h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '📋 Log observation'),
-              h('button', { onClick: function() { setIQ({ spanM: 18, areaMm2: 1500, materialId: 'steel_a36', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                style: { padding: '4px 10px', background: '#0a1525', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, '↺ Reset'),
+              h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.bridgelab.log_observation', '📋 Log observation')),
+              h('button', { onClick: function() { setIQ({ spanM: 18, areaMm2: 1500, materialId: 'steel', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                style: { padding: '4px 10px', background: '#0a1525', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, __alloT('stem.bridgelab.reset', '↺ Reset')),
               (iq.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' observations logged')
             ),
             // Log table
@@ -4172,42 +4406,42 @@
             // Free-text hypothesis
             h('div', { style: { marginBottom: 12 } },
               h('label', { htmlFor: 'iq-hypo', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
-                'Your hypothesis (free text — no right answer):'),
+                __alloT('stem.bridgelab.your_hypothesis_free_text_no_right_ans', 'Your hypothesis (free text — no right answer):')),
               h('textarea', { id: 'iq-hypo', value: iq.hypothesis || '',
                 onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-                placeholder: 'What single change is the most efficient way to move a FAILED bridge into SAFE? Does doubling span require doubling area? Type your own theory.',
-                style: { width: '100%', minHeight: 60, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 3 })
+                placeholder: __alloT('stem.bridgelab.what_single_change_is_the_most_efficie', 'What single change is the most efficient way to move a FAILED bridge into SAFE? Does doubling span require doubling area? Type your own theory.'),
+                style: { width: '100%', minHeight: 60, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'inherit' }, rows: 3 })
             ),
             // Opt-in questions
             h('div', { style: { marginBottom: 12 } },
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
                 style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
-                '🤔 I\'m stuck — show me questions to think about (no answers)'),
+                __alloT('stem.bridgelab.i_m_stuck_show_me_questions_to_think_a', '🤔 I\'m stuck — show me questions to think about (no answers)')),
               iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
-                h('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, 'Open questions — investigate by manipulating:'),
+                h('div', { style: { fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, __alloT('stem.bridgelab.open_questions_investigate_by_manipula', 'Open questions — investigate by manipulating:')),
                 h('ul', { style: { margin: 0, paddingLeft: 18 } },
-                  h('li', null, 'Hold material and area fixed. Sweep span from 6 to 60 m. At what span does the state flip from SAFE to MARGINAL? Now change material — does the flip-point move?'),
-                  h('li', null, 'Pick a span where the bridge FAILS. What is cheaper: doubling the cross-section area, or switching to a stronger material? Test both and compare.'),
-                  h('li', null, 'Some materials have very high strength but are heavy or expensive in real life. The simulation does not penalize this. What would change about your hypotheses if cost mattered?'),
-                  h('li', null, 'Log 4-5 SAFE configurations. Look at the safety factor column. What range do they share? Is there a single threshold or a band?'),
-                  h('li', null, 'In real engineering, the rule of thumb is safety factor ≥ 1.5 for steel structures. Why might the simulation show MARGINAL at sf 1-2 but SAFE only at sf ≥ 2?')),
-                h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 6 } }, 'No answers will be revealed. Investigate.'))
+                  h('li', null, __alloT('stem.bridgelab.hold_material_and_area_fixed_sweep_spa', 'Hold material and area fixed. Sweep span from 6 to 60 m. At what span does the state flip from SAFE to MARGINAL? Now change material — does the flip-point move?')),
+                  h('li', null, __alloT('stem.bridgelab.pick_a_span_where_the_bridge_fails_wha', 'Pick a span where the bridge FAILS. What is cheaper: doubling the cross-section area, or switching to a stronger material? Test both and compare.')),
+                  h('li', null, __alloT('stem.bridgelab.some_materials_have_very_high_strength', 'Some materials have very high strength but are heavy or expensive in real life. The simulation does not penalize this. What would change about your hypotheses if cost mattered?')),
+                  h('li', null, __alloT('stem.bridgelab.log_4_5_safe_configurations_look_at_th', 'Log 4-5 SAFE configurations. Look at the safety factor column. What range do they share? Is there a single threshold or a band?')),
+                  h('li', null, __alloT('stem.bridgelab.in_real_engineering_the_rule_of_thumb_', 'In real engineering, the rule of thumb is safety factor ≥ 1.5 for steel structures. Why might the simulation show MARGINAL at sf 1-2 but SAFE only at sf ≥ 2?'))),
+                h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 6 } }, __alloT('stem.bridgelab.no_answers_will_be_revealed_investigat', 'No answers will be revealed. Investigate.')))
             ),
             // Self-mark
             h('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('input', { type: 'checkbox', id: 'iq-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 14, height: 14 } }),
                 h('label', { htmlFor: 'iq-und', style: { fontSize: 12, fontWeight: 700, color: '#10b981', cursor: 'pointer' } },
-                  'I think I understand the trade-offs — let me explain them in my own words')),
+                  __alloT('stem.bridgelab.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
               iq.understood && h('textarea', { value: iq.explanation || '',
                 onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                placeholder: 'Explain in your own words: how do span, cross-section area, and material strength interact to determine load-bearing capacity? Which one matters most? What is the trade-off a real engineer faces?',
-                style: { width: '100%', minHeight: 80, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 4 }),
+                placeholder: __alloT('stem.bridgelab.explain_in_your_own_words_how_do_span_', 'Explain in your own words: how do span, cross-section area, and material strength interact to determine load-bearing capacity? Which one matters most? What is the trade-off a real engineer faces?'),
+                style: { width: '100%', minHeight: 80, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'inherit' }, rows: 4 }),
               iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { style: { marginTop: 6, fontSize: 10, fontStyle: 'italic', color: '#10b981' } },
-                '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+                __alloT('stem.bridgelab.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
             ),
             h('div', { style: { marginTop: 12, padding: 8, background: 'rgba(10,21,37,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } },
-              'Design note: no numeric safety-factor target, no reveal button, no quiz validation. Safety is shown as a discrete 3-state marker (SAFE / MARGINAL / FAILS), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.')
+              __alloT('stem.bridgelab.design_note_no_numeric_safety_factor_t', 'Design note: no numeric safety-factor target, no reveal button, no quiz validation. Safety is shown as a discrete 3-state marker (SAFE / MARGINAL / FAILS), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'))
           )
         );
       }
@@ -4225,13 +4459,13 @@
         var massKg = a.totalLen * areaM2 * mat.densityKgM3;
         var costUsd = a.totalLen * areaM2 * mat.costPerM3;
         return h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid ' + AMBER, marginBottom: 12, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
-            h('strong', null, '🖨 Bridge design specification sheet. '),
-            'A one-page artifact for engineering portfolios, design competitions, classroom presentations, or maker-faire submissions. Contains the design parameters, the stress analysis result, the material properties, and your design notes.'
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid ' + AMBER, marginBottom: 12, fontSize: 12.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
+            h('strong', null, __alloT('stem.bridgelab.bridge_design_specification_sheet', '🖨 Bridge design specification sheet. ')),
+            __alloT('stem.bridgelab.a_one_page_artifact_for_engineering_po', 'A one-page artifact for engineering portfolios, design competitions, classroom presentations, or maker-faire submissions. Contains the design parameters, the stress analysis result, the material properties, and your design notes.')
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
             h('button', { onClick: function() { try { window.print(); } catch (e) {} },
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #c2410c 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.bridgelab.print_save_as_pdf', '🖨 Print / Save as PDF'))
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -4243,7 +4477,7 @@
           h('div', { id: 'bridge-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, d.designName || 'My Bridge Design'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' } }, 'NGSS MS-ETS1 · HS-ETS1 · HS-PS2')
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' } }, __alloT('stem.bridgelab.ngss_ms_ets1_hs_ets1_hs_ps2', 'NGSS MS-ETS1 · HS-ETS1 · HS-PS2'))
             ),
 
             h('div', { style: { padding: 10, background: status === 'safe' ? '#ecfdf5' : status === 'marginal' ? '#fffbeb' : '#fef2f2', border: '1px solid ' + (status === 'safe' ? '#6ee7b7' : status === 'marginal' ? '#fcd34d' : '#fecaca'), borderRadius: 8, marginBottom: 14, fontSize: 12, color: status === 'safe' ? '#065f46' : status === 'marginal' ? '#78350f' : '#7f1d1d' } },
@@ -4254,10 +4488,10 @@
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Design parameters'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.bridgelab.design_parameters', 'Design parameters')),
               h('table', { style: { width: '100%', fontSize: 12, color: '#0f172a', borderCollapse: 'collapse' } },
                 h('tbody', null,
-                  printRow('Bridge type', 'Warren truss, ' + d.nBays + ' bays'),
+                  printRow('Bridge type', ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren') + ' truss, ' + d.nBays + ' bays'),
                   printRow('Span', d.span + ' m'),
                   printRow('Height', d.height + ' m'),
                   printRow('Load per top joint', d.loadPerJoint + ' kN'),
@@ -4269,7 +4503,7 @@
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Stress analysis (deep-beam approximation)'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.bridgelab.stress_analysis_deep_beam_approximatio', 'Stress analysis (deep-beam approximation)')),
               h('table', { style: { width: '100%', fontSize: 12, color: '#0f172a', borderCollapse: 'collapse' } },
                 h('tbody', null,
                   printRow('Reaction at each support', a.reactions.toFixed(0) + ' kN'),
@@ -4283,7 +4517,7 @@
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Quantities'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.bridgelab.quantities', 'Quantities')),
               h('table', { style: { width: '100%', fontSize: 12, color: '#0f172a', borderCollapse: 'collapse' } },
                 h('tbody', null,
                   printRow('Total member length', a.totalLen.toFixed(1) + ' m'),
@@ -4294,17 +4528,17 @@
             ),
 
             d.designNotes ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Design notes'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.bridgelab.design_notes', 'Design notes')),
               h('div', { style: { fontSize: 12.5, color: '#0f172a', whiteSpace: 'pre-wrap', lineHeight: 1.6 } }, d.designNotes)
             ) : null,
 
             h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 12, fontSize: 11.5, color: '#78350f', lineHeight: 1.55 } },
-              h('strong', null, 'Honest limit of this analysis: '),
-              'A deep-beam approximation. Real bridge design uses method of joints, method of sections, or matrix structural analysis to get exact member forces, then checks every individual member for yield, buckling, fatigue, and connection limits. This tool is for learning, not for actually building a bridge.'
+              h('strong', null, __alloT('stem.bridgelab.honest_limit_of_this_analysis', 'Honest limit of this analysis: ')),
+              __alloT('stem.bridgelab.a_deep_beam_approximation_real_bridge_', 'A deep-beam approximation. Real bridge design uses method of joints, method of sections, or matrix structural analysis to get exact member forces, then checks every individual member for yield, buckling, fatigue, and connection limits. This tool is for learning, not for actually building a bridge.')
             ),
 
             h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.5 } },
-              'Sources: NGSS Lead States (2013) · Hibbeler, R.C. (2017), Structural Analysis · AASHTO LRFD Bridge Design Specifications · Petroski, H. (1994), Design Paradigms (Tacoma Narrows + Tay Bridge + Hyatt). Printed from AlloFlow STEM Lab.'
+              __alloT('stem.bridgelab.sources_ngss_lead_states_2013_hibbeler', 'Sources: NGSS Lead States (2013) · Hibbeler, R.C. (2017), Structural Analysis · AASHTO LRFD Bridge Design Specifications · Petroski, H. (1994), Design Paradigms (Tacoma Narrows + Tay Bridge + Hyatt). Printed from AlloFlow STEM Lab.')
             )
           )
         );
@@ -4336,8 +4570,74 @@
         h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, #0f172a))', display: 'flex', alignItems: 'center', gap: 12 } },
           h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, '🌉'),
           h('div', null,
-            h('h2', { style: { margin: 0, color: '#fbbf24', fontSize: 20, fontWeight: 900 } }, 'Bridge Engineering Lab'),
-            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Engineering Design · Structural Mechanics · NGSS HS-ETS1 + HS-PS2')
+            h('h2', { style: { margin: 0, color: '#fbbf24', fontSize: 20, fontWeight: 900 } }, __alloT('stem.bridgelab.bridge_engineering_lab', 'Bridge Engineering Lab')),
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, __alloT('stem.bridgelab.engineering_design_structural_mechanic', 'Engineering Design · Structural Mechanics · NGSS HS-ETS1 + HS-PS2'))
+          )
+        ),
+        h('section', { 'data-bridgelab-design-brief': 'true',
+          role: 'region',
+          'aria-labelledby': 'bridgelab-brief-heading',
+          style: { margin: '12px 16px 10px', padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(120,53,15,0.84), rgba(15,23,42,0.94))', border: '1px solid rgba(251,191,36,0.32)', color: '#fffbeb', boxShadow: '0 16px 36px rgba(2,8,23,0.22)' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 12, alignItems: 'stretch' } },
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#fde68a', letterSpacing: 0, marginBottom: 4 } }, __alloT('stem.bridgelab.design_brief', 'Design brief')),
+              h('h3', { id: 'bridgelab-brief-heading', style: { margin: 0, fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, currentBridgeTab.label),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#e2e8f0' } },
+                __alloT('stem.bridgelab.design_brief_copy', 'Start by stress-testing a bridge, then use material and force references only when you need evidence for a redesign.')),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8 } },
+                bridgeRoutes.map(function(route) {
+                  var active = d.tab === route.id;
+                  return h('button', { key: route.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                    'aria-label': __alloT('stem.bridgelab.open_route', 'Open') + ' ' + route.label,
+                    onClick: function() { upd({ tab: route.id }); },
+                    style: { minHeight: 72, padding: 9, textAlign: 'left', borderRadius: 8, border: '1px solid ' + (active ? 'rgba(251,191,36,0.72)' : 'rgba(251,191,36,0.24)'), background: active ? 'rgba(245,158,11,0.18)' : 'rgba(15,23,42,0.55)', color: '#fffbeb', cursor: 'pointer' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, route.label),
+                    h('div', { style: { fontSize: 11, lineHeight: 1.35, color: '#fde68a' } }, route.hint)
+                  );
+                })
+              )
+            ),
+            h('div', null,
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 112px', gap: 10, alignItems: 'center', padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.38)', border: '1px solid rgba(148,163,184,0.2)', marginBottom: 8 } },
+                h('div', null,
+                  h('div', { style: { fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 3 } }, __alloT('stem.bridgelab.design_readiness', 'Design readiness')),
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+                    h('strong', { style: { fontSize: 17, color: bridgeBriefStatusColor } }, bridgeBriefStatusCopy),
+                    h('span', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 800 } }, 'SF ' + bridgeBriefSF.toFixed(2))
+                  ),
+                  h('div', { style: { marginTop: 4, fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.45 } },
+                    bridgeBriefStyle + ' truss, ' + d.nBays + ' bays, ' + bridgeBriefMat.name)
+                ),
+                h('svg', { viewBox: '0 0 160 88', role: 'img', 'aria-label': __alloT('stem.bridgelab.bridge_readiness_visual', 'Bridge readiness visual'), style: { width: '100%', display: 'block' } },
+                  h('rect', { x: 0, y: 0, width: 160, height: 88, rx: 12, fill: '#020617' }),
+                  h('path', { d: 'M12 66 H148', stroke: '#64748b', strokeWidth: 3, strokeLinecap: 'round' }),
+                  h('path', { d: 'M24 62 L56 26 L88 62 L120 26 L144 62', fill: 'none', stroke: '#fbbf24', strokeWidth: 6, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                  h('path', { d: 'M24 62 H144', stroke: bridgeBriefStatusColor, strokeWidth: 5, strokeLinecap: 'round' }),
+                  h('circle', { cx: 24, cy: 62, r: 6, fill: '#e2e8f0' }),
+                  h('circle', { cx: 144, cy: 62, r: 6, fill: '#e2e8f0' }),
+                  h('text', { x: 80, y: 18, textAnchor: 'middle', fill: bridgeBriefStatusColor, fontSize: 13, fontWeight: 900 }, bridgeBriefStatus.toUpperCase())
+                )
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
+                [
+                  { label: __alloT('stem.bridgelab.status_span', 'Span'), value: d.span + ' m' },
+                  { label: __alloT('stem.bridgelab.status_load', 'Load'), value: d.loadMode === 'vehicle' ? (d.vehicleLoad + ' kN') : (d.loadPerJoint + ' kN') },
+                  { label: __alloT('stem.bridgelab.status_material', 'Material'), value: bridgeBriefMat.name },
+                  { label: __alloT('stem.bridgelab.status_stress', 'Stress'), value: bridgeBriefStress.toFixed(0) + ' MPa' },
+                  { label: __alloT('stem.bridgelab.status_mass', 'Mass'), value: (bridgeBriefVolumeM3 * bridgeBriefMat.densityKgM3).toFixed(0) + ' kg' },
+                  { label: __alloT('stem.bridgelab.status_cost', 'Material cost'), value: '$' + (bridgeBriefVolumeM3 * bridgeBriefMat.costPerM3).toFixed(0) }
+                ].map(function(card) {
+                  return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
+                    h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
+                    h('div', { style: { fontSize: 13, fontWeight: 900, color: '#f8fafc' } }, card.value)
+                  );
+                })
+              ),
+              h('button', { type: 'button', 'aria-expanded': showFullBridgeNav ? 'true' : 'false',
+                onClick: function() { upd({ showBridgeLibrary: !d.showBridgeLibrary }); },
+                style: { width: '100%', marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.32)', background: 'rgba(245,158,11,0.12)', color: '#fde68a', fontSize: 11, fontWeight: 900, cursor: 'pointer' } },
+                showFullBridgeNav ? __alloT('stem.bridgelab.hide_reference_tabs', 'Hide reference tabs') : __alloT('stem.bridgelab.show_reference_tabs', 'Show reference tabs'))
+            )
           )
         ),
         tabBar,

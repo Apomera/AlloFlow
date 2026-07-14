@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-hurricanes-card",
+  "title": "NOAA Hurricanes",
+  "description": "A NOAA source card about hurricane science, forecasting, hazards, and preparedness.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": [
+    "Weather",
+    "Hurricanes",
+    "Hazards",
+    "Forecasting"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Education",
+    "url": "https://www.nhc.noaa.gov/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA hurricane resources explain tropical cyclones, storm surge, wind, rainfall, forecasting, observations, and preparedness."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students reading hazard maps, interpreting forecasts, and explaining how atmosphere and ocean conditions shape storms."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NOAA materials are generally U.S. government work, but resource collections may link to partners or offsite materials. Check item-level rights before mirroring linked resources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

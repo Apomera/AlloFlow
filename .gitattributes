@@ -1,0 +1,34 @@
+# Line-ending policy: the repo is LF in the index (every tracked text file — 2279/2279
+# — is stored LF; there are zero CRLF blobs). Force LF on CHECKOUT everywhere so a
+# Windows machine with core.autocrlf=true does not materialize CRLF working-tree files.
+#
+# WHY THIS EXISTS: CI (.github/workflows/verify.yml) runs `runs-on: windows-latest`, and
+# GitHub's Windows runner images set core.autocrlf=true by default. Without this file,
+# `actions/checkout` rewrote LF blobs to CRLF on disk, which broke byte-exact tests
+# (tests/gemini_api_build_determinism.test.js compares the module file to a hard-coded
+# '\n'-wrapped string) and could perturb render-digest goldens. The blobs are unchanged;
+# this only normalizes how they land on disk. Matches what dev machines already produce
+# (build scripts write LF).
+* text=auto eol=lf
+
+# Binaries: never apply text/EOL conversion (explicit, in addition to git's auto-detect).
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.bmp  binary
+*.pdf  binary
+*.woff  binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.eot  binary
+*.mp3  binary
+*.mp4  binary
+*.wav  binary
+*.m4a  binary
+*.zip  binary
+*.gz   binary
+*.wasm binary

@@ -6,8 +6,62 @@
   if (window.AlloModules && window.AlloModules.SelHub) { console.log('[CDN] SelHub already loaded, skipping duplicate'); } else {
   // WCAG 2.4.3: Focus management for modal dialogs
   var _alloFocusTrigger = null;
+  var _alloLastToolCardId = null;
   function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
-  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+  function alloRestoreFocus() {
+    if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') {
+      try { _alloFocusTrigger.focus(); _alloFocusTrigger = null; return true; } catch(e) {}
+    }
+    _alloFocusTrigger = null;
+    return false;
+  }
+  function alloFocusSelHubStart() {
+    try {
+      var target = document.querySelector('[aria-label="For Educators: how to use this Hub responsibly"]')
+        || document.querySelector('[aria-label="Toggle theme (light / dark / high contrast)"]')
+        || document.querySelector('[aria-label="Close SEL Hub"]');
+      if (target && target.focus) target.focus();
+    } catch (e) {}
+  }
+  function alloRestoreOrFocusSelHubStart() {
+    setTimeout(function() {
+      if (!alloRestoreFocus()) alloFocusSelHubStart();
+    }, 0);
+  }
+  function alloFocusStationNameInput() {
+    setTimeout(function() {
+      try {
+        var input = document.getElementById('sel-station-name-input');
+        if (input && input.focus) input.focus();
+      } catch (e) {}
+    }, 50);
+  }
+  function alloFocusToolStart() {
+    setTimeout(function() {
+      try {
+        var target = document.querySelector('[aria-label="Back to SEL tools"]')
+          || document.querySelector('[aria-label="Back to tools"]')
+          || document.querySelector('[aria-label="Back to Tools"]');
+        if (target && target.focus) target.focus();
+      } catch (e) {}
+    }, 60);
+  }
+  function alloFocusToolCard(toolId) {
+    setTimeout(function() {
+      try {
+        var id = toolId || _alloLastToolCardId;
+        var target = null;
+        if (id) {
+          var cards = document.querySelectorAll('[data-sel-tool-card-id]');
+          for (var i = 0; i < cards.length; i++) {
+            if (cards[i].getAttribute('data-sel-tool-card-id') === id) { target = cards[i]; break; }
+          }
+        }
+        if (!target) target = document.querySelector('[aria-label="Search SEL tools"]');
+        if (target && target.focus) target.focus();
+      } catch (e) {}
+    }, 80);
+  }
 
 
     // ── SelHub Plugin Registry ──
@@ -17,6 +71,73 @@
       window.SelHub = {
         _registry: {},
         _order: [],
+        _standardShellTools: {
+          zones: {
+            time: '5-8 min',
+            purpose: 'Name your current zone and choose a regulation strategy that fits.',
+            next: 'Check your zone, choose one strategy, then save if you want to revisit it.'
+          },
+          coping: {
+            time: '3-10 min',
+            purpose: 'Choose a coping strategy and practice it once with a clear stopping point.',
+            next: 'Pick one body-based or grounding strategy, try it, then notice whether it helped.'
+          },
+          journal: {
+            time: '5-12 min',
+            purpose: 'Write a private reflection and notice patterns you may want to keep.',
+            next: 'Choose a prompt, write honestly, and save or export before closing.'
+          },
+          emotions: {
+            time: '4-8 min',
+            purpose: 'Build emotional vocabulary and name what you are feeling with more precision.',
+            next: 'Pick a feeling, rate its intensity, then choose one word that fits best.'
+          },
+          mindfulness: {
+            time: '2-10 min',
+            purpose: 'Pause, breathe, and practice attention without needing to write anything.',
+            next: 'Choose one short practice, follow it through, then notice what changed.'
+          },
+          thoughtRecord: {
+            time: '8-15 min',
+            purpose: 'Slow down a difficult thought and look for a more balanced view.',
+            next: 'Name the situation, rate the feeling, then test the thought against evidence.'
+          },
+          anxietyToolkit: {
+            time: '5-12 min',
+            purpose: 'Sort worry, reduce anxiety intensity, and choose a practical next step.',
+            next: 'Pick the worry that is loudest, try one strategy, then save the plan if it helps.'
+          },
+          sleep: {
+            time: '4-10 min',
+            purpose: 'Notice sleep barriers and choose one rest habit to try next.',
+            next: 'Check what is getting in the way, choose one small change, then revisit later.'
+          },
+          goals: {
+            time: '5-10 min',
+            purpose: 'Turn an intention into a concrete, realistic next action.',
+            next: 'Write one goal, choose a first step, and save the plan before closing.'
+          },
+          friendship: {
+            time: '5-10 min',
+            purpose: 'Think through friendship needs, belonging, and peer choices.',
+            next: 'Choose one friendship situation and identify one kind next move.'
+          },
+          conflict: {
+            time: '6-12 min',
+            purpose: 'Understand a conflict and prepare a repair-focused response.',
+            next: 'Name what happened, consider both sides, then choose one repair action.'
+          },
+          safety: {
+            time: '8-15 min',
+            purpose: 'Create a practical safety plan and identify trusted supports.',
+            next: 'Add warning signs, coping steps, and people to contact; save before closing.'
+          },
+          crisiscompanion: {
+            time: '3-10 min',
+            purpose: 'Use a structured support path when emotions feel urgent or unsafe.',
+            next: 'Choose the closest support option and involve a trusted adult or crisis service when needed.'
+          }
+        },
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
@@ -34,13 +155,189 @@
           return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
         },
         isRegistered: function(id) { return !!this._registry[id]; },
+        _wrapStandardToolShell: function(id, tool, content, ctx) {
+          if (!ctx || !ctx.React) return content;
+          var h = ctx.React.createElement;
+          var meta = (this._standardShellTools && this._standardShellTools[id]) || {};
+          var palette = (ctx.theme && ctx.theme.palette) || ctx.themePalette || {};
+          var isDark = !!((ctx.theme && ctx.theme.isDark) || ctx.isDark);
+          var isContrast = !!((ctx.theme && ctx.theme.isContrast) || ctx.isContrast);
+          var title = tool.label || tool.title || tool.name || id;
+          var icon = tool.icon || '*';
+          var category = tool.category ? String(tool.category).replace(/[-_]/g, ' ') : 'SEL practice';
+          category = category.charAt(0).toUpperCase() + category.slice(1);
+          var surface = isContrast ? '#000000' : (isDark ? '#111827' : '#f8fafc');
+          var headerBg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff');
+          var border = palette.border || (isContrast ? '#ffff00' : (isDark ? '#334155' : '#e2e8f0'));
+          var text = palette.text || (isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a'));
+          var muted = palette.textMuted || (isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#64748b'));
+          var accent = palette.accent || '#7c3aed';
+          var accentText = palette.accentText || (isContrast ? '#000000' : '#ffffff');
+          var purpose = meta.purpose || tool.desc || tool.description || 'Practice one SEL skill with care.';
+          if (purpose.length > 180) purpose = purpose.slice(0, 177).replace(/\s+\S*$/, '') + '...';
+          var nextStep = meta.next || 'Complete one small step, then decide whether to save.';
+          var savePolicy = (typeof ctx.getSavePolicy === 'function') ? ctx.getSavePolicy(id) : {
+            checkpointLabel: 'Private checkpoint',
+            sharePacketLabel: 'Share Packet eligible'
+          };
+
+          function requestSave() {
+            if (ctx.props && typeof ctx.props.onExportRequested === 'function') {
+              try { ctx.props.onExportRequested(); } catch (e) {}
+            } else {
+              try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested', { detail: { source: 'sel-tool-shell', toolId: id } })); } catch (e) {}
+            }
+            if (typeof ctx.addToast === 'function') ctx.addToast('Preparing to save your SEL work...', 'info');
+            if (typeof ctx.announceToSR === 'function') ctx.announceToSR('Save requested for ' + title);
+          }
+
+          function goBack() {
+            if (typeof ctx.setSelHubTool === 'function') ctx.setSelHubTool(null);
+            if (typeof ctx.announceToSR === 'function') ctx.announceToSR('Returned to tool grid');
+            alloFocusToolCard(id);
+          }
+
+          function pill(label) {
+            return h('span', {
+              style: {
+                display: 'inline-flex',
+                alignItems: 'center',
+                minHeight: 28,
+                padding: '5px 9px',
+                borderRadius: 8,
+                border: '1px solid ' + border,
+                color: muted,
+                background: isContrast ? '#000000' : (isDark ? '#0b1120' : '#f8fafc'),
+                fontSize: 12,
+                fontWeight: 800,
+                whiteSpace: 'nowrap'
+              }
+            }, label);
+          }
+
+          return h('section', {
+            'data-sel-standard-shell': id,
+            style: {
+              background: surface,
+              color: text,
+              minHeight: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }
+          },
+            h('div', {
+              style: {
+                background: headerBg,
+                borderBottom: '1px solid ' + border,
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 300px' } },
+                h('button', {
+                  type: 'button',
+                  onClick: goBack,
+                  'aria-label': 'Back to SEL tools',
+                  style: {
+                    minWidth: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    border: '1px solid ' + border,
+                    background: isContrast ? '#000000' : (isDark ? '#111827' : '#ffffff'),
+                    color: text,
+                    cursor: 'pointer',
+                    fontSize: 18,
+                    fontWeight: 900
+                  }
+                }, '\u2190'),
+                h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    background: accent,
+                    color: accentText,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 20,
+                    flex: '0 0 auto'
+                  }
+                }, icon),
+                h('div', { style: { minWidth: 0 } },
+                  h('div', { style: { color: muted, fontSize: 12, fontWeight: 800, marginBottom: 2 } }, category),
+                  h('h3', { style: { margin: 0, color: text, fontSize: 20, lineHeight: 1.2, fontWeight: 900 } }, title)
+                )
+              ),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                pill(meta.time || 'SEL practice'),
+                pill(savePolicy.checkpointLabel || 'Private checkpoint'),
+                pill(savePolicy.sharePacketLabel || 'Share Packet eligible'),
+                h('button', {
+                  type: 'button',
+                  onClick: requestSave,
+                  'aria-label': 'Export SEL project file now',
+                  style: {
+                    minHeight: 36,
+                    borderRadius: 8,
+                    border: '1px solid ' + accent,
+                    background: accent,
+                    color: accentText,
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    padding: '7px 12px'
+                  }
+                }, 'Export now')
+              )
+            ),
+            h('div', {
+              style: {
+                padding: '10px 16px',
+                display: 'flex',
+                gap: 14,
+                flexWrap: 'wrap',
+                borderBottom: '1px solid ' + border,
+                background: isContrast ? '#000000' : (isDark ? '#111827' : '#f8fafc')
+              }
+            },
+              h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
+                h('strong', { style: { color: muted, marginRight: 6 } }, 'Purpose'),
+                purpose
+              ),
+              h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
+                h('strong', { style: { color: muted, marginRight: 6 } }, 'Next step'),
+                nextStep
+              ),
+              h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
+                h('strong', { style: { color: muted, marginRight: 6 } }, 'Saved work'),
+                'Tool checkpoints stay private here unless you choose them for a Share Packet.'
+              )
+            ),
+            h('div', { style: { padding: 16, minWidth: 0, flex: '1 1 auto' } }, content)
+          );
+        },
         renderTool: function(id, ctx) {
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
+          var hasReact = ctx && ctx.React;
+          var useStandardShell = hasReact && tool.standardShell !== false;
+          var needsDarkShell = tool.lightBackground !== true && hasReact;
+          var renderCtx = ctx;
+          if (needsDarkShell && ctx) {
+            var shellTheme = Object.assign({}, ctx.theme || {}, { isDark: true });
+            renderCtx = Object.assign({}, ctx, { isDark: true, theme: shellTheme });
+          }
           var rendered;
-          try { rendered = tool.render(ctx); }
+          try { rendered = tool.render(renderCtx); }
           catch(e) { console.error('[SelHub] Error rendering ' + id, e); return null; }
           if (rendered == null) return null;
+          var body = rendered;
           // ── WCAG dark-shell auto-wrap ──
           // Same vulnerability + fix as STEM Lab's host-level wrap. 69 of 70
           // SEL tools (audit May 2026) hardcode dark-mode text colors that
@@ -54,17 +351,20 @@
           //
           // Opt out by setting `lightBackground: true` in registerTool config
           // (intended for any future tool that genuinely needs a light surface).
-          if (tool.lightBackground === true) return rendered;
-          if (!ctx || !ctx.React) return rendered;
-          return ctx.React.createElement('div', {
-            style: {
-              background: '#0f172a',
-              color: '#e2e8f0',
-              borderRadius: 12,
-              minHeight: 'calc(100vh - 32px)'
-            },
-            'data-sel-tool-shell': id
-          }, rendered);
+          if (needsDarkShell) {
+            body = ctx.React.createElement('div', {
+              style: {
+                background: '#0f172a',
+                color: '#e2e8f0',
+                borderRadius: useStandardShell ? 8 : 12,
+                minHeight: useStandardShell ? 520 : 'calc(100vh - 32px)',
+                overflow: 'hidden'
+              },
+              'data-sel-tool-shell': id
+            }, rendered);
+          }
+          if (useStandardShell) return this._wrapStandardToolShell(id, tool, body, ctx);
+          return body;
         }
       };
     }
@@ -222,6 +522,96 @@
       { id: 'self_discovery', name: 'Self-Discovery Journey', icon: '\u2728', desc: 'Explore who you are — strengths, emotions, and growth mindset', tools: ['strengths', 'emotions', 'growthmindset', 'compassion', 'advocacy'], casel: 'self-awareness' },
       { id: 'friendship', name: 'Friendship & Social Skills', icon: '\uD83E\uDD1D', desc: 'Build healthy friendships and communication skills', tools: ['social', 'friendship', 'teamwork', 'peersupport'], casel: 'relationship-skills' },
       { id: 'transitions', name: 'Navigating Change', icon: '\uD83C\uDF31', desc: 'Support students through life transitions and new experiences', tools: ['transitions', 'coping', 'journal', 'goals'], casel: 'self-management' },
+    ];
+
+    var SEL_TEACHER_TOOL_META = {
+      zones: { time: '5-8 min', format: 'Solo or group', cue: 'Useful first check-in before any sharing.' },
+      emotions: { time: '5-8 min', format: 'Solo or pair', cue: 'Good vocabulary warm-up.' },
+      coping: { time: '3-10 min', format: 'Solo or group', cue: 'Best for a regulation reset.' },
+      mindfulness: { time: '2-10 min', format: 'Whole class', cue: 'Low-writing regulation option.' },
+      journal: { time: '5-12 min', format: 'Solo', cue: 'Private reflection. Sharing should be optional.' },
+      goals: { time: '5-10 min', format: 'Solo or advisory', cue: 'Good closing step after reflection.' },
+      conflict: { time: '8-12 min', format: 'Pair or small group', cue: 'Preview norms before role-play.' },
+      restorativeCircle: { time: '15-30 min', format: 'Circle', cue: 'Use with established circle norms.' },
+      peersupport: { time: '8-15 min', format: 'Pair practice', cue: 'Strong for listening-skills rehearsal.' },
+      perspective: { time: '6-12 min', format: 'Pair or group', cue: 'Good empathy bridge before discussion.' },
+      digitalWellbeing: { time: '8-15 min', format: 'Solo or advisory', cue: 'Useful before phone or AI norms.' },
+      sleep: { time: '5-10 min', format: 'Solo', cue: 'Good for health advisory units.' },
+      safety: { time: '8-15 min', format: 'Solo', cue: 'Preview first; avoid forced disclosure.', sensitive: true },
+      crisiscompanion: { time: '3-10 min', format: 'Solo', cue: 'For urgent support skills, not a class assignment.', sensitive: true },
+      griefLoss: { time: '10-20 min', format: 'Solo', cue: 'Preview first; use opt-out alternatives.', sensitive: true },
+      identitySupport: { time: '8-15 min', format: 'Solo', cue: 'Use with privacy and opt-out care.', sensitive: true }
+    };
+
+    var SEL_TEACHER_LAUNCH_PLANS = [
+      {
+        id: 'advisory_checkin',
+        name: 'Morning advisory check-in',
+        icon: '\uD83C\uDF05',
+        time: '10-15 min',
+        format: 'Whole class',
+        focus: 'Mood, breath, one next step',
+        studentView: 'Students privately check their zone, try a regulation option, then choose one need for the day or pass.',
+        teacherMove: 'Model the pass option first. Invite one-word or color sharing only after private practice.',
+        privacyBoundary: 'No journal text is collected; students decide later whether any checkpoint enters a Share Packet.',
+        tools: ['zones', 'mindfulness', 'goals', 'journal'],
+        note: 'Begin with a private zone check, then offer breathing or goal-setting. Students may share one word, a color, or pass.',
+        quests: [
+          { type: 'manualComplete', toolRef: 'first', label: 'Complete a private check-in', params: {} },
+          { type: 'freeResponse', toolId: null, label: 'Name one thing you need today', params: { prompt: 'What is one thing that would help you have a steadier day?', minLength: 30 } }
+        ]
+      },
+      {
+        id: 'calm_reset',
+        name: 'Five-minute calm reset',
+        icon: '\uD83E\uDDD8',
+        time: '5-8 min',
+        format: 'Whole class or calm corner',
+        focus: 'Body regulation',
+        studentView: 'Students notice their current body state and choose one calm-body practice.',
+        teacherMove: 'Keep the routine low-talk and time-boxed. Offer movement, breathing, or quiet alternatives.',
+        privacyBoundary: 'Students can save a checkpoint for themselves; no one has to explain why they needed a reset.',
+        tools: ['zones', 'coping', 'mindfulness'],
+        note: 'Keep this low-talk. Students choose one regulation practice and notice what changed.',
+        quests: [
+          { type: 'manualComplete', toolRef: 'first', label: 'Check your current zone', params: {} },
+          { type: 'manualComplete', toolRef: 'last', label: 'Try one calm-body practice', params: {} }
+        ]
+      },
+      {
+        id: 'repair_routine',
+        name: 'Post-conflict repair routine',
+        icon: '\u2696\uFE0F',
+        time: '15-25 min',
+        format: 'Small group or advisory',
+        focus: 'Perspective, repair, next action',
+        studentView: 'Students can use a real, hypothetical, or teacher-provided scenario to practice repair language.',
+        teacherMove: 'Set repair norms first and avoid public confession. Pause if the situation needs adult mediation.',
+        privacyBoundary: 'Students choose what to share; private conflict reflections should not become class evidence.',
+        tools: ['conflict', 'perspective', 'restorativeCircle', 'peersupport'],
+        note: 'Use after norms are set. Keep focus on repair language, not public confession.',
+        quests: [
+          { type: 'manualComplete', toolRef: 'first', label: 'Map the conflict or perspective', params: {} },
+          { type: 'freeResponse', toolId: null, label: 'Draft a repair statement', params: { prompt: 'Write a repair statement using an "I" statement, one impact you understand, and one next action.', minLength: 70 } }
+        ]
+      },
+      {
+        id: 'digital_reset',
+        name: 'Digital wellbeing mini-lesson',
+        icon: '\uD83D\uDCF1',
+        time: '12-20 min',
+        format: 'Advisory or health',
+        focus: 'Phone, sleep, AI and boundaries',
+        studentView: 'Students review habits, choose one boundary to test, and keep the reason private if they want.',
+        teacherMove: 'Frame as habit design, not a phone audit. Avoid asking students to disclose screenshots or usage data.',
+        privacyBoundary: 'Students can share a boundary goal, but personal sleep, phone, or AI details stay optional.',
+        tools: ['digitalWellbeing', 'sleep', 'mindfulness'],
+        note: 'Frame as habit design, not a phone audit. Students choose one boundary to try.',
+        quests: [
+          { type: 'manualComplete', toolRef: 'first', label: 'Choose one digital habit to adjust', params: {} },
+          { type: 'freeResponse', toolId: null, label: 'Name one boundary to test', params: { prompt: 'What is one phone, sleep, or AI boundary you want to test this week?', minLength: 40 } }
+        ]
+      }
     ];
 
     // ── Grade-Level Complexity Helpers ──
@@ -585,9 +975,34 @@
       var setPathwayProgress = _selPathwayProgress[1];
 
       // Tool snapshots (save/load)
-      var _selSnapshots = React.useState([]);
+      var _selSnapshots = React.useState(function () {
+        try {
+          if (typeof window !== 'undefined' && Array.isArray(window.__alloflowSelSnapshots)) {
+            return window.__alloflowSelSnapshots;
+          }
+        } catch (e) {}
+        try {
+          var raw = JSON.parse(localStorage.getItem('alloflow_sel_snapshots') || '[]');
+          return Array.isArray(raw) ? raw : [];
+        } catch (e) { return []; }
+      });
       var selSnapshots  = _selSnapshots[0];
       var setSelSnapshots = _selSnapshots[1];
+
+      function _readStudentArtifacts() {
+        try {
+          if (typeof window !== 'undefined' && Array.isArray(window.__alloflowStudentArtifacts)) {
+            return window.__alloflowStudentArtifacts;
+          }
+        } catch (e) {}
+        try {
+          var rawArtifacts = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]');
+          return Array.isArray(rawArtifacts) ? rawArtifacts : [];
+        } catch (e) { return []; }
+      }
+      var _studentArtifacts = React.useState(_readStudentArtifacts);
+      var studentArtifacts = _studentArtifacts[0];
+      var setStudentArtifacts = _studentArtifacts[1];
 
       // XP system
       var _selXp = React.useState(0);
@@ -602,11 +1017,31 @@
       React.useEffect(function() {
         var handler = function(e) {
           if (e && e.detail && e.detail.label !== 'Sel') return;
-          _setPluginProgressTick(function(t) { return t + 1; });
+          // Defer out of any in-progress React render (dispatchEvent runs
+          // listeners synchronously): a direct setState here during a host
+          // render trips "Cannot update a component while rendering". The tick
+          // only refreshes the tile grid as plugins stream in — a microtask
+          // defer is imperceptible and render-safe. Mirrors the StemLab fix.
+          Promise.resolve().then(function() { _setPluginProgressTick(function(t) { return t + 1; }); });
         };
         window.addEventListener('allo-plugins-changed', handler);
         return function() { window.removeEventListener('allo-plugins-changed', handler); };
       }, []);
+
+      var _viewportWidthState = React.useState(function() {
+        try { return window.innerWidth || 1024; } catch (e) { return 1024; }
+      });
+      var viewportWidth = _viewportWidthState[0];
+      var setViewportWidth = _viewportWidthState[1];
+      React.useEffect(function() {
+        function onResize() {
+          try { setViewportWidth(window.innerWidth || 1024); } catch (e) {}
+        }
+        window.addEventListener('resize', onResize);
+        return function() { window.removeEventListener('resize', onResize); };
+      }, []);
+      var isCompact = viewportWidth < 720;
+      var isMidWidth = viewportWidth < 980;
 
       // ── CHANGE 1: Ephemerality explainer state ──
       // Surfaces a first-run modal explaining that work is lost without Export.
@@ -635,15 +1070,18 @@
       var _showForEducators = React.useState(false);
       var showForEducators = _showForEducators[0];
       var setShowForEducators = _showForEducators[1];
-
-      // Mark dirty when any persisted tool state changes (after first render).
-      React.useEffect(function() {
-        if (_firstRenderRef.current) {
-          _firstRenderRef.current = false;
-          return;
-        }
-        setIsDirty(true);
-      }, [selToolData, selSnapshots, selXp, selToolUsage]);
+      var _showSharePacket = React.useState(false);
+      var showSharePacket = _showSharePacket[0];
+      var setShowSharePacket = _showSharePacket[1];
+      var _packetSelections = React.useState({});
+      var packetSelections = _packetSelections[0];
+      var setPacketSelections = _packetSelections[1];
+      var _packetSavedNotice = React.useState('');
+      var packetSavedNotice = _packetSavedNotice[0];
+      var setPacketSavedNotice = _packetSavedNotice[1];
+      var _activeSharePacketArtifactId = React.useState(null);
+      var activeSharePacketArtifactId = _activeSharePacketArtifactId[0];
+      var setActiveSharePacketArtifactId = _activeSharePacketArtifactId[1];
 
       // Listen for export events fired by either the parent app or our own
       // Export-now CTA. Clears dirty + resets the 20-min idle-export timer.
@@ -703,20 +1141,22 @@
         return function() { clearInterval(interval); };
       }, [showSelHub, showEphemeralExplainer]);
 
-      // Tab-trap + ESC for the ephemeral explainer + For-Educators modal.
+      // Tab-trap + ESC for the ephemeral explainer, For-Educators modal, and share packet builder.
       React.useEffect(function() {
-        if (!showEphemeralExplainer && !showForEducators) return;
+        if (!showEphemeralExplainer && !showForEducators && !showSharePacket) return;
         function onKey(e) {
           if (e.key === 'Escape') {
-            if (showForEducators) { setShowForEducators(false); }
+            if (showSharePacket) { setShowSharePacket(false); alloRestoreOrFocusSelHubStart(); }
+            else if (showForEducators) { setShowForEducators(false); alloRestoreOrFocusSelHubStart(); }
             else if (showEphemeralExplainer) {
               setShowEphemeralExplainer(false);
               try { sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1'); } catch (err) {}
+              alloRestoreOrFocusSelHubStart();
             }
             return;
           }
           if (e.key === 'Tab') {
-            var modalId = showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal';
+            var modalId = showSharePacket ? 'sel-share-packet-modal' : (showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal');
             var modal = document.getElementById(modalId);
             if (!modal) return;
             var focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
@@ -730,7 +1170,7 @@
         document.addEventListener('keydown', onKey);
         // Focus the primary action on open.
         setTimeout(function() {
-          var modalId = showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal';
+          var modalId = showSharePacket ? 'sel-share-packet-modal' : (showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal');
           var modal = document.getElementById(modalId);
           if (modal) {
             var primary = modal.querySelector('[data-primary-action]') || modal.querySelector('button');
@@ -738,7 +1178,7 @@
           }
         }, 50);
         return function() { document.removeEventListener('keydown', onKey); };
-      }, [showEphemeralExplainer, showForEducators]);
+      }, [showEphemeralExplainer, showForEducators, showSharePacket]);
 
       function awardSelXP(amount) {
         var pts = amount || 5;
@@ -798,6 +1238,15 @@
       var _selToolUsage = React.useState(_selInitial.toolUsage || {});
       var selToolUsage = _selToolUsage[0]; var setSelToolUsage = _selToolUsage[1];
 
+      // Mark dirty when any persisted tool state changes (after first render).
+      React.useEffect(function() {
+        if (_firstRenderRef.current) {
+          _firstRenderRef.current = false;
+          return;
+        }
+        setIsDirty(true);
+      }, [selToolData, selSnapshots, studentArtifacts, selXp, selToolUsage]);
+
       // Mirror state changes to the window slot so the host save flow can
       // serialize it into the project JSON. The _ts stamp lets the host
       // skip emitting a SEL block when nothing has changed.
@@ -806,6 +1255,23 @@
           window.__alloflowSelEngagement = { streak: selStreak, toolUsage: selToolUsage, _ts: Date.now() };
         } catch (e) {}
       }, [selStreak, selToolUsage]);
+
+      // Persist tool snapshots locally and mirror them to the host save slot.
+      React.useEffect(function () {
+        try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(selSnapshots || [])); } catch (e) {}
+        try { window.__alloflowSelSnapshots = Array.isArray(selSnapshots) ? selSnapshots : []; } catch (e) {}
+      }, [selSnapshots]);
+
+      // Shared student-authored artifacts registry. SEL writes share packets;
+      // AlloHaven reads the registry as a read-only portfolio shelf.
+      React.useEffect(function () {
+        var artifacts = Array.isArray(studentArtifacts) ? studentArtifacts : [];
+        try { localStorage.setItem('alloflow_student_artifacts', JSON.stringify(artifacts)); } catch (e) {}
+        try {
+          window.__alloflowStudentArtifacts = artifacts;
+          window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'sel_hub' } }));
+        } catch (e) {}
+      }, [studentArtifacts]);
 
       // Hot-reload from a project JSON load mid-session: misc_handlers
       // dispatches this event after writing window.__alloflowSelEngagement.
@@ -819,6 +1285,33 @@
         }
         window.addEventListener('alloflow-sel-engagement-restored', onRestore);
         return function () { window.removeEventListener('alloflow-sel-engagement-restored', onRestore); };
+      }, []);
+
+      // Same hot-reload path for saved tool snapshots.
+      React.useEffect(function () {
+        function onSnapshotRestore() {
+          try {
+            var w = window.__alloflowSelSnapshots;
+            if (Array.isArray(w)) setSelSnapshots(w);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-sel-snapshots-restored', onSnapshotRestore);
+        return function () { window.removeEventListener('alloflow-sel-snapshots-restored', onSnapshotRestore); };
+      }, []);
+
+      React.useEffect(function () {
+        function onStudentArtifactsRestore() {
+          try {
+            var w = window.__alloflowStudentArtifacts;
+            if (Array.isArray(w)) setStudentArtifacts(w);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-student-artifacts-restored', onStudentArtifactsRestore);
+        window.addEventListener('alloflow-student-artifacts-changed', onStudentArtifactsRestore);
+        return function () {
+          window.removeEventListener('alloflow-student-artifacts-restored', onStudentArtifactsRestore);
+          window.removeEventListener('alloflow-student-artifacts-changed', onStudentArtifactsRestore);
+        };
       }, []);
 
       var _activeStationId = React.useState(null);
@@ -938,6 +1431,26 @@
           try { localStorage.setItem('alloflow_sel_tool_usage', JSON.stringify(next)); } catch (e) {}
           return next;
         });
+      }
+
+      function openSelToolById(toolId, label) {
+        if (!toolId) return;
+        if (window.SelHub && window.SelHub.isRegistered(toolId)) {
+          _alloLastToolCardId = toolId;
+          trackToolOpen(toolId);
+          setSelHubTool(toolId);
+          announceToSR('Opened ' + (label || toolId));
+          alloFocusToolStart();
+          if (activePathway && activePathway.tools && activePathway.tools.indexOf(toolId) >= 0) {
+            setPathwayProgress(function(prev) {
+              var n = Object.assign({}, prev);
+              n[toolId] = true;
+              return n;
+            });
+          }
+        } else if (typeof addToast === 'function') {
+          addToast((label || 'This SEL tool') + ' is loading...', 'info');
+        }
       }
 
       // Sync activeStation prop from parent (e.g. resource-history click).
@@ -1088,11 +1601,11 @@
         function handleKeyDown(e) {
           if (!showSelHub) return;
           if (e.key === 'Escape') {
-            if (selHubTool) { setSelHubTool(null); announceToSR('Returned to tool grid'); }
+            if (selHubTool) { setSelHubTool(null); announceToSR('Returned to tool grid'); alloFocusToolCard(selHubTool); }
             else { setShowSelHub(false); }
           }
           if (e.altKey) {
-            if (e.key === 'Backspace' || e.key === 'b') { e.preventDefault(); setSelHubTool(null); announceToSR('Returned to tool grid'); }
+            if (e.key === 'Backspace' || e.key === 'b') { e.preventDefault(); var fromTool = selHubTool; setSelHubTool(null); announceToSR('Returned to tool grid'); alloFocusToolCard(fromTool); }
           }
         }
         document.addEventListener('keydown', handleKeyDown);
@@ -1121,7 +1634,19 @@
         btnBg:    isContrast ? '#000000' : isDark ? '#334155' : '#e2e8f0',
         btnText:  isContrast ? '#00ff00' : isDark ? '#f1f5f9' : '#334155',
         btnBorder:isContrast ? '2px solid #00ff00' : isDark ? 'none' : 'none',
-        accent:   '#7c3aed'
+        accent:   isContrast ? '#00ff00' : '#7c3aed',
+        accentText: isContrast ? '#000000' : '#ffffff',
+        bgSoft:   isContrast ? '#000000' : isDark ? '#111827' : '#f8fafc',
+        bgRaised: isContrast ? '#000000' : isDark ? '#111827' : '#ffffff',
+        bgDisabled: isContrast ? '#000000' : isDark ? '#172033' : '#f1f5f9',
+        accentSoftBg: isContrast ? '#000000' : isDark ? 'rgba(124,58,237,0.2)' : '#f5f3ff',
+        accentSoftText: isContrast ? '#00ff00' : isDark ? '#ddd6fe' : '#6d28d9',
+        successText: isContrast ? '#00ff00' : '#0f766e',
+        dangerText: isContrast ? '#ff6b6b' : '#b91c1c',
+        warningText: isContrast ? '#ffff00' : isDark ? '#fbbf24' : '#92400e',
+        pinkAccent: isContrast ? '#ff7ab6' : '#db2777',
+        pinkText: isContrast ? '#ff7ab6' : '#be185d',
+        onPink: isContrast ? '#000000' : '#ffffff'
       };
 
       // ══════════════════════════════════════════════════════════════
@@ -1170,6 +1695,7 @@
         { id: 'traumaPsychoed', icon: '\uD83C\uDF3F', label: 'Understanding Trauma', desc: 'Psychoeducation only (NOT a screener). What trauma is and is not, neurobiology in plain English, common responses reframed as adaptations, SAMHSA\'s 6 principles, evidence-based treatments. For students and educators. Includes prominent safety framing about why screening without follow-up is unsafe.', color: 'emerald', recommendedRange: '6-12' },
         { id: 'bodyStory',   icon: '\uD83E\uDEC2', label: 'Body Story',           desc: 'Body-acceptance and embodiment tool. NOT weight-focused, NOT diet-adjacent, NOT a screener. Built on Tylka body appreciation, intuitive eating principles, and media literacy. Inclusive of all bodies, all genders, all sizes. Strong NEDA referral framing for eating disorders.', color: 'rose', recommendedRange: '6-12' },
         { id: 'sourcesOfStrength', icon: '\uD83C\uDF1F', label: 'Sources of Strength', desc: 'Map your 8 protective factors. The strongest evidence-based upstream youth suicide prevention framework (Wyman et al.). Builds protective factors BEFORE crisis hits. Complements Crisis Companion on the protective side.', color: 'amber', recommendedRange: '6-12' },
+        { id: 'crisiscompanion', icon: '\uD83E\uDEC2', label: 'Crisis Companion', desc: 'Peer support and suicide-prevention skills: what to do if you or a friend is depressed, in crisis, or thinking about self-harm \u2014 recognizing the signs, what to say (and not say), telling a trusted adult, plus 988 and a personal safety plan. Content-warning gated. Aligned with NEDA, AFSP, Sources of Strength, and 988. The acute-support counterpart to Sources of Strength.', color: 'teal', recommendedRange: '6-12' },
         { id: 'identitySupport', icon: '\uD83C\uDF08', label: 'Identity Support', desc: 'Inclusive, affirming space for gender identity, sexual orientation, romantic orientation, and broader identity questions. Vocabulary, identity development, finding community, safety for trans youth, ally guidance. Built on Trevor Project, GLSEN, PFLAG.', color: 'pink', recommendedRange: '5-12' },
         { id: 'disabilityVoices', icon: '\uD83C\uDFA4', label: 'Disability Voices', desc: 'Real autistic and disabled advocates whose work shaped, and critiqued, disability practice. Quotes, context, and a curated reading list. Built so the people the field has been done TO are centered, not relegated to a sidebar in a behavior-science tool. Ari Ne\'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, Patty Berne.', color: 'pink', recommendedRange: '6-12' },
         // Self-Direction (agency, goal-setting, executive function)
@@ -1215,12 +1741,13 @@
         { id: 'transitions', icon: '\uD83C\uDF31', label: 'Life Transitions', desc: 'Navigate changes like moving, new schools, and growing up.', color: 'emerald', recommendedRange: 'K-12', _cat: 'self-regulation' },
         { id: 'upstander', icon: '\uD83E\uDDB8', label: 'Upstander Training', desc: 'Learn to stand up for others safely — bystander to upstander skills.', color: 'red', recommendedRange: '2-12', _cat: 'social-awareness' },
         { id: 'growthmindset', icon: '\uD83E\uDDE0', label: 'Growth Mindset', desc: 'Brain science, reframing challenges, and building resilience.', color: 'violet', recommendedRange: 'K-12', _cat: 'self-direction' },
+        { id: 'execfunction', icon: '\uD83E\uDDE0', label: 'Executive Function', desc: 'Strategies for the harder parts of getting things done: starting tasks, holding focus, planning ahead, and tracking time.', color: 'cyan', recommendedRange: '3-12', _cat: 'self-direction' },
         { id: 'advocacy', icon: '\uD83D\uDCE2', label: 'Self-Advocacy', desc: 'Learn to speak up for your needs, rights, and goals.', color: 'blue', recommendedRange: '3-12', _cat: 'self-awareness' },
         { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', _cat: 'stewardship' },
         { id: 'ethicalReasoning', icon: '\u2696\uFE0F', label: 'Ethical Reasoning Lab', desc: 'Explore contemporary ethical dilemmas through multiple frameworks and AI Socratic dialogue.', color: 'slate', recommendedRange: '5-12', _cat: 'responsible-decision-making' },
         { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Take AI-powered deep dives into world cultures with illustrations and audio.', color: 'cyan', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'voicedetective', icon: '\uD83D\uDD0A', label: 'Voice Detective', desc: 'Listen to voices and identify emotions from tone.', color: 'purple', recommendedRange: 'K-12', _cat: 'social-awareness' },
-        { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Lab', desc: 'Practice social scenarios and AI peer roleplay.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
+        { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Roleplay', desc: 'Practice social scenarios and AI peer roleplay with branching dialogue.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
         { id: 'peersupport', icon: '\uD83E\uDD1D', label: 'Peer Support Coach', desc: 'Learn OARS listening skills and when to get adult help.', color: 'emerald', recommendedRange: '3-12', _cat: 'relationship-skills' },
         { id: 'conflicttheater', icon: '\uD83C\uDFAD', label: 'Conflict Theater', desc: 'Mediate a real conflict with two AI characters who have personalities, moods, and reasons of their own. Practice restorative principles in an immersive scene.', color: 'amber', recommendedRange: '5-12', _cat: 'relationship-skills' },
         { id: 'digitalWellbeing', icon: '\uD83D\uDCF1', label: 'Digital Wellbeing Studio', desc: 'Self-check your relationship with social media and AI chatbots, build healthier phone habits, recover from cyberbullying, spot manipulation in the feed, navigate chatbot relationships safely, and find help when you need it.', color: 'cyan', recommendedRange: '5-12', _cat: 'self-regulation' },
@@ -1296,7 +1823,7 @@
         // Emerging: real but limited or mixed evidence
         zones: { tier: 'emerging', note: 'Draws on adjacent research; the Zones curriculum itself has limited outcome studies (the tool says so in its own limitations).' },
         emotions: { tier: 'emerging', note: 'Emotional granularity has empirical support (Barrett); specific neuro explanations are framed as models.' },
-        coping: { tier: 'emerging' },
+        coping: { tier: 'emerging', note: 'Core CBT/DBT/somatic coping skills are well supported; the "Nervous System States" polyvagal framing is popular but scientifically contested (Grossman, 2023) and is flagged as such in the tool.' },
         mindfulness: { tier: 'emerging', note: 'Benefits are modest and context-dependent; trauma-informed cautions apply.' },
         windowOfTolerance: { tier: 'emerging', note: 'Widely used clinical heuristic (Siegel); the polyvagal framing it is often paired with is scientifically contested, which this tool flags.' },
         stressBucket: { tier: 'emerging', note: 'CBT-tradition heuristic (Brabban and Turkington), widely used in NHS IAPT.' },
@@ -1324,6 +1851,7 @@
         // (No tool is currently rated 'contested'; the tier stays reserved for
         // mechanisms that are popular but scientifically disputed.)
         growthmindset: { tier: 'emerging', note: 'Mindset interventions are popular; effects are real but small and debated (Sisk et al. 2018 meta-analysis; Yeager et al. 2019 found small, targeted effects).' },
+        execfunction: { tier: 'emerging', note: 'Executive-function strategy instruction has real but modest, mixed support (Dawson & Guare; Barkley); this is a structured scaffold, not a clinical intervention.' },
         // Practice: structured practice / heuristic, not an empirical efficacy claim
         strengths: { tier: 'practice' },
         viaStrengths: { tier: 'practice', note: 'Reflective self-sort, not the validated VIA survey at viacharacter.org.' },
@@ -1348,6 +1876,7 @@
         teamwork: { tier: 'practice' },
         friendship: { tier: 'practice' },
         advocacy: { tier: 'practice' },
+        crisiscompanion: { tier: 'practice', note: 'Structured peer-support and crisis-coping scaffold aligned with 988 / AFSP / NEDA guidance; not a clinical assessment or treatment.' },
         civicAction: { tier: 'practice' },
         voicedetective: { tier: 'practice' },
         transitions: { tier: 'practice' },
@@ -1355,9 +1884,659 @@
         disabilityVoices: { tier: 'practice' }
       };
 
+      function _selShortDesc(tool) {
+        var desc = (tool && tool.desc) ? String(tool.desc).trim() : '';
+        if (!desc) return '';
+        var firstSentence = desc.match(/^.{1,150}?[.!?](?:\s|$)/);
+        if (firstSentence && firstSentence[0]) return firstSentence[0].trim();
+        if (desc.length <= 150) return desc;
+        return desc.slice(0, 147).replace(/\s+\S*$/, '') + '...';
+      }
+
+      var _selSearchAliasMap = {
+        zones: 'feeling feelings emotion emotions mood mad angry sad worried nervous calm red yellow green blue dysregulated overwhelmed',
+        emotions: 'feeling feelings emotion emotions mood identify name vocabulary faces sad mad worried happy',
+        coping: 'calm breathe breathing grounding panic anxious anxiety worried stress overwhelmed regulate body',
+        mindfulness: 'calm breathe breathing body scan mindful still focus quiet attention',
+        journal: 'write writing private reflect reflection feelings diary think process',
+        thoughtRecord: 'thought thoughts thinking worry anxious anxiety stuck evidence balanced reframe',
+        anxietyToolkit: 'anxiety anxious worry worried panic nervous fear calm',
+        sleep: 'sleep tired rest exhausted bedtime phone night stress',
+        stressBucket: 'stress stressed pressure overwhelmed busy load capacity',
+        tipp: 'panic crisis intense emotion emergency calm body temperature breathing',
+        bigFeelings: 'anger angry mad rage upset conflict cool down',
+        sensoryRegulation: 'sensory noise light texture overload neurodivergent regulation',
+        friendship: 'friend friends lonely friendship peer belong',
+        conflict: 'conflict fight argument repair friend apologize',
+        conflicttheater: 'conflict fight argument repair friend mediation',
+        restorativeCircle: 'repair conflict harm apology restore relationship',
+        peersupport: 'listen listening friend help support peer adult',
+        sociallab: 'social roleplay conversation practice friend peer',
+        goals: 'goal goals plan motivation future',
+        decisions: 'decision decide choice choices problem solve',
+        ethicalReasoning: 'decision ethics right wrong dilemma values',
+        valuesCommittedAction: 'values purpose decision action committed',
+        advocacy: 'ask help need accommodation self advocate',
+        safety: 'safe safety plan help trusted adult',
+        crisiscompanion: 'crisis urgent unsafe self harm suicide help',
+        griefLoss: 'grief loss death missing sad',
+        digitalWellbeing: 'phone social media cyberbullying screen online chatbot'
+      };
+
+      function _selToolSearchText(tool) {
+        if (!tool) return '';
+        return [
+          tool.label || '',
+          tool.desc || '',
+          tool.recommendedRange || '',
+          _selSearchAliasMap[tool.id] || ''
+        ].join(' ').toLowerCase();
+      }
+
+      function _selToolMatchesSearch(tool, query) {
+        var q = String(query || '').toLowerCase().trim();
+        if (!q) return true;
+        var text = _selToolSearchText(tool);
+        if (text.indexOf(q) !== -1) return true;
+        var terms = q.split(/\s+/).filter(function(term) { return term.length > 1; });
+        if (terms.length === 0) return true;
+        var matches = 0;
+        terms.forEach(function(term) {
+          if (text.indexOf(term) !== -1) matches++;
+        });
+        return matches > 0 && matches >= Math.ceil(Math.min(terms.length, 3) / 2);
+      }
+
+      function _selGradePick() {
+        var band = gradeBand(gradeLevel);
+        var ids = band === 'elementary'
+          ? ['zones', 'emotions', 'coping', 'friendship']
+          : band === 'middle'
+            ? ['coping', 'journal', 'perspective', 'goals']
+            : ['thoughtRecord', 'valuesCommittedAction', 'advocacy', 'sleep'];
+        for (var i = 0; i < ids.length; i++) {
+          var found = _allSelTools.find(function(t) { return t.id === ids[i] && !t.category; });
+          if (found) return found;
+        }
+        return _allSelTools.find(function(t) { return t && !t.category; }) || null;
+      }
+
+      function _selToolById(toolId) {
+        if (!toolId) return null;
+        return _allSelTools.find(function(t) { return t.id === toolId && !t.category; }) || null;
+      }
+
+      function _teacherToolCue(toolId) {
+        return (SEL_TEACHER_TOOL_META && SEL_TEACHER_TOOL_META[toolId]) || null;
+      }
+
+      function _teacherPlanCatalogTools(plan) {
+        if (!plan || !Array.isArray(plan.tools)) return [];
+        return plan.tools.filter(function(toolId) {
+          return !!_selToolById(toolId);
+        });
+      }
+
+      function _teacherPlanToolLabels(plan) {
+        return _teacherPlanCatalogTools(plan).map(function(toolId) {
+          var tool = _selToolById(toolId);
+          return tool ? tool.label : toolId;
+        });
+      }
+
+      function _teacherPlanPendingLabels(plan) {
+        return _teacherPlanCatalogTools(plan).filter(function(toolId) {
+          return !(window.SelHub && window.SelHub.isRegistered(toolId));
+        }).map(function(toolId) {
+          var tool = _selToolById(toolId);
+          return tool ? tool.label : toolId;
+        });
+      }
+
+      function _teacherPlanSensitiveLabels(plan) {
+        return _teacherPlanCatalogTools(plan).filter(function(toolId) {
+          var cue = _teacherToolCue(toolId);
+          return cue && cue.sensitive;
+        }).map(function(toolId) {
+          var tool = _selToolById(toolId);
+          return tool ? tool.label : toolId;
+        });
+      }
+
+      function _teacherPlanBuilderNote(plan) {
+        var parts = [];
+        if (plan && plan.studentView) parts.push('Student view: ' + plan.studentView);
+        if (plan && plan.teacherMove) parts.push('Teacher move: ' + plan.teacherMove);
+        if (plan && plan.privacyBoundary) parts.push('Sharing boundary: ' + plan.privacyBoundary);
+        if (plan && plan.note) parts.push('Teacher note: ' + plan.note);
+        return parts.join('\n');
+      }
+
+      function _teacherPlanQuests(plan, selectedToolIds) {
+        return (plan && Array.isArray(plan.quests) ? plan.quests : []).map(function(q) {
+          var copy = Object.assign({}, q, { params: Object.assign({}, q.params || {}) });
+          if (copy.toolRef === 'first') copy.toolId = selectedToolIds[0] || null;
+          if (copy.toolRef === 'last') copy.toolId = selectedToolIds[selectedToolIds.length - 1] || null;
+          delete copy.toolRef;
+          return copy;
+        });
+      }
+
+      function _applyTeacherLaunchPlan(plan) {
+        var selectedToolIds = _teacherPlanCatalogTools(plan);
+        var pendingLabels = _teacherPlanPendingLabels(plan);
+        if (selectedToolIds.length === 0 || pendingLabels.length) {
+          if (typeof addToast === 'function') addToast('Teacher launch tools are still loading. Try again in a moment.', 'info');
+          announceToSR('Teacher launch tools are still loading.');
+          return;
+        }
+        var nextTools = {};
+        selectedToolIds.forEach(function(toolId) { nextTools[toolId] = true; });
+        setBuilderName(plan.name || 'SEL classroom routine');
+        setBuilderNote(_teacherPlanBuilderNote(plan));
+        setBuilderTools(nextTools);
+        setBuilderQuests(_teacherPlanQuests(plan, selectedToolIds));
+        setBuilderOpen(true);
+        setActivePathway(null);
+        setActiveStationId(null);
+        setSelCategoryFilter(null);
+        setSelToolSearch('');
+        announceToSR('Teacher launch plan loaded into the station builder: ' + (plan.name || 'SEL routine'));
+        if (typeof addToast === 'function') addToast('Teacher launch plan loaded into Station Builder.', 'success');
+        alloFocusStationNameInput();
+      }
+
+      function _selRelativeTime(ts) {
+        var n = Number(ts || 0);
+        if (!n) return '';
+        var diff = Math.max(0, Date.now() - n);
+        var mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'just now';
+        if (mins < 60) return mins + ' min ago';
+        var hours = Math.floor(mins / 60);
+        if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+        var days = Math.floor(hours / 24);
+        if (days < 7) return days + (days === 1 ? ' day ago' : ' days ago');
+        try { return new Date(n).toLocaleDateString(); } catch (e) { return ''; }
+      }
+
+      function _selRecentWorkItems() {
+        var items = [];
+        (Array.isArray(selSnapshots) ? selSnapshots : []).forEach(function(snap) {
+          if (!snap) return;
+          var toolId = snap.tool || snap.toolId;
+          var tool = _selToolById(toolId);
+          items.push({
+            key: 'snap-' + (snap.id || toolId || items.length),
+            kind: 'Saved',
+            toolId: toolId,
+            icon: tool ? tool.icon : '\uD83D\uDCBE',
+            title: snap.label || (tool ? tool.label : 'Saved SEL work'),
+            detail: tool ? tool.label : 'SEL snapshot',
+            ts: snap.ts || snap.timestamp || 0
+          });
+        });
+        Object.keys(selToolUsage || {}).forEach(function(toolId) {
+          var usage = selToolUsage[toolId] || {};
+          var tool = _selToolById(toolId);
+          if (!tool || !usage.lastUsed) return;
+          items.push({
+            key: 'use-' + toolId,
+            kind: 'Opened',
+            toolId: toolId,
+            icon: tool.icon,
+            title: tool.label,
+            detail: (usage.count || 1) + ((usage.count || 1) === 1 ? ' visit' : ' visits'),
+            ts: usage.lastUsed || 0
+          });
+        });
+        items.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+        var seen = {};
+        var out = [];
+        items.forEach(function(item) {
+          var dedupeKey = item.kind + ':' + (item.toolId || item.title);
+          if (seen[dedupeKey] || out.length >= 4) return;
+          seen[dedupeKey] = true;
+          out.push(item);
+        });
+        return out;
+      }
+
       // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
       // ══════════════════════════════════════════════════════════════
+      function _selPacketPrivacyChoices() {
+        return [
+          { id: 'summary', label: 'Share summary only' },
+          { id: 'full', label: 'Share full saved text' },
+          { id: 'followup', label: 'Ask adult to follow up' },
+          { id: 'private', label: 'Keep private' }
+        ];
+      }
+
+      function _selPacketPrivacyLabel(mode) {
+        var match = _selPacketPrivacyChoices().filter(function(choice) { return choice.id === mode; })[0];
+        return match ? match.label : 'Share summary only';
+      }
+
+      function _selPacketEscape(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+        });
+      }
+
+      function _selPacketTextFromValue(value, depth) {
+        if (value == null || depth > 3) return '';
+        if (typeof value === 'string') return value;
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        if (Array.isArray(value)) {
+          return value.map(function(part) { return _selPacketTextFromValue(part, depth + 1); }).filter(Boolean).join(' ');
+        }
+        if (typeof value === 'object') {
+          var preferred = ['reflection', 'response', 'summary', 'text', 'entry', 'note', 'body', 'plan', 'strategy', 'goal', 'name'];
+          var best = '';
+          preferred.forEach(function(key) {
+            if (value[key] !== undefined) {
+              var text = _selPacketTextFromValue(value[key], depth + 1);
+              if (text && text.length > best.length) best = text;
+            }
+          });
+          if (best) return best;
+          Object.keys(value).forEach(function(key) {
+            if (/^(id|ts|timestamp|createdAt|updatedAt|tool|toolId|icon)$/i.test(key)) return;
+            var text = _selPacketTextFromValue(value[key], depth + 1);
+            if (text && text.length > best.length) best = text;
+          });
+          return best;
+        }
+        return '';
+      }
+
+      function _selPacketCleanText(value, maxLen) {
+        var text = String(value || '').replace(/\s+/g, ' ').trim();
+        if (!text) return '';
+        if (maxLen && text.length > maxLen) return text.slice(0, maxLen - 1).trim() + '...';
+        return text;
+      }
+
+      function _selCheckpointSavePolicy(toolId) {
+        var tool = _selToolById(toolId);
+        return {
+          checkpointLabel: 'Private checkpoint',
+          confirmation: 'Checkpoint saved privately.',
+          privacy: 'student-controlled',
+          privacyLabel: 'Private on this device',
+          sharePacketEligible: true,
+          sharePacketLabel: 'Share Packet eligible',
+          sharePacketDefaultPrivacy: 'summary',
+          sharePacketPrivacyLabel: 'Defaults to summary only',
+          sharePacketHint: 'It can appear in a Share Packet only if the student chooses it.',
+          sourceLabel: tool ? tool.label : 'SEL Hub'
+        };
+      }
+
+      function _normalizeSelCheckpoint(toolId, label, data, options) {
+        options = options || {};
+        if (toolId && typeof toolId === 'object') {
+          options = toolId;
+          toolId = options.toolId || options.tool || selHubTool || 'sel';
+          label = options.label || options.title;
+          data = options.data || options.value || options.snapshot || {};
+        }
+        toolId = toolId || selHubTool || 'sel';
+        var tool = _selToolById(toolId);
+        var ts = options.ts || Date.now();
+        var policy = _selCheckpointSavePolicy(toolId);
+        var eligible = options.sharePacketEligible === false ? false : policy.sharePacketEligible;
+        return {
+          id: options.id || (toolId + '-' + ts),
+          type: 'sel-checkpoint',
+          kind: 'sel-checkpoint',
+          source: 'sel_hub',
+          sourceLabel: 'SEL Hub',
+          tool: toolId,
+          toolId: toolId,
+          toolLabel: options.toolLabel || (tool ? tool.label : policy.sourceLabel),
+          label: label || options.title || (tool ? tool.label + ' checkpoint' : 'SEL checkpoint'),
+          title: label || options.title || (tool ? tool.label + ' checkpoint' : 'SEL checkpoint'),
+          data: data || {},
+          ts: ts,
+          createdAt: new Date(ts).toISOString(),
+          privacy: options.privacy || policy.privacy,
+          privacyLabel: options.privacyLabel || policy.privacyLabel,
+          saveConfirmation: options.confirmation || policy.confirmation,
+          sharePacketEligible: eligible,
+          sharePacketLabel: eligible ? policy.sharePacketLabel : 'Not included in Share Packets',
+          sharePacketDefaultPrivacy: options.sharePacketDefaultPrivacy || policy.sharePacketDefaultPrivacy,
+          sharePacketPrivacyLabel: options.sharePacketPrivacyLabel || policy.sharePacketPrivacyLabel,
+          sharePacketHint: options.sharePacketHint || policy.sharePacketHint
+        };
+      }
+
+      function _saveSelCheckpoint(toolId, label, data, options) {
+        var checkpoint = _normalizeSelCheckpoint(toolId, label, data, options);
+        setSelSnapshots(function(prev) {
+          var next = (prev || []).concat([checkpoint]);
+          next.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+          return next.slice(0, 30);
+        });
+        if (typeof addToast === 'function') addToast(checkpoint.saveConfirmation + ' You choose later if it joins a Share Packet.', 'success');
+        if (announceToSR) announceToSR(checkpoint.saveConfirmation + ' It remains private unless selected for a Share Packet.');
+        return checkpoint;
+      }
+
+      function _selArtifactPacket(artifact) {
+        if (!artifact || typeof artifact !== 'object') return {};
+        if (artifact.artifact && typeof artifact.artifact === 'object') return artifact.artifact;
+        if (artifact.packet && typeof artifact.packet === 'object') return artifact.packet;
+        if (artifact.data && typeof artifact.data === 'object') return artifact.data;
+        return artifact;
+      }
+
+      function _selSavedSharePacketArtifacts() {
+        return (Array.isArray(studentArtifacts) ? studentArtifacts : []).filter(function(artifact) {
+          if (!artifact || typeof artifact !== 'object') return false;
+          var packet = _selArtifactPacket(artifact);
+          return artifact.type === 'sel-share-packet'
+            || packet.type === 'sel-share-packet'
+            || artifact.kindLabel === 'SEL Share Packet'
+            || packet.kindLabel === 'SEL Share Packet';
+        }).sort(function(a, b) {
+          return Date.parse((b && (b.updatedAt || b.createdAt)) || (_selArtifactPacket(b).updatedAt || _selArtifactPacket(b).createdAt) || 0)
+            - Date.parse((a && (a.updatedAt || a.createdAt)) || (_selArtifactPacket(a).updatedAt || _selArtifactPacket(a).createdAt) || 0);
+        });
+      }
+
+      function _selActiveSharePacketArtifact() {
+        if (!activeSharePacketArtifactId) return null;
+        var saved = _selSavedSharePacketArtifacts();
+        for (var i = 0; i < saved.length; i++) {
+          var packet = _selArtifactPacket(saved[i]);
+          if (saved[i].id === activeSharePacketArtifactId || packet.id === activeSharePacketArtifactId) return saved[i];
+        }
+        return null;
+      }
+
+      function _selSharePacketItems() {
+        var items = (Array.isArray(selSnapshots) ? selSnapshots : []).map(function(snap, idx) {
+          if (!snap) return null;
+          if (snap.sharePacketEligible === false) return null;
+          var toolId = snap.tool || snap.toolId;
+          var tool = _selToolById(toolId);
+          var title = snap.label || (tool ? tool.label : 'Saved SEL work');
+          var text = _selPacketCleanText(_selPacketTextFromValue(snap.data || snap, 0), 1800);
+          return {
+            id: String(snap.id || ('sel-snapshot-' + (snap.ts || snap.timestamp || idx))),
+            raw: snap,
+            toolId: toolId,
+            toolLabel: tool ? tool.label : 'SEL Hub',
+            icon: tool ? tool.icon : '\uD83D\uDCBE',
+            title: title,
+            text: text,
+            summary: text ? _selPacketCleanText(text, 220) : ('Saved checkpoint from ' + (tool ? tool.label : 'SEL Hub') + '.'),
+            ts: snap.ts || snap.timestamp || 0,
+            privacyLabel: snap.privacyLabel || 'Private on this device',
+            sharePacketLabel: snap.sharePacketLabel || 'Share Packet eligible',
+            sharePacketDefaultPrivacy: snap.sharePacketDefaultPrivacy || 'summary',
+            sharePacketPrivacyLabel: snap.sharePacketPrivacyLabel || 'Defaults to summary only',
+            sharePacketHint: snap.sharePacketHint || 'It can appear in a Share Packet only if the student chooses it.'
+          };
+        }).filter(Boolean);
+        var seen = {};
+        items.forEach(function(item) { seen[item.id] = true; });
+        var activeArtifact = _selActiveSharePacketArtifact();
+        var activePacket = activeArtifact ? _selArtifactPacket(activeArtifact) : null;
+        if (activePacket && Array.isArray(activePacket.items)) {
+          activePacket.items.forEach(function(savedItem, idx) {
+            if (!savedItem) return;
+            var savedId = String(savedItem.id || ('saved-packet-item-' + idx));
+            if (seen[savedId]) return;
+            var savedText = _selPacketCleanText(savedItem.text || savedItem.summary || '', 1800);
+            items.push({
+              id: savedId,
+              raw: savedItem,
+              toolId: savedItem.toolId || null,
+              toolLabel: savedItem.toolLabel || 'SEL Hub',
+              icon: '\uD83D\uDCC4',
+              title: savedItem.title || 'Saved packet item',
+              text: savedText,
+              summary: savedItem.summary || _selPacketCleanText(savedText, 220) || 'Saved in the previous packet.',
+              ts: Date.parse(savedItem.savedAt || activePacket.updatedAt || activePacket.createdAt || 0) || 0,
+              fromSavedPacket: true
+            });
+            seen[savedId] = true;
+          });
+        }
+        return items.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+      }
+
+      function _buildSelSharePacket(ts, baseArtifact) {
+        var packetTs = ts || Date.now();
+        var basePacket = baseArtifact ? _selArtifactPacket(baseArtifact) : null;
+        var createdAt = (baseArtifact && baseArtifact.createdAt) || (basePacket && basePacket.createdAt) || new Date(packetTs).toISOString();
+        var updatedAt = new Date(packetTs).toISOString();
+        var selected = _selSharePacketItems().filter(function(item) {
+          return !!(packetSelections && packetSelections[item.id]);
+        });
+        var items = selected.map(function(item) {
+          var privacy = (packetSelections && packetSelections[item.id]) || 'summary';
+          var shared = {
+            id: item.id,
+            title: item.title,
+            toolId: item.toolId || null,
+            toolLabel: item.toolLabel,
+            privacy: privacy,
+            privacyLabel: _selPacketPrivacyLabel(privacy),
+            savedAt: item.ts ? new Date(item.ts).toISOString() : null
+          };
+          if (privacy === 'full') {
+            shared.text = item.text || item.summary;
+          } else if (privacy === 'followup') {
+            shared.summary = item.summary;
+            shared.followUpRequested = true;
+          } else if (privacy === 'private') {
+            shared.summary = 'Kept private by student choice.';
+          } else {
+            shared.summary = item.summary;
+          }
+          return shared;
+        });
+        return {
+          id: (baseArtifact && baseArtifact.id) || (basePacket && basePacket.id) || ('sel-share-packet-' + String(packetTs)),
+          type: 'sel-share-packet',
+          source: 'sel_hub',
+          sourceLabel: 'SEL Hub',
+          kindLabel: 'SEL Share Packet',
+          title: (basePacket && basePacket.title) || 'SEL Share Packet',
+          summary: 'Student-controlled SEL packet with ' + items.length + (items.length === 1 ? ' selected checkpoint' : ' selected checkpoints'),
+          privacy: 'student-controlled',
+          privacySummary: 'Student-controlled. Only selected checkpoint details appear in AlloHaven.',
+          sourceSummary: 'Saved from SEL Hub Share Packet',
+          audience: 'student-selected',
+          sharingModel: 'item-level-privacy',
+          exportKinds: ['text', 'print', 'allohaven'],
+          createdAt: createdAt,
+          updatedAt: updatedAt,
+          itemCount: items.length,
+          lifecycleStatus: baseArtifact ? 'revised' : 'saved',
+          items: items
+        };
+      }
+
+      function _selPacketPlainText(packet) {
+        var lines = [
+          packet.title || 'SEL Share Packet',
+          'Created: ' + (packet.createdAt ? new Date(packet.createdAt).toLocaleString() : new Date().toLocaleString()),
+          'Privacy: student-selected',
+          ''
+        ];
+        (packet.items || []).forEach(function(item, idx) {
+          lines.push(String(idx + 1) + '. ' + (item.title || 'SEL checkpoint'));
+          lines.push('Tool: ' + (item.toolLabel || 'SEL Hub'));
+          lines.push('Sharing choice: ' + (item.privacyLabel || _selPacketPrivacyLabel(item.privacy)));
+          if (item.followUpRequested) lines.push('Follow-up requested.');
+          lines.push(item.text || item.summary || 'No reflection text shared.');
+          lines.push('');
+        });
+        return lines.join('\n');
+      }
+
+      function _downloadSelSharePacket() {
+        var packet = _buildSelSharePacket(Date.now());
+        if (!packet.items.length) {
+          setPacketSavedNotice('Choose at least one saved checkpoint first.');
+          return;
+        }
+        try {
+          var blob = new Blob([_selPacketPlainText(packet)], { type: 'text/plain;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'sel-share-packet.txt';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function() {
+            try { document.body.removeChild(a); } catch (e) {}
+            try { URL.revokeObjectURL(url); } catch (e2) {}
+          }, 0);
+          setPacketSavedNotice('Downloaded a text copy of this packet.');
+        } catch (e) {
+          setPacketSavedNotice('Download was not available in this browser.');
+        }
+      }
+
+      function _printSelSharePacket() {
+        var packet = _buildSelSharePacket(Date.now());
+        if (!packet.items.length) {
+          setPacketSavedNotice('Choose at least one saved checkpoint first.');
+          return;
+        }
+        var body = (packet.items || []).map(function(item, idx) {
+          var sharedText = item.text || item.summary || 'No reflection text shared.';
+          return '<section style="border:1px solid #cbd5e1;border-radius:10px;padding:14px;margin:0 0 12px;">'
+            + '<h2 style="font-size:16px;margin:0 0 4px;">' + (idx + 1) + '. ' + _selPacketEscape(item.title || 'SEL checkpoint') + '</h2>'
+            + '<p style="margin:0 0 8px;color:#475569;font-size:12px;">' + _selPacketEscape(item.toolLabel || 'SEL Hub') + ' | ' + _selPacketEscape(item.privacyLabel || _selPacketPrivacyLabel(item.privacy)) + '</p>'
+            + (item.followUpRequested ? '<p style="font-weight:700;color:#92400e;">Follow-up requested.</p>' : '')
+            + '<p style="white-space:pre-wrap;line-height:1.55;margin:0;">' + _selPacketEscape(sharedText) + '</p>'
+            + '</section>';
+        }).join('');
+        var html = '<!doctype html><html><head><meta charset="utf-8"><title>SEL Share Packet</title></head>'
+          + '<body style="font-family:Arial,sans-serif;color:#0f172a;margin:28px;">'
+          + '<h1 style="margin:0 0 4px;">SEL Share Packet</h1>'
+          + '<p style="margin:0 0 16px;color:#475569;">Student-selected sharing choices. Created ' + _selPacketEscape(new Date(packet.createdAt).toLocaleString()) + '.</p>'
+          + body
+          + '<script>window.onload=function(){setTimeout(function(){window.print();},80);};<\/script>'
+          + '</body></html>';
+        var win = null;
+        try { win = window.open('', '_blank'); } catch (e) {}
+        if (!win) {
+          setPacketSavedNotice('Print was blocked by the browser. Try Download text instead.');
+          return;
+        }
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+      }
+
+      function _saveSelSharePacketToPortfolio(replaceExisting) {
+        var ts = Date.now();
+        var existingArtifact = replaceExisting ? _selActiveSharePacketArtifact() : null;
+        var packet = _buildSelSharePacket(ts, existingArtifact);
+        if (!packet.items.length) {
+          setPacketSavedNotice('Choose at least one saved checkpoint first.');
+          return;
+        }
+        var previousVersion = existingArtifact ? Number(existingArtifact.version || _selArtifactPacket(existingArtifact).version || 1) : 0;
+        var artifact = {
+          id: packet.id,
+          type: 'sel-share-packet',
+          source: 'sel_hub',
+          sourceLabel: 'SEL Hub',
+          kindLabel: 'SEL Share Packet',
+          title: packet.title,
+          summary: packet.summary,
+          privacy: packet.privacy,
+          privacySummary: packet.privacySummary,
+          sourceSummary: packet.sourceSummary,
+          audience: packet.audience,
+          sharingModel: packet.sharingModel,
+          exportKinds: packet.exportKinds,
+          createdAt: packet.createdAt,
+          updatedAt: packet.updatedAt,
+          lifecycleStatus: packet.lifecycleStatus,
+          version: existingArtifact ? previousVersion + 1 : 1,
+          itemCount: packet.itemCount,
+          artifact: packet
+        };
+        setStudentArtifacts(function(prev) {
+          var artifactStore = window.AlloModules && window.AlloModules.StudentArtifactStore;
+          if (artifactStore && typeof artifactStore.save === 'function') {
+            return artifactStore.save(artifact, { source: 'sel_hub', replaceExisting: !!existingArtifact, limit: 80 });
+          }
+          var existingMatched = false;
+          var next = Array.isArray(prev) ? prev.slice() : [];
+          if (existingArtifact) {
+            next = next.map(function(candidate) {
+              var candidatePacket = _selArtifactPacket(candidate);
+              if (candidate && (candidate.id === artifact.id || candidatePacket.id === artifact.id)) {
+                existingMatched = true;
+                return artifact;
+              }
+              return candidate;
+            });
+          }
+          if (!existingMatched) next = [artifact].concat(next);
+          next.sort(function(a, b) {
+            return Date.parse(b.updatedAt || b.createdAt || 0) - Date.parse(a.updatedAt || a.createdAt || 0);
+          });
+          next = next.slice(0, 80);
+          try {
+            window.__alloflowStudentArtifacts = next;
+            localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+            window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'sel_hub' } }));
+          } catch (e) {}
+          return next;
+        });
+        setActiveSharePacketArtifactId(artifact.id);
+        var receipt = existingArtifact
+          ? 'Updated existing student-controlled SEL Hub packet in AlloHaven Portfolio.'
+          : 'Saved new student-controlled SEL Hub packet to AlloHaven Portfolio.';
+        setPacketSavedNotice(receipt + ' Open AlloHaven > Portfolio to view it.');
+        if (typeof addToast === 'function') addToast(receipt, 'success');
+        if (announceToSR) announceToSR(receipt);
+      }
+
+      function _startNewSelSharePacketDraft() {
+        var packetItems = _selSharePacketItems().filter(function(item) { return !item.fromSavedPacket; });
+        var nextSelections = {};
+        packetItems.slice(0, Math.min(4, packetItems.length)).forEach(function(item) {
+          nextSelections[item.id] = item.sharePacketDefaultPrivacy || 'summary';
+        });
+        setActiveSharePacketArtifactId(null);
+        setPacketSelections(nextSelections);
+        setPacketSavedNotice('');
+      }
+
+      function _loadSelSharePacketDraft(artifact) {
+        var packet = _selArtifactPacket(artifact);
+        var nextSelections = {};
+        (Array.isArray(packet.items) ? packet.items : []).forEach(function(item) {
+          if (!item) return;
+          nextSelections[String(item.id || item.title || Object.keys(nextSelections).length)] = item.privacy || 'summary';
+        });
+        setActiveSharePacketArtifactId((artifact && artifact.id) || packet.id || null);
+        setPacketSelections(nextSelections);
+        setPacketSavedNotice('Loaded saved packet as a draft. Review choices before updating or saving a new copy.');
+        if (announceToSR) announceToSR('Saved SEL Share Packet loaded as draft.');
+      }
+
+      function _openSelSharePacketBuilder() {
+        _startNewSelSharePacketDraft();
+        alloSaveFocus();
+        setShowSharePacket(true);
+        if (announceToSR) announceToSR('Create SEL Share Packet opened.');
+      }
+
       if (!showSelHub) return null;
 
       // ── Screen reader live region (fixed: removed bogus role=button) ──
@@ -1372,36 +2551,36 @@
       // ── Header bar (fixed: removed bogus role=button from non-interactive containers) ──
       var header = h('div', {
         role: 'banner',
-        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: isCompact ? 'wrap' : 'nowrap', padding: isCompact ? '12px 12px' : '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
       },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 8 : 12, minWidth: 0 } },
           selHubTool && h('button', {
-            onClick: function() { setSelHubTool(null); announceToSR('Returned to tool grid'); },
+            onClick: function() { var fromTool = selHubTool; setSelHubTool(null); announceToSR('Returned to tool grid'); alloFocusToolCard(fromTool); },
             'aria-label': 'Back to tools',
             style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }
           }, ArrowLeft ? h(ArrowLeft, { size: 20 }) : '\u2190'),
-          h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 800, color: _t.headerText } },
+          h('h2', { style: { margin: 0, fontSize: isCompact ? 18 : 20, fontWeight: 800, color: _t.headerText, whiteSpace: 'nowrap' } },
             '\u2764\uFE0F\u200D\uD83D\uDD25 SEL Hub'
           ),
           h('span', {
-            style: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
+            style: { display: isCompact ? 'none' : 'inline', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
           }, gradeBand(gradeLevel) === 'elementary' ? 'Elementary' : gradeBand(gradeLevel) === 'middle' ? 'Middle School' : 'High School')
         ),
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, position: 'relative' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 6 : 8, position: 'relative', flexWrap: 'wrap', justifyContent: isCompact ? 'flex-end' : 'flex-start', marginLeft: 'auto' } },
           // CHANGE 2: Unsaved-changes badge \u2014 dot only when dirty
           isDirty && h('div', { style: { position: 'relative' } },
             h('button', {
               onClick: function() { setShowDirtyTooltip(function(v) { return !v; }); },
               'aria-label': 'You have unsaved changes',
               title: 'Unsaved changes',
-              style: { background: 'rgba(239, 68, 68, 0.18)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fecaca', cursor: 'pointer', padding: '4px 10px', borderRadius: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }
+              style: { background: 'rgba(239, 68, 68, 0.18)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fecaca', cursor: 'pointer', padding: isCompact ? '4px 8px' : '4px 10px', borderRadius: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }
             },
               h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' } }),
               h('span', null, 'Unsaved')
             ),
             showDirtyTooltip && h('div', {
               role: 'tooltip',
-              style: { position: 'absolute', top: '110%', right: 0, marginTop: 6, background: '#0f172a', color: '#f1f5f9', border: '1px solid #475569', borderRadius: 10, padding: 12, fontSize: 12, width: 260, zIndex: 10000, boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }
+              style: { position: 'absolute', top: '110%', right: 0, marginTop: 6, background: '#0f172a', color: '#f1f5f9', border: '1px solid #475569', borderRadius: 8, padding: 12, fontSize: 12, width: isCompact ? 220 : 260, zIndex: 10000, boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }
             },
               h('div', { style: { marginBottom: 8 } }, 'You have unsaved changes \u2014 tap Export now to save them'),
               h('button', {
@@ -1418,28 +2597,28 @@
                   // alloflow-sel-exported if/when the file actually writes).
                   if (typeof addToast === 'function') addToast('Exporting your work\u2026', 'info');
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%' }
+                style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: _t.accent, color: _t.accentText, fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%' }
               }, '\uD83D\uDCBE Export now')
             )
           ),
           // CHANGE 3: For-Educators link
           h('button', {
-            onClick: function() { setShowForEducators(true); announceToSR('For Educators guide opened'); },
+            onClick: function() { alloSaveFocus(); setShowForEducators(true); announceToSR('For Educators guide opened'); },
             'aria-label': 'For Educators: how to use this Hub responsibly',
             title: 'For Educators',
-            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }
-          }, '\uD83C\uDF93 ', h('span', null, 'For Educators')),
+            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 'auto' }
+          }, '\uD83C\uDF93 ', h('span', { style: { display: isCompact ? 'none' : 'inline' } }, 'For Educators')),
           // Theme toggle button
           h('button', {
             onClick: function() { if (typeof window.AlloToggleTheme === 'function') { window.AlloToggleTheme(); setTimeout(function() { setSelToolData(function(p) { return Object.assign({}, p); }); }, 50); } },
             'aria-label': 'Toggle theme (light / dark / high contrast)',
             title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode',
-            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }
-          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
+            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 'auto' }
+          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { display: isCompact ? 'none' : 'inline', fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
           // XP badge (fixed: removed bogus role=button from display-only element)
           h('div', {
             'aria-label': selXp + ' SEL experience points',
-            style: { background: _t.accent, color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700 }
+            style: { background: _t.accent, color: _t.accentText, borderRadius: 20, padding: isCompact ? '6px 10px' : '4px 14px', fontSize: 12, fontWeight: 700, minHeight: isCompact ? 24 : 'auto' }
           }, '\u2728 ' + selXp + ' XP'),
           // Close button
           h('button', {
@@ -1476,6 +2655,7 @@
                 // measures from this dismissal.
                 _lastActivityRef.current = Date.now();
                 _lastExportRef.current = Date.now();
+                alloRestoreOrFocusSelHubStart();
               },
               'aria-label': 'Got it, start using the SEL Hub',
               style: { padding: '10px 28px', minHeight: 44, borderRadius: 10, border: 'none', background: _t.accent, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
@@ -1485,6 +2665,63 @@
       );
 
       // \u2500\u2500 CHANGE 3: For-Educators modal \u2500\u2500
+      // SEL-PRIV-7: right-to-delete affordance — permanently clear all SEL data
+      // (journal entries, reflections, safety plan, streak, stations, progress)
+      // from this device. FERPA-positive; destructive, so confirm-gated.
+      var clearAllSelData = function() {
+        var ok = (typeof window !== 'undefined' && window.confirm)
+          ? window.confirm('Permanently delete ALL your SEL work on this device — journal entries, reflections, safety plan, streak, stations, and progress?\n\nThis cannot be undone.')
+          : false;
+        if (!ok) return;
+        // Remove every SEL-namespaced localStorage key (hub keys, legacy per-tool
+        // keys, and per-session crisiscompanion namespaced keys) via a scan so no
+        // variant is missed.
+        try {
+          var toRemove = [];
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && /^(alloflow_sel_|alloSel|crisisCompanion\.)/.test(k)) toRemove.push(k);
+          }
+          toRemove.forEach(function(k) { try { localStorage.removeItem(k); } catch (e) {} });
+        } catch (e) {}
+        // Reset in-memory hub state.
+        try { setSelToolData({}); } catch (e) {}
+        try { setSavedStations([]); } catch (e) {}
+        try { setQuestProgress({}); } catch (e) {}
+        try { setSelStreak({ count: 0, longest: 0, lastDate: null }); } catch (e) {}
+        try { setSelToolUsage({}); } catch (e) {}
+        try { setSelXp(0); } catch (e) {}
+        try { setSelSnapshots([]); } catch (e) {}
+        try {
+          setStudentArtifacts(function(prev) {
+            return (Array.isArray(prev) ? prev : []).filter(function(a) {
+              return !(a && a.source === 'sel_hub');
+            });
+          });
+        } catch (e) {}
+        // Clear the window mirror slots so a subsequent host project-save does not
+        // re-serialize the deleted data back into the file.
+        try {
+          if (typeof window !== 'undefined') {
+            var keptArtifacts = (Array.isArray(window.__alloflowStudentArtifacts) ? window.__alloflowStudentArtifacts : []).filter(function(a) {
+              return !(a && a.source === 'sel_hub');
+            });
+            window.__alloflowSelToolData = {};
+            window.__alloflowSelEngagement = null;
+            window.__alloflowSelStations = null;
+            window.__alloflowSelProgress = null;
+            window.__alloflowSelSnapshots = [];
+            window.__alloflowStudentArtifacts = keptArtifacts;
+            try { localStorage.setItem('alloflow_student_artifacts', JSON.stringify(keptArtifacts)); } catch (e2) {}
+            try { window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'sel_hub-clear' } })); } catch (e3) {}
+          }
+        } catch (e) {}
+        setShowForEducators(false);
+        alloRestoreOrFocusSelHubStart();
+        if (typeof addToast === 'function') addToast('Your SEL data has been cleared from this device.', 'success');
+        if (announceToSR) announceToSR('Your SEL data has been cleared from this device.');
+      };
+
       var forEducatorsModal = showForEducators && h('div', {
         role: 'dialog',
         'aria-modal': 'true',
@@ -1499,13 +2736,38 @@
             h('h2', { id: 'sel-for-educators-title', style: { margin: 0, fontSize: 16, fontWeight: 800 } }, '\uD83C\uDF93 For Educators'),
             h('button', {
               'data-primary-action': 'true',
-              onClick: function() { setShowForEducators(false); },
+              onClick: function() { setShowForEducators(false); alloRestoreOrFocusSelHubStart(); },
               'aria-label': 'Close For Educators guide',
               style: { background: 'none', border: 'none', color: _t.text, cursor: 'pointer', fontSize: 18, padding: 4 }
             }, '\u2715')
           ),
           h('div', { style: { flex: 1, overflow: 'auto', padding: '16px 24px', fontSize: 13, color: _t.text } },
-            _selRenderMarkdown(React, FOR_EDUCATORS_MD)
+            h('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgSoft } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 14, fontWeight: 900, color: _t.text } }, 'Classroom launch frame'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 8 } },
+                [
+                  { label: 'Before', body: 'Confirm parent notice, opt-out path, and crisis-response contact.' },
+                  { label: 'During', body: 'Keep sharing optional. Frame tools as practice, not assessment.' },
+                  { label: 'After', body: 'Save only when students choose to export or hand you a file.' }
+                ].map(function(item) {
+                  return h('div', { key: item.label, style: { padding: 10, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard } },
+                    h('div', { style: { fontSize: 11, fontWeight: 900, color: _t.successText, textTransform: 'uppercase', marginBottom: 4 } }, item.label),
+                    h('div', { style: { fontSize: 12, color: _t.textMuted, lineHeight: 1.45 } }, item.body)
+                  );
+                })
+              )
+            ),
+            _selRenderMarkdown(React, FOR_EDUCATORS_MD),
+            h('div', { style: { marginTop: 20, paddingTop: 16, borderTop: '1px solid ' + _t.border } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 14, fontWeight: 800, color: _t.text } }, 'Data & privacy'),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12, color: _t.textMuted, lineHeight: 1.5 } },
+                'SEL work (journal entries, reflections, safety plan, streak, stations, and progress) is stored on this device and can be included when a project file is saved. This permanently deletes all of it from this device.'),
+              h('button', {
+                onClick: clearAllSelData,
+                'aria-label': 'Clear all my SEL data from this device',
+                style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + _t.dangerText, background: isContrast ? '#000000' : 'rgba(220,38,38,0.08)', color: _t.dangerText, fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+              }, '🗑️ Clear my SEL data')
+            )
           )
         )
       );
@@ -1513,8 +2775,287 @@
       // ══════════════════════════════════════════════════════════════
       // ── Tool Grid (when no tool is selected) ──
       // ══════════════════════════════════════════════════════════════
+      var sharePacketModal = showSharePacket && (function() {
+        var packetItems = _selSharePacketItems();
+        var savedSharePacketArtifacts = _selSavedSharePacketArtifacts();
+        var activeSharePacketArtifact = _selActiveSharePacketArtifact();
+        var activePacket = activeSharePacketArtifact ? _selArtifactPacket(activeSharePacketArtifact) : null;
+        var previewPacket = _buildSelSharePacket(Date.now(), activeSharePacketArtifact);
+        var selectedCount = previewPacket.items.length;
+        var privacyChoices = _selPacketPrivacyChoices();
+        var actionDisabledStyle = selectedCount ? {} : { opacity: 0.55, cursor: 'not-allowed' };
+        return h('div', {
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'sel-share-packet-title',
+          id: 'sel-share-packet-modal',
+          style: { position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }
+        },
+          h('div', {
+            style: { background: _t.bgCard, color: _t.text, borderRadius: 14, border: '1px solid ' + _t.border, maxWidth: 860, width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: '14px 20px', borderBottom: '1px solid ' + _t.border } },
+              h('div', { style: { minWidth: 0 } },
+                h('h2', { id: 'sel-share-packet-title', style: { margin: 0, fontSize: 17, fontWeight: 900, color: _t.text } }, 'Create SEL Share Packet'),
+                h('p', { style: { margin: '4px 0 0', fontSize: 12, lineHeight: 1.45, color: _t.textMuted } },
+                  'Choose saved checkpoints and what each one can share. AlloHaven will only show the details selected here.')
+              ),
+              h('button', {
+                'data-primary-action': 'true',
+                onClick: function() { setShowSharePacket(false); alloRestoreOrFocusSelHubStart(); },
+                'aria-label': 'Close SEL Share Packet builder',
+                style: { background: 'none', border: 'none', color: _t.text, cursor: 'pointer', fontSize: 18, padding: 4 }
+              }, '\u2715')
+            ),
+            h('div', { style: { flex: 1, overflow: 'auto', padding: isCompact ? '14px' : '18px 20px' } },
+              h('div', {
+                role: 'note',
+                style: {
+                  marginBottom: 12,
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  border: '1px solid ' + _t.border,
+                  background: _t.bgSoft,
+                  color: _t.textMuted,
+                  fontSize: 11.5,
+                  lineHeight: 1.45
+                }
+              },
+                h('strong', { style: { color: _t.text } }, 'Student-controlled packet. '),
+                'Choose what appears, then set the sharing label for each checkpoint. Private entries appear only as private labels.'
+              ),
+              h('div', {
+                role: 'status',
+                'aria-live': 'polite',
+                style: {
+                  marginBottom: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                  flexWrap: 'wrap',
+                  padding: '9px 11px',
+                  borderRadius: 8,
+                  border: '1px solid ' + (activeSharePacketArtifact ? _t.successText : _t.border),
+                  background: activeSharePacketArtifact ? (isContrast ? '#000000' : 'rgba(15,118,110,0.08)') : _t.bgSoft,
+                  color: _t.textMuted,
+                  fontSize: 11.5,
+                  lineHeight: 1.4
+                }
+              },
+                h('span', null,
+                  activeSharePacketArtifact
+                    ? 'Draft loaded from saved packet: ' + ((activePacket && activePacket.title) || 'SEL Share Packet') + '. Updating keeps the same AlloHaven portfolio item.'
+                    : 'New packet draft. Save it to AlloHaven when the sharing choices look right.'
+                ),
+                activeSharePacketArtifact && h('button', {
+                  type: 'button',
+                  onClick: _startNewSelSharePacketDraft,
+                  'aria-label': 'Start a new SEL Share Packet draft',
+                  style: { minHeight: 32, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, color: _t.text, cursor: 'pointer', fontSize: 11, fontWeight: 900, padding: '5px 10px' }
+                }, 'Start new')
+              ),
+              savedSharePacketArtifacts.length ? h('section', {
+                'aria-label': 'Saved SEL Share Packets',
+                style: {
+                  marginBottom: 12,
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  border: '1px solid ' + _t.border,
+                  background: _t.bgSoft
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+                  h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 900, color: _t.text } }, 'Saved Packets'),
+                  h('span', { style: { fontSize: 11, color: _t.textMuted } }, savedSharePacketArtifacts.length + (savedSharePacketArtifacts.length === 1 ? ' packet' : ' packets') + ' in AlloHaven')
+                ),
+                h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 } },
+                  savedSharePacketArtifacts.slice(0, 4).map(function(artifact) {
+                    var packet = _selArtifactPacket(artifact);
+                    var updated = Date.parse(artifact.updatedAt || packet.updatedAt || artifact.createdAt || packet.createdAt || 0) || 0;
+                    var isActivePacket = !!(activeSharePacketArtifactId && (artifact.id === activeSharePacketArtifactId || packet.id === activeSharePacketArtifactId));
+                    var itemCount = Number(artifact.itemCount || packet.itemCount || (Array.isArray(packet.items) ? packet.items.length : 0));
+                    return h('div', {
+                      key: artifact.id || packet.id || ('saved-share-packet-' + updated),
+                      style: { border: '1px solid ' + (isActivePacket ? _t.successText : _t.border), borderRadius: 8, background: _t.bgCard, padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
+                    },
+                      h('div', { style: { minWidth: 0 } },
+                        h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 2 } },
+                          h('strong', { style: { fontSize: 12, color: _t.text, overflowWrap: 'anywhere' } }, packet.title || artifact.title || 'SEL Share Packet'),
+                          isActivePacket && h('span', { style: { fontSize: 9.5, fontWeight: 900, color: _t.successText, textTransform: 'uppercase' } }, 'current draft')
+                        ),
+                        h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.35 } },
+                          (itemCount || 0) + ((itemCount || 0) === 1 ? ' checkpoint' : ' checkpoints') + (updated ? ' | updated ' + _selRelativeTime(updated) : '')
+                        )
+                      ),
+                      h('button', {
+                        type: 'button',
+                        onClick: function() { _loadSelSharePacketDraft(artifact); },
+                        'aria-label': 'Reopen saved SEL Share Packet as draft: ' + (packet.title || artifact.title || 'SEL Share Packet'),
+                        style: { alignSelf: 'flex-start', minHeight: 32, borderRadius: 8, border: '1px solid ' + _t.accent, background: isActivePacket ? _t.accent : _t.accentSoftBg, color: isActivePacket ? _t.accentText : _t.accentSoftText, cursor: 'pointer', fontSize: 11, fontWeight: 900, padding: '5px 10px' }
+                      }, isActivePacket ? 'Reload draft' : 'Reopen')
+                    );
+                  })
+                )
+              ) : null,
+              packetItems.length ? h('div', {
+                style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'minmax(0, 1.15fr) minmax(280px, 0.85fr)', gap: 14, alignItems: 'start' }
+              },
+                h('section', { 'aria-label': 'Saved SEL checkpoints', style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' } },
+                    h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 900, color: _t.text } }, 'Saved Checkpoints'),
+                    h('span', { style: { fontSize: 11, color: _t.textMuted } }, selectedCount + ' selected')
+                  ),
+                  packetItems.slice(0, 12).map(function(item) {
+                    var selected = !!(packetSelections && packetSelections[item.id]);
+                    var privacy = selected ? (packetSelections[item.id] || 'summary') : 'summary';
+                    return h('div', {
+                      key: 'packet-item-' + item.id,
+                      style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgRaised, padding: 10, display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 10, alignItems: 'start' }
+                    },
+                      h('input', {
+                        type: 'checkbox',
+                        checked: selected,
+                        'aria-label': (selected ? 'Remove ' : 'Add ') + item.title + ' from SEL Share Packet',
+                        onChange: function(e) {
+                          var next = Object.assign({}, packetSelections || {});
+                          if (e.target.checked) next[item.id] = next[item.id] || item.sharePacketDefaultPrivacy || 'summary';
+                          else delete next[item.id];
+                          setPacketSelections(next);
+                          setPacketSavedNotice('');
+                        },
+                        style: { width: 18, height: 18, marginTop: 2, accentColor: '#7c3aed' }
+                      }),
+                      h('div', { style: { minWidth: 0 } },
+                        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, marginBottom: 4 } },
+                          h('span', { 'aria-hidden': 'true', style: { fontSize: 18, flexShrink: 0 } }, item.icon || '\uD83D\uDCBE'),
+                          h('div', { style: { minWidth: 0 } },
+                            h('div', { style: { fontSize: 12, fontWeight: 900, color: _t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, item.title),
+                            h('div', { style: { fontSize: 10.5, color: _t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, item.toolLabel + (_selRelativeTime(item.ts) ? ' | ' + _selRelativeTime(item.ts) : ''))
+                          )
+                        ),
+                        h('p', { style: { margin: '0 0 8px', fontSize: 11, lineHeight: 1.4, color: _t.textMuted } }, item.summary),
+                        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 } },
+                          [item.privacyLabel || 'Private on this device', item.sharePacketPrivacyLabel || 'Defaults to summary only'].map(function(label) {
+                            return h('span', {
+                              key: label,
+                              style: { border: '1px solid ' + _t.border, borderRadius: 999, padding: '2px 7px', color: _t.textMuted, background: _t.bgSoft, fontSize: 10, fontWeight: 800 }
+                            }, label);
+                          })
+                        ),
+                        h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 10.5, fontWeight: 800, color: _t.textMuted } },
+                          'Sharing choice',
+                          h('select', {
+                            disabled: !selected,
+                            value: privacy,
+                            onChange: function(e) {
+                              var next = Object.assign({}, packetSelections || {});
+                              next[item.id] = e.target.value;
+                              setPacketSelections(next);
+                              setPacketSavedNotice('');
+                            },
+                            'aria-label': 'Sharing choice for ' + item.title,
+                            style: { width: '100%', minHeight: 34, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, padding: '6px 8px', fontSize: 12, boxSizing: 'border-box', opacity: selected ? 1 : 0.6 }
+                          },
+                            privacyChoices.map(function(choice) {
+                              return h('option', { key: choice.id, value: choice.id }, choice.label);
+                            })
+                          )
+                        )
+                      )
+                    );
+                  })
+                ),
+                h('section', { 'aria-label': 'SEL Share Packet preview', style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgSoft, padding: 12 } },
+                  h('h3', { style: { margin: '0 0 6px', fontSize: 13, fontWeight: 900, color: _t.text } }, 'Preview'),
+                  h('p', { style: { margin: '0 0 10px', fontSize: 11.5, color: _t.textMuted, lineHeight: 1.45 } },
+                    selectedCount ? 'This is the version that will print, download, and appear in AlloHaven.' : 'Select at least one checkpoint to build a packet.'),
+                  selectedCount ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                    previewPacket.items.map(function(item, idx) {
+                      return h('div', {
+                        key: 'packet-preview-' + item.id + '-' + idx,
+                        style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard, padding: 10 }
+                      },
+                        h('div', { style: { fontSize: 11, fontWeight: 900, color: _t.text, marginBottom: 4 } }, String(idx + 1) + '. ' + item.title),
+                        h('div', { style: { fontSize: 10.5, color: item.privacy === 'private' ? _t.dangerText : _t.successText, fontWeight: 900, marginBottom: 5 } }, item.privacyLabel),
+                        item.followUpRequested ? h('div', { style: { fontSize: 11, color: _t.warningText, fontWeight: 800, marginBottom: 5 } }, 'Follow-up requested.') : null,
+                        h('p', { style: { margin: 0, fontSize: 11.5, lineHeight: 1.45, color: _t.textMuted } }, item.text || item.summary || 'No reflection text shared.')
+                      );
+                    })
+                  ) : null
+                )
+              ) : h('div', { style: { padding: 18, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgSoft, color: _t.textMuted, fontSize: 13, lineHeight: 1.5 } },
+                'No saved SEL checkpoints yet. Open an SEL tool and use its save/checkpoint action, then return here to create a packet.')
+            ),
+            h('div', { style: { borderTop: '1px solid ' + _t.border, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+              h('div', { role: 'status', 'aria-live': 'polite', style: { minHeight: 18, fontSize: 11, color: packetSavedNotice ? _t.successText : _t.textMuted, fontWeight: packetSavedNotice ? 800 : 500 } },
+                packetSavedNotice || 'Private items stay private; summary-only items keep full text out of the portfolio.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                h('button', {
+                  type: 'button',
+                  disabled: !selectedCount,
+                  onClick: _downloadSelSharePacket,
+                  'aria-label': 'Download this SEL Share Packet as text',
+                  style: Object.assign({ minHeight: 36, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, color: _t.text, cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: '7px 12px' }, actionDisabledStyle)
+                }, 'Download text'),
+                h('button', {
+                  type: 'button',
+                  disabled: !selectedCount,
+                  onClick: _printSelSharePacket,
+                  'aria-label': 'Print or save this SEL Share Packet as a PDF',
+                  style: Object.assign({ minHeight: 36, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, color: _t.text, cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: '7px 12px' }, actionDisabledStyle)
+                }, 'Print / Save PDF'),
+                activeSharePacketArtifact && h('button', {
+                  type: 'button',
+                  disabled: !selectedCount,
+                  onClick: function() { _saveSelSharePacketToPortfolio(true); },
+                  'aria-label': 'Update this saved SEL Share Packet in AlloHaven',
+                  style: Object.assign({ minHeight: 36, borderRadius: 8, border: '1px solid ' + _t.successText, background: isContrast ? '#000000' : 'rgba(15,118,110,0.10)', color: _t.successText, cursor: 'pointer', fontSize: 12, fontWeight: 900, padding: '7px 12px' }, actionDisabledStyle)
+                }, 'Update saved copy'),
+                h('button', {
+                  type: 'button',
+                  disabled: !selectedCount,
+                  onClick: function() { _saveSelSharePacketToPortfolio(false); },
+                  'aria-label': activeSharePacketArtifact ? 'Save this SEL Share Packet as a new AlloHaven copy' : 'Save this SEL Share Packet to AlloHaven',
+                  style: Object.assign({ minHeight: 36, borderRadius: 8, border: 'none', background: _t.accent, color: _t.accentText, cursor: 'pointer', fontSize: 12, fontWeight: 900, padding: '7px 14px' }, actionDisabledStyle)
+                }, activeSharePacketArtifact ? 'Save as new copy' : 'Save to AlloHaven')
+              )
+            )
+          )
+        );
+      })();
+
       var toolGrid = null;
       if (!selHubTool) {
+        var _recentSelTool = null;
+        if (!activePathway && !activeStation) {
+          var bestId = null; var bestTime = 0; var weekAgo = Date.now() - 7 * 86400000;
+          Object.keys(selToolUsage || {}).forEach(function(k) {
+            var u = selToolUsage[k];
+            if (u && u.lastUsed && u.lastUsed > bestTime && u.lastUsed > weekAgo) { bestTime = u.lastUsed; bestId = k; }
+          });
+          if (bestId) _recentSelTool = _allSelTools.find(function(t) { return t.id === bestId && !t.category; }) || null;
+        }
+        var _gradePick = _selGradePick();
+        var _startHereCards = [
+          { key: 'continue', icon: _recentSelTool ? _recentSelTool.icon : '\u21A9', label: 'Continue', desc: _recentSelTool ? _recentSelTool.label : 'Resume the last SEL tool you opened.', tool: _recentSelTool, disabled: !_recentSelTool },
+          { key: 'recommended', icon: _gradePick ? _gradePick.icon : '\u2728', label: 'Recommended', desc: _gradePick ? _gradePick.label + ' fits this grade band.' : 'Open a grade-friendly starting point.', tool: _gradePick, disabled: !_gradePick },
+          { key: 'calm', icon: '\uD83E\uDDD8', label: 'Calm Down', desc: 'Try a quick regulation practice.', tool: _allSelTools.find(function(t) { return t.id === 'coping'; }) || _allSelTools.find(function(t) { return t.id === 'mindfulness'; }) },
+          { key: 'journal', icon: '\uD83D\uDCD3', label: 'Journal', desc: 'Write a private reflection.', tool: _allSelTools.find(function(t) { return t.id === 'journal'; }) },
+          { key: 'browse', icon: '\uD83D\uDD0D', label: 'Browse All', desc: 'Search or filter the full catalog.', browse: true, disabled: false }
+        ];
+        var _selNeedChips = [
+          { key: 'calm', icon: '\uD83E\uDDD8', label: 'Calm my body', query: 'calm' },
+          { key: 'feelings', icon: '\uD83D\uDCAC', label: 'Name feelings', query: 'feelings' },
+          { key: 'stress', icon: '\uD83C\uDF2A', label: 'Stress or worry', query: 'stress worry' },
+          { key: 'friend', icon: '\uD83E\uDD1D', label: 'Friend conflict', query: 'friend conflict' },
+          { key: 'write', icon: '\uD83D\uDCD3', label: 'Write it out', query: 'write' },
+          { key: 'decision', icon: '\u2696\uFE0F', label: 'Make a decision', query: 'decision' },
+          { key: 'sleep', icon: '\uD83D\uDE34', label: 'Sleep or tired', query: 'sleep tired' }
+        ];
+        var _recentWorkItems = (!activePathway && !activeStation) ? _selRecentWorkItems() : [];
+        var _shareableSnapshotCount = (!activePathway && !activeStation) ? _selSharePacketItems().length : 0;
+        var _savedSharePacketCount = (!activePathway && !activeStation) ? _selSavedSharePacketArtifacts().length : 0;
         // Search filter
         var _searchLower = selToolSearch.toLowerCase().trim();
         var _filteredTools = _searchLower ? _allSelTools.filter(function(tool) {
@@ -1523,13 +3064,11 @@
             var catIdx = _allSelTools.indexOf(tool);
             for (var j = catIdx + 1; j < _allSelTools.length; j++) {
               if (_allSelTools[j].category) break;
-              if (_allSelTools[j].label.toLowerCase().indexOf(_searchLower) !== -1 ||
-                  _allSelTools[j].desc.toLowerCase().indexOf(_searchLower) !== -1) return true;
+              if (_selToolMatchesSearch(_allSelTools[j], _searchLower)) return true;
             }
             return false;
           }
-          return tool.label.toLowerCase().indexOf(_searchLower) !== -1 ||
-                 tool.desc.toLowerCase().indexOf(_searchLower) !== -1;
+          return _selToolMatchesSearch(tool, _searchLower);
         }) : _allSelTools;
 
         // Remove orphan category headers
@@ -1602,19 +3141,19 @@
           });
         }
 
-        toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: 20 } },
+        toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: isCompact ? 12 : 20 } },
           // Active pathway banner
           activePathway && h('div', {
-            style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #7c3aed15, #6366f115)', border: '1px solid #7c3aed33', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+            style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: _t.bgSoft, border: '1px solid ' + _t.accent, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
           },
             h('div', null,
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7c3aed' } }, '\uD83D\uDEE4\uFE0F ' + activePathway.name),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _t.accentSoftText } }, '\uD83D\uDEE4\uFE0F ' + activePathway.name),
               h('div', { style: { fontSize: 11, color: _t.textMuted, marginTop: 2 } }, activePathway.tools.length + ' tools \u2022 ' + Object.keys(pathwayProgress).filter(function(k) { return pathwayProgress[k]; }).length + '/' + activePathway.tools.length + ' completed')
             ),
             h('button', {
               onClick: function() { setActivePathway(null); setPathwayProgress({}); announceToSR('Pathway cleared'); },
               'aria-label': 'Exit pathway mode',
-              style: { background: 'none', border: '1px solid #7c3aed44', borderRadius: 8, padding: '4px 10px', color: '#7c3aed', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { background: 'none', border: '1px solid ' + _t.accent, borderRadius: 8, padding: '4px 10px', color: _t.accentSoftText, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, '\u2715 Exit Pathway')
           ),
           // Active station banner (mutually exclusive with active pathway in practice)
@@ -1624,11 +3163,11 @@
             var doneQ = (activeStation.quests || []).filter(function (q) { return (stationProg[q.qid] || {}).complete; }).length;
             return h('div', {
               role: 'region', 'aria-label': 'Active SEL Station: ' + activeStation.name,
-              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #ec489915, #f43f5e15)', border: '1px solid #ec489933' }
+              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: _t.bgSoft, border: '1px solid ' + _t.pinkAccent }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
                 h('div', { style: { minWidth: 0, flex: 1 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#be185d' } }, '\ud83d\udccc ' + activeStation.name),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: _t.pinkText } }, '\ud83d\udccc ' + activeStation.name),
                   h('div', { style: { fontSize: 11, color: _t.textMuted, marginTop: 2 } },
                     (activeStation.tools || []).length + ' tools' + (totalQ > 0 ? ' \u2022 ' + doneQ + '/' + totalQ + ' quests done' : '')
                   ),
@@ -1637,7 +3176,7 @@
                 h('button', {
                   onClick: function () { setActiveStationId(null); announceToSR('Station cleared'); },
                   'aria-label': 'Exit station mode',
-                  style: { background: 'none', border: '1px solid #ec489944', borderRadius: 8, padding: '4px 10px', color: '#be185d', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { background: 'none', border: '1px solid ' + _t.pinkAccent, borderRadius: 8, padding: '4px 10px', color: _t.pinkText, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                 }, '\u2715 Exit Station')
               ),
               totalQ > 0 && h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -1645,10 +3184,10 @@
                   var qp = stationProg[q.qid] || {};
                   var done = !!qp.complete;
                   var qIcon = (SEL_QUEST_TYPES.find(function (qt) { return qt.id === q.type; }) || {}).icon || '\ud83c\udfaf';
-                  return h('div', { key: q.qid, style: { background: done ? '#dcfce7' : _t.bgCard, border: '1px solid ' + (done ? '#86efac' : _t.border), borderRadius: 8, padding: '6px 10px' } },
+                  return h('div', { key: q.qid, style: { background: done ? (isContrast ? '#000000' : '#dcfce7') : _t.bgCard, border: '1px solid ' + (done ? _t.successText : _t.border), borderRadius: 8, padding: '6px 10px' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, done ? '\u2705' : qIcon),
-                      h('span', { style: { fontSize: 12, fontWeight: 600, color: done ? '#166534' : _t.text, flex: 1, textDecoration: done ? 'line-through' : 'none' } }, q.label),
+                      h('span', { style: { fontSize: 12, fontWeight: 600, color: done ? _t.successText : _t.text, flex: 1, textDecoration: done ? 'line-through' : 'none' } }, q.label),
                       !done && q.type === 'xpThreshold' && h('span', { style: { fontSize: 10, color: _t.textMuted } }, selXp + ' / ' + ((q.params && q.params.threshold) || 30)),
                       !done && q.type === 'timeSpent' && h('span', { style: { fontSize: 10, color: _t.textMuted } }, Math.floor(((qp.timeAccumMs || 0) / 60000)) + ' / ' + ((q.params && q.params.minutes) || 5) + ' min'),
                       !done && q.type === 'manualComplete' && h('button', {
@@ -1663,7 +3202,7 @@
                           announceToSR('Quest marked complete: ' + q.label);
                         },
                         'aria-label': 'Mark "' + q.label + '" as complete',
-                        style: { fontSize: 11, fontWeight: 700, padding: '8px 14px', minHeight: 36, borderRadius: 6, border: '1px solid #ec489966', background: '#fff', color: '#be185d', cursor: 'pointer' }
+                        style: { fontSize: 11, fontWeight: 700, padding: '8px 14px', minHeight: 36, borderRadius: 6, border: '1px solid ' + _t.pinkAccent, background: _t.bgCard, color: _t.pinkText, cursor: 'pointer' }
                       }, 'Mark complete')
                     ),
                     !done && q.type === 'freeResponse' && h('textarea', {
@@ -1688,28 +3227,242 @@
               )
             );
           })(),
-          // \u2500\u2500 Daily Streak + Continue Where You Left Off \u2500\u2500
+          !activePathway && !activeStation && h('section', {
+            'aria-label': 'Start here',
+            style: { marginBottom: 14 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8 } },
+              h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: _t.text } }, 'Start here'),
+              h('span', { style: { fontSize: 11, color: _t.textMuted } }, 'Pick a quick route, or browse below.')
+            ),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(3, minmax(0, 1fr))' : 'repeat(5, minmax(0, 1fr))'),
+                gap: 8
+              }
+            },
+              _startHereCards.map(function(card) {
+                var disabled = card.disabled || (!card.browse && !card.tool);
+                return h('button', {
+                  key: card.key,
+                  disabled: disabled,
+                  onClick: function() {
+                    if (card.browse) {
+                      setActivePathway(null);
+                      setActiveStationId(null);
+                      setSelCategoryFilter(null);
+                      setSelToolSearch('');
+                      announceToSR('Browsing all SEL tools');
+                      setTimeout(function() {
+                        var searchInput = document.getElementById('sel-tool-search-input');
+                        if (searchInput && searchInput.focus) searchInput.focus();
+                      }, 50);
+                    } else if (card.tool) {
+                      openSelToolById(card.tool.id, card.tool.label);
+                    }
+                  },
+                  'aria-label': card.label + ': ' + card.desc,
+                  style: {
+                    textAlign: 'left',
+                    padding: isCompact ? '10px 12px' : '12px',
+                    minHeight: isCompact ? 68 : 86,
+                    borderRadius: 8,
+                    border: '1px solid ' + _t.border,
+                    background: disabled ? _t.bgDisabled : _t.bgCard,
+                    color: _t.text,
+                    opacity: disabled ? 0.55 : 1,
+                    cursor: disabled ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    flexDirection: isCompact ? 'row' : 'column',
+                    alignItems: isCompact ? 'center' : 'flex-start',
+                    gap: isCompact ? 10 : 6,
+                    boxSizing: 'border-box'
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: isCompact ? 20 : 22, flexShrink: 0 } }, card.icon),
+                  h('span', { style: { minWidth: 0 } },
+                    h('span', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: _t.text, marginBottom: 2 } }, card.label),
+                    h('span', { style: { display: 'block', fontSize: 10.5, lineHeight: 1.35, color: _t.textMuted } }, card.desc)
+                  )
+                );
+              })
+            ),
+            h('div', {
+              role: 'note',
+              style: { marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 11, lineHeight: 1.4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
+            },
+              h('span', null, 'Private on this device. Save or export before closing if you want to keep your work.'),
+              h('button', {
+                onClick: function() {
+                  if (typeof props.onExportRequested === 'function') {
+                    try { props.onExportRequested(); } catch (e) {}
+                  } else {
+                    try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested')); } catch (e) {}
+                  }
+                  if (typeof addToast === 'function') addToast('Preparing to save your SEL work...', 'info');
+                },
+                'aria-label': 'Save or export SEL work now',
+                style: { border: '1px solid ' + _t.accent, background: _t.accent, color: _t.accentText, borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 800, cursor: 'pointer', minHeight: 32 }
+              }, 'Save now')
+            )
+          ),
+          !activePathway && !activeStation && h('details', {
+            'aria-label': 'Teacher launch routines',
+            style: { marginBottom: 14, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden', background: _t.bgCard }
+          },
+            h('summary', {
+              style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 800, color: _t.text, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 8 }
+            }, h('span', { 'aria-hidden': 'true' }, '\uD83C\uDF93'), 'Teacher launch'),
+            h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid ' + _t.border } },
+              h('div', {
+                role: 'note',
+                style: { padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 11, lineHeight: 1.45 }
+              }, 'Class routines stay formative: no grades, no forced sharing, no teacher dashboard of private reflections. Students save or share only when you ask them to choose a file.'),
+              h('div', {
+                role: 'list',
+                'aria-label': 'Teacher launch guardrails',
+                style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 8 }
+              },
+                [
+                  { label: 'Set the boundary', body: 'Say what is private, what is optional, and how students can pass.' },
+                  { label: 'Run the routine', body: 'Use the tools as practice. Keep reflection formative and ungraded.' },
+                  { label: 'Close with choice', body: 'Students decide whether to save, export, or include a checkpoint later.' }
+                ].map(function(step) {
+                  return h('div', {
+                    key: step.label,
+                    role: 'listitem',
+                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard, padding: 9, minWidth: 0 }
+                  },
+                    h('div', { style: { color: _t.text, fontSize: 11, fontWeight: 900, marginBottom: 3 } }, step.label),
+                    h('div', { style: { color: _t.textMuted, fontSize: 10.5, lineHeight: 1.4 } }, step.body)
+                  );
+                })
+              ),
+              h('div', {
+                style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'), gap: 8 }
+              },
+                SEL_TEACHER_LAUNCH_PLANS.map(function(plan) {
+                  var labels = _teacherPlanToolLabels(plan);
+                  var pendingLabels = _teacherPlanPendingLabels(plan);
+                  var sensitiveLabels = _teacherPlanSensitiveLabels(plan);
+                  var catalogTools = _teacherPlanCatalogTools(plan);
+                  var disabled = catalogTools.length === 0 || pendingLabels.length > 0;
+                  return h('div', {
+                    key: plan.id,
+                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgRaised, padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 18, flex: '0 0 auto' } }, plan.icon),
+                      h('div', { style: { minWidth: 0 } },
+                        h('div', { style: { fontSize: 12, fontWeight: 900, color: _t.text, lineHeight: 1.25 } }, plan.name),
+                        h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.35, marginTop: 2 } }, plan.time + ' | ' + plan.format)
+                      )
+                    ),
+                    h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.4 } }, plan.focus),
+                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5, padding: '7px 8px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft } },
+                      [
+                        { label: 'Student sees', body: plan.studentView || 'Students complete a private SEL routine and choose what to share.' },
+                        { label: 'Teacher move', body: plan.teacherMove || 'Frame this as practice, not assessment.' },
+                        { label: 'Sharing boundary', body: plan.privacyBoundary || 'Sharing remains student-controlled.' }
+                      ].map(function(row) {
+                        return h('div', { key: row.label, style: { minWidth: 0 } },
+                          h('span', { style: { display: 'block', color: _t.text, fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase', marginBottom: 1 } }, row.label),
+                          h('span', { style: { display: 'block', color: _t.textMuted, fontSize: 10.5, lineHeight: 1.35, overflowWrap: 'anywhere' } }, row.body)
+                        );
+                      })
+                    ),
+                    h('div', { style: { fontSize: 10, color: _t.textMuted, lineHeight: 1.35, minHeight: 28 } },
+                      labels.length ? labels.join(', ') : 'Tools loading...',
+                      pendingLabels.length ? h('span', { style: { display: 'block', marginTop: 2, color: _t.warningText, fontWeight: 800 } }, 'Still loading: ' + pendingLabels.join(', ')) : null
+                    ),
+                    sensitiveLabels.length ? h('div', { style: { fontSize: 10, color: _t.warningText, fontWeight: 900, lineHeight: 1.35 } },
+                      'Preview sensitive tools first: ' + sensitiveLabels.join(', ')
+                    ) : null,
+                    h('button', {
+                      type: 'button',
+                      disabled: disabled,
+                      onClick: function() { _applyTeacherLaunchPlan(plan); },
+                      'aria-label': 'Load teacher launch plan: ' + plan.name,
+                      style: { marginTop: 'auto', minHeight: 34, borderRadius: 8, border: disabled ? '1px solid ' + _t.border : '1px solid ' + _t.successText, background: disabled ? _t.bgCard : _t.successText, color: disabled ? _t.textMuted : (isContrast ? '#000000' : '#ffffff'), cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 11, fontWeight: 900, padding: '6px 10px' }
+                    }, pendingLabels.length ? 'Waiting for tools' : disabled ? 'Loading' : 'Load into Station Builder')
+                  );
+                })
+              )
+            )
+          ),
+          !activePathway && !activeStation && _recentWorkItems.length > 0 && h('section', {
+            'aria-label': 'Recent SEL work',
+            style: { marginBottom: 14 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+              h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: _t.text } }, 'Recent SEL work'),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                h('span', { style: { fontSize: 11, color: _t.textMuted } }, 'Saved here. Export to keep it after closing.'),
+                (_shareableSnapshotCount > 0 || _savedSharePacketCount > 0) && h('button', {
+                  type: 'button',
+                  onClick: _openSelSharePacketBuilder,
+                  'aria-label': _shareableSnapshotCount > 0 ? 'Create SEL Share Packet from saved checkpoints' : 'Review saved SEL Share Packets',
+                  style: { minHeight: 32, borderRadius: 8, border: '1px solid ' + _t.accent, background: _t.accentSoftBg, color: _t.accentSoftText, cursor: 'pointer', fontSize: 11, fontWeight: 900, padding: '6px 10px' }
+                }, _shareableSnapshotCount > 0 ? 'Create Share Packet' : 'Review Share Packets')
+              )
+            ),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'),
+                gap: 8
+              }
+            },
+              _recentWorkItems.map(function(item) {
+                var canOpen = item.toolId && window.SelHub && window.SelHub.isRegistered(item.toolId);
+                var when = _selRelativeTime(item.ts);
+                return h('button', {
+                  key: item.key,
+                  disabled: !canOpen,
+                  onClick: function() {
+                    if (canOpen) openSelToolById(item.toolId, item.title);
+                  },
+                  'aria-label': item.kind + ' SEL work: ' + item.title + (when ? ', ' + when : '') + '. ' + (canOpen ? 'Open related tool.' : 'Related tool is still loading.'),
+                  title: item.detail || item.title,
+                  style: {
+                    minHeight: 72,
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    border: '1px solid ' + _t.border,
+                    background: _t.bgCard,
+                    color: _t.text,
+                    cursor: canOpen ? 'pointer' : 'default',
+                    opacity: canOpen ? 1 : 0.55,
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    boxSizing: 'border-box'
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22, flexShrink: 0 } }, item.icon || '\uD83D\uDCBE'),
+                  h('span', { style: { minWidth: 0, flex: 1 } },
+                    h('span', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2, minWidth: 0 } },
+                      h('span', { style: { fontSize: 10, fontWeight: 900, color: _t.accentSoftText, textTransform: 'uppercase', flexShrink: 0 } }, item.kind),
+                      when && h('span', { style: { fontSize: 10, color: _t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, when)
+                    ),
+                    h('span', { style: { display: 'block', fontSize: 12, lineHeight: 1.25, fontWeight: 800, color: _t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, item.title),
+                    h('span', { style: { display: 'block', fontSize: 10.5, lineHeight: 1.3, color: _t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 } }, item.detail)
+                  )
+                );
+              })
+            )
+          ),
+          // \u2500\u2500 Daily Streak \u2500\u2500
           // Pulls from localStorage-backed selStreak / selToolUsage.
           // Streak chip surfaces only when count >= 2 (avoids "1-day streak"
-          // noise on first visit). Continue card shows the most recently
-          // opened tool if it was used within the last 7 days AND the user
-          // isn't already in a pathway/station view.
+          // noise on first visit). Continue now lives in the Start here cards.
           (function () {
             var showStreak = (selStreak.count || 0) >= 2;
-            var continueTool = null;
-            if (!activePathway && !activeStation) {
-              var bestId = null; var bestTime = 0; var weekAgo = Date.now() - 7 * 86400000;
-              Object.keys(selToolUsage).forEach(function (k) {
-                var u = selToolUsage[k];
-                if (u && u.lastUsed && u.lastUsed > bestTime && u.lastUsed > weekAgo) { bestTime = u.lastUsed; bestId = k; }
-              });
-              if (bestId) {
-                continueTool = _allSelTools.find(function (t) { return t.id === bestId && !t.category; }) || null;
-              }
-            }
-            if (!showStreak && !continueTool) return null;
+            if (!showStreak) return null;
             return h('div', {
-              style: { marginBottom: 12, padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, #f59e0b15, #ec489915)', border: '1px solid #f59e0b33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }
+              style: { marginBottom: 12, padding: '10px 14px', borderRadius: 8, background: 'linear-gradient(135deg, #f59e0b15, #ec489915)', border: '1px solid #f59e0b33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
                 showStreak && h('div', {
@@ -1720,47 +3473,80 @@
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, '\uD83D\uDD25'),
                   h('span', { style: { fontSize: 12, fontWeight: 800, color: '#c2410c' } }, selStreak.count + '-day streak'),
                   (selStreak.longest > selStreak.count) && h('span', { style: { fontSize: 10, color: '#9a3412', fontWeight: 600 } }, '\u00B7 best ' + selStreak.longest)
-                ),
-                continueTool && h('div', { style: { fontSize: 12, color: _t.textMuted } },
-                  h('span', { style: { fontWeight: 700, color: _t.text } }, '\uD83D\uDC4B Welcome back. '),
-                  'Continue with ',
-                  h('span', { style: { fontWeight: 700, color: _t.text } }, continueTool.label),
-                  '?'
                 )
-              ),
-              continueTool && h('button', {
-                onClick: function () {
-                  trackToolOpen(continueTool.id);
-                  setSelHubTool(continueTool.id);
-                  announceToSR('Resumed ' + continueTool.label);
-                },
-                'aria-label': 'Continue with ' + continueTool.label,
-                style: { padding: '10px 16px', minHeight: 44, borderRadius: 10, background: '#f59e0b', color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
-              },
-                h('span', { 'aria-hidden': 'true' }, continueTool.icon),
-                'Continue \u2192'
               )
             );
           })(),
           // Search bar
           h('div', { style: { marginBottom: 12 } },
             h('input', {
+              id: 'sel-tool-search-input',
               type: 'text',
-              placeholder: '\uD83D\uDD0D Search SEL tools...',
+              placeholder: '\uD83D\uDD0D Search feelings, friends, stress, goals...',
               value: selToolSearch,
               onChange: function(e) { setSelToolSearch(e.target.value); },
               'aria-label': 'Search SEL tools',
-              style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' },
+              style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #8b5cf6'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
             })
           ),
+          !activePathway && !activeStation && h('div', {
+            role: 'group',
+            'aria-label': 'Find SEL tools by need',
+            style: { marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 6 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              h('span', { style: { fontSize: 11, fontWeight: 800, color: _t.textMuted } }, 'I need...'),
+              _searchLower && h('button', {
+                onClick: function() { setSelToolSearch(''); setSelCategoryFilter(null); announceToSR('Cleared SEL search'); },
+                'aria-label': 'Clear SEL search',
+                style: { border: 'none', background: 'transparent', color: _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: '4px 2px' }
+              }, 'Clear')
+            ),
+            h('div', { style: { display: 'flex', gap: 6, overflowX: isCompact ? 'auto' : 'visible', flexWrap: isCompact ? 'nowrap' : 'wrap', paddingBottom: isCompact ? 4 : 0, WebkitOverflowScrolling: 'touch' } },
+              _selNeedChips.map(function(chip) {
+                var activeNeed = _searchLower === chip.query;
+                return h('button', {
+                  key: chip.key,
+                  onClick: function() {
+                    setActivePathway(null);
+                    setActiveStationId(null);
+                    setSelCategoryFilter(null);
+                    setSelToolSearch(activeNeed ? '' : chip.query);
+                    announceToSR(activeNeed ? 'Cleared SEL need filter' : 'Showing SEL tools for ' + chip.label);
+                  },
+                  'aria-label': (activeNeed ? 'Clear need filter: ' : 'Find tools for: ') + chip.label,
+                  'aria-pressed': activeNeed ? 'true' : 'false',
+                  style: {
+                    minHeight: 34,
+                    padding: '7px 10px',
+                    borderRadius: 8,
+                    border: '1px solid ' + (activeNeed ? _t.accent : _t.border),
+                    background: activeNeed ? _t.accent : _t.bgCard,
+                    color: activeNeed ? _t.accentText : _t.text,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true' }, chip.icon),
+                  chip.label
+                );
+              })
+            )
+          ),
           // CASEL category filter chips
-          h('div', { role: 'group', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+          h('div', { role: 'group', 'aria-label': 'Filter SEL tools by category', style: { display: 'flex', flexWrap: isCompact ? 'nowrap' : 'wrap', gap: 6, marginBottom: 16, overflowX: isCompact ? 'auto' : 'visible', paddingBottom: isCompact ? 4 : 0, WebkitOverflowScrolling: 'touch' } },
             h('button', {
               onClick: function() { setSelCategoryFilter(null); announceToSR('Showing all categories'); },
               'aria-label': 'Show all categories',
               'aria-pressed': selCategoryFilter === null ? 'true' : 'false',
-              style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? '#7c3aed' : _t.border), background: selCategoryFilter === null ? '#7c3aed' : _t.bgCard, color: selCategoryFilter === null ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }
+              style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? _t.accent : _t.border), background: selCategoryFilter === null ? _t.accent : _t.bgCard, color: selCategoryFilter === null ? _t.accentText : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0 }
             }, 'All'),
             SEL_CATEGORIES.map(function(cat) {
               var isActive = selCategoryFilter === cat.id;
@@ -1769,18 +3555,18 @@
                 onClick: function() { setSelCategoryFilter(isActive ? null : cat.id); announceToSR(isActive ? 'Showing all categories' : 'Filtered to ' + cat.label); },
                 'aria-label': 'Filter: ' + cat.label,
                 'aria-pressed': isActive ? 'true' : 'false',
-                style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? '#7c3aed' : _t.border), background: isActive ? '#7c3aed' : _t.bgCard, color: isActive ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4 }
+                style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? _t.accent : _t.border), background: isActive ? _t.accent : _t.bgCard, color: isActive ? _t.accentText : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', flexShrink: 0 }
               }, cat.icon + ' ' + cat.label);
             })
           ),
           // SEL Pathways — curated learning sequences (collapsed by default)
           !activePathway && h('details', {
-            style: { marginBottom: 16, borderRadius: 12, border: '1px solid ' + _t.border, overflow: 'hidden' }
+            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
           },
             h('summary', {
               style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
             }, '\uD83D\uDEE4\uFE0F SEL Pathways \u2014 Curated Learning Sequences'),
-            h('div', { style: { padding: '8px 12px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+            h('div', { style: { padding: '8px 12px', display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 } },
               SEL_PATHWAYS.map(function(pw) {
                 return h('button', {
                   key: pw.id,
@@ -1793,14 +3579,14 @@
                     if (typeof addToast === 'function') addToast('\uD83D\uDEE4\uFE0F ' + pw.name + ' pathway started!', 'success');
                   },
                   'aria-label': pw.name + ': ' + pw.desc,
-                  style: { textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, cursor: 'pointer', transition: 'all 0.15s' }
+                  style: { textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, cursor: 'pointer', transition: 'all 0.15s' }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                     h('span', { style: { fontSize: 16 } }, pw.icon),
                     h('span', { style: { fontSize: 12, fontWeight: 700, color: _t.text } }, pw.name)
                   ),
                   h('div', { style: { fontSize: 10, color: _t.textMuted, lineHeight: 1.4 } }, pw.desc),
-                  h('div', { style: { fontSize: 9, color: '#7c3aed', fontWeight: 600, marginTop: 4 } }, pw.tools.length + ' activities')
+                  h('div', { style: { fontSize: 9, color: _t.accentSoftText, fontWeight: 600, marginTop: 4 } }, pw.tools.length + ' activities')
                 );
               })
             )
@@ -1808,14 +3594,14 @@
           // Custom SEL Stations — teacher-authored bundles (parallel to STEM Lab Stations)
           !activeStation && !activePathway && h('details', {
             open: builderOpen || savedStations.length > 0,
-            style: { marginBottom: 16, borderRadius: 12, border: '1px solid ' + _t.border, overflow: 'hidden' }
+            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
           },
             h('summary', {
               style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
             }, '📌 Custom SEL Stations — teacher-authored bundles'),
             h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 } },
               // Saved stations list
-              savedStations.length > 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+              savedStations.length > 0 && h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 } },
                 savedStations.map(function (st) {
                   return h('div', { key: st.id, style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, display: 'flex', flexDirection: 'column', gap: 4 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
@@ -1832,6 +3618,7 @@
                       }, '✕')
                     ),
                     h('div', { style: { fontSize: 10, color: _t.textMuted } }, (st.tools || []).length + ' tools' + ((st.quests || []).length > 0 ? ' • ' + st.quests.length + ' quests' : '')),
+                    st.teacherNote && h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.4, padding: '6px 8px', borderRadius: 8, background: _t.bgSoft, border: '1px solid ' + _t.border } }, st.teacherNote),
                     h('button', {
                       onClick: function () {
                         setActiveStationId(st.id);
@@ -1841,20 +3628,49 @@
                         if (typeof addToast === 'function') addToast('📌 ' + st.name + ' started!', 'success');
                       },
                       'aria-label': 'Activate station ' + st.name,
-                      style: { marginTop: 4, padding: '4px 10px', borderRadius: 8, border: 'none', background: '#db2777', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                    }, 'Activate')
+                      style: { marginTop: 4, padding: '4px 10px', borderRadius: 8, border: 'none', background: _t.pinkAccent, color: _t.onPink, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    }, 'Start station')
                   );
                 })
               ),
               // Open builder button
               !builderOpen && h('button', {
-                onClick: function () { setBuilderOpen(true); announceToSR('Station builder opened'); },
+                onClick: function () { alloSaveFocus(); setBuilderOpen(true); announceToSR('Station builder opened'); alloFocusStationNameInput(); },
                 'aria-label': 'Build a new custom SEL Station',
-                style: { padding: '8px 14px', borderRadius: 10, border: '1px dashed #ec4899', background: 'rgba(236, 72, 153, 0.05)', color: '#be185d', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
+                style: { padding: '8px 14px', borderRadius: 10, border: '1px dashed ' + _t.pinkAccent, background: isContrast ? '#000000' : 'rgba(236, 72, 153, 0.05)', color: _t.pinkText, fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
               }, '+ Build a Custom Station'),
               // Inline builder
               builderOpen && (function () {
                 var registry = (window.SelHub && window.SelHub.getRegisteredTools) ? window.SelHub.getRegisteredTools() : [];
+                // Station Builder hardening: only offer tools that actually have a grid
+                // card. A registered-but-uncarded tool (e.g. a deprecated duplicate) would
+                // otherwise be saveable into a Station and then silently fail to render in
+                // the card-filtered grid; excluding it here keeps custom Stations reachable
+                // end-to-end and is robust to future registry drift.
+                var _cardedIds = {};
+                _allSelTools.forEach(function (t) { if (t && t.id && !t.category) _cardedIds[t.id] = true; });
+                registry = registry.filter(function (tool) { return _cardedIds[tool.id]; });
+                var selectedBuilderToolIds = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                selectedBuilderToolIds.forEach(function(toolId) {
+                  if (!_cardedIds[toolId]) return;
+                  if (registry.some(function(tool) { return tool.id === toolId; })) return;
+                  var catalogTool = _selToolById(toolId);
+                  if (!catalogTool) return;
+                  registry.push(Object.assign({}, catalogTool, {
+                    name: catalogTool.name || catalogTool.label || catalogTool.id,
+                    pendingRegistration: true
+                  }));
+                });
+                var builderEstimatedMinutes = selectedBuilderToolIds.length ? Math.max(5, (selectedBuilderToolIds.length * 4) + (builderQuests.length * 2)) : 0;
+                var selectedBuilderToolLabels = selectedBuilderToolIds.map(function(toolId) {
+                  var found = registry.filter(function(tool) { return tool.id === toolId; })[0] || _selToolById(toolId);
+                  return found ? (found.name || found.label || found.id) : toolId;
+                }).filter(Boolean);
+                function builderNoteLine(prefix, fallback) {
+                  var text = String(builderNote || '');
+                  var match = text.match(new RegExp(prefix + ':\\s*([^\\n]+)', 'i'));
+                  return match ? match[1] : fallback;
+                }
                 var QUEST_PRESETS = [
                   { name: 'Daily Check-In', icon: '🌅', desc: 'Quick reflection + XP', build: function () {
                     var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
@@ -1881,17 +3697,44 @@
                     ];
                   } }
                 ];
-                return h('div', { role: 'region', 'aria-label': 'Station Builder', style: { padding: '12px 14px', borderRadius: 10, border: '1px solid #ec489955', background: 'rgba(236, 72, 153, 0.04)', display: 'flex', flexDirection: 'column', gap: 10 } },
+                return h('div', { role: 'region', 'aria-label': 'Station Builder', style: { padding: '12px 14px', borderRadius: 10, border: '1px solid ' + _t.pinkAccent, background: isContrast ? '#000000' : 'rgba(236, 72, 153, 0.04)', display: 'flex', flexDirection: 'column', gap: 10 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#be185d' } }, '🧑‍🏫 Station Builder'),
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: _t.pinkText } }, '🧑‍🏫 Station Builder'),
                     h('button', {
-                      onClick: function () { setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); },
+                      onClick: function () { setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); alloRestoreOrFocusSelHubStart(); },
                       'aria-label': 'Cancel station builder',
                       style: { fontSize: 11, fontWeight: 700, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer' }
                     }, '✕ Cancel')
                   ),
+                  h('div', {
+                    role: 'note',
+                    'aria-label': 'Student view preview for this station',
+                    style: {
+                      display: 'grid',
+                      gridTemplateColumns: isCompact ? '1fr' : 'minmax(0, 1fr) minmax(160px, 0.45fr)',
+                      gap: 8,
+                      padding: '9px 10px',
+                      borderRadius: 8,
+                      border: '1px solid ' + _t.border,
+                      background: _t.bgSoft,
+                      color: _t.textMuted,
+                      fontSize: 11,
+                      lineHeight: 1.4
+                    }
+                  },
+                    h('div', { style: { minWidth: 0 } },
+                      h('div', { style: { color: _t.text, fontWeight: 900, marginBottom: 2 } }, 'Student view preview'),
+                      h('div', { style: { overflowWrap: 'anywhere' } },
+                        builderNoteLine('Student view', selectedBuilderToolLabels.length ? selectedBuilderToolLabels.slice(0, 5).join(', ') + (selectedBuilderToolLabels.length > 5 ? ' +' + (selectedBuilderToolLabels.length - 5) + ' more' : '') : 'No tools selected yet.'))
+                    ),
+                    h('div', { style: { minWidth: 0 } },
+                      h('div', { style: { color: _t.text, fontWeight: 900, marginBottom: 2 } }, 'Sharing boundary'),
+                      h('div', null, builderNoteLine('Sharing boundary', 'Student saves and share packets stay student-controlled.'))
+                    )
+                  ),
                   // Name
                   h('input', {
+                    id: 'sel-station-name-input',
                     type: 'text', value: builderName,
                     onChange: function (ev) { setBuilderName(ev.target.value); },
                     placeholder: 'Station name (e.g. "Friday SEL Routine")',
@@ -1904,27 +3747,47 @@
                     onChange: function (ev) { setBuilderNote(ev.target.value); },
                     placeholder: 'Optional teacher note (instructions students see when they activate this station)',
                     'aria-label': 'Teacher note',
-                    rows: 2,
+                    rows: 4,
                     style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }
                   }),
+                  h('div', {
+                    role: 'status',
+                    'aria-live': 'polite',
+                    style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', padding: '7px 9px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 11, lineHeight: 1.35 }
+                  },
+                    h('span', null, selectedBuilderToolIds.length + (selectedBuilderToolIds.length === 1 ? ' tool' : ' tools') + ' selected'),
+                    h('span', { 'aria-hidden': 'true' }, '|'),
+                    h('span', null, builderQuests.length + (builderQuests.length === 1 ? ' quest' : ' quests')),
+                    builderEstimatedMinutes > 0 && h('span', null, '| about ' + builderEstimatedMinutes + ' min')
+                  ),
                   // Tool picker
                   h('div', null,
-                    h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Pick tools to include:'),
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 } },
+                      h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text } }, 'Pick tools to include:'),
+                      selectedBuilderToolIds.length > 0 && h('button', {
+                        type: 'button',
+                        onClick: function () { setBuilderTools({}); },
+                        'aria-label': 'Clear selected station tools',
+                        style: { border: 'none', background: 'none', color: _t.textMuted, cursor: 'pointer', fontSize: 10, fontWeight: 800, textDecoration: 'underline' }
+                      }, 'Clear')
+                    ),
                     registry.length === 0
                       ? h('div', { style: { fontSize: 11, color: _t.textMuted, fontStyle: 'italic' } }, 'No SEL tools registered yet. Open the hub once so plugins load, then return here.')
-                      : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
+                        : h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
                           registry.map(function (tool) {
                             var checked = !!builderTools[tool.id];
-                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? '#fce7f3' : 'transparent', fontSize: 11, color: _t.text } },
+                            var pending = !!tool.pendingRegistration;
+                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? (isContrast ? '#000000' : (isDark ? '#3b1026' : '#fce7f3')) : 'transparent', border: checked ? '1px solid ' + _t.pinkAccent : '1px solid transparent', fontSize: 11, color: _t.text } },
                               h('input', {
                                 type: 'checkbox', checked: checked,
                                 onChange: function () {
                                   setBuilderTools(function (prev) { var n = Object.assign({}, prev); n[tool.id] = !checked; return n; });
                                 },
-                                'aria-label': 'Include ' + (tool.name || tool.id) + ' in this station'
+                                'aria-label': 'Include ' + (tool.name || tool.label || tool.id) + ' in this station' + (pending ? '. Tool is still loading.' : '')
                               }),
                               h('span', { 'aria-hidden': 'true' }, tool.icon || '🔧'),
-                              h('span', { style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, tool.name || tool.id)
+                              h('span', { style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, tool.name || tool.label || tool.id),
+                              pending && h('span', { style: { marginLeft: 'auto', flex: '0 0 auto', fontSize: 9, fontWeight: 800, color: _t.warningText } }, 'loading')
                             );
                           })
                         )
@@ -1932,7 +3795,7 @@
                   // Quest presets + manual quest add
                   h('div', null,
                     h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Quests (optional):'),
-                    builderQuests.length === 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 6 } },
+                    builderQuests.length === 0 && h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 6, marginBottom: 6 } },
                       QUEST_PRESETS.map(function (preset) {
                         return h('button', {
                           key: preset.name,
@@ -1976,16 +3839,18 @@
                   ),
                   // Save button
                   h('button', {
+                    type: 'button',
+                    disabled: selectedBuilderToolIds.length === 0,
                     onClick: _saveBuilderAsStation,
                     'aria-label': 'Save this station',
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#db2777', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: selectedBuilderToolIds.length === 0 ? _t.btnBg : _t.pinkAccent, color: selectedBuilderToolIds.length === 0 ? _t.textMuted : _t.onPink, fontSize: 12, fontWeight: 700, cursor: selectedBuilderToolIds.length === 0 ? 'not-allowed' : 'pointer', alignSelf: 'flex-start' }
                   }, '💾 Save Station')
                 );
               })()
             )
           ),
           // Grid
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: isCompact ? 10 : 16 } },
             _filteredTools.map(function(tool) {
               // Category header
               if (tool.category) {
@@ -2008,26 +3873,20 @@
                 pink: '#ec4899', red: '#ef4444'
               };
               var cardColor = colorMap[tool.color] || '#3b82f6';
+              var shortDesc = _selShortDesc(tool);
+              var teacherCue = _teacherToolCue(tool.id);
 
               return h('button', {
                 key: tool.id,
+                'data-sel-tool-card-id': tool.id,
                 onClick: function() {
-                  if (isRegistered) {
-                    trackToolOpen(tool.id);
-                    setSelHubTool(tool.id);
-                    announceToSR('Opened ' + tool.label);
-                    // Track pathway progress
-                    if (activePathway && activePathway.tools.indexOf(tool.id) >= 0) {
-                      setPathwayProgress(function(prev) { var n = Object.assign({}, prev); n[tool.id] = true; return n; });
-                    }
-                  } else {
-                    if (typeof addToast === 'function') addToast(tool.label + ' is loading...', 'info');
-                  }
+                  openSelToolById(tool.id, tool.label);
                 },
-                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : ''),
+                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : '') + (shortDesc ? '. ' + shortDesc : '') + (teacherCue ? '. Teacher cue: ' + teacherCue.time + ', ' + teacherCue.format + '. ' + teacherCue.cue : ''),
+                title: tool.desc || tool.label,
                 style: {
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-                  padding: 16, borderRadius: 14, border: '1px solid ' + _t.border,
+                  padding: isCompact ? 14 : 16, borderRadius: 8, border: '1px solid ' + _t.border,
                   background: _t.bgCard,
                   cursor: isRegistered ? 'pointer' : 'default',
                   opacity: isRegistered ? 1 : 0.5,
@@ -2055,7 +3914,13 @@
                     return h('span', { 'aria-hidden': 'true', title: u.count + (u.count === 1 ? ' visit' : ' visits'), style: { fontSize: 9, color: cardColor, letterSpacing: '1px' } }, '•'.repeat(Math.min(u.count, 4)));
                   })()
                 ),
-                h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, tool.desc),
+                h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, shortDesc),
+                teacherCue && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, marginTop: 2 } },
+                  h('span', { style: { fontSize: 10, color: _t.textMuted, fontWeight: 800 } }, teacherCue.time + ' | ' + teacherCue.format),
+                  teacherCue.sensitive && h('span', {
+                    style: { fontSize: 9, fontWeight: 900, color: '#991b1b', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 4, padding: '1px 5px', textTransform: 'uppercase' }
+                  }, 'Preview first')
+                ),
                 // Evidence-tradition pill (sourced from sel_standards_alignment.js)
                 (function() {
                   if (!window.SelHubStandards || !window.SelHubStandards.alignments) return null;
@@ -2101,7 +3966,7 @@
           _searchLower && _filteredTools.length === 0 && h('div', { style: { textAlign: 'center', padding: '48px 0', color: _t.textMuted } },
             h('div', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDD0D'),
             h('p', { style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'No tools match "' + selToolSearch + '"'),
-            h('p', { style: { fontSize: 12 } }, 'Try a different search term')
+            h('p', { style: { fontSize: 12 } }, 'Try calm, feelings, stress, friend, write, decision, or sleep.')
           )
         );
       }
@@ -2195,11 +4060,10 @@
           // ── Snapshots ──
           toolSnapshots: selSnapshots,
           setToolSnapshots: setSelSnapshots,
-          saveSnapshot: function(toolId, label, data) {
-            setSelSnapshots(function(prev) {
-              return (prev || []).concat([{ id: toolId + '-' + Date.now(), tool: toolId, label: label, data: data, ts: Date.now() }]);
-            });
-          },
+          saveSnapshot: _saveSelCheckpoint,
+          saveCheckpoint: _saveSelCheckpoint,
+          getSavePolicy: _selCheckpointSavePolicy,
+          savePolicy: _selCheckpointSavePolicy(selHubTool),
 
           // ── Accessibility helpers ──
           srOnly: function(text) { return h('span', { className: 'sr-only' }, text); },
@@ -2215,7 +4079,7 @@
           // ── Theme ──
           isDark: isDark,
           isContrast: isContrast,
-          theme: _t,
+          themePalette: _t,
 
           // ── Full props passthrough ──
           props: props || {}
@@ -2251,7 +4115,7 @@
             h('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + selHubTool),
             h('p', { style: { fontSize: 12, color: _t.textMuted, marginBottom: 16 } }, e.message || 'Unknown error'),
             h('button', { 'aria-label': 'Back to Tools',
-              onClick: function() { setSelHubTool(null); },
+              onClick: function() { var fromTool = selHubTool; setSelHubTool(null); alloFocusToolCard(fromTool); },
               style: { padding: '8px 20px', borderRadius: 8, background: _t.accent, color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
             }, '\u2190 Back to Tools')
           );
@@ -2270,7 +4134,7 @@
           h('p', { style: { fontWeight: 700, fontSize: 16, marginBottom: 4, color: _t.text } }, 'Loading tool...'),
           h('p', { style: { fontSize: 12 } }, 'The plugin file is still being fetched.'),
           h('button', {
-            onClick: function() { setSelHubTool(null); },
+            onClick: function() { var fromTool = selHubTool; setSelHubTool(null); alloFocusToolCard(fromTool); },
             style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: _t.btnBg, color: _t.btnText, fontWeight: 600, border: _t.btnBorder, cursor: 'pointer' }
           }, '\u2190 Back to Tools')
         );
@@ -2281,6 +4145,11 @@
         role: 'dialog',
         'aria-modal': 'true',
         'aria-label': 'SEL Hub',
+        // allo-docsuite = the generated theme-remap scope (gen_docsuite_theme.cjs).
+        // It themes the 4 Tailwind-className tools (civicaction/cultureexplorer/
+        // ethicalreasoning/selfadvocacy); the 66 inline-hex tools carry their own
+        // _xxC remaps and are untouched by class-based CSS.
+        className: 'allo-docsuite',
         style: {
           position: 'fixed', inset: 0, zIndex: 9999,
           background: _t.bg, color: _t.text,
@@ -2298,7 +4167,8 @@
         ),
         // CHANGE 1 + CHANGE 3: stacked above the hub modal via zIndex
         ephemeralExplainerModal,
-        forEducatorsModal
+        forEducatorsModal,
+        sharePacketModal
       );
     };
   }

@@ -1,0 +1,214 @@
+rules_version = '2';
+// AlloFlow Firestore security rules — v1.0 draft (2026-07-01).
+//
+// Deploy: Firebase console → Firestore Database → Rules → paste → Publish.
+// BEFORE deploying, copy the currently published rules into
+// docs/firestore.rules.PREVIOUS so rollback is one paste away.
+// Full context + threat model: docs/LIVE_SESSION_HARDENING_PROPOSAL.md.
+// Deploy/rollback/smoke checklist: docs/FIRESTORE_RULES_DEPLOY.md.
+//
+// Design summary (matches the write paths verified in code on 2026-07-01):
+//   - Everything requires Firebase (anonymous) auth.
+//   - Session docs: created/deleted/edited freely ONLY by the creating
+//     teacher (hostId == auth.uid). Other participants may write exactly
+//     three surfaces, each restricted to their own uid:
+//       roster.{uid}, quizState.allResponses.{uid}, bridgeReactions.{uid}.
+//   - LIST on sessions is denied → codes can't be enumerated via queries.
+//   - WebRTC signaling docs: the guest owns their doc; the session host may
+//     merge only answer/iceFromHost and may delete post-connect.
+//   - Student CONTENT never appears in any of these paths by design (it is
+//     WebRTC peer-to-peer) — these rules protect metadata integrity.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function authed() { return request.auth != null; }
+
+    match /artifacts/{appId} {
+
+      // ── Live session documents ─────────────────────────────────────────
+      match /public/data/sessions/{code} {
+        function isHost() { return authed() && resource.data.hostId == request.auth.uid; }
+        function changedTop() {
+          return request.resource.data.diff(resource.data).affectedKeys();
+        }
+        function rosterOnlySelf() {
+          // Students may only touch their OWN roster entry. Nested fields are
+          // deliberately not enumerated here (the client/mailbox validators
+          // enforce per-field shapes); current student-written fields include
+          // join metadata, xp, signal/signalAt, viewingResourceId/viewingAt,
+          // and the Word Sounds wsProgress / wsProbeResult summaries
+          // (2026-07-12: structured numbers + pattern-checked ids only — see
+          // SESSION_TIER1_LEAVES in AlloFlowANTI.txt for justifications).
+          return resource.data.get('roster', {})
+            .diff(request.resource.data.get('roster', {}))
+            .affectedKeys().hasOnly([request.auth.uid]);
+        }
+        function quizNestedOnlySelf(field) {
+          return !(field in resource.data.get('quizState', {})
+                .diff(request.resource.data.get('quizState', {})).affectedKeys())
+            || resource.data.get('quizState', {}).get(field, {})
+                .diff(request.resource.data.get('quizState', {}).get(field, {}))
+                .affectedKeys().hasOnly([request.auth.uid]);
+        }
+        function quizOnlySelf() {
+          // Students write three quizState surfaces, each keyed by their own
+          // uid: allResponses (live quiz), responses + teams (class-vs-boss
+          // one-question mode: answer option index + auto-assigned team color).
+          return resource.data.get('quizState', {})
+              .diff(request.resource.data.get('quizState', {}))
+              .affectedKeys().hasOnly(['allResponses', 'responses', 'teams'])
+            && quizNestedOnlySelf('allResponses')
+            && quizNestedOnlySelf('responses')
+            && quizNestedOnlySelf('teams');
+        }
+        function reactionsOnlySelf() {
+          return resource.data.get('bridgeReactions', {})
+            .diff(request.resource.data.get('bridgeReactions', {}))
+            .affectedKeys().hasOnly([request.auth.uid]);
+        }
+        function democracyOnlySelfVote() {
+          // Adventure democracy mode: students cast democracy.votes.{their uid}
+          // (an option string from the scene's fixed choice list).
+          return resource.data.get('democracy', {})
+              .diff(request.resource.data.get('democracy', {}))
+              .affectedKeys().hasOnly(['votes'])
+            && resource.data.get('democracy', {}).get('votes', {})
+              .diff(request.resource.data.get('democracy', {}).get('votes', {}))
+              .affectedKeys().hasOnly([request.auth.uid]);
+        }
+        function escapeRoomTeamPlay() {
+          // Collaborative escape room: team progress is SHARED game state by
+          // design (non-PII enums/ids, session-scoped) — any roster member
+          // may update their team's progress; team-slot claims are per-uid.
+          return resource.data.get('escapeRoomState', {})
+              .diff(request.resource.data.get('escapeRoomState', {}))
+              .affectedKeys().hasOnly(['teamProgress', 'teams'])
+            && (
+              !('teams' in resource.data.get('escapeRoomState', {})
+                  .diff(request.resource.data.get('escapeRoomState', {}))
+                  .affectedKeys())
+              || resource.data.get('escapeRoomState', {}).get('teams', {})
+                  .diff(request.resource.data.get('escapeRoomState', {}).get('teams', {}))
+                  .affectedKeys().hasOnly([request.auth.uid])
+            );
+        }
+
+        // Students need GET by code; LIST would allow code enumeration.
+        allow get: if authed()
+          && (resource.data.get('kind', '') != 'assignment'
+            || (resource.data.expiresAt is timestamp && resource.data.expiresAt > request.time));
+        allow list: if false;
+        allow create: if authed() && request.resource.data.hostId == request.auth.uid
+          && (request.resource.data.get('kind', '') != 'assignment'
+            || (request.resource.data.expiresAt is timestamp
+              && request.resource.data.expiresAt > request.time
+              && request.resource.data.expiresAt <= request.time + duration.value(31, 'd')));
+        allow delete: if isHost();
+        allow update: if isHost() || (
+          authed()
+          && changedTop().hasOnly(['roster', 'quizState', 'bridgeReactions', 'democracy', 'escapeRoomState'])
+          && (!('roster' in changedTop()) || rosterOnlySelf())
+          && (!('quizState' in changedTop()) || quizOnlySelf())
+          && (!('bridgeReactions' in changedTop()) || reactionsOnlySelf())
+          && (!('democracy' in changedTop()) || democracyOnlySelfVote())
+          && (!('escapeRoomState' in changedTop()) || escapeRoomTeamPlay())
+        );
+      }
+
+      // ── WebRTC signaling handshakes (polling + pictionary) ─────────────
+      // Docs live at {signaling|pictionary-signaling}/{code}/peers/{peerUid}
+      // and hold only SDP offers/answers, ICE candidates, and a codename;
+      // both sides delete the doc ~750ms after the connection opens.
+      match /public/data/{signalingCollection}/{code}/peers/{peerUid} {
+        function isSignaling() {
+          return signalingCollection == 'signaling'
+              || signalingCollection == 'pictionary-signaling'
+              || signalingCollection == 'quiz-signaling';
+        }
+        function isSessionHost() {
+          return get(/databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code)).data.hostId == request.auth.uid;
+        }
+        allow read: if isSignaling() && authed()
+          && (request.auth.uid == peerUid || isSessionHost());
+        allow create: if isSignaling() && authed() && request.auth.uid == peerUid;
+        allow delete: if isSignaling() && authed()
+          && (request.auth.uid == peerUid || isSessionHost());
+        allow update: if isSignaling() && authed() && (
+          (request.auth.uid == peerUid
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['offer', 'codename', 'createdAt', 'expiresAt', 'iceFromGuest']))
+          || (isSessionHost()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['answer', 'iceFromHost']))
+        );
+      }
+
+      // ── Chunked session assets (teacher resource manifest + chunks) ────
+      // Read by students during resource hydration; written by teachers.
+      // Authed-write is a known soft spot (see proposal §2.2.2) — tightening
+      // requires binding assets to a session host, a follow-up code change.
+      match /public/data/session_assets/{assetId} {
+        function isOwner() {
+          return authed() && resource.data.ownerUid == request.auth.uid;
+        }
+        function parentPath() {
+          return /databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(resource.data.parentId);
+        }
+        function validCreate() {
+          return authed()
+            && request.resource.data.keys().hasAll([
+              'kind', 'ownerUid', 'parentId', 'parentKind', 'createdAt', 'expiresAt'
+            ])
+            && request.resource.data.ownerUid == request.auth.uid
+            && request.resource.data.parentId is string
+            && request.resource.data.parentId.size() >= 5
+            && request.resource.data.parentId.size() <= 80
+            && request.resource.data.parentKind in ['live', 'assignment']
+            && request.resource.data.createdAt is timestamp
+            && request.resource.data.createdAt <= request.time
+            && request.resource.data.expiresAt is timestamp
+            && request.resource.data.expiresAt > request.time
+            && request.resource.data.expiresAt <= request.time + duration.value(31, 'd');
+        }
+        allow get: if isOwner() || (
+          authed()
+          && resource.data.expiresAt is timestamp
+          && resource.data.expiresAt > request.time
+          && exists(parentPath())
+          && get(parentPath()).data.hostId == resource.data.ownerUid
+        );
+        allow list: if false;
+        allow create: if validCreate();
+        allow update: if isOwner()
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.parentId == resource.data.parentId
+          && request.resource.data.parentKind == resource.data.parentKind
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.expiresAt <= resource.data.expiresAt;
+        allow delete: if isOwner();
+      }
+
+      // ── Cross-session concept mastery — RETIRED 2026-07-01 ─────────────
+      // The app no longer writes here (mastery is device-local; teachers get
+      // it via live P2P snapshots + student project files). Kept readable/
+      // self-writable only for clients running pre-migration builds; safe to
+      // flip to `allow read, write: if false;` once all surfaces are updated,
+      // and legacy docs can be bulk-deleted.
+      match /public/data/conceptMastery/{uid} {
+        allow read, write: if false;
+      }
+
+      // ── Per-user private data (teacher history, adventure images) ──────
+      match /users/{uid}/{document=**} {
+        allow read, write: if authed() && request.auth.uid == uid;
+      }
+    }
+
+    // Default deny.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

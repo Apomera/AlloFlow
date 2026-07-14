@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-lincoln-second-inaugural-source-card",
+  "title": "Lincoln's Second Inaugural Address",
+  "description": "A Wikisource source card for Lincoln's Second Inaugural Address.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Civil War",
+    "Rhetoric",
+    "Primary sources",
+    "U.S. history"
+  ],
+  "authors": [
+    "Abraham Lincoln"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Abraham_Lincoln%27s_Second_Inaugural_Address",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Abraham_Lincoln%27s_Second_Inaugural_Address"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Lincoln's Second Inaugural Address is a compact primary source for studying wartime leadership, reconciliation, moral reasoning, and rhetorical structure."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for short close reads, sentence-level analysis, tone, allusion, and discussion about how leaders speak during crisis."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "The speech is public domain, but Wikisource edition notes and linked materials should be checked before copying page-specific metadata."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

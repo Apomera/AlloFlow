@@ -88,6 +88,7 @@ function UDLGuideModal(props) {
     setUdlMessages,
     setUdlStandardFramework,
     setUdlStandardGrade,
+    showStemLab,
     showUDLGuide,
     suggestedStandards,
     t,
@@ -100,7 +101,7 @@ function UDLGuideModal(props) {
     udlStandardGrade
   } = props;
   if (!showUDLGuide) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: `fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? "inset-4 top-24" : "top-24 right-4 bottom-4 w-96"} ${isSpotlightMode ? "opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto" : "opacity-100"} ${chatStyles.container}` }, /* @__PURE__ */ React.createElement("div", { className: `p-4 flex justify-between items-center shrink-0 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 font-bold" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18 }), " ", t("chat_guide.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { style: { zIndex: showStemLab ? 10490 : void 0 }, className: `allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? "inset-4 top-24" : "top-24 right-4 bottom-4 w-96"} ${isSpotlightMode ? "opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto" : "opacity-100"} ${chatStyles.container}` }, /* @__PURE__ */ React.createElement("div", { className: `p-4 flex justify-between items-center shrink-0 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 font-bold" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18 }), " ", t("chat_guide.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -177,7 +178,17 @@ function UDLGuideModal(props) {
         setActiveBlueprint(null);
       }
     }
-  )), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
+  )), msg.type === "choices" && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none` }, renderFormattedText(msg.text), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": t("chat_guide.header") }, (msg.choices || []).map((choice, cIdx) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: cIdx,
+      type: "button",
+      disabled: isChatProcessing || idx !== udlMessages.length - 1,
+      onClick: () => handleSendUDLMessage(choice.value),
+      className: `px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${chatStyles.button}`
+    },
+    choice.label
+  )))), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.refresh"),
@@ -443,9 +454,243 @@ function AIBackendModal(props) {
     GEMINI_MODELS
   } = props;
   if (!(showAIBackendModal && !_isCanvasEnv)) return null;
-  return /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
-    if (e.key === "Escape") e.currentTarget.click();
-  }, className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { className: "font-black text-lg" }, t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
+  const aiBackendDefaults = {
+    gemini: "",
+    "alloflow-local": "http://localhost:32173",
+    lmstudio: "http://localhost:1234",
+    localai: "http://localhost:8080",
+    ollama: "http://localhost:11434",
+    openai: "https://api.openai.com",
+    claude: "https://api.anthropic.com",
+    "onnx-npu": "http://localhost:11435",
+    custom: "http://localhost:8080"
+  };
+  const readAIBackendConfig = () => {
+    try {
+      return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+    } catch {
+      return {};
+    }
+  };
+  const writeAIBackendConfig = (config) => {
+    try {
+      localStorage.setItem("alloflow_ai_config", JSON.stringify(config));
+    } catch (_) {
+    }
+  };
+  const populateModelSelect = (select, emptyLabel, models, selectedValue = "") => {
+    if (!select) return;
+    select.innerHTML = "";
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = emptyLabel;
+    select.appendChild(emptyOption);
+    (models || []).forEach((model) => {
+      const option = document.createElement("option");
+      option.value = model.id;
+      option.textContent = model.id;
+      select.appendChild(option);
+    });
+    select.value = selectedValue || "";
+  };
+  const stopEngineStripPoll = () => {
+    if (window.__alloEngineStripPoll) {
+      clearInterval(window.__alloEngineStripPoll);
+      window.__alloEngineStripPoll = null;
+    }
+  };
+  const startEngineStripPoll = () => {
+    if (window.__alloEngineStripPoll) return;
+    window.__alloEngineStripPoll = setInterval(() => {
+      if (!document.getElementById("ai-backend-engine-strip")) {
+        stopEngineStripPoll();
+        return;
+      }
+      refreshEngineStrip();
+    }, 2e3);
+  };
+  const refreshSdTurboStrip = async () => {
+    const strip = document.getElementById("ai-backend-sdturbo-strip");
+    if (!strip) return;
+    let text = strip.querySelector("[data-sd-strip-text]");
+    let btn = strip.querySelector("[data-sd-strip-btn]");
+    if (!text) {
+      text = document.createElement("span");
+      text.setAttribute("data-sd-strip-text", "1");
+      strip.appendChild(text);
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("data-sd-strip-btn", "1");
+      btn.className = "ml-2 px-2.5 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700";
+      btn.hidden = true;
+      strip.appendChild(btn);
+    }
+    const TITLE = (t("ai_backend.sd_title") || "Local images (SD-Turbo)") + ": ";
+    const setLine = (line, cls) => {
+      const full = TITLE + line;
+      if (text.textContent !== full) text.textContent = full;
+      if (strip.className !== cls) strip.className = cls;
+    };
+    const SD_SLATE = "text-xs font-bold mt-2 text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200";
+    const SD_GREEN = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
+    const SD_AMBER = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
+    strip.style.display = "";
+    if (window._sdTurbo?.ready) {
+      setLine(t("ai_backend.sd_ready") || "Ready. Images generate on this computer when cloud image AI is unavailable.", SD_GREEN);
+      btn.hidden = true;
+      return;
+    }
+    let adapterOk = false;
+    try {
+      adapterOk = window.__alloWebGpuAdapterCheck ? await window.__alloWebGpuAdapterCheck() : !!(typeof navigator !== "undefined" && navigator.gpu && await navigator.gpu.requestAdapter());
+    } catch (_) {
+      adapterOk = false;
+    }
+    if (!adapterOk) {
+      setLine(t("ai_backend.sd_no_gpu") || "Not available on this computer (no WebGPU graphics adapter). Cloud image AI still works with an API key.", SD_SLATE);
+      btn.hidden = true;
+      return;
+    }
+    const DOWNLOADING = t("ai_backend.sd_downloading") || "Downloading the model... about 2GB, one time only.";
+    if (window.__sdTurboDownloading) {
+      setLine(DOWNLOADING, SD_AMBER);
+      btn.hidden = true;
+      return;
+    }
+    setLine(t("ai_backend.sd_available") || "Available. Downloads a ~2GB model once, then images generate on this computer at no cost.", SD_SLATE);
+    btn.textContent = t("ai_backend.sd_download_btn") || "Download & enable";
+    btn.hidden = false;
+    btn.disabled = false;
+    btn.onclick = async () => {
+      btn.disabled = true;
+      btn.hidden = true;
+      window.__sdTurboDownloading = true;
+      setLine(DOWNLOADING + " 0%", SD_AMBER);
+      try {
+        const ok = await (window.__loadSdTurbo ? window.__loadSdTurbo((p) => {
+          const pct = p && p.pct != null ? Math.round(p.pct * 100) + "%" : "";
+          setLine(DOWNLOADING + " " + pct, SD_AMBER);
+        }) : Promise.resolve(false));
+        window.__sdTurboDownloading = false;
+        if (ok) {
+          setLine(t("ai_backend.sd_ready") || "Ready. Images generate on this computer when cloud image AI is unavailable.", SD_GREEN);
+        } else {
+          setLine(t("ai_backend.sd_failed") || "Download failed. Check the connection and try again.", SD_AMBER);
+          btn.hidden = false;
+          btn.disabled = false;
+        }
+      } catch (e) {
+        window.__sdTurboDownloading = false;
+        setLine((t("ai_backend.sd_failed") || "Download failed. Check the connection and try again.") + (e && e.message ? " (" + e.message + ")" : ""), SD_AMBER);
+        btn.hidden = false;
+        btn.disabled = false;
+      }
+    };
+  };
+  const refreshEngineStrip = async () => {
+    const strip = document.getElementById("ai-backend-engine-strip");
+    if (!strip) return;
+    let backend = readAIBackendConfig().backend || "gemini";
+    const providerSelect = document.getElementById("ai-backend-provider");
+    if (providerSelect && providerSelect.value) backend = providerSelect.value;
+    if (backend !== "alloflow-local") {
+      strip.style.display = "none";
+      stopEngineStripPoll();
+      return;
+    }
+    strip.style.display = "";
+    let stripText = strip.querySelector("[data-engine-strip-text]");
+    let startBtn = strip.querySelector("[data-engine-strip-start]");
+    if (!stripText) {
+      stripText = document.createElement("span");
+      stripText.setAttribute("data-engine-strip-text", "1");
+      strip.appendChild(stripText);
+      startBtn = document.createElement("button");
+      startBtn.type = "button";
+      startBtn.setAttribute("data-engine-strip-start", "1");
+      startBtn.textContent = t("ai_backend.engine_start_btn") || "Start engine";
+      startBtn.className = "ml-2 px-2.5 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700";
+      startBtn.onclick = async () => {
+        startBtn.disabled = true;
+        try {
+          await fetch("/api/engine/start", { method: "POST" });
+        } catch (_) {
+        }
+        startEngineStripPoll();
+      };
+      strip.appendChild(startBtn);
+    }
+    const setLine = (line, cls) => {
+      if (stripText.textContent !== line) stripText.textContent = line;
+      if (strip.className !== cls) strip.className = cls;
+    };
+    const AMBER = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
+    if (!(typeof window !== "undefined" && window._isDesktopBundledApp)) {
+      setLine(
+        t("ai_backend.engine_desktop_only") || "The Built-in Engine runs inside AlloFlow Desktop. Install the desktop app to use local AI on this computer \u2014 no account or key needed.",
+        "text-xs font-bold mt-2 text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200"
+      );
+      startBtn.hidden = true;
+      stopEngineStripPoll();
+      return;
+    }
+    try {
+      const engineStatus = await fetch("/api/engine/status").then((response) => response.json());
+      if (engineStatus.running) {
+        const _bridgeActive = typeof window !== "undefined" && window.__alloActiveAIBackend && window.__alloActiveAIBackend.backend === "alloflow-local";
+        const _tail = _bridgeActive ? t("ai_backend.engine_connected") || "Connected \u2014 this app is using it right now." : t("ai_backend.engine_reload_note") || "Reload the app to start using it.";
+        setLine(
+          "\u2713 " + (t("ai_backend.engine_running") || "Engine running") + (engineStatus.model && engineStatus.model.name ? " \u2014 " + engineStatus.model.name : "") + ". " + _tail,
+          "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100"
+        );
+        startBtn.hidden = true;
+        stopEngineStripPoll();
+        return;
+      }
+      let line = t("ai_backend.engine_stopped") || "Engine is not running.";
+      const busy = Boolean(engineStatus.download && engineStatus.download.totalBytes) || engineStatus.phase === "starting" || engineStatus.phase === "downloading-binary" || engineStatus.phase === "downloading-model";
+      if (engineStatus.download && engineStatus.download.totalBytes) {
+        line = (t("ai_backend.engine_downloading") || "Downloading") + " " + engineStatus.download.file + " \u2014 " + Math.round(engineStatus.download.receivedBytes / engineStatus.download.totalBytes * 100) + "%";
+      } else if (engineStatus.phase === "starting") {
+        line = t("ai_backend.engine_starting") || "Starting the engine\u2026";
+      } else if (engineStatus.lastError) {
+        line = engineStatus.lastError;
+      }
+      if (engineStatus.model && !engineStatus.model.present && !busy) {
+        line += " " + (t("ai_backend.engine_first_run") || "(first start downloads the AI model \u2014 about 2 GB, one time)");
+      }
+      setLine(line, AMBER);
+      startBtn.hidden = busy;
+      if (!busy) startBtn.disabled = false;
+      if (busy) startEngineStripPoll();
+      else stopEngineStripPoll();
+    } catch (_) {
+      setLine(t("ai_backend.engine_unreachable") || "Could not reach the desktop runtime from this page.", AMBER);
+      startBtn.hidden = true;
+      stopEngineStripPoll();
+    }
+  };
+  const createAIProviderFromSettings = () => {
+    const cfg = readAIBackendConfig();
+    const backend = cfg.backend || "gemini";
+    const Provider = typeof window !== "undefined" && window.AIProvider || ai && ai.constructor;
+    if (!Provider) return ai;
+    const canInheritActiveProvider = backend === "gemini" || backend === (ai && ai.backend);
+    const inheritedApiKey = canInheritActiveProvider ? ai && ai.apiKey : "";
+    const inheritedModels = canInheritActiveProvider ? ai && ai.models : {};
+    return new Provider({
+      backend,
+      apiKey: cfg.apiKey ?? inheritedApiKey ?? "",
+      baseUrl: cfg.baseUrl || aiBackendDefaults[backend] || "",
+      models: cfg.models || inheritedModels || {},
+      ttsProvider: cfg.ttsProvider || "auto",
+      imageProvider: cfg.imageProvider || "auto",
+      isCanvasEnv: false
+    });
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: (e) => {
+    if (e.key === "Escape") setShowAIBackendModal(false);
+  }, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "data-help-key": "ai_backend_provider_select",
@@ -459,16 +704,27 @@ function AIBackendModal(props) {
         }
       })(),
       onChange: (e) => {
-        const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-        const defaults = { gemini: "", localai: "http://localhost:8080", ollama: "http://localhost:11434", openai: "https://api.openai.com", claude: "https://api.anthropic.com", "onnx-npu": "http://localhost:11435", custom: "http://localhost:8080" };
-        const updated = { ...current, backend: e.target.value, baseUrl: defaults[e.target.value] || "" };
-        localStorage.setItem("alloflow_ai_config", JSON.stringify(updated));
+        const current = readAIBackendConfig();
+        const backend = e.target.value;
+        const updated = { ...current, backend, baseUrl: aiBackendDefaults[backend] || "" };
+        if (backend !== current.backend) delete updated.models;
+        writeAIBackendConfig(updated);
         const urlEl = document.getElementById("ai-backend-url");
         if (urlEl) urlEl.value = updated.baseUrl || "";
+        populateModelSelect(document.getElementById("ai-backend-model-default"), "Auto (server default)", [], "");
+        populateModelSelect(document.getElementById("ai-backend-model-fallback"), "Same as default", [], "");
+        const status = document.getElementById("ai-backend-status");
+        if (status) {
+          status.textContent = "Preset applied. Test connection to discover models, then reload to apply.";
+          status.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
+        }
+        setTimeout(refreshEngineStrip, 0);
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-bold text-slate-700 bg-white cursor-pointer"
     },
     /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "\u2728 Gemini (Google) \u2014 Default"),
+    /* @__PURE__ */ React.createElement("option", { value: "alloflow-local" }, "\u{1F3EB} AlloFlow Built-in Engine (this computer \u2014 no account)"),
+    /* @__PURE__ */ React.createElement("option", { value: "lmstudio" }, "LM Studio (Local)"),
     /* @__PURE__ */ React.createElement("option", { value: "localai" }, "\u{1F5A5}\uFE0F LocalAI (Self-Hosted GPU)"),
     /* @__PURE__ */ React.createElement("option", { value: "ollama" }, "\u{1F999} Ollama (Local)"),
     /* @__PURE__ */ React.createElement("option", { value: "openai" }, "\u{1F916} OpenAI"),
@@ -496,7 +752,17 @@ function AIBackendModal(props) {
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
     }
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.api_key_label") || "API Key", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.api_key_hint") || "(cloud providers only)")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-engine-strip", style: { display: "none" }, "aria-live": "polite", ref: (node) => {
+    if (node && !node.dataset.engineInit) {
+      node.dataset.engineInit = "1";
+      setTimeout(refreshEngineStrip, 0);
+    }
+  } }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-sdturbo-strip", style: { display: "none" }, "aria-live": "polite", ref: (node) => {
+    if (node && !node.dataset.sdInit) {
+      node.dataset.sdInit = "1";
+      setTimeout(refreshSdTurboStrip, 0);
+    }
+  } }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.api_key_label") || "API Key", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.api_key_hint") || "(cloud providers only)")), /* @__PURE__ */ React.createElement(
     "input",
     {
       "data-help-key": "ai_backend_api_key_input",
@@ -554,23 +820,26 @@ function AIBackendModal(props) {
           status.className = "";
         }
         try {
-          const result = await ai.testConnection();
+          const result = await createAIProviderFromSettings().testConnection();
           if (result.success) {
-            if (status) {
-              status.textContent = "\u2705 Connected! " + result.modelCount + " model(s) available";
-              status.className = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
-            }
             const modelSelect = document.getElementById("ai-backend-model-default");
             const fallbackSelect = document.getElementById("ai-backend-model-fallback");
+            const cfg = readAIBackendConfig();
+            const firstModel = result.models?.[0]?.id || "";
+            if (firstModel && !cfg.models?.default) {
+              const models = { ...cfg.models || {}, default: firstModel };
+              writeAIBackendConfig({ ...cfg, models });
+            }
+            const refreshedCfg = readAIBackendConfig();
+            if (status) {
+              status.textContent = "Connected! " + result.modelCount + " model(s) available" + (firstModel && !cfg.models?.default ? ". Default model selected." : "");
+              status.className = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
+            }
             if (modelSelect && result.models?.length > 0) {
-              modelSelect.innerHTML = '<option value="">Auto (server default)</option>' + result.models.map((m) => `<option value="${m.id}">${m.id}</option>`).join("");
-              const cfg = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-              if (cfg.models?.default) modelSelect.value = cfg.models.default;
+              populateModelSelect(modelSelect, "Auto (server default)", result.models, refreshedCfg.models?.default || "");
             }
             if (fallbackSelect && result.models?.length > 0) {
-              fallbackSelect.innerHTML = '<option value="">Same as default</option>' + result.models.map((m) => `<option value="${m.id}">${m.id}</option>`).join("");
-              const cfg = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-              if (cfg.models?.fallback) fallbackSelect.value = cfg.models.fallback;
+              populateModelSelect(fallbackSelect, "Same as default", result.models, refreshedCfg.models?.fallback || "");
             }
           } else {
             if (status) {
@@ -617,7 +886,7 @@ function AIBackendModal(props) {
           s.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
         }
       },
-      className: "bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
+      className: "bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
     },
     "\u21A9 Reset"
   )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status" }), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
@@ -706,6 +975,7 @@ function AIBackendModal(props) {
       className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
     },
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F504} Auto (match backend)"),
+    /* @__PURE__ */ React.createElement("option", { value: "sd-local" }, "\u{1F3EB} SD-Turbo (this computer \u2014 no account)"),
     /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
     /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")

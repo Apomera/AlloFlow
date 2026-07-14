@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-landsat-missions-card",
+  "title": "USGS Landsat Missions",
+  "description": "A USGS source card about Landsat satellites and Earth-observation data.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Remote sensing",
+    "Satellites",
+    "Earth systems",
+    "Data literacy"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/landsat-missions"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS Landsat resources describe how satellite imagery tracks land cover, agriculture, cities, water, fire scars, and long-term environmental change."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for interpreting images as evidence, comparing change over time, and asking how technology helps scientists monitor Earth systems."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Landsat data are generally available without copyright restriction, but linked photographs, logos, and partner materials can carry separate usage guidance."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

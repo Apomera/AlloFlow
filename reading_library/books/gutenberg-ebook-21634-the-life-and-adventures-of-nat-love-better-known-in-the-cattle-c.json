@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-21634-the-life-and-adventures-of-nat-love-better-known-in-the-cattle-c",
+  "title": "The Life and Adventures of Nat Love: Better Known in the Cattle Country as \"Deadwood Dick\"",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "African American cowboys -- West (U.S.) -- Biography",
+    "Cowboys -- West (U.S.) -- Biography",
+    "Love, Nat, 1854-1921",
+    "West (U.S.) -- Biography"
+  ],
+  "authors": [
+    "Love, Nat"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/21634"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/21634/pg21634.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Life and Adventures of Nat Love: Better Known in the Cattle Country as \"Deadwood Dick\"\" by Love, Nat. Metadata tags include: African American cowboys -- West (U.S.) -- Biography; Cowboys -- West (U.S.) -- Biography; Love, Nat, 1854-1921; West (U.S.) -- Biography."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 93
+  }
+}

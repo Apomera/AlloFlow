@@ -83,6 +83,7 @@ function TimelineView(props) {
   var handleTimelineDragEnd = props.handleTimelineDragEnd;
   var handleTimelineDragOver = props.handleTimelineDragOver;
   var handleTimelineDragStart = props.handleTimelineDragStart;
+  var handleTimelineMove = props.handleTimelineMove;
   var handleTimelineRevision = props.handleTimelineRevision;
   var handleToggleIsEditingTimeline = props.handleToggleIsEditingTimeline;
   var handleVerifyTimelineAccuracy = props.handleVerifyTimelineAccuracy;
@@ -211,11 +212,20 @@ function TimelineView(props) {
   }), isEditingTimeline ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
   }, /*#__PURE__*/React.createElement("div", {
+    id: "timeline-reorder-instructions",
     className: "text-xs text-slate-600 italic text-center mb-2"
-  }, t('timeline.edit_instruction')), (Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => /*#__PURE__*/React.createElement("div", {
+  }, t('timeline.edit_instruction'), /*#__PURE__*/React.createElement("span", {
+    className: "block mt-1"
+  }, t('timeline.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.')), (Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => /*#__PURE__*/React.createElement("div", {
     key: idx,
     "data-timeline-row": true,
     draggable: true,
+    role: "group",
+    "aria-label": t('timeline.item_position_aria', {
+      position: idx + 1,
+      total: (Array.isArray(generatedContent?.data) ? generatedContent.data : generatedContent?.data?.items || []).length
+    }) || `Timeline item ${idx + 1}`,
+    "aria-describedby": "timeline-reorder-instructions",
     onDragStart: e => handleTimelineDragStart(e, idx),
     onDragOver: e => handleTimelineDragOver(e, idx),
     onDragEnd: handleTimelineDragEnd,
@@ -223,10 +233,27 @@ function TimelineView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center gap-1 mt-2 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500"
   }, /*#__PURE__*/React.createElement(GripVertical, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-bold bg-slate-100 px-1.5 rounded text-slate-600"
-  }, idx + 1)), /*#__PURE__*/React.createElement("div", {
+  }, idx + 1), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => handleTimelineMove(idx, idx - 1),
+    disabled: idx === 0,
+    "aria-label": t('timeline.move_up_aria', {
+      position: idx + 1
+    }) || `Move timeline item ${idx + 1} up`,
+    className: "w-7 h-7 inline-flex items-center justify-center rounded bg-white border border-slate-400 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
+  }, "?"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => handleTimelineMove(idx, idx + 1),
+    disabled: idx === (Array.isArray(generatedContent?.data) ? generatedContent.data : generatedContent?.data?.items || []).length - 1,
+    "aria-label": t('timeline.move_down_aria', {
+      position: idx + 1
+    }) || `Move timeline item ${idx + 1} down`,
+    className: "w-7 h-7 inline-flex items-center justify-center rounded bg-white border border-slate-400 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
+  }, "?")), /*#__PURE__*/React.createElement("div", {
     className: "flex-grow grid grid-cols-1 gap-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"

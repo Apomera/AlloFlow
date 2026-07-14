@@ -917,6 +917,15 @@ window.SelHub = window.SelHub || {
     category: 'relationship-skills',
 
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _rcT = (ctx && ctx.theme) || {};
+      var _rcHC = !!_rcT.isContrast, _rcL = !_rcHC && !_rcT.isDark;
+      var _rc_BGL = {}, _rc_BGH = {'#fff':'#000000','#fef3c7':'#000000','#fafafa':'#000000','#f0fdf4':'#000000','#d97706':'#000000','#ffffff':'#000000','#fffbeb':'#000000'};
+      var _rc_FGL = {}, _rc_FGH = {'#0f172a':'#ffff00','#64748b':'#ffff00','#92400e':'#ffff00','#475569':'#ffff00','#166534':'#ffff00','#78350f':'#ffff00','#fff':'#ffff00'};
+      var _rc_BDL = {'#0f172a':'#cbd5e1'}, _rc_BDH = {'#fde68a':'#ffff00','#fcd34d':'#ffff00','#e5e7eb':'#ffff00','#f59e0b':'#ffff00','#cbd5e1':'#ffff00','#bbf7d0':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00'};
+      var _rcBg = function(h){ return _rcHC ? (_rc_BGH[h]||h) : (_rcL ? (_rc_BGL[h]||h) : h); };
+      var _rcFg = function(h){ return _rcHC ? (_rc_FGH[h]||h) : (_rcL ? (_rc_FGL[h]||h) : h); };
+      var _rcBd = function(h){ return _rcHC ? (_rc_BDH[h]||h) : (_rcL ? (_rc_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData['restorativeCircle']) || {};
@@ -1092,7 +1101,7 @@ window.SelHub = window.SelHub || {
         // ── Header ──
         h('div', { className: 'flex items-center justify-between' },
           h('div', { className: 'flex items-center gap-3' },
-            h('button', Object.assign({ className: 'p-2 rounded-full hover:bg-amber-100 text-amber-800 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })),
+            h('button', Object.assign({ 'aria-label': 'Back to SEL tools', className: 'p-2 rounded-full hover:bg-amber-100 text-amber-800 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })),
               h(ArrowLeft, { size: 20 })
             ),
             h('div', null,
@@ -1140,7 +1149,7 @@ window.SelHub = window.SelHub || {
           // Circle type cards
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             CIRCLE_TYPES.map(function(ct) {
-              return h('button', { 'aria-label': ct.emoji,
+              return h('button', { 
                 key: ct.id,
                 onClick: function() { updMulti({ circleType: ct.id, tab: 'circle', promptIdx: 0, circleActive: true, customPrompts: null }); ctx.awardXP(5); },
                 className: 'p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-md ' +
@@ -1633,8 +1642,8 @@ window.SelHub = window.SelHub || {
                     disabled: !callGemini || rcRpStarting,
                     style: {
                       padding: '12px 14px', textAlign: 'left',
-                      background: '#fff', border: '2px solid #fde68a', borderRadius: 10,
-                      fontSize: 14, color: '#0f172a', cursor: (callGemini && !rcRpStarting) ? 'pointer' : 'not-allowed',
+                      background: _rcBg('#fff'), border: '2px solid #fde68a', borderRadius: 10,
+                      fontSize: 14, color: _rcFg('#0f172a'), cursor: (callGemini && !rcRpStarting) ? 'pointer' : 'not-allowed',
                       display: 'flex', alignItems: 'flex-start', gap: 10,
                       opacity: rcRpStarting ? 0.6 : 1
                     }
@@ -1642,7 +1651,7 @@ window.SelHub = window.SelHub || {
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 22, marginTop: 2 } }, cfg.icon),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontWeight: 700, marginBottom: 4 } }, cfg.label),
-                      h('div', { style: { fontSize: 12, color: '#64748b', lineHeight: 1.45 } }, cfg.desc)
+                      h('div', { style: { fontSize: 12, color: _rcFg('#64748b'), lineHeight: 1.45 } }, cfg.desc)
                     )
                   );
                 })
@@ -1652,16 +1661,16 @@ window.SelHub = window.SelHub || {
             ),
             // STEP 2: conversation in progress
             rcRpRole && charCfg && h('div', { className: 'space-y-3' },
-              h('div', { style: { padding: '8px 12px', background: '#fef3c7', borderRadius: 8, fontSize: 12, color: '#92400e', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              h('div', { style: { padding: '8px 12px', background: _rcBg('#fef3c7'), borderRadius: 8, fontSize: 12, color: _rcFg('#92400e'), display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontWeight: 700 } }, charCfg.icon + ' ' + charCfg.label),
                 h('button', {
                   onClick: function() { updMulti({ rcRpRole: '', rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: false }); },
-                  style: { padding: '4px 10px', background: '#fff', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+                  style: { padding: '4px 10px', background: _rcBg('#fff'), color: _rcFg('#92400e'), border: '1px solid #fcd34d', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
                 }, '← Different role')
               ),
               // Scene
-              rcRpScene && h('div', { style: { padding: '10px 12px', background: '#fafafa', borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic' } },
-                h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#92400e', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
+              rcRpScene && h('div', { style: { padding: '10px 12px', background: _rcBg('#fafafa'), borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: _rcFg('#475569'), fontStyle: 'italic' } },
+                h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: _rcFg('#92400e'), fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
                 rcRpScene
               ),
               // Conversation log
@@ -1682,12 +1691,12 @@ window.SelHub = window.SelHub || {
                       padding: '10px 13px',
                       borderRadius: 12,
                       fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
-                      background: isStudent ? '#dbeafe' : (isCoach ? '#fef3c7' : '#f1f5f9'),
+                      background: isStudent ? '#dbeafe' : (isCoach ? _rcBg('#fef3c7') : '#f1f5f9'),
                       border: '1px solid ' + (isStudent ? '#93c5fd' : (isCoach ? '#fcd34d' : '#cbd5e1')),
-                      color: '#0f172a'
+                      color: _rcFg('#0f172a')
                     }
                   },
-                    h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#1d4ed8' : (isCoach ? '#92400e' : '#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                    h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#1d4ed8' : (isCoach ? _rcFg('#92400e') : _rcFg('#475569')), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
                       isStudent ? 'You' : (isCoach ? '🪶 Coach (out of character)' : '🎭 ' + (rcRpRole === 'facilitator' ? 'Defensive participant' : rcRpRole === 'accountability' ? 'Person you hurt' : 'Peer sharing their hurt'))),
                     h('div', null, turn.text)
                   );
@@ -1760,7 +1769,7 @@ window.SelHub = window.SelHub || {
                       });
                     },
                     className: 'px-4 py-2 rounded-lg text-sm font-bold text-white',
-                    style: { background: (rcRpLoading || !rcRpInput.trim() || !callGemini) ? '#cbd5e1' : '#d97706', cursor: (rcRpLoading || !rcRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer' }
+                    style: { background: (rcRpLoading || !rcRpInput.trim() || !callGemini) ? '#cbd5e1' : _rcBg('#d97706'), cursor: (rcRpLoading || !rcRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer' }
                   }, rcRpLoading ? 'Thinking…' : 'Send →'),
                   // Break character → coach
                   h('button', {
@@ -1795,7 +1804,7 @@ window.SelHub = window.SelHub || {
                       });
                     },
                     className: 'px-3 py-2 rounded-lg text-sm font-semibold',
-                    style: { background: '#fff', color: '#92400e', border: '1px solid #fcd34d', cursor: (rcRpLoading || !callGemini || rcRpHistory.length === 0) ? 'not-allowed' : 'pointer' }
+                    style: { background: _rcBg('#fff'), color: _rcFg('#92400e'), border: '1px solid #fcd34d', cursor: (rcRpLoading || !callGemini || rcRpHistory.length === 0) ? 'not-allowed' : 'pointer' }
                   }, '🪶 Break character — coach me'),
                   // End & reflect
                   rcRpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
@@ -1826,28 +1835,28 @@ window.SelHub = window.SelHub || {
                       });
                     },
                     className: 'px-3 py-2 rounded-lg text-sm font-semibold',
-                    style: { background: '#fff', color: '#475569', border: '1px solid #cbd5e1', cursor: (rcRpLoading || !callGemini) ? 'not-allowed' : 'pointer' }
+                    style: { background: _rcBg('#fff'), color: _rcFg('#475569'), border: '1px solid #cbd5e1', cursor: (rcRpLoading || !callGemini) ? 'not-allowed' : 'pointer' }
                   }, 'End & reflect')
                 )
               ),
               // STEP 3: reflection
-              rcRpEnded && rcRpReflection && h('div', { style: { padding: 14, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10 } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'How that went'),
-                h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: '#0f172a', whiteSpace: 'pre-wrap' } }, rcRpReflection),
+              rcRpEnded && rcRpReflection && h('div', { style: { padding: 14, background: _rcBg('#f0fdf4'), border: '1px solid #bbf7d0', borderRadius: 10 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _rcFg('#166534'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'How that went'),
+                h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: _rcFg('#0f172a'), whiteSpace: 'pre-wrap' } }, rcRpReflection),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   h('button', {
                     onClick: function() { updMulti({ rcRpRole: '', rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: false }); },
                     className: 'px-3 py-2 rounded-lg text-sm font-bold text-white',
-                    style: { background: '#d97706', cursor: 'pointer' }
+                    style: { background: _rcBg('#d97706'), cursor: 'pointer' }
                   }, 'Practice again'),
                   h('button', {
                     onClick: function() { upd('tab', 'home'); updMulti({ rcRpRole: '', rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '' }); },
                     className: 'px-3 py-2 rounded-lg text-sm font-semibold',
-                    style: { background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', cursor: 'pointer' }
+                    style: { background: _rcBg('#fff'), color: _rcFg('#0f172a'), border: '1px solid #cbd5e1', cursor: 'pointer' }
                   }, 'Done')
                 )
               ),
-              rcRpRole && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#92400e', fontStyle: 'italic' } },
+              rcRpRole && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _rcFg('#92400e'), fontStyle: 'italic' } },
                 'AI-generated responses. No real student is depicted. Treat coach feedback as one perspective.'),
               // Always-on help strip — the real safety net is a trusted adult.
               rcRpRole && window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, gradeBand)
@@ -1989,6 +1998,8 @@ window.SelHub = window.SelHub || {
               return h('div', {                 key: piece.id,
                 className: 'rounded-2xl border-2 p-4 transition-all cursor-pointer hover:shadow-md ' +
                   (isSelected ? 'border-amber-400 bg-amber-50 shadow-md ring-2 ring-amber-200' : 'border-slate-200 bg-white hover:border-amber-300'),
+                role: 'button', tabIndex: 0, 'aria-pressed': isSelected ? 'true' : 'false',
+                onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } },
                 onClick: function() { upd('talkingPiece', piece.id); ctx.awardXP(3); }
               },
                 h('div', { className: 'flex items-center gap-3 mb-2' },
@@ -2184,7 +2195,7 @@ window.SelHub = window.SelHub || {
                 (isExpanded ? 'border-amber-400 shadow-lg' : 'border-slate-200 hover:border-amber-300')
             },
               // Header (always visible)
-              h('button', { 'aria-label': role.emoji,
+              h('button', { 
                 onClick: function() {
                   upd('expandedRole', isExpanded ? null : role.id);
                   if (!isExpanded) {
@@ -2285,7 +2296,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'flex gap-2 bg-slate-100 rounded-xl p-1' },
             ['personA', 'personB'].map(function(person) {
               var personLabel = person === 'personA' ? '\uD83D\uDC64 Person A' : '\uD83D\uDC65 Person B';
-              return h('button', { 'aria-label': 'text-slate-600 hover:text-amber-600',
+              return h('button', { 
                 key: person,
                 onClick: function() { upd('empathyPerson', person); },
                 className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
@@ -2364,6 +2375,15 @@ window.SelHub = window.SelHub || {
                 '2. Identify areas of MISUNDERSTANDING (where one person may not see the other\'s viewpoint).\n' +
                 '3. Suggest 2-3 specific bridge-building actions they could take to repair the relationship.\n' +
                 'Be warm, empathetic, and constructive. Use simple language.';
+              // Local safety pre-check on the free-text empathy-map fields (mirrors
+              // askCircleFacilitator); the empathy-map AI path previously skipped it.
+              var _empSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                ? window.SelHub.safeRehearseCheck(summary, { toolId: 'restorativecircle', onSafetyFlag: ctx.onSafetyFlag })
+                : { action: 'continue' };
+              if (_empSafety.action === 'block') {
+                updMulti({ empathyAnalysis: window.SelHub.rehearseBreakCharacterText(_empSafety.severity), aiLoading: false });
+                return;
+              }
               callGemini(aiPrompt).then(function(resp) {
                 updMulti({ empathyAnalysis: resp, aiLoading: false });
                 incrementBadgeStat('empathyMapsCompleted', 1);
@@ -2509,7 +2529,7 @@ window.SelHub = window.SelHub || {
                         : 'Which approach do you think would be more effective and why?'
                     ),
                     h('div', { className: 'flex gap-2' },
-                      h('button', { 'aria-label': 'comparisonScenariosRated',
+                      h('button', { 
                         onClick: function() {
                           var newRatings = Object.assign({}, ratings);
                           newRatings[ratingKey] = 'punitive';
@@ -2520,7 +2540,7 @@ window.SelHub = window.SelHub || {
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
                           (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-600')
                       }, gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive'),
-                      h('button', { 'aria-label': 'compareReflections',
+                      h('button', { 
                         onClick: function() {
                           var newRatings = Object.assign({}, ratings);
                           newRatings[ratingKey] = 'restorative';
@@ -2667,13 +2687,13 @@ window.SelHub = window.SelHub || {
 
         // ═══ PRINT ═══
         tab === 'print' && h('div', { className: 'space-y-3' },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 12.5, color: '#78350f', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 12.5, color: _rcFg('#78350f'), lineHeight: 1.65 } },
             h('strong', null, '\uD83D\uDDA8 Facilitator pocket reference. '),
             'A one-page circle protocol: structure of the 4 movements, talking-piece norms, opening + closing scripts, role cards, and the questions bank for the three most common circle types. Designed for teachers and Crew leaders to carry.'
           ),
           h('div', { className: 'no-print', style: { textAlign: 'center', marginBottom: 14 } },
             h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: _rcFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -2682,20 +2702,20 @@ window.SelHub = window.SelHub || {
             '#rc-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
             '.no-print { display: none !important; } }'
           ),
-          h('div', { id: 'rc-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+          h('div', { id: 'rc-print-region', style: { padding: 18, borderRadius: 12, background: _rcBg('#ffffff'), color: _rcFg('#0f172a'), border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
-              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Restorative Circle \u00b7 Facilitator Reference'),
-              h('div', { style: { fontSize: 11, color: '#475569' } }, 'IIRP \u00b7 Indigenous lineage \u00b7 EL Education Crew')
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: _rcFg('#0f172a') } }, 'Restorative Circle \u00b7 Facilitator Reference'),
+              h('div', { style: { fontSize: 11, color: _rcFg('#475569') } }, 'IIRP \u00b7 Indigenous lineage \u00b7 EL Education Crew')
             ),
 
-            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.6, color: '#78350f' } },
+            h('div', { style: { padding: 10, background: _rcBg('#fffbeb'), border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.6, color: _rcFg('#78350f') } },
               h('strong', null, 'Use this before, not during, the circle. '),
               'In circle, eyes are on the talking piece, not paper. The reference is for prep. Once you have run a few circles, the structure becomes second nature.'
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'The four movements of a circle'),
-              h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.7 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _rcFg('#0f172a'), marginBottom: 8 } }, 'The four movements of a circle'),
+              h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: _rcFg('#0f172a'), lineHeight: 1.7 } },
                 h('li', { style: { marginBottom: 4 } }, h('strong', null, 'Welcome and centering. '), 'Greet the group. A short centering moment (breath, mindful minute, naming what you carry into the space). State the purpose of the circle in one sentence.'),
                 h('li', { style: { marginBottom: 4 } }, h('strong', null, 'Agreements. '), 'Name the talking-piece norm: when you hold it, you speak; when you do not, you listen. "Pass" is always an option. What is said in circle stays in circle.'),
                 h('li', { style: { marginBottom: 4 } }, h('strong', null, 'Rounds. '), 'Open the question. Pass the piece. Listen. Keep going until everyone has had a chance with the piece (more than once for deeper circles).'),
@@ -2704,8 +2724,8 @@ window.SelHub = window.SelHub || {
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Talking-piece norms'),
-              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.65 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _rcFg('#0f172a'), marginBottom: 8 } }, 'Talking-piece norms'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: _rcFg('#0f172a'), lineHeight: 1.65 } },
                 h('li', null, 'The person holding the piece is the only person speaking. Everyone else listens, fully, without prepping a response.'),
                 h('li', null, 'Pass is always honored. Silence is part of the circle.'),
                 h('li', null, 'No cross-talk, no rebuttal, no interruption \u2014 even by the facilitator.'),
@@ -2715,38 +2735,38 @@ window.SelHub = window.SelHub || {
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Opening + closing scripts'),
-              h('div', { style: { padding: 8, background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 6, marginBottom: 8 } },
-                h('div', { style: { fontSize: 11.5, color: '#78350f', fontWeight: 700, marginBottom: 4 } }, 'Opening'),
-                h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.6, fontStyle: 'italic' } }, '"Welcome. We are gathering in circle today to ____. Before we begin, let\'s take a breath together. \u00b7 [breath] \u00b7 The talking piece is ____. When you hold it, you speak. When you do not, you listen. Pass is always okay. What we share in this circle stays in this circle. The first round will be on ____."')
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _rcFg('#0f172a'), marginBottom: 8 } }, 'Opening + closing scripts'),
+              h('div', { style: { padding: 8, background: _rcBg('#fef3c7'), border: '1px solid #fcd34d', borderRadius: 6, marginBottom: 8 } },
+                h('div', { style: { fontSize: 11.5, color: _rcFg('#78350f'), fontWeight: 700, marginBottom: 4 } }, 'Opening'),
+                h('div', { style: { fontSize: 12, color: _rcFg('#0f172a'), lineHeight: 1.6, fontStyle: 'italic' } }, '"Welcome. We are gathering in circle today to ____. Before we begin, let\'s take a breath together. \u00b7 [breath] \u00b7 The talking piece is ____. When you hold it, you speak. When you do not, you listen. Pass is always okay. What we share in this circle stays in this circle. The first round will be on ____."')
               ),
-              h('div', { style: { padding: 8, background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 6 } },
-                h('div', { style: { fontSize: 11.5, color: '#78350f', fontWeight: 700, marginBottom: 4 } }, 'Closing'),
-                h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.6, fontStyle: 'italic' } }, '"As we close, I am going to invite one final round. One word, one breath, one feeling \u2014 something to carry out of this circle with you. \u00b7 [round] \u00b7 Thank you for your honesty, your listening, and your care for each other today. The circle is closed."')
+              h('div', { style: { padding: 8, background: _rcBg('#fef3c7'), border: '1px solid #fcd34d', borderRadius: 6 } },
+                h('div', { style: { fontSize: 11.5, color: _rcFg('#78350f'), fontWeight: 700, marginBottom: 4 } }, 'Closing'),
+                h('div', { style: { fontSize: 12, color: _rcFg('#0f172a'), lineHeight: 1.6, fontStyle: 'italic' } }, '"As we close, I am going to invite one final round. One word, one breath, one feeling \u2014 something to carry out of this circle with you. \u00b7 [round] \u00b7 Thank you for your honesty, your listening, and your care for each other today. The circle is closed."')
               )
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Question bank: the three most common circle types'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _rcFg('#0f172a'), marginBottom: 8 } }, 'Question bank: the three most common circle types'),
               h('div', { style: { marginBottom: 8 } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#78350f', marginBottom: 3 } }, 'Community-building circle'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _rcFg('#78350f'), marginBottom: 3 } }, 'Community-building circle'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: _rcFg('#0f172a'), lineHeight: 1.55 } },
                   h('li', null, 'One word for how you arrived today.'),
                   h('li', null, 'A small thing you are grateful for this week.'),
                   h('li', null, 'Something you wish more people in this circle knew about you.')
                 )
               ),
               h('div', { style: { marginBottom: 8 } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#78350f', marginBottom: 3 } }, 'Check-in / Crew circle'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _rcFg('#78350f'), marginBottom: 3 } }, 'Check-in / Crew circle'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: _rcFg('#0f172a'), lineHeight: 1.55 } },
                   h('li', null, 'How is your heart today? One word.'),
                   h('li', null, 'A moment from this week when you were proud of who you were being.'),
                   h('li', null, 'Something you are carrying that you want this Crew to know about, even briefly.')
                 )
               ),
               h('div', null,
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#78350f', marginBottom: 3 } }, 'Harm-repair circle'),
-                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _rcFg('#78350f'), marginBottom: 3 } }, 'Harm-repair circle'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: _rcFg('#0f172a'), lineHeight: 1.55 } },
                   h('li', null, 'For the person harmed: what happened, from your perspective?'),
                   h('li', null, 'For the person who caused harm: what happened, from your perspective?'),
                   h('li', null, 'For everyone: what was the impact on you, on the people you love, on this community?'),
@@ -2756,12 +2776,12 @@ window.SelHub = window.SelHub || {
               )
             ),
 
-            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10, fontSize: 11.5, color: '#78350f', lineHeight: 1.6 } },
+            h('div', { style: { padding: 10, background: _rcBg('#fffbeb'), border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10, fontSize: 11.5, color: _rcFg('#78350f'), lineHeight: 1.6 } },
               h('strong', null, 'Roles: '),
               'Keeper (holds the structure, opens and closes), Timekeeper (gentle, optional, especially for shorter circles), Talking-piece holder (one person who passes the piece in), Witness or Co-keeper (especially in harm-repair circles, to share the emotional load).'
             ),
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: _rcFg('#475569'), lineHeight: 1.5 } },
               'Circle practice has deep Indigenous roots and was carried into Western restorative justice through Howard Zehr, Kay Pranis, and many First Nations elders. Sources: International Institute for Restorative Practices (iirp.edu), Kay Pranis (The Little Book of Circle Processes), Howard Zehr (The Little Book of Restorative Justice). Printed from AlloFlow SEL Hub.'
             )
           )

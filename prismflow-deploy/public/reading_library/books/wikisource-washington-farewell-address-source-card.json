@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-washington-farewell-address-source-card",
+  "title": "Washington's Farewell Address",
+  "description": "A Wikisource source card for Washington's Farewell Address and older-student civics reading.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Civics",
+    "Primary sources",
+    "U.S. history",
+    "Political philosophy"
+  ],
+  "authors": [
+    "George Washington"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Washington%27s_Farewell_Address",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Washington%27s_Farewell_Address"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Washington's Farewell Address is a primary source for studying political parties, foreign alliances, national unity, and early U.S. civic ideals."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for close reading of argument, vocabulary, historical context, and comparing advice from the founding era with later debates."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Wikisource hosts public-domain and freely licensed texts. Check the linked page for source notes, edition information, and license details before mirroring."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 62
+  }
+}

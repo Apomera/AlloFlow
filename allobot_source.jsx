@@ -1,5 +1,5 @@
 // @section SPEECH_BUBBLE — Allobot speech bubble component
-const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = 'speech' }) => {
+const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = 'speech', disableAnimations = false }) => {
   const { t } = useContext(LanguageContext);
   const bubbleRef = useRef(null);
   const [placement, setPlacement] = useState('top-right');
@@ -13,6 +13,11 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
       setDisplayedText('');
       if (onTyping) onTyping(true);
       const chars = Array.from(text);
+      if (disableAnimations) {
+          setDisplayedText(text);
+          if (onTyping) onTyping(false);
+          return;
+      }
       let i = 0;
       const speed = 30;
       const timer = setInterval(() => {
@@ -48,7 +53,7 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
       return () => {
           clearInterval(timer);
       };
-  }, [text, isVisible, onTyping, soundEnabled]);
+  }, [text, isVisible, onTyping, soundEnabled, disableAnimations]);
   React.useLayoutEffect(() => {
     if (!isVisible || !bubbleRef.current) return;
     const rect = bubbleRef.current.getBoundingClientRect();
@@ -222,8 +227,58 @@ const BotConfettiBurst = ({ onComplete }) => {
 const spokenEventIds = new Set();
 const lastGlobalSpeech = { text: '', time: 0 };
 let introFiredGlobal = false;
+const useAlloMotionDisabled = (disableAnimations) => {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+      try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+      catch (_) { return false; }
+  });
+  useEffect(() => {
+      let mq = null;
+      try { mq = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)'); } catch (_) { mq = null; }
+      if (!mq) return;
+      const apply = () => setPrefersReducedMotion(!!mq.matches);
+      apply();
+      if (mq.addEventListener) {
+          mq.addEventListener('change', apply);
+          return () => mq.removeEventListener('change', apply);
+      }
+      if (mq.addListener) {
+          mq.addListener(apply);
+          return () => mq.removeListener(apply);
+      }
+  }, []);
+  return !!disableAnimations || !!prefersReducedMotion;
+};
 // @section ALLOBOT — Embodied pedagogical tour agent
-const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
+// STEM Lab: map the active tool -> its discipline -> a themed accessory.
+// Discipline is read from the tool's registered category (window.STEM_TOOL_REGISTRY,
+// populated by registerTool at load), so new tools auto-inherit the right accessory;
+// a few known edge cases are pinned in the override table.
+const STEM_DISCIPLINE_ACCESSORY = { math: 'math-tools', engineering: 'gear', creative: 'artist', strategy: 'game-pad', applied: 'hard-hat', science: 'microscope' };
+const STEM_DISCIPLINE_OVERRIDE = { cellularLab: 'science', geoSandbox: 'science', lumen: 'science', dataPlot: 'math', dataStudio: 'math', alloBotSage: 'engineering', worldBuilder: 'creative', echoTrainer: 'science' };
+function alloStemDiscipline(toolId) {
+    if (!toolId) return null;
+    if (STEM_DISCIPLINE_OVERRIDE[toolId]) return STEM_DISCIPLINE_OVERRIDE[toolId];
+    let cat = '';
+    try {
+        const reg = (typeof window !== 'undefined') && window.STEM_TOOL_REGISTRY;
+        if (reg) { for (let i = 0; i < reg.length; i++) { if (reg[i] && reg[i].id === toolId) { cat = (reg[i].tags && reg[i].tags[0]) || ''; break; } } }
+    } catch (e) {}
+    const s = (String(cat) + ' ' + String(toolId)).toLowerCase();
+    if (/\bmath\b|algebra|calc|geometr|fraction|number|arithmet|\bdata\b|statist|probab|graph|\blogic|coordinate|areamodel|base10|multtable|unitconv|volume|inequal|moneymath|protractor/.test(s)) return 'math';
+    if (/coding|\bcs\b|technology|\btech\b|comput|applab|cyber|semiconductor|llm|algorithm|robot|history-engineering|circuit|bridge|archstudio|a11y|assessmentlit/.test(s)) return 'engineering';
+    if (/creativ|\bart\b|music|paint|draw|design|story|film|photo|animat|poet|singing|oratory/.test(s)) return 'creative';
+    if (/strateg|\bgames?\b|puzzle|arccity|gamestudio|arcade/.test(s)) return 'strategy';
+    if (/applied|life-?skill|\bgeo\b|econom|finance|career|nutri|baking|cooking|garden|aquacultur|farm|roadready|driver|behavior|literacy|firstaid|firstrespon|pets|skate|swim|typing|recreation|autorepair|bikelab/.test(s)) return 'applied';
+    return 'science';
+}
+function alloStemAccessory(toolId) {
+    const d = alloStemDiscipline(toolId);
+    return d ? (STEM_DISCIPLINE_ACCESSORY[d] || 'microscope') : null;
+}
+const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
+  const motionDisabled = useAlloMotionDisabled(disableAnimations);
+  useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; try { if (motionDisabled) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else { _svg.unpauseAnimations(); } } catch (e) {} } catch (e) {} }, [motionDisabled]);
   const { t } = useContext(LanguageContext);
   const [position, setPosition] = useState(() => {
       try {
@@ -233,18 +288,28 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           return { x: 24, y: 20 };
       }
   });
+  const [keyboardMoveStatus, setKeyboardMoveStatus] = useState('');
   const [isHovered, setIsHovered] = useState(false);
   const [pulseScale, setPulseScale] = useState(1);
   useEffect(() => {
+      if (motionDisabled) {
+          setPulseScale(1);
+          return;
+      }
       const pulseInterval = setInterval(() => {
           setPulseScale(prev => prev === 1 ? 1.02 : 1);
       }, 2000);
       return () => clearInterval(pulseInterval);
-  }, []);
+  }, [motionDisabled]);
   const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
   const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
   useEffect(() => {
+      if (motionDisabled) {
+          setEyePosition({ x: 0, y: 0 });
+          setVisorPosition({ x: 0, y: 0 });
+          return;
+      }
       const handleMouseMove = (e) => {
           if (!containerRef.current) return;
           const rect = containerRef.current.getBoundingClientRect();
@@ -271,7 +336,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       };
       window.addEventListener('mousemove', handleMouseMove);
       return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [motionDisabled]);
   const [customMessage, setCustomMessage] = useState(null);
   const [isTruncated, setIsTruncated] = useState(false);
   const [isTalking, setIsTalking] = useState(false);
@@ -282,6 +347,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const effectiveMood = internalMood || mood;
   const [viseme, setViseme] = useState('neutral');
   const [blinkScale, setBlinkScale] = useState(1);
+  const [accPop, setAccPop] = useState(false);
+  const [displayedAccessory, setDisplayedAccessory] = useState(null);
+  const [accExiting, setAccExiting] = useState(false);
+  const prevMoodRef = useRef('idle');
   const [isSquashed, setIsSquashed] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
   const [isPoofing, setIsPoofing] = useState(false);
@@ -298,6 +367,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const lastPosRef = useRef({ x: position.x, y: position.y, time: Date.now() });
   const velocityTimerRef = useRef(null);
   useEffect(() => {
+      if (motionDisabled) {
+          setVelocity({ dx: 0, dy: 0 });
+          lastPosRef.current = { x: position.x, y: position.y, time: Date.now() };
+          return;
+      }
       const now = Date.now();
       const dt = Math.max(1, now - lastPosRef.current.time);
       const dx = ((position.x - lastPosRef.current.x) / dt) * 10;
@@ -309,12 +383,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           setVelocity({ dx: 0, dy: 0 });
       }, 100);
       return () => clearTimeout(velocityTimerRef.current);
-  }, [position]);
+  }, [position, motionDisabled]);
   const [antennaAction, setAntennaAction] = useState(null);
   const [wobbleState, setWobbleState] = useState({ active: false, deg: 0 });
   const lastRotationRef = useRef(0);
-  const isFlightActive = isFlying || localIsFlying;
+  const isFlightActive = !motionDisabled && (isFlying || localIsFlying);
   useEffect(() => {
+    if (isFlying && motionDisabled) {
+      setLocalIsFlying(false);
+      setIsLanding(false);
+      setMoveDuration(0);
+      return;
+    }
     if (isFlying && !isSleeping) {
       // Fly from bottom-left to resting position over 2s
       const startX = 5;
@@ -334,7 +414,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       }, 100);
       return () => clearTimeout(flyTimer);
     }
-  }, [isFlying]);
+  }, [isFlying, motionDisabled]);
   const getHeldItem = () => {
       if (holdingPointer) return 'flashlight';
       if (isFlightActive || isSleeping) return null;
@@ -367,6 +447,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       lastRotationRef.current = antennaRotation;
   }
   useEffect(() => {
+      if (motionDisabled) {
+          setWobbleState({ active: false, deg: 0 });
+          lastRotationRef.current = 0;
+          return;
+      }
       if (!isMoving && Math.abs(lastRotationRef.current) > 2 && !wobbleState.active) {
            setWobbleState({ active: true, deg: lastRotationRef.current });
            const timer = setTimeout(() => {
@@ -375,7 +460,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
            }, 500);
            return () => clearTimeout(timer);
       }
-  }, [isMoving]);
+  }, [isMoving, motionDisabled]);
   const speechTimeoutRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
@@ -396,26 +481,42 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       try { safeSetItem('allo_bot_pos_v2', JSON.stringify(position)); } catch(e) { warnLog('localStorage write failed', e); }
   }, [position]);
   useEffect(() => {
-      if (isSleeping) {
-          setBlinkScale(1);
-          return;
-      }
-      let timer;
+      let timer, innerTimer;
       const scheduleBlink = () => {
           const delay = 3000 + Math.random() * 3000;
           timer = setTimeout(() => {
               setBlinkScale(0.1);
-              setTimeout(() => {
+              innerTimer = setTimeout(() => {
                   setBlinkScale(1);
                   scheduleBlink();
               }, 150);
           }, delay);
       };
+      if (isSleeping || motionDisabled) {
+          setBlinkScale(1);
+          return () => {
+              clearTimeout(timer);
+              clearTimeout(innerTimer);
+          };
+      }
       scheduleBlink();
-      return () => clearTimeout(timer);
-  }, [isSleeping]);
+      return () => {
+          clearTimeout(timer);
+          clearTimeout(innerTimer);
+      };
+  }, [isSleeping, motionDisabled]);
   useEffect(() => {
-      if (!isTalking) {
+      // One-shot accessory "pop" when generation finishes (thinking -> not thinking).
+      const prev = prevMoodRef.current;
+      prevMoodRef.current = effectiveMood;
+      if (prev === 'thinking' && effectiveMood !== 'thinking' && !isSleeping && !motionDisabled) {
+          setAccPop(true);
+          const t = setTimeout(() => setAccPop(false), 650);
+          return () => clearTimeout(t);
+      }
+  }, [effectiveMood, isSleeping, motionDisabled]);
+  useEffect(() => {
+      if (!isTalking || motionDisabled) {
           setViseme('neutral');
           return;
       }
@@ -427,9 +528,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           if (Math.random() > 0.8) index = (index + 1) % mouthShapes.length;
       }, 120);
       return () => clearInterval(interval);
-  }, [isTalking]);
+  }, [isTalking, motionDisabled]);
   useEffect(() => {
-      if (isSleeping || isFlightActive || effectiveMood === 'thinking') {
+      if (isSleeping || motionDisabled || isFlightActive || effectiveMood === 'thinking') {
           setAntennaAction(null);
           return;
       }
@@ -445,7 +546,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           }
       }, 5000);
       return () => clearInterval(timer);
-  }, [isSleeping, isFlightActive, effectiveMood]);
+  }, [isSleeping, motionDisabled, isFlightActive, effectiveMood]);
   useEffect(() => {
       if (isFlightActive && soundEnabled && !isGlobalMuted()) {
           try {
@@ -505,11 +606,21 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   }, []);
   const moveTo = useCallback((targetX, targetY, duration = 1000) => {
       if (isSleeping) return;
+      const newRight = window.innerWidth - targetX - 32;
+      const newTop = Math.max(10, targetY);
+      if (motionDisabled) {
+          setMoveDuration(0);
+          setLocalIsFlying(false);
+          setIsLanding(false);
+          setPosition({
+              x: Math.max(10, newRight),
+              y: newTop
+          });
+          return;
+      }
       setMoveDuration(duration);
       setLocalIsFlying(true);
       setIsLanding(false);
-      const newRight = window.innerWidth - targetX - 32;
-      const newTop = Math.max(10, targetY);
       setPosition({
           x: Math.max(10, newRight),
           y: newTop
@@ -519,15 +630,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           setIsLanding(true);
           setTimeout(() => setIsLanding(false), 1000);
       }, duration);
-  }, [isSleeping]);
+  }, [isSleeping, motionDisabled]);
   const triggerReaction = useCallback((emoji) => {
+      if (motionDisabled) return;
       const id = Date.now() + Math.random();
       setReactions(prev => [...prev, { id, emoji }]);
       if (emoji === '🎉') {
           const burstId = Date.now() + Math.random();
           setBursts(prev => [...prev, { id: burstId }]);
       }
-  }, []);
+  }, [motionDisabled]);
   const speak = useCallback(async (text, isSilent = false) => {
       const safeText = (text || "").toString();
       const now = Date.now();
@@ -553,8 +665,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       if (window.speechSynthesis) window.speechSynthesis.cancel();
       if (onSpeechStart) onSpeechStart();
       setIsSleeping(false);
-      setWobbleState({ active: true, deg: 3 });
-      setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
+      if (!motionDisabled) {
+          setWobbleState({ active: true, deg: 3 });
+          setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
+      }
       let cleanText = safeText
           .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
           .replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '')   // superscript citations ⁽³⁾
@@ -699,7 +813,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           const duration = Math.min(90000, 4000 + (cleanText.length * 80));
           speechTimeoutRef.current = setTimeout(resetState, duration);
       }
-  }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio]);
+  }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio, motionDisabled]);
   const handleTypingState = useCallback((isTyping) => {
     if (isTyping) { setIsTalking(true); }
     else if (!currentAudioRef.current) { setIsTalking(false); }
@@ -710,13 +824,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       lastSummonTimeRef.current = now;
       setPosition({ x: 24, y: 20 });
       setIsSleeping(false);
-      setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 1500);
+      if (!motionDisabled) { setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 1500); }
       speak(t('bot.summon_msg'));
-  }, [speak, t]);
+  }, [speak, t, motionDisabled]);
   const handleSleep = (e) => {
       e.stopPropagation();
-      setIsPoofing(true);
       setCustomMessage(null);
+      if (motionDisabled) {
+          setIsPoofing(false);
+          setIsSleeping(true);
+          return;
+      }
+      setIsPoofing(true);
       setTimeout(() => {
           setIsSleeping(true);
           setIsPoofing(false);
@@ -733,10 +852,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           setIsTalking(false);
       },
       playAnimation: (animName, durationMs = 1200) => {
+          if (motionDisabled) return;
           setIdleAnimation(animName);
           setTimeout(() => setIdleAnimation(null), durationMs);
       },
       flyTo: (targetX, targetY, duration = 2000) => {
+          if (motionDisabled) {
+              setMoveDuration(0);
+              setLocalIsFlying(false);
+              setIsLanding(false);
+              setPosition({ x: targetX, y: targetY });
+              return;
+          }
           setLocalIsFlying(true);
           setMoveDuration(duration);
           setTimeout(() => {
@@ -759,14 +886,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
             if (welcomeMsg && welcomeMsg !== 'sidebar.ai_guide_welcome') {
                 speak(welcomeMsg);
             }
-            setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 2500);
+            if (!motionDisabled) { setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 2500); }
             if (onBotIntroSeen) onBotIntroSeen();
         }, 2500);
       }
     }
-  }, [canPlayIntro, onBotIntroSeen, speak, isTalking, customMessage, t]);
+  }, [canPlayIntro, onBotIntroSeen, speak, isTalking, customMessage, t, motionDisabled]);
   useEffect(() => {
     const onCelebrate = (e) => {
+      if (motionDisabled) return;
       const detail = (e && e.detail) || {};
       const kind = detail.kind || 'backflip';
       const wantConfetti = detail.confetti !== false;
@@ -781,14 +909,33 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     };
     window.addEventListener('alloflow:bot-celebrate', onCelebrate);
     return () => window.removeEventListener('alloflow:bot-celebrate', onCelebrate);
-  }, []);
+  }, [motionDisabled]);
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
        if (isSleeping) {
            e.preventDefault();
            summon();
        }
+       return;
     }
+    const movement = {
+      ArrowLeft: { x: 1, y: 0, label: 'left' },
+      ArrowRight: { x: -1, y: 0, label: 'right' },
+      ArrowUp: { x: 0, y: -1, label: 'up' },
+      ArrowDown: { x: 0, y: 1, label: 'down' }
+    }[e.key];
+    if (!movement || isSleeping) return;
+    e.preventDefault();
+    const step = e.shiftKey ? 40 : 10;
+    setPosition((current) => {
+      const maxRight = Math.max(10, window.innerWidth - 74);
+      const maxTop = Math.max(10, window.innerHeight - 74);
+      return {
+        x: Math.min(maxRight, Math.max(10, current.x + movement.x * step)),
+        y: Math.min(maxTop, Math.max(10, current.y + movement.y * step))
+      };
+    });
+    setKeyboardMoveStatus(`AlloBot moved ${movement.label}${e.shiftKey ? ' by a larger step' : ''}.`);
   };
   const pendingSpeechTimerRef = useRef(null);
   useEffect(() => {
@@ -1027,10 +1174,12 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                 scheduleAmbientAction();
                 return;
             }
-            const anims = ['wave', 'backflip', 'shrug', 'look-around'];
-            const action = anims[Math.floor(Math.random() * anims.length)];
-            setIdleAnimation(action);
-            setTimeout(() => setIdleAnimation(null), 2000);
+            if (!motionDisabled) {
+                const anims = ['wave', 'backflip', 'shrug', 'look-around'];
+                const action = anims[Math.floor(Math.random() * anims.length)];
+                setIdleAnimation(action);
+                setTimeout(() => setIdleAnimation(null), 2000);
+            }
             if (Math.random() < 0.3) {
                  const tip = getRandomTip();
                  speak(tip, true);
@@ -1067,7 +1216,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         window.removeEventListener('click', resetInactivity);
         window.removeEventListener('scroll', resetInactivity);
     };
-  }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, t]);
+  }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, t, motionDisabled]);
   const handleMouseDown = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -1137,9 +1286,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
              antenna: '#FACC15',
              jetpackFill: '#000000',
              jetpackStroke: '#FACC15',
+             accPaper: '#000000',
+             accInk: '#FACC15',
           };
       }
-      let c = { ...base, screenBg: '#1E1B4B', antenna: base.gradTo, jetpackFill: '#94A3B8', jetpackStroke: '#475569' };
+      let c = { ...base, screenBg: '#1E1B4B', antenna: base.gradTo, jetpackFill: '#94A3B8', jetpackStroke: '#475569', accPaper: '#FFFFFF', accInk: '#475569' };
       if (colorOverlay === 'blue') {
           c = { ...c, gradFrom: '#60A5FA', gradTo: '#2563EB', glow: '#93C5FD', screenBg: '#172554', antenna: '#2563EB', jetpackFill: '#60A5FA' };
       } else if (colorOverlay === 'peach') {
@@ -1152,6 +1303,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           c.jetpackFill = '#334155';
           c.jetpackStroke = '#64748B';
           c.glow = '#A5B4FC';
+          c.accPaper = '#1E293B';
+          c.accInk = '#94A3B8';
           if (effectiveMood === 'idle') {
               c.gradFrom = '#6366F1';
               c.gradTo = '#312E81';
@@ -1163,7 +1316,20 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       return c;
   };
   const colors = getColors();
-  const effectiveAccessory = isSleeping ? 'sleep-cap' : accessory;
+  // When a STEM tool is open, the bot dresses for that tool's discipline.
+  const stemAccessory = (showStemLab && stemLabTool) ? alloStemAccessory(stemLabTool) : null;
+  const targetAccessory = isSleeping ? 'sleep-cap' : (stemAccessory || accessory);
+  // Exit transition: render the *displayed* (delayed) accessory so a view switch
+  // briefly keeps the old one mounted to animate it out before the new enters.
+  const effectiveAccessory = displayedAccessory;
+  useEffect(() => {
+      if (targetAccessory === displayedAccessory) return;
+      const instant = !displayedAccessory || motionDisabled || isSleeping;
+      if (instant) { setDisplayedAccessory(targetAccessory); setAccExiting(false); return; }
+      setAccExiting(true);
+      const t = setTimeout(() => { setDisplayedAccessory(targetAccessory); setAccExiting(false); }, 200);
+      return () => clearTimeout(t);
+  }, [targetAccessory, displayedAccessory, motionDisabled, isSleeping]);
   const getEyeDimensions = () => {
     switch (effectiveMood) {
       case 'happy':
@@ -1203,7 +1369,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         return "M 45 59 Q 50 61 55 59 Q 50 61 45 59";
     }
   };
-  const trailFilter = (isFlying || localIsFlying)
+  const trailFilter = isFlightActive
       ? `drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)`
       : 'none';
   const renderHologramContent = () => {
@@ -1283,7 +1449,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       }
   };
   return (
-    <>
+    <aside aria-label={t('bot.assistant_landmark') || 'AlloBot assistant'}>
+    <p id="allobot-move-instructions" className="sr-only">Use the arrow keys to move AlloBot. Hold Shift with an arrow key for a larger step.</p>
+    <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{keyboardMoveStatus}</div>
     <style>{`
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
         /* allo-talk keyframe removed — defined but never applied to any element. Audit confirmed dead code. */
@@ -1532,6 +1700,32 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
             clip: auto;
             white-space: normal;
         }
+/* AlloBot accessory idle "alive" motions. Pure translateY/opacity so there are
+   no transform-origin quirks and no clobbering of the positioning/entrance
+   transforms (these classes live on INNER wrapper groups). Named animate-* so
+   they are auto-disabled by the app reduce-motion toggle (.reduce-motion
+   [class*="animate-"]) and OS prefers-reduced-motion (block below). */
+@keyframes allobotFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.6px); } }
+@keyframes allobotPerk { 0%, 80%, 100% { transform: translateY(0); } 90% { transform: translateY(-2.5px); } }
+@keyframes allobotTwinkle { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.animate-allobot-float { animation: allobotFloat 4s ease-in-out infinite; }
+.animate-allobot-perk { animation: allobotPerk 7s ease-in-out infinite; }
+.animate-allobot-twinkle { animation: allobotTwinkle 3s ease-in-out infinite; }
+/* Bespoke signatures (rotate around the element's own base). */
+@keyframes allobotTick { to { transform: rotate(360deg); } }
+@keyframes allobotSway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+.animate-allobot-tick { transform-box: fill-box; transform-origin: center bottom; animation: allobotTick 6s steps(12) infinite; }
+.animate-allobot-sway { transform-box: fill-box; transform-origin: center bottom; animation: allobotSway 3.5s ease-in-out infinite; }
+/* State-reactive: accessory "works" while generating, then a one-shot pop when done.
+   Targets the animate-allobot-* wrappers, so the reduce-motion [class*="animate-"]
+   override below still wins and disables these too. */
+@keyframes allobotWorking { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes allobotPop { 0% { transform: translateY(0); } 35% { transform: translateY(-6px); } 70% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
+.allobot-thinking .animate-allobot-float, .allobot-thinking .animate-allobot-perk { animation: allobotWorking 0.85s ease-in-out infinite; }
+.allobot-pop .animate-allobot-float, .allobot-pop .animate-allobot-perk { animation: allobotPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1; }
+/* Exit transition: the outgoing accessory fades up briefly before the new enters. */
+@keyframes allobotExit { to { opacity: 0; transform: translateY(-3px); } }
+.allobot-exiting > * { animation: allobotExit 0.2s ease-in forwards; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -1543,6 +1737,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     animation: none !important;
     transition: none !important;
   }
+}
+.allobot-motion-disabled *, .allobot-motion-disabled *::before, .allobot-motion-disabled *::after {
+  animation: none !important;
+  transition: none !important;
 }
 /* WCAG 2.4.7 Focus Visible — ensure all interactive elements show focus */
 *:focus-visible {
@@ -1559,17 +1757,25 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     <div
       ref={containerRef}
       tabIndex={0} data-help-key="bot_avatar"
+      aria-describedby="allobot-move-instructions"
       aria-label={isSleeping ? t('bot.aria_sleeping') : t('bot.aria_active')}
       onKeyDown={handleKeyDown}
-      className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
+      className={`fixed z-[10000] group ${motionDisabled ? 'allobot-motion-disabled' : ''} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
       style={{
+        // The STEM Lab modal sets an inline zIndex of 10020 (its z-[9999] class is
+        // overridden), which buries the bot's z-[10000] — so the bot and its speech
+        // bubble/chat were invisible during STEM tools. While the lab is open, lift
+        // the bot to 10500: above the lab, below the voice overlays (10999/11500).
+        zIndex: showStemLab ? 10500 : undefined,
         top: `${position.y}px`,
         right: `${position.x}px`,
-        transform: `translateY(${isHovered && !isDragging && !isSleeping ? '-5px' : '0px'}) scale(${isSquashed ? '1.1, 0.9' : String(pulseScale)})`,
+        transform: motionDisabled ? 'translateY(0px) scale(1)' : `translateY(${isHovered && !isDragging && !isSleeping ? '-5px' : '0px'}) scale(${isSquashed ? '1.1, 0.9' : String(pulseScale)})`,
         touchAction: 'none',
-        transition: isDragging || isSquashed
-            ? 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)'
-            : `top ${moveDuration}ms, right ${moveDuration}ms, transform ${moveDuration}ms cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s, filter 0.3s`,
+        transition: motionDisabled
+            ? 'none'
+            : (isDragging || isSquashed
+                ? 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                : `top ${moveDuration}ms, right ${moveDuration}ms, transform ${moveDuration}ms cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s, filter 0.3s`),
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -1589,8 +1795,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
       }}
     >
       <div
-        className={`${isDragging ? "" : ((isFlying || localIsFlying) ? "animate-bot-fly-tilt" : (isLanding ? "animate-bot-land" : (idleAnimation ? `animate-allo-${idleAnimation}` : (isSleeping ? "" : "animate-allo-float"))))} ${isPoofing ? "animate-allo-puff" : ""}`}
-        style={isDragging ? { transform: `rotate(${dragRotation}deg)`, transition: 'transform 0.2s ease-out' } : (isSleeping ? { transform: 'translateY(10px)' } : undefined)}
+        className={motionDisabled ? "" : `${isDragging ? "" : (isFlightActive ? "animate-bot-fly-tilt" : (isLanding ? "animate-bot-land" : (idleAnimation ? `animate-allo-${idleAnimation}` : (isSleeping ? "" : "animate-allo-float"))))} ${isPoofing ? "animate-allo-puff" : ""}`}
+        style={motionDisabled ? (isSleeping ? { transform: 'translateY(10px)' } : undefined) : (isDragging ? { transform: `rotate(${dragRotation}deg)`, transition: 'transform 0.2s ease-out' } : (isSleeping ? { transform: 'translateY(10px)' } : undefined))}
       >
           <SpeechBubble
             text={isSleeping ? t('bot.sleeping') : (customMessage || colors.msg)}
@@ -1600,29 +1806,30 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             onTyping={handleTypingState}
             soundEnabled={soundEnabled && !isSleeping}
             variant={effectiveMood === 'thinking' && !isTalking ? 'thought' : 'speech'}
+            disableAnimations={motionDisabled}
           />
-          {reactions.map(r => (
+          {!motionDisabled && reactions.map(r => (
               <ReactionBubble
                   key={r.id}
                   emoji={r.emoji}
                   onComplete={() => setReactions(prev => prev.filter(item => item.id !== r.id))}
               />
           ))}
-          {bursts.map(b => (
+          {!motionDisabled && bursts.map(b => (
               <BotConfettiBurst
                   key={b.id}
                   onComplete={() => setBursts(prev => prev.filter(item => item.id !== b.id))}
               />
           ))}
           <div
-            className={`relative drop-shadow-2xl ${!isFlightActive ? "animate-bot-breathe" : ""} ${isCelebrating ? "animate-allo-backflip" : ""}`}
+            className={`relative drop-shadow-2xl ${!motionDisabled && !isFlightActive ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`}
             style={{
                 filter: trailFilter,
-                transition: 'filter 0.3s ease',
+                transition: motionDisabled ? 'none' : 'filter 0.3s ease',
             }}
           >
-              <JetpackParticles active={isFlying || localIsFlying} />
-              <LandingDust active={isLanding} />
+              <JetpackParticles active={isFlightActive} />
+              <LandingDust active={!motionDisabled && isLanding} />
               {!isDragging && !isPoofing && !isSleeping && (
                   <>
                     <button data-help-key="bot_sleep_btn"
@@ -1725,7 +1932,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         rx="18"
                         ry="4"
                         fill="#000"
-                        className={isSleeping ? "opacity-20" : "animate-shadow-pulse"}
+                        className={isSleeping || motionDisabled ? "opacity-20" : "animate-shadow-pulse"}
                     />
                 )}
                     <rect x="25" y="42" width="50" height="8" rx="2" fill={colors.jetpackStroke} />
@@ -1735,7 +1942,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     <path d="M10 46 H30 M10 60 H30" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
                     <path d="M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
                     <path d="M70 46 H90 M70 60 H90" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
-                    {(isFlying || localIsFlying) && (
+                    {isFlightActive && (
                         <g className="animate-jetpack-flame">
                              <path d="M14 78 Q20 100 26 78 Z" fill="#F59E0B" />
                              <path d="M17 78 Q20 90 23 78 Z" fill="#FEF3C7" />
@@ -1743,14 +1950,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                              <path d="M77 78 Q80 90 83 78 Z" fill="#FEF3C7" />
                         </g>
                     )}
-                {(isFlying || localIsFlying) && (
+                {isFlightActive && (
                     <g transform="translate(-10, 0)" className="animate-fade-in" style={{ opacity: 0.6 }}>
                        <rect x="-20" y="20" width="30" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.4s', animationDelay: '0s' }} />
                        <rect x="-10" y="50" width="40" height="1" rx="0.5" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.6s', animationDelay: '0.2s' }} />
                        <rect x="-15" y="80" width="25" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.5s', animationDelay: '0.1s' }} />
                     </g>
                 )}
-                {effectiveMood === 'thinking' && !isSleeping && (
+                {effectiveMood === 'thinking' && !isSleeping && !motionDisabled && (
                     <g className="animate-pulse" style={{ animationDuration: '2s' }}>
                         <path
                             d="M 20 -50 L 80 -50 L 54 5 L 46 5 Z"
@@ -1784,10 +1991,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         <text x="75" y="-5" fontSize="18" fill="#60A5FA" fontWeight="bold" style={STYLE_ANIMATION_DELAY_HALF}>Z</text>
                     </g>
                 )}
-                <circle cx="50" cy="50" r="45" fill={colors.glow} fillOpacity="0.2" className={isSleeping ? "" : "animate-pulse"} />
+                <circle cx="50" cy="50" r="45" fill={colors.glow} fillOpacity="0.2" className={isSleeping || motionDisabled ? "" : "animate-pulse"} />
                 <g
                     className={
-                        isSleeping ? "" :
+                        isSleeping || motionDisabled ? "" :
                         (isMoving ? "transition-transform duration-100 ease-out" :
                         (wobbleState.active ? "animate-antenna-spring" : "animate-antenna-sway"))
                     }
@@ -1798,7 +2005,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     }}
                 >
                     <path d="M50 15V5" stroke={colors.antenna} strokeWidth="4" strokeLinecap="round" />
-                    {antennaAction === 'signal' && !isSleeping && effectiveMood !== 'thinking' && (
+                    {antennaAction === 'signal' && !motionDisabled && !isSleeping && effectiveMood !== 'thinking' && (
                         <g>
                             <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" />
                             <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={STYLE_ANIMATION_DELAY_HALF} />
@@ -1809,14 +2016,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         cx="50" cy="5" r="5"
                         fill={isSleeping ? "#64748B" : "#FACC15"}
                         className={
-                            effectiveMood === 'thinking' && !isSleeping ? "animate-ping" :
-                            (isTalking ? "animate-pulse" :
+                            effectiveMood === 'thinking' && !motionDisabled && !isSleeping ? "animate-ping" :
+                            (!motionDisabled && isTalking ? "animate-pulse" :
                             (isSleeping ? "" :
                             (antennaAction === 'bounce' ? "animate-antenna-tri-bounce" : "")))
                         }
                     />
                 </g>
-                {effectiveMood === 'thinking' && !isSleeping && (
+                {effectiveMood === 'thinking' && !isSleeping && !motionDisabled && (
                     <g className="animate-pulse" style={{ animationDuration: '1.5s' }}>
                         <path
                             d="M 35 40 L 15 5 L 85 5 L 65 40 Z"
@@ -1831,12 +2038,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                 )}
                 <circle cx="50" cy="55" r="35" fill={`url(#bodyGradient-${effectiveMood})`} />
                 <circle cx="50" cy="55" r="35" fill="url(#rimLightGradient)" />
-                {activeView === 'faq' && !isSleeping && (
+                {activeView === 'faq' && !isSleeping && !motionDisabled && (
                      <g className="animate-bounce" style={{ animationDuration: '2.5s' }}>
                           <text x="50" y="10" fontSize="24" fill="#F59E0B" stroke="#B45309" strokeWidth="1" textAnchor="middle" fontWeight="bold" style={{ filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))' }}>?</text>
                      </g>
                 )}
-                <g style={{ transform: `translate(${visorPosition.x}px, ${visorPosition.y}px)`, transition: 'transform 0.1s ease-out' }}>
+                <g style={{ transform: `translate(${visorPosition.x}px, ${visorPosition.y}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}>
                     <rect
                         x="20"
                         y="30"
@@ -1866,7 +2073,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     />
                 </g>
                 <g
-                    className={!isSleeping && !isDragging ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
+                    className={!motionDisabled && !isSleeping && !isDragging ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.2s' }}
                 >
                     <circle cx="10" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
@@ -1905,7 +2112,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     )}
                 </g>
                 <g
-                    className={!isSleeping && !isDragging ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
+                    className={!motionDisabled && !isSleeping && !isDragging ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.5s' }}
                 >
                     <circle cx="90" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
@@ -2022,7 +2229,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                     </g>
                 )}
-                <g style={{ transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: 'transform 0.1s ease-out' }}>
+                <g style={{ transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}>
                     {isSleeping ? (
                         <g className="transition-all duration-500">
                             <path d="M34 49 Q39 53 44 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
@@ -2077,20 +2284,24 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     )}
                 </g>
                 {effectiveAccessory && (
-                    <g id="accessories">
+                    <g id="accessories" className={`${accExiting ? 'allobot-exiting ' : ''}${effectiveMood === 'thinking' ? 'allobot-thinking' : (accPop ? 'allobot-pop' : '')}`.trim() || undefined}>
                          {effectiveAccessory === 'grad-cap' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '1.2s' }}>
                                 <path d="M32 30 Q50 36 68 30 V 22 H 32 V 30 Z" fill="#1F2937" />
                                 <path d="M15 22 L50 8 L85 22 L50 36 Z" fill="#111827" stroke="#374151" strokeWidth="2" />
                                 <path d="M50 22 L82 22 L82 42" stroke="#F59E0B" strokeWidth="2" fill="none" className="drop-shadow-sm"/>
                                 <circle cx="82" cy="42" r="2.5" fill="#F59E0B" />
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'explorer-hat' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '3.3s' }}>
                                 <ellipse cx="50" cy="22" rx="38" ry="10" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
                                 <path d="M32 22 L35 4 Q50 0 65 4 L68 22 Z" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
                                 <path d="M32 19 Q50 23 68 19" stroke="#3E2723" strokeWidth="4" fill="none" transform="rotate(-5 50 22)" />
+                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'magnifying-glass' && (
@@ -2103,6 +2314,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                         {effectiveAccessory === 'artist' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '5.1s' }}>
                                 <path
                                     d="M 25 28 Q 15 28 15 20 Q 15 5 45 2 Q 85 -2 90 10 Q 95 22 80 26 Q 70 29 55 27"
                                     fill="#374151"
@@ -2117,6 +2329,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     strokeLinecap="round"
                                     transform="rotate(-10 50 20)"
                                 />
+                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'hard-hat' && (
@@ -2196,22 +2409,28 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'teacher-stack' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
-                                <rect x="22" y="22" width="56" height="10" rx="1.5" fill="#FCD34D" stroke="#B45309" strokeWidth="1" transform="rotate(-4 50 27)" />
-                                <line x1="28" y1="27" x2="44" y2="27" stroke="#B45309" strokeWidth="0.6" transform="rotate(-4 50 27)" />
-                                <line x1="58" y1="27" x2="72" y2="27" stroke="#B45309" strokeWidth="0.6" transform="rotate(-4 50 27)" />
-                                <rect x="20" y="14" width="56" height="10" rx="1.5" fill="#FDE68A" stroke="#92400E" strokeWidth="1" transform="rotate(3 50 19)" />
-                                <line x1="26" y1="19" x2="50" y2="19" stroke="#92400E" strokeWidth="0.6" transform="rotate(3 50 19)" />
-                                <rect x="24" y="6" width="52" height="10" rx="1.5" fill="#FFFBEB" stroke="#78350F" strokeWidth="1" transform="rotate(-2 50 11)" />
-                                <line x1="30" y1="11" x2="48" y2="11" stroke="#78350F" strokeWidth="0.5" transform="rotate(-2 50 11)" />
-                                <circle cx="68" cy="2" r="5" fill="#DC2626" stroke="#991B1B" strokeWidth="1" />
-                                <path d="M 67 -2 Q 70 -4 72 -1" stroke="#16A34A" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                                <path d="M 66 -3 L 68 -2" stroke="#365314" strokeWidth="1" strokeLinecap="round" />
-                                <ellipse cx="66" cy="0" rx="1.5" ry="0.7" fill="#FECACA" opacity="0.7" />
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-20, 34)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '3.5s' }}>
+                                <ellipse cx="16" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.18" />
+                                <rect x="0" y="40" width="34" height="11" rx="1.5" fill="#FCD34D" stroke="#B45309" strokeWidth="1.2" transform="rotate(-3 17 45)" />
+                                <line x1="5" y1="45" x2="24" y2="45" stroke="#B45309" strokeWidth="0.7" transform="rotate(-3 17 45)" />
+                                <rect x="2" y="30" width="32" height="11" rx="1.5" fill="#34D399" stroke="#047857" strokeWidth="1.2" transform="rotate(2 18 35)" />
+                                <line x1="7" y1="35" x2="26" y2="35" stroke="#047857" strokeWidth="0.7" transform="rotate(2 18 35)" />
+                                <rect x="1" y="20" width="32" height="11" rx="1.5" fill="#60A5FA" stroke="#1D4ED8" strokeWidth="1.2" transform="rotate(-2 17 25)" />
+                                <line x1="6" y1="25" x2="25" y2="25" stroke="#1D4ED8" strokeWidth="0.7" transform="rotate(-2 17 25)" />
+                                <g transform="translate(17, 9)">
+                                    <path d="M 0 3 C -7 3 -9 9 -6 14 C -4 17 -2 18 0 17 C 2 18 4 17 6 14 C 9 9 7 3 0 3 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="1" />
+                                    <path d="M 0 4 Q -1 6 0 7 Q 1 6 0 4 Z" fill="#B91C1C" opacity="0.6" />
+                                    <path d="M 0 4 L 0 -2" stroke="#7C2D12" strokeWidth="1.6" strokeLinecap="round" />
+                                    <path d="M 0 -1 Q 6 -4 8 1 Q 3 2 0 -1 Z" fill="#22C55E" stroke="#15803D" strokeWidth="0.6" />
+                                    <ellipse cx="-2.5" cy="8" rx="1.8" ry="3" fill="#fff" opacity="0.45" transform="rotate(-20 -2.5 8)" />
+                                </g>
+                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'scholar-specs' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-500 origin-center">
+                            <g className="animate-allobot-float" style={{ animationDelay: '1.0s' }}>
                                 <circle cx="38" cy="48" r="9" fill="rgba(219, 234, 254, 0.25)" stroke="#1F2937" strokeWidth="1.5" />
                                 <circle cx="62" cy="48" r="9" fill="rgba(219, 234, 254, 0.25)" stroke="#1F2937" strokeWidth="1.5" />
                                 <path d="M 47 48 Q 50 45 53 48" stroke="#1F2937" strokeWidth="1.5" fill="none" strokeLinecap="round" />
@@ -2232,6 +2451,40 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     <line x1="17" y1="13" x2="23" y2="13" stroke="#92400E" strokeWidth="0.5" />
                                     <path d="M -2 0 L 30 0 L 30 -2 L -2 -2 Z" fill="#7C2D12" stroke="#451A03" strokeWidth="0.8" />
                                 </g>
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'librarian-kit' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-500 origin-center">
+                            <g className="animate-allobot-float" style={{ animationDelay: '0.8s' }}>
+                                <g>
+                                    <circle cx="38" cy="48" r="8.5" fill="rgba(219, 234, 254, 0.22)" stroke="#334155" strokeWidth="1.5" />
+                                    <circle cx="62" cy="48" r="8.5" fill="rgba(219, 234, 254, 0.22)" stroke="#334155" strokeWidth="1.5" />
+                                    <path d="M46.5 48 Q50 45 53.5 48" stroke="#334155" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                                    <path d="M29.5 48 Q23 49 20 54" stroke="#334155" strokeWidth="1.1" fill="none" strokeLinecap="round" opacity="0.85" />
+                                    <path d="M70.5 48 Q77 49 80 54" stroke="#334155" strokeWidth="1.1" fill="none" strokeLinecap="round" opacity="0.85" />
+                                    <ellipse cx="35.5" cy="45.5" rx="2.2" ry="1.2" fill="white" opacity="0.55" />
+                                    <ellipse cx="59.5" cy="45.5" rx="2.2" ry="1.2" fill="white" opacity="0.55" />
+                                </g>
+                                <g transform="translate(70, 58) rotate(-7)">
+                                    <rect x="0" y="0" width="26" height="20" rx="2" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="1.3" />
+                                    <rect x="0" y="0" width="6" height="20" rx="1.5" fill="#6366F1" stroke="#4338CA" strokeWidth="0.8" />
+                                    <line x1="9" y1="6" x2="22" y2="6" stroke={colors.accInk} strokeWidth="1" opacity="0.65" />
+                                    <line x1="9" y1="10" x2="20" y2="10" stroke={colors.accInk} strokeWidth="1" opacity="0.45" />
+                                    <line x1="9" y1="14" x2="22" y2="14" stroke={colors.accInk} strokeWidth="1" opacity="0.45" />
+                                    <path d="M18 0 L22 0 L22 8 L20 6 L18 8 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="0.6" />
+                                </g>
+                                <g transform="translate(-27, 56) rotate(5)">
+                                    <rect x="0" y="0" width="30" height="22" rx="2" fill="#FFFBEB" stroke="#92400E" strokeWidth="1.2" />
+                                    <rect x="0" y="0" width="30" height="6" rx="2" fill="#FDE68A" stroke="#B45309" strokeWidth="0.7" />
+                                    <circle cx="6" cy="13" r="2.2" fill="#A78BFA" stroke="#6D28D9" strokeWidth="0.6" />
+                                    <line x1="12" y1="11" x2="25" y2="11" stroke="#92400E" strokeWidth="0.9" opacity="0.65" />
+                                    <line x1="12" y1="15" x2="23" y2="15" stroke="#92400E" strokeWidth="0.9" opacity="0.45" />
+                                    <line x1="5" y1="19" x2="25" y2="19" stroke="#92400E" strokeWidth="0.8" opacity="0.35" />
+                                </g>
+                                <path d="M36 76 Q50 84 64 76" stroke="#FDE68A" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.95" />
+                                <circle cx="50" cy="80" r="2.5" fill="#F59E0B" stroke="#92400E" strokeWidth="0.8" />
+                            </g>
                             </g>
                         )}
                         {effectiveAccessory === 'thinking-cap' && (
@@ -2271,6 +2524,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                         {effectiveAccessory === 'sorting-cubes' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '2.4s' }}>
                                 <ellipse cx="50" cy="32" rx="22" ry="3" fill="#1F2937" opacity="0.18" />
                                 <g transform="translate(38 18) rotate(-6)">
                                     <rect x="0" y="0" width="14" height="14" rx="1.5" fill="#3B82F6" stroke="#1E3A8A" strokeWidth="1" />
@@ -2288,9 +2542,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     <path d="M 4 4 L 9 9 M 9 4 L 4 9" stroke="#FEE2E2" strokeWidth="1.4" strokeLinecap="round" />
                                 </g>
                             </g>
+                            </g>
                         )}
                         {effectiveAccessory === 'clarity-crown' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '4.2s' }}>
                                 <path d="M 22 28 L 28 12 L 35 22 L 42 8 L 50 20 L 58 8 L 65 22 L 72 12 L 78 28 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.4" />
                                 <path d="M 22 28 Q 50 32 78 28" stroke="#92400E" strokeWidth="1.6" fill="none" />
                                 <circle cx="28" cy="13" r="2.4" fill="#FDE68A" stroke="#92400E" strokeWidth="0.6" />
@@ -2307,6 +2563,164 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <path d="M 58 8 Q 56 12 58 18 Q 60 12 58 8 Z" fill="#F472B6" stroke="#BE185D" strokeWidth="0.6" />
                                 <circle cx="65" cy="17" r="2.2" fill="#A78BFA" stroke="#5B21B6" strokeWidth="0.5" />
                                 <circle cx="72" cy="13" r="2.4" fill="#FDE68A" stroke="#92400E" strokeWidth="0.6" />
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'deerstalker' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '0s' }}>
+                                <ellipse cx="50" cy="25" rx="33" ry="6.5" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.2" />
+                                <path d="M19 23 Q11 25 14 35 Q21 35 25 28 Z" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.1" />
+                                <path d="M81 23 Q89 25 86 35 Q79 35 75 28 Z" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.1" />
+                                <path d="M25 25 Q23 5 50 4 Q77 5 75 25 Z" fill="#A6968A" stroke="#5C4D40" strokeWidth="1.4" />
+                                <path d="M50 4 L50 25" stroke="#5C4D40" strokeWidth="0.8" opacity="0.45" />
+                                <path d="M40 25 Q50 31 60 25 L58 22 Q50 25 42 22 Z" fill="#7A6B5D" stroke="#5C4D40" strokeWidth="1" />
+                                <g fill="#5C4D40" opacity="0.5"><circle cx="42" cy="14" r="1" /><circle cx="50" cy="10" r="1" /><circle cx="58" cy="14" r="1" /><circle cx="46" cy="19" r="1" /><circle cx="54" cy="19" r="1" /></g>
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'persona-masks' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-24, 40)">
+                            <g className="animate-allobot-sway" style={{ animationDelay: '0s' }}>
+                                <ellipse cx="14" cy="46" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
+                                <g transform="rotate(-8 8 26)">
+                                    <path d="M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.3" />
+                                    <path d="M3 16 Q6 13 9 16 M15 16 Q18 13 21 16" stroke="#7C2D12" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                                    <path d="M6 27 Q12 33 18 27" stroke="#7C2D12" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                                </g>
+                                <g transform="translate(16, 2) rotate(8 12 26)">
+                                    <path d="M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z" fill="#60A5FA" stroke="#1D4ED8" strokeWidth="1.3" />
+                                    <path d="M3 17 Q6 20 9 17 M15 17 Q18 20 21 17" stroke="#1E3A8A" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                                    <path d="M6 32 Q12 27 18 32" stroke="#1E3A8A" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                                </g>
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'sentence-frames' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-500" transform="translate(76, 36)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '0.7s' }}>
+                                <rect x="0" y="0" width="40" height="30" rx="2.5" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="2" />
+                                <rect x="4" y="4" width="32" height="22" rx="1" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="0.8" opacity="0.6" />
+                                <rect x="7" y="8" width="9" height="5" rx="1" fill="#60A5FA" />
+                                <line x1="18" y1="13" x2="27" y2="13" stroke={colors.accInk} strokeWidth="1.4" opacity="0.7" />
+                                <rect x="29" y="8" width="5" height="5" rx="1" fill="#34D399" />
+                                <line x1="7" y1="20" x2="14" y2="20" stroke={colors.accInk} strokeWidth="1.4" opacity="0.7" />
+                                <rect x="16" y="16" width="9" height="5" rx="1" fill="#F472B6" />
+                                <line x1="27" y1="20" x2="34" y2="20" stroke={colors.accInk} strokeWidth="1.4" opacity="0.7" />
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'outline-doc' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '1.4s' }}>
+                                <ellipse cx="18" cy="50" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
+                                <rect x="2" y="6" width="34" height="42" rx="2" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="1.5" />
+                                <text x="6" y="15" fontFamily="Arial" fontSize="6" fontWeight="bold" fill={colors.accInk}>I.</text>
+                                <line x1="13" y1="13" x2="32" y2="13" stroke={colors.accInk} strokeWidth="1.6" />
+                                <circle cx="12" cy="20" r="1.1" fill={colors.accInk} opacity="0.7" /><line x1="16" y1="20" x2="31" y2="20" stroke={colors.accInk} strokeWidth="1.2" opacity="0.45" />
+                                <circle cx="12" cy="26" r="1.1" fill={colors.accInk} opacity="0.7" /><line x1="16" y1="26" x2="29" y2="26" stroke={colors.accInk} strokeWidth="1.2" opacity="0.45" />
+                                <text x="6" y="36" fontFamily="Arial" fontSize="6" fontWeight="bold" fill={colors.accInk}>II.</text>
+                                <line x1="13" y1="34" x2="32" y2="34" stroke={colors.accInk} strokeWidth="1.6" />
+                                <circle cx="12" cy="41" r="1.1" fill={colors.accInk} opacity="0.7" /><line x1="16" y1="41" x2="30" y2="41" stroke={colors.accInk} strokeWidth="1.2" opacity="0.45" />
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'sticky-notes' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '2.5s' }}>
+                                <g transform="rotate(-8 34 18)"><rect x="22" y="8" width="22" height="20" rx="1" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" /><path d="M38 28 L44 28 L44 22 Z" fill="#FACC15" /><line x1="26" y1="14" x2="40" y2="14" stroke="#A16207" strokeWidth="1" /><line x1="26" y1="18" x2="37" y2="18" stroke="#A16207" strokeWidth="1" /></g>
+                                <g transform="rotate(7 64 18)"><rect x="54" y="6" width="22" height="20" rx="1" fill="#5EEAD4" stroke="#0D9488" strokeWidth="1" /><path d="M70 26 L76 26 L76 20 Z" fill="#2DD4BF" /><line x1="58" y1="12" x2="72" y2="12" stroke="#0F766E" strokeWidth="1" /><line x1="58" y1="16" x2="69" y2="16" stroke="#0F766E" strokeWidth="1" /></g>
+                                <g transform="rotate(-3 50 12)"><rect x="40" y="0" width="22" height="20" rx="1" fill="#FDA4AF" stroke="#E11D48" strokeWidth="1" /><path d="M56 20 L62 20 L62 14 Z" fill="#FB7185" /><line x1="44" y1="6" x2="58" y2="6" stroke="#BE123C" strokeWidth="1" /><line x1="44" y1="10" x2="55" y2="10" stroke="#BE123C" strokeWidth="1" /></g>
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'anchor-easel' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 18)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '2.1s' }}>
+                                <line x1="6" y1="20" x2="-2" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
+                                <line x1="30" y1="20" x2="38" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
+                                <line x1="22" y1="22" x2="26" y2="62" stroke="#78350F" strokeWidth="2" strokeLinecap="round" />
+                                <rect x="0" y="6" width="36" height="32" rx="1.5" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="1.5" />
+                                <rect x="0" y="6" width="36" height="8" rx="1.5" fill="#4338CA" />
+                                <line x1="5" y1="20" x2="31" y2="20" stroke={colors.accInk} strokeWidth="1.4" opacity="0.5" />
+                                <line x1="5" y1="25" x2="28" y2="25" stroke={colors.accInk} strokeWidth="1.4" opacity="0.5" />
+                                <path d="M5 31 L9 34 L15 28" stroke="#22C55E" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                <line x1="19" y1="31" x2="31" y2="31" stroke={colors.accInk} strokeWidth="1.4" opacity="0.5" />
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'behavior-watch' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 42)">
+                            <g className="animate-allobot-float" style={{ animationDelay: '2.8s' }}>
+                                <ellipse cx="15" cy="42" rx="15" ry="3" fill="#1F2937" opacity="0.16" />
+                                <g transform="translate(15, 24)">
+                                    <rect x="-2.5" y="-15" width="5" height="5" rx="1.2" fill="#475569" />
+                                    <rect x="-5" y="-17.5" width="10" height="3" rx="1" fill="#64748B" />
+                                    <circle cx="0" cy="0" r="13" fill="#E2E8F0" stroke="#334155" strokeWidth="2.2" />
+                                    <circle cx="0" cy="0" r="10" fill="#F8FAFC" stroke="#94A3B8" strokeWidth="0.8" />
+                                    <g stroke="#94A3B8" strokeWidth="0.8"><line x1="0" y1="-9" x2="0" y2="-7.5" /><line x1="9" y1="0" x2="7.5" y2="0" /><line x1="0" y1="9" x2="0" y2="7.5" /><line x1="-9" y1="0" x2="-7.5" y2="0" /></g>
+                                    <g className="animate-allobot-tick"><line x1="0" y1="0" x2="0" y2="-7" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" /></g>
+                                    <line x1="0" y1="0" x2="4.5" y2="3" stroke="#334155" strokeWidth="1.4" strokeLinecap="round" />
+                                    <circle cx="0" cy="0" r="1.3" fill="#334155" />
+                                </g>
+                                <g transform="translate(26, 30)" stroke="#16A34A" strokeWidth="1.4" strokeLinecap="round"><line x1="0" y1="0" x2="0" y2="8" /><line x1="3" y1="0" x2="3" y2="8" /><line x1="6" y1="0" x2="6" y2="8" /><line x1="-2" y1="6" x2="8" y2="2" /></g>
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'bard-cap' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-allobot-perk" style={{ animationDelay: '4.5s' }}>
+                                <path d="M22 26 Q20 12 50 8 Q80 12 78 26 Q50 30 22 26 Z" fill="#0D9488" stroke="#0F766E" strokeWidth="1.4" />
+                                <path d="M22 24 Q50 30 78 24" stroke="#FCD34D" strokeWidth="3" fill="none" />
+                                <ellipse cx="50" cy="13" rx="4" ry="2" fill="#2DD4BF" opacity="0.5" />
+                                <circle cx="38" cy="21" r="2.6" fill="#FCD34D" stroke="#A16207" strokeWidth="0.7" />
+                                <g className="animate-allobot-sway">
+                                    <path d="M38 19 Q29 3 23 -12 Q34 0 41 12 Q41 16 38 19 Z" fill="#F472B6" stroke="#BE185D" strokeWidth="1" />
+                                    <path d="M34 11 Q29 1 25 -8" stroke="#FBCFE8" strokeWidth="1" fill="none" opacity="0.85" />
+                                </g>
+                            </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'math-tools' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 32)">
+                                <g className="animate-allobot-float" style={{ animationDelay: '0.5s' }}>
+                                    <ellipse cx="18" cy="48" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <path d="M2 46 L2 20 L30 46 Z" fill="#93C5FD" stroke="#1D4ED8" strokeWidth="1.4" />
+                                    <line x1="2" y1="26" x2="6" y2="26" stroke="#1E3A8A" strokeWidth="0.8" /><line x1="2" y1="32" x2="6" y2="32" stroke="#1E3A8A" strokeWidth="0.8" /><line x1="2" y1="38" x2="6" y2="38" stroke="#1E3A8A" strokeWidth="0.8" />
+                                    <path d="M8 22 A 13 13 0 0 1 34 22 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.4" />
+                                    <path d="M11 22 A 10 10 0 0 1 31 22" fill="#FFFBEB" stroke="#B45309" strokeWidth="0.8" />
+                                    <circle cx="21" cy="22" r="1.4" fill="#B45309" />
+                                    <line x1="21" y1="22" x2="21" y2="11" stroke="#B45309" strokeWidth="0.7" /><line x1="21" y1="22" x2="13" y2="15" stroke="#B45309" strokeWidth="0.7" /><line x1="21" y1="22" x2="29" y2="15" stroke="#B45309" strokeWidth="0.7" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'gear' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <g className="animate-allobot-perk" style={{ animationDelay: '1.5s' }}>
+                                    <g transform="translate(50, 15)">
+                                        <g fill="#B0B8C4" stroke="#475569" strokeWidth="1.1">
+                                            <rect x="-2.5" y="-15" width="5" height="6" rx="1" /><rect x="-2.5" y="9" width="5" height="6" rx="1" />
+                                            <rect x="-15" y="-2.5" width="6" height="5" rx="1" /><rect x="9" y="-2.5" width="6" height="5" rx="1" />
+                                            <rect x="-12" y="-12" width="5" height="6" rx="1" transform="rotate(45 -9.5 -9)" /><rect x="7" y="6" width="5" height="6" rx="1" transform="rotate(45 9.5 9)" />
+                                            <rect x="7" y="-12" width="5" height="6" rx="1" transform="rotate(-45 9.5 -9)" /><rect x="-12" y="6" width="5" height="6" rx="1" transform="rotate(-45 -9.5 9)" />
+                                        </g>
+                                        <circle cx="0" cy="0" r="11" fill="#CBD5E1" stroke="#475569" strokeWidth="1.4" />
+                                        <circle cx="0" cy="0" r="4.5" fill="#0f172a" stroke="#475569" strokeWidth="1" />
+                                        <circle cx="-3" cy="-3" r="1.6" fill="#fff" opacity="0.5" />
+                                    </g>
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'game-pad' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-32, 40)">
+                                <g className="animate-allobot-float" style={{ animationDelay: '1.1s' }}>
+                                    <ellipse cx="19" cy="34" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <path d="M5 14 Q0 15 1 24 L4 31 Q7 34 12 31 L26 31 Q31 34 34 31 L37 24 Q38 15 33 14 Q19 11 5 14 Z" fill="#5B6472" stroke="#1F2937" strokeWidth="1.4" />
+                                    <rect x="7" y="21" width="9" height="3" rx="1" fill="#1F2937" /><rect x="10" y="18" width="3" height="9" rx="1" fill="#1F2937" />
+                                    <circle cx="26" cy="20" r="2.3" fill="#F472B6" stroke="#9D174D" strokeWidth="0.6" />
+                                    <circle cx="31" cy="24" r="2.3" fill="#34D399" stroke="#065F46" strokeWidth="0.6" />
+                                    <circle cx="21" cy="25" r="2.3" fill="#FBBF24" stroke="#92400E" strokeWidth="0.6" />
+                                </g>
                             </g>
                         )}
                     </g>
@@ -2338,6 +2752,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           </div>
       </div>
     </div>
-    </>
+    </aside>
   );
 }));

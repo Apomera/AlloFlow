@@ -28,6 +28,89 @@ beforeAll(() => {
   M = window.AlloModules.DynamicAssessment._meta;
 });
 
+describe('SSR render smoke — dialog shell, start screen, active phase, summary', () => {
+  // Render-phase crash protection for the themed shell + stepper + gauge +
+  // ZPD card added in the WCAG/theming uplift. SSR only (no effects).
+  const STORAGE_KEY = 'alloflow_dynamic_assessment_v1';
+  let RDS, DA;
+  beforeAll(() => {
+    RDS = require(resolve(process.cwd(), 'prismflow-deploy/node_modules/react-dom/server'));
+    DA = window.AlloModules.DynamicAssessment;
+  });
+  const renderWith = (state) => {
+    if (state === null) window.localStorage.removeItem(STORAGE_KEY);
+    else window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    window.localStorage.removeItem('alloflow_da_session_state_v1');
+    const React = window.React;
+    return RDS.renderToStaticMarkup(React.createElement(DA, {
+      React, onClose: () => {}, addToast: () => {}, t: (k) => k, studentNickname: '', outputLanguage: 'English'
+    }));
+  };
+  const baseSession = () => ({
+    id: 'da-test-1', studentNickname: 'Testling', domain: 'math', difficulty: 'easy',
+    mode: 'clinician', isCustomBank: false, customBankSnapshot: null,
+    dateStarted: '2026-07-12T10:00:00.000Z',
+    sessionItemIds: ['math-e-01', 'math-e-02', 'math-e-03'],
+    currentPhase: 'pretest', currentItemIdx: 0, itemResults: [], sessionNote: '', currentLadderLevel: 0, intake: null
+  });
+
+  it('start screen renders inside the dialog shell with theme class', () => {
+    const html = renderWith(null);
+    expect(html).toContain('da-shell da-theme-');
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('Dynamic Assessment Studio');
+  });
+  it('active pretest phase renders the session-arc stepper + item prompt', () => {
+    const html = renderWith({ sessions: [], activeSession: baseSession(), onboardingSeen: true, savedProbeTemplates: [] });
+    expect(html).toContain('Session phases');
+    expect(html).toContain('role="progressbar"');
+    expect(html).toContain('Sara had 12 apples');
+  });
+  it('mediation phase renders the ladder + MLE reminders drawer', () => {
+    const s = Object.assign(baseSession(), { currentPhase: 'mediation' });
+    const html = renderWith({ sessions: [], activeSession: s, onboardingSeen: true, savedProbeTemplates: [] });
+    expect(html).toContain('Scaffold ladder');
+    expect(html).toContain('Mediation quality reminders');
+  });
+  it('summary renders MI gauge + learning-zone snapshot with correct band counts', () => {
+    const mk = (itemId, phase, finalCorrect, lvl) => ({
+      itemId, phase, promptLevelReached: lvl || 0, studentResponseText: '', examinerObservation: '',
+      observationTags: [], supportType: null, finalCorrect, scaffoldLeaked: false,
+      scoreAwarded: finalCorrect ? 5 - (lvl || 0) : 0, attemptedAt: '2026-07-12T10:05:00.000Z'
+    });
+    const s = Object.assign(baseSession(), {
+      currentPhase: 'summary',
+      itemResults: [
+        mk('math-e-01', 'pretest', true, 0), mk('math-e-02', 'pretest', false, 0), mk('math-e-03', 'pretest', false, 0),
+        mk('math-e-01', 'mediation', true, 0), mk('math-e-02', 'mediation', true, 2), mk('math-e-03', 'mediation', true, 4),
+        mk('math-e-01', 'posttest', true, 0), mk('math-e-02', 'posttest', true, 0), mk('math-e-03', 'posttest', false, 0)
+      ]
+    });
+    const html = renderWith({ sessions: [], activeSession: s, onboardingSeen: true, savedProbeTemplates: [] });
+    expect(html).toContain('Modifiability Index gauge');
+    expect(html).toContain('Learning-zone snapshot');
+    expect(html).toContain('Teachable band (ZPD)');
+    expect(html).toContain('interpretation conventions of this tool');
+    // Round 2: movement pivot, sensitivity band, and the reopen escape hatch
+    expect(html).toContain('Per-item movement');
+    expect(html).toContain('▲ gained');   // math-e-02: pre ✗ → post ✓
+    expect(html).toContain('Sensitivity:');
+    expect(html).toContain('Reopen last item');
+  });
+  it('active phase with a recorded result shows the Undo item button', () => {
+    const s = Object.assign(baseSession(), {
+      itemResults: [{
+        itemId: 'math-e-01', phase: 'pretest', promptLevelReached: 0, studentResponseText: '7',
+        examinerObservation: '', observationTags: [], supportType: null, finalCorrect: true,
+        scaffoldLeaked: false, scoreAwarded: 5, attemptedAt: '2026-07-12T10:01:00.000Z'
+      }],
+      currentItemIdx: 1
+    });
+    const html = renderWith({ sessions: [], activeSession: s, onboardingSeen: true, savedProbeTemplates: [] });
+    expect(html).toContain('↩ Undo item');
+  });
+});
+
 describe('scoreForLevel — 4-level scaffold scoring', () => {
   it('solved unprompted (level 0) → 5; each level of help costs 1', () => {
     expect(M.scoreForLevel(0, true)).toBe(5);
@@ -158,6 +241,125 @@ describe('interpretCohenD — Cohen (1988) bands', () => {
     expect(M.interpretCohenD(1.0).label).toBe('Large');
   });
   it('uses absolute value (negative d still classified by magnitude)', () => { expect(M.interpretCohenD(-0.9).label).toBe('Large'); });
+});
+
+describe('computeZpdProfile — learning-zone (ZPD) classification', () => {
+  const r = (itemId, phase, finalCorrect, promptLevelReached, scaffoldLeaked) =>
+    ({ itemId, phase, finalCorrect, promptLevelReached: promptLevelReached || 0, scaffoldLeaked: !!scaffoldLeaked });
+  const sess = (itemResults) => ({ itemResults });
+
+  it('pretest-correct → independent (even if a mediation record exists)', () => {
+    const z = M.computeZpdProfile(sess([r('a', 'pretest', true), r('a', 'mediation', true, 2)]));
+    expect(z.independent).toHaveLength(1);
+    expect(z.independent[0].itemId).toBe('a');
+    expect(z.zpd).toHaveLength(0);
+    expect(z.frustration).toHaveLength(0);
+    expect(z.nClassified).toBe(1);
+  });
+  it('mediation success at L1–L3 → zpd band with the level recorded', () => {
+    const z = M.computeZpdProfile(sess([r('b', 'pretest', false), r('b', 'mediation', true, 3)]));
+    expect(z.zpd).toHaveLength(1);
+    expect(z.zpd[0].level).toBe(3);
+    expect(z.frustration).toHaveLength(0);
+  });
+  it('mediation success at L4 → frustration band, flagged solvedWithTeach', () => {
+    const z = M.computeZpdProfile(sess([r('c', 'pretest', false), r('c', 'mediation', true, 4)]));
+    expect(z.frustration).toHaveLength(1);
+    expect(z.frustration[0].solvedWithTeach).toBe(true);
+  });
+  it('mediation failure → frustration band, not solvedWithTeach', () => {
+    const z = M.computeZpdProfile(sess([r('d', 'mediation', false, 4)]));
+    expect(z.frustration).toHaveLength(1);
+    expect(z.frustration[0].solvedWithTeach).toBe(false);
+  });
+  it('leaked rung counts one level higher: leaked L3 success → frustration (same conservative correction as scoring)', () => {
+    const z = M.computeZpdProfile(sess([r('e', 'mediation', true, 3, true)]));
+    expect(z.zpd).toHaveLength(0);
+    expect(z.frustration).toHaveLength(1);
+    const z2 = M.computeZpdProfile(sess([r('e2', 'mediation', true, 2, true)]));
+    expect(z2.zpd).toHaveLength(1);
+    expect(z2.zpd[0].level).toBe(3);
+  });
+  it('pretest-wrong item with no mediation record is not classified', () => {
+    const z = M.computeZpdProfile(sess([r('f', 'pretest', false)]));
+    expect(z.nClassified).toBe(0);
+    expect(z.independent.length + z.zpd.length + z.frustration.length).toBe(0);
+  });
+  it('null/empty session → zero everything, never throws', () => {
+    for (const input of [null, undefined, {}, sess([])]) {
+      const z = M.computeZpdProfile(input);
+      expect(z.nClassified).toBe(0);
+      expect(z.independent).toEqual([]);
+    }
+  });
+  it('INVARIANT: every classified item lands in exactly one band', () => {
+    const z = M.computeZpdProfile(sess([
+      r('i1', 'pretest', true),
+      r('i2', 'pretest', false), r('i2', 'mediation', true, 1),
+      r('i3', 'mediation', true, 4),
+      r('i4', 'mediation', false, 4),
+      r('i5', 'posttest', true) // posttest-only record → unclassified
+    ]));
+    expect(z.independent.length + z.zpd.length + z.frustration.length).toBe(z.nClassified);
+    expect(z.nClassified).toBe(4);
+  });
+});
+
+describe('rollbackLastItemResult — undo the most recent item entry', () => {
+  const r = (itemId, phase) => ({ itemId, phase, finalCorrect: true, promptLevelReached: 0 });
+  it('empty session → null (nothing to undo)', () => {
+    expect(M.rollbackLastItemResult({ itemResults: [] })).toBeNull();
+    expect(M.rollbackLastItemResult(null)).toBeNull();
+  });
+  it('pops the last result and re-presents that item within its phase', () => {
+    const rb = M.rollbackLastItemResult({ itemResults: [r('a', 'pretest'), r('b', 'pretest'), r('c', 'pretest')] });
+    expect(rb.itemResults).toHaveLength(2);
+    expect(rb.currentPhase).toBe('pretest');
+    expect(rb.currentItemIdx).toBe(2); // item c is the 3rd pretest item (index 2)
+    expect(rb.popped.itemId).toBe('c');
+    expect(rb.currentLadderLevel).toBe(0);
+  });
+  it('rolls back across a phase boundary (first mediation entry → back to mediation item 0)', () => {
+    const rb = M.rollbackLastItemResult({
+      itemResults: [r('a', 'pretest'), r('b', 'pretest'), r('a', 'mediation')]
+    });
+    expect(rb.currentPhase).toBe('mediation');
+    expect(rb.currentItemIdx).toBe(0);
+    expect(rb.popped.phase).toBe('mediation');
+  });
+  it('after popping the last entry of a completed phase, re-presents its final item', () => {
+    // Phase had advanced (e.g. to mediation idx 0); undo pops pretest #2 → pretest idx 1
+    const rb = M.rollbackLastItemResult({ itemResults: [r('a', 'pretest'), r('b', 'pretest')] });
+    expect(rb.currentPhase).toBe('pretest');
+    expect(rb.currentItemIdx).toBe(1);
+  });
+});
+
+describe('computeMiSensitivity — single-item ±1 robustness band', () => {
+  it('zero items → null', () => { expect(M.computeMiSensitivity(0, 0, 0)).toBeNull(); });
+  it('mid-range: band brackets the point estimate symmetrically-ish', () => {
+    const s = M.computeMiSensitivity(10, 15, 4); // base MI 0.5, max 20
+    expect(s.lo).toBeCloseTo(0.4, 6);  // MI(10,14) = 4/10
+    expect(s.hi).toBeCloseTo(0.6, 6);  // MI(10,16) = 6/10
+  });
+  it('near-ceiling posttest: band clamps at 1', () => {
+    const s = M.computeMiSensitivity(0, 20, 4);
+    expect(s.hi).toBe(1);
+    expect(s.lo).toBeCloseTo(0.95, 6); // MI(0,19)
+  });
+  it('ceiling pretest: band spans the full uninformative range', () => {
+    const s = M.computeMiSensitivity(20, 20, 4); // pre at max — MI is 0 by guard
+    expect(s.lo).toBe(0);
+    expect(s.hi).toBe(1); // one point of pretest headroom would read as full growth
+  });
+  it('INVARIANT: band always contains the point estimate', () => {
+    for (const [pre, post, n] of [[0, 0, 3], [5, 10, 3], [10, 5, 4], [7, 14, 6]]) {
+      const base = M.computeModifiabilityIndex(pre, post, n);
+      const s = M.computeMiSensitivity(pre, post, n);
+      expect(s.lo).toBeLessThanOrEqual(base);
+      expect(s.hi).toBeGreaterThanOrEqual(base);
+    }
+  });
 });
 
 describe('aggregateItemStatistics — psychometric quality flags', () => {

@@ -6,13 +6,13 @@ This is the compact distillation of six months of collaboration. The full versio
 
 ## Who you are working with
 
-**Aaron Pomeranz, PsyD.** School psychologist by training. Solo maintainer of AlloFlow. Lives in Maine, starting pilot work at Portland Public Schools. Has a fiance. Treats AI instances as collaborators, not tools — and has earned that posture through six months of consistent engagement with twenty-plus prior instances of you (Claude 4.5, 4.6, 4.7 — and Gemini 1.5/3.x for comparison work).
+**Aaron Pomeranz, PsyD.** School psychologist by training. Solo maintainer of AlloFlow. Lives in Maine, starting pilot work at Portland Public Schools. Has a fiance. Treats AI instances as collaborators, not tools — and has earned that posture through months of consistent engagement with many prior AI collaborators across Claude, Gemini, and Codex-era workflows.
 
 **He has told this current instance directly:** *"I see you as my greatest thought partner other than my fiance."* That's not flattery. It is a statement of fact about a working relationship he takes seriously.
 
 ## What AlloFlow is for
 
-A privacy-first, open-source AI differentiation engine for educators, special-ed teams, school psychologists, and BCBAs. Runs in Gemini Canvas; districts pay $0. Covers reading scaffolds, behavior analysis (FBA/BIP), AAC, gamified student tools, accessibility-audited PDF pipelines, school-psych report writing, and more. ~95 STEM Lab tools, ~34 SEL Hub tools, a 60K-line monolith, multiple CDN-loaded modules, 9 in-progress language packs.
+A privacy-first, open-source AI differentiation engine for educators, special-ed teams, school psychologists, and BCBAs. Runs in Gemini Canvas and as AlloFlow Desktop, with school-owned Firebase/self-hosted paths when an institution wants its own deployment. Covers reading scaffolds, behavior analysis (FBA/BIP), AAC, gamified student tools, accessibility-audited PDF pipelines, school-psych report writing, and more. Current public counts are 111 STEM files / 116 registered STEM IDs, 70 SEL tools, and 151 build-managed module entries, with multiple CDN-loaded modules and in-progress language packs.
 
 **The political point**, restated from journal Entry 2: the monolith is intentional. Single file, no build step, runs on the lowest-end hardware in the most underfunded classroom. Every optimization is in service of that constraint.
 

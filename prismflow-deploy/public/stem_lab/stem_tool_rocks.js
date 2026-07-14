@@ -754,12 +754,38 @@ const d = labToolData.rocks || {};
             const H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
 
             const ctx = canvasEl.getContext('2d');
+            if (!ctx) { canvasEl._rocksInit = false; return; }
 
             const dpr = window.devicePixelRatio || 1;
 
             let tick = 0;
 
             let hoverZone = null;
+            let rocksAlive = true;
+            let rocksMotionReduced = false;
+            try { rocksMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isRocksHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelRocksFrame() {
+              if (animId && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(animId);
+              animId = null;
+            }
+
+            function scheduleRocksFrame() {
+              if (!rocksAlive || rocksMotionReduced || animId || isRocksHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              animId = requestAnimationFrame(loop);
+            }
+
+            function onRocksVisibilityChange() {
+              if (!rocksAlive) return;
+              if (!canvasEl.isConnected) { canvasEl._rocksCleanup(); return; }
+              if (isRocksHidden()) cancelRocksFrame();
+              else { cancelRocksFrame(); loop(); }
+            }
 
 
 
@@ -1237,16 +1263,20 @@ const d = labToolData.rocks || {};
             let animId = null;
 
             function loop() {
+              if (!rocksAlive) return;
+              animId = null;
+              if (!canvasEl.isConnected) { canvasEl._rocksCleanup(); return; }
+              if (isRocksHidden()) { cancelRocksFrame(); return; }
 
-              tick++;
+              if (!rocksMotionReduced) tick++;
 
               drawLandscape();
 
-              animId = requestAnimationFrame(loop);
+              scheduleRocksFrame();
 
             }
 
-            animId = requestAnimationFrame(loop);
+            loop();
 
 
 
@@ -1269,6 +1299,7 @@ const d = labToolData.rocks || {};
               });
 
               canvasEl.style.cursor = hoverZone ? 'pointer' : 'default';
+              if (rocksMotionReduced) drawLandscape();
 
             }
 
@@ -1335,6 +1366,7 @@ const d = labToolData.rocks || {};
                 var typeRocks = ROCKS.filter(function (r) { return r.type === z.type; });
 
                 if (typeRocks.length > 0) canvasEl._onSelectRock && canvasEl._onSelectRock(typeRocks[0].id, z.type);
+                if (rocksMotionReduced) drawLandscape();
 
               }
 
@@ -1355,6 +1387,7 @@ const d = labToolData.rocks || {};
                 canvasEl.width = newW;
 
                 canvasEl.height = newH;
+                if (rocksMotionReduced) drawLandscape();
 
               }
 
@@ -1363,18 +1396,24 @@ const d = labToolData.rocks || {};
             ro.observe(canvasEl);
 
             canvasEl._rocksRO = ro;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onRocksVisibilityChange);
 
             canvasEl._rocksCleanup = function () {
+              rocksAlive = false;
 
-              if (animId) cancelAnimationFrame(animId);
+              cancelRocksFrame();
 
               canvasEl.removeEventListener('mousemove', onRockMove);
 
               canvasEl.removeEventListener('click', onRockClick);
 
               canvasEl.removeEventListener('keydown', onRockKey);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onRocksVisibilityChange);
 
               ro.disconnect();
+              canvasEl._rocksRO = null;
+              canvasEl._rocksCleanup = null;
+              canvasEl._rocksInit = false;
 
             };
 
@@ -1663,9 +1702,11 @@ const d = labToolData.rocks || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
+
+              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: 'Open the 3D voxel cross-section of the crust', 'aria-label': 'Open Geology Explorer \u2014 3D voxel cross-section', className: "transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" }, "\u26F0\uFE0F Explore in 3D \u2192"),
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
@@ -1685,7 +1726,7 @@ const d = labToolData.rocks || {};
 
                       if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + modeLabel + ' mode.', repeat: modeLabel + ' mode.', terse: m + '.' }, { debounce: 500 }); }
 
-                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
 
                   },
 
@@ -1770,6 +1811,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("canvas", {
 
+                  role: "img", tabIndex: 0, "aria-label": "Rock cycle diagram — click a rock type or process to explore how rocks transform.",
                   "data-rocks-canvas": "true",
 
                   ref: function (el) {
@@ -1840,7 +1882,7 @@ const d = labToolData.rocks || {};
 
                     className: "px-3 py-1 rounded-full text-xs font-bold transition-all " +
 
-                      ((d.selectedType || null) === (t === 'all' ? null : t) ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
+                      ((d.selectedType || null) === (t === 'all' ? null : t) ? 'text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]'),
 
                     style: (d.selectedType || null) === (t === 'all' ? null : t) ? { background: t === 'all' ? '#78716c' : ROCK_TYPES[t]?.color || '#78716c' } : {}
 
@@ -1884,7 +1926,7 @@ const d = labToolData.rocks || {};
 
                   // Texture canvas
 
-                  React.createElement("canvas", { ref: textureRef, role: "img", "aria-label": "Rock texture close-up", style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
+                  React.createElement("canvas", { tabIndex: 0, ref: textureRef, role: "img", "aria-label": "Rock texture close-up", style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
 
                   React.createElement("div", { className: "flex-1" },
 
@@ -2076,11 +2118,11 @@ const d = labToolData.rocks || {};
                     ),
                     React.createElement("div", { className: "flex flex-col md:flex-row gap-3 items-center" },
                       React.createElement("div", { className: "w-full md:w-1/3 flex flex-col items-center" },
-                        React.createElement("canvas", { ref: coolingRef, style: { width: '130px', height: '80px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'block', background: '#1e293b' } }),
+                        React.createElement("canvas", { ref: coolingRef, role: "img", tabIndex: 0, "aria-label": "Crystal cooling-rate diagram — slower cooling grows larger crystals.", style: { width: '130px', height: '80px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'block', background: '#1e293b' } }),
                         React.createElement("button", {
                           disabled: isAnimActive,
                           onClick: startCooling,
-                          className: "mt-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[10px] shadow-sm disabled:opacity-50"
+                          className: "transition-colors mt-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[10px] shadow-sm disabled:opacity-50 active:scale-[0.97]"
                         }, isAnimActive ? "Cooling..." : "⚡ Run Solidification")
                       ),
                       React.createElement("div", { className: "flex-1 w-full" },
@@ -2089,8 +2131,8 @@ const d = labToolData.rocks || {};
                             return React.createElement("button", {
                               key: s.id,
                               onClick: function() { updMulti({ coolingSpeed: s.id, coolingProgress: 0, coolingAnimActive: false }); sfxRockClick(); },
-                              className: "p-1 rounded text-[9px] font-bold text-center border transition-all " +
-                                (coolingSpeed === s.id ? "bg-amber-100 border-amber-500 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-200")
+                              className: "p-1 rounded text-[10px] font-bold text-center border transition-all " +
+                                (coolingSpeed === s.id ? "bg-amber-100 border-amber-500 text-amber-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-200")
                             }, s.label);
                           })
                         ),
@@ -2142,7 +2184,7 @@ const d = labToolData.rocks || {};
                           updMulti({ fizzAnimActive: false, fizzResult: res });
                         }, 1200);
                       },
-                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50"
+                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
                     }, d.fizzAnimActive ? "🫧 Dropping Acid..." : "🧪 Drop HCl Acid"),
                     d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
@@ -2175,7 +2217,7 @@ const d = labToolData.rocks || {};
                     React.createElement("button", {
                       disabled: d.aiLoading,
                       onClick: askPetrologist,
-                      className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50"
+                      className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50 active:scale-[0.97]"
                     }, d.aiLoading ? "Thinking..." : "Ask")
                   ),
                   d.aiAnswer && React.createElement("div", { className: "mt-2 p-2.5 bg-slate-50 border rounded-lg animate-in slide-in-from-top-1" },
@@ -2750,7 +2792,7 @@ const d = labToolData.rocks || {};
                   MINERALS.map(function (mineral) {
                     return React.createElement("button", { key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
                       className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
-                        (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'bg-slate-50 border-slate-200 hover:border-violet-200'),
+                        (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'transition-colors bg-slate-50 border-slate-200 hover:border-violet-200'),
                       style: d.selectedMineral === mineral.id ? { borderColor: '#8b5cf6', color: '#6d28d9' } : {}
                     },
                       React.createElement("div", { className: "w-5 h-5 rounded-full mx-auto mb-1 border border-slate-400", style: { background: mineral.color } }),
@@ -2769,7 +2811,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "flex gap-3 items-start" },
 
-                  React.createElement("canvas", { ref: mineralCrossSectionRef, role: "img", "aria-label": "Mineral cross-section", style: { width: '140px', height: '100px', borderRadius: '10px', flexShrink: 0 } }),
+                  React.createElement("canvas", { tabIndex: 0, ref: mineralCrossSectionRef, role: "img", "aria-label": "Mineral cross-section", style: { width: '140px', height: '100px', borderRadius: '10px', flexShrink: 0 } }),
 
                   React.createElement("div", { className: "flex-1 min-w-0" },
 
@@ -2889,10 +2931,10 @@ const d = labToolData.rocks || {};
                           sfxRockClick();
                         },
                         className: "p-1.5 rounded-lg border-2 text-[10px] font-bold text-center transition-all " +
-                          (isSelected ? "bg-violet-100 border-violet-500 text-violet-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-violet-200")
+                          (isSelected ? "bg-violet-100 border-violet-500 text-violet-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-violet-200")
                       },
                         React.createElement("div", null, tool.label),
-                        React.createElement("div", { className: "text-[9px] text-slate-400 font-mono mt-0.5" }, "H: " + tool.h)
+                        React.createElement("div", { className: "text-[10px] text-slate-400 font-mono mt-0.5" }, "H: " + tool.h)
                       );
                     })
                   ),
@@ -2935,7 +2977,7 @@ const d = labToolData.rocks || {};
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, "Active Tool: " + toolData.label + " (Hardness " + toolData.h + ")"),
                         animProgress === 0 && React.createElement("button", {
                           onClick: runTest,
-                          className: "px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm"
+                          className: "px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm active:scale-[0.97]"
                         }, "⚡ Run Scratch Test")
                       ),
                       animProgress > 0 && animProgress < 100 && React.createElement("div", { className: "w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-2" },
@@ -2972,7 +3014,7 @@ const d = labToolData.rocks || {};
                           updMulti({ streakAnimActive: false, streakResult: res });
                         }, 800);
                       },
-                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50"
+                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
                     }, d.streakAnimActive ? "✏️ Scratching plate..." : "🍽️ Perform Streak Test"),
                     d.streakResult && (function() {
                       var streakColors = { 'White': '#f8fafc', 'Greenish-black': '#1a3a1a', 'Black': '#1e1e1e', 'Red-brown': '#8b3a2a', 'Lead-gray': '#94a3b8', 'White-yellow': '#fef9c3', 'None (too hard)': '#94a3b8' };
@@ -3030,7 +3072,7 @@ const d = labToolData.rocks || {};
                           updMulti({ fizzAnimActive: false, fizzResult: res });
                         }, 1200);
                       },
-                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50"
+                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
                     }, d.fizzAnimActive ? "🫧 Dropping Acid..." : "🧪 Drop HCl Acid"),
                     d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
@@ -3063,7 +3105,7 @@ const d = labToolData.rocks || {};
                     React.createElement("button", {
                       disabled: d.aiLoading,
                       onClick: askPetrologist,
-                      className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50"
+                      className: "px-3 py-1 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all disabled:opacity-50 active:scale-[0.97]"
                     }, d.aiLoading ? "Thinking..." : "Ask")
                   ),
                   d.aiAnswer && React.createElement("div", { className: "mt-2 p-2.5 bg-slate-50 border rounded-lg animate-in slide-in-from-top-1" },
@@ -3265,7 +3307,7 @@ const d = labToolData.rocks || {};
 
                       "aria-label": "Reveal next clue",
 
-                      className: "mt-1 px-3 py-1 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200"
+                      className: "transition-colors mt-1 px-3 py-1 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 active:scale-[0.97]"
 
                     }, "+ Reveal next clue")
 
@@ -3291,7 +3333,7 @@ const d = labToolData.rocks || {};
 
                       "aria-label": "Start a new Mystery Rock challenge",
 
-                      className: "mt-2 px-3 py-1 text-[11px] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800"
+                      className: "transition-colors mt-2 px-3 py-1 text-[11px] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800 active:scale-[0.97]"
 
                     }, "🎲 New Mystery")
 
@@ -3319,7 +3361,7 @@ const d = labToolData.rocks || {};
 
                           className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
 
-                            (wasWrong ? "bg-red-50 border-red-600 text-red-700" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
+                            (wasWrong ? "bg-red-50 border-red-600 text-red-700" : "transition-colors bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
 
                         },
 
@@ -3337,7 +3379,7 @@ const d = labToolData.rocks || {};
 
                       "aria-label": "Give up and reveal the answer",
 
-                      className: "px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+                      className: "transition-colors px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 active:scale-[0.97]"
 
                     }, "🤷 Give up · show answer")
 
@@ -3420,7 +3462,7 @@ const d = labToolData.rocks || {};
                         sfxRockCrack();
                       }
                     }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] flex items-center gap-2 " +
-                      (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : isChosen ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-600") : "border-amber-200 bg-white text-slate-700 hover:border-amber-400")
+                      (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : isChosen ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-600") : "transition-colors border-amber-200 bg-white text-slate-700 hover:border-amber-400")
                   },
                     React.createElement("span", { className: "inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0", "aria-hidden": "true" }, shortcut),
                     React.createElement("span", null, opt));
@@ -3451,7 +3493,7 @@ const d = labToolData.rocks || {};
                         var nextState = Object.assign({}, d, { vocabLookedUp: newList });
                         setTimeout(function() { checkRocksChallenges(nextState); }, 50);
                       },
-                      className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105"
+                      className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                     }, "📖 Study Term (+5 RP)")
                   );
                 })(),
@@ -3460,7 +3502,7 @@ const d = labToolData.rocks || {};
                     onClick: function () {
                       const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
                       upd("quizIdx", nextIdx); upd("quizFeedback", null);
-                    }, className: "px-4 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all"
+                    }, className: "px-4 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all active:scale-[0.97]"
                   }, "Next Question \u2192 (N)")
                 )
               )
@@ -3555,6 +3597,11 @@ const d = labToolData.rocks || {};
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'view_3_rocks', label: 'Explore all 3 rock families', icon: '🪨', check: function(d) { return Object.keys(d.rcViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.rcViewed || {}).length + '/3 families'; } },
+      { id: 'try_process', label: 'Inspect a transformation process', icon: '↔️', check: function(d) { return !!d.selectedProcess; }, progress: function(d) { return d.selectedProcess ? 'Done' : 'Pick a process'; } },
+      { id: 'run_3_transforms', label: 'Run the Transformation Machine 3 times', icon: '🔄', check: function(d) { return (d.transformsRun || 0) >= 3; }, progress: function(d) { return (d.transformsRun || 0) + '/3 runs'; } }
+    ],
     render: function(ctx) {
       // Aliases: maps ctx properties to original variable names
       var React = ctx.React;
@@ -3694,10 +3741,45 @@ const d = labToolData.rockCycle || {};
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
 
             var ctx = canvasEl.getContext('2d');
+            if (!ctx) { canvasEl._rcInit = false; return; }
 
             var dpr = 2;
 
             var tick = 0;
+            var rcAlive = true;
+            var rcMotionReduced = false;
+            try { rcMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isRockCycleHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelRockCycleFrame() {
+              if (canvasEl._rcAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._rcAnim);
+              canvasEl._rcAnim = null;
+            }
+
+            function scheduleRockCycleFrame() {
+              if (!rcAlive || rcMotionReduced || canvasEl._rcAnim || isRockCycleHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvasEl._rcAnim = requestAnimationFrame(draw);
+            }
+
+            function cleanupRockCycleCanvas() {
+              rcAlive = false;
+              cancelRockCycleFrame();
+              canvasEl.removeEventListener('click', onRockCycleClick);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onRockCycleVisibilityChange);
+              canvasEl._rcCleanup = null;
+              canvasEl._rcInit = false;
+            }
+
+            function onRockCycleVisibilityChange() {
+              if (!rcAlive) return;
+              if (!canvasEl.isConnected) { cleanupRockCycleCanvas(); return; }
+              if (isRockCycleHidden()) cancelRockCycleFrame();
+              else { cancelRockCycleFrame(); draw(); }
+            }
 
 
 
@@ -3754,8 +3836,12 @@ const d = labToolData.rockCycle || {};
 
 
             function draw() {
+              if (!rcAlive) return;
+              canvasEl._rcAnim = null;
+              if (!canvasEl.isConnected) { cleanupRockCycleCanvas(); return; }
+              if (isRockCycleHidden()) { cancelRockCycleFrame(); return; }
 
-              tick++;
+              if (!rcMotionReduced) tick++;
 
               ctx.clearRect(0, 0, cW, cH);
 
@@ -4135,44 +4221,48 @@ const d = labToolData.rockCycle || {};
 
               // ── Process arrow curves ──
 
-              PROCESSES.slice(0, 3).forEach(function (proc, i) {
-
+              // Render ALL 6 process edges — the 3 forward (canonical) cycle steps PLUS the 3
+              // "shortcut" reverse edges — so the diagram shows the rock cycle as the BRANCHING
+              // network it really is (any rock → any rock), not a one-way circle. Shortcuts arc the
+              // opposite way and are de-emphasized; every edge gets a direction arrowhead.
+              PROCESSES.forEach(function (proc, i) {
                 var fromN = nodes[proc.from];
-
                 var toN = nodes[proc.to];
-
-                var midX = (fromN.x + toN.x) / 2 + (toN.y - fromN.y) * 0.2;
-
-                var midY = (fromN.y + toN.y) / 2 - (toN.x - fromN.x) * 0.2;
-
+                var shortcut = i >= 3;
+                var bow = shortcut ? -0.34 : 0.2;
+                var midX = (fromN.x + toN.x) / 2 + (toN.y - fromN.y) * bow;
+                var midY = (fromN.y + toN.y) / 2 - (toN.x - fromN.x) * bow;
                 ctx.beginPath();
-
                 ctx.moveTo(fromN.x * dpr, fromN.y * dpr);
-
                 ctx.quadraticCurveTo(midX * dpr, midY * dpr, toN.x * dpr, toN.y * dpr);
-
-                ctx.strokeStyle = 'rgba(148,163,184,0.4)';
-
-                ctx.lineWidth = 1.5 * dpr;
-
+                ctx.strokeStyle = shortcut ? 'rgba(148,163,184,0.22)' : 'rgba(148,163,184,0.45)';
+                ctx.lineWidth = (shortcut ? 1 : 1.5) * dpr;
                 ctx.setLineDash([6, 4]);
-
                 ctx.stroke();
-
                 ctx.setLineDash([]);
-
-                var labelX = (fromN.x + midX + toN.x) / 3;
-
-                var labelY = (fromN.y + midY + toN.y) / 3;
-
-                ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
-
-                ctx.fillStyle = 'rgba(226,232,240,0.7)';
-
-                ctx.textAlign = 'center';
-
-                ctx.fillText(proc.label, labelX * dpr, labelY * dpr);
-
+                // Direction arrowhead at ~80% along the curve (just outside the destination node).
+                var tt = 0.8;
+                var bx = (1 - tt) * (1 - tt) * fromN.x + 2 * (1 - tt) * tt * midX + tt * tt * toN.x;
+                var by = (1 - tt) * (1 - tt) * fromN.y + 2 * (1 - tt) * tt * midY + tt * tt * toN.y;
+                var ang = Math.atan2(2 * (1 - tt) * (midY - fromN.y) + 2 * tt * (toN.y - midY), 2 * (1 - tt) * (midX - fromN.x) + 2 * tt * (toN.x - midX));
+                var ah = (shortcut ? 5 : 7) * dpr;
+                ctx.fillStyle = shortcut ? 'rgba(148,163,184,0.45)' : 'rgba(148,163,184,0.75)';
+                ctx.beginPath();
+                ctx.moveTo(bx * dpr, by * dpr);
+                ctx.lineTo(bx * dpr - ah * Math.cos(ang - 0.42), by * dpr - ah * Math.sin(ang - 0.42));
+                ctx.lineTo(bx * dpr - ah * Math.cos(ang + 0.42), by * dpr - ah * Math.sin(ang + 0.42));
+                ctx.closePath();
+                ctx.fill();
+                // Label only the 3 forward edges (the 3 shortcuts repeat the same process names and
+                // would clutter the small canvas).
+                if (!shortcut) {
+                  var labelX = (fromN.x + midX + toN.x) / 3;
+                  var labelY = (fromN.y + midY + toN.y) / 3;
+                  ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
+                  ctx.fillStyle = 'rgba(226,232,240,0.78)';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(proc.label, labelX * dpr, labelY * dpr);
+                }
               });
 
 
@@ -4225,6 +4315,19 @@ const d = labToolData.rockCycle || {};
 
                 ctx.stroke();
 
+                // Orbiting dashed ring on the selected node — a clear "you are here"
+                if (isSel) {
+                  ctx.save();
+                  ctx.setLineDash([6 * dpr, 5 * dpr]);
+                  ctx.lineDashOffset = -tick * 0.6 * dpr;
+                  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+                  ctx.lineWidth = 1.5 * dpr;
+                  ctx.beginPath();
+                  ctx.arc(n.x * dpr, n.y * dpr, (radius + 8) * dpr, 0, Math.PI * 2);
+                  ctx.stroke();
+                  ctx.restore();
+                }
+
                 // Rock-type-specific internal textures
 
                 ctx.save();
@@ -4259,6 +4362,7 @@ const d = labToolData.rockCycle || {};
 
                   // Sparkle dots on crystals
 
+                  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 5;
                   ctx.fillStyle = 'rgba(255,255,255,' + (0.15 + 0.1 * Math.sin(tick * 0.05)) + ')';
 
                   for (var spi2 = 0; spi2 < 5; spi2++) {
@@ -4268,6 +4372,7 @@ const d = labToolData.rockCycle || {};
                     ctx.beginPath(); ctx.arc(n.x * dpr + Math.cos(spa) * 10 * dpr, n.y * dpr + Math.sin(spa) * 8 * dpr, 1.2 * dpr, 0, Math.PI * 2); ctx.fill();
 
                   }
+                  ctx.restore();
 
                 } else if (rock.id === 'sedimentary') {
 
@@ -4379,17 +4484,18 @@ const d = labToolData.rockCycle || {};
 
               ctx.fillText('\uD83E\uDEA8 Rock Cycle', 12 * dpr, 19 * dpr);
 
-              canvasEl._rcAnim = requestAnimationFrame(draw);
+              scheduleRockCycleFrame();
 
             }
 
-            canvasEl._rcAnim = requestAnimationFrame(draw);
+            draw();
 
-            canvasEl._rcCleanup = function () { if (canvasEl._rcAnim) cancelAnimationFrame(canvasEl._rcAnim); };
+            canvasEl._rcCleanup = cleanupRockCycleCanvas;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onRockCycleVisibilityChange);
 
 
 
-            canvasEl.addEventListener('click', function (e) {
+            function onRockCycleClick(e) {
 
               var rect = canvasEl.getBoundingClientRect();
 
@@ -4409,33 +4515,66 @@ const d = labToolData.rockCycle || {};
 
                   upd('selectedRock', rock.id);
 
+                  // Track families explored (functional update — this listener's
+                  // closure is bound once at canvas init, so `d` here is stale)
+                  setLabToolData(function (prev) {
+                    var rc = prev.rockCycle || {};
+                    var v = Object.assign({}, rc.rcViewed);
+                    v[rock.id] = true;
+                    return Object.assign({}, prev, { rockCycle: Object.assign({}, rc, { rcViewed: v }) });
+                  });
+                  if (rcMotionReduced) draw();
+
                 }
 
               });
 
-            });
+            }
+            canvasEl.addEventListener('click', onRockCycleClick);
 
           };
 
 
+          var viewedFamilies = Object.keys(d.rcViewed || {}).length;
+          var transformsRun = d.transformsRun || 0;
+          var nextMission = viewedFamilies < 3 ? { icon: '🪨', title: 'Compare all three rock families', detail: 'Select each node and look for evidence of how it formed.' }
+            : !d.selectedProcess ? { icon: '↔️', title: 'Trace a transformation', detail: 'Choose an arrow to connect process, energy, and time.' }
+            : transformsRun < 3 ? { icon: '🔄', title: 'Test the transformation machine', detail: 'Run another pathway and compare its inputs and products.' }
+            : { icon: '🧠', title: 'Explain the branching cycle', detail: 'Use evidence to show why the rock cycle has many valid paths.' };
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "transition-colors grid h-10 w-10 shrink-0 place-items-center border border-slate-200 hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rock Cycle"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rock Cycle"),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
 
             ),
 
-            React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "Click a rock type on the diagram to explore. Watch particles flow through the cycle!"),
+            React.createElement("section", { "data-rockcycle-command": true, className: "relative overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-sky-50 p-4 sm:p-5 mb-4", "aria-labelledby": "rockcycle-command-title" },
+              React.createElement("div", { className: "absolute -right-6 -top-8 text-8xl opacity-[0.06]", "aria-hidden": true }, "🪨"),
+              React.createElement("div", { className: "relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]" },
+                React.createElement("div", null,
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.15em] text-orange-700" }, "Earth systems mission"),
+                  React.createElement("h2", { id: "rockcycle-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-slate-900" }, nextMission.icon + " " + nextMission.title),
+                  React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed" }, nextMission.detail),
+                  React.createElement("div", { className: "mt-4 grid grid-cols-3 gap-2", "aria-label": "Rock cycle mission progress" },
+                    [[viewedFamilies + '/3', 'Families'], [d.selectedProcess ? '1/1' : '0/1', 'Process'], [transformsRun + '/3', 'Transforms']].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white/80 p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, metric[1])); })
+                  )
+                ),
+                React.createElement("aside", { className: "rounded-xl border border-sky-200 bg-sky-50/70 p-4", "aria-label": "Rock cycle evidence route" },
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-sky-800" }, "Evidence route"),
+                  React.createElement("ol", { className: "mt-2 space-y-2 text-[11px] text-slate-700" }, ['Observe texture and composition', 'Connect process to energy and time', 'Explain more than one valid pathway'].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-600" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
+                )
+              )
+            ),
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg mb-3", style: { height: "420px" } },
 
-              React.createElement("canvas", { ref: canvasRef, "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
+              React.createElement("canvas", { ref: canvasRef, role: "img", tabIndex: 0, "aria-label": "Rock sample close-up" + (d.selectedRock ? " of " + d.selectedRock : "") + " — click to inspect.", "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
 
             ),
 
@@ -4443,7 +4582,7 @@ const d = labToolData.rockCycle || {};
 
               ROCKS.map(function (rock) {
 
-                return React.createElement("button", { key: rock.id, onClick: function () { upd('selectedRock', rock.id); },
+                return React.createElement("button", { key: rock.id, onClick: function () { upd('selectedRock', rock.id); setLabToolData(function (prev) { var rc = prev.rockCycle || {}; var v = Object.assign({}, rc.rcViewed); v[rock.id] = true; return Object.assign({}, prev, { rockCycle: Object.assign({}, rc, { rcViewed: v }) }); }); },
 
                   className: "px-3 py-2 rounded-lg text-xs font-bold transition-all " + (d.selectedRock === rock.id ? 'text-white shadow-md scale-105' : 'border hover:opacity-80'),
 
@@ -4463,7 +4602,7 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", null,
 
-                  React.createElement("h4", { className: "text-lg font-black", style: { color: sel.color } }, sel.label + " Rocks"),
+                  React.createElement("h4", { className: "text-lg font-black tracking-tight", style: { color: sel.color } }, sel.label + " Rocks"),
 
                   React.createElement("p", { className: "text-[11px] text-slate-600" }, sel.examples)
 
@@ -4528,7 +4667,7 @@ const d = labToolData.rockCycle || {};
 
                   return React.createElement("button", { key: i, onClick: function () { upd('selectedProcess', proc); },
 
-                    className: "p-2 rounded-lg text-left border transition-all " + (isActive ? 'bg-orange-100 border-orange-400 shadow-md' : 'bg-slate-50 border-slate-200 hover:bg-orange-50')
+                    className: "p-2 rounded-lg text-left border transition-all " + (isActive ? 'bg-orange-100 border-orange-400 shadow-md' : 'transition-colors bg-slate-50 border-slate-200 hover:bg-orange-50 active:scale-[0.97]')
 
                   },
 
@@ -4548,6 +4687,19 @@ const d = labToolData.rockCycle || {};
 
               )
 
+            ),
+
+            // ── Branching-network + common-myths note ──
+            React.createElement("div", { className: "mt-3 p-3 rounded-lg border border-violet-200 bg-violet-50 text-[12px] text-violet-900 leading-relaxed" },
+              React.createElement("p", { className: "font-bold mb-1" }, "🔀 A branching network, not a one-way circle"),
+              React.createElement("p", { className: "mb-2" }, "ANY rock can become ANY other rock — the diagram's 6 arrows show every path. Which one happens depends on the process (the geological agent), not on a fixed order."),
+              React.createElement("p", { className: "font-bold mb-1" }, "⚠ Common myths"),
+              React.createElement("ul", { className: "list-disc pl-4 space-y-0.5" },
+                React.createElement("li", null, "“Rocks never change.” They change constantly — just over thousands to millions of years."),
+                React.createElement("li", null, "“The cycle only goes one way.” It can run in any direction (follow the arrows)."),
+                React.createElement("li", null, "“Soil is a rock.” Soil is weathered rock plus organic matter — not a rock itself."),
+                React.createElement("li", null, "“Lava and magma are the same.” Magma is molten rock UNDERGROUND; once it erupts it's lava.")
+              )
             ),
 
             // Rock Transformation Machine
@@ -4588,8 +4740,8 @@ const d = labToolData.rockCycle || {};
                       return React.createElement("button", {
                         key: agent.id,
                         onClick: function() { upd("geologicalAgent", agent.id); sfxRockClick(); },
-                        className: "p-1 rounded text-[9px] font-black text-center border transition-all " +
-                          (isSel ? "bg-orange-100 border-orange-500 text-orange-800" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-orange-200")
+                        className: "p-1 rounded text-[10px] font-black text-center border transition-all " +
+                          (isSel ? "bg-orange-100 border-orange-500 text-orange-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-orange-200")
                       }, agent.label);
                     })
                   )
@@ -4601,6 +4753,7 @@ const d = labToolData.rockCycle || {};
                       var agent = d.geologicalAgent;
                       upd("transformationAnimActive", true);
                       upd("transformationResult", null);
+                      upd("transformsRun", (d.transformsRun || 0) + 1);
 
                       if (agent === 'melting_cooling') {
                         sfxRockMelt();
@@ -4616,18 +4769,26 @@ const d = labToolData.rockCycle || {};
                         upd("transformationProgress", p);
                         if (p >= 100) {
                           clearInterval(interval);
+                          // The geological AGENT determines the result TYPE (any rock can melt →
+                          // igneous, be heated/pressed → metamorphic, or weather → sedimentary) —
+                          // but the chosen STARTING ROCK now names a real, specific transformation,
+                          // so the dropdown actually matters and teaches the named pairings.
+                          var startingRock = d.startingRock || 'igneous';
                           var resultId = 'igneous';
                           var description = '';
 
                           if (agent === 'melting_cooling') {
                             resultId = 'igneous';
-                            description = "Extreme temperatures melted the rock into magma, which cooled and crystallized into a new IGNEOUS rock!";
+                            var mEx = startingRock === 'sedimentary' ? 'sandstone' : startingRock === 'metamorphic' ? 'gneiss' : 'older igneous rock';
+                            description = "Extreme heat (>800°C) melted the " + startingRock + " rock (e.g. " + mEx + ") into magma, which cooled and crystallized into a new IGNEOUS rock such as granite or basalt. Any rock can melt, so the result is always igneous.";
                           } else if (agent === 'heat_pressure') {
                             resultId = 'metamorphic';
-                            description = "Buried deep within the crust, intense heat and tectonic pressure recrystallized the rock's minerals, transforming it into a METAMORPHIC rock!";
+                            var hEx = startingRock === 'sedimentary' ? 'limestone → marble, or shale → slate' : startingRock === 'igneous' ? 'granite → gneiss' : 'slate → schist → gneiss (a higher grade)';
+                            description = "Buried deep, intense heat and pressure recrystallized the " + startingRock + " rock WITHOUT melting it — " + hEx + " — forming METAMORPHIC rock. Any rock can be metamorphosed.";
                           } else {
                             resultId = 'sedimentary';
-                            description = "Weathered by rain and wind, the rock shattered into tiny sediment grains, which washed into a basin, compacted, and cemented into a SEDIMENTARY rock!";
+                            var wEx = startingRock === 'igneous' ? 'granite → sand and clay' : startingRock === 'metamorphic' ? 'marble → sediment grains' : 'older sediment, broken down and re-deposited';
+                            description = "Weathering and erosion broke the " + startingRock + " rock into grains (" + wEx + "), which washed into a basin, then compacted and cemented into SEDIMENTARY rock. Any rock at the surface weathers into sediment.";
                           }
 
                           updMulti({
@@ -4688,7 +4849,7 @@ const d = labToolData.rockCycle || {};
                         }
                       }, 100);
                     },
-                    className: "w-full py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded-lg text-xs transition-all disabled:opacity-50"
+                    className: "w-full py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded-lg text-xs transition-all disabled:opacity-50 active:scale-[0.97]"
                   }, d.transformationAnimActive ? "Transforming..." : "⚡ Transform!")
                 )
               ),
@@ -4839,7 +5000,7 @@ const d = labToolData.rockCycle || {};
                   d.rcQuiz.opts.map(function (opt, i) {
                     var isCorrect = opt === d.rcQuiz.a;
                     var wasChosen = d.rcQuiz.chosen === opt;
-                    var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-600 text-emerald-800' : wasChosen ? 'bg-red-100 border-red-600 text-red-800' : 'bg-slate-50 border-slate-200 opacity-50';
+                    var cls = !d.rcQuiz.answered ? 'transition-colors bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-600 text-emerald-800' : wasChosen ? 'bg-red-100 border-red-600 text-red-800' : 'bg-slate-50 border-slate-200 opacity-50';
 
                     return React.createElement("button", { "aria-label": "Select answer: " + opt,
                       key: opt, disabled: d.rcQuiz.answered, onClick: function () {
@@ -4918,7 +5079,7 @@ const d = labToolData.rockCycle || {};
                           if (typeof awardStemXP === 'function') awardStemXP(5, 'Concept studied: ' + d.rcQuiz.concept);
                           if (typeof addToast === 'function') addToast({ type: 'success', title: 'Concept Studied!', message: 'You studied ' + d.rcQuiz.concept + ' (+5 RP)' });
                         },
-                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[9px] shrink-0 self-start sm:self-center transition-all hover:scale-105"
+                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                       }, "📖 Study Term (+5 RP)")
                     );
                   })()

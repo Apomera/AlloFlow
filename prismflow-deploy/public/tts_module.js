@@ -36,6 +36,18 @@ const createTTS = deps => {
     setShowKokoroOfferModal
   } = deps;
 
+  // Effective cloud-TTS key. Two ways a "key" can be a lie (both field-hit
+  // 2026-07-06 on desktop): the bundler's old 'desktop-user-provided'
+  // sentinel (truthy placeholder nothing recognized), and a real-looking key
+  // Google rejects (__ttsGeminiAuthFailed latches on the first key-invalid
+  // 400). Either way the cloud leg is unusable and keyless routing — local
+  // Kokoro reroute + skip-doomed-calls — must engage.
+  const _cloudKeyUsable = () => {
+    if (!apiKey || apiKey === 'desktop-user-provided') return false;
+    if (typeof window !== 'undefined' && window.__ttsGeminiAuthFailed) return false;
+    return true;
+  };
+
   // pcmToWav is inlined here (not injected) because it's a pure conversion
   // utility with no external deps. Keeps the module self-contained and avoids
   // a TDZ trap from the monolith's pcmToWav being component-scoped.
@@ -82,6 +94,10 @@ const createTTS = deps => {
         for (let j = 0; j < len; j++) bytes[j] = binaryString.charCodeAt(j);
         return bytes;
       };
+      // Guard: callers can pass a missing field; undefined.length threw here and
+      // was pointlessly retried. Normalize; empty text fails fast, non-retryable.
+      text = text == null ? '' : String(text);
+      if (!text.trim()) throw new Error('TTS Empty Text');
       let promptText = text.length <= 2 ? `Say the sound: ${text}` : text;
       promptText = promptText.replace(/^\s*\d+\.\s+/gm, '');
       promptText = promptText.replace(/^\s*[-*•]\s+/gm, '');
@@ -114,6 +130,20 @@ const createTTS = deps => {
         }],
         generationConfig: {
           responseModalities: ["AUDIO"],
+          // Read-aloud FIDELITY temperature (2026-07-06). Gemini TTS is a
+          // GENERATIVE model — at the default (~1.0) or even 0.7 it has
+          // latitude to paraphrase or DROP words, which on repetitive
+          // leveled text surfaced as e.g. 'The teacher says, "Jump up
+          // high."' being spoken as a truncated fragment. The text sent
+          // is provably intact (splitter + preprocessing verified), so
+          // the drift is the model's sampling. 0.2 strongly favors reading
+          // the words verbatim — the priority for a struggling reader
+          // tracking along. Personas keep 0.7 (callTTSDirect) for
+          // expressive delivery. Gated so a 400 rejecting the field
+          // disables it globally (see below).
+          ...(state.ttsTemperatureUnsupported ? {} : {
+            temperature: 0.2
+          }),
           speechConfig: {
             voiceConfig: {
               prebuiltVoiceConfig: {
@@ -153,6 +183,19 @@ const createTTS = deps => {
             throw new Error(`TTS Transient Error (${response.status})`);
           }
           const errorBody = await response.text().catch(() => '');
+          if (response.status === 400 && !state.ttsTemperatureUnsupported && /temperature/i.test(errorBody)) {
+            state.ttsTemperatureUnsupported = true;
+            console.warn('[TTS] API rejected temperature param — disabled; caller retry will go without it.');
+            throw new Error('TTS Transient Error (400 temperature)');
+          }
+          if (response.status === 400 && /API key not valid|API_KEY_INVALID/i.test(errorBody)) {
+            // Key-invalid latch: this key will NEVER work — flip the whole
+            // session to keyless routing (local Kokoro serves; no more doomed calls).
+            try {
+              window.__ttsGeminiAuthFailed = true;
+            } catch (_) {}
+            console.warn("[TTS]" + " cloud TTS key rejected — switching this session to the local voice.");
+          }
           console.error("[TTS] API Error:", response.status, response.statusText, errorBody.substring(0, 200));
           throw new Error(`API Error: ${response.status} ${response.statusText}`);
         }
@@ -170,6 +213,9 @@ const createTTS = deps => {
                 }],
                 generationConfig: {
                   responseModalities: ["AUDIO"],
+                  ...(state.ttsTemperatureUnsupported ? {} : {
+                    temperature: 0.2
+                  }),
                   speechConfig: {
                     voiceConfig: {
                       prebuiltVoiceConfig: {
@@ -227,14 +273,87 @@ const createTTS = deps => {
     state.queue = queuedTask.catch(() => {});
     return queuedTask;
   };
+
+  // ONE voice-prefix test and ONE local-TTS text cleaner for all four
+  // routing sites (Canvas/non-Canvas x callTTS/callTTSDirect). The copies
+  // had already drifted: the short chains lacked the Dr./Mr./decimal-point
+  // pronunciation rules the Canvas chain applies.
+  const KOKORO_VOICE_PREFIX = /^(af_|am_|bf_|bm_)/i;
+  const cleanTextForLocalTTS = raw => String(raw == null ? '' : raw).replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*\u2022]\s+/gm, '').replace(/\be\.g\.\s/gi, 'for example ').replace(/\bi\.e\.\s/gi, 'that is ').replace(/\betc\.\s/gi, 'etcetera ').replace(/\bvs\.\s/gi, 'versus ').replace(/\bDr\.\s/gi, 'Doctor ').replace(/\bMr\.\s/gi, 'Mister ').replace(/\bMs\.\s/gi, 'Miss ').replace(/\bSt\.\s/gi, 'Saint ').replace(/(\d)\.\s+(\d)/g, '$1 point $2').replace(/\n{2,}/g, '. ').replace(/\n/g, ', ').replace(/\s{2,}/g, ' ').trim();
+  // ── Spoken math pre-pass (2026-07-05) ──
+  // Substitute delimited math ($x^2$, $$..$$, \(..\), \[..\]) with a spoken
+  // rendering via Speech Rule Engine (sre_loader.js → window.AlloMathSpeech)
+  // BEFORE the text forks to any synthesis leg — without this every engine
+  // reads "dollar x caret two dollar". One shared pre-pass, same rationale
+  // as cleanTextForLocalTTS (the per-leg copies drift). Fallback-safe: on
+  // no-math / loader missing / SRE failure / timeout the original text is
+  // returned untouched, so the worst case is exactly today's behaviour.
+  const MATH_SEGMENT_RE = /\$\$([^$]{1,400}?)\$\$|\\\[([\s\S]{1,400}?)\\\]|\\\(([\s\S]{1,300}?)\\\)|\$([^$\n]{1,200}?)\$/g;
+  // Currency guard: "$5 and $10" pairs into a bogus segment. Only treat a
+  // segment as math when it carries a LaTeX command, super/subscript, or a
+  // short equation — anything else stays verbatim (conservative by design).
+  const _mathLooksReal = c => /\\[a-zA-Z]+|[\^_]/.test(c) || /=/.test(c) && c.length <= 80;
+  const _mathToSpeakable = async (raw, language) => {
+    try {
+      const src = String(raw == null ? '' : raw);
+      MATH_SEGMENT_RE.lastIndex = 0;
+      if (!MATH_SEGMENT_RE.test(src)) return raw;
+      if (!window.AlloMathSpeech && window.__alloLoadPlugin) {
+        try {
+          await window.__alloLoadPlugin('sre_loader.js');
+        } catch (_) {}
+      }
+      if (!window.AlloMathSpeech || typeof window.AlloMathSpeech.toSpeech !== 'function') return raw;
+      const jobs = [];
+      src.replace(MATH_SEGMENT_RE, (m, disp, brk, par, inl, off) => {
+        const body = (disp || brk || par || inl || '').trim();
+        if (body && _mathLooksReal(body)) jobs.push({
+          m,
+          body,
+          off
+        });
+        return m;
+      });
+      if (!jobs.length) return raw;
+      const spoken = await Promise.all(jobs.map(j => window.AlloMathSpeech.toSpeech(j.body, {
+        lang: language,
+        timeoutMs: 6000
+      })));
+      let out = '';
+      let cursor = 0;
+      jobs.forEach((j, i) => {
+        out += src.slice(cursor, j.off);
+        out += spoken[i] && String(spoken[i]).trim() ? ' ' + String(spoken[i]).trim() + ' ' : j.m;
+        cursor = j.off + j.m.length;
+      });
+      out += src.slice(cursor);
+      return out;
+    } catch (_) {
+      return raw;
+    }
+  };
+  // De-dupe identical, non-cancellable cloud requests that arrive before the
+  // first one has populated urlCache (for example, karaoke playback racing a
+  // look-ahead warm). Requests carrying an AbortSignal stay independent so
+  // one caller can never cancel audio another caller is awaiting.
+  const callTTSInFlight = new Map();
   const callTTS = async (text, voiceName = "Puck", speed = 1, maxRetriesOrOpts = 2, languageArg) => {
     if (isGlobalMuted()) {
       return null;
     }
+    if (text == null || !String(text).trim()) {
+      console.warn('[TTS] Skipped: empty text (a caller passed a missing field)');
+      return null;
+    }
     var maxRetries = typeof maxRetriesOrOpts === 'number' ? maxRetriesOrOpts : maxRetriesOrOpts && typeof maxRetriesOrOpts.maxRetries === 'number' ? maxRetriesOrOpts.maxRetries : 2;
     var _callOpts = maxRetriesOrOpts && typeof maxRetriesOrOpts === 'object' ? maxRetriesOrOpts : {};
-    var _language = languageArg || _callOpts.language || 'English';
+    // When the caller omits the language, resolve it from app state the
+    // same way callTTSDirect does — defaulting to 'English' made Kokoro
+    // speak Spanish glossary terms with English phonology (and cache it).
+    var _language = languageArg || _callOpts.language || getLeveledTextLanguage() || getCurrentUiLanguage() || 'English';
     var _isEnglish = typeof _language === 'string' && /^english$/i.test(_language.trim());
+    // Spoken math pre-pass (no-op unless delimited math is present)
+    text = await _mathToSpeakable(text, _language);
     // Optional AbortSignal for per-call cancellation. AlloSpeechPlayer.stop()
     // aborts in-flight TTS so a fast click-to-stop doesn't keep burning the
     // Gemini quota for audio the user already cancelled. fetchTTSBytes
@@ -254,17 +373,45 @@ const createTTS = deps => {
       if (_isKokoroVoice) {
         console.log('[Canvas TTS] Kokoro voice selected (' + voiceName + ') — skipping Gemini, using Kokoro directly');
       }
+      // Match the non-Canvas cache key exactly, including language. The
+      // previous Canvas branch wrote a shorter key and never read it, so
+      // a warmed sentence was synthesized again when playback asked.
+      const canvasCacheKey = (text || '').toLowerCase().trim() + '__' + voiceName + '__' + speed + '__' + (_language || 'English');
+      if (!_isKokoroVoice && state.urlCache.has(canvasCacheKey)) {
+        debugLog('callTTS Canvas cache HIT:', text?.substring(0, 30));
+        return state.urlCache.get(canvasCacheKey);
+      }
       if (_isKokoroVoice) {
         // Intentional fall-through to Kokoro/Piper block below.
       } else if (Date.now() >= state.rateLimitedUntil) {
         const canvasMaxAttempts = 3;
         let canvasLastErr = null;
+        const fetchCanvasTTSBytes = async () => {
+          if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal);
+          let inFlight = callTTSInFlight.get(canvasCacheKey);
+          if (!inFlight) {
+            inFlight = fetchTTSBytes(text, voiceName, speed, _language, null);
+            callTTSInFlight.set(canvasCacheKey, inFlight);
+          } else {
+            debugLog('callTTS Canvas in-flight JOIN:', text?.substring(0, 30));
+          }
+          try {
+            return await inFlight;
+          } finally {
+            if (callTTSInFlight.get(canvasCacheKey) === inFlight) {
+              callTTSInFlight.delete(canvasCacheKey);
+            }
+          }
+        };
         for (let canvasAttempt = 0; canvasAttempt < canvasMaxAttempts; canvasAttempt++) {
           try {
             console.log(`[Canvas TTS] Attempting Gemini TTS${canvasAttempt > 0 ? ` (retry ${canvasAttempt})` : ''} for:`, text?.substring(0, 40), 'voice:', voiceName);
-            const ttsResult = await fetchTTSBytes(text, voiceName, speed, _language, _signal);
+            const ttsResult = await fetchCanvasTTSBytes();
             console.log('[Canvas TTS] fetchTTSBytes result:', ttsResult ? 'got audio (' + (ttsResult.bytes?.length || 0) + ' bytes)' : 'null');
             if (ttsResult) {
+              // A joined caller may resume after the owner already
+              // converted these bytes and populated the URL cache.
+              if (state.urlCache.has(canvasCacheKey)) return state.urlCache.get(canvasCacheKey);
               const {
                 bytes: pcmBytes
               } = ttsResult;
@@ -273,8 +420,7 @@ const createTTS = deps => {
                 type: 'audio/wav'
               });
               const url = URL.createObjectURL(blob);
-              const cacheKey = `${(text || '').toLowerCase().trim()}__${voiceName}__${speed}`;
-              state.urlCache.set(cacheKey, url);
+              state.urlCache.set(canvasCacheKey, url);
               console.log('[Canvas TTS] ✅ Gemini TTS succeeded!');
               return url;
             }
@@ -321,7 +467,7 @@ const createTTS = deps => {
           if (setShowKokoroOfferModal) setShowKokoroOfferModal(true);
         }
       }
-      const localTtsText = text.replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*•]\s+/gm, '').replace(/\be\.g\.\s/gi, 'for example ').replace(/\bi\.e\.\s/gi, 'that is ').replace(/\betc\.\s/gi, 'etcetera ').replace(/\bvs\.\s/gi, 'versus ').replace(/\bDr\.\s/gi, 'Doctor ').replace(/\bMr\.\s/gi, 'Mister ').replace(/\bMs\.\s/gi, 'Miss ').replace(/\bSt\.\s/gi, 'Saint ').replace(/(\d)\.\s+(\d)/g, '$1 point $2').replace(/\n{2,}/g, '. ').replace(/\n/g, ', ').replace(/\s{2,}/g, ' ').trim();
+      const localTtsText = cleanTextForLocalTTS(text);
       const ttsLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
       if (ttsLang === 'en') {
         try {
@@ -352,6 +498,91 @@ const createTTS = deps => {
       }
       return null;
     }
+    // ─── Desktop/Firebase: a selected Kokoro voice speaks through the local engine ───
+    // The Canvas branch above has always routed af_/am_/bf_/bm_ voices to the
+    // in-browser Kokoro engine, but this non-Canvas path sent them to the
+    // AIProvider/Gemini instead: Gemini 400s on non-Gemini voice names, every
+    // caller's catch lands on browser speechSynthesis, and the model that the
+    // header picker downloads (and desktop/Firebase boot auto-loads) never speaks.
+    var _kokoroDeferredToGemini = false;
+    // Routing breadcrumb for the Setup Health card / diagnostics: which leg
+    // actually served (or refused) the last read-aloud, and why.
+    var _routeNote = function (route, detail) {
+      try {
+        window.__ttsLastRoute = {
+          at: Date.now(),
+          fn: 'callTTS',
+          voice: String(voiceName || ''),
+          route: route,
+          detail: detail || ''
+        };
+      } catch (_) {}
+    };
+    // Keyless installs have NO usable cloud voice: once the local engine is
+    // ready it should serve EVERY voice name (the engine's resolveVoice maps
+    // Gemini names like 'Kore' to Kokoro equivalents). Without this, any
+    // stale cloud voice name in storage pinned keyless users to the browser
+    // voice even with a ready engine. Explicit 'browser' choice and
+    // provider-managed TTS (Edge/off) are respected.
+    var _cfgTtsEarly = getAiUserConfig();
+    var _provTtsEarly = _cfgTtsEarly && _cfgTtsEarly.ttsProvider || 'auto';
+    var _provIsLocalAI = !!(_cfgTtsEarly && (_cfgTtsEarly.backend === 'ollama' || _cfgTtsEarly.backend === 'localai'));
+    // 'local' does NOT block Kokoro (field-caught 2026-07-06, the last bug
+    // of the batch): the "Local TTS" setting predates the in-browser
+    // engine and pointed only at self-hosted Kokoro-FastAPI (:8880) /
+    // Edge-TTS (:5500) servers a desktop install doesn't run — picking
+    // "Local TTS" ironically skipped the REAL local voice and landed on
+    // the browser fallback. The in-browser engine is now the FIRST leg of
+    // that cascade; the provider servers stay second for setups that run them.
+    var _providerHandlesTts = _provTtsEarly === 'browser' || _provTtsEarly === 'off' || _provTtsEarly === 'auto' && _provIsLocalAI;
+    var _kokoroPreferred = typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName);
+    var _localTtsChosen = _provTtsEarly === 'local' && typeof voiceName === 'string' && voiceName !== 'browser';
+    var _kokoroKeyless = !_isCanvasEnv && !_cloudKeyUsable() && !_providerHandlesTts && typeof voiceName === 'string' && voiceName !== 'browser';
+    if (_kokoroPreferred || _localTtsChosen || _kokoroKeyless) {
+      if (!_isEnglish) {
+        console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — deferring to cloud voices for this call');
+        _routeNote('kokoro-skip', 'non-English content: ' + _language);
+        _kokoroDeferredToGemini = true;
+      } else if (window._kokoroTTS && window._kokoroTTS.ready) {
+        try {
+          const kokoroUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
+          if (kokoroUrl) {
+            _routeNote('kokoro', _kokoroPreferred ? 'kokoro voice selected' : 'keyless reroute');
+            return kokoroUrl;
+          }
+          _routeNote('kokoro-empty', 'engine returned no audio');
+          _kokoroDeferredToGemini = true; // engine returned nothing
+        } catch (e) {
+          if (_isAbortError(e)) {
+            throw e;
+          }
+          console.warn('[TTS] Kokoro engine failed — deferring to provider/cloud voices:', e?.message);
+          _kokoroDeferredToGemini = true;
+        }
+      } else {
+        // Engine missing OR loaded-but-never-ready: kick a background
+        // (re)load for future calls. The ready gate matters — a failed
+        // first init (e.g. the ~86MB voice download racing a multi-GB
+        // LLM download on first desktop boot, or a truncated cache)
+        // leaves window._kokoroTTS PRESENT with ready=false forever;
+        // without re-init here every call silently lands on the
+        // browser voice. __loadKokoroTTS re-runs init when not ready.
+        // The configured provider still sees the ORIGINAL voice —
+        // OpenAI-compatible local TTS servers (Kokoro-FastAPI) accept
+        // af_* natively; only the Gemini leg needs a Gemini voice.
+        if (window.__loadKokoroTTS && !window.__kokoroTTSDownloading) {
+          window.__kokoroTTSDownloading = true;
+          Promise.resolve(window.__loadKokoroTTS()).then(function () {
+            window.__kokoroTTSDownloading = false;
+          }, function () {
+            window.__kokoroTTSDownloading = false;
+          });
+        }
+        _routeNote('kokoro-not-ready', 'engine preparing — background (re)init kicked');
+        _kokoroDeferredToGemini = true;
+      }
+    }
+
     // ─── AIProvider TTS routing ───────────────────────────────────
     const _aiUserConfig = getAiUserConfig();
     const _ai = getAi();
@@ -363,13 +594,30 @@ const createTTS = deps => {
           voice: voiceName,
           speed
         });
+        _routeNote('provider', 'ttsProvider=' + _ttsOvr);
         return result;
       } catch (e) {
         console.warn('[callTTS] AIProvider TTS failed, falling back to Gemini:', e?.message);
       }
     }
+    if (_kokoroDeferredToGemini && KOKORO_VOICE_PREFIX.test(voiceName)) {
+      console.warn('[TTS] Kokoro voice unavailable for this call — using Gemini "Puck"');
+      voiceName = 'Puck';
+    }
     if (Date.now() < state.rateLimitedUntil) {
       console.warn("[TTS] Skipping — global rate-limit cooldown active for", Math.round((state.rateLimitedUntil - Date.now()) / 1000), "more seconds");
+      return null;
+    }
+    // Keyless install (desktop Built-in Engine, no cloud account): the
+    // Gemini TTS leg can NEVER succeed — every attempt is a guaranteed
+    // 400 + retries + an error-report entry. Skip it silently (one log
+    // per session); callers fall to the browser voice until Kokoro is up.
+    if (!_isCanvasEnv && !_cloudKeyUsable()) {
+      if (typeof window !== 'undefined' && !window.__ttsKeylessLogged) {
+        window.__ttsKeylessLogged = true;
+        console.log('[TTS] No cloud TTS key — cloud voice skipped; local Kokoro/browser voices handle read-aloud.');
+      }
+      _routeNote('keyless-skip', 'no cloud key; caller falls back to the browser voice');
       return null;
     }
     const cacheKey = `${(text || '').toLowerCase().trim()}__${voiceName}__${speed}__${_language || 'English'}`;
@@ -420,30 +668,58 @@ const createTTS = deps => {
   };
   const callTTSDirect = async (text, voiceName = "Puck", speed = 1, maxRetries = 2) => {
     if (isGlobalMuted()) return null;
+    if (text == null || !String(text).trim()) {
+      console.warn('[TTS] Skipped: empty text');
+      return null;
+    }
+    // Spoken math pre-pass (no-op unless delimited math is present)
+    text = await _mathToSpeakable(text, getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
     // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
     if (_isCanvasEnv) {
       if (Date.now() >= state.rateLimitedUntil) {
-        try {
-          const ttsResult = await fetchTTSBytes(text, voiceName, speed);
-          if (ttsResult) {
-            const {
-              bytes: pcmBytes
-            } = ttsResult;
-            const wavBuffer = pcmToWav(pcmBytes);
-            const blob = new Blob([wavBuffer], {
-              type: 'audio/wav'
-            });
-            return URL.createObjectURL(blob);
-          }
-        } catch (e) {
-          console.warn('[callTTSDirect] Gemini TTS failed, falling back to local:', e?.message);
-          if (e?.message?.includes('429') || e?.message?.includes('Rate Limited')) {
-            state.rateLimitedUntil = Date.now() + 60000;
+        // Match callTTS's Canvas resilience (field-caught 2026-07-06): the
+        // Canvas proxy rotates auth tokens fast enough that a request can
+        // transiently 401/503, and the generative TTS model occasionally
+        // refuses a short bot line. This path had NO retry (unlike callTTS),
+        // so a single blip dropped AlloBot straight to the browser voice
+        // even though Gemini was available — the "sometimes browser TTS"
+        // regression. Retry transient errors before giving up.
+        const botCanvasMaxAttempts = 3;
+        for (let botAttempt = 0; botAttempt < botCanvasMaxAttempts; botAttempt++) {
+          try {
+            const ttsResult = await fetchTTSBytes(text, voiceName, speed);
+            if (ttsResult) {
+              const {
+                bytes: pcmBytes
+              } = ttsResult;
+              const wavBuffer = pcmToWav(pcmBytes);
+              const blob = new Blob([wavBuffer], {
+                type: 'audio/wav'
+              });
+              return URL.createObjectURL(blob);
+            }
+            throw new Error('fetchTTSBytes returned empty result');
+          } catch (e) {
+            const msg = e?.message || '';
+            if (msg.includes('429') || msg.includes('Rate Limited')) {
+              state.rateLimitedUntil = Date.now() + 60000;
+              console.warn('[callTTSDirect] Gemini rate-limited — falling back to local:', msg);
+              break;
+            }
+            const isTransient = msg.includes('401') || msg.includes('403') || msg.includes('503') || msg.includes('model refused') || msg.includes('Transient Error') || msg.includes('empty result');
+            if (isTransient && botAttempt < botCanvasMaxAttempts - 1) {
+              const backoffMs = 800 * Math.pow(2, botAttempt);
+              console.warn(`[callTTSDirect] Transient Gemini error "${msg}" — retrying in ${backoffMs}ms (attempt ${botAttempt + 2}/${botCanvasMaxAttempts})`);
+              await new Promise(r => setTimeout(r, backoffMs));
+              continue;
+            }
+            console.warn('[callTTSDirect] Gemini TTS failed after retries, falling back to local:', msg);
+            break;
           }
         }
       }
       const ttsLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
-      const cleanedText = text.replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*•]\s+/gm, '').replace(/\be\.g\.\s/gi, 'for example ').replace(/\bi\.e\.\s/gi, 'that is ').replace(/\n{2,}/g, '. ').replace(/\n/g, ', ').replace(/\s{2,}/g, ' ').trim();
+      const cleanedText = cleanTextForLocalTTS(text);
       if (ttsLang === 'en') {
         try {
           if (window._kokoroTTS) {
@@ -473,6 +749,58 @@ const createTTS = deps => {
       }
       return null;
     }
+    // ─── Desktop/Firebase: selected Kokoro voice → local engine (same fix as callTTS) ───
+    var _routeNoteBot = function (route, detail) {
+      try {
+        window.__ttsLastRoute = {
+          at: Date.now(),
+          fn: 'callTTSDirect',
+          voice: String(voiceName || ''),
+          route: route,
+          detail: detail || ''
+        };
+      } catch (_) {}
+    };
+    // Keyless: the local engine serves ANY bot voice name once ready
+    // (resolveVoice maps Gemini names) — same reroute as callTTS.
+    var _botCfgTts = getAiUserConfig();
+    var _botProvTts = _botCfgTts && _botCfgTts.ttsProvider || 'auto';
+    var _botProvLocalAI = !!(_botCfgTts && (_botCfgTts.backend === 'ollama' || _botCfgTts.backend === 'localai'));
+    // Same as callTTS: ttsProvider 'local' PREFERS the in-browser engine
+    // (first cascade leg), never blocks it.
+    var _botProviderHandles = _botProvTts === 'browser' || _botProvTts === 'off' || _botProvTts === 'auto' && _botProvLocalAI;
+    var _botKokoroEligible = typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName) || _botProvTts === 'local' && typeof voiceName === 'string' && voiceName !== 'browser' || !_isCanvasEnv && !_cloudKeyUsable() && !_botProviderHandles && typeof voiceName === 'string' && voiceName !== 'browser';
+    if (_botKokoroEligible) {
+      const botKokoroLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
+      if (botKokoroLang === 'en' && window._kokoroTTS && window._kokoroTTS.ready) {
+        try {
+          const kokoroBotUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
+          if (kokoroBotUrl) {
+            _routeNoteBot('kokoro');
+            return kokoroBotUrl;
+          }
+        } catch (e) {
+          console.warn('[callTTSDirect] Kokoro engine failed — deferring to provider/cloud:', e?.message);
+          _routeNoteBot('kokoro-failed', e?.message);
+        }
+      } else if (botKokoroLang === 'en') {
+        // Missing or never-ready engine: background (re)init, same as
+        // callTTS — a failed first init otherwise pins every bot line
+        // to the browser voice with no path back to Kokoro.
+        if (window.__loadKokoroTTS && !window.__kokoroTTSDownloading) {
+          window.__kokoroTTSDownloading = true;
+          Promise.resolve(window.__loadKokoroTTS()).then(function () {
+            window.__kokoroTTSDownloading = false;
+          }, function () {
+            window.__kokoroTTSDownloading = false;
+          });
+        }
+      }
+      // No rewrite here: the configured provider accepts af_* names
+      // (Kokoro-FastAPI); the safeVoice guard below already maps any
+      // non-Gemini voice to 'Puck' for the Gemini fallback leg.
+    }
+
     // ─── AIProvider TTS routing (same as callTTS) ─────────────────
     const _aiUserConfig = getAiUserConfig();
     const _ai = getAi();
@@ -490,6 +818,15 @@ const createTTS = deps => {
     }
     if (Date.now() < state.rateLimitedUntil) {
       console.warn("[TTS-Bot] Skipping — global rate-limit cooldown active for", Math.round((state.rateLimitedUntil - Date.now()) / 1000), "more seconds");
+      return null;
+    }
+    // Same keyless short-circuit as callTTS: no key = guaranteed 400 from
+    // the Gemini leg, so don't burn retries or pollute the error report.
+    if (!_isCanvasEnv && !_cloudKeyUsable()) {
+      if (typeof window !== 'undefined' && !window.__ttsKeylessLogged) {
+        window.__ttsKeylessLogged = true;
+        console.log('[TTS-Bot] No cloud TTS key — cloud voice skipped; local Kokoro/browser voices handle speech.');
+      }
       return null;
     }
     const safeVoice = AVAILABLE_VOICES.map(v => v.toLowerCase()).includes((voiceName || '').toLowerCase()) ? voiceName : 'Puck';
@@ -532,6 +869,9 @@ const createTTS = deps => {
             }],
             generationConfig: {
               responseModalities: ["AUDIO"],
+              ...(state.ttsTemperatureUnsupported ? {} : {
+                temperature: 0.7
+              }),
               speechConfig: {
                 voiceConfig: {
                   prebuiltVoiceConfig: {
@@ -560,6 +900,19 @@ const createTTS = deps => {
               throw new Error(`TTS Transient Error (${response.status})`);
             }
             const errorBody = await response.text().catch(() => '');
+            if (response.status === 400 && !state.ttsTemperatureUnsupported && /temperature/i.test(errorBody)) {
+              state.ttsTemperatureUnsupported = true;
+              console.warn('[TTS-Bot] API rejected temperature param — disabled; retry will go without it.');
+              throw new Error('TTS Transient Error (400 temperature)');
+            }
+            if (response.status === 400 && /API key not valid|API_KEY_INVALID/i.test(errorBody)) {
+              // Key-invalid latch: this key will NEVER work — flip the whole
+              // session to keyless routing (local Kokoro serves; no more doomed calls).
+              try {
+                window.__ttsGeminiAuthFailed = true;
+              } catch (_) {}
+              console.warn("[TTS-Bot]" + " cloud TTS key rejected — switching this session to the local voice.");
+            }
             console.error("[TTS-Bot] ❌ API Error:", response.status, response.statusText, errorBody.substring(0, 200));
             throw new Error(`API Error: ${response.status} ${response.statusText}`);
           }

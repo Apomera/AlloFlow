@@ -212,6 +212,32 @@
      Each object links to a MATERIALS compound by name
      x,y are 0-1 normalized coords for canvas placement
      ═══════════════════════════════════════════════════════════ */
+
+  // ═══════════════════════════════════════════════════════════
+  //   GEOMETRY — substance phase-transition data (melting/boiling °C)
+  //   Used by the "States of Matter" tab (states-tab particle simulation).
+  //   2026-06-08: added after multi-tab render-smoke surfaced an undefined
+  //   GEOMETRY reference at :2483-2660 — clicking the states tab crashed
+  //   the whole Decomposer tool. mp = melting point °C, bp = boiling point °C.
+  //   bp = null means the substance decomposes before it boils (i.e. it has
+  //   no liquid→gas transition at atmospheric pressure).
+  //   Values from CRC Handbook of Chemistry & Physics; rounded to integers.
+  //   Sublimating compounds (CO₂) have mp == bp (skips liquid state).
+  // ═══════════════════════════════════════════════════════════
+  var GEOMETRY = {
+    'Water':              { mp: 0,    bp: 100 },
+    'Table Salt':         { mp: 801,  bp: 1413 },
+    'Sugar (Sucrose)':    { mp: 186,  bp: null },   // decomposes (caramelizes)
+    'Baking Soda':        { mp: 50,   bp: null },   // decomposes
+    'Acetic Acid':        { mp: 17,   bp: 118 },
+    'Carbon Dioxide':     { mp: -78,  bp: -78 },    // sublimates (no liquid at 1 atm)
+    'Glucose':            { mp: 146,  bp: null },   // decomposes
+    'Hydrogen Peroxide':  { mp: 0,    bp: 150 },
+    'Ammonia':            { mp: -78,  bp: -33 },
+    'Ethanol':            { mp: -114, bp: 78 },
+    'Calcium Carbonate':  { mp: 825,  bp: null },   // decomposes to CaO + CO₂
+  };
+
   var SCENES = [
     {
       id: 'kitchen', name: 'Kitchen', icon: '\uD83C\uDF73', bgColor: '#fef3c7', accent: '#b45309',
@@ -385,9 +411,9 @@
      Register Tool
      ═══════════════════════════════════════════════════════════ */
   window.StemLab.registerTool('decomposer', {
-    icon: '\uD83D\uDD2C',
-    label: 'decomposer',
-    desc: '',
+    icon: "⚗️",
+    label: "Material Decomposer",
+    desc: "Break everyday compounds into their constituent elements and explore molecules, atoms, bonds, states of matter, and chemical reactions.",
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -597,7 +623,7 @@
             realUse: 'Costs about $7 billion/year in damage. Mars is red because of iron oxide on its surface!'
           },
           {
-            name: 'Carbon Dioxide', formula: 'CO\u2082', emoji: '\uD83D\uDCA8', color: 'var(--allo-stem-text-soft, #94a3b8)',
+            name: 'Carbon Dioxide', formula: 'CO\u2082', emoji: '\uD83D\uDCA8', color: '#22d3ee',
             desc: 'A greenhouse gas we exhale. Plants absorb it during photosynthesis.',
             elements: [
               { sym: 'C', name: 'Carbon', num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' },
@@ -780,7 +806,7 @@
             newBadges.forEach(function(b) {
               ids.push(b.id);
               addToast(b.icon + ' Badge: ' + b.label, 'success');
-              if (awardStemXP) awardStemXP(b.xp);
+              if (awardStemXP) awardStemXP('decomposer', b.xp, 'Badge: ' + b.label);
             });
             SOUNDS.badge();
             if (stemCelebrate) stemCelebrate();
@@ -1061,6 +1087,7 @@
           var wasDecomposed = false;
 
           function draw() {
+            if (!canvas.isConnected) { cancelAnimationFrame(animId); canvas._dcAnimRunning = false; return; } // stop on tab-switch/unmount (was leaking)
             // Check for material change
             if (canvas.dataset.formula !== curFormula) {
               rebuildPositions();
@@ -1304,7 +1331,8 @@
           { id: 'states', label: '\uD83C\uDF21\uFE0F States', color: 'sky' },
           { id: 'visualize', label: '\uD83C\uDFA8 Atoms', color: 'indigo' },
           { id: 'quiz', label: '\uD83E\uDDE0 Quiz', color: 'emerald' },
-          { id: 'tutor', label: '\uD83E\uDD16 AI Tutor', color: 'purple' }
+          { id: 'tutor', label: '\uD83E\uDD16 AI Tutor', color: 'purple' },
+          { id: 'decompHunt', label: '\u23F1\uFE0F Decompose', color: 'lime' }
         ];
 
 
@@ -2216,8 +2244,10 @@
                           }
                           var nextState = Object.assign({}, d, updates);
                           updMulti(updates);
-                          if (addToast) addToast('\u2705 Correct! ' + obj.name + ' = ' + MATERIALS.find(function(m) { return m.name === obj.material; }).formula, 'success');
-                          if (awardStemXP) awardStemXP(5);
+                          var matRec = MATERIALS.find(function(m) { return m.name === obj.material; });
+                          var matFormula = matRec ? matRec.formula : '?';
+                          if (addToast) addToast('\u2705 Correct! ' + obj.name + ' = ' + matFormula, 'success');
+                          if (awardStemXP) awardStemXP('decomposer', 5, 'Compound identified: ' + obj.name);
                           setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                         } else {
                           SOUNDS.quizWrong();
@@ -2412,7 +2442,7 @@
                       var nextState = Object.assign({}, d, { activeReaction: reaction, reactionsDiscovered: disc });
                       updMulti({ activeReaction: reaction, reactionsDiscovered: disc });
                       if (addToast) addToast(reaction.emoji + ' ' + reaction.name + '!', 'success');
-                      if (awardStemXP) awardStemXP(10);
+                      if (awardStemXP) awardStemXP('decomposer', 10, 'Reaction: ' + reaction.name);
                       setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                     } else {
                       upd('activeReaction', { name: 'No Known Reaction', emoji: '\uD83E\uDD37', desc: 'These two materials don\u2019t have a notable reaction in our database. Try a different combination!', equation: reactantA + ' + ' + reactantB + ' \u2192 ?', type: 'Unknown', observable: 'No visible change' });
@@ -2561,6 +2591,7 @@
                   var tick = 0;
 
                   function drawState() {
+                    if (!canvas.isConnected) { cancelAnimationFrame(canvas._stateAnimId); return; } // stop on tab-switch/unmount (was leaking)
                     tick++;
                     c2.clearRect(0, 0, cw, ch2);
 
@@ -2664,8 +2695,8 @@
                 ),
                 h('div', { className: 'bg-cyan-50 rounded-xl border border-cyan-200 p-2 text-center' },
                   h('div', { className: 'text-lg' }, '\uD83D\uDCA7'),
-                  h('div', { className: 'text-xs font-bold text-cyan-700' }, geo.shape || 'Shape'),
-                  h('div', { className: 'text-sm font-black text-cyan-900' }, geo.angle || '-')
+                  h('div', { className: 'text-xs font-bold text-cyan-700' }, 'Liquid Range'),
+                  h('div', { className: 'text-sm font-black text-cyan-900' }, (geo.mp !== null && geo.bp !== null) ? geo.mp + '\u2013' + geo.bp + '\u00B0C' : 'N/A')
                 ),
                 h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-2 text-center' },
                   h('div', { className: 'text-lg' }, '\uD83D\uDD25'),
@@ -2839,7 +2870,7 @@
                       if (correct) {
                         SOUNDS.quizCorrect();
                         addToast('Correct!', 'success');
-                        if (awardStemXP) awardStemXP(5);
+                        if (awardStemXP) awardStemXP('decomposer', 5, 'Quiz answered correctly');
                       } else {
                         SOUNDS.quizWrong();
                         addToast('The answer is: ' + quizQ.answer, 'error');
@@ -2928,7 +2959,7 @@
               onClick: function() {
                 updMulti({ quizScore: 0, quizStreak: 0, quizQ: null, quizMode: false });
               },
-              className: 'text-xs text-slate-600 hover:text-slate-600 font-bold'
+              className: 'text-xs text-slate-600 hover:text-slate-800 font-bold'
             }, '\uD83D\uDD04 Reset Quiz')
           ),
 
@@ -3015,6 +3046,60 @@
             )
           ),
 
+          tab === 'decompHunt' && (function() {
+            var iq = d.decompHunt || { tempC: 25, humidity: 70, oxygen: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('decompHunt', Object.assign({}, iq, patch)); }
+            var rate = (iq.tempC > 15 && iq.tempC < 40 ? 1 : 0.2) * (iq.humidity / 100) * (iq.oxygen / 100);
+            var state;
+            if (rate < 0.05) state = 'stopped';
+            else if (rate < 0.25) state = 'slow';
+            else if (rate < 0.6) state = 'medium';
+            else state = 'fast';
+            var sm = {
+              stopped: { label: '🧊 Stopped', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Temperature out of range or no moisture/oxygen.' },
+              slow:    { label: '🐢 Slow', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Marginal conditions. Months to years.' },
+              medium:  { label: '🟢 Medium', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Normal compost conditions. Weeks to months.' },
+              fast:    { label: '🔥 Fast (hot compost)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Optimal: 30-40°C, 70%+ humidity, abundant O₂. Days to weeks.' }
+            }[state];
+            return h('div', null,
+              h('div', { className: 'p-4 rounded-xl bg-white border border-lime-300 shadow-sm space-y-3' },
+                h('h3', { className: 'text-sm font-black text-lime-700' }, '⏱️ Decomposition rate discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for temperature, humidity, oxygen. Discrete 4-state rate. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                  [{ k: 'tempC', l: 'Temp (°C)', mn: -10, mx: 60, st: 1 },
+                   { k: 'humidity', l: 'Humidity (%)', mn: 0, mx: 100, st: 5 },
+                   { k: 'oxygen', l: 'Oxygen (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-lime-700' }, iq[s.k])),
+                      h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempC, h: iq.humidity, o: iq.oxygen, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ tempC: 25, humidity: 70, oxygen: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which condition is most important for decomposition?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Why do compost bins need turning?'),
+                    h('li', null, 'What happens to decomposition below 0°C?'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how temperature, humidity, and oxygen jointly drive decomposition.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state decomposition marker; no rate score; no reveal — by design.')
+              )
+            );
+          })(),
 
           /* ═══════════════════════════════════════════════════
              Badges Section (always visible)

@@ -1,0 +1,56 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-25603-detailed-minutiae-of-soldier-life-in-the-army-of-northern-virgin",
+  "title": "Detailed Minutiae of Soldier life in the Army of Northern Virginia, 1861-1865",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Confederate States of America. Army of Northern Virginia -- Biography",
+    "Confederate States of America. Army of Northern Virginia -- Military life",
+    "McCarthy, Carlton, 1847-",
+    "United States -- History -- Civil War, 1861-1865 -- Personal narratives, Confederate",
+    "United States -- History -- Civil War, 1861-1865 -- Regimental histories"
+  ],
+  "authors": [
+    "McCarthy, Carlton"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/25603"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/25603/pg25603.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Detailed Minutiae of Soldier life in the Army of Northern Virginia, 1861-1865\" by McCarthy, Carlton. Metadata tags include: Confederate States of America. Army of Northern Virginia -- Biography; Confederate States of America. Army of Northern Virginia -- Military life; McCarthy, Carlton, 1847-; United States -- History -- Civil War, 1861-1865 -- Personal narratives, Confederate."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 104
+  }
+}

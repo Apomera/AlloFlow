@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-376-a-journal-of-the-plague-year-being-observations-or-memorials-of-",
+  "title": "A Journal of the Plague Year: Being Observations or Memorials of the Most Remarkable Occurrences, as Well Public as Private, Which Happened in London During the Last Great Visitation in 1665. Written by a Citizen Who Continued All the While in London",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Great Fire, London, England, 1666 -- Fiction",
+    "Historical fiction",
+    "London (England) -- History -- 17th century -- Fiction",
+    "Plague -- Fiction"
+  ],
+  "authors": [
+    "Defoe, Daniel"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/376"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/376/pg376.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"A Journal of the Plague Year: Being Observations or Memorials of the Most Remarkable Occurrences, as Well Public as Private, Which Happened in London During the Last Great Visitation in 1665. Written by a Citizen Who Continued All the While in London\" by Defoe, Daniel. Metadata tags include: Great Fire, London, England, 1666 -- Fiction; Historical fiction; London (England) -- History -- 17th century -- Fiction; Plague -- Fiction."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 119
+  }
+}

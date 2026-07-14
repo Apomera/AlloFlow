@@ -225,7 +225,9 @@ describe('generateBibliographyString', () => {
         { web: { uri: 'https://cdc.gov/b', title: 'Article B' } },
       ],
     });
-    expect(r).toContain('### Verified Sources');
+    expect(r).toContain('### Referenced Sources');               // 2026-06-24: no longer overclaims "Verified Sources"
+    expect(r).not.toContain('Verified Sources');
+    expect(r).toContain('have not been independently verified'); // carries the verify-before-citing caveat
     expect(r).toContain('1. [Article A](https://nih.gov/a)');
     expect(r).toContain('2. [Article B](https://cdc.gov/b)');
   });
@@ -237,5 +239,6 @@ describe('generateBibliographyString', () => {
       'Source Citations',
     );
     expect(r).toContain('### Source Citations');
+    expect(r).toContain('have not been independently verified'); // every path carries the caveat now
   });
 });

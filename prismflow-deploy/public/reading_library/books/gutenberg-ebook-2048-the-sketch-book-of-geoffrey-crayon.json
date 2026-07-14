@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-2048-the-sketch-book-of-geoffrey-crayon",
+  "title": "The Sketch-Book of Geoffrey Crayon",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Americans -- England -- History -- 19th century",
+    "Catskill Mountains Region (N.Y.) -- Fiction",
+    "England -- Social life and customs -- 19th century",
+    "Fantasy fiction, American",
+    "Hudson River Valley (N.Y. and N.J.) -- Fiction",
+    "Irving, Washington, 1783-1859 -- Travel -- England"
+  ],
+  "authors": [
+    "Irving, Washington"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/2048"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/2048/pg2048.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Sketch-Book of Geoffrey Crayon\" by Irving, Washington. Metadata tags include: Americans -- England -- History -- 19th century; Catskill Mountains Region (N.Y.) -- Fiction; England -- Social life and customs -- 19th century; Fantasy fiction, American."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 87
+  }
+}

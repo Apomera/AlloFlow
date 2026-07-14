@@ -1,0 +1,1634 @@
+{
+  "generatedAt": "2026-07-12T22:27:25.424Z",
+  "source": {
+    "stemToolFileCount": 119,
+    "registeredToolCount": 121,
+    "monitoredMarkerCount": 74
+  },
+  "summary": {
+    "loadErrorCount": 1,
+    "markerPassCount": 73,
+    "markerFailCount": 1,
+    "monitoredIssueCount": 16,
+    "monitoredErrorCount": 0,
+    "monitoredWarningCount": 6,
+    "monitoredNoticeCount": 10,
+    "syncDriftCount": 5,
+    "sourcePublicDriftCount": 2,
+    "monitoredSyncDriftCount": 2
+  },
+  "loadErrors": [
+    {
+      "file": "stem_tool_companionplanting.js",
+      "error": "Invalid or unexpected token"
+    }
+  ],
+  "markerResults": [
+    {
+      "id": "opticsLab",
+      "file": "stem_tool_optics.js",
+      "marker": "data-opticslab-focus",
+      "label": "Optics focus panel",
+      "ok": true,
+      "htmlBytes": 20319,
+      "issues": [
+        {
+          "toolId": "opticsLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div > div.opticslab-tool-shell"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 34,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 20319
+      }
+    },
+    {
+      "id": "microbiology",
+      "file": "stem_tool_microbiology.js",
+      "marker": "data-microbiology-focus",
+      "label": "Microbiology mission panel",
+      "ok": true,
+      "htmlBytes": 43628,
+      "issues": [],
+      "metrics": {
+        "buttons": 14,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 43628
+      }
+    },
+    {
+      "id": "ecosystem",
+      "file": "stem_tool_ecosystem.js",
+      "marker": "data-ecosystem-field-brief",
+      "label": "Ecosystem field brief",
+      "ok": true,
+      "htmlBytes": 24116,
+      "issues": [],
+      "metrics": {
+        "buttons": 33,
+        "fields": 8,
+        "canvases": 1,
+        "headings": 1,
+        "htmlBytes": 24116
+      }
+    },
+    {
+      "id": "epidemicSim",
+      "file": "stem_tool_epidemic.js",
+      "marker": "data-epidemic-triage",
+      "label": "Epidemic triage panel",
+      "ok": true,
+      "htmlBytes": 89143,
+      "issues": [],
+      "metrics": {
+        "buttons": 21,
+        "fields": 4,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 89143
+      }
+    },
+    {
+      "id": "renewablesLab",
+      "file": "stem_tool_renewables.js",
+      "marker": "data-renewables-launch-panel",
+      "label": "Renewables launch panel",
+      "ok": true,
+      "htmlBytes": 12837,
+      "issues": [],
+      "metrics": {
+        "buttons": 12,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 12837
+      }
+    },
+    {
+      "id": "climateExplorer",
+      "file": "stem_tool_climateExplorer.js",
+      "marker": "data-climate-mission-panel",
+      "label": "Climate mission panel",
+      "ok": true,
+      "htmlBytes": 33456,
+      "issues": [],
+      "metrics": {
+        "buttons": 39,
+        "fields": 0,
+        "canvases": 2,
+        "headings": 2,
+        "htmlBytes": 33456
+      }
+    },
+    {
+      "id": "bridgeLab",
+      "file": "stem_tool_bridgelab.js",
+      "marker": "data-bridgelab-design-brief",
+      "label": "Bridge design brief",
+      "ok": true,
+      "htmlBytes": 40290,
+      "issues": [],
+      "metrics": {
+        "buttons": 24,
+        "fields": 8,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 40290
+      }
+    },
+    {
+      "id": "nutritionLab",
+      "file": "stem_tool_nutritionlab.js",
+      "marker": "data-nutrition-practice-path",
+      "label": "Nutrition practice path",
+      "ok": true,
+      "htmlBytes": 23951,
+      "issues": [],
+      "metrics": {
+        "buttons": 19,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 16,
+        "htmlBytes": 23951
+      }
+    },
+    {
+      "id": "bakingScience",
+      "file": "stem_tool_bakingscience.js",
+      "marker": "data-baking-kitchen-bench",
+      "label": "Baking kitchen bench",
+      "ok": true,
+      "htmlBytes": 11164,
+      "issues": [],
+      "metrics": {
+        "buttons": 16,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 11164
+      }
+    },
+    {
+      "id": "cellularLab",
+      "file": "stem_tool_cellular.js",
+      "marker": "data-cellularlab-focus-panel",
+      "label": "Cellular focus panel",
+      "ok": true,
+      "htmlBytes": 13063,
+      "issues": [
+        {
+          "toolId": "cellularLab",
+          "severity": "warning",
+          "code": "heading",
+          "message": "No semantic heading rendered for this tool."
+        },
+        {
+          "toolId": "cellularLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 6,
+          "examples": [
+            {
+              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(1)"
+            },
+            {
+              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(2)"
+            },
+            {
+              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(3)"
+            },
+            {
+              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(4)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 22,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 0,
+        "htmlBytes": 13063
+      }
+    },
+    {
+      "id": "companionPlanting",
+      "file": "stem_tool_companionplanting.js",
+      "marker": "data-companion-workspace-stage",
+      "label": "Companion Planting workspace stage",
+      "ok": false,
+      "error": "Tool is not registered.",
+      "htmlBytes": 0,
+      "issues": [],
+      "metrics": {}
+    },
+    {
+      "id": "dnaLab",
+      "file": "stem_tool_dna.js",
+      "marker": "data-dna-mission",
+      "label": "DNA mission control",
+      "ok": true,
+      "htmlBytes": 32181,
+      "issues": [],
+      "metrics": {
+        "buttons": 87,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 4,
+        "htmlBytes": 32181
+      }
+    },
+    {
+      "id": "alphaFoldExplorer",
+      "file": "stem_tool_alphafold.js",
+      "marker": "data-alphafold-mission",
+      "label": "AlphaFold structural biology mission",
+      "ok": true,
+      "htmlBytes": 4256,
+      "issues": [],
+      "metrics": {
+        "buttons": 1,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 6,
+        "htmlBytes": 4256
+      }
+    },
+    {
+      "id": "swimLab",
+      "file": "stem_tool_swimlab.js",
+      "marker": "data-swimlab-readiness",
+      "label": "SwimLab water-safety readiness",
+      "ok": true,
+      "htmlBytes": 13899,
+      "issues": [],
+      "metrics": {
+        "buttons": 13,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 5,
+        "htmlBytes": 13899
+      }
+    },
+    {
+      "id": "firstResponse",
+      "file": "stem_tool_firstresponse.js",
+      "marker": "data-firstresponse-readiness",
+      "label": "First Response readiness path",
+      "ok": true,
+      "htmlBytes": 12697,
+      "issues": [],
+      "metrics": {
+        "buttons": 12,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 12697
+      }
+    },
+    {
+      "id": "stewardshipHub",
+      "file": "stem_tool_stewardship.js",
+      "marker": "data-stewardship-mission",
+      "label": "Stewardship systems mission",
+      "ok": true,
+      "htmlBytes": 38019,
+      "issues": [],
+      "metrics": {
+        "buttons": 21,
+        "fields": 6,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 38019
+      }
+    },
+    {
+      "id": "spaceColony",
+      "file": "stem_tool_spacecolony.js",
+      "marker": "data-spacecolony-life-support",
+      "label": "Space Colony life-support mission",
+      "ok": true,
+      "htmlBytes": 15773,
+      "issues": [],
+      "metrics": {
+        "buttons": 13,
+        "fields": 7,
+        "canvases": 0,
+        "headings": 5,
+        "htmlBytes": 15773
+      }
+    },
+    {
+      "id": "fireEcology",
+      "file": "stem_tool_fireecology.js",
+      "marker": "data-fireecology-mission",
+      "label": "Fire Ecology stewardship mission",
+      "ok": true,
+      "htmlBytes": 25696,
+      "issues": [],
+      "metrics": {
+        "buttons": 29,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 25696
+      }
+    },
+    {
+      "id": "behaviorLab",
+      "file": "stem_tool_behaviorlab.js",
+      "marker": "data-behaviorlab-mission",
+      "label": "Behavior Lab experiment mission",
+      "ok": true,
+      "htmlBytes": 12727,
+      "issues": [],
+      "metrics": {
+        "buttons": 24,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 5,
+        "htmlBytes": 12727
+      }
+    },
+    {
+      "id": "beehive",
+      "file": "stem_tool_beehive.js",
+      "marker": "data-beehive-command",
+      "label": "Beehive superorganism command deck",
+      "ok": true,
+      "htmlBytes": 66162,
+      "issues": [],
+      "metrics": {
+        "buttons": 65,
+        "fields": 5,
+        "canvases": 1,
+        "headings": 9,
+        "htmlBytes": 66162
+      }
+    },
+    {
+      "id": "migration",
+      "file": "stem_tool_migration.js",
+      "marker": "data-migration-mission",
+      "label": "Migration field mission",
+      "ok": true,
+      "htmlBytes": 16925,
+      "issues": [],
+      "metrics": {
+        "buttons": 10,
+        "fields": 6,
+        "canvases": 1,
+        "headings": 7,
+        "htmlBytes": 16925
+      }
+    },
+    {
+      "id": "petsLab",
+      "file": "stem_tool_pets.js",
+      "marker": "data-petslab-mission",
+      "label": "Pets Lab science mission",
+      "ok": true,
+      "htmlBytes": 32805,
+      "issues": [],
+      "metrics": {
+        "buttons": 35,
+        "fields": 7,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 32805
+      }
+    },
+    {
+      "id": "cell",
+      "file": "stem_tool_cell.js",
+      "marker": "data-cell-mission",
+      "label": "Cell Simulator mission panel",
+      "ok": true,
+      "htmlBytes": 21708,
+      "issues": [],
+      "metrics": {
+        "buttons": 39,
+        "fields": 3,
+        "canvases": 1,
+        "headings": 5,
+        "htmlBytes": 21708
+      }
+    },
+    {
+      "id": "evoLab",
+      "file": "stem_tool_evolab.js",
+      "marker": "data-evolab-command",
+      "label": "EvoLab command panel",
+      "ok": true,
+      "htmlBytes": 38271,
+      "issues": [],
+      "metrics": {
+        "buttons": 28,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 22,
+        "htmlBytes": 38271
+      }
+    },
+    {
+      "id": "dinoLab",
+      "file": "stem_tool_dinolab.js",
+      "marker": "data-dinolab-command",
+      "label": "Dino Lab mission deck",
+      "ok": true,
+      "htmlBytes": 424728,
+      "issues": [
+        {
+          "toolId": "dinoLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 747,
+          "examples": [
+            {
+              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)"
+            },
+            {
+              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)"
+            },
+            {
+              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)"
+            },
+            {
+              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(4)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 408,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 424728
+      }
+    },
+    {
+      "id": "aquacultureLab",
+      "file": "stem_tool_aquaculture.js",
+      "marker": "data-aquaculture-command",
+      "label": "Aquaculture operations dashboard",
+      "ok": true,
+      "htmlBytes": 58061,
+      "issues": [],
+      "metrics": {
+        "buttons": 144,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 58061
+      }
+    },
+    {
+      "id": "musicSynth",
+      "file": "stem_tool_music.js",
+      "marker": "data-music-command",
+      "label": "Music Synth studio deck",
+      "ok": true,
+      "htmlBytes": 47879,
+      "issues": [],
+      "metrics": {
+        "buttons": 94,
+        "fields": 19,
+        "canvases": 2,
+        "headings": 3,
+        "htmlBytes": 47879
+      }
+    },
+    {
+      "id": "molecule",
+      "file": "stem_tool_molecule.js",
+      "marker": "data-molecule-command",
+      "label": "Molecule Lab command deck",
+      "ok": true,
+      "htmlBytes": 35164,
+      "issues": [],
+      "metrics": {
+        "buttons": 104,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 35164
+      }
+    },
+    {
+      "id": "printingPress",
+      "file": "stem_tool_printingpress.js",
+      "marker": "data-printingpress-command",
+      "label": "PrintingPress shop dashboard",
+      "ok": true,
+      "htmlBytes": 45088,
+      "issues": [
+        {
+          "toolId": "printingPress",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div > div > div:nth-of-type(2)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 25,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 5,
+        "htmlBytes": 45088
+      }
+    },
+    {
+      "id": "fisherLab",
+      "file": "stem_tool_fisherlab.js",
+      "marker": "data-fisherlab-command",
+      "label": "FisherLab harbor briefing",
+      "ok": true,
+      "htmlBytes": 21757,
+      "issues": [],
+      "metrics": {
+        "buttons": 24,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 21757
+      }
+    },
+    {
+      "id": "raptorHunt",
+      "file": "stem_tool_raptorhunt.js",
+      "marker": "data-raptorhunt-command",
+      "label": "Raptor Hunt flight briefing",
+      "ok": true,
+      "htmlBytes": 25524,
+      "issues": [],
+      "metrics": {
+        "buttons": 48,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 25524
+      }
+    },
+    {
+      "id": "flightSim",
+      "file": "stem_tool_flightsim.js",
+      "marker": "data-flightsim-briefing",
+      "label": "SkySchool cockpit briefing",
+      "ok": true,
+      "htmlBytes": 41556,
+      "issues": [],
+      "metrics": {
+        "buttons": 48,
+        "fields": 2,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 41556
+      }
+    },
+    {
+      "id": "atcTower",
+      "file": "stem_tool_atctower.js",
+      "marker": "data-atctower-command",
+      "label": "ATC Tower command center",
+      "ok": true,
+      "htmlBytes": 16103,
+      "issues": [],
+      "metrics": {
+        "buttons": 10,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 16103
+      }
+    },
+    {
+      "id": "echoTrainer",
+      "file": "stem_tool_echotrainer.js",
+      "marker": "data-echotrainer-briefing",
+      "label": "Echo Navigator sonar briefing",
+      "ok": true,
+      "htmlBytes": 26842,
+      "issues": [],
+      "metrics": {
+        "buttons": 26,
+        "fields": 5,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 26842
+      }
+    },
+    {
+      "id": "brainAtlas",
+      "file": "stem_tool_brainatlas.js",
+      "marker": "data-brainatlas-mission",
+      "label": "Brain Atlas mission panel",
+      "ok": true,
+      "htmlBytes": 19839,
+      "issues": [],
+      "metrics": {
+        "buttons": 46,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 19839
+      }
+    },
+    {
+      "id": "anatomy",
+      "file": "stem_tool_anatomy.js",
+      "marker": "data-anatomy-mission",
+      "label": "Anatomy mission panel",
+      "ok": true,
+      "htmlBytes": 33093,
+      "issues": [],
+      "metrics": {
+        "buttons": 66,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 4,
+        "htmlBytes": 33093
+      }
+    },
+    {
+      "id": "birdLab",
+      "file": "stem_tool_birdlab.js",
+      "marker": "data-birdlab-field-station",
+      "label": "Bird Lab field station",
+      "ok": true,
+      "htmlBytes": 146094,
+      "issues": [
+        {
+          "toolId": "birdLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 2,
+          "examples": [
+            {
+              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(1)",
+              "width": "800"
+            },
+            {
+              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(2)",
+              "width": "800"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 127,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 127,
+        "htmlBytes": 146094
+      }
+    },
+    {
+      "id": "waterCycle",
+      "file": "stem_tool_watercycle.js",
+      "marker": "data-watercycle-focus",
+      "label": "Water Cycle focus panel",
+      "ok": true,
+      "htmlBytes": 21817,
+      "issues": [],
+      "metrics": {
+        "buttons": 30,
+        "fields": 6,
+        "canvases": 1,
+        "headings": 7,
+        "htmlBytes": 21817
+      }
+    },
+    {
+      "id": "playlab",
+      "file": "stem_tool_playlab.js",
+      "marker": "data-playlab-gameplan",
+      "label": "PlayLab game plan",
+      "ok": true,
+      "htmlBytes": 17740,
+      "issues": [
+        {
+          "toolId": "playlab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 29,
+          "examples": [
+            {
+              "selector": "div > div.playlab-root"
+            },
+            {
+              "selector": "div > div.playlab-root > div:nth-of-type(2) > button:nth-of-type(1)"
+            },
+            {
+              "selector": "div > div.playlab-root > div:nth-of-type(2) > button:nth-of-type(2)"
+            },
+            {
+              "selector": "div > div.playlab-root > div:nth-of-type(5) > button:nth-of-type(1)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 31,
+        "fields": 5,
+        "canvases": 1,
+        "headings": 7,
+        "htmlBytes": 17740
+      }
+    },
+    {
+      "id": "plateTectonics",
+      "file": "stem_tool_platetectonics.js",
+      "marker": "data-pt-sim-focus",
+      "label": "Plate Tectonics sim focus",
+      "ok": true,
+      "htmlBytes": 27288,
+      "issues": [],
+      "metrics": {
+        "buttons": 25,
+        "fields": 5,
+        "canvases": 6,
+        "headings": 6,
+        "htmlBytes": 27288
+      }
+    },
+    {
+      "id": "astronomy",
+      "file": "stem_tool_astronomy.js",
+      "marker": "data-astronomy-command",
+      "label": "Astronomy observation command",
+      "ok": true,
+      "htmlBytes": 12452,
+      "issues": [],
+      "metrics": {
+        "buttons": 18,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 12452
+      }
+    },
+    {
+      "id": "geologyExplorer",
+      "file": "stem_tool_geologyexplorer.js",
+      "marker": "data-geology-command",
+      "label": "Geology field investigation command",
+      "ok": true,
+      "htmlBytes": 15087,
+      "issues": [],
+      "metrics": {
+        "buttons": 23,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 15087
+      }
+    },
+    {
+      "id": "rockCycle",
+      "file": "stem_tool_rocks.js",
+      "marker": "data-rockcycle-command",
+      "label": "Rock Cycle Earth systems command",
+      "ok": true,
+      "htmlBytes": 7975,
+      "issues": [],
+      "metrics": {
+        "buttons": 13,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 7975
+      }
+    },
+    {
+      "id": "aquarium",
+      "file": "stem_tool_aquarium.js",
+      "marker": "data-aquarium-focus-panel",
+      "label": "Aquarium mission panel",
+      "ok": true,
+      "htmlBytes": 28684,
+      "issues": [],
+      "metrics": {
+        "buttons": 22,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 28684
+      }
+    },
+    {
+      "id": "moonMission",
+      "file": "stem_tool_moonmission.js",
+      "marker": "data-moonmission-control",
+      "label": "Moon Mission control panel",
+      "ok": true,
+      "htmlBytes": 13327,
+      "issues": [],
+      "metrics": {
+        "buttons": 8,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 13327
+      }
+    },
+    {
+      "id": "solarSystem",
+      "file": "stem_tool_solarsystem.js",
+      "marker": "data-solarsystem-command-center",
+      "label": "Solar System command center",
+      "ok": true,
+      "htmlBytes": 16665,
+      "issues": [],
+      "metrics": {
+        "buttons": 25,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 16665
+      }
+    },
+    {
+      "id": "bikeLab",
+      "file": "stem_tool_bikelab.js",
+      "marker": "data-bikelab-ride-focus",
+      "label": "BikeLab ride focus",
+      "ok": true,
+      "htmlBytes": 13572,
+      "issues": [
+        {
+          "toolId": "bikeLab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div#bikelab-sandbox-fs > canvas.w-full.block"
+        },
+        {
+          "toolId": "bikeLab",
+          "severity": "warning",
+          "code": "heading",
+          "message": "No semantic heading rendered for this tool."
+        },
+        {
+          "toolId": "bikeLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div#bikelab-sandbox-fs > canvas.w-full.block",
+              "width": "900"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 21,
+        "fields": 4,
+        "canvases": 1,
+        "headings": 0,
+        "htmlBytes": 13572
+      }
+    },
+    {
+      "id": "throwlab",
+      "file": "stem_tool_throwlab.js",
+      "marker": "data-throwlab-run-focus",
+      "label": "ThrowLab run focus",
+      "ok": true,
+      "htmlBytes": 47675,
+      "issues": [],
+      "metrics": {
+        "buttons": 53,
+        "fields": 8,
+        "canvases": 1,
+        "headings": 4,
+        "htmlBytes": 47675
+      }
+    },
+    {
+      "id": "echolocation",
+      "file": "stem_tool_echolocation.js",
+      "marker": "data-echolocation-run-focus",
+      "label": "Echolocation run focus",
+      "ok": true,
+      "htmlBytes": 22026,
+      "issues": [
+        {
+          "toolId": "echolocation",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 3,
+          "examples": [
+            {
+              "selector": "div#echo-sonar-fs-wrap > canvas",
+              "width": "800"
+            },
+            {
+              "selector": "div#echo-sonar-fs-wrap > div > div:nth-of-type(1)"
+            },
+            {
+              "selector": "div#echo-sonar-fs-wrap > div > div:nth-of-type(2)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 16,
+        "fields": 0,
+        "canvases": 1,
+        "headings": 1,
+        "htmlBytes": 22026
+      }
+    },
+    {
+      "id": "skatelab",
+      "file": "stem_tool_skatelab.js",
+      "marker": "data-skatelab-run-focus",
+      "label": "SkateLab run focus",
+      "ok": true,
+      "htmlBytes": 69325,
+      "issues": [
+        {
+          "toolId": "skatelab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div#sk-mode-panel > canvas"
+        }
+      ],
+      "metrics": {
+        "buttons": 57,
+        "fields": 10,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 69325
+      }
+    },
+    {
+      "id": "probability",
+      "file": "stem_tool_probability.js",
+      "marker": "data-probability-command",
+      "label": "Probability Lab command deck",
+      "ok": true,
+      "htmlBytes": 20164,
+      "issues": [],
+      "metrics": {
+        "buttons": 37,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 20164
+      }
+    },
+    {
+      "id": "statsLab",
+      "file": "stem_tool_statslab.js",
+      "marker": "data-statslab-command",
+      "label": "Statistics research-analysis command",
+      "ok": true,
+      "htmlBytes": 16903,
+      "issues": [
+        {
+          "toolId": "statsLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div > div"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 21,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 16903
+      }
+    },
+    {
+      "id": "funcGrapher",
+      "file": "stem_tool_funcgrapher.js",
+      "marker": "data-funcgrapher-command",
+      "label": "Function Grapher exploration console",
+      "ok": true,
+      "htmlBytes": 24183,
+      "issues": [
+        {
+          "toolId": "funcGrapher",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 0,
+          "selector": "div > div.max-w-5xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(12) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
+        },
+        {
+          "toolId": "funcGrapher",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div > div.max-w-5xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(12) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
+        }
+      ],
+      "metrics": {
+        "buttons": 47,
+        "fields": 9,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 24183
+      }
+    },
+    {
+      "id": "calculus",
+      "file": "stem_tool_calculus.js",
+      "marker": "data-calculus-command",
+      "label": "Calculus concept studio",
+      "ok": true,
+      "htmlBytes": 24191,
+      "issues": [],
+      "metrics": {
+        "buttons": 29,
+        "fields": 9,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 24191
+      }
+    },
+    {
+      "id": "physics",
+      "file": "stem_tool_physics.js",
+      "marker": "data-physics-command",
+      "label": "Physics projectile mission",
+      "ok": true,
+      "htmlBytes": 20191,
+      "issues": [],
+      "metrics": {
+        "buttons": 36,
+        "fields": 10,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 20191
+      }
+    },
+    {
+      "id": "unitConvert",
+      "file": "stem_tool_unitconvert.js",
+      "marker": "data-unitconvert-command",
+      "label": "Unit Converter measurement workbench",
+      "ok": true,
+      "htmlBytes": 13032,
+      "issues": [],
+      "metrics": {
+        "buttons": 21,
+        "fields": 3,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 13032
+      }
+    },
+    {
+      "id": "punnett",
+      "file": "stem_tool_punnett.js",
+      "marker": "data-punnett-cross-focus",
+      "label": "Punnett cross focus board",
+      "ok": true,
+      "htmlBytes": 21528,
+      "issues": [],
+      "metrics": {
+        "buttons": 26,
+        "fields": 2,
+        "canvases": 0,
+        "headings": 7,
+        "htmlBytes": 21528
+      }
+    },
+    {
+      "id": "circuit",
+      "file": "stem_tool_circuit.js",
+      "marker": "data-circuit-bench",
+      "label": "Circuit electronics bench",
+      "ok": true,
+      "htmlBytes": 42420,
+      "issues": [],
+      "metrics": {
+        "buttons": 54,
+        "fields": 2,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 42420
+      }
+    },
+    {
+      "id": "chemBalance",
+      "file": "stem_tool_chembalance.js",
+      "marker": "data-chembalance-command",
+      "label": "Chemistry Lab bench",
+      "ok": true,
+      "htmlBytes": 8754,
+      "issues": [],
+      "metrics": {
+        "buttons": 12,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 8754
+      }
+    },
+    {
+      "id": "titrationLab",
+      "file": "stem_tool_titration.js",
+      "marker": "data-titration-command",
+      "label": "Titration experiment command",
+      "ok": true,
+      "htmlBytes": 34329,
+      "issues": [],
+      "metrics": {
+        "buttons": 30,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 8,
+        "htmlBytes": 34329
+      }
+    },
+    {
+      "id": "areamodel",
+      "file": "stem_tool_areamodel.js",
+      "marker": "data-areamodel-focus",
+      "label": "Area Model workshop",
+      "ok": true,
+      "htmlBytes": 20095,
+      "issues": [],
+      "metrics": {
+        "buttons": 18,
+        "fields": 3,
+        "canvases": 0,
+        "headings": 4,
+        "htmlBytes": 20095
+      }
+    },
+    {
+      "id": "coordinate",
+      "file": "stem_tool_coordgrid.js",
+      "marker": "data-coordinate-command",
+      "label": "Coordinate spatial reasoning studio",
+      "ok": true,
+      "htmlBytes": 13161,
+      "issues": [],
+      "metrics": {
+        "buttons": 14,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 13161
+      }
+    },
+    {
+      "id": "protractor",
+      "file": "stem_tool_angles.js",
+      "marker": "data-protractor-command",
+      "label": "Angle investigation studio",
+      "ok": true,
+      "htmlBytes": 31533,
+      "issues": [],
+      "metrics": {
+        "buttons": 69,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 31533
+      }
+    },
+    {
+      "id": "volume",
+      "file": "stem_tool_volume.js",
+      "marker": "data-volume-command",
+      "label": "Volume design brief",
+      "ok": true,
+      "htmlBytes": 34685,
+      "issues": [
+        {
+          "toolId": "volume",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div > div.space-y-4.max-w-5xl > div.bg-gradient-to-b.from-slate-900:nth-of-type(4)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 26,
+        "fields": 11,
+        "canvases": 1,
+        "headings": 4,
+        "htmlBytes": 34685
+      }
+    },
+    {
+      "id": "base10",
+      "file": "stem_tool_manipulatives.js",
+      "marker": "data-manipulatives-command",
+      "label": "Math representation studio",
+      "ok": true,
+      "htmlBytes": 19623,
+      "issues": [],
+      "metrics": {
+        "buttons": 51,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 19623
+      }
+    },
+    {
+      "id": "multtable",
+      "file": "stem_tool_multtable.js",
+      "marker": "data-multtable-command",
+      "label": "Multiplication fact strategy studio",
+      "ok": true,
+      "htmlBytes": 32340,
+      "issues": [],
+      "metrics": {
+        "buttons": 22,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 32340
+      }
+    },
+    {
+      "id": "inequality",
+      "file": "stem_tool_inequality.js",
+      "marker": "data-inequality-command",
+      "label": "Inequality solution-set studio",
+      "ok": true,
+      "htmlBytes": 18563,
+      "issues": [],
+      "metrics": {
+        "buttons": 30,
+        "fields": 8,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 18563
+      }
+    },
+    {
+      "id": "numberline",
+      "file": "stem_tool_numberline.js",
+      "marker": "data-numberline-focus",
+      "label": "Number Line workspace",
+      "ok": true,
+      "htmlBytes": 18817,
+      "issues": [],
+      "metrics": {
+        "buttons": 22,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 4,
+        "htmlBytes": 18817
+      }
+    },
+    {
+      "id": "moneyMath",
+      "file": "stem_tool_money.js",
+      "marker": "data-moneymath-focus",
+      "label": "Money Math studio",
+      "ok": true,
+      "htmlBytes": 22548,
+      "issues": [],
+      "metrics": {
+        "buttons": 33,
+        "fields": 2,
+        "canvases": 0,
+        "headings": 7,
+        "htmlBytes": 22548
+      }
+    },
+    {
+      "id": "logicLab",
+      "file": "stem_tool_logiclab.js",
+      "marker": "data-logiclab-focus",
+      "label": "Logic Lab reasoning studio",
+      "ok": true,
+      "htmlBytes": 24969,
+      "issues": [],
+      "metrics": {
+        "buttons": 41,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 6,
+        "htmlBytes": 24969
+      }
+    },
+    {
+      "id": "fractions",
+      "file": "stem_tool_fractions.js",
+      "marker": "data-fraction-focus",
+      "label": "Fraction Lab focus panel",
+      "ok": true,
+      "htmlBytes": 15192,
+      "issues": [],
+      "metrics": {
+        "buttons": 41,
+        "fields": 2,
+        "canvases": 1,
+        "headings": 5,
+        "htmlBytes": 15192
+      }
+    },
+    {
+      "id": "galaxy",
+      "file": "stem_tool_galaxy.js",
+      "marker": "data-galaxy-canvas",
+      "label": "Galaxy 3D canvas",
+      "ok": true,
+      "htmlBytes": 37208,
+      "issues": [],
+      "metrics": {
+        "buttons": 52,
+        "fields": 3,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 37208
+      }
+    },
+    {
+      "id": "semiconductor",
+      "file": "stem_tool_semiconductor.js",
+      "marker": "data-semiconductor-command",
+      "label": "Semiconductor command bench",
+      "ok": true,
+      "htmlBytes": 16752,
+      "issues": [],
+      "metrics": {
+        "buttons": 37,
+        "fields": 2,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 16752
+      }
+    },
+    {
+      "id": "wave",
+      "file": "stem_tool_wave.js",
+      "marker": "data-wave-canvas",
+      "label": "Wave canvas",
+      "ok": true,
+      "htmlBytes": 20837,
+      "issues": [],
+      "metrics": {
+        "buttons": 36,
+        "fields": 8,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 20837
+      }
+    }
+  ],
+  "sync": {
+    "drift": [
+      {
+        "file": "stem_tool_circuit.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "C71A16911AAC",
+          "public": "C71A16911AAC",
+          "build": "4A474AAC85A8"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_companionplanting.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "7D3F03451492",
+          "public": "2E8FF8053DD3",
+          "build": "682FAEB000EA"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_economicslab.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "F5B7DD4BAD48",
+          "public": "F5B7DD4BAD48",
+          "build": "8BD285AA61CC"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_particlelab3d.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "D53BE9D40D0D",
+          "public": "7E5ED7C03E6C",
+          "build": "A284849D1A8B"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_roadready.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "3DA8BB08AF9F",
+          "public": "3DA8BB08AF9F",
+          "build": "4250E357A8BD"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      }
+    ],
+    "sourcePublicDrift": [
+      {
+        "file": "stem_tool_companionplanting.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "7D3F03451492",
+          "public": "2E8FF8053DD3",
+          "build": "682FAEB000EA"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_particlelab3d.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "D53BE9D40D0D",
+          "public": "7E5ED7C03E6C",
+          "build": "A284849D1A8B"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ],
+    "monitoredDrift": [
+      {
+        "file": "stem_tool_circuit.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "C71A16911AAC",
+          "public": "C71A16911AAC",
+          "build": "4A474AAC85A8"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_companionplanting.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "7D3F03451492",
+          "public": "2E8FF8053DD3",
+          "build": "682FAEB000EA"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ]
+  },
+  "topFindings": [
+    {
+      "code": "canvas-focus",
+      "severity": "warning",
+      "count": 3,
+      "toolCount": 3,
+      "exampleTools": [
+        "bikeLab",
+        "skatelab",
+        "funcGrapher"
+      ]
+    },
+    {
+      "code": "heading",
+      "severity": "warning",
+      "count": 2,
+      "toolCount": 2,
+      "exampleTools": [
+        "cellularLab",
+        "bikeLab"
+      ]
+    },
+    {
+      "code": "canvas-name",
+      "severity": "warning",
+      "count": 1,
+      "toolCount": 1,
+      "exampleTools": [
+        "funcGrapher"
+      ]
+    },
+    {
+      "code": "horizontal-overflow-risk",
+      "severity": "notice",
+      "count": 10,
+      "toolCount": 10,
+      "exampleTools": [
+        "opticsLab",
+        "cellularLab",
+        "dinoLab",
+        "printingPress",
+        "birdLab",
+        "playlab",
+        "bikeLab",
+        "echolocation",
+        "statsLab",
+        "volume"
+      ]
+    }
+  ]
+}

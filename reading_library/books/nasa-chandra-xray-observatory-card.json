@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-chandra-xray-observatory-card",
+  "title": "NASA Chandra X-ray Observatory",
+  "description": "A NASA source card about Chandra and high-energy astronomy.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Astronomy",
+    "X-rays",
+    "Black holes",
+    "Telescopes"
+  ],
+  "authors": [
+    "NASA Science"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/chandra/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Chandra resources introduce X-ray astronomy and evidence from hot gas, supernova remnants, neutron stars, black holes, and galaxy clusters."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source to show why scientists observe the universe in wavelengths human eyes cannot see."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, insignia, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 61
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-magna-carta-source-card",
+  "title": "Magna Carta",
+  "description": "A Wikisource source card for Magna Carta and the history of law and rights.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Law",
+    "Rights",
+    "World history",
+    "Primary sources"
+  ],
+  "authors": [
+    "Traditional / historical document"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Magna_Carta",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Magna_Carta"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Magna Carta is a medieval legal document often used to study limits on power, rule of law, legal rights, and later constitutional traditions."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source in short excerpts with background support, vocabulary scaffolds, and comparisons to later rights documents."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "The historical text is public domain. Check the Wikisource page for translation, edition, and source notes before assigning or mirroring excerpts."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 61
+  }
+}

@@ -72,7 +72,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 - "cell": for biology cell diagrams, organelle identification. State: {"type":"animal","selectedOrganelle":"nucleus"}
                 "manipulativeSupport" pre-loads the tool as a visual scaffold alongside the problem.
                 "manipulativeResponse" replaces the text input — the student must configure the manipulative correctly to answer.
-                ` : 'Optionally, you can enable STEM Lab manipulatives by returning objects in "manipulativeSupport" (to pre-load scaffolding) or "manipulativeResponse" (to grade the student\'s physical configuration instead of typed text). Supported tools are "coordinate", "base10", "numberline", "fractions", "volume", and "protractor".'}
+                ` : 'Optionally, you can enable STEM Lab manipulatives by returning objects in "manipulativeSupport" (to pre-load scaffolding) or "manipulativeResponse" (to grade the student\'s physical configuration instead of typed text). Supported tools are "base10", "coordinate", "numberline", "fractions", "volume", "protractor", "funcGrapher", "physics", "chemBalance", "punnett", "circuit", "dataPlot", "inequality", "molecule", "calculus", "wave", and "cell" — the same set the renderer grades.'}
                 You may include ANY type of math problem: computation, word problems, geometry/volume, missing number, algebraic equations, fractions, measurement, data/graphing, etc.
                 Follow the teacher's instructions precisely regarding:
                 - Number and types of problems
@@ -151,10 +151,9 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 ${useMathSourceContext ? 'Relate the explanation to the Source Context concepts.' : ''}
                 ${isMathGraphEnabled ? `
                     VISUALS REQUIRED:
-                    - If Math/Physics/Economics: Generate a self-contained SVG graph (plots, curves, geometry) in the "graphData" field.
-                    - If Biology/Earth Science: Generate a self-contained SVG diagram (e.g. Punnett Square, Water Cycle Flowchart, Cell Structure) in the "graphData" field.
-                    - If Computer Science: Generate an SVG Flowchart or Logic Gate diagram in "graphData".
-                    - Keep SVG code clean, minimal, responsive (viewBox), and use standard colors.
+                    - PREFER a parametric "manipulativeSupport" {tool,state} over a "graphData" SVG string WHENEVER the visual fits a supported interactive manipulative — these render INLINE as accessible, editable diagrams (vs a static, non-editable SVG). Supported inline: "numberline" (number lines / integers / fractions on a line), "coordinate" (plotting points, lines, geometry on a grid), "fractions" (fraction bars / comparison), "base10" (place value), "protractor" (angles). Use the state shapes from the manipulative instructions.
+                    - Only fall back to a "graphData" SVG for visuals that do NOT fit one of those: Math/Physics curves/plots, Biology/Earth Science diagrams (Punnett Square, Water Cycle, Cell Structure), or Computer Science Flowcharts / Logic Gates.
+                    - If a "graphData" SVG is used: keep it clean, minimal, responsive (viewBox), standard colors — AND ALWAYS set "graphAlt" to a one-sentence plain-text description of the diagram for screen-reader users.
                 ` : ''}
                 Return ONLY JSON in the following format:
                 {
@@ -162,7 +161,8 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                   "taskType": "REQUIRED. One of: 'simplify', 'solve', 'evaluate', 'factor', 'graph', 'compute', 'word_problem', 'prove', 'convert'. Pick the action the student is being asked to perform on this single problem.",
                   "answer": "Final Answer string",
                   "steps": [{ "explanation": "Step explanation", "latex": "Step math in Latex" }],
-                  "graphData": "SVG string or null",
+                  "graphData": "SVG string or null (prefer manipulativeSupport for the supported inline types)",
+                  "graphAlt": "one-sentence plain-text description of graphData for screen readers (null if no graphData)",
                   "realWorld": "1-2 sentence explanation of a specific career, hobby, or everyday situation where this concept is applied — NOT a word problem restatement",
                   "manipulativeSupport": null,
                   "manipulativeResponse": null
@@ -484,19 +484,19 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         if (resultItem.data.originalText) {
                             batchSourceText = resultItem.data.originalText;
                         }
-                        if (resultItem.data.concepts && Array.isArray(resultItem.data.concepts)) {
+                        if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) {
                             lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
                         }
                     }
                     if (type === 'glossary') {
-                        if (Array.isArray(resultItem.data)) {
-                            lessonDNA.keyTerms = resultItem.data.slice(0, 8).map(t => t.term);
+                        if (Array.isArray(resultItem.data) && lessonDNA.keyTerms.length === 0) {
+                            lessonDNA.keyTerms = resultItem.data.slice(0, 8).map(t => t.term).filter(Boolean);
                         }
                     }
                     if (type === 'image') {
                         lessonDNA.visualContext = resultItem.data.prompt || resultItem.data.altText;
                     }
-                    if (type === 'lesson-plan') {
+                    if (type === 'lesson-plan' && resultItem.data.essentialQuestion && !lessonDNA.essentialQuestion) {
                         lessonDNA.essentialQuestion = resultItem.data.essentialQuestion;
                     }
                 }

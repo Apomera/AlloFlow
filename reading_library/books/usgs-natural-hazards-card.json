@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-natural-hazards-card",
+  "title": "USGS Natural Hazards",
+  "description": "A USGS source card for earthquakes, volcanoes, landslides, coastal change, and other hazards.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Natural hazards",
+    "Risk",
+    "Earth science",
+    "Preparedness"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/mission-areas/natural-hazards"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS natural hazards resources bring together science about earthquakes, volcanoes, landslides, geomagnetic storms, coastal change, and related risks."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for cross-hazard comparison, scientific modeling, emergency planning discussions, and reading evidence about uncertainty and risk."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS government materials are generally public domain, but individual linked photos, datasets, or partner media may require separate review."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 55
+  }
+}

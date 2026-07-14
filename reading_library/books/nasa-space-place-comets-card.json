@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-space-place-comets-card",
+  "title": "NASA Space Place: Comets",
+  "description": "A NASA Space Place source card about comets, tails, orbits, ice, dust, and solar heating.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Astronomy",
+    "Comets",
+    "Solar system",
+    "Space science"
+  ],
+  "authors": [
+    "NASA Space Place"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Space Place",
+    "url": "https://spaceplace.nasa.gov/comets/en/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Space Place explains comets as icy bodies that can form glowing comas and tails when sunlight warms their surfaces."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for comparing comets, asteroids, meteors, and planets through structure, orbit, composition, and evidence."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

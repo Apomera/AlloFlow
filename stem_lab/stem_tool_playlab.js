@@ -68,6 +68,53 @@ window.StemLab = window.StemLab || {
   })();
 
   // ── ARIA live region ──
+  // PlayLab field-first polish: stronger live surface, responsive layout, stable controls.
+  (function() {
+    if (document.getElementById('allo-playlab-field-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-playlab-field-polish-css';
+    st.textContent = [
+      '.playlab-gameplan-card{margin-bottom:14px;padding:14px;border:1px solid rgba(56,189,248,.35);border-radius:16px;background:linear-gradient(135deg,rgba(15,23,42,.96),rgba(12,74,110,.42));box-shadow:0 18px 42px rgba(2,6,23,.28)}',
+      '.playlab-gameplan-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}',
+      '.playlab-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}',
+      '.playlab-gameplan-title{margin:2px 0 0;font-size:18px;font-weight:900;color:#f8fafc;line-height:1.2}',
+      '.playlab-gameplan-copy{margin:5px 0 0;color:#cbd5e1;font-size:12px;line-height:1.45;max-width:720px}',
+      '.playlab-status-pill{border:1px solid rgba(16,185,129,.55);background:rgba(16,185,129,.16);color:#bbf7d0;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;white-space:nowrap}',
+      '.playlab-metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}',
+      '.playlab-metric{border:1px solid rgba(148,163,184,.24);background:rgba(15,23,42,.64);border-radius:12px;padding:9px;min-height:64px}',
+      '.playlab-metric span{display:block;color:#cbd5e1;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}',
+      '.playlab-metric b{display:block;color:#f8fafc;font-size:13px;line-height:1.25;margin-top:3px}',
+      '.playlab-setup-panel{margin-bottom:12px;padding:12px;border:1px solid #64748b;border-radius:14px;background:rgba(15,23,42,.82)}',
+      '.playlab-setup-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}',
+      '.playlab-setup-title{margin:0;color:#f8fafc;font-size:14px;font-weight:900;line-height:1.2}',
+      '.playlab-setup-note{color:#e2e8f0;font-size:11px;font-weight:700}',
+      '.playlab-setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}',
+      '.playlab-choice-group{min-width:0;border:1px solid rgba(148,163,184,.45);border-radius:12px;background:rgba(2,6,23,.34);padding:9px}',
+      '.playlab-choice-group-wide{grid-column:1/-1}',
+      '.playlab-choice-label{display:block;color:#f8fafc;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}',
+      '.playlab-choice-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+      '.playlab-native-control{min-height:32px;border:1px solid #94a3b8!important;background:#0f172a!important;color:#f8fafc!important;border-radius:6px}',
+      '.playlab-field-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,320px);gap:16px;align-items:start}',
+      '.playlab-field-column,.playlab-info-column{min-width:0}',
+      '.playlab-field-shell{position:relative;overflow:hidden;border:1px solid #64748b;border-radius:18px;background:linear-gradient(180deg,#020617,#0f172a);padding:12px;box-shadow:0 18px 42px rgba(2,6,23,.34)}',
+      '.playlab-field-shell:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(56,189,248,.12),transparent 38%),linear-gradient(300deg,rgba(251,191,36,.10),transparent 34%);pointer-events:none}',
+      '.playlab-field-topbar{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:9px}',
+      '.playlab-field-title{margin:0;color:#f8fafc;font-size:14px;font-weight:900;line-height:1.2}',
+      '.playlab-chip-row{display:flex;gap:6px;flex-wrap:wrap}',
+      '.playlab-chip{border:1px solid #94a3b8;background:rgba(15,23,42,.86);color:#f8fafc;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:800}',
+      '.playlab-field-canvas{position:relative;z-index:1;width:100%;max-width:720px;height:auto;border-radius:14px;border:1px solid #94a3b8;background:#0f172a;cursor:pointer;touch-action:none;display:block;margin:0 auto;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}',
+      '.playlab-run-rack{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
+      '.playlab-run-button{padding:11px 18px;min-height:42px;border-radius:999px;cursor:pointer;border:1px solid #86efac;background:linear-gradient(135deg,#86efac,#22c55e);color:#052e16;font-size:14px;font-weight:900;box-shadow:0 10px 22px rgba(16,185,129,.22)}',
+      '.playlab-run-button:disabled{cursor:wait;background:#334155;color:#e2e8f0;box-shadow:none;border-color:#94a3b8}',
+      '.playlab-last-result{font-size:12px;color:#cbd5e1;font-style:italic}',
+      '.playlab-toggle-rack{margin-top:9px;display:flex;gap:8px;font-size:12px;color:#f8fafc;flex-wrap:wrap;align-items:center;padding:9px 10px;border:1px solid #64748b;border-radius:12px;background:rgba(15,23,42,.78)}',
+      '.playlab-toggle-rack label{cursor:pointer;display:inline-flex;align-items:center;gap:6px}',
+      '@media (max-width:920px){.playlab-field-layout{grid-template-columns:1fr}.playlab-metric-grid,.playlab-setup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.playlab-info-column{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.playlab-info-column>section,.playlab-info-column>div{margin-bottom:0!important}}',
+      '@media (max-width:560px){.playlab-gameplan-card,.playlab-field-shell,.playlab-setup-panel{border-radius:14px;padding:11px}.playlab-metric-grid,.playlab-info-column,.playlab-setup-grid{grid-template-columns:1fr}.playlab-gameplan-title{font-size:16px}.playlab-run-button{width:100%}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   (function() {
     if (document.getElementById('allo-live-playlab')) return;
     var liveRegion = document.createElement('div');
@@ -193,9 +240,12 @@ window.StemLab = window.StemLab || {
   }
   function getHotHand(streak) {
     if (!streak || streak < 2) return null;
-    if (streak === 2) return { emoji: '🟧', label: 'Warming up', color: '#fb923c' };
-    if (streak <= 4) return { emoji: '🔥', label: "He's heating up!", color: '#ef4444' };
-    return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626' };
+    // bg/text are theme-INDEPENDENT (solid pill) so the streak label stays
+    // AA-readable on both light and dark host surfaces. color = accent used
+    // for the border + the on-field ember tint.
+    if (streak === 2) return { emoji: '🟧', label: 'Warming up', color: '#fb923c', bg: '#7c2d12', text: '#fed7aa' };
+    if (streak <= 4) return { emoji: '🔥', label: "He's heating up!", color: '#ef4444', bg: '#7f1d1d', text: '#fecaca' };
+    return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626', bg: '#7f1d1d', text: '#fee2e2' };
   }
 
   // ── Engagement layer: Personal Bests ──
@@ -1757,6 +1807,7 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return ((d.coveragesViewed && Object.keys(d.coveragesViewed).length) || 0) + ' / ' + COVERAGES.length + ' coverages'; } }
     ],
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -1768,9 +1819,13 @@ window.StemLab = window.StemLab || {
       var awardXP = ctx.awardXP;
 
       // State init
-      if (!labToolData || !labToolData.playlab) {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: {
+      // Seed defaults, but DO NOT early-return a Loading screen: this render calls
+      // hooks (useRef/useState/useEffect) below, so a conditional early-return changes
+      // the hook count between the empty and seeded renders and throws "Rendered more
+      // hooks than during the previous render" on that transition (the bucket is not
+      // persisted, so it is empty on every reload). Seed and fall through; the body
+      // reads state only via the local `d`. (Rules-of-Hooks fix, 2026-06-20.)
+      var PLAYLAB_DEFAULTS = {
             // Sport mode — toggle between American football + soccer.
             // Each sport has its own field, formations/plays, defensive
             // shapes, and visual scale (yards vs meters). State for both
@@ -1843,11 +1898,14 @@ window.StemLab = window.StemLab || {
               setPieceRun: false,
               setPieceTypesRun: {}
             }
-          }});
+          };
+      if (!labToolData || !labToolData.playlab) {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { playlab: PLAYLAB_DEFAULTS });
         });
-        return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading PlayLab…');
       }
-      var d = labToolData.playlab;
+      var d = labToolData.playlab || PLAYLAB_DEFAULTS;
+      var workspaceTab = d.workspaceTab || 'field';
       var upd = function(key, val) {
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.playlab); next[key] = val;
@@ -2119,6 +2177,7 @@ window.StemLab = window.StemLab || {
             runT: 0,
             runOutcome: null,
             coachReply: '', coachError: '',
+            workspaceTab: 'field',
             activeScenarioId: scenarioId
           });
           if (s.sport === 'soccer') {
@@ -2225,6 +2284,7 @@ window.StemLab = window.StemLab || {
           var next = Object.assign({}, prev.playlab, {
             sport: entry.sport,
             customPositions: Object.assign({}, entry.customPositions || {}),
+            workspaceTab: 'field',
             // Clear in-flight animation + ephemeral state on load
             runActive: false, runT: 0, runOutcome: null, coachReply: '', coachError: ''
           });
@@ -2990,6 +3050,12 @@ window.StemLab = window.StemLab || {
         if ('imageSmoothingQuality' in gfx) gfx.imageSmoothingQuality = 'high';
         var W = canvas._plLogicalW;
         var H = canvas._plLogicalH;
+        // PL: "Hot Hand" momentum made visible ON THE FIELD. When the student
+        // is on a 3+ completion streak ("ON FIRE"), the ball's motion trail
+        // burns ember-orange and a warm vignette frames the field — so the
+        // HUD streak label pays off as on-field juice, not just a text pill.
+        var _hotStreak = (d.drillStats || {}).hotStreak || 0;
+        var _onFire = _hotStreak >= 3;
         gfx.clearRect(0, 0, W, H);
         // Field is rendered HORIZONTALLY: x (yards) maps to canvas x (px),
         // y (yards across the field) maps to canvas y. End zone left, defense right.
@@ -3172,6 +3238,21 @@ window.StemLab = window.StemLab || {
         gfx.fillStyle = '#60a5fa';
         gfx.font = 'bold 10px system-ui';
         gfx.fillText('LOS', losPx, marginT + fieldPxH + 14);
+
+        // ── Persistent down & distance HUD (top-left) — always on, not just in
+        // the post-play outcome banner, so the situation is readable mid-setup. ──
+        (function() {
+          var dn = d.down || 1, ytg = d.yardsToGoal != null ? d.yardsToGoal : 75;
+          var ord = dn === 1 ? '1st' : dn === 2 ? '2nd' : dn === 3 ? '3rd' : '4th';
+          var full = '🏈 ' + ord + ' down · ' + ytg + ' yd to goal';
+          gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'left'; gfx.textBaseline = 'middle';
+          var tw = gfx.measureText(full).width;
+          gfx.fillStyle = 'rgba(15,23,42,0.72)';
+          gfx.fillRect(marginL + 4, marginT + 4, tw + 12, 18);
+          gfx.fillStyle = '#fde68a';
+          gfx.fillText(full, marginL + 9, marginT + 13);
+          gfx.textBaseline = 'alphabetic';
+        })();
 
         // ── Coverage zones ──
         if (d.showZones) {
@@ -3395,7 +3476,8 @@ window.StemLab = window.StemLab || {
               var tpos = _ballAt(trailT);
               var alpha = (1 - ti / 9) * 0.55;
               var trad = 4 - ti * 0.35;
-              gfx.fillStyle = 'rgba(254,226,182,' + alpha.toFixed(2) + ')';
+              // ON FIRE → ember-orange trail; otherwise the default warm cream.
+              gfx.fillStyle = (_onFire ? 'rgba(251,146,60,' : 'rgba(254,226,182,') + alpha.toFixed(2) + ')';
               gfx.beginPath();
               gfx.arc(tpos.px, tpos.py, Math.max(1.2, trad), 0, Math.PI * 2);
               gfx.fill();
@@ -3407,8 +3489,8 @@ window.StemLab = window.StemLab || {
             // Draw the football — small brown ellipse (warm glow matching
             // the amber arc guide so the leading edge pops over the trail)
             gfx.save();
-            gfx.shadowColor = 'rgba(251,191,36,0.85)';
-            gfx.shadowBlur = 10;
+            gfx.shadowColor = _onFire ? 'rgba(239,68,68,0.95)' : 'rgba(251,191,36,0.85)';
+            gfx.shadowBlur = _onFire ? 14 : 10;
             gfx.fillStyle = '#7c2d12';
             gfx.beginPath();
             gfx.ellipse(bpx, bpy, 5, 3, 0, 0, Math.PI * 2);
@@ -3481,26 +3563,80 @@ window.StemLab = window.StemLab || {
           gfx.fillText('EPA: ' + epaSign + dEPA.toFixed(2) + '  (pre ' + epaResult.preEP.toFixed(1) + ' → post ' + epaResult.postEP.toFixed(1) + ')',
                        W / 2, marginT + fieldPxH / 2 + 44);
         }
+        // ── "ON FIRE" warm vignette ──
+        // Ember frame around the field on a 3+ streak. Pulses subtly with
+        // runT during an active play, steady otherwise. Drawn last so it
+        // overlays the field edges but leaves the central outcome banner clear.
+        if (_onFire) {
+          var _emberPulse = d.runActive ? (0.42 + 0.26 * Math.abs(Math.sin((runT || 0) * 3))) : 0.5;
+          gfx.save();
+          gfx.lineWidth = _hotStreak >= 5 ? 6 : 4;
+          gfx.strokeStyle = 'rgba(239,68,68,' + _emberPulse.toFixed(2) + ')';
+          gfx.shadowColor = 'rgba(251,146,60,0.9)';
+          gfx.shadowBlur = 16;
+          gfx.strokeRect(gfx.lineWidth / 2, gfx.lineWidth / 2, W - gfx.lineWidth, H - gfx.lineWidth);
+          gfx.restore();
+        }
       }, [d.playId, d.coverageId, d.losX, d.showZones, d.showRoutes, d.showOpen,
           d.customPositions, d.runActive, d.runT, d.runOutcome,
           d.sport, d.formationId, d.conceptId, d.shapeId, d.showXG,
-          d.down, d.yardsToGoal]);
+          d.down, d.yardsToGoal, d.drillStats]);
 
       // ── UI ──
+      function playLabChoiceButtonStyle(sel, opts) {
+        opts = opts || {};
+        var accent = opts.accent || '#facc15';
+        var activeText = opts.activeText || '#111827';
+        return {
+          padding: opts.small ? '6px 10px' : (opts.compact ? '7px 13px' : '8px 14px'),
+          borderRadius: opts.square ? 8 : 999,
+          cursor: 'pointer',
+          minHeight: opts.small ? 30 : 34,
+          border: '1px solid ' + (sel ? (opts.activeBorder || '#fde68a') : '#94a3b8'),
+          background: sel ? accent : '#0f172a',
+          color: sel ? activeText : '#f8fafc',
+          fontSize: opts.small ? 11 : (opts.compact ? 12 : 13),
+          fontWeight: sel ? 900 : 700,
+          boxShadow: sel ? '0 0 0 2px rgba(250,204,21,0.18)' : 'none'
+        };
+      }
+
+      function playLabSecondaryButtonStyle(extra) {
+        return Object.assign({
+          padding: '6px 12px',
+          minHeight: 32,
+          borderRadius: 6,
+          cursor: 'pointer',
+          border: '1px solid #94a3b8',
+          background: '#0f172a',
+          color: '#f8fafc',
+          fontSize: 12,
+          fontWeight: 700
+        }, extra || {});
+      }
+
+      function playLabNativeControlStyle(extra) {
+        return Object.assign({
+          padding: '5px 8px',
+          minHeight: 32,
+          borderRadius: 6,
+          border: '1px solid #94a3b8',
+          background: '#0f172a',
+          color: '#f8fafc',
+          fontSize: 12
+        }, extra || {});
+      }
+
       function pillBtn(label, sel, onClick, opts) {
         opts = opts || {};
         return h('button', {
+          key: opts.key,
           onClick: onClick, 'aria-pressed': sel, 'data-pl-focusable': 'true',
-          style: {
-            padding: opts.small ? '6px 10px' : '8px 14px', borderRadius: 999, cursor: 'pointer',
-            border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
-            background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-            color: 'var(--allo-stem-text, #f1f5f9)', fontSize: opts.small ? 11 : 13, fontWeight: 600
-          }
+          style: playLabChoiceButtonStyle(sel, opts)
         }, label);
       }
 
-      return h('div', { style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: 1100, margin: '0 auto' } },
+      return h('div', { className: 'playlab-root', style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: 1100, margin: '0 auto' } },
         // Scenario intro card — pops when a one-click teaching demo loads.
         // Surfaces the scenario's `teach` paragraph + discussion questions
         // before the play runs (previously hover-only on the chip).
@@ -3526,8 +3662,8 @@ window.StemLab = window.StemLab || {
                 scenarioIntro.label),
               h('button', {
                 onClick: function() { setScenarioIntro(null); },
-                'aria-label': 'Close scenario intro',
-                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)',
+                'aria-label': __alloT('stem.playlab.close_scenario_intro', 'Close scenario intro'),
+                style: { background: '#0f172a', border: '1px solid #94a3b8', color: '#f8fafc',
                          width: 32, height: 32, borderRadius: 6, cursor: 'pointer',
                          fontSize: 16, lineHeight: 1, fontWeight: 700 }
               }, '×')
@@ -3535,7 +3671,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { marginBottom: 14 } },
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24',
                                   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
-                '📜 The story'),
+                __alloT('stem.playlab.the_story', '📜 The story')),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
                 scenarioIntro.teach)
             ),
@@ -3544,7 +3680,7 @@ window.StemLab = window.StemLab || {
             },
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa',
                                   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
-                '🤔 Try these before you run it'),
+                __alloT('stem.playlab.try_these_before_you_run_it', '🤔 Try these before you run it')),
               h('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.5 } },
                 scenarioIntro.questions.map(function(q, i) {
                   return h('li', { key: 'pl-sq-' + i, style: { marginBottom: 6 } }, q);
@@ -3554,17 +3690,17 @@ window.StemLab = window.StemLab || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 } },
               h('button', {
                 onClick: function() { setScenarioIntro(null); startRun(); },
+                'data-pl-focusable': 'true',
                 style: { flex: '1 1 200px', padding: '10px 14px', borderRadius: 8,
-                         border: 'none', background: 'linear-gradient(135deg, #16a34a, #06b6d4)',
-                         color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
-                         boxShadow: '0 4px 12px rgba(6,182,212,0.3)' }
-              }, '▶ Run it now'),
+                         border: '1px solid #86efac', background: 'linear-gradient(135deg, #86efac, #22c55e)',
+                         color: '#052e16', fontSize: 14, fontWeight: 900, cursor: 'pointer',
+                         boxShadow: '0 4px 12px rgba(34,197,94,0.25)' }
+              }, __alloT('stem.playlab.run_it_now', '▶ Run it now')),
               h('button', {
                 onClick: function() { setScenarioIntro(null); },
-                style: { flex: '1 1 160px', padding: '10px 14px', borderRadius: 8,
-                         border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)',
-                         color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
-              }, '🔧 Explore the field first')
+                'data-pl-focusable': 'true',
+                style: playLabSecondaryButtonStyle({ flex: '1 1 160px', padding: '10px 14px', borderRadius: 8, fontSize: 13 })
+              }, __alloT('stem.playlab.explore_the_field_first', '🔧 Explore the field first'))
             )
           )
         ),
@@ -3585,7 +3721,7 @@ window.StemLab = window.StemLab || {
                               display: 'flex', alignItems: 'center', gap: 12 } },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, plCeleb.icon || (plCeleb.sport === 'soccer' ? '⚽' : '🏈')),
             h('div', null,
-              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Play added to your catalog'),
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, __alloT('stem.playlab.play_added_to_your_catalog', 'Play added to your catalog')),
               h('div', { style: { fontSize: 14, fontWeight: 800, lineHeight: 1.3 } }, plCeleb.label),
               h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, plCeleb.total + ' plays in your catalog')
             )
@@ -3595,19 +3731,19 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           ArrowLeft && h('button', {
             onClick: function() { setStemLabTool && setStemLabTool(null); },
-            'data-pl-focusable': 'true', 'aria-label': 'Back to STEM Lab',
-            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #f1f5f9)', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
-          }, '← Back'),
+            'data-pl-focusable': 'true', 'aria-label': __alloT('stem.playlab.back_to_stem_lab', 'Back to STEM Lab'),
+            style: playLabSecondaryButtonStyle({ padding: '6px 10px' })
+          }, __alloT('stem.playlab.back', '← Back')),
           h('h2', { style: { margin: 0, fontSize: 20 } },
             (isSoccer ? '⚽ PlayLab — Soccer Tactics' : '🏈 PlayLab — Football Play & Coverage')),
-          h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Every play is a coordinated math problem on a fixed grid.')
+          h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, __alloT('stem.playlab.every_play_is_a_coordinated_math_probl', 'Every play is a coordinated math problem on a fixed grid.'))
         ),
         // ── Play Catalog summary band ──
         // Sticky band under the header. Shows count of unique plays/concepts
         // run successfully for the current sport, plus chips for each.
         // Football: counts plays with first-completion. Soccer: counts
         // concepts with first xG ≥ 0.20.
-        (function () {
+        workspaceTab === 'scout' && (function () {
           var catalog = (d.playCatalog && typeof d.playCatalog === 'object') ? d.playCatalog : {};
           var sportPrefix = isSoccer ? 'soccer:' : 'football:';
           var sportEntries = Object.keys(catalog).filter(function (k) { return k.indexOf(sportPrefix) === 0; });
@@ -3629,7 +3765,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0 } }, '🏅'),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
-                h('strong', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, 'Play Catalog'),
+                h('strong', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, __alloT('stem.playlab.play_catalog', 'Play Catalog')),
                 h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, got + ' / ' + sportTotal + (isSoccer ? ' concepts run with xG ≥ 0.20' : ' plays completed')),
                 h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
                   got === 0
@@ -3645,11 +3781,11 @@ window.StemLab = window.StemLab || {
         // as a single-select group. Switching sports preserves separate
         // state for each (football presets stay set even when you flip
         // to soccer and back).
-        h('div', { role: 'tablist', 'aria-label': 'Sport',
+        h('div', { role: 'tablist', 'aria-label': __alloT('stem.playlab.sport', 'Sport'),
           style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
           [
-            { id: 'football', label: '🏈 American Football' },
-            { id: 'soccer', label: '⚽ Soccer' }
+            { id: 'football', label: __alloT('stem.playlab.american_football', '🏈 American Football') },
+            { id: 'soccer', label: __alloT('stem.playlab.soccer', '⚽ Soccer') }
           ].map(function(sp) {
             var sel = (d.sport || 'football') === sp.id;
             return h('button', {
@@ -3661,21 +3797,39 @@ window.StemLab = window.StemLab || {
               },
               'aria-selected': sel,
               'data-pl-focusable': 'true',
-              style: {
-                padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
-                border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
-                background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, fontWeight: 600
-              }
+              style: playLabChoiceButtonStyle(sel)
             }, sp.label);
           })
         ),
 
         // ── Sport-accent hero band (sport-flavored, dark-themed) ──
-        (function() {
+        // Workspace switch: default to the live field, keep scenario/stats extras opt-in.
+        h('div', { role: 'tablist', 'aria-label': __alloT('stem.playlab.workspace', 'PlayLab workspace'),
+          style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+          [
+            { id: 'field', label: __alloT('stem.playlab.field_tab', 'Field'), title: __alloT('stem.playlab.field_tab_title', 'Run the active play and adjust the tactical setup') },
+            { id: 'scout', label: __alloT('stem.playlab.scout_tab', 'Scout'), title: __alloT('stem.playlab.scout_tab_title', 'Choose scenarios, daily challenges, achievements, and session numbers') }
+          ].map(function(wt) {
+            var sel = workspaceTab === wt.id;
+            return h('button', {
+              key: 'pl-workspace-' + wt.id,
+              role: 'tab',
+              onClick: function() {
+                upd('workspaceTab', wt.id);
+                plAnnounce(wt.label + ' workspace.');
+              },
+              'aria-selected': sel,
+              'data-pl-focusable': 'true',
+              title: wt.title,
+              style: playLabChoiceButtonStyle(sel, { compact: true, square: true, accent: '#7dd3fc', activeBorder: '#bae6fd', activeText: '#082f49' })
+            }, wt.label);
+          })
+        ),
+
+        workspaceTab === 'scout' && (function() {
           var SPORT_META = {
-            football: { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)', icon: '🏈', title: 'American Football \u2014 chess at 4.4 yds/sec',  hint: '11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense \u2014 and good QBs read the answer pre-snap.' },
-            soccer:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)', icon: '⚽', title: 'Soccer \u2014 the beautiful game, on a 105\u00d768m grid', hint: '4-3-3 vs 4-4-2 vs 3-5-2. Pep\u2019s positional play, Klopp\u2019s gegenpress, Italian catenaccio. Width creates space, the 10 finds it, the false-9 drops to make it. Tactics are the second player.' }
+            football: { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)', icon: '🏈', title: __alloT('stem.playlab.american_football_chess_at_4_4_yds_sec', 'American Football \u2014 chess at 4.4 yds/sec'),  hint: __alloT('stem.playlab.11_vs_11_100_yd_field_4_downs_to_gain_', '11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense \u2014 and good QBs read the answer pre-snap.') },
+            soccer:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)', icon: '⚽', title: __alloT('stem.playlab.soccer_the_beautiful_game_on_a_105_68m', 'Soccer \u2014 the beautiful game, on a 105\u00d768m grid'), hint: __alloT('stem.playlab.4_3_3_vs_4_4_2_vs_3_5_2_pep_s_position', '4-3-3 vs 4-4-2 vs 3-5-2. Pep\u2019s positional play, Klopp\u2019s gegenpress, Italian catenaccio. Width creates space, the 10 finds it, the false-9 drops to make it. Tactics are the second player.') }
           };
           var meta = SPORT_META[d.sport || 'football'] || SPORT_META.football;
           return h('div', {
@@ -3703,14 +3857,14 @@ window.StemLab = window.StemLab || {
         // configured tactical setup. Useful as a warm-up for class
         // discussion. Filtered to the active sport so students don't see
         // 5 football scenarios when they're in soccer mode.
-        h('details', {
+        workspaceTab === 'scout' && h('details', {
           style: { marginBottom: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
             style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '🎬 Scenarios — one-click teaching demos (' + PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === (d.sport || 'football'); }).length + ' built-in' + ((d.savedPlays || []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length ? ' + ' + (d.savedPlays || []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length + ' custom' : '') + ' for ' + (isSoccer ? 'soccer' : 'football') + ')'),
           h('div', {
-            role: 'group', 'aria-label': 'Tactical scenarios',
+            role: 'group', 'aria-label': __alloT('stem.playlab.tactical_scenarios', 'Tactical scenarios'),
             style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }
           },
             PLAYLAB_SCENARIOS.filter(function(sc) {
@@ -3724,9 +3878,9 @@ window.StemLab = window.StemLab || {
                 title: sc.teach,
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid var(--allo-stem-border, #334155)',
-                  background: 'var(--allo-stem-panel, #1e293b)',
-                  color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600
+                  border: '1px solid #94a3b8',
+                  background: '#0f172a',
+                  color: '#f8fafc', fontSize: 11, fontWeight: 700
                 }
               }, sc.icon + ' ' + sc.label);
             }).concat(
@@ -3756,7 +3910,7 @@ window.StemLab = window.StemLab || {
                       onClick: function() { deleteSavedPlay(sp.id); },
                       'aria-label': 'Delete custom scenario: ' + sp.name,
                       'data-pl-focusable': 'true',
-                      title: 'Delete this custom scenario',
+                      title: __alloT('stem.playlab.delete_this_custom_scenario', 'Delete this custom scenario'),
                       style: {
                         padding: '6px 8px', cursor: 'pointer',
                         border: '1px solid #a78bfa',
@@ -3771,51 +3925,51 @@ window.StemLab = window.StemLab || {
               h('button', {
                 key: 'plsc-random',
                 onClick: runRandomPlayLabScenario,
-                'aria-label': 'Run a random scenario — go straight to executing without reading setup',
+                'aria-label': __alloT('stem.playlab.run_a_random_scenario_go_straight_to_e', 'Run a random scenario — go straight to executing without reading setup'),
                 'data-pl-focusable': 'true',
-                title: 'Pick a random scenario and start immediately — no setup, just run it',
+                title: __alloT('stem.playlab.pick_a_random_scenario_and_start_immed', 'Pick a random scenario and start immediately — no setup, just run it'),
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
                   border: '1px dashed #6366f1', background: 'rgba(99,102,241,0.10)',
                   color: '#a5b4fc', fontSize: 11, fontWeight: 700
                 }
-              }, '🎲 Run something cool'),
+              }, __alloT('stem.playlab.run_something_cool', '🎲 Run something cool')),
               h('button', {
                 key: 'plsc-save',
                 onClick: openSavePrompt,
-                'aria-label': 'Save current setup as a custom scenario',
+                'aria-label': __alloT('stem.playlab.save_current_setup_as_a_custom_scenari', 'Save current setup as a custom scenario'),
                 'data-pl-focusable': 'true',
-                title: 'Save the current sport + play/concept + coverage/shape + custom edits as a personalized scenario',
+                title: __alloT('stem.playlab.save_the_current_sport_play_concept_co', 'Save the current sport + play/concept + coverage/shape + custom edits as a personalized scenario'),
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px dashed #a78bfa', background: 'transparent',
-                  color: '#a78bfa', fontSize: 11, fontWeight: 700
+                  border: '1px dashed #c4b5fd', background: 'rgba(30,41,59,0.78)',
+                  color: '#ddd6fe', fontSize: 11, fontWeight: 800
                 }
-              }, '⭐ Save current'),
+              }, __alloT('stem.playlab.save_current', '⭐ Save current')),
               h('button', {
                 key: 'plsc-print',
                 onClick: printPlayLabActivitySheet,
                 'aria-label': 'Print activity sheet for ' + (isSoccer ? 'soccer' : 'football') + ' scenarios',
                 'data-pl-focusable': 'true',
-                title: 'Open a printable activity sheet with all scenarios + discussion questions',
+                title: __alloT('stem.playlab.open_a_printable_activity_sheet_with_a', 'Open a printable activity sheet with all scenarios + discussion questions'),
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
                   border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.10)',
                   color: '#fbbf24', fontSize: 11, fontWeight: 700, marginLeft: 4
                 }
-              }, '📄 Print activity sheet'),
+              }, __alloT('stem.playlab.print_activity_sheet', '📄 Print activity sheet')),
               h('button', {
                 key: 'plsc-card',
                 onClick: exportPlayLabTradingCard,
-                'aria-label': 'Export the current play / concept as a printable trading card',
+                'aria-label': __alloT('stem.playlab.export_the_current_play_concept_as_a_p', 'Export the current play / concept as a printable trading card'),
                 'data-pl-focusable': 'true',
-                title: 'Make a Topps-style trading card from your active play + matchup grade + badges',
+                title: __alloT('stem.playlab.make_a_topps_style_trading_card_from_y', 'Make a Topps-style trading card from your active play + matchup grade + badges'),
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
                   border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.10)',
                   color: '#fbbf24', fontSize: 11, fontWeight: 700
                 }
-              }, '📇 Trading card')
+              }, __alloT('stem.playlab.trading_card', '📇 Trading card'))
             ])
           )
         ),
@@ -3825,7 +3979,7 @@ window.StemLab = window.StemLab || {
         // today\'s football pick, soccer class sees today\'s soccer pick.
         // Three states: untried (lavender) / in-progress (gold) /
         // complete (green). Click → applies the scenario.
-        (function() {
+        workspaceTab === 'scout' && (function() {
           var daily = getPlayLabDailyChallenge(d.sport || 'football');
           if (!daily) return null;
           var key = todayKey();
@@ -3863,14 +4017,14 @@ window.StemLab = window.StemLab || {
         // Collection mechanic for athletic students. Earned badges glow
         // with their color; unearned are dimmed with the hint as tooltip
         // so students see how to unlock them.
-        h('details', {
+        workspaceTab === 'scout' && h('details', {
           style: { marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
             style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '🏅 Achievements (' + Object.keys(d.badgesEarned || {}).length + ' / ' + PLAYLAB_BADGES.length + ')'),
           h('div', {
-            role: 'list', 'aria-label': 'Badge achievements',
+            role: 'list', 'aria-label': __alloT('stem.playlab.badge_achievements', 'Badge achievements'),
             style: { marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }
           },
             PLAYLAB_BADGES.map(function(b) {
@@ -3882,11 +4036,11 @@ window.StemLab = window.StemLab || {
                 title: b.hint,
                 style: {
                   padding: '5px 10px', borderRadius: 999,
-                  border: '1px solid ' + (earned ? '#fbbf24' : '#334155'),
-                  background: earned ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                  color: earned ? '#fbbf24' : '#475569',
-                  fontSize: 11, fontWeight: earned ? 700 : 500,
-                  opacity: earned ? 1 : 0.6
+                  border: '1px solid ' + (earned ? '#fbbf24' : '#94a3b8'),
+                  background: earned ? 'rgba(251,191,36,0.18)' : '#0f172a',
+                  color: earned ? '#facc15' : '#cbd5e1',
+                  fontSize: 11, fontWeight: earned ? 800 : 700,
+                  opacity: 1
                 }
               }, b.emoji + ' ' + b.label);
             })
@@ -3897,14 +4051,14 @@ window.StemLab = window.StemLab || {
         // Baseball-card-style "your numbers" surface for PlayLab. Sport-
         // aware: football shows coverages-beaten / plays completed / drill
         // flags; soccer shows xG / concepts run / set-piece types.
-        h('details', {
+        workspaceTab === 'scout' && h('details', {
           style: { marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
             style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '📊 Your Numbers — ' + (d.playerName || (isSoccer ? 'soccer session' : 'football session'))),
           h('div', {
-            role: 'table', 'aria-label': 'Session stats',
+            role: 'table', 'aria-label': __alloT('stem.playlab.session_stats', 'Session stats'),
             style: { marginTop: 10, display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: 12 }
           },
             getPlayLabStatsRows(d).reduce(function(acc, row) {
@@ -3938,12 +4092,12 @@ window.StemLab = window.StemLab || {
             style: {
               marginBottom: 12, padding: '6px 10px', borderRadius: 6,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-              background: hot ? 'rgba(220,38,38,0.10)' : 'rgba(167,139,250,0.10)',
+              background: hot ? hot.bg : 'rgba(167,139,250,0.10)',
               border: '1px solid ' + (hot ? hot.color : '#a78bfa'),
               fontSize: 12
             }
           },
-            hot ? h('span', { style: { color: hot.color, fontWeight: 700 } },
+            hot ? h('span', { style: { color: hot.text, fontWeight: 700 } },
               hot.emoji + ' ' + hot.label + ' (streak: ' + d.drillStats.hotStreak + ')'
             ) : h('span', { style: { color: '#a78bfa', fontStyle: 'italic' } },
               '🎙️ ' + pickHypePhrase()
@@ -3963,7 +4117,7 @@ window.StemLab = window.StemLab || {
             : null;
           if (!active) return null;
           return h('section', {
-            'aria-label': 'Scenario briefing',
+            'aria-label': __alloT('stem.playlab.scenario_briefing', 'Scenario briefing'),
             style: {
               padding: 12, borderRadius: 10, marginBottom: 12,
               background: 'rgba(167,139,250,0.10)',
@@ -3980,20 +4134,20 @@ window.StemLab = window.StemLab || {
               ),
               h('button', {
                 onClick: function() { upd('activeScenarioId', null); },
-                'aria-label': 'Dismiss scenario briefing',
+                'aria-label': __alloT('stem.playlab.dismiss_scenario_briefing', 'Dismiss scenario briefing'),
                 'data-pl-focusable': 'true',
                 style: {
                   padding: '2px 8px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid var(--allo-stem-border, #475569)', background: 'transparent',
-                  color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11
+                  border: '1px solid #94a3b8', background: '#0f172a',
+                  color: '#f8fafc', fontSize: 11, fontWeight: 700
                 }
-              }, '✕ Dismiss')
+              }, __alloT('stem.playlab.dismiss', '✕ Dismiss'))
             ),
             (active.questions && active.questions.length) ? h('div', {
               style: { marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(167,139,250,0.30)' }
             },
               h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
-                '💭 Discussion'),
+                __alloT('stem.playlab.discussion', '💭 Discussion')),
               h('ol', { style: { margin: '4px 0 0 18px', padding: 0, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } },
                 active.questions.map(function(q, i) {
                   return h('li', { key: 'q-' + i, style: { marginBottom: 4 } }, q);
@@ -4002,6 +4156,20 @@ window.StemLab = window.StemLab || {
             ) : null
           );
         })(),
+
+        h('section', {
+          className: 'playlab-setup-panel',
+          'data-playlab-setup': 'true',
+          'aria-labelledby': 'pl-setup-heading'
+        },
+          h('div', { className: 'playlab-setup-header' },
+            h('h3', { id: 'pl-setup-heading', className: 'playlab-setup-title' },
+              isSoccer ? 'Soccer setup' : 'Football setup'),
+            h('span', { className: 'playlab-setup-note' },
+              isSoccer ? (formationDef.label + ' / ' + concept.label + ' / ' + soccerShape.label)
+                : (play.label + ' / ' + coverage.label + ' / ' + (d.down || 1) + ' down'))
+          )
+        ),
 
         // Play / Formation picker
         h('div', { role: 'group', 'aria-label': isSoccer ? 'Formation library' : 'Play library',
@@ -4016,19 +4184,19 @@ window.StemLab = window.StemLab || {
               } else {
                 loadPlay(p.id);
               }
-            });
+            }, { key: (isSoccer ? 'formation-' : 'play-') + p.id });
           })
         ),
 
         // Concept picker — soccer only
-        isSoccer ? h('div', { role: 'group', 'aria-label': 'Tactical concept',
+        isSoccer ? h('div', { role: 'group', 'aria-label': __alloT('stem.playlab.tactical_concept', 'Tactical concept'),
           style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', fontSize: 12 } },
           h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Concept:'),
           SOCCER_CONCEPTS.map(function(c) {
             return pillBtn(c.icon + ' ' + c.label, d.conceptId === c.id, function() {
               upd('conceptId', c.id);
               plAnnounce('Concept: ' + c.label + '. ' + c.teach);
-            });
+            }, { key: 'concept-' + c.id });
           })
         ) : null,
 
@@ -4036,7 +4204,7 @@ window.StemLab = window.StemLab || {
         // shown in the post-play banner. 1st-and-10 from own 25 (75 yd
         // to goal) is the default; students can tweak to see how the
         // value of the same play changes by situation.
-        !isSoccer ? h('div', { role: 'group', 'aria-label': 'Down and field position',
+        !isSoccer ? h('div', { role: 'group', 'aria-label': __alloT('stem.playlab.down_and_field_position', 'Down and field position'),
           style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap', fontSize: 12 } },
           h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Situation:'),
           h('label', { htmlFor: 'pl-down', style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Down:'),
@@ -4044,20 +4212,22 @@ window.StemLab = window.StemLab || {
             id: 'pl-down', value: String(d.down || 1),
             onChange: function(e) { upd('down', parseInt(e.target.value, 10) || 1); },
             'data-pl-focusable': 'true',
-            style: { padding: '4px 6px', borderRadius: 4, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12 }
+            className: 'playlab-native-control',
+            style: playLabNativeControlStyle()
           },
             [1, 2, 3, 4].map(function(n) { return h('option', { key: n, value: String(n) }, n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th')); })
           ),
-          h('label', { htmlFor: 'pl-ytg', style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Yards to goal:'),
+          h('label', { htmlFor: 'pl-ytg', style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, __alloT('stem.playlab.yards_to_goal', 'Yards to goal:')),
           h('input', {
             id: 'pl-ytg', type: 'number', min: 1, max: 99,
             value: d.yardsToGoal || 75,
             onChange: function(e) { upd('yardsToGoal', Math.max(1, Math.min(99, parseInt(e.target.value, 10) || 75))); },
             'data-pl-focusable': 'true',
-            style: { width: 60, padding: '4px 6px', borderRadius: 4, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12 }
+            className: 'playlab-native-control',
+            style: playLabNativeControlStyle({ width: 72 })
           }),
           h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
-            'EP at this state: ', h('span', { style: { color: '#fbbf24', fontWeight: 700 } },
+            __alloT('stem.playlab.ep_at_this_state', 'EP at this state: '), h('span', { style: { color: '#fbbf24', fontWeight: 700 } },
               expectedPoints(d.yardsToGoal || 75, d.down || 1).toFixed(1)))
         ) : null,
 
@@ -4068,7 +4238,7 @@ window.StemLab = window.StemLab || {
         // students can see HOW the current call sits within the broader
         // tactical landscape. Collapsed by default to keep the layout
         // tight for free-explore.
-        h('details', {
+        workspaceTab === 'scout' && h('details', {
           style: { marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
@@ -4165,7 +4335,7 @@ window.StemLab = window.StemLab || {
               } else {
                 loadCoverage(c.id);
               }
-            });
+            }, { key: (isSoccer ? 'shape-' : 'coverage-') + c.id });
           })
         ),
 
@@ -4206,7 +4376,7 @@ window.StemLab = window.StemLab || {
               style: { marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(241,245,249,0.18)',
                        display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }
             },
-              h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 4 } }, '💡 Try instead:'),
+              h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 4 } }, __alloT('stem.playlab.try_instead', '💡 Try instead:')),
               suggestions.map(function(s) {
                 return h('button', {
                   key: 'sug-' + s.id,
@@ -4290,10 +4460,9 @@ window.StemLab = window.StemLab || {
                   });
                   plAnnounce('Drill stopped.');
                 },
-                'aria-label': 'Stop the current drill',
+                'aria-label': __alloT('stem.playlab.stop_the_current_drill', 'Stop the current drill'),
                 'data-pl-focusable': 'true',
-                style: { padding: '4px 8px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
-                  border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 }
+                style: playLabSecondaryButtonStyle({ padding: '4px 8px', minHeight: 28, borderRadius: 4, fontSize: 11 })
               }, allDone ? 'Close' : 'Stop')),
             allDone
               ? h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)' } },
@@ -4308,18 +4477,105 @@ window.StemLab = window.StemLab || {
           );
         })(),
 
+        (function() {
+          var matchup = isSoccer
+            ? getSoccerMatchup(concept, soccerShape)
+            : (play && coverage ? getMatchup(play, coverage) : null);
+          var callLabel = isSoccer ? concept.label : play.label;
+          var shapeLabel = isSoccer ? soccerShape.label : coverage.label;
+          var formationLabel = isSoccer ? formationDef.label : ((d.down || 1) + ' down, ' + (d.yardsToGoal || 75) + ' yd to goal');
+          var readLabel = 'No read yet';
+          var readDetail = isSoccer ? 'Run a sequence to create a shot.' : 'Run routes to find separation.';
+          var finalPlayer = null;
+          if (isSoccer) {
+            var finalPair = concept && concept.passes && concept.passes.length ? concept.passes[concept.passes.length - 1] : null;
+            finalPlayer = finalPair ? formation.find(function(p) { return p.id === finalPair[1]; }) : null;
+            if (!finalPlayer) {
+              finalPlayer = formation.reduce(function(best, p) {
+                return (!best || p.x > best.x) ? p : best;
+              }, null);
+            }
+            if (finalPlayer) {
+              var liveXG = computeXG(finalPlayer.x, finalPlayer.y);
+              readLabel = finalPlayer.id + ' xG ' + liveXG.toFixed(2);
+              readDetail = liveXG > 0.30 ? 'High-quality chance if the pattern arrives there.'
+                : liveXG > 0.10 ? 'Decent chance; look for one cleaner pass or cutback.'
+                  : 'Low-percentage chance; use spacing or the heatmap to improve it.';
+            }
+          } else if (analysis.length) {
+            var top = analysis[0];
+            var sep = top.opennessYd === Infinity ? 'open field' : top.opennessYd.toFixed(1) + ' yd';
+            readLabel = top.id + ' - ' + sep;
+            readDetail = top.nearestZone ? 'Nearest defender: ' + top.nearestZone + '.' : 'No nearby defender.';
+          }
+          var lastResult = 'No run yet';
+          if (d.runActive) lastResult = 'Play in motion';
+          else if (d.runOutcome && d.runOutcome.sport === 'soccer') {
+            lastResult = 'Last xG ' + (d.runOutcome.xG || 0).toFixed(2);
+          } else if (d.runOutcome) {
+            lastResult = d.runOutcome.location === 'caught' ? 'Complete to ' + d.runOutcome.receiverId
+              : d.runOutcome.location === 'brokenup' ? 'Broken up'
+                : 'Incomplete';
+          }
+          var matchupLabel = matchup ? matchup.label : 'Matchup ready';
+          return h('section', {
+            className: 'playlab-gameplan-card',
+            'data-playlab-gameplan': 'true',
+            'aria-labelledby': 'pl-gameplan-heading'
+          },
+            h('div', { className: 'playlab-gameplan-top' },
+              h('div', null,
+                h('div', { className: 'playlab-kicker' }, isSoccer ? 'Live tactical read' : 'Live play read'),
+                h('h3', { id: 'pl-gameplan-heading', className: 'playlab-gameplan-title' },
+                  callLabel + ' vs ' + shapeLabel),
+                h('p', { className: 'playlab-gameplan-copy' },
+                  isSoccer
+                    ? 'Run the sequence, watch the passing lanes, then drag attackers to improve the final shot location.'
+                    : 'Run the concept, watch the route spacing, then drag receivers to test how geometry changes the read.')
+              ),
+              h('div', { className: 'playlab-status-pill', role: 'status', 'aria-live': 'polite' }, d.runActive ? 'Live now' : (d.runOutcome ? 'Review last run' : 'Ready to run'))
+            ),
+            h('div', { className: 'playlab-metric-grid' },
+              h('div', { className: 'playlab-metric' }, h('span', null, isSoccer ? 'Formation' : 'Situation'), h('b', null, formationLabel)),
+              h('div', { className: 'playlab-metric' }, h('span', null, 'Matchup'), h('b', null, matchupLabel)),
+              h('div', { className: 'playlab-metric' }, h('span', null, isSoccer ? 'Best chance' : 'Best read'), h('b', null, readLabel)),
+              h('div', { className: 'playlab-metric' }, h('span', null, 'Last result'), h('b', null, lastResult))
+            ),
+            h('p', { className: 'playlab-gameplan-copy', style: { marginTop: 10 } }, readDetail)
+          );
+        })(),
+
         // Two-column layout
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 } },
+        h('div', { className: 'playlab-field-layout', 'data-playlab-field-layout': 'true' },
 
           // LEFT: field canvas + analysis panel
-          h('div', null,
-            h('canvas', {
+          h('div', { className: 'playlab-field-column' },
+            h('section', {
+              className: 'playlab-field-shell',
+              'data-playlab-field-shell': 'true',
+              'aria-labelledby': 'pl-live-field-heading'
+            },
+              h('div', { className: 'playlab-field-topbar' },
+                h('div', null,
+                  h('div', { className: 'playlab-kicker' }, isSoccer ? 'Live pitch' : 'Live field'),
+                  h('h3', { id: 'pl-live-field-heading', className: 'playlab-field-title' },
+                    isSoccer ? formationDef.label + ' - ' + concept.label : play.label + ' - ' + coverage.label)
+                ),
+                h('div', { className: 'playlab-chip-row', 'aria-label': 'Visible overlays' },
+                  h('span', { className: 'playlab-chip' }, d.showRoutes === false ? 'Routes off' : 'Routes on'),
+                  h('span', { className: 'playlab-chip' }, d.showOpen === false ? 'Open read off' : 'Open read on'),
+                  isSoccer ? h('span', { className: 'playlab-chip' }, d.showXG ? 'xG on' : 'xG off') : h('span', { className: 'playlab-chip' }, d.showZones ? 'Zones on' : 'Zones off')
+                )
+              ),
+              h('canvas', {
               ref: canvasRef,
               // width/height are set by _plSetupHiDPI on first effect run.
               // Keep small placeholder values so the element has dimensions
               // before the effect fires (prevents 1-frame layout jump).
               width: 720, height: 360,
               role: 'img', tabIndex: 0, 'data-pl-focusable': 'true',
+              'data-playlab-canvas': 'true',
+              className: 'playlab-field-canvas',
               'aria-label': isSoccer
                 ? ('Soccer pitch, ' + formationDef.label + ' against ' + soccerShape.label + ' defensive shape.')
                 : ('Football field, ' + play.label + ' against ' + coverage.label
@@ -4338,59 +4594,53 @@ window.StemLab = window.StemLab || {
               onTouchStart: function(e) { if (e.touches && e.touches[0]) { e.preventDefault(); handleMouseDown({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }); } },
               onTouchMove: function(e) { if (e.touches && e.touches[0]) { e.preventDefault(); handleMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }); } },
               onTouchEnd: function(e) { e.preventDefault(); handleMouseUp(); },
-              onTouchCancel: function() { handleMouseUp(); },
-              style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', cursor: 'pointer', touchAction: 'none' }
-            }),
+              onTouchCancel: function() { handleMouseUp(); }
+              })
+            ),
             // ── Run Play button — the headline action ──
             // A green pill below the canvas that animates the play.
             // Disabled while a run is in flight; re-enables after the
             // outcome banner clears. Reduced-motion users get an instant
             // outcome (no animation) — handled in the rAF effect.
-            h('div', { style: { marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+            h('div', { className: 'playlab-run-rack' },
               h('button', {
                 onClick: startRun,
                 disabled: !!d.runActive,
                 'aria-busy': !!d.runActive,
                 'data-pl-focusable': 'true',
                 'aria-label': d.runActive ? 'Play is running' : 'Run the active play with animation',
-                style: {
-                  padding: '10px 18px', minHeight: 38, borderRadius: 8,
-                  cursor: d.runActive ? 'wait' : 'pointer',
-                  border: '1px solid #10b981',
-                  background: d.runActive ? '#1e293b' : 'linear-gradient(135deg, #10b981, #059669)',
-                  color: d.runActive ? '#94a3b8' : '#0f172a',
-                  fontSize: 14, fontWeight: 800
-                }
+                className: 'playlab-run-button'
               }, d.runActive ? '⏱ Running…' : '▶ Run Play'),
               d.runOutcome ? h('span', {
-                style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' }
+                className: 'playlab-last-result'
               },
-                d.runOutcome.location === 'caught' ? 'Last result: ✅ Complete to ' + d.runOutcome.receiverId
-                  : d.runOutcome.location === 'brokenup' ? 'Last result: ✋ Broken up'
-                  : 'Last result: ❌ Incomplete'
+                d.runOutcome.sport === 'soccer' ? 'Last result: xG ' + (d.runOutcome.xG || 0).toFixed(2)
+                  : d.runOutcome.location === 'caught' ? 'Last result: ✅ Complete to ' + d.runOutcome.receiverId
+                    : d.runOutcome.location === 'brokenup' ? 'Last result: ✋ Broken up'
+                      : 'Last result: ❌ Incomplete'
               ) : null
             ),
 
             // Toggle row + reset positions
-            h('div', { style: { marginTop: 8, display: 'flex', gap: 12, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', flexWrap: 'wrap', alignItems: 'center' } },
-              h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+            h('div', { className: 'playlab-toggle-rack' },
+              h('label', null,
                 h('input', { type: 'checkbox', checked: !!d.showZones, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showZones', e.target.checked); } }),
-                'Coverage zones'),
-              h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+                __alloT('stem.playlab.coverage_zones', 'Coverage zones')),
+              h('label', null,
                 h('input', { type: 'checkbox', checked: !!d.showRoutes, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showRoutes', e.target.checked); } }),
-                'Route lines'),
-              h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+                __alloT('stem.playlab.route_lines', 'Route lines')),
+              h('label', null,
                 h('input', { type: 'checkbox', checked: !!d.showOpen, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showOpen', e.target.checked); } }),
                 isSoccer ? 'Open-player halo' : 'Open-receiver halo'),
               // Soccer-only: xG heatmap toggle. Lives next to the open-halo
               // toggle so all visualization options sit together.
-              isSoccer ? h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+              isSoccer ? h('label', null,
                 h('input', { type: 'checkbox', checked: !!d.showXG, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showXG', e.target.checked); } }),
-                'xG heatmap') : null,
+                __alloT('stem.playlab.xg_heatmap', 'xG heatmap')) : null,
               // "Custom edits" indicator + Reset button. Only renders when the
               // student has actually moved a player, so the UI stays clean
               // when running stock plays.
@@ -4400,30 +4650,27 @@ window.StemLab = window.StemLab || {
               Object.keys(d.customPositions || {}).length > 0 ? h('button', {
                 onClick: resetPositions,
                 'data-pl-focusable': 'true',
-                'aria-label': 'Reset all custom player positions to the play preset',
-                style: {
-                  padding: '4px 10px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
-                  border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11
-                }
-              }, 'Reset positions') : null,
+                'aria-label': __alloT('stem.playlab.reset_all_custom_player_positions_to_t', 'Reset all custom player positions to the play preset'),
+                style: playLabSecondaryButtonStyle({ padding: '4px 10px', minHeight: 28, borderRadius: 4, fontSize: 11 })
+              }, __alloT('stem.playlab.reset_positions', 'Reset positions')) : null,
               // Save play — only renders when there's something custom to save
               Object.keys(d.customPositions || {}).length > 0 ? h('button', {
                 onClick: openSavePrompt,
                 'data-pl-focusable': 'true',
-                'aria-label': 'Save the current custom play with a name',
+                'aria-label': __alloT('stem.playlab.save_the_current_custom_play_with_a_na', 'Save the current custom play with a name'),
                 style: {
                   padding: '4px 10px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
                   border: '1px solid #d946ef', background: 'rgba(217,70,239,0.18)',
                   color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600
                 }
-              }, '💾 Save play') : null
+              }, __alloT('stem.playlab.save_play', '💾 Save play')) : null
             ),
             // Save prompt — inline form below the toggle row
             d.savePromptOpen ? h('div', {
-              role: 'dialog', 'aria-label': 'Save play',
+              role: 'dialog', 'aria-label': __alloT('stem.playlab.save_play_2', 'Save play'),
               style: { marginTop: 8, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #d946ef', borderRadius: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
             },
-              h('label', { htmlFor: 'pl-save-name', style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Play name:'),
+              h('label', { htmlFor: 'pl-save-name', style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, __alloT('stem.playlab.play_name', 'Play name:')),
               h('input', {
                 id: 'pl-save-name', type: 'text',
                 value: d.savePromptName || '',
@@ -4433,22 +4680,23 @@ window.StemLab = window.StemLab || {
                   else if (e.key === 'Escape') cancelSavePrompt();
                 },
                 'data-pl-focusable': 'true', autoFocus: true,
-                style: { flex: 1, minWidth: 200, padding: '6px 8px', borderRadius: 4, border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12 }
+                className: 'playlab-native-control',
+                style: playLabNativeControlStyle({ flex: 1, minWidth: 200 })
               }),
               h('button', {
                 onClick: commitSavePlay, 'data-pl-focusable': 'true',
                 style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid #d946ef', background: 'rgba(217,70,239,0.18)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600 }
-              }, 'Save'),
+              }, __alloT('stem.playlab.save', 'Save')),
               h('button', {
                 onClick: cancelSavePrompt, 'data-pl-focusable': 'true',
-                style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 }
-              }, 'Cancel')
+                style: playLabSecondaryButtonStyle({ padding: '6px 12px', minHeight: 30, borderRadius: 4, fontSize: 11 })
+              }, __alloT('stem.playlab.cancel', 'Cancel'))
             ) : null,
             // Drag hint — only on first load (no custom edits yet) so it
             // doesn't nag returning students
             !Object.keys(d.customPositions || {}).length ? h('div', {
               style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' }
-            }, '💡 Tip: click and drag any player on the field to reposition them. The route stays attached so you can design your own play.') : null,
+            }, __alloT('stem.playlab.tip_click_and_drag_any_player_on_the_f', '💡 Tip: click and drag any player on the field to reposition them. The route stays attached so you can design your own play.')) : null,
             // ── Coach Mode bubble ──
             // Renders only when there's a reply, error, or in-flight request.
             // Sits between the toggles and the analysis panel so coaching
@@ -4460,9 +4708,9 @@ window.StemLab = window.StemLab || {
             },
               h('h3', { id: 'pl-coach-heading',
                 style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#d946ef', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
-              }, '🤖 Coach analysis'),
+              }, __alloT('stem.playlab.coach_analysis', '🤖 Coach analysis')),
               d.coachLoading
-                ? h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontStyle: 'italic' } }, 'Analyzing the play vs the coverage…')
+                ? h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontStyle: 'italic' } }, __alloT('stem.playlab.analyzing_the_play_vs_the_coverage', 'Analyzing the play vs the coverage…'))
                 : d.coachError
                 ? h('div', { style: { color: '#ef4444', fontSize: 12 } }, d.coachError)
                 : h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, lineHeight: 1.5 } }, d.coachReply)
@@ -4474,9 +4722,12 @@ window.StemLab = window.StemLab || {
               style: { marginTop: 10, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10 }
             },
               h('h3', { id: 'pl-analysis-heading', style: { fontSize: 12, margin: 0, marginBottom: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
-                'Open-receiver analysis'),
-              analysis.length === 0
-                ? h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, fontStyle: 'italic' } }, 'No eligible receivers running routes.')
+                isSoccer ? __alloT('stem.playlab.chance_analysis', 'Chance analysis') : __alloT('stem.playlab.open_receiver_analysis', 'Open-receiver analysis')),
+              isSoccer
+                ? h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.5 } },
+                    __alloT('stem.playlab.soccer_chance_analysis_copy', 'The live read tracks the final shot location, xG, and how the passing pattern stretches the defensive shape.'))
+                : analysis.length === 0
+                ? h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, fontStyle: 'italic' } }, __alloT('stem.playlab.no_eligible_receivers_running_routes', 'No eligible receivers running routes.'))
                 : h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, fontSize: 12 } },
                     analysis.slice(0, 3).map(function(r, idx) {
                       var winner = idx === 0;
@@ -4501,7 +4752,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // RIGHT: teach + coverage info + stats
-          h('div', null,
+          h('div', { className: 'playlab-info-column' },
             h('section', {
               'aria-labelledby': 'pl-play-heading',
               style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 10 }
@@ -4534,7 +4785,7 @@ window.StemLab = window.StemLab || {
             // (left column) so it doesn't squeeze the narrow right column.
             typeof callGemini === 'function' ? h('div', { style: { marginBottom: 10 } },
               // Coach persona picker — pill row of 4 voice options
-              h('div', { role: 'group', 'aria-label': 'Coach voice',
+              h('div', { role: 'group', 'aria-label': __alloT('stem.playlab.coach_voice', 'Coach voice'),
                 style: { display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' } },
                 COACH_PERSONAS.map(function(p) {
                   var sel = (d.coachPersona || 'analyst') === p.id;
@@ -4550,9 +4801,9 @@ window.StemLab = window.StemLab || {
                     title: p.prepend,
                     style: {
                       padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
-                      border: '1px solid ' + (sel ? '#d946ef' : '#334155'),
-                      background: sel ? 'rgba(217,70,239,0.18)' : '#1e293b',
-                      color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: sel ? 700 : 500
+                      border: '1px solid ' + (sel ? '#f5d0fe' : '#94a3b8'),
+                      background: sel ? '#f0abfc' : '#0f172a',
+                      color: sel ? '#3b0764' : '#f8fafc', fontSize: 11, fontWeight: sel ? 900 : 700
                     }
                   }, p.icon + ' ' + p.label);
                 })
@@ -4588,7 +4839,7 @@ window.StemLab = window.StemLab || {
                 d.savedPlays.slice().reverse().map(function(entry) {
                   return h('li', {
                     key: entry.id,
-                    style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 6px', borderRadius: 4, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' }
+                    style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 6px', borderRadius: 4, background: '#0f172a', border: '1px solid #64748b' }
                   },
                     h('span', { style: { fontSize: 14 } }, entry.sport === 'soccer' ? '⚽' : '🏈'),
                     h('button', {
@@ -4596,15 +4847,14 @@ window.StemLab = window.StemLab || {
                       'aria-label': 'Load saved play ' + entry.name,
                       'data-pl-focusable': 'true',
                       style: { flex: 1, padding: '4px 6px', borderRadius: 4, cursor: 'pointer',
-                        border: '1px solid transparent', background: 'transparent',
-                        color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, textAlign: 'left' }
+                        border: '1px solid #94a3b8', background: '#0f172a',
+                        color: '#f8fafc', fontSize: 12, textAlign: 'left' }
                     }, entry.name),
                     h('button', {
                       onClick: function() { if (confirm('Delete saved play "' + entry.name + '"?')) deleteSavedPlay(entry.id); },
                       'aria-label': 'Delete saved play ' + entry.name,
                       'data-pl-focusable': 'true',
-                      style: { padding: '4px 8px', minHeight: 24, minWidth: 24, borderRadius: 4, cursor: 'pointer',
-                        border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12 }
+                      style: playLabSecondaryButtonStyle({ padding: '4px 8px', minHeight: 28, minWidth: 28, borderRadius: 4, fontSize: 12 })
                     }, '✕')
                   );
                 })

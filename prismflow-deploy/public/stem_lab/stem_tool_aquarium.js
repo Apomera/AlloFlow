@@ -10789,8 +10789,8 @@ window.StemLab = window.StemLab || {
 
   window.StemLab.registerTool('aquarium', {
     icon: '\uD83D\uDC20',
-    label: 'aquarium',
-    desc: '',
+    label: "Aquarium Lab",
+    desc: "Build and run a virtual fish tank to learn the nitrogen cycle, water chemistry, fish anatomy, species care, and marine ecology.",
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -10813,6 +10813,7 @@ window.StemLab = window.StemLab || {
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -11111,7 +11112,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             fish: {
 
-              label: 'Bony Fish (Osteichthyes)',
+              label: __alloT('stem.aquarium.bony_fish_osteichthyes', 'Bony Fish (Osteichthyes)'),
 
               svg: function (w, h, color) {
 
@@ -11179,23 +11180,23 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Dorsal Fin', x: 48, y: 5, desc: 'Stabilizes the fish during swimming, preventing rolling. Contains bony spines (rays) connected by thin membrane. Erected when alarmed.' },
+                { name: __alloT('stem.aquarium.dorsal_fin', 'Dorsal Fin'), x: 48, y: 5, desc: __alloT('stem.aquarium.stabilizes_the_fish_during_swimming_pr', 'Stabilizes the fish during swimming, preventing rolling. Contains bony spines (rays) connected by thin membrane. Erected when alarmed.') },
 
-                { name: 'Caudal Fin (Tail)', x: 93, y: 48, desc: 'Primary propulsion organ. Shape determines swimming style — forked tails are built for speed, rounded for maneuverability.' },
+                { name: __alloT('stem.aquarium.caudal_fin_tail', 'Caudal Fin (Tail)'), x: 93, y: 48, desc: __alloT('stem.aquarium.primary_propulsion_organ_shape_determi', 'Primary propulsion organ. Shape determines swimming style — forked tails are built for speed, rounded for maneuverability.') },
 
-                { name: 'Pectoral Fins', x: 26, y: 68, desc: 'Paired fins used for steering, braking, and hovering. Act like hydrofoils. Can be fanned out to appear larger to rivals.' },
+                { name: __alloT('stem.aquarium.pectoral_fins', 'Pectoral Fins'), x: 26, y: 68, desc: __alloT('stem.aquarium.paired_fins_used_for_steering_braking_', 'Paired fins used for steering, braking, and hovering. Act like hydrofoils. Can be fanned out to appear larger to rivals.') },
 
-                { name: 'Anal/Pelvic Fins', x: 53, y: 85, desc: 'Ventral stabilizers that prevent pitching and yawing. Pelvic fins evolved from ancestral limb buds.' },
+                { name: __alloT('stem.aquarium.anal_pelvic_fins', 'Anal/Pelvic Fins'), x: 53, y: 85, desc: __alloT('stem.aquarium.ventral_stabilizers_that_prevent_pitch', 'Ventral stabilizers that prevent pitching and yawing. Pelvic fins evolved from ancestral limb buds.') },
 
-                { name: 'Gill Cover (Operculum)', x: 27, y: 42, desc: 'Bony plate protecting delicate gill filaments. Pumps water over gills by rhythmically opening and closing.' },
+                { name: __alloT('stem.aquarium.gill_cover_operculum', 'Gill Cover (Operculum)'), x: 27, y: 42, desc: __alloT('stem.aquarium.bony_plate_protecting_delicate_gill_fi', 'Bony plate protecting delicate gill filaments. Pumps water over gills by rhythmically opening and closing.') },
 
-                { name: 'Lateral Line', x: 58, y: 42, desc: 'A row of sensory pores detecting vibrations and pressure changes. Allows fish to sense movement, currents, and obstacles in total darkness.' },
+                { name: __alloT('stem.aquarium.lateral_line', 'Lateral Line'), x: 58, y: 42, desc: __alloT('stem.aquarium.a_row_of_sensory_pores_detecting_vibra', 'A row of sensory pores detecting vibrations and pressure changes. Allows fish to sense movement, currents, and obstacles in total darkness.') },
 
-                { name: 'Eye', x: 19, y: 44, desc: 'Spherical lens focuses light. Most fish see in color and some perceive UV light. No eyelids — cornea is bathed in water.' },
+                { name: 'Eye', x: 19, y: 44, desc: __alloT('stem.aquarium.spherical_lens_focuses_light_most_fish', 'Spherical lens focuses light. Most fish see in color and some perceive UV light. No eyelids — cornea is bathed in water.') },
 
-                { name: 'Swim Bladder (internal)', x: 48, y: 38, desc: 'Gas-filled organ for buoyancy control. Fish add or remove gas to hover at any depth without expending energy.' },
+                { name: __alloT('stem.aquarium.swim_bladder_internal', 'Swim Bladder (internal)'), x: 48, y: 38, desc: __alloT('stem.aquarium.gas_filled_organ_for_buoyancy_control_', 'Gas-filled organ for buoyancy control. Fish add or remove gas to hover at any depth without expending energy.') },
 
-                { name: 'Scales & Mucus', x: 70, y: 55, desc: 'Overlapping cycloid or ctenoid scales covered in antibacterial mucus. Reduces hydrodynamic drag by up to 65%.' }
+                { name: __alloT('stem.aquarium.scales_mucus', 'Scales & Mucus'), x: 70, y: 55, desc: __alloT('stem.aquarium.overlapping_cycloid_or_ctenoid_scales_', 'Overlapping cycloid or ctenoid scales covered in antibacterial mucus. Reduces hydrodynamic drag by up to 65%.') }
 
               ]
 
@@ -11203,7 +11204,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             shark: {
 
-              label: 'Cartilaginous Fish (Chondrichthyes)',
+              label: __alloT('stem.aquarium.cartilaginous_fish_chondrichthyes', 'Cartilaginous Fish (Chondrichthyes)'),
 
               svg: function (w, h, color) {
 
@@ -11263,21 +11264,21 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Dorsal Fin', x: 53, y: 3, desc: 'The iconic triangular fin provides stability. Made entirely of cartilage — sharks have no true bones anywhere in their body.' },
+                { name: __alloT('stem.aquarium.dorsal_fin_2', 'Dorsal Fin'), x: 53, y: 3, desc: __alloT('stem.aquarium.the_iconic_triangular_fin_provides_sta', 'The iconic triangular fin provides stability. Made entirely of cartilage — sharks have no true bones anywhere in their body.') },
 
-                { name: 'Gill Slits (5)', x: 27, y: 36, desc: 'Five exposed gill slits with no protective cover. Sharks must swim to push water over gills — they cannot pump water like bony fish.' },
+                { name: __alloT('stem.aquarium.gill_slits_5', 'Gill Slits (5)'), x: 27, y: 36, desc: __alloT('stem.aquarium.five_exposed_gill_slits_with_no_protec', 'Five exposed gill slits with no protective cover. Sharks must swim to push water over gills — they cannot pump water like bony fish.') },
 
-                { name: 'Ampullae of Lorenzini', x: 9, y: 46, desc: 'Jelly-filled pores on the snout that detect electrical fields as weak as 5 nanovolts — enough to sense a prey heartbeat buried in sand.' },
+                { name: __alloT('stem.aquarium.ampullae_of_lorenzini', 'Ampullae of Lorenzini'), x: 9, y: 46, desc: __alloT('stem.aquarium.jelly_filled_pores_on_the_snout_that_d', 'Jelly-filled pores on the snout that detect electrical fields as weak as 5 nanovolts — enough to sense a prey heartbeat buried in sand.') },
 
-                { name: 'Heterocercal Tail', x: 95, y: 32, desc: 'Upper lobe is longer, generating upward lift as the shark swims. This compensates for the lack of a swim bladder.' },
+                { name: __alloT('stem.aquarium.heterocercal_tail', 'Heterocercal Tail'), x: 95, y: 32, desc: __alloT('stem.aquarium.upper_lobe_is_longer_generating_upward', 'Upper lobe is longer, generating upward lift as the shark swims. This compensates for the lack of a swim bladder.') },
 
-                { name: 'Pectoral Fins', x: 26, y: 62, desc: 'Rigid, wing-like fins that generate lift. Unlike bony fish, shark pectoral fins cannot fold flat — they act as airplane wings.' },
+                { name: __alloT('stem.aquarium.pectoral_fins_2', 'Pectoral Fins'), x: 26, y: 62, desc: __alloT('stem.aquarium.rigid_wing_like_fins_that_generate_lif', 'Rigid, wing-like fins that generate lift. Unlike bony fish, shark pectoral fins cannot fold flat — they act as airplane wings.') },
 
-                { name: 'Dermal Denticles', x: 62, y: 55, desc: 'Tooth-like scales (placoid scales) that channel water flow. Surface texture reduces drag by 8% — inspired NASA swimsuit designs.' },
+                { name: __alloT('stem.aquarium.dermal_denticles', 'Dermal Denticles'), x: 62, y: 55, desc: __alloT('stem.aquarium.tooth_like_scales_placoid_scales_that_', 'Tooth-like scales (placoid scales) that channel water flow. Surface texture reduces drag by 8% — inspired NASA swimsuit designs.') },
 
-                { name: 'Cartilage Skeleton', x: 45, y: 50, desc: 'Skeleton is 100% cartilage — half the density of bone. This makes sharks lighter and more agile, but fossils only preserve teeth and spines.' },
+                { name: __alloT('stem.aquarium.cartilage_skeleton', 'Cartilage Skeleton'), x: 45, y: 50, desc: __alloT('stem.aquarium.skeleton_is_100_cartilage_half_the_den', 'Skeleton is 100% cartilage — half the density of bone. This makes sharks lighter and more agile, but fossils only preserve teeth and spines.') },
 
-                { name: 'Replaceable Teeth', x: 5, y: 50, desc: 'Teeth grow in rows on a conveyor-belt jaw. A single shark may produce 30,000+ teeth in its lifetime, replacing them every 1-2 weeks.' }
+                { name: __alloT('stem.aquarium.replaceable_teeth', 'Replaceable Teeth'), x: 5, y: 50, desc: __alloT('stem.aquarium.teeth_grow_in_rows_on_a_conveyor_belt_', 'Teeth grow in rows on a conveyor-belt jaw. A single shark may produce 30,000+ teeth in its lifetime, replacing them every 1-2 weeks.') }
 
               ]
 
@@ -11285,7 +11286,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             jellyfish: {
 
-              label: 'Cnidarian (Medusa Form)',
+              label: __alloT('stem.aquarium.cnidarian_medusa_form', 'Cnidarian (Medusa Form)'),
 
               svg: function (w, h, color) {
 
@@ -11333,17 +11334,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Bell (Medusa)', x: 50, y: 10, desc: 'The dome-shaped body contracts rhythmically for jet propulsion. Made of mesoglea — 95% water with collagen fibers for elasticity.' },
+                { name: __alloT('stem.aquarium.bell_medusa', 'Bell (Medusa)'), x: 50, y: 10, desc: __alloT('stem.aquarium.the_dome_shaped_body_contracts_rhythmi', 'The dome-shaped body contracts rhythmically for jet propulsion. Made of mesoglea — 95% water with collagen fibers for elasticity.') },
 
-                { name: 'Tentacles', x: 78, y: 60, desc: 'Trailing appendages lined with cnidocytes — stinging cells that fire nematocysts in 700 nanoseconds, among the fastest events in nature.' },
+                { name: __alloT('stem.aquarium.tentacles', 'Tentacles'), x: 78, y: 60, desc: __alloT('stem.aquarium.trailing_appendages_lined_with_cnidocy', 'Trailing appendages lined with cnidocytes — stinging cells that fire nematocysts in 700 nanoseconds, among the fastest events in nature.') },
 
-                { name: 'Oral Arms', x: 25, y: 50, desc: 'Frilly appendages near the mouth that capture food particles. In some species they fuse to form a feeding curtain.' },
+                { name: __alloT('stem.aquarium.oral_arms', 'Oral Arms'), x: 25, y: 50, desc: __alloT('stem.aquarium.frilly_appendages_near_the_mouth_that_', 'Frilly appendages near the mouth that capture food particles. In some species they fuse to form a feeding curtain.') },
 
-                { name: 'Gastrovascular Cavity', x: 50, y: 33, desc: 'A central cavity serves as both stomach and circulatory system. One opening functions as both mouth and anus.' },
+                { name: __alloT('stem.aquarium.gastrovascular_cavity', 'Gastrovascular Cavity'), x: 50, y: 33, desc: __alloT('stem.aquarium.a_central_cavity_serves_as_both_stomac', 'A central cavity serves as both stomach and circulatory system. One opening functions as both mouth and anus.') },
 
-                { name: 'Nerve Net', x: 40, y: 22, desc: 'No brain, no central nervous system. A diffuse nerve net coordinates swimming contractions. Some species have rhopalia (light/gravity sensors).' },
+                { name: __alloT('stem.aquarium.nerve_net', 'Nerve Net'), x: 40, y: 22, desc: __alloT('stem.aquarium.no_brain_no_central_nervous_system_a_d', 'No brain, no central nervous system. A diffuse nerve net coordinates swimming contractions. Some species have rhopalia (light/gravity sensors).') },
 
-                { name: 'Radial Canals', x: 65, y: 25, desc: 'Channels radiating from the central cavity to the bell margin, distributing nutrients. Their radial symmetry predates bilateral body plans by 200M+ years.' }
+                { name: __alloT('stem.aquarium.radial_canals', 'Radial Canals'), x: 65, y: 25, desc: __alloT('stem.aquarium.channels_radiating_from_the_central_ca', 'Channels radiating from the central cavity to the bell margin, distributing nutrients. Their radial symmetry predates bilateral body plans by 200M+ years.') }
 
               ]
 
@@ -11351,7 +11352,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             sea_anemone: {
 
-              label: 'Cnidarian (Polyp Form — Sea Anemone)',
+              label: __alloT('stem.aquarium.cnidarian_polyp_form_sea_anemone', 'Cnidarian (Polyp Form — Sea Anemone)'),
 
               svg: function (w, h, color) {
 
@@ -11423,17 +11424,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Tentacles', x: 50, y: 8, desc: 'Ring of flexible tentacles armed with cnidocytes (stinging cells). Used to capture prey — small fish and shrimp are paralyzed by nematocyst venom and guided to the mouth.' },
+                { name: __alloT('stem.aquarium.tentacles_2', 'Tentacles'), x: 50, y: 8, desc: __alloT('stem.aquarium.ring_of_flexible_tentacles_armed_with_', 'Ring of flexible tentacles armed with cnidocytes (stinging cells). Used to capture prey — small fish and shrimp are paralyzed by nematocyst venom and guided to the mouth.') },
 
-                { name: 'Oral Disc', x: 50, y: 33, desc: 'Flat upper surface surrounding the central mouth. The mouth is the only opening — it serves as both entrance for food and exit for waste, identical to the jellyfish body plan.' },
+                { name: __alloT('stem.aquarium.oral_disc', 'Oral Disc'), x: 50, y: 33, desc: __alloT('stem.aquarium.flat_upper_surface_surrounding_the_cen', 'Flat upper surface surrounding the central mouth. The mouth is the only opening — it serves as both entrance for food and exit for waste, identical to the jellyfish body plan.') },
 
-                { name: 'Column', x: 28, y: 55, desc: 'Muscular cylindrical body wall made of two tissue layers (ectoderm and endoderm) separated by mesoglea. Can contract to retract tentacles when threatened.' },
+                { name: __alloT('stem.aquarium.column', 'Column'), x: 28, y: 55, desc: __alloT('stem.aquarium.muscular_cylindrical_body_wall_made_of', 'Muscular cylindrical body wall made of two tissue layers (ectoderm and endoderm) separated by mesoglea. Can contract to retract tentacles when threatened.') },
 
-                { name: 'Pedal Disc', x: 50, y: 95, desc: 'Adhesive base that anchors the anemone to rocks, shells, or coral. Despite appearing fixed, anemones can slowly glide across surfaces at ~1 cm/hour.' },
+                { name: __alloT('stem.aquarium.pedal_disc', 'Pedal Disc'), x: 50, y: 95, desc: __alloT('stem.aquarium.adhesive_base_that_anchors_the_anemone', 'Adhesive base that anchors the anemone to rocks, shells, or coral. Despite appearing fixed, anemones can slowly glide across surfaces at ~1 cm/hour.') },
 
-                { name: 'Cnidocytes', x: 75, y: 18, desc: 'Specialized stinging cells concentrated on tentacles. Each cnidocyte fires a barbed nematocyst in under 700 nanoseconds — one of the fastest mechanical processes in nature.' },
+                { name: __alloT('stem.aquarium.cnidocytes', 'Cnidocytes'), x: 75, y: 18, desc: __alloT('stem.aquarium.specialized_stinging_cells_concentrate', 'Specialized stinging cells concentrated on tentacles. Each cnidocyte fires a barbed nematocyst in under 700 nanoseconds — one of the fastest mechanical processes in nature.') },
 
-                { name: 'Zooxanthellae', x: 30, y: 70, desc: 'Symbiotic photosynthetic algae living inside the tissue. They provide up to 90% of the anemone\'s energy via photosynthesis, in exchange for shelter and nutrients.' }
+                { name: __alloT('stem.aquarium.zooxanthellae', 'Zooxanthellae'), x: 30, y: 70, desc: __alloT('stem.aquarium.symbiotic_photosynthetic_algae_living_', 'Symbiotic photosynthetic algae living inside the tissue. They provide up to 90% of the anemone\'s energy via photosynthesis, in exchange for shelter and nutrients.') }
 
               ]
 
@@ -11441,7 +11442,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             crustacean: {
 
-              label: 'Crustacean (Arthropoda)',
+              label: __alloT('stem.aquarium.crustacean_arthropoda', 'Crustacean (Arthropoda)'),
 
               svg: function (w, h, color) {
 
@@ -11489,17 +11490,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Carapace (Exoskeleton)', x: 50, y: 24, desc: 'Hardened shell of chitin and calcium carbonate. Must be molted (shed) to grow — the animal is soft and vulnerable for hours after.' },
+                { name: __alloT('stem.aquarium.carapace_exoskeleton', 'Carapace (Exoskeleton)'), x: 50, y: 24, desc: __alloT('stem.aquarium.hardened_shell_of_chitin_and_calcium_c', 'Hardened shell of chitin and calcium carbonate. Must be molted (shed) to grow — the animal is soft and vulnerable for hours after.') },
 
-                { name: 'Antennae (2 pairs)', x: 10, y: 11, desc: 'Long antennae detect touch, chemicals, and water currents. Short antennules sense gravity and balance via statocysts.' },
+                { name: __alloT('stem.aquarium.antennae_2_pairs', 'Antennae (2 pairs)'), x: 10, y: 11, desc: __alloT('stem.aquarium.long_antennae_detect_touch_chemicals_a', 'Long antennae detect touch, chemicals, and water currents. Short antennules sense gravity and balance via statocysts.') },
 
-                { name: 'Compound Eyes', x: 22, y: 30, desc: 'Mounted on stalks with thousands of ommatidia (individual lenses). Excellent motion detection. Some species see polarized and UV light.' },
+                { name: __alloT('stem.aquarium.compound_eyes', 'Compound Eyes'), x: 22, y: 30, desc: __alloT('stem.aquarium.mounted_on_stalks_with_thousands_of_om', 'Mounted on stalks with thousands of ommatidia (individual lenses). Excellent motion detection. Some species see polarized and UV light.') },
 
-                { name: 'Walking Legs (Pereopods)', x: 42, y: 78, desc: 'Five pairs of jointed walking legs. First pair often modified into claws (chelipeds) for defense, feeding, and signaling.' },
+                { name: __alloT('stem.aquarium.walking_legs_pereopods', 'Walking Legs (Pereopods)'), x: 42, y: 78, desc: __alloT('stem.aquarium.five_pairs_of_jointed_walking_legs_fir', 'Five pairs of jointed walking legs. First pair often modified into claws (chelipeds) for defense, feeding, and signaling.') },
 
-                { name: 'Swimmerets (Pleopods)', x: 60, y: 60, desc: 'Small paddle-like appendages under the abdomen. Used for swimming, carrying eggs, and circulating water over abdominal gills.' },
+                { name: __alloT('stem.aquarium.swimmerets_pleopods', 'Swimmerets (Pleopods)'), x: 60, y: 60, desc: __alloT('stem.aquarium.small_paddle_like_appendages_under_the', 'Small paddle-like appendages under the abdomen. Used for swimming, carrying eggs, and circulating water over abdominal gills.') },
 
-                { name: 'Gills (under carapace)', x: 72, y: 38, desc: 'Feathery gills sit in chambers under the carapace. Appendages called scaphognathites act as pumps to draw water through.' }
+                { name: __alloT('stem.aquarium.gills_under_carapace', 'Gills (under carapace)'), x: 72, y: 38, desc: __alloT('stem.aquarium.feathery_gills_sit_in_chambers_under_t', 'Feathery gills sit in chambers under the carapace. Appendages called scaphognathites act as pumps to draw water through.') }
 
               ]
 
@@ -11507,7 +11508,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             cephalopod: {
 
-              label: 'Cephalopod (Mollusca)',
+              label: __alloT('stem.aquarium.cephalopod_mollusca', 'Cephalopod (Mollusca)'),
 
               svg: function (w, h, color) {
 
@@ -11569,19 +11570,19 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Mantle', x: 50, y: 8, desc: 'Muscular body housing all organs. Contracts forcefully to jet water through the siphon, achieving speeds up to 40 km/h in squids.' },
+                { name: __alloT('stem.aquarium.mantle', 'Mantle'), x: 50, y: 8, desc: __alloT('stem.aquarium.muscular_body_housing_all_organs_contr', 'Muscular body housing all organs. Contracts forcefully to jet water through the siphon, achieving speeds up to 40 km/h in squids.') },
 
-                { name: 'Arms (8) with Suckers', x: 25, y: 60, desc: 'Eight arms lined with suckers containing chemoreceptors — they can taste what they touch. Each sucker can exert tremendous grip force.' },
+                { name: __alloT('stem.aquarium.arms_8_with_suckers', 'Arms (8) with Suckers'), x: 25, y: 60, desc: __alloT('stem.aquarium.eight_arms_lined_with_suckers_containi', 'Eight arms lined with suckers containing chemoreceptors — they can taste what they touch. Each sucker can exert tremendous grip force.') },
 
-                { name: 'Siphon (Funnel)', x: 50, y: 40, desc: 'A muscular nozzle for jet propulsion. Water is drawn into the mantle cavity, then expelled forcefully. Also ejects ink for escape.' },
+                { name: __alloT('stem.aquarium.siphon_funnel', 'Siphon (Funnel)'), x: 50, y: 40, desc: __alloT('stem.aquarium.a_muscular_nozzle_for_jet_propulsion_w', 'A muscular nozzle for jet propulsion. Water is drawn into the mantle cavity, then expelled forcefully. Also ejects ink for escape.') },
 
-                { name: 'Camera Eyes', x: 38, y: 22, desc: 'Evolved independently from vertebrate eyes but are structurally similar. No blind spot (unlike human eyes). Can see polarized light.' },
+                { name: __alloT('stem.aquarium.camera_eyes', 'Camera Eyes'), x: 38, y: 22, desc: __alloT('stem.aquarium.evolved_independently_from_vertebrate_', 'Evolved independently from vertebrate eyes but are structurally similar. No blind spot (unlike human eyes). Can see polarized light.') },
 
-                { name: 'Chromatophores', x: 60, y: 15, desc: 'Thousands of pigment-filled sacs that expand/contract in milliseconds. Controlled directly by the brain for instant camouflage, signaling, and hypnotic hunting displays.' },
+                { name: __alloT('stem.aquarium.chromatophores', 'Chromatophores'), x: 60, y: 15, desc: __alloT('stem.aquarium.thousands_of_pigment_filled_sacs_that_', 'Thousands of pigment-filled sacs that expand/contract in milliseconds. Controlled directly by the brain for instant camouflage, signaling, and hypnotic hunting displays.') },
 
-                { name: 'Three Hearts', x: 50, y: 30, desc: 'Two branchial hearts push blood through the gills. One systemic heart circulates oxygenated blood. Blood is copper-based (hemocyanin) — it is blue.' },
+                { name: __alloT('stem.aquarium.three_hearts', 'Three Hearts'), x: 50, y: 30, desc: __alloT('stem.aquarium.two_branchial_hearts_push_blood_throug', 'Two branchial hearts push blood through the gills. One systemic heart circulates oxygenated blood. Blood is copper-based (hemocyanin) — it is blue.') },
 
-                { name: 'Beak', x: 50, y: 36, desc: 'A hard, parrot-like beak of chitin — the only rigid structure. An octopus can squeeze through any gap larger than its beak.' }
+                { name: __alloT('stem.aquarium.beak', 'Beak'), x: 50, y: 36, desc: __alloT('stem.aquarium.a_hard_parrot_like_beak_of_chitin_the_', 'A hard, parrot-like beak of chitin — the only rigid structure. An octopus can squeeze through any gap larger than its beak.') }
 
               ]
 
@@ -11589,7 +11590,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             echinoderm: {
 
-              label: 'Echinoderm (Asteroidea)',
+              label: __alloT('stem.aquarium.echinoderm_asteroidea', 'Echinoderm (Asteroidea)'),
 
               svg: function (w, h, color) {
 
@@ -11639,17 +11640,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Water Vascular System', x: 50, y: 42, desc: 'A hydraulic network unique to echinoderms. Seawater enters through the madreporite and fills radial canals powering hundreds of tube feet.' },
+                { name: __alloT('stem.aquarium.water_vascular_system', 'Water Vascular System'), x: 50, y: 42, desc: __alloT('stem.aquarium.a_hydraulic_network_unique_to_echinode', 'A hydraulic network unique to echinoderms. Seawater enters through the madreporite and fills radial canals powering hundreds of tube feet.') },
 
-                { name: 'Tube Feet', x: 30, y: 42, desc: 'Tiny suction-cup appendages powered by hydraulic pressure. Coordinated movement can pry open clam shells with sustained force of 5+ kg.' },
+                { name: __alloT('stem.aquarium.tube_feet', 'Tube Feet'), x: 30, y: 42, desc: __alloT('stem.aquarium.tiny_suction_cup_appendages_powered_by', 'Tiny suction-cup appendages powered by hydraulic pressure. Coordinated movement can pry open clam shells with sustained force of 5+ kg.') },
 
-                { name: 'Madreporite', x: 48, y: 38, desc: 'A small sieve plate (visible as a pale dot) that filters seawater into the water vascular system. Located off-center on the aboral surface.' },
+                { name: __alloT('stem.aquarium.madreporite', 'Madreporite'), x: 48, y: 38, desc: __alloT('stem.aquarium.a_small_sieve_plate_visible_as_a_pale_', 'A small sieve plate (visible as a pale dot) that filters seawater into the water vascular system. Located off-center on the aboral surface.') },
 
-                { name: 'Eyespots', x: 50, y: 5, desc: 'Simple photoreceptors at each arm tip — bright spots visible at extremities. Cannot form images but detect light direction and intensity.' },
+                { name: __alloT('stem.aquarium.eyespots', 'Eyespots'), x: 50, y: 5, desc: __alloT('stem.aquarium.simple_photoreceptors_at_each_arm_tip_', 'Simple photoreceptors at each arm tip — bright spots visible at extremities. Cannot form images but detect light direction and intensity.') },
 
-                { name: 'Pentaradial Symmetry', x: 85, y: 22, desc: 'Five-fold body plan. Adults develop this from bilateral larvae — a unique metamorphosis among animals. No front, back, or sides.' },
+                { name: __alloT('stem.aquarium.pentaradial_symmetry', 'Pentaradial Symmetry'), x: 85, y: 22, desc: __alloT('stem.aquarium.five_fold_body_plan_adults_develop_thi', 'Five-fold body plan. Adults develop this from bilateral larvae — a unique metamorphosis among animals. No front, back, or sides.') },
 
-                { name: 'Regeneration Zone', x: 24, y: 60, desc: 'Can regrow entire arms from the central disc. Some species regenerate a complete animal from a single arm. Process takes months to years.' }
+                { name: __alloT('stem.aquarium.regeneration_zone', 'Regeneration Zone'), x: 24, y: 60, desc: __alloT('stem.aquarium.can_regrow_entire_arms_from_the_centra', 'Can regrow entire arms from the central disc. Some species regenerate a complete animal from a single arm. Process takes months to years.') }
 
               ]
 
@@ -11657,7 +11658,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             cetacean: {
 
-              label: 'Marine Mammal (Cetacea)',
+              label: __alloT('stem.aquarium.marine_mammal_cetacea', 'Marine Mammal (Cetacea)'),
 
               svg: function (w, h, color) {
 
@@ -11693,17 +11694,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Blowhole', x: 12, y: 28, desc: 'Modified nostril(s) on top of skull. Breathing is voluntary — cetaceans must consciously surface. Only half the brain sleeps at a time (unihemispheric sleep).' },
+                { name: __alloT('stem.aquarium.blowhole', 'Blowhole'), x: 12, y: 28, desc: __alloT('stem.aquarium.modified_nostril_s_on_top_of_skull_bre', 'Modified nostril(s) on top of skull. Breathing is voluntary — cetaceans must consciously surface. Only half the brain sleeps at a time (unihemispheric sleep).') },
 
-                { name: 'Melon (Echolocation)', x: 20, y: 40, desc: 'A fatty, oil-filled lens in the forehead that focuses outgoing clicks into a directional beam. Returning echoes are received through the lower jaw.' },
+                { name: __alloT('stem.aquarium.melon_echolocation', 'Melon (Echolocation)'), x: 20, y: 40, desc: __alloT('stem.aquarium.a_fatty_oil_filled_lens_in_the_forehea', 'A fatty, oil-filled lens in the forehead that focuses outgoing clicks into a directional beam. Returning echoes are received through the lower jaw.') },
 
-                { name: 'Dorsal Fin', x: 57, y: 12, desc: 'Dense connective tissue (no bone). Used for thermoregulation — blood vessels release or retain heat. Shape and nicks identify individuals.' },
+                { name: __alloT('stem.aquarium.dorsal_fin_3', 'Dorsal Fin'), x: 57, y: 12, desc: __alloT('stem.aquarium.dense_connective_tissue_no_bone_used_f', 'Dense connective tissue (no bone). Used for thermoregulation — blood vessels release or retain heat. Shape and nicks identify individuals.') },
 
-                { name: 'Fluke (Tail)', x: 95, y: 38, desc: 'Horizontal tail moved up-and-down by powerful back muscles (not side-to-side like fish). No bones — pure collagen and connective tissue.' },
+                { name: __alloT('stem.aquarium.fluke_tail', 'Fluke (Tail)'), x: 95, y: 38, desc: __alloT('stem.aquarium.horizontal_tail_moved_up_and_down_by_p', 'Horizontal tail moved up-and-down by powerful back muscles (not side-to-side like fish). No bones — pure collagen and connective tissue.') },
 
-                { name: 'Pectoral Flippers', x: 30, y: 68, desc: 'Modified forelimbs containing humerus, radius, ulna, and finger bones — the same skeletal plan as a human arm, adapted for steering and braking.' },
+                { name: __alloT('stem.aquarium.pectoral_flippers', 'Pectoral Flippers'), x: 30, y: 68, desc: __alloT('stem.aquarium.modified_forelimbs_containing_humerus_', 'Modified forelimbs containing humerus, radius, ulna, and finger bones — the same skeletal plan as a human arm, adapted for steering and braking.') },
 
-                { name: 'Blubber Layer', x: 50, y: 55, desc: 'Thick subcutaneous fat providing insulation, energy storage, buoyancy, and streamlining. Up to 50 cm thick in Arctic species like bowhead whales.' }
+                { name: __alloT('stem.aquarium.blubber_layer', 'Blubber Layer'), x: 50, y: 55, desc: __alloT('stem.aquarium.thick_subcutaneous_fat_providing_insul', 'Thick subcutaneous fat providing insulation, energy storage, buoyancy, and streamlining. Up to 50 cm thick in Arctic species like bowhead whales.') }
 
               ]
 
@@ -11711,7 +11712,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             chelonian: {
 
-              label: 'Sea Turtle (Testudines)',
+              label: __alloT('stem.aquarium.sea_turtle_testudines', 'Sea Turtle (Testudines)'),
 
               svg: function (w, h, color) {
 
@@ -11817,17 +11818,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Carapace (Shell)', x: 50, y: 25, desc: 'Fused vertebrae and ribs covered in keratinous scutes. Unlike land turtles, sea turtles cannot retract into their shell — it is streamlined for swimming.' },
+                { name: __alloT('stem.aquarium.carapace_shell', 'Carapace (Shell)'), x: 50, y: 25, desc: __alloT('stem.aquarium.fused_vertebrae_and_ribs_covered_in_ke', 'Fused vertebrae and ribs covered in keratinous scutes. Unlike land turtles, sea turtles cannot retract into their shell — it is streamlined for swimming.') },
 
-                { name: 'Front Flippers', x: 8, y: 35, desc: 'Elongated forelimbs used for powerful underwater flight. Leatherbacks can dive to 1,280 meters. Front flippers generate all thrust.' },
+                { name: __alloT('stem.aquarium.front_flippers', 'Front Flippers'), x: 8, y: 35, desc: __alloT('stem.aquarium.elongated_forelimbs_used_for_powerful_', 'Elongated forelimbs used for powerful underwater flight. Leatherbacks can dive to 1,280 meters. Front flippers generate all thrust.') },
 
-                { name: 'Rear Flippers', x: 20, y: 80, desc: 'Shorter and rounder than front flippers. Used as rudders for steering. Females use them to dig egg chambers on nesting beaches.' },
+                { name: __alloT('stem.aquarium.rear_flippers', 'Rear Flippers'), x: 20, y: 80, desc: __alloT('stem.aquarium.shorter_and_rounder_than_front_flipper', 'Shorter and rounder than front flippers. Used as rudders for steering. Females use them to dig egg chambers on nesting beaches.') },
 
-                { name: 'Salt Glands', x: 5, y: 18, desc: 'Orbital glands near the eyes excrete concentrated salt — this is why sea turtles appear to cry. Excreted salt is twice as concentrated as seawater.' },
+                { name: __alloT('stem.aquarium.salt_glands', 'Salt Glands'), x: 5, y: 18, desc: __alloT('stem.aquarium.orbital_glands_near_the_eyes_excrete_c', 'Orbital glands near the eyes excrete concentrated salt — this is why sea turtles appear to cry. Excreted salt is twice as concentrated as seawater.') },
 
-                { name: 'Scute Pattern', x: 35, y: 42, desc: 'Keratinous plates in species-specific arrangements. The pattern helps identify species. Growth rings on scutes record age like tree rings.' },
+                { name: __alloT('stem.aquarium.scute_pattern', 'Scute Pattern'), x: 35, y: 42, desc: __alloT('stem.aquarium.keratinous_plates_in_species_specific_', 'Keratinous plates in species-specific arrangements. The pattern helps identify species. Growth rings on scutes record age like tree rings.') },
 
-                { name: 'Magnetic Navigation', x: 55, y: 55, desc: 'Magnetite crystals in the brain create an internal compass. Hatchlings imprint their natal beach\'s unique magnetic signature and return decades later to nest.' }
+                { name: __alloT('stem.aquarium.magnetic_navigation', 'Magnetic Navigation'), x: 55, y: 55, desc: __alloT('stem.aquarium.magnetite_crystals_in_the_brain_create', 'Magnetite crystals in the brain create an internal compass. Hatchlings imprint their natal beach\'s unique magnetic signature and return decades later to nest.') }
 
               ]
 
@@ -11835,7 +11836,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             betta: {
 
-              label: 'Betta (Labyrinth Fish)',
+              label: __alloT('stem.aquarium.betta_labyrinth_fish', 'Betta (Labyrinth Fish)'),
 
               svg: function (w, h, color) {
 
@@ -11883,17 +11884,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Flowing Dorsal Fin', x: 48, y: 2, desc: 'Elaborate, sail-like dorsal fin used for display. In male bettas, it can span nearly the entire body length. Breeding selects for longer, more colorful fins.' },
+                { name: __alloT('stem.aquarium.flowing_dorsal_fin', 'Flowing Dorsal Fin'), x: 48, y: 2, desc: __alloT('stem.aquarium.elaborate_sail_like_dorsal_fin_used_fo', 'Elaborate, sail-like dorsal fin used for display. In male bettas, it can span nearly the entire body length. Breeding selects for longer, more colorful fins.') },
 
-                { name: 'Caudal Veil (Tail)', x: 90, y: 42, desc: 'Dramatic fan-shaped tail with delicate membrane. Multiple tail types exist: halfmoon, crowntail, plakat, veiltail. Susceptible to fin rot in poor water.' },
+                { name: __alloT('stem.aquarium.caudal_veil_tail', 'Caudal Veil (Tail)'), x: 90, y: 42, desc: __alloT('stem.aquarium.dramatic_fan_shaped_tail_with_delicate', 'Dramatic fan-shaped tail with delicate membrane. Multiple tail types exist: halfmoon, crowntail, plakat, veiltail. Susceptible to fin rot in poor water.') },
 
-                { name: 'Pectoral Fins', x: 18, y: 58, desc: 'Small, rounded fins used for slow sculling movements. Bettas hover and maneuver precisely rather than swimming fast.' },
+                { name: __alloT('stem.aquarium.pectoral_fins_3', 'Pectoral Fins'), x: 18, y: 58, desc: __alloT('stem.aquarium.small_rounded_fins_used_for_slow_scull', 'Small, rounded fins used for slow sculling movements. Bettas hover and maneuver precisely rather than swimming fast.') },
 
-                { name: 'Labyrinth Organ', x: 35, y: 32, desc: 'A folded, lung-like organ above the gills that extracts oxygen from air. This allows bettas to survive in shallow, oxygen-poor water like rice paddies.' },
+                { name: __alloT('stem.aquarium.labyrinth_organ', 'Labyrinth Organ'), x: 35, y: 32, desc: __alloT('stem.aquarium.a_folded_lung_like_organ_above_the_gil', 'A folded, lung-like organ above the gills that extracts oxygen from air. This allows bettas to survive in shallow, oxygen-poor water like rice paddies.') },
 
-                { name: 'Ventral Fins (Display)', x: 42, y: 85, desc: 'Long, trailing ventral fins used primarily for signaling. Males flare ventral fins alongside their gill covers when challenging rivals.' },
+                { name: __alloT('stem.aquarium.ventral_fins_display', 'Ventral Fins (Display)'), x: 42, y: 85, desc: __alloT('stem.aquarium.long_trailing_ventral_fins_used_primar', 'Long, trailing ventral fins used primarily for signaling. Males flare ventral fins alongside their gill covers when challenging rivals.') },
 
-                { name: 'Opercular Flare', x: 22, y: 44, desc: 'Gill covers extend outward to display bright-colored gill membranes. This threat display makes the fish appear larger and more intimidating to rivals.' }
+                { name: __alloT('stem.aquarium.opercular_flare', 'Opercular Flare'), x: 22, y: 44, desc: __alloT('stem.aquarium.gill_covers_extend_outward_to_display_', 'Gill covers extend outward to display bright-colored gill membranes. This threat display makes the fish appear larger and more intimidating to rivals.') }
 
               ]
 
@@ -11901,7 +11902,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             seahorse: {
 
-              label: 'Seahorse (Syngnathidae)',
+              label: __alloT('stem.aquarium.seahorse_syngnathidae', 'Seahorse (Syngnathidae)'),
 
               svg: function (w, h, color) {
 
@@ -11945,17 +11946,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Coronet (Crown)', x: 49, y: 2, desc: 'A bony crest unique to each individual — like a fingerprint. Used for species identification. Grows more elaborate with age.' },
+                { name: __alloT('stem.aquarium.coronet_crown', 'Coronet (Crown)'), x: 49, y: 2, desc: __alloT('stem.aquarium.a_bony_crest_unique_to_each_individual', 'A bony crest unique to each individual — like a fingerprint. Used for species identification. Grows more elaborate with age.') },
 
-                { name: 'Prehensile Tail', x: 30, y: 72, desc: 'Muscular, gripping tail used to anchor to seagrass and coral. Has a square cross-section for superior grip strength — unique among fish.' },
+                { name: __alloT('stem.aquarium.prehensile_tail', 'Prehensile Tail'), x: 30, y: 72, desc: __alloT('stem.aquarium.muscular_gripping_tail_used_to_anchor_', 'Muscular, gripping tail used to anchor to seagrass and coral. Has a square cross-section for superior grip strength — unique among fish.') },
 
-                { name: 'Brood Pouch (male)', x: 53, y: 48, desc: 'Males carry eggs in a ventral pouch. The female deposits eggs during an elaborate upright dance. Males nourish embryos for 2-4 weeks before giving birth.' },
+                { name: __alloT('stem.aquarium.brood_pouch_male', 'Brood Pouch (male)'), x: 53, y: 48, desc: __alloT('stem.aquarium.males_carry_eggs_in_a_ventral_pouch_th', 'Males carry eggs in a ventral pouch. The female deposits eggs during an elaborate upright dance. Males nourish embryos for 2-4 weeks before giving birth.') },
 
-                { name: 'Dorsal Fin', x: 60, y: 20, desc: 'Tiny, translucent dorsal fin that beats up to 35 times per second. This is the primary means of propulsion — making seahorses the slowest fish in the ocean.' },
+                { name: __alloT('stem.aquarium.dorsal_fin_4', 'Dorsal Fin'), x: 60, y: 20, desc: __alloT('stem.aquarium.tiny_translucent_dorsal_fin_that_beats', 'Tiny, translucent dorsal fin that beats up to 35 times per second. This is the primary means of propulsion — making seahorses the slowest fish in the ocean.') },
 
-                { name: 'Tubular Snout', x: 78, y: 10, desc: 'Elongated snout acts as a pipette — seahorses slurp up tiny crustaceans with a rapid head snap. Can strike and ingest prey in under 1 millisecond.' },
+                { name: __alloT('stem.aquarium.tubular_snout', 'Tubular Snout'), x: 78, y: 10, desc: __alloT('stem.aquarium.elongated_snout_acts_as_a_pipette_seah', 'Elongated snout acts as a pipette — seahorses slurp up tiny crustaceans with a rapid head snap. Can strike and ingest prey in under 1 millisecond.') },
 
-                { name: 'Bony Armor Plates', x: 42, y: 35, desc: 'Body encased in bony rings instead of scales. Provides excellent protection but limits flexibility. Few predators can digest the bony exterior.' }
+                { name: __alloT('stem.aquarium.bony_armor_plates', 'Bony Armor Plates'), x: 42, y: 35, desc: __alloT('stem.aquarium.body_encased_in_bony_rings_instead_of_', 'Body encased in bony rings instead of scales. Provides excellent protection but limits flexibility. Few predators can digest the bony exterior.') }
 
               ]
 
@@ -11963,7 +11964,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             pufferfish: {
 
-              label: 'Pufferfish (Tetraodontidae)',
+              label: __alloT('stem.aquarium.pufferfish_tetraodontidae', 'Pufferfish (Tetraodontidae)'),
 
               svg: function (w, h, color) {
 
@@ -12027,17 +12028,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Inflation Sac', x: 50, y: 48, desc: 'A highly elastic stomach that can inflate with water (or air) to 3x normal size. This makes the fish nearly impossible for predators to swallow.' },
+                { name: __alloT('stem.aquarium.inflation_sac', 'Inflation Sac'), x: 50, y: 48, desc: __alloT('stem.aquarium.a_highly_elastic_stomach_that_can_infl', 'A highly elastic stomach that can inflate with water (or air) to 3x normal size. This makes the fish nearly impossible for predators to swallow.') },
 
-                { name: 'Fused Beak Teeth', x: 50, y: 55, desc: 'Four fused teeth form a strong beak that can crack open shellfish, sea urchins, and crabs. Teeth grow continuously — must eat hard food to keep them trimmed.' },
+                { name: __alloT('stem.aquarium.fused_beak_teeth', 'Fused Beak Teeth'), x: 50, y: 55, desc: __alloT('stem.aquarium.four_fused_teeth_form_a_strong_beak_th', 'Four fused teeth form a strong beak that can crack open shellfish, sea urchins, and crabs. Teeth grow continuously — must eat hard food to keep them trimmed.') },
 
-                { name: 'Spines (when inflated)', x: 30, y: 18, desc: 'Short spines embedded in the skin become erect when inflated. Combined with inflation, they create a spiky ball that deters all but the most determined predators.' },
+                { name: __alloT('stem.aquarium.spines_when_inflated', 'Spines (when inflated)'), x: 30, y: 18, desc: __alloT('stem.aquarium.short_spines_embedded_in_the_skin_beco', 'Short spines embedded in the skin become erect when inflated. Combined with inflation, they create a spiky ball that deters all but the most determined predators.') },
 
-                { name: 'Large Eyes', x: 33, y: 34, desc: 'Independently moving eyes provide near 360° vision. Puffers are considered among the most intelligent fish — they recognize their owners and can learn tricks.' },
+                { name: __alloT('stem.aquarium.large_eyes', 'Large Eyes'), x: 33, y: 34, desc: __alloT('stem.aquarium.independently_moving_eyes_provide_near', 'Independently moving eyes provide near 360° vision. Puffers are considered among the most intelligent fish — they recognize their owners and can learn tricks.') },
 
-                { name: 'Tetrodotoxin Organs', x: 70, y: 45, desc: 'Liver, ovaries, and skin contain tetrodotoxin — 1,200× more lethal than cyanide. Produced by symbiotic bacteria. There is no antidote.' },
+                { name: __alloT('stem.aquarium.tetrodotoxin_organs', 'Tetrodotoxin Organs'), x: 70, y: 45, desc: __alloT('stem.aquarium.liver_ovaries_and_skin_contain_tetrodo', 'Liver, ovaries, and skin contain tetrodotoxin — 1,200× more lethal than cyanide. Produced by symbiotic bacteria. There is no antidote.') },
 
-                { name: 'Caudal Fin (Rudder)', x: 88, y: 40, desc: 'Small tail fin for slow, precise maneuvering. Dorsal and anal fins do most of the work. Puffers swim awkwardly but compensate with excellent defenses.' }
+                { name: __alloT('stem.aquarium.caudal_fin_rudder', 'Caudal Fin (Rudder)'), x: 88, y: 40, desc: __alloT('stem.aquarium.small_tail_fin_for_slow_precise_maneuv', 'Small tail fin for slow, precise maneuvering. Dorsal and anal fins do most of the work. Puffers swim awkwardly but compensate with excellent defenses.') }
 
               ]
 
@@ -12045,7 +12046,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             anglerfish_plan: {
 
-              label: 'Deep-Sea Anglerfish (Lophiiformes)',
+              label: __alloT('stem.aquarium.deep_sea_anglerfish_lophiiformes', 'Deep-Sea Anglerfish (Lophiiformes)'),
 
               svg: function (w, h, color) {
 
@@ -12097,17 +12098,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Bioluminescent Lure (Esca)', x: 24, y: 4, desc: 'A modified dorsal fin spine (illicium) tipped with a glowing bulb. Contains symbiotic bioluminescent bacteria. Attracts prey in the pitch-black deep sea.' },
+                { name: __alloT('stem.aquarium.bioluminescent_lure_esca', 'Bioluminescent Lure (Esca)'), x: 24, y: 4, desc: __alloT('stem.aquarium.a_modified_dorsal_fin_spine_illicium_t', 'A modified dorsal fin spine (illicium) tipped with a glowing bulb. Contains symbiotic bioluminescent bacteria. Attracts prey in the pitch-black deep sea.') },
 
-                { name: 'Enormous Mouth', x: 15, y: 55, desc: 'Hinged jaw can open to 120°, allowing the anglerfish to swallow prey up to twice its own body size. Inward-pointing teeth prevent escape.' },
+                { name: __alloT('stem.aquarium.enormous_mouth', 'Enormous Mouth'), x: 15, y: 55, desc: __alloT('stem.aquarium.hinged_jaw_can_open_to_120_allowing_th', 'Hinged jaw can open to 120°, allowing the anglerfish to swallow prey up to twice its own body size. Inward-pointing teeth prevent escape.') },
 
-                { name: 'Enormous Eye', x: 26, y: 43, desc: 'Large, forward-facing eyes sensitized to detect bioluminescent flashes. In many species, eyes are adapted to see blue-green light wavelengths only.' },
+                { name: __alloT('stem.aquarium.enormous_eye', 'Enormous Eye'), x: 26, y: 43, desc: __alloT('stem.aquarium.large_forward_facing_eyes_sensitized_t', 'Large, forward-facing eyes sensitized to detect bioluminescent flashes. In many species, eyes are adapted to see blue-green light wavelengths only.') },
 
-                { name: 'Expandable Stomach', x: 50, y: 60, desc: 'Highly distensible stomach can accommodate meals larger than the anglerfish itself. Meals are rare in the deep sea, so storage capacity is critical.' },
+                { name: __alloT('stem.aquarium.expandable_stomach', 'Expandable Stomach'), x: 50, y: 60, desc: __alloT('stem.aquarium.highly_distensible_stomach_can_accommo', 'Highly distensible stomach can accommodate meals larger than the anglerfish itself. Meals are rare in the deep sea, so storage capacity is critical.') },
 
-                { name: 'Parasitic Male (attached)', x: 70, y: 75, desc: 'Males are tiny (<10% of female size). They bite the female and fuse permanently, becoming a parasite that provides sperm on demand.' },
+                { name: __alloT('stem.aquarium.parasitic_male_attached', 'Parasitic Male (attached)'), x: 70, y: 75, desc: __alloT('stem.aquarium.males_are_tiny_10_of_female_size_they_', 'Males are tiny (<10% of female size). They bite the female and fuse permanently, becoming a parasite that provides sperm on demand.') },
 
-                { name: 'Pressure-Adapted Body', x: 45, y: 85, desc: 'Gelatinous flesh with minimal bone. Lack of a swim bladder prevents implosion at extreme depths (1,000-4,000m). Metabolism is extremely slow.' }
+                { name: __alloT('stem.aquarium.pressure_adapted_body', 'Pressure-Adapted Body'), x: 45, y: 85, desc: __alloT('stem.aquarium.gelatinous_flesh_with_minimal_bone_lac', 'Gelatinous flesh with minimal bone. Lack of a swim bladder prevents implosion at extreme depths (1,000-4,000m). Metabolism is extremely slow.') }
 
               ]
 
@@ -12115,7 +12116,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             angelfish: {
 
-              label: 'Angelfish (Pterophyllum)',
+              label: __alloT('stem.aquarium.angelfish_pterophyllum', 'Angelfish (Pterophyllum)'),
 
               svg: function (w, h, color) {
 
@@ -12165,17 +12166,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Tall Dorsal Fin', x: 55, y: 3, desc: 'Extremely elongated dorsal fin gives the diamond-shaped profile. Used for display and stability in slow-moving water. Vulnerable to fin nipping by tankmates.' },
+                { name: __alloT('stem.aquarium.tall_dorsal_fin', 'Tall Dorsal Fin'), x: 55, y: 3, desc: __alloT('stem.aquarium.extremely_elongated_dorsal_fin_gives_t', 'Extremely elongated dorsal fin gives the diamond-shaped profile. Used for display and stability in slow-moving water. Vulnerable to fin nipping by tankmates.') },
 
-                { name: 'Trailing Anal Fin', x: 55, y: 95, desc: 'Mirror-image of the dorsal fin. Creates the characteristic angel profile. Both fins are supported by bony rays covered in thin membrane.' },
+                { name: __alloT('stem.aquarium.trailing_anal_fin', 'Trailing Anal Fin'), x: 55, y: 95, desc: __alloT('stem.aquarium.mirror_image_of_the_dorsal_fin_creates', 'Mirror-image of the dorsal fin. Creates the characteristic angel profile. Both fins are supported by bony rays covered in thin membrane.') },
 
-                { name: 'Laterally Compressed Body', x: 42, y: 48, desc: 'Disc-shaped body allows navigation through dense vegetation. Angelfish are ambush predators that hide among plant stems in the Amazon basin.' },
+                { name: __alloT('stem.aquarium.laterally_compressed_body', 'Laterally Compressed Body'), x: 42, y: 48, desc: __alloT('stem.aquarium.disc_shaped_body_allows_navigation_thr', 'Disc-shaped body allows navigation through dense vegetation. Angelfish are ambush predators that hide among plant stems in the Amazon basin.') },
 
-                { name: 'Caudal Fin (Tail)', x: 92, y: 48, desc: 'Small, fan-shaped tail provides gentle propulsion. Angelfish are slow, deliberate swimmers — built for maneuverability, not speed.' },
+                { name: __alloT('stem.aquarium.caudal_fin_tail_2', 'Caudal Fin (Tail)'), x: 92, y: 48, desc: __alloT('stem.aquarium.small_fan_shaped_tail_provides_gentle_', 'Small, fan-shaped tail provides gentle propulsion. Angelfish are slow, deliberate swimmers — built for maneuverability, not speed.') },
 
-                { name: 'Vertical Bars', x: 60, y: 35, desc: 'Dark vertical bars provide camouflage among underwater vegetation. Pattern intensity changes with mood — bars fade when stressed or dominant.' },
+                { name: __alloT('stem.aquarium.vertical_bars', 'Vertical Bars'), x: 60, y: 35, desc: __alloT('stem.aquarium.dark_vertical_bars_provide_camouflage_', 'Dark vertical bars provide camouflage among underwater vegetation. Pattern intensity changes with mood — bars fade when stressed or dominant.') },
 
-                { name: 'Pectoral Fins', x: 30, y: 42, desc: 'Fan-shaped fins for precise steering. Used to fan eggs during spawning. Both parents guard eggs by wafting fresh, oxygenated water over them.' }
+                { name: __alloT('stem.aquarium.pectoral_fins_4', 'Pectoral Fins'), x: 30, y: 42, desc: __alloT('stem.aquarium.fan_shaped_fins_for_precise_steering_u', 'Fan-shaped fins for precise steering. Used to fan eggs during spawning. Both parents guard eggs by wafting fresh, oxygenated water over them.') }
 
               ]
 
@@ -12183,7 +12184,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             tetra: {
 
-              label: 'Tetra (Characidae)',
+              label: __alloT('stem.aquarium.tetra_characidae', 'Tetra (Characidae)'),
 
               svg: function (w, h, color) {
 
@@ -12223,17 +12224,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Iridescent Stripe', x: 40, y: 37, desc: 'The famous neon stripe is made of guanine crystals arranged in layers. Acts like a biological mirror — reflects light to create iridescent blue-green shimmer.' },
+                { name: __alloT('stem.aquarium.iridescent_stripe', 'Iridescent Stripe'), x: 40, y: 37, desc: __alloT('stem.aquarium.the_famous_neon_stripe_is_made_of_guan', 'The famous neon stripe is made of guanine crystals arranged in layers. Acts like a biological mirror — reflects light to create iridescent blue-green shimmer.') },
 
-                { name: 'Red Band', x: 40, y: 44, desc: 'Pigment cells (chromatophores) produce the vivid red belly band. Color intensity signals health and breeding readiness to potential mates.' },
+                { name: __alloT('stem.aquarium.red_band', 'Red Band'), x: 40, y: 44, desc: __alloT('stem.aquarium.pigment_cells_chromatophores_produce_t', 'Pigment cells (chromatophores) produce the vivid red belly band. Color intensity signals health and breeding readiness to potential mates.') },
 
-                { name: 'Torpedo Body', x: 55, y: 50, desc: 'Streamlined, laterally compressed body optimized for darting through dense vegetation. Small size (3-4cm) allows passage through tight spaces.' },
+                { name: __alloT('stem.aquarium.torpedo_body', 'Torpedo Body'), x: 55, y: 50, desc: __alloT('stem.aquarium.streamlined_laterally_compressed_body_', 'Streamlined, laterally compressed body optimized for darting through dense vegetation. Small size (3-4cm) allows passage through tight spaces.') },
 
-                { name: 'Forked Caudal Fin', x: 90, y: 50, desc: 'Deeply forked tail for rapid bursts of speed. Tetras alternate between hovering in schools and explosive escape dashes when startled.' },
+                { name: __alloT('stem.aquarium.forked_caudal_fin', 'Forked Caudal Fin'), x: 90, y: 50, desc: __alloT('stem.aquarium.deeply_forked_tail_for_rapid_bursts_of', 'Deeply forked tail for rapid bursts of speed. Tetras alternate between hovering in schools and explosive escape dashes when startled.') },
 
-                { name: 'Adipose Fin', x: 55, y: 10, desc: 'A small, fleshy fin between dorsal and tail found only in certain fish groups. Its function is debated — may detect water flow turbulence.' },
+                { name: __alloT('stem.aquarium.adipose_fin', 'Adipose Fin'), x: 55, y: 10, desc: __alloT('stem.aquarium.a_small_fleshy_fin_between_dorsal_and_', 'A small, fleshy fin between dorsal and tail found only in certain fish groups. Its function is debated — may detect water flow turbulence.') },
 
-                { name: 'Schooling Behavior', x: 20, y: 45, desc: 'Large eyes positioned for wide-angle vision enable precise school coordination. Each fish maintains exact distance from neighbors using its lateral line.' }
+                { name: __alloT('stem.aquarium.schooling_behavior', 'Schooling Behavior'), x: 20, y: 45, desc: __alloT('stem.aquarium.large_eyes_positioned_for_wide_angle_v', 'Large eyes positioned for wide-angle vision enable precise school coordination. Each fish maintains exact distance from neighbors using its lateral line.') }
 
               ]
 
@@ -12241,7 +12242,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             guppy_body: {
 
-              label: 'Livebearer (Poeciliidae)',
+              label: __alloT('stem.aquarium.livebearer_poeciliidae', 'Livebearer (Poeciliidae)'),
 
               svg: function (w, h, color) {
 
@@ -12283,17 +12284,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Fan-Shaped Caudal', x: 90, y: 30, desc: 'Large, colorful tail fin doubles as a display organ. Males fan their tails to attract females. Tail shape varies: round, lyretail, swordtail, delta.' },
+                { name: __alloT('stem.aquarium.fan_shaped_caudal', 'Fan-Shaped Caudal'), x: 90, y: 30, desc: __alloT('stem.aquarium.large_colorful_tail_fin_doubles_as_a_d', 'Large, colorful tail fin doubles as a display organ. Males fan their tails to attract females. Tail shape varies: round, lyretail, swordtail, delta.') },
 
-                { name: 'Gravid Spot (female)', x: 60, y: 58, desc: 'A dark patch near the anal fin in pregnant females. Darkens as embryos develop. Fry develop fully inside the mother — born live and free-swimming.' },
+                { name: __alloT('stem.aquarium.gravid_spot_female', 'Gravid Spot (female)'), x: 60, y: 58, desc: __alloT('stem.aquarium.a_dark_patch_near_the_anal_fin_in_preg', 'A dark patch near the anal fin in pregnant females. Darkens as embryos develop. Fry develop fully inside the mother — born live and free-swimming.') },
 
-                { name: 'Gonopodium (male)', x: 53, y: 78, desc: 'Modified anal fin used for internal fertilization — unique to livebearers. Guppies can store sperm for months, producing multiple broods from a single mating.' },
+                { name: __alloT('stem.aquarium.gonopodium_male', 'Gonopodium (male)'), x: 53, y: 78, desc: __alloT('stem.aquarium.modified_anal_fin_used_for_internal_fe', 'Modified anal fin used for internal fertilization — unique to livebearers. Guppies can store sperm for months, producing multiple broods from a single mating.') },
 
-                { name: 'Color Patterns', x: 40, y: 35, desc: 'Male coloration is genetically determined and Y-linked. Females prefer males with rare patterns — driving constant evolution of new color morphs.' },
+                { name: __alloT('stem.aquarium.color_patterns', 'Color Patterns'), x: 40, y: 35, desc: __alloT('stem.aquarium.male_coloration_is_genetically_determi', 'Male coloration is genetically determined and Y-linked. Females prefer males with rare patterns — driving constant evolution of new color morphs.') },
 
-                { name: 'Compact Body', x: 35, y: 50, desc: 'Rounded, robust body optimized for quick starts rather than sustained swimming. Livebearers are surface-feeders that dart for food.' },
+                { name: __alloT('stem.aquarium.compact_body', 'Compact Body'), x: 35, y: 50, desc: __alloT('stem.aquarium.rounded_robust_body_optimized_for_quic', 'Rounded, robust body optimized for quick starts rather than sustained swimming. Livebearers are surface-feeders that dart for food.') },
 
-                { name: 'Upturned Mouth', x: 14, y: 42, desc: 'Slightly upturned jaw adapted for feeding at the water surface. Guppies eat mosquito larvae, making them valuable for biocontrol of malaria.' }
+                { name: __alloT('stem.aquarium.upturned_mouth', 'Upturned Mouth'), x: 14, y: 42, desc: __alloT('stem.aquarium.slightly_upturned_jaw_adapted_for_feed', 'Slightly upturned jaw adapted for feeding at the water surface. Guppies eat mosquito larvae, making them valuable for biocontrol of malaria.') }
 
               ]
 
@@ -12301,7 +12302,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             flatfish: {
 
-              label: 'Bottom-Dweller (Loricariidae)',
+              label: __alloT('stem.aquarium.bottom_dweller_loricariidae', 'Bottom-Dweller (Loricariidae)'),
 
               svg: function (w, h, color) {
 
@@ -12347,17 +12348,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Sucker Mouth', x: 10, y: 58, desc: 'Ventral sucker-like mouth for rasping algae off surfaces. The lips form a vacuum seal. Specialized teeth scrape biofilm — a living algae scrubber.' },
+                { name: __alloT('stem.aquarium.sucker_mouth', 'Sucker Mouth'), x: 10, y: 58, desc: __alloT('stem.aquarium.ventral_sucker_like_mouth_for_rasping_', 'Ventral sucker-like mouth for rasping algae off surfaces. The lips form a vacuum seal. Specialized teeth scrape biofilm — a living algae scrubber.') },
 
-                { name: 'Bony Armor Plates', x: 50, y: 30, desc: 'Overlapping bony scutes replace scales. Provides armor-like protection from predators. So tough that some indigenous peoples use dried pleco skin as sandpaper.' },
+                { name: __alloT('stem.aquarium.bony_armor_plates_2', 'Bony Armor Plates'), x: 50, y: 30, desc: __alloT('stem.aquarium.overlapping_bony_scutes_replace_scales', 'Overlapping bony scutes replace scales. Provides armor-like protection from predators. So tough that some indigenous peoples use dried pleco skin as sandpaper.') },
 
-                { name: 'Dorsal Spine Array', x: 15, y: 18, desc: 'Lockable dorsal spines can be erected and locked rigid. Once locked, predators cannot swallow the fish. Spines unlock with a special "trigger" mechanism.' },
+                { name: __alloT('stem.aquarium.dorsal_spine_array', 'Dorsal Spine Array'), x: 15, y: 18, desc: __alloT('stem.aquarium.lockable_dorsal_spines_can_be_erected_', 'Lockable dorsal spines can be erected and locked rigid. Once locked, predators cannot swallow the fish. Spines unlock with a special "trigger" mechanism.') },
 
-                { name: 'High-Set Eyes', x: 22, y: 45, desc: 'Eyes positioned on top of the head for upward surveillance while bottom-feeding. Can see approaching predators while attached to rocks.' },
+                { name: __alloT('stem.aquarium.high_set_eyes', 'High-Set Eyes'), x: 22, y: 45, desc: __alloT('stem.aquarium.eyes_positioned_on_top_of_the_head_for', 'Eyes positioned on top of the head for upward surveillance while bottom-feeding. Can see approaching predators while attached to rocks.') },
 
-                { name: 'Flat Ventral Profile', x: 40, y: 55, desc: 'Body flattened from top to bottom (dorsoventrally) for a low profile against substrates. Reduces drag in current and helps maintain position on rocks.' },
+                { name: __alloT('stem.aquarium.flat_ventral_profile', 'Flat Ventral Profile'), x: 40, y: 55, desc: __alloT('stem.aquarium.body_flattened_from_top_to_bottom_dors', 'Body flattened from top to bottom (dorsoventrally) for a low profile against substrates. Reduces drag in current and helps maintain position on rocks.') },
 
-                { name: 'Intestinal Breathing', x: 70, y: 52, desc: 'Some species can absorb atmospheric oxygen through a modified intestine. They gulp air at the surface — essential in low-oxygen tropical waters.' }
+                { name: __alloT('stem.aquarium.intestinal_breathing', 'Intestinal Breathing'), x: 70, y: 52, desc: __alloT('stem.aquarium.some_species_can_absorb_atmospheric_ox', 'Some species can absorb atmospheric oxygen through a modified intestine. They gulp air at the surface — essential in low-oxygen tropical waters.') }
 
               ]
 
@@ -12365,7 +12366,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             eel: {
 
-              label: 'Deep-Sea Eel (Saccopharyngiformes)',
+              label: __alloT('stem.aquarium.deep_sea_eel_saccopharyngiformes', 'Deep-Sea Eel (Saccopharyngiformes)'),
 
               svg: function (w, h, color) {
 
@@ -12395,17 +12396,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Massive Hinged Jaw', x: 15, y: 30, desc: 'Jaw can unhinge to an angle greater than 180°. The entire head unfolds like a net to engulf prey. Can swallow fish larger than its own body.' },
+                { name: __alloT('stem.aquarium.massive_hinged_jaw', 'Massive Hinged Jaw'), x: 15, y: 30, desc: __alloT('stem.aquarium.jaw_can_unhinge_to_an_angle_greater_th', 'Jaw can unhinge to an angle greater than 180°. The entire head unfolds like a net to engulf prey. Can swallow fish larger than its own body.') },
 
-                { name: 'Distensible Stomach', x: 30, y: 50, desc: 'Expandable stomach stretches to accommodate enormous meals. In the food-scarce deep sea, the ability to eat any prey encountered is essential for survival.' },
+                { name: __alloT('stem.aquarium.distensible_stomach', 'Distensible Stomach'), x: 30, y: 50, desc: __alloT('stem.aquarium.expandable_stomach_stretches_to_accomm', 'Expandable stomach stretches to accommodate enormous meals. In the food-scarce deep sea, the ability to eat any prey encountered is essential for survival.') },
 
-                { name: 'Bioluminescent Tail Tip', x: 97, y: 53, desc: 'The tail tip emits a pinkish-red glow to lure prey. Functions as a fishing line in reverse — prey approaches the light and enters the gaping mouth.' },
+                { name: __alloT('stem.aquarium.bioluminescent_tail_tip', 'Bioluminescent Tail Tip'), x: 97, y: 53, desc: __alloT('stem.aquarium.the_tail_tip_emits_a_pinkish_red_glow_', 'The tail tip emits a pinkish-red glow to lure prey. Functions as a fishing line in reverse — prey approaches the light and enters the gaping mouth.') },
 
-                { name: 'Tiny Eyes', x: 11, y: 35, desc: 'Extremely small eyes with minimal visual capability. In the lightless deep sea, vision is less important than detecting bioluminescent flashes.' },
+                { name: __alloT('stem.aquarium.tiny_eyes', 'Tiny Eyes'), x: 11, y: 35, desc: __alloT('stem.aquarium.extremely_small_eyes_with_minimal_visu', 'Extremely small eyes with minimal visual capability. In the lightless deep sea, vision is less important than detecting bioluminescent flashes.') },
 
-                { name: 'Whip-Like Body', x: 60, y: 60, desc: 'Extremely elongated and laterally compressed body. The tail is 3-4x longer than the head and body combined. Enables slow, energy-efficient drifting.' },
+                { name: __alloT('stem.aquarium.whip_like_body', 'Whip-Like Body'), x: 60, y: 60, desc: __alloT('stem.aquarium.extremely_elongated_and_laterally_comp', 'Extremely elongated and laterally compressed body. The tail is 3-4x longer than the head and body combined. Enables slow, energy-efficient drifting.') },
 
-                { name: 'Reduced Skeleton', x: 45, y: 40, desc: 'Minimally ossified bones reduce weight for neutral buoyancy. No swim bladder, no pelvic fins, no scales — everything stripped for deep-sea efficiency.' }
+                { name: __alloT('stem.aquarium.reduced_skeleton', 'Reduced Skeleton'), x: 45, y: 40, desc: __alloT('stem.aquarium.minimally_ossified_bones_reduce_weight', 'Minimally ossified bones reduce weight for neutral buoyancy. No swim bladder, no pelvic fins, no scales — everything stripped for deep-sea efficiency.') }
 
               ]
 
@@ -12413,7 +12414,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             ray: {
 
-              label: 'Manta Ray (Mobulidae)',
+              label: __alloT('stem.aquarium.manta_ray_mobulidae', 'Manta Ray (Mobulidae)'),
 
               svg: function (w, h, color) {
 
@@ -12453,17 +12454,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Pectoral Wings', x: 8, y: 15, desc: 'Enormously expanded pectoral fins create wing-like surfaces. Mantas swim by "flying" through water with powerful downstrokes. Wingspan can reach 7 meters.' },
+                { name: __alloT('stem.aquarium.pectoral_wings', 'Pectoral Wings'), x: 8, y: 15, desc: __alloT('stem.aquarium.enormously_expanded_pectoral_fins_crea', 'Enormously expanded pectoral fins create wing-like surfaces. Mantas swim by "flying" through water with powerful downstrokes. Wingspan can reach 7 meters.') },
 
-                { name: 'Cephalic Fins', x: 42, y: 15, desc: 'Unique horn-like fins flanking the mouth that funnel plankton-rich water inward. Can be rolled up when not feeding. Gave rise to the name "devil ray."' },
+                { name: __alloT('stem.aquarium.cephalic_fins', 'Cephalic Fins'), x: 42, y: 15, desc: __alloT('stem.aquarium.unique_horn_like_fins_flanking_the_mou', 'Unique horn-like fins flanking the mouth that funnel plankton-rich water inward. Can be rolled up when not feeding. Gave rise to the name "devil ray."') },
 
-                { name: 'Terminal Mouth', x: 50, y: 38, desc: 'Wide, forward-facing mouth with rows of tiny filter plates. Opens wide during feeding to maximize water intake. Can process thousands of liters per hour.' },
+                { name: __alloT('stem.aquarium.terminal_mouth', 'Terminal Mouth'), x: 50, y: 38, desc: __alloT('stem.aquarium.wide_forward_facing_mouth_with_rows_of', 'Wide, forward-facing mouth with rows of tiny filter plates. Opens wide during feeding to maximize water intake. Can process thousands of liters per hour.') },
 
-                { name: 'Counter-Shading', x: 60, y: 45, desc: 'Dark dorsal surface blends with ocean depths when viewed from above. Light ventral surface matches bright surface when viewed from below. Classic marine camouflage.' },
+                { name: 'Counter-Shading', x: 60, y: 45, desc: __alloT('stem.aquarium.dark_dorsal_surface_blends_with_ocean_', 'Dark dorsal surface blends with ocean depths when viewed from above. Light ventral surface matches bright surface when viewed from below. Classic marine camouflage.') },
 
-                { name: 'Whip Tail', x: 50, y: 85, desc: 'Long, slender tail without a stinging barb (unlike stingrays). Used as a rudder for precise turns during barrel-roll feeding maneuvers.' },
+                { name: __alloT('stem.aquarium.whip_tail', 'Whip Tail'), x: 50, y: 85, desc: __alloT('stem.aquarium.long_slender_tail_without_a_stinging_b', 'Long, slender tail without a stinging barb (unlike stingrays). Used as a rudder for precise turns during barrel-roll feeding maneuvers.') },
 
-                { name: 'Gill Slits (ventral)', x: 38, y: 42, desc: 'Five pairs of gill slits on the underside filter oxygen. During feeding, water enters the mouth and exits the gills — a ram-ventilation system.' }
+                { name: __alloT('stem.aquarium.gill_slits_ventral', 'Gill Slits (ventral)'), x: 38, y: 42, desc: __alloT('stem.aquarium.five_pairs_of_gill_slits_on_the_unders', 'Five pairs of gill slits on the underside filter oxygen. During feeding, water enters the mouth and exits the gills — a ram-ventilation system.') }
 
               ]
 
@@ -12471,7 +12472,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             whale: {
 
-              label: 'Baleen Whale (Mysticeti)',
+              label: __alloT('stem.aquarium.baleen_whale_mysticeti', 'Baleen Whale (Mysticeti)'),
 
               svg: function (w, h, color) {
 
@@ -12511,17 +12512,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Baleen Plates', x: 25, y: 72, desc: 'Hundreds of keratinous plates hang from the upper jaw like a curtain. Filter up to 4 tons of krill daily. Made of the same protein as human fingernails.' },
+                { name: __alloT('stem.aquarium.baleen_plates', 'Baleen Plates'), x: 25, y: 72, desc: __alloT('stem.aquarium.hundreds_of_keratinous_plates_hang_fro', 'Hundreds of keratinous plates hang from the upper jaw like a curtain. Filter up to 4 tons of krill daily. Made of the same protein as human fingernails.') },
 
-                { name: 'Ventral Pleats', x: 30, y: 82, desc: 'Accordion-like throat grooves expand to engulf enormous volumes of water. A blue whale\'s mouth can hold 90 tonnes of water in a single gulp.' },
+                { name: __alloT('stem.aquarium.ventral_pleats', 'Ventral Pleats'), x: 30, y: 82, desc: __alloT('stem.aquarium.accordion_like_throat_grooves_expand_t', 'Accordion-like throat grooves expand to engulf enormous volumes of water. A blue whale\'s mouth can hold 90 tonnes of water in a single gulp.') },
 
-                { name: 'Blowhole', x: 57, y: 5, desc: 'Paired nostrils migrated to the top of the skull. Exhaled air can reach 9 meters high. Contains a muscular plug that seals watertight during dives.' },
+                { name: __alloT('stem.aquarium.blowhole_2', 'Blowhole'), x: 57, y: 5, desc: __alloT('stem.aquarium.paired_nostrils_migrated_to_the_top_of', 'Paired nostrils migrated to the top of the skull. Exhaled air can reach 9 meters high. Contains a muscular plug that seals watertight during dives.') },
 
-                { name: 'Fluke (Tail)', x: 95, y: 42, desc: 'Horizontal tail flukes move up and down (unlike fish tails). Each fluke has a unique trailing edge pattern — used by researchers to identify individuals.' },
+                { name: __alloT('stem.aquarium.fluke_tail_2', 'Fluke (Tail)'), x: 95, y: 42, desc: __alloT('stem.aquarium.horizontal_tail_flukes_move_up_and_dow', 'Horizontal tail flukes move up and down (unlike fish tails). Each fluke has a unique trailing edge pattern — used by researchers to identify individuals.') },
 
-                { name: 'Pectoral Flipper', x: 13, y: 78, desc: 'Contains the same bones as a human arm (humerus, radius, ulna, fingers). Internal structure reveals the whale\'s evolution from land-dwelling mammals.' },
+                { name: __alloT('stem.aquarium.pectoral_flipper', 'Pectoral Flipper'), x: 13, y: 78, desc: __alloT('stem.aquarium.contains_the_same_bones_as_a_human_arm', 'Contains the same bones as a human arm (humerus, radius, ulna, fingers). Internal structure reveals the whale\'s evolution from land-dwelling mammals.') },
 
-                { name: 'Blubber Layer', x: 45, y: 55, desc: 'Up to 30cm of insulating fat. Serves as energy storage, thermal insulation, and streamlining. A blue whale\'s blubber can weigh 27 tonnes.' }
+                { name: __alloT('stem.aquarium.blubber_layer_2', 'Blubber Layer'), x: 45, y: 55, desc: __alloT('stem.aquarium.up_to_30cm_of_insulating_fat_serves_as', 'Up to 30cm of insulating fat. Serves as energy storage, thermal insulation, and streamlining. A blue whale\'s blubber can weigh 27 tonnes.') }
 
               ]
 
@@ -12529,7 +12530,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             worm: {
 
-              label: 'Giant Tube Worm (Riftia)',
+              label: __alloT('stem.aquarium.giant_tube_worm_riftia', 'Giant Tube Worm (Riftia)'),
 
               svg: function (w, h, color) {
 
@@ -12573,17 +12574,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Plume (Obturaculae)', x: 50, y: 8, desc: 'Bright red feathery plume absorbs hydrogen sulfide, oxygen, and CO₂ from vent water. The red color comes from hemoglobin — same iron-based molecule as in human blood.' },
+                { name: __alloT('stem.aquarium.plume_obturaculae', 'Plume (Obturaculae)'), x: 50, y: 8, desc: __alloT('stem.aquarium.bright_red_feathery_plume_absorbs_hydr', 'Bright red feathery plume absorbs hydrogen sulfide, oxygen, and CO₂ from vent water. The red color comes from hemoglobin — same iron-based molecule as in human blood.') },
 
-                { name: 'Chitin Tube', x: 50, y: 55, desc: 'Self-secreted protective tube made of chitin and protein. Can grow over 2 meters tall. The worm can retract completely inside when threatened by predators.' },
+                { name: __alloT('stem.aquarium.chitin_tube', 'Chitin Tube'), x: 50, y: 55, desc: __alloT('stem.aquarium.self_secreted_protective_tube_made_of_', 'Self-secreted protective tube made of chitin and protein. Can grow over 2 meters tall. The worm can retract completely inside when threatened by predators.') },
 
-                { name: 'Trophosome (internal)', x: 50, y: 40, desc: 'A spongy organ packed with billions of chemosynthetic bacteria. These bacteria convert hydrogen sulfide into organic molecules — the worm\'s sole energy source.' },
+                { name: __alloT('stem.aquarium.trophosome_internal', 'Trophosome (internal)'), x: 50, y: 40, desc: __alloT('stem.aquarium.a_spongy_organ_packed_with_billions_of', 'A spongy organ packed with billions of chemosynthetic bacteria. These bacteria convert hydrogen sulfide into organic molecules — the worm\'s sole energy source.') },
 
-                { name: 'No Mouth or Gut', x: 30, y: 30, desc: 'Adult tube worms have no digestive system at all. They rely entirely on their symbiotic bacteria. Nutrients are delivered through the bloodstream.' },
+                { name: __alloT('stem.aquarium.no_mouth_or_gut', 'No Mouth or Gut'), x: 30, y: 30, desc: __alloT('stem.aquarium.adult_tube_worms_have_no_digestive_sys', 'Adult tube worms have no digestive system at all. They rely entirely on their symbiotic bacteria. Nutrients are delivered through the bloodstream.') },
 
-                { name: 'Vestimentiferan Body', x: 35, y: 50, desc: 'Segmented body plan divided into distinct regions. Anchors in the tube using tiny hooks called chaetae. Can grow at rates of 85cm per year — the fastest of any invertebrate.' },
+                { name: __alloT('stem.aquarium.vestimentiferan_body', 'Vestimentiferan Body'), x: 35, y: 50, desc: __alloT('stem.aquarium.segmented_body_plan_divided_into_disti', 'Segmented body plan divided into distinct regions. Anchors in the tube using tiny hooks called chaetae. Can grow at rates of 85cm per year — the fastest of any invertebrate.') },
 
-                { name: 'Hydrothermal Vent Base', x: 50, y: 92, desc: 'Lives exclusively at hydrothermal vents where superheated water (up to 400°C) meets near-freezing ocean. Thrives in water containing lethal levels of hydrogen sulfide.' }
+                { name: __alloT('stem.aquarium.hydrothermal_vent_base', 'Hydrothermal Vent Base'), x: 50, y: 92, desc: __alloT('stem.aquarium.lives_exclusively_at_hydrothermal_vent', 'Lives exclusively at hydrothermal vents where superheated water (up to 400°C) meets near-freezing ocean. Thrives in water containing lethal levels of hydrogen sulfide.') }
 
               ]
 
@@ -12591,7 +12592,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             clownfish_body: {
 
-              label: 'Clownfish (Amphiprioninae)',
+              label: __alloT('stem.aquarium.clownfish_amphiprioninae', 'Clownfish (Amphiprioninae)'),
 
               svg: function (w, h, color) {
 
@@ -12635,17 +12636,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'White Bands', x: 33, y: 22, desc: 'Distinctive vertical white bands bordered by black margins. Band pattern varies by species — 0 to 3 bands. Produced by iridophore cells containing guanine crystals.' },
+                { name: __alloT('stem.aquarium.white_bands', 'White Bands'), x: 33, y: 22, desc: __alloT('stem.aquarium.distinctive_vertical_white_bands_borde', 'Distinctive vertical white bands bordered by black margins. Band pattern varies by species — 0 to 3 bands. Produced by iridophore cells containing guanine crystals.') },
 
-                { name: 'Rounded Body', x: 50, y: 50, desc: 'Compact, laterally compressed body adapted for quick turns among anemone tentacles. Shape allows rapid darting rather than sustained swimming.' },
+                { name: __alloT('stem.aquarium.rounded_body', 'Rounded Body'), x: 50, y: 50, desc: __alloT('stem.aquarium.compact_laterally_compressed_body_adap', 'Compact, laterally compressed body adapted for quick turns among anemone tentacles. Shape allows rapid darting rather than sustained swimming.') },
 
-                { name: 'Mucus Coating', x: 20, y: 48, desc: 'Special mucus layer prevents anemone stings. Built up gradually through careful acclimation touching. Composition includes sugars that inhibit nematocyst discharge.' },
+                { name: __alloT('stem.aquarium.mucus_coating', 'Mucus Coating'), x: 20, y: 48, desc: __alloT('stem.aquarium.special_mucus_layer_prevents_anemone_s', 'Special mucus layer prevents anemone stings. Built up gradually through careful acclimation touching. Composition includes sugars that inhibit nematocyst discharge.') },
 
-                { name: 'Rounded Tail', x: 92, y: 48, desc: 'Small, rounded caudal fin for quick maneuvers near host anemone. Clownfish rarely venture far from their home anemone — typically within 1 meter.' },
+                { name: __alloT('stem.aquarium.rounded_tail', 'Rounded Tail'), x: 92, y: 48, desc: __alloT('stem.aquarium.small_rounded_caudal_fin_for_quick_man', 'Small, rounded caudal fin for quick maneuvers near host anemone. Clownfish rarely venture far from their home anemone — typically within 1 meter.') },
 
-                { name: 'Protandrous Sex', x: 55, y: 35, desc: 'All clownfish are born male. The dominant individual transitions to female. If the female dies, the next-largest male becomes female.' },
+                { name: __alloT('stem.aquarium.protandrous_sex', 'Protandrous Sex'), x: 55, y: 35, desc: __alloT('stem.aquarium.all_clownfish_are_born_male_the_domina', 'All clownfish are born male. The dominant individual transitions to female. If the female dies, the next-largest male becomes female.') },
 
-                { name: 'Pectoral Hovering', x: 22, y: 65, desc: 'Rapid pectoral fin waving creates the characteristic hovering motion near the anemone. The constant fluttering also aerates the anemone.' }
+                { name: __alloT('stem.aquarium.pectoral_hovering', 'Pectoral Hovering'), x: 22, y: 65, desc: __alloT('stem.aquarium.rapid_pectoral_fin_waving_creates_the_', 'Rapid pectoral fin waving creates the characteristic hovering motion near the anemone. The constant fluttering also aerates the anemone.') }
 
               ]
 
@@ -12653,7 +12654,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             cichlid: {
 
-              label: 'Cichlid (Cichlidae)',
+              label: __alloT('stem.aquarium.cichlid_cichlidae', 'Cichlid (Cichlidae)'),
 
               svg: function (w, h, color) {
 
@@ -12717,17 +12718,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Spiny Dorsal Fin', x: 48, y: 3, desc: 'Long dorsal fin with sharp anterior spines and soft posterior rays. Spines lock erect for defense. Cichlids raise their dorsal to signal aggression.' },
+                { name: __alloT('stem.aquarium.spiny_dorsal_fin', 'Spiny Dorsal Fin'), x: 48, y: 3, desc: __alloT('stem.aquarium.long_dorsal_fin_with_sharp_anterior_sp', 'Long dorsal fin with sharp anterior spines and soft posterior rays. Spines lock erect for defense. Cichlids raise their dorsal to signal aggression.') },
 
-                { name: 'Thick Oval Body', x: 50, y: 50, desc: 'Deep, laterally compressed body provides power for territorial defense. Cichlids are among the most diverse vertebrate families — over 2,000 species.' },
+                { name: __alloT('stem.aquarium.thick_oval_body', 'Thick Oval Body'), x: 50, y: 50, desc: __alloT('stem.aquarium.deep_laterally_compressed_body_provide', 'Deep, laterally compressed body provides power for territorial defense. Cichlids are among the most diverse vertebrate families — over 2,000 species.') },
 
-                { name: 'Protrusible Jaw', x: 12, y: 48, desc: 'Pharyngeal jaws in the throat grind food independently of the outer jaw. This dual-jaw system enabled explosive adaptive radiation in African rift lakes.' },
+                { name: __alloT('stem.aquarium.protrusible_jaw', 'Protrusible Jaw'), x: 12, y: 48, desc: __alloT('stem.aquarium.pharyngeal_jaws_in_the_throat_grind_fo', 'Pharyngeal jaws in the throat grind food independently of the outer jaw. This dual-jaw system enabled explosive adaptive radiation in African rift lakes.') },
 
-                { name: 'Lateral Line', x: 55, y: 42, desc: 'Sensory canal running head to tail detects water pressure changes. Enables cichlids to sense approaching rivals and fine-tune territorial spacing.' },
+                { name: __alloT('stem.aquarium.lateral_line_2', 'Lateral Line'), x: 55, y: 42, desc: __alloT('stem.aquarium.sensory_canal_running_head_to_tail_det', 'Sensory canal running head to tail detects water pressure changes. Enables cichlids to sense approaching rivals and fine-tune territorial spacing.') },
 
-                { name: 'Pelvic Fans', x: 25, y: 72, desc: 'Modified pelvic fins used for fanning eggs and signaling. Many cichlids are mouthbrooders — carrying fertilized eggs inside their mouth.' },
+                { name: __alloT('stem.aquarium.pelvic_fans', 'Pelvic Fans'), x: 25, y: 72, desc: __alloT('stem.aquarium.modified_pelvic_fins_used_for_fanning_', 'Modified pelvic fins used for fanning eggs and signaling. Many cichlids are mouthbrooders — carrying fertilized eggs inside their mouth.') },
 
-                { name: 'Color Patches', x: 40, y: 35, desc: 'Chromatophore-driven color patterns signal mood, dominance, and breeding readiness. Colors intensify during courtship and territorial displays.' }
+                { name: __alloT('stem.aquarium.color_patches', 'Color Patches'), x: 40, y: 35, desc: __alloT('stem.aquarium.chromatophore_driven_color_patterns_si', 'Chromatophore-driven color patterns signal mood, dominance, and breeding readiness. Colors intensify during courtship and territorial displays.') }
 
               ]
 
@@ -12735,7 +12736,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             goldfish_body: {
 
-              label: 'Goldfish (Carassius auratus)',
+              label: __alloT('stem.aquarium.goldfish_carassius_auratus', 'Goldfish (Carassius auratus)'),
 
               svg: function (w, h, color) {
 
@@ -12787,17 +12788,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Rounded Body', x: 50, y: 48, desc: 'Selectively bred for 1,000+ years to achieve the deep, egg-shaped body. Wild-type carp have streamlined bodies — the round shape is entirely artificial selection.' },
+                { name: __alloT('stem.aquarium.rounded_body_2', 'Rounded Body'), x: 50, y: 48, desc: __alloT('stem.aquarium.selectively_bred_for_1_000_years_to_ac', 'Selectively bred for 1,000+ years to achieve the deep, egg-shaped body. Wild-type carp have streamlined bodies — the round shape is entirely artificial selection.') },
 
-                { name: 'Double Tail Fin', x: 92, y: 45, desc: 'Flowing double or triple caudal fin with delicate membrane. Fancy varieties include butterfly, veil, and fantail. Creates drag but enhances display.' },
+                { name: __alloT('stem.aquarium.double_tail_fin', 'Double Tail Fin'), x: 92, y: 45, desc: __alloT('stem.aquarium.flowing_double_or_triple_caudal_fin_wi', 'Flowing double or triple caudal fin with delicate membrane. Fancy varieties include butterfly, veil, and fantail. Creates drag but enhances display.') },
 
-                { name: 'Dorsal Fin', x: 45, y: 6, desc: 'Single dorsal fin — absent in some fancy breeds like ranchu. When present, it provides stability during the slow, waddling swim of round-bodied varieties.' },
+                { name: __alloT('stem.aquarium.dorsal_fin_5', 'Dorsal Fin'), x: 45, y: 6, desc: __alloT('stem.aquarium.single_dorsal_fin_absent_in_some_fancy', 'Single dorsal fin — absent in some fancy breeds like ranchu. When present, it provides stability during the slow, waddling swim of round-bodied varieties.') },
 
-                { name: 'Pharyngeal Teeth', x: 18, y: 48, desc: 'Teeth in the throat (not the mouth) crush food. Goldfish are omnivorous bottom-feeders that naturally root through substrate for insect larvae.' },
+                { name: __alloT('stem.aquarium.pharyngeal_teeth', 'Pharyngeal Teeth'), x: 18, y: 48, desc: __alloT('stem.aquarium.teeth_in_the_throat_not_the_mouth_crus', 'Teeth in the throat (not the mouth) crush food. Goldfish are omnivorous bottom-feeders that naturally root through substrate for insect larvae.') },
 
-                { name: 'Lateral Line', x: 55, y: 40, desc: 'Pressure-sensing canal line. Goldfish have excellent senses — they can distinguish individual humans and learn to respond to feeding cues within days.' },
+                { name: __alloT('stem.aquarium.lateral_line_3', 'Lateral Line'), x: 55, y: 40, desc: __alloT('stem.aquarium.pressure_sensing_canal_line_goldfish_h', 'Pressure-sensing canal line. Goldfish have excellent senses — they can distinguish individual humans and learn to respond to feeding cues within days.') },
 
-                { name: 'Operculum', x: 22, y: 52, desc: 'Bony gill cover pumps water over the gills. Goldfish are cold-water fish with a remarkable temperature range (2-30°C) and can survive brief oxygen deprivation.' }
+                { name: __alloT('stem.aquarium.operculum', 'Operculum'), x: 22, y: 52, desc: __alloT('stem.aquarium.bony_gill_cover_pumps_water_over_the_g', 'Bony gill cover pumps water over the gills. Goldfish are cold-water fish with a remarkable temperature range (2-30°C) and can survive brief oxygen deprivation.') }
 
               ]
 
@@ -12805,7 +12806,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             swordfish_body: {
 
-              label: 'Billfish (Xiphiidae)',
+              label: __alloT('stem.aquarium.billfish_xiphiidae', 'Billfish (Xiphiidae)'),
 
               svg: function (w, h, color) {
 
@@ -12853,17 +12854,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Bill / Rostrum', x: 5, y: 48, desc: 'Elongated upper jaw forms a flat, sword-like bill. Used to slash through schools of fish, stunning prey. Can reach speeds of 100 km/h — one of the fastest fish.' },
+                { name: __alloT('stem.aquarium.bill_rostrum', 'Bill / Rostrum'), x: 5, y: 48, desc: __alloT('stem.aquarium.elongated_upper_jaw_forms_a_flat_sword', 'Elongated upper jaw forms a flat, sword-like bill. Used to slash through schools of fish, stunning prey. Can reach speeds of 100 km/h — one of the fastest fish.') },
 
-                { name: 'Streamlined Torpedo', x: 50, y: 50, desc: 'Supremely hydrodynamic body with minimal drag coefficient. Skin secretes an oil that further reduces friction. Built for sustained high-speed pursuit.' },
+                { name: __alloT('stem.aquarium.streamlined_torpedo', 'Streamlined Torpedo'), x: 50, y: 50, desc: __alloT('stem.aquarium.supremely_hydrodynamic_body_with_minim', 'Supremely hydrodynamic body with minimal drag coefficient. Skin secretes an oil that further reduces friction. Built for sustained high-speed pursuit.') },
 
-                { name: 'Crescent Tail', x: 92, y: 42, desc: 'Deeply forked, crescent-shaped (lunate) caudal fin is the hallmark of high-speed pelagic fish. Generates maximum thrust with minimal turbulence.' },
+                { name: __alloT('stem.aquarium.crescent_tail', 'Crescent Tail'), x: 92, y: 42, desc: __alloT('stem.aquarium.deeply_forked_crescent_shaped_lunate_c', 'Deeply forked, crescent-shaped (lunate) caudal fin is the hallmark of high-speed pelagic fish. Generates maximum thrust with minimal turbulence.') },
 
-                { name: 'Tall Dorsal', x: 52, y: 5, desc: 'Large, sail-like first dorsal fin folds into a groove for speed. When raised, it stabilizes turns and can be used to herd prey fish.' },
+                { name: __alloT('stem.aquarium.tall_dorsal', 'Tall Dorsal'), x: 52, y: 5, desc: __alloT('stem.aquarium.large_sail_like_first_dorsal_fin_folds', 'Large, sail-like first dorsal fin folds into a groove for speed. When raised, it stabilizes turns and can be used to herd prey fish.') },
 
-                { name: 'Lateral Keel', x: 30, y: 38, desc: 'Bony ridge on the caudal peduncle reduces drag during tail beats. Combined with counter-current heat exchangers, allows warm-blooded muscle operation.' },
+                { name: __alloT('stem.aquarium.lateral_keel', 'Lateral Keel'), x: 30, y: 38, desc: __alloT('stem.aquarium.bony_ridge_on_the_caudal_peduncle_redu', 'Bony ridge on the caudal peduncle reduces drag during tail beats. Combined with counter-current heat exchangers, allows warm-blooded muscle operation.') },
 
-                { name: 'Large Eye', x: 20, y: 45, desc: 'Enormous eyes with specialized heating organs keep them warm. Heated eyes process visual information faster — critical for high-speed pursuit in cold deep water.' }
+                { name: __alloT('stem.aquarium.large_eye', 'Large Eye'), x: 20, y: 45, desc: __alloT('stem.aquarium.enormous_eyes_with_specialized_heating', 'Enormous eyes with specialized heating organs keep them warm. Heated eyes process visual information faster — critical for high-speed pursuit in cold deep water.') }
 
               ]
 
@@ -12871,7 +12872,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             corydoras: {
 
-              label: 'Corydoras Catfish (Callichthyidae)',
+              label: __alloT('stem.aquarium.corydoras_catfish_callichthyidae', 'Corydoras Catfish (Callichthyidae)'),
 
               svg: function (w, h, color) {
 
@@ -12921,17 +12922,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               parts: [
 
-                { name: 'Barbels (3 pairs)', x: 10, y: 48, desc: 'Sensitive whisker-like organs around the mouth packed with taste buds. Used to probe substrate for buried worms, larvae, and detritus in murky Amazonian streams.' },
+                { name: __alloT('stem.aquarium.barbels_3_pairs', 'Barbels (3 pairs)'), x: 10, y: 48, desc: __alloT('stem.aquarium.sensitive_whisker_like_organs_around_t', 'Sensitive whisker-like organs around the mouth packed with taste buds. Used to probe substrate for buried worms, larvae, and detritus in murky Amazonian streams.') },
 
-                { name: 'Bony Scute Armor', x: 30, y: 35, desc: 'Two rows of overlapping bony plates (scutes) instead of scales. Provides excellent armor — most predators avoid them. Plates are visible as ridged lines along the flanks.' },
+                { name: __alloT('stem.aquarium.bony_scute_armor', 'Bony Scute Armor'), x: 30, y: 35, desc: __alloT('stem.aquarium.two_rows_of_overlapping_bony_plates_sc', 'Two rows of overlapping bony plates (scutes) instead of scales. Provides excellent armor — most predators avoid them. Plates are visible as ridged lines along the flanks.') },
 
-                { name: 'Dorsal Spine', x: 47, y: 5, desc: 'Sharp, lockable dorsal spine that can pierce predator mouths. Some species secrete a mild venom. The spine locks rigid with a ratchet mechanism.' },
+                { name: __alloT('stem.aquarium.dorsal_spine', 'Dorsal Spine'), x: 47, y: 5, desc: __alloT('stem.aquarium.sharp_lockable_dorsal_spine_that_can_p', 'Sharp, lockable dorsal spine that can pierce predator mouths. Some species secrete a mild venom. The spine locks rigid with a ratchet mechanism.') },
 
-                { name: 'Flat Belly', x: 50, y: 78, desc: 'Ventrally flattened body profile for bottom-dwelling. Corydoras spend most of their time rooting through substrate — they are the cleanup crew of freshwater tanks.' },
+                { name: __alloT('stem.aquarium.flat_belly', 'Flat Belly'), x: 50, y: 78, desc: __alloT('stem.aquarium.ventrally_flattened_body_profile_for_b', 'Ventrally flattened body profile for bottom-dwelling. Corydoras spend most of their time rooting through substrate — they are the cleanup crew of freshwater tanks.') },
 
-                { name: 'Intestinal Breathing', x: 65, y: 55, desc: 'Can gulp air at the surface and absorb oxygen through a modified intestine. This adaptation allows survival in warm, stagnant Amazonian pools with near-zero dissolved oxygen.' },
+                { name: __alloT('stem.aquarium.intestinal_breathing_2', 'Intestinal Breathing'), x: 65, y: 55, desc: __alloT('stem.aquarium.can_gulp_air_at_the_surface_and_absorb', 'Can gulp air at the surface and absorb oxygen through a modified intestine. This adaptation allows survival in warm, stagnant Amazonian pools with near-zero dissolved oxygen.') },
 
-                { name: 'Adipose Fin', x: 80, y: 30, desc: 'A small, fleshy fin between dorsal and tail — a telltale sign shared with tetras, catfish, and salmon. Its function remains debated among ichthyologists.' }
+                { name: __alloT('stem.aquarium.adipose_fin_2', 'Adipose Fin'), x: 80, y: 30, desc: __alloT('stem.aquarium.a_small_fleshy_fin_between_dorsal_and__2', 'A small, fleshy fin between dorsal and tail — a telltale sign shared with tetras, catfish, and salmon. Its function remains debated among ichthyologists.') }
 
               ]
 
@@ -13237,21 +13238,21 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-            { id: 'freshwater', name: '🐠 Freshwater Community', size: 20, temp: 76, salinity: 0, pH: 7.0, diff: 1, desc: 'Classic beginner setup with tetras, guppies, and corydoras.' },
+            { id: 'freshwater', name: __alloT('stem.aquarium.freshwater_community', '🐠 Freshwater Community'), size: 20, temp: 76, salinity: 0, pH: 7.0, diff: 1, desc: __alloT('stem.aquarium.classic_beginner_setup_with_tetras_gup', 'Classic beginner setup with tetras, guppies, and corydoras.') },
 
-            { id: 'planted', name: '🌿 Planted Tropical', size: 40, temp: 78, salinity: 0, pH: 6.8, diff: 2, desc: 'Lush aquascape with live plants and small schooling fish.' },
+            { id: 'planted', name: __alloT('stem.aquarium.planted_tropical', '🌿 Planted Tropical'), size: 40, temp: 78, salinity: 0, pH: 6.8, diff: 2, desc: __alloT('stem.aquarium.lush_aquascape_with_live_plants_and_sm', 'Lush aquascape with live plants and small schooling fish.') },
 
-            { id: 'reef', name: '🐡 Saltwater Reef', size: 55, temp: 78, salinity: 35, pH: 8.2, diff: 3, desc: 'Vibrant coral reef with clownfish and anemones.' },
+            { id: 'reef', name: __alloT('stem.aquarium.saltwater_reef', '🐡 Saltwater Reef'), size: 55, temp: 78, salinity: 35, pH: 8.2, diff: 3, desc: __alloT('stem.aquarium.vibrant_coral_reef_with_clownfish_and_', 'Vibrant coral reef with clownfish and anemones.') },
 
-            { id: 'predator', name: '🦈 Predator Tank', size: 75, temp: 76, salinity: 0, pH: 7.2, diff: 3, desc: 'Oscars, pike cichlids, and other large predatory fish.' },
+            { id: 'predator', name: __alloT('stem.aquarium.predator_tank', '🦈 Predator Tank'), size: 75, temp: 76, salinity: 0, pH: 7.2, diff: 3, desc: __alloT('stem.aquarium.oscars_pike_cichlids_and_other_large_p', 'Oscars, pike cichlids, and other large predatory fish.') },
 
-            { id: 'turtle', name: '🐢 Turtle & Reptile', size: 40, temp: 80, salinity: 0, pH: 7.5, diff: 2, desc: 'Basking dock, UVB lighting, and hardy companion fish.' },
+            { id: 'turtle', name: __alloT('stem.aquarium.turtle_reptile', '🐢 Turtle & Reptile'), size: 40, temp: 80, salinity: 0, pH: 7.5, diff: 2, desc: __alloT('stem.aquarium.basking_dock_uvb_lighting_and_hardy_co', 'Basking dock, UVB lighting, and hardy companion fish.') },
 
-            { id: 'invert', name: '🦐 Invertebrate Reef', size: 30, temp: 77, salinity: 35, pH: 8.3, diff: 4, desc: 'Shrimp, crabs, urchins, and delicate corals.' },
+            { id: 'invert', name: __alloT('stem.aquarium.invertebrate_reef', '🦐 Invertebrate Reef'), size: 30, temp: 77, salinity: 35, pH: 8.3, diff: 4, desc: __alloT('stem.aquarium.shrimp_crabs_urchins_and_delicate_cora', 'Shrimp, crabs, urchins, and delicate corals.') },
 
-            { id: 'coldwater', name: '🐧 Cold Water Marine', size: 100, temp: 55, salinity: 34, pH: 8.1, diff: 4, desc: 'Kelp forest ecosystem with rockfish and sea stars.' },
+            { id: 'coldwater', name: __alloT('stem.aquarium.cold_water_marine', '🐧 Cold Water Marine'), size: 100, temp: 55, salinity: 34, pH: 8.1, diff: 4, desc: __alloT('stem.aquarium.kelp_forest_ecosystem_with_rockfish_an', 'Kelp forest ecosystem with rockfish and sea stars.') },
 
-            { id: 'brackish', name: '🔬 Brackish Estuary', size: 30, temp: 75, salinity: 15, pH: 7.8, diff: 3, desc: 'Where river meets sea — archerfish, puffers, mudskippers.' }
+            { id: 'brackish', name: __alloT('stem.aquarium.brackish_estuary', '🔬 Brackish Estuary'), size: 30, temp: 75, salinity: 15, pH: 7.8, diff: 3, desc: __alloT('stem.aquarium.where_river_meets_sea_archerfish_puffe', 'Where river meets sea — archerfish, puffers, mudskippers.') }
 
           ];
 
@@ -13261,93 +13262,93 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             freshwater: [
 
-              { id: 'neon', name: 'Neon Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [72, 80], pHRange: [6.0, 7.5], compat: ['guppy', 'cory', 'platy'], diet: 'Micro-omnivore — brine shrimp, daphnia, and crushed flake food', habitat: 'Shaded blackwater streams in the Amazon basin among submerged roots and leaf litter', fact: 'Their iridescent stripe is made of guanine crystals.' },
+              { id: 'neon', name: __alloT('stem.aquarium.neon_tetra', 'Neon Tetra'), icon: '🐟', load: 1, minTank: 10, tempRange: [72, 80], pHRange: [6.0, 7.5], compat: ['guppy', 'cory', 'platy'], diet: 'Micro-omnivore — brine shrimp, daphnia, and crushed flake food', habitat: 'Shaded blackwater streams in the Amazon basin among submerged roots and leaf litter', fact: __alloT('stem.aquarium.their_iridescent_stripe_is_made_of_gua', 'Their iridescent stripe is made of guanine crystals.') },
 
-              { id: 'guppy', name: 'Guppy', icon: '🐠', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], diet: 'Omnivore — algae, mosquito larvae, micro-worms, and flake food', habitat: 'Warm, slow-moving streams and pools in Trinidad, Venezuela, and northeast Brazil', fact: 'Males display vibrant colors to attract females.' },
+              { id: 'guppy', name: __alloT('stem.aquarium.guppy', 'Guppy'), icon: '🐠', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], diet: 'Omnivore — algae, mosquito larvae, micro-worms, and flake food', habitat: 'Warm, slow-moving streams and pools in Trinidad, Venezuela, and northeast Brazil', fact: __alloT('stem.aquarium.males_display_vibrant_colors_to_attrac', 'Males display vibrant colors to attract females.') },
 
-              { id: 'cory', name: 'Corydoras', icon: '🐡', load: 2, minTank: 15, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['neon', 'guppy', 'platy', 'angel'], diet: 'Bottom-feeder — sinking pellets, bloodworms, and organic detritus from the substrate', habitat: 'Sandy-bottomed, slow-flowing tributaries of the Amazon and Orinoco basins', fact: 'They breathe air by darting to the surface!' },
+              { id: 'cory', name: __alloT('stem.aquarium.corydoras', 'Corydoras'), icon: '🐡', load: 2, minTank: 15, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['neon', 'guppy', 'platy', 'angel'], diet: 'Bottom-feeder — sinking pellets, bloodworms, and organic detritus from the substrate', habitat: 'Sandy-bottomed, slow-flowing tributaries of the Amazon and Orinoco basins', fact: __alloT('stem.aquarium.they_breathe_air_by_darting_to_the_sur', 'They breathe air by darting to the surface!') },
 
-              { id: 'angel', name: 'Angelfish', icon: '🐠', load: 4, minTank: 20, tempRange: [76, 84], pHRange: [6.0, 7.5], compat: ['cory'], diet: 'Predatory omnivore — small fish, insects, worms, and vegetable matter', habitat: 'Deep, quiet, vegetated floodplains and slow tributaries of the central Amazon', fact: 'Angelfish are cichlids — they guard their eggs fiercely.' },
+              { id: 'angel', name: __alloT('stem.aquarium.angelfish', 'Angelfish'), icon: '🐠', load: 4, minTank: 20, tempRange: [76, 84], pHRange: [6.0, 7.5], compat: ['cory'], diet: 'Predatory omnivore — small fish, insects, worms, and vegetable matter', habitat: 'Deep, quiet, vegetated floodplains and slow tributaries of the central Amazon', fact: __alloT('stem.aquarium.angelfish_are_cichlids_they_guard_thei', 'Angelfish are cichlids — they guard their eggs fiercely.') },
 
-              { id: 'platy', name: 'Platy', icon: '🐠', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], diet: 'Omnivore — algae, blanched vegetables, and small invertebrates', habitat: 'Warm, spring-fed streams and drainage ditches in southern Mexico and Guatemala', fact: 'Platys are livebearers — they give birth to free-swimming fry.' },
+              { id: 'platy', name: __alloT('stem.aquarium.platy', 'Platy'), icon: '🐠', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], diet: 'Omnivore — algae, blanched vegetables, and small invertebrates', habitat: 'Warm, spring-fed streams and drainage ditches in southern Mexico and Guatemala', fact: __alloT('stem.aquarium.platys_are_livebearers_they_give_birth', 'Platys are livebearers — they give birth to free-swimming fry.') },
 
-              { id: 'molly', name: 'Molly', icon: '🐟', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], diet: 'Herbivore-leaning omnivore — algae films, spirulina, and occasional insect larvae', habitat: 'Brackish coastal lagoons, mangrove swamps, and freshwater streams from Mexico to Colombia', fact: 'Mollies can survive in both fresh and saltwater!' }
+              { id: 'molly', name: __alloT('stem.aquarium.molly', 'Molly'), icon: '🐟', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], diet: 'Herbivore-leaning omnivore — algae films, spirulina, and occasional insect larvae', habitat: 'Brackish coastal lagoons, mangrove swamps, and freshwater streams from Mexico to Colombia', fact: __alloT('stem.aquarium.mollies_can_survive_in_both_fresh_and_', 'Mollies can survive in both fresh and saltwater!') }
 
             ],
 
             planted: [
 
-              { id: 'cardinal', name: 'Cardinal Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [73, 81], pHRange: [5.5, 7.0], compat: ['rummy', 'oto', 'shrimp'], diet: 'Micro-predator — tiny crustaceans, insect larvae, and fine flake food', habitat: 'Tea-stained blackwater streams of the Rio Negro basin under dense rainforest canopy', fact: 'Cardinals have a deeper red stripe than neons.' },
+              { id: 'cardinal', name: __alloT('stem.aquarium.cardinal_tetra', 'Cardinal Tetra'), icon: '🐟', load: 1, minTank: 10, tempRange: [73, 81], pHRange: [5.5, 7.0], compat: ['rummy', 'oto', 'shrimp'], diet: 'Micro-predator — tiny crustaceans, insect larvae, and fine flake food', habitat: 'Tea-stained blackwater streams of the Rio Negro basin under dense rainforest canopy', fact: __alloT('stem.aquarium.cardinals_have_a_deeper_red_stripe_tha', 'Cardinals have a deeper red stripe than neons.') },
 
-              { id: 'rummy', name: 'Rummynose Tetra', icon: '🐟', load: 1, minTank: 15, tempRange: [75, 82], pHRange: [5.5, 7.0], compat: ['cardinal', 'oto', 'shrimp'], diet: 'Omnivore — micro-crustaceans, fallen fruit particles, and algae', habitat: 'Soft, acidic tributaries of the Amazon and Rio Meta with sandy substrates', fact: 'Their red nose fades when stressed — a living water quality indicator!' },
+              { id: 'rummy', name: __alloT('stem.aquarium.rummynose_tetra', 'Rummynose Tetra'), icon: '🐟', load: 1, minTank: 15, tempRange: [75, 82], pHRange: [5.5, 7.0], compat: ['cardinal', 'oto', 'shrimp'], diet: 'Omnivore — micro-crustaceans, fallen fruit particles, and algae', habitat: 'Soft, acidic tributaries of the Amazon and Rio Meta with sandy substrates', fact: __alloT('stem.aquarium.their_red_nose_fades_when_stressed_a_l', 'Their red nose fades when stressed — a living water quality indicator!') },
 
-              { id: 'oto', name: 'Otocinclus', icon: '🐡', load: 1, minTank: 10, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['cardinal', 'rummy', 'shrimp', 'betta'], diet: 'Herbivore — biofilm, soft green algae, and blanched zucchini', habitat: 'Shallow, sunlit, plant-rich margins of South American rivers with moderate current', fact: 'These tiny catfish are the best algae cleaners in the hobby.' },
+              { id: 'oto', name: __alloT('stem.aquarium.otocinclus', 'Otocinclus'), icon: '🐡', load: 1, minTank: 10, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['cardinal', 'rummy', 'shrimp', 'betta'], diet: 'Herbivore — biofilm, soft green algae, and blanched zucchini', habitat: 'Shallow, sunlit, plant-rich margins of South American rivers with moderate current', fact: __alloT('stem.aquarium.these_tiny_catfish_are_the_best_algae_', 'These tiny catfish are the best algae cleaners in the hobby.') },
 
-              { id: 'shrimp', name: 'Cherry Shrimp', icon: '🦐', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], diet: 'Detritivore — biofilm, decaying plant matter, algae, and microorganisms', habitat: 'Densely vegetated freshwater streams and ponds in Taiwan', fact: 'A colony can double in size every 2-3 months.' },
+              { id: 'shrimp', name: __alloT('stem.aquarium.cherry_shrimp', 'Cherry Shrimp'), icon: '🦐', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], diet: 'Detritivore — biofilm, decaying plant matter, algae, and microorganisms', habitat: 'Densely vegetated freshwater streams and ponds in Taiwan', fact: __alloT('stem.aquarium.a_colony_can_double_in_size_every_2_3_', 'A colony can double in size every 2-3 months.') },
 
-              { id: 'betta', name: 'Betta', icon: '🐠', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], diet: 'Insectivore — mosquito larvae, small insects, daphnia, and brine shrimp', habitat: 'Shallow rice paddies, stagnant ponds, and floodplains of Thailand and Cambodia', fact: 'Bettas build bubble nests at the surface for their eggs.' }
+              { id: 'betta', name: __alloT('stem.aquarium.betta', 'Betta'), icon: '🐠', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], diet: 'Insectivore — mosquito larvae, small insects, daphnia, and brine shrimp', habitat: 'Shallow rice paddies, stagnant ponds, and floodplains of Thailand and Cambodia', fact: __alloT('stem.aquarium.bettas_build_bubble_nests_at_the_surfa', 'Bettas build bubble nests at the surface for their eggs.') }
 
             ],
 
             reef: [
 
-              { id: 'clown', name: 'Clownfish', icon: '🐠', load: 3, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['tang', 'goby', 'anemone'], diet: 'Omnivore — algae, zooplankton, and leftover scraps from its host anemone', habitat: 'Shelters among venomous tentacles of Heteractis anemones on Indo-Pacific reefs', fact: 'All clownfish are born male — the dominant one becomes female!' },
+              { id: 'clown', name: __alloT('stem.aquarium.clownfish', 'Clownfish'), icon: '🐠', load: 3, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['tang', 'goby', 'anemone'], diet: 'Omnivore — algae, zooplankton, and leftover scraps from its host anemone', habitat: 'Shelters among venomous tentacles of Heteractis anemones on Indo-Pacific reefs', fact: __alloT('stem.aquarium.all_clownfish_are_born_male_the_domina_2', 'All clownfish are born male — the dominant one becomes female!') },
 
-              { id: 'tang', name: 'Blue Tang', icon: '🐠', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], diet: 'Herbivore — filamentous algae and seaweed, essential for reef health', habitat: 'Coral-rich outer reef slopes and lagoons throughout the Indo-Pacific', fact: 'Blue tangs can "play dead" when stressed, lying on their side.' },
+              { id: 'tang', name: __alloT('stem.aquarium.blue_tang', 'Blue Tang'), icon: '🐠', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], diet: 'Herbivore — filamentous algae and seaweed, essential for reef health', habitat: 'Coral-rich outer reef slopes and lagoons throughout the Indo-Pacific', fact: __alloT('stem.aquarium.blue_tangs_can_play_dead_when_stressed', 'Blue tangs can "play dead" when stressed, lying on their side.') },
 
-              { id: 'goby', name: 'Watchman Goby', icon: '🐡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], diet: 'Micro-predator — copepods, mysis shrimp, and sand-dwelling invertebrates', habitat: 'Sandy rubble zones adjacent to coral reefs, often sharing a burrow with a pistol shrimp', fact: 'Gobies form symbiotic partnerships with pistol shrimp.' },
+              { id: 'goby', name: __alloT('stem.aquarium.watchman_goby', 'Watchman Goby'), icon: '🐡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], diet: 'Micro-predator — copepods, mysis shrimp, and sand-dwelling invertebrates', habitat: 'Sandy rubble zones adjacent to coral reefs, often sharing a burrow with a pistol shrimp', fact: __alloT('stem.aquarium.gobies_form_symbiotic_partnerships_wit', 'Gobies form symbiotic partnerships with pistol shrimp.') },
 
-              { id: 'anemone', name: 'Sea Anemone', icon: '🪸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], diet: 'Carnivore — captures small fish and shrimp with nematocyst-armed tentacles; also hosts photosynthetic zooxanthellae', habitat: 'Well-lit, current-swept sections of tropical reefs in the Indo-Pacific', fact: 'Anemones can live over 100 years in the right conditions.' }
+              { id: 'anemone', name: __alloT('stem.aquarium.sea_anemone', 'Sea Anemone'), icon: '🪸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], diet: 'Carnivore — captures small fish and shrimp with nematocyst-armed tentacles; also hosts photosynthetic zooxanthellae', habitat: 'Well-lit, current-swept sections of tropical reefs in the Indo-Pacific', fact: __alloT('stem.aquarium.anemones_can_live_over_100_years_in_th', 'Anemones can live over 100 years in the right conditions.') }
 
             ],
 
             predator: [
 
-              { id: 'oscar', name: 'Oscar', icon: '🐠', load: 10, minTank: 55, tempRange: [74, 81], pHRange: [6.0, 8.0], compat: ['pleco'], diet: 'Carnivore — crayfish, insects, small fish, and earthworms', habitat: 'Slow-moving, white-water rivers and flooded forests of the Amazon, Orinoco, and Paraná basins', fact: 'Oscars recognize their owners and can learn tricks.' },
+              { id: 'oscar', name: __alloT('stem.aquarium.oscar', 'Oscar'), icon: '🐠', load: 10, minTank: 55, tempRange: [74, 81], pHRange: [6.0, 8.0], compat: ['pleco'], diet: 'Carnivore — crayfish, insects, small fish, and earthworms', habitat: 'Slow-moving, white-water rivers and flooded forests of the Amazon, Orinoco, and Paraná basins', fact: __alloT('stem.aquarium.oscars_recognize_their_owners_and_can_', 'Oscars recognize their owners and can learn tricks.') },
 
-              { id: 'pike', name: 'Pike Cichlid', icon: '🐡', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], diet: 'Aggressive piscivore — ambushes fish, large insects, and crustaceans', habitat: 'Submerged logs and undercut banks in fast-flowing Amazonian creeks', fact: 'Pike cichlids are ambush predators that strike in milliseconds.' },
+              { id: 'pike', name: __alloT('stem.aquarium.pike_cichlid', 'Pike Cichlid'), icon: '🐡', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], diet: 'Aggressive piscivore — ambushes fish, large insects, and crustaceans', habitat: 'Submerged logs and undercut banks in fast-flowing Amazonian creeks', fact: __alloT('stem.aquarium.pike_cichlids_are_ambush_predators_tha', 'Pike cichlids are ambush predators that strike in milliseconds.') },
 
-              { id: 'pleco', name: 'Plecostomus', icon: '🐡', load: 6, minTank: 40, tempRange: [72, 82], pHRange: [6.5, 7.5], compat: ['oscar', 'pike'], diet: 'Omnivorous grazer — rasps algae and biofilm off rocks; also eats driftwood and sinking wafers', habitat: 'Rocky rapids and submerged driftwood in tropical South American rivers', fact: 'Some plecos can grow over 2 feet long!' }
+              { id: 'pleco', name: __alloT('stem.aquarium.plecostomus', 'Plecostomus'), icon: '🐡', load: 6, minTank: 40, tempRange: [72, 82], pHRange: [6.5, 7.5], compat: ['oscar', 'pike'], diet: 'Omnivorous grazer — rasps algae and biofilm off rocks; also eats driftwood and sinking wafers', habitat: 'Rocky rapids and submerged driftwood in tropical South American rivers', fact: __alloT('stem.aquarium.some_plecos_can_grow_over_2_feet_long', 'Some plecos can grow over 2 feet long!') }
 
             ],
 
             turtle: [
 
-              { id: 'slider', name: 'Red-Eared Slider', icon: '🐢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], diet: 'Omnivore — aquatic plants, snails, insects, and commercial turtle pellets; diet shifts to more vegetation with age', habitat: 'Calm ponds, lakes, and slow streams with muddy bottoms and basking logs in the southern United States', fact: 'They can hold their breath for over 30 minutes!' },
+              { id: 'slider', name: __alloT('stem.aquarium.red_eared_slider', 'Red-Eared Slider'), icon: '🐢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], diet: 'Omnivore — aquatic plants, snails, insects, and commercial turtle pellets; diet shifts to more vegetation with age', habitat: 'Calm ponds, lakes, and slow streams with muddy bottoms and basking logs in the southern United States', fact: __alloT('stem.aquarium.they_can_hold_their_breath_for_over_30', 'They can hold their breath for over 30 minutes!') },
 
-              { id: 'goldfish', name: 'Feeder Goldfish', icon: '🐠', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], diet: 'Omnivore — algae, aquatic plants, detritus, small invertebrates, and prepared pellets', habitat: 'Cool, slow-moving freshwater ponds and rivers; originally domesticated from wild carp in East Asia', fact: 'Goldfish can live 20+ years with proper care.' }
+              { id: 'goldfish', name: __alloT('stem.aquarium.feeder_goldfish', 'Feeder Goldfish'), icon: '🐠', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], diet: 'Omnivore — algae, aquatic plants, detritus, small invertebrates, and prepared pellets', habitat: 'Cool, slow-moving freshwater ponds and rivers; originally domesticated from wild carp in East Asia', fact: __alloT('stem.aquarium.goldfish_can_live_20_years_with_proper', 'Goldfish can live 20+ years with proper care.') }
 
             ],
 
             invert: [
 
-              { id: 'cleaner', name: 'Cleaner Shrimp', icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], diet: 'Ectoparasite feeder — removes parasites, dead skin, and mucus from visiting reef fish', habitat: 'Coral ledges and reef crevices throughout the Indo-Pacific where it establishes cleaning stations', fact: 'They set up cleaning stations where fish line up to be groomed!' },
+              { id: 'cleaner', name: __alloT('stem.aquarium.cleaner_shrimp', 'Cleaner Shrimp'), icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], diet: 'Ectoparasite feeder — removes parasites, dead skin, and mucus from visiting reef fish', habitat: 'Coral ledges and reef crevices throughout the Indo-Pacific where it establishes cleaning stations', fact: __alloT('stem.aquarium.they_set_up_cleaning_stations_where_fi', 'They set up cleaning stations where fish line up to be groomed!') },
 
-              { id: 'urchin', name: 'Sea Urchin', icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], diet: 'Herbivore — rasps coralline and filamentous algae off rocks using a five-toothed jaw called Aristotle\'s lantern', habitat: 'Rocky subtidal reef zones and kelp forests in temperate and tropical seas', fact: 'Urchin spines are actually modified teeth.' },
+              { id: 'urchin', name: __alloT('stem.aquarium.sea_urchin', 'Sea Urchin'), icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], diet: 'Herbivore — rasps coralline and filamentous algae off rocks using a five-toothed jaw called Aristotle\'s lantern', habitat: 'Rocky subtidal reef zones and kelp forests in temperate and tropical seas', fact: __alloT('stem.aquarium.urchin_spines_are_actually_modified_te', 'Urchin spines are actually modified teeth.') },
 
-              { id: 'crab', name: 'Hermit Crab', icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], diet: 'Scavenger/omnivore — detritus, algae, leftover food scraps, and small worms', habitat: 'Intertidal rock pools and shallow coral rubble zones in tropical seas', fact: 'Hermit crabs form "vacancy chains" — swapping shells in order of size!' },
+              { id: 'crab', name: __alloT('stem.aquarium.hermit_crab', 'Hermit Crab'), icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], diet: 'Scavenger/omnivore — detritus, algae, leftover food scraps, and small worms', habitat: 'Intertidal rock pools and shallow coral rubble zones in tropical seas', fact: __alloT('stem.aquarium.hermit_crabs_form_vacancy_chains_swapp', 'Hermit crabs form "vacancy chains" — swapping shells in order of size!') },
 
-              { id: 'starfish', name: 'Sea Star', icon: '⭐', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], diet: 'Predator — everts its stomach to digest mussels, clams, and oysters externally', habitat: 'Rocky intertidal zones to deep reef slopes in nearly every ocean', fact: 'Sea stars can regenerate lost arms — and sometimes an entire body from one arm.' }
+              { id: 'starfish', name: __alloT('stem.aquarium.sea_star', 'Sea Star'), icon: '⭐', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], diet: 'Predator — everts its stomach to digest mussels, clams, and oysters externally', habitat: 'Rocky intertidal zones to deep reef slopes in nearly every ocean', fact: __alloT('stem.aquarium.sea_stars_can_regenerate_lost_arms_and', 'Sea stars can regenerate lost arms — and sometimes an entire body from one arm.') }
 
             ],
 
             coldwater: [
 
-              { id: 'rockfish', name: 'Rockfish', icon: '🐡', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], diet: 'Ambush predator — small fish, shrimp, and planktonic crustaceans near rocky structure', habitat: 'Deep rocky reefs and kelp forests along the Pacific coast of North America', fact: 'Some rockfish live over 200 years!' },
+              { id: 'rockfish', name: __alloT('stem.aquarium.rockfish', 'Rockfish'), icon: '🐡', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], diet: 'Ambush predator — small fish, shrimp, and planktonic crustaceans near rocky structure', habitat: 'Deep rocky reefs and kelp forests along the Pacific coast of North America', fact: __alloT('stem.aquarium.some_rockfish_live_over_200_years', 'Some rockfish live over 200 years!') },
 
-              { id: 'seastar', name: 'Sunflower Star', icon: '⭐', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], diet: 'Voracious predator — sea urchins, clams, snails, and other sea stars', habitat: 'Kelp forests and rocky reefs from Alaska to Baja California, critical for controlling urchin populations', fact: 'Sunflower stars have up to 24 arms and can move 1 meter per minute.' },
+              { id: 'seastar', name: __alloT('stem.aquarium.sunflower_star', 'Sunflower Star'), icon: '⭐', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], diet: 'Voracious predator — sea urchins, clams, snails, and other sea stars', habitat: 'Kelp forests and rocky reefs from Alaska to Baja California, critical for controlling urchin populations', fact: __alloT('stem.aquarium.sunflower_stars_have_up_to_24_arms_and', 'Sunflower stars have up to 24 arms and can move 1 meter per minute.') },
 
-              { id: 'kelp', name: 'Giant Kelp', icon: '🌿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], diet: 'Photosynthetic autotroph — converts sunlight, CO₂, and dissolved nutrients into biomass', habitat: 'Cool, nutrient-rich, sunlit coastal waters from 6-30m depth along temperate coastlines', fact: 'Giant kelp can grow up to 2 feet per day!' }
+              { id: 'kelp', name: __alloT('stem.aquarium.giant_kelp', 'Giant Kelp'), icon: '🌿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], diet: 'Photosynthetic autotroph — converts sunlight, CO₂, and dissolved nutrients into biomass', habitat: 'Cool, nutrient-rich, sunlit coastal waters from 6-30m depth along temperate coastlines', fact: __alloT('stem.aquarium.giant_kelp_can_grow_up_to_2_feet_per_d', 'Giant kelp can grow up to 2 feet per day!') }
 
             ],
 
             brackish: [
 
-              { id: 'archer', name: 'Archerfish', icon: '🐠', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], diet: 'Insectivore — shoots down terrestrial insects with precisely aimed jets of water', habitat: 'Mangrove-lined estuaries, brackish creeks, and river mouths across Southeast Asia and northern Australia', fact: 'Archerfish shoot jets of water to knock insects off branches!' },
+              { id: 'archer', name: __alloT('stem.aquarium.archerfish', 'Archerfish'), icon: '🐠', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], diet: 'Insectivore — shoots down terrestrial insects with precisely aimed jets of water', habitat: 'Mangrove-lined estuaries, brackish creeks, and river mouths across Southeast Asia and northern Australia', fact: __alloT('stem.aquarium.archerfish_shoot_jets_of_water_to_knoc', 'Archerfish shoot jets of water to knock insects off branches!') },
 
-              { id: 'puffer', name: 'Figure-8 Puffer', icon: '🐡', load: 4, minTank: 15, tempRange: [72, 79], pHRange: [7.5, 8.5], compat: ['archer'], diet: 'Molluscivore — crunches snails, clams, and crustacean shells to keep its fused beak trimmed', habitat: 'Brackish river deltas and coastal mangroves of Southeast Asia, especially in Thailand and Borneo', fact: 'Puffers need to crunch hard-shelled food to keep their beaks trimmed.' },
+              { id: 'puffer', name: __alloT('stem.aquarium.figure_8_puffer', 'Figure-8 Puffer'), icon: '🐡', load: 4, minTank: 15, tempRange: [72, 79], pHRange: [7.5, 8.5], compat: ['archer'], diet: 'Molluscivore — crunches snails, clams, and crustacean shells to keep its fused beak trimmed', habitat: 'Brackish river deltas and coastal mangroves of Southeast Asia, especially in Thailand and Borneo', fact: __alloT('stem.aquarium.puffers_need_to_crunch_hard_shelled_fo', 'Puffers need to crunch hard-shelled food to keep their beaks trimmed.') },
 
-              { id: 'mudskip', name: 'Mudskipper', icon: '🐸', load: 3, minTank: 20, tempRange: [75, 86], pHRange: [7.0, 8.5], compat: ['archer'], diet: 'Opportunistic omnivore — insects, small crabs, algae, and detritus from mudflats', habitat: 'Intertidal mudflats and mangrove forests of the Indo-Pacific, spending much of its time on land', fact: 'Mudskippers are fish that can walk on land and breathe air!' }
+              { id: 'mudskip', name: __alloT('stem.aquarium.mudskipper', 'Mudskipper'), icon: '🐸', load: 3, minTank: 20, tempRange: [75, 86], pHRange: [7.0, 8.5], compat: ['archer'], diet: 'Opportunistic omnivore — insects, small crabs, algae, and detritus from mudflats', habitat: 'Intertidal mudflats and mangrove forests of the Indo-Pacific, spending much of its time on land', fact: __alloT('stem.aquarium.mudskippers_are_fish_that_can_walk_on_', 'Mudskippers are fish that can walk on land and breathe air!') }
 
             ]
 
@@ -13363,55 +13364,55 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             freshwater: [
 
-              { id: 'java_fern', name: 'Java Fern', icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: 'Hardy epiphyte — attaches to rocks and driftwood. Thrives in low light. Absorbs nutrients through leaves, not roots.', fact: 'Java Fern reproduces by growing tiny plantlets on its leaves!' },
+              { id: 'java_fern', name: __alloT('stem.aquarium.java_fern', 'Java Fern'), icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: __alloT('stem.aquarium.hardy_epiphyte_attaches_to_rocks_and_d', 'Hardy epiphyte — attaches to rocks and driftwood. Thrives in low light. Absorbs nutrients through leaves, not roots.'), fact: __alloT('stem.aquarium.java_fern_reproduces_by_growing_tiny_p', 'Java Fern reproduces by growing tiny plantlets on its leaves!') },
 
-              { id: 'amazon_sword', name: 'Amazon Sword', icon: '🌱', o2: 0.8, co2Need: 0.5, nitrateAbsorb: 0.7, light: 'medium', growth: 0.05, maxSize: 5, desc: 'Large rosette plant with broad leaves. Heavy root feeder — needs nutrient-rich substrate. Excellent nitrate absorber.', fact: 'A single Amazon Sword can grow over 20 inches tall and consume enormous amounts of nitrate.' },
+              { id: 'amazon_sword', name: __alloT('stem.aquarium.amazon_sword', 'Amazon Sword'), icon: '🌱', o2: 0.8, co2Need: 0.5, nitrateAbsorb: 0.7, light: 'medium', growth: 0.05, maxSize: 5, desc: __alloT('stem.aquarium.large_rosette_plant_with_broad_leaves_', 'Large rosette plant with broad leaves. Heavy root feeder — needs nutrient-rich substrate. Excellent nitrate absorber.'), fact: __alloT('stem.aquarium.a_single_amazon_sword_can_grow_over_20', 'A single Amazon Sword can grow over 20 inches tall and consume enormous amounts of nitrate.') },
 
-              { id: 'java_moss', name: 'Java Moss', icon: '🌿', o2: 0.2, co2Need: 0.15, nitrateAbsorb: 0.3, light: 'low', growth: 0.06, maxSize: 4, desc: 'Versatile moss that carpets surfaces. Provides hiding spots for fry and shrimp. Nearly indestructible.', fact: 'Java Moss can survive in almost any water conditions and even grow emersed above water.' },
+              { id: 'java_moss', name: __alloT('stem.aquarium.java_moss', 'Java Moss'), icon: '🌿', o2: 0.2, co2Need: 0.15, nitrateAbsorb: 0.3, light: 'low', growth: 0.06, maxSize: 4, desc: __alloT('stem.aquarium.versatile_moss_that_carpets_surfaces_p', 'Versatile moss that carpets surfaces. Provides hiding spots for fry and shrimp. Nearly indestructible.'), fact: __alloT('stem.aquarium.java_moss_can_survive_in_almost_any_wa', 'Java Moss can survive in almost any water conditions and even grow emersed above water.') },
 
-              { id: 'hornwort', name: 'Hornwort', icon: '🌿', o2: 1.0, co2Need: 0.4, nitrateAbsorb: 0.9, light: 'medium', growth: 0.08, maxSize: 6, desc: 'Fast-growing floating/anchored stem plant. Champion nitrate absorber and oxygenator. Can grow 1-5 inches per week.', fact: 'Hornwort releases allelopathic chemicals that actively inhibit algae growth!' },
+              { id: 'hornwort', name: __alloT('stem.aquarium.hornwort', 'Hornwort'), icon: '🌿', o2: 1.0, co2Need: 0.4, nitrateAbsorb: 0.9, light: 'medium', growth: 0.08, maxSize: 6, desc: __alloT('stem.aquarium.fast_growing_floating_anchored_stem_pl', 'Fast-growing floating/anchored stem plant. Champion nitrate absorber and oxygenator. Can grow 1-5 inches per week.'), fact: __alloT('stem.aquarium.hornwort_releases_allelopathic_chemica', 'Hornwort releases allelopathic chemicals that actively inhibit algae growth!') },
 
-              { id: 'anubias', name: 'Anubias', icon: '🍀', o2: 0.2, co2Need: 0.1, nitrateAbsorb: 0.15, light: 'low', growth: 0.01, maxSize: 3, desc: 'Extremely slow-growing but nearly unkillable. Thick, waxy leaves resist algae and herbivorous fish.', fact: 'Anubias grows so slowly that algae often colonizes its leaves before new ones emerge.' },
+              { id: 'anubias', name: __alloT('stem.aquarium.anubias', 'Anubias'), icon: '🍀', o2: 0.2, co2Need: 0.1, nitrateAbsorb: 0.15, light: 'low', growth: 0.01, maxSize: 3, desc: __alloT('stem.aquarium.extremely_slow_growing_but_nearly_unki', 'Extremely slow-growing but nearly unkillable. Thick, waxy leaves resist algae and herbivorous fish.'), fact: __alloT('stem.aquarium.anubias_grows_so_slowly_that_algae_oft', 'Anubias grows so slowly that algae often colonizes its leaves before new ones emerge.') },
 
-              { id: 'water_wisteria', name: 'Water Wisteria', icon: '🌿', o2: 0.7, co2Need: 0.4, nitrateAbsorb: 0.6, light: 'medium', growth: 0.07, maxSize: 5, desc: 'Fast-growing stem plant with finely divided leaves. Excellent for absorbing excess nutrients and preventing algae.', fact: 'Water Wisteria leaf shape changes dramatically based on whether it grows submerged or above water.' },
+              { id: 'water_wisteria', name: __alloT('stem.aquarium.water_wisteria', 'Water Wisteria'), icon: '🌿', o2: 0.7, co2Need: 0.4, nitrateAbsorb: 0.6, light: 'medium', growth: 0.07, maxSize: 5, desc: __alloT('stem.aquarium.fast_growing_stem_plant_with_finely_di', 'Fast-growing stem plant with finely divided leaves. Excellent for absorbing excess nutrients and preventing algae.'), fact: __alloT('stem.aquarium.water_wisteria_leaf_shape_changes_dram', 'Water Wisteria leaf shape changes dramatically based on whether it grows submerged or above water.') },
 
-              { id: 'duckweed', name: 'Duckweed', icon: '🟢', o2: 0.5, co2Need: 0.1, nitrateAbsorb: 0.8, light: 'high', growth: 0.1, maxSize: 8, desc: 'Tiny floating plant that doubles in mass every 2-3 days. Absorbs nitrate voraciously but blocks light to plants below.', fact: 'Duckweed is the fastest-growing flowering plant on Earth — used in wastewater treatment worldwide.' }
+              { id: 'duckweed', name: __alloT('stem.aquarium.duckweed', 'Duckweed'), icon: '🟢', o2: 0.5, co2Need: 0.1, nitrateAbsorb: 0.8, light: 'high', growth: 0.1, maxSize: 8, desc: __alloT('stem.aquarium.tiny_floating_plant_that_doubles_in_ma', 'Tiny floating plant that doubles in mass every 2-3 days. Absorbs nitrate voraciously but blocks light to plants below.'), fact: __alloT('stem.aquarium.duckweed_is_the_fastest_growing_flower', 'Duckweed is the fastest-growing flowering plant on Earth — used in wastewater treatment worldwide.') }
 
             ],
 
             planted: [
 
-              { id: 'dwarf_hairgrass', name: 'Dwarf Hairgrass', icon: '🌾', o2: 0.5, co2Need: 0.7, nitrateAbsorb: 0.4, light: 'high', growth: 0.04, maxSize: 3, desc: 'Carpet-forming grass that creates lush green lawns. Requires high CO2 and bright light to thrive.', fact: 'Dwarf Hairgrass sends out runners underground, forming a dense carpet over weeks.' },
+              { id: 'dwarf_hairgrass', name: __alloT('stem.aquarium.dwarf_hairgrass', 'Dwarf Hairgrass'), icon: '🌾', o2: 0.5, co2Need: 0.7, nitrateAbsorb: 0.4, light: 'high', growth: 0.04, maxSize: 3, desc: __alloT('stem.aquarium.carpet_forming_grass_that_creates_lush', 'Carpet-forming grass that creates lush green lawns. Requires high CO2 and bright light to thrive.'), fact: __alloT('stem.aquarium.dwarf_hairgrass_sends_out_runners_unde', 'Dwarf Hairgrass sends out runners underground, forming a dense carpet over weeks.') },
 
-              { id: 'red_root_floater', name: 'Red Root Floater', icon: '🔴', o2: 0.4, co2Need: 0.1, nitrateAbsorb: 0.5, light: 'high', growth: 0.06, maxSize: 4, desc: 'Floating plant with red-purple roots that dangle into the water. Roots absorb nutrients directly from the water column.', fact: 'The roots turn deep red under intense light — a sign of anthocyanin pigment production.' },
+              { id: 'red_root_floater', name: __alloT('stem.aquarium.red_root_floater', 'Red Root Floater'), icon: '🔴', o2: 0.4, co2Need: 0.1, nitrateAbsorb: 0.5, light: 'high', growth: 0.06, maxSize: 4, desc: __alloT('stem.aquarium.floating_plant_with_red_purple_roots_t', 'Floating plant with red-purple roots that dangle into the water. Roots absorb nutrients directly from the water column.'), fact: __alloT('stem.aquarium.the_roots_turn_deep_red_under_intense_', 'The roots turn deep red under intense light — a sign of anthocyanin pigment production.') },
 
-              { id: 'rotala', name: 'Rotala Rotundifolia', icon: '🌺', o2: 0.6, co2Need: 0.6, nitrateAbsorb: 0.5, light: 'high', growth: 0.05, maxSize: 5, desc: 'Colorful stem plant that turns pink-red under high light and CO2. One of the most popular aquascaping plants.', fact: 'Rotala can grow completely red when iron levels are high, creating stunning underwater landscapes.' },
+              { id: 'rotala', name: __alloT('stem.aquarium.rotala_rotundifolia', 'Rotala Rotundifolia'), icon: '🌺', o2: 0.6, co2Need: 0.6, nitrateAbsorb: 0.5, light: 'high', growth: 0.05, maxSize: 5, desc: __alloT('stem.aquarium.colorful_stem_plant_that_turns_pink_re', 'Colorful stem plant that turns pink-red under high light and CO2. One of the most popular aquascaping plants.'), fact: __alloT('stem.aquarium.rotala_can_grow_completely_red_when_ir', 'Rotala can grow completely red when iron levels are high, creating stunning underwater landscapes.') },
 
-              { id: 'monte_carlo', name: 'Monte Carlo', icon: '🌿', o2: 0.4, co2Need: 0.6, nitrateAbsorb: 0.3, light: 'high', growth: 0.03, maxSize: 2, desc: 'Low-growing carpet plant with small round leaves. Creates dense ground cover. Needs CO2 injection.', fact: 'Monte Carlo was discovered in Argentina and named after Monte Carlo, the famous Mediterranean city.' },
+              { id: 'monte_carlo', name: __alloT('stem.aquarium.monte_carlo', 'Monte Carlo'), icon: '🌿', o2: 0.4, co2Need: 0.6, nitrateAbsorb: 0.3, light: 'high', growth: 0.03, maxSize: 2, desc: __alloT('stem.aquarium.low_growing_carpet_plant_with_small_ro', 'Low-growing carpet plant with small round leaves. Creates dense ground cover. Needs CO2 injection.'), fact: __alloT('stem.aquarium.monte_carlo_was_discovered_in_argentin', 'Monte Carlo was discovered in Argentina and named after Monte Carlo, the famous Mediterranean city.') },
 
-              { id: 'java_fern', name: 'Java Fern', icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: 'Hardy epiphyte — attaches to rocks and driftwood. Thrives in low light.', fact: 'Java Fern reproduces by growing tiny plantlets on its leaves!' },
+              { id: 'java_fern', name: __alloT('stem.aquarium.java_fern_2', 'Java Fern'), icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: __alloT('stem.aquarium.hardy_epiphyte_attaches_to_rocks_and_d_2', 'Hardy epiphyte — attaches to rocks and driftwood. Thrives in low light.'), fact: __alloT('stem.aquarium.java_fern_reproduces_by_growing_tiny_p_2', 'Java Fern reproduces by growing tiny plantlets on its leaves!') },
 
-              { id: 'hornwort', name: 'Hornwort', icon: '🌿', o2: 1.0, co2Need: 0.4, nitrateAbsorb: 0.9, light: 'medium', growth: 0.08, maxSize: 6, desc: 'Champion oxygenator and nitrate absorber. Grows fast and releases algae-inhibiting chemicals.', fact: 'Hornwort allelopathy actively suppresses algae growth in the water column.' },
+              { id: 'hornwort', name: __alloT('stem.aquarium.hornwort_2', 'Hornwort'), icon: '🌿', o2: 1.0, co2Need: 0.4, nitrateAbsorb: 0.9, light: 'medium', growth: 0.08, maxSize: 6, desc: __alloT('stem.aquarium.champion_oxygenator_and_nitrate_absorb', 'Champion oxygenator and nitrate absorber. Grows fast and releases algae-inhibiting chemicals.'), fact: __alloT('stem.aquarium.hornwort_allelopathy_actively_suppress', 'Hornwort allelopathy actively suppresses algae growth in the water column.') },
 
-              { id: 'water_wisteria', name: 'Water Wisteria', icon: '🌿', o2: 0.7, co2Need: 0.4, nitrateAbsorb: 0.6, light: 'medium', growth: 0.07, maxSize: 5, desc: 'Fast-growing nutrient sponge with beautiful lacey leaves.', fact: 'Water Wisteria can be propagated from just a single stem cutting.' }
+              { id: 'water_wisteria', name: __alloT('stem.aquarium.water_wisteria_2', 'Water Wisteria'), icon: '🌿', o2: 0.7, co2Need: 0.4, nitrateAbsorb: 0.6, light: 'medium', growth: 0.07, maxSize: 5, desc: __alloT('stem.aquarium.fast_growing_nutrient_sponge_with_beau', 'Fast-growing nutrient sponge with beautiful lacey leaves.'), fact: __alloT('stem.aquarium.water_wisteria_can_be_propagated_from_', 'Water Wisteria can be propagated from just a single stem cutting.') }
 
             ],
 
             reef: [
 
-              { id: 'chaeto', name: 'Chaetomorpha', icon: '🌿', o2: 0.8, co2Need: 0.6, nitrateAbsorb: 0.9, light: 'high', growth: 0.07, maxSize: 5, desc: 'Green macroalgae grown in refugiums. The ultimate nitrate and phosphate remover for saltwater tanks.', fact: 'Chaeto is so effective at nutrient export that reefers harvest and discard overgrown portions regularly.' },
+              { id: 'chaeto', name: __alloT('stem.aquarium.chaetomorpha', 'Chaetomorpha'), icon: '🌿', o2: 0.8, co2Need: 0.6, nitrateAbsorb: 0.9, light: 'high', growth: 0.07, maxSize: 5, desc: __alloT('stem.aquarium.green_macroalgae_grown_in_refugiums_th', 'Green macroalgae grown in refugiums. The ultimate nitrate and phosphate remover for saltwater tanks.'), fact: __alloT('stem.aquarium.chaeto_is_so_effective_at_nutrient_exp', 'Chaeto is so effective at nutrient export that reefers harvest and discard overgrown portions regularly.') },
 
-              { id: 'mangrove', name: 'Mangrove Seedling', icon: '🌳', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: 'Grows roots in saltwater while leaves emerge above. Excellent natural denitrifier and provides habitat structure.', fact: 'Mangrove forests protect coastlines from storms and serve as nurseries for 75% of commercially caught fish species.' },
+              { id: 'mangrove', name: __alloT('stem.aquarium.mangrove_seedling', 'Mangrove Seedling'), icon: '🌳', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: __alloT('stem.aquarium.grows_roots_in_saltwater_while_leaves_', 'Grows roots in saltwater while leaves emerge above. Excellent natural denitrifier and provides habitat structure.'), fact: __alloT('stem.aquarium.mangrove_forests_protect_coastlines_fr', 'Mangrove forests protect coastlines from storms and serve as nurseries for 75% of commercially caught fish species.') },
 
-              { id: 'caulerpa', name: 'Caulerpa', icon: '🌿', o2: 0.5, co2Need: 0.4, nitrateAbsorb: 0.7, light: 'medium', growth: 0.06, maxSize: 5, desc: 'Fast-growing marine macroalgae. Can become invasive if not pruned — known to "go sexual" and release spores in a toxic crash.', fact: 'Caulerpa is a single-celled organism — one of the largest single cells on Earth, up to 3 meters long!' }
+              { id: 'caulerpa', name: __alloT('stem.aquarium.caulerpa', 'Caulerpa'), icon: '🌿', o2: 0.5, co2Need: 0.4, nitrateAbsorb: 0.7, light: 'medium', growth: 0.06, maxSize: 5, desc: __alloT('stem.aquarium.fast_growing_marine_macroalgae_can_bec', 'Fast-growing marine macroalgae. Can become invasive if not pruned — known to "go sexual" and release spores in a toxic crash.'), fact: __alloT('stem.aquarium.caulerpa_is_a_single_celled_organism_o', 'Caulerpa is a single-celled organism — one of the largest single cells on Earth, up to 3 meters long!') }
 
             ],
 
             brackish: [
 
-              { id: 'mangrove', name: 'Mangrove Seedling', icon: '🌳', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: 'Grows roots in brackish water while leaves emerge above. Natural denitrifier.', fact: 'Mangroves can filter salt from seawater — their roots excrete salt crystals.' },
+              { id: 'mangrove', name: __alloT('stem.aquarium.mangrove_seedling_2', 'Mangrove Seedling'), icon: '🌳', o2: 0.4, co2Need: 0.2, nitrateAbsorb: 0.6, light: 'high', growth: 0.01, maxSize: 4, desc: __alloT('stem.aquarium.grows_roots_in_brackish_water_while_le', 'Grows roots in brackish water while leaves emerge above. Natural denitrifier.'), fact: __alloT('stem.aquarium.mangroves_can_filter_salt_from_seawate', 'Mangroves can filter salt from seawater — their roots excrete salt crystals.') },
 
-              { id: 'java_fern', name: 'Java Fern', icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: 'Tolerates mild brackish conditions. Hardy and low-maintenance.', fact: 'Java Fern is one of the few plants that can tolerate slight salinity.' }
+              { id: 'java_fern', name: __alloT('stem.aquarium.java_fern_3', 'Java Fern'), icon: '🌿', o2: 0.3, co2Need: 0.2, nitrateAbsorb: 0.2, light: 'low', growth: 0.02, maxSize: 3, desc: __alloT('stem.aquarium.tolerates_mild_brackish_conditions_har', 'Tolerates mild brackish conditions. Hardy and low-maintenance.'), fact: __alloT('stem.aquarium.java_fern_is_one_of_the_few_plants_tha', 'Java Fern is one of the few plants that can tolerate slight salinity.') }
 
             ]
 
@@ -13435,35 +13436,35 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             // Livebearers — give birth to free-swimming fry, no egg stage
 
-            guppy: { type: 'livebearer', gestationTicks: 20, fryCount: [3, 7], breedChance: 0.12, minPop: 2, desc: 'Males display vibrant color patterns to attract females. Females store sperm and can produce multiple broods.' },
+            guppy: { type: 'livebearer', gestationTicks: 20, fryCount: [3, 7], breedChance: 0.12, minPop: 2, desc: __alloT('stem.aquarium.males_display_vibrant_color_patterns_t', 'Males display vibrant color patterns to attract females. Females store sperm and can produce multiple broods.') },
 
-            platy: { type: 'livebearer', gestationTicks: 18, fryCount: [2, 5], breedChance: 0.10, minPop: 2, desc: 'Prolific livebearers that give birth to free-swimming fry every 4-6 weeks.' },
+            platy: { type: 'livebearer', gestationTicks: 18, fryCount: [2, 5], breedChance: 0.10, minPop: 2, desc: __alloT('stem.aquarium.prolific_livebearers_that_give_birth_t', 'Prolific livebearers that give birth to free-swimming fry every 4-6 weeks.') },
 
-            molly: { type: 'livebearer', gestationTicks: 22, fryCount: [3, 8], breedChance: 0.08, minPop: 2, desc: 'Mollies prefer slightly brackish conditions for breeding. Fry are large and independent at birth.' },
+            molly: { type: 'livebearer', gestationTicks: 22, fryCount: [3, 8], breedChance: 0.08, minPop: 2, desc: __alloT('stem.aquarium.mollies_prefer_slightly_brackish_condi', 'Mollies prefer slightly brackish conditions for breeding. Fry are large and independent at birth.') },
 
             // Egg-layers — lay eggs on surfaces, parents may guard
 
-            angel: { type: 'egg_layer', gestationTicks: 30, fryCount: [1, 3], breedChance: 0.05, minPop: 2, desc: 'Angelfish carefully clean a flat surface before laying hundreds of eggs. Both parents fan and guard the clutch.' },
+            angel: { type: 'egg_layer', gestationTicks: 30, fryCount: [1, 3], breedChance: 0.05, minPop: 2, desc: __alloT('stem.aquarium.angelfish_carefully_clean_a_flat_surfa', 'Angelfish carefully clean a flat surface before laying hundreds of eggs. Both parents fan and guard the clutch.') },
 
-            clown: { type: 'egg_layer', gestationTicks: 35, fryCount: [1, 2], breedChance: 0.04, minPop: 2, hermaphrodite: true, desc: 'All clownfish are born male. The dominant fish becomes female — if she dies, the next male transitions.' },
+            clown: { type: 'egg_layer', gestationTicks: 35, fryCount: [1, 2], breedChance: 0.04, minPop: 2, hermaphrodite: true, desc: __alloT('stem.aquarium.all_clownfish_are_born_male_the_domina_3', 'All clownfish are born male. The dominant fish becomes female — if she dies, the next male transitions.') },
 
-            cory: { type: 'egg_layer', gestationTicks: 25, fryCount: [2, 4], breedChance: 0.06, minPop: 2, desc: 'Corydoras perform a unique "T-position" mating dance. Females carry eggs in their pelvic fins before depositing them on glass or leaves.' },
+            cory: { type: 'egg_layer', gestationTicks: 25, fryCount: [2, 4], breedChance: 0.06, minPop: 2, desc: __alloT('stem.aquarium.corydoras_perform_a_unique_t_position_', 'Corydoras perform a unique "T-position" mating dance. Females carry eggs in their pelvic fins before depositing them on glass or leaves.') },
 
             // Bubble nest builders — male builds floating bubble nest
 
-            betta: { type: 'bubble_nest', gestationTicks: 25, fryCount: [1, 2], breedChance: 0.04, minPop: 1, desc: 'Males blow mucus-coated bubbles to build a floating nest. After spawning, the male guards eggs and returns fallen fry to the nest.' },
+            betta: { type: 'bubble_nest', gestationTicks: 25, fryCount: [1, 2], breedChance: 0.04, minPop: 1, desc: __alloT('stem.aquarium.males_blow_mucus_coated_bubbles_to_bui', 'Males blow mucus-coated bubbles to build a floating nest. After spawning, the male guards eggs and returns fallen fry to the nest.') },
 
             // Colony breeders — rapid reproduction, females carry eggs
 
-            shrimp: { type: 'colony', gestationTicks: 12, fryCount: [4, 10], breedChance: 0.15, minPop: 2, desc: 'Females carry fertilized eggs under their abdomen ("berried"). Shrimplets are miniature adults at birth.' },
+            shrimp: { type: 'colony', gestationTicks: 12, fryCount: [4, 10], breedChance: 0.15, minPop: 2, desc: __alloT('stem.aquarium.females_carry_fertilized_eggs_under_th', 'Females carry fertilized eggs under their abdomen ("berried"). Shrimplets are miniature adults at birth.') },
 
             // Schooling egg-scatterers — eggs scattered among plants, no parental care
 
-            neon: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 3], breedChance: 0.03, minPop: 4, desc: 'Scatter tiny adhesive eggs among fine-leaved plants at dawn. Eggs are light-sensitive and hatch in 24 hours.' },
+            neon: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 3], breedChance: 0.03, minPop: 4, desc: __alloT('stem.aquarium.scatter_tiny_adhesive_eggs_among_fine_', 'Scatter tiny adhesive eggs among fine-leaved plants at dawn. Eggs are light-sensitive and hatch in 24 hours.') },
 
-            cardinal: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 3], breedChance: 0.03, minPop: 4, desc: 'Prefer very soft, acidic water for spawning. Eggs and fry are extremely small and fragile.' },
+            cardinal: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 3], breedChance: 0.03, minPop: 4, desc: __alloT('stem.aquarium.prefer_very_soft_acidic_water_for_spaw', 'Prefer very soft, acidic water for spawning. Eggs and fry are extremely small and fragile.') },
 
-            rummy: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 2], breedChance: 0.03, minPop: 4, desc: 'Spawn in tight schools at first light. Red nose coloration intensifies during courtship.' }
+            rummy: { type: 'egg_scatter', gestationTicks: 28, fryCount: [1, 2], breedChance: 0.03, minPop: 4, desc: __alloT('stem.aquarium.spawn_in_tight_schools_at_first_light_', 'Spawn in tight schools at first light. Red nose coloration intensifies during courtship.') }
 
           };
 
@@ -13544,70 +13545,70 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var EQUIPMENT_CATALOG = {
             filter: {
-              name: 'Filter', icon: '\u2699\uFE0F',
+              name: __alloT('stem.aquarium.filter', 'Filter'), icon: '\u2699\uFE0F',
               levels: [
-                { name: 'Sponge Filter', cost: 0, ammoniaReduction: 0.05, nitriteReduction: 0.03, desc: 'Basic mechanical & biological filtration.' },
-                { name: 'HOB Filter', cost: 30, ammoniaReduction: 0.08, nitriteReduction: 0.05, desc: 'Hang-on-back with activated carbon. Better flow.' },
-                { name: 'Canister Filter', cost: 75, ammoniaReduction: 0.12, nitriteReduction: 0.08, desc: 'Multi-stage: mechanical, chemical, biological.' },
-                { name: 'Sump System', cost: 150, ammoniaReduction: 0.18, nitriteReduction: 0.12, desc: 'Professional-grade. Massive biological capacity.' }
+                { name: __alloT('stem.aquarium.sponge_filter', 'Sponge Filter'), cost: 0, ammoniaReduction: 0.05, nitriteReduction: 0.03, desc: __alloT('stem.aquarium.basic_mechanical_biological_filtration', 'Basic mechanical & biological filtration.') },
+                { name: __alloT('stem.aquarium.hob_filter', 'HOB Filter'), cost: 30, ammoniaReduction: 0.08, nitriteReduction: 0.05, desc: __alloT('stem.aquarium.hang_on_back_with_activated_carbon_bet', 'Hang-on-back with activated carbon. Better flow.') },
+                { name: __alloT('stem.aquarium.canister_filter', 'Canister Filter'), cost: 75, ammoniaReduction: 0.12, nitriteReduction: 0.08, desc: __alloT('stem.aquarium.multi_stage_mechanical_chemical_biolog', 'Multi-stage: mechanical, chemical, biological.') },
+                { name: __alloT('stem.aquarium.sump_system', 'Sump System'), cost: 150, ammoniaReduction: 0.18, nitriteReduction: 0.12, desc: __alloT('stem.aquarium.professional_grade_massive_biological_', 'Professional-grade. Massive biological capacity.') }
               ]
             },
             heater: {
-              name: 'Heater', icon: '\uD83C\uDF21\uFE0F',
+              name: __alloT('stem.aquarium.heater', 'Heater'), icon: '\uD83C\uDF21\uFE0F',
               levels: [
-                { name: 'No Heater', cost: 0, tempStability: 0, failChance: 0.05, desc: 'Room temperature only. Temp swings.' },
-                { name: 'Preset Heater', cost: 20, tempStability: 0.6, failChance: 0.03, desc: 'Fixed 78\u00B0F. Reliable but not adjustable.' },
-                { name: 'Adjustable Heater', cost: 50, tempStability: 0.85, failChance: 0.015, desc: 'Dial-controlled. \u00B11\u00B0F accuracy.' },
-                { name: 'Titanium + Controller', cost: 120, tempStability: 0.97, failChance: 0.005, desc: 'Shatterproof with digital controller.' }
+                { name: __alloT('stem.aquarium.no_heater', 'No Heater'), cost: 0, tempStability: 0, failChance: 0.05, desc: __alloT('stem.aquarium.room_temperature_only_temp_swings', 'Room temperature only. Temp swings.') },
+                { name: __alloT('stem.aquarium.preset_heater', 'Preset Heater'), cost: 20, tempStability: 0.6, failChance: 0.03, desc: __alloT('stem.aquarium.fixed_78_f_reliable_but_not_adjustable', 'Fixed 78\u00B0F. Reliable but not adjustable.') },
+                { name: __alloT('stem.aquarium.adjustable_heater', 'Adjustable Heater'), cost: 50, tempStability: 0.85, failChance: 0.015, desc: __alloT('stem.aquarium.dial_controlled_1_f_accuracy', 'Dial-controlled. \u00B11\u00B0F accuracy.') },
+                { name: __alloT('stem.aquarium.titanium_controller', 'Titanium + Controller'), cost: 120, tempStability: 0.97, failChance: 0.005, desc: __alloT('stem.aquarium.shatterproof_with_digital_controller', 'Shatterproof with digital controller.') }
               ]
             },
             light: {
-              name: 'Light', icon: '\uD83D\uDCA1',
+              name: __alloT('stem.aquarium.light', 'Light'), icon: '\uD83D\uDCA1',
               levels: [
-                { name: 'Room Light', cost: 0, plantBoost: 0, algaeMult: 0.8, desc: 'Ambient only. Insufficient for plants.' },
-                { name: 'Basic LED', cost: 25, plantBoost: 0.2, algaeMult: 1.0, desc: 'White LED strip. Adequate for low-light plants.' },
-                { name: 'Full Spectrum', cost: 60, plantBoost: 0.5, algaeMult: 1.1, desc: 'Tuned for photosynthesis. Sunrise/sunset.' },
-                { name: 'Pro Planted LED', cost: 130, plantBoost: 0.8, algaeMult: 0.9, desc: 'PAR-optimized with adjustable RGB.' }
+                { name: __alloT('stem.aquarium.room_light', 'Room Light'), cost: 0, plantBoost: 0, algaeMult: 0.8, desc: __alloT('stem.aquarium.ambient_only_insufficient_for_plants', 'Ambient only. Insufficient for plants.') },
+                { name: __alloT('stem.aquarium.basic_led', 'Basic LED'), cost: 25, plantBoost: 0.2, algaeMult: 1.0, desc: __alloT('stem.aquarium.white_led_strip_adequate_for_low_light', 'White LED strip. Adequate for low-light plants.') },
+                { name: __alloT('stem.aquarium.full_spectrum', 'Full Spectrum'), cost: 60, plantBoost: 0.5, algaeMult: 1.1, desc: __alloT('stem.aquarium.tuned_for_photosynthesis_sunrise_sunse', 'Tuned for photosynthesis. Sunrise/sunset.') },
+                { name: __alloT('stem.aquarium.pro_planted_led', 'Pro Planted LED'), cost: 130, plantBoost: 0.8, algaeMult: 0.9, desc: __alloT('stem.aquarium.par_optimized_with_adjustable_rgb', 'PAR-optimized with adjustable RGB.') }
               ]
             },
             airPump: {
-              name: 'Air Pump', icon: '\uD83C\uDF2C\uFE0F',
+              name: __alloT('stem.aquarium.air_pump', 'Air Pump'), icon: '\uD83C\uDF2C\uFE0F',
               levels: [
-                { name: 'None', cost: 0, o2Boost: 0, desc: 'Surface agitation from filter only.' },
-                { name: 'Small Air Pump', cost: 15, o2Boost: 0.3, desc: 'Single airstone. Gentle bubbles.' },
-                { name: 'Dual Outlet', cost: 40, o2Boost: 0.6, desc: 'Two airstones. Adjustable flow.' },
-                { name: 'Linear Piston', cost: 90, o2Boost: 1.0, desc: 'Whisper-quiet micro-bubbles.' }
+                { name: __alloT('stem.aquarium.none', 'None'), cost: 0, o2Boost: 0, desc: __alloT('stem.aquarium.surface_agitation_from_filter_only', 'Surface agitation from filter only.') },
+                { name: __alloT('stem.aquarium.small_air_pump', 'Small Air Pump'), cost: 15, o2Boost: 0.3, desc: __alloT('stem.aquarium.single_airstone_gentle_bubbles', 'Single airstone. Gentle bubbles.') },
+                { name: __alloT('stem.aquarium.dual_outlet', 'Dual Outlet'), cost: 40, o2Boost: 0.6, desc: __alloT('stem.aquarium.two_airstones_adjustable_flow', 'Two airstones. Adjustable flow.') },
+                { name: __alloT('stem.aquarium.linear_piston', 'Linear Piston'), cost: 90, o2Boost: 1.0, desc: __alloT('stem.aquarium.whisper_quiet_micro_bubbles', 'Whisper-quiet micro-bubbles.') }
               ]
             }
           };
 
           var ACHIEVEMENTS = [
-            { id: 'first_fish', name: 'First Splash', icon: '\uD83D\uDC1F', desc: 'Add your first fish', coins: 10 },
-            { id: 'full_tank', name: 'Full House', icon: '\uD83C\uDFE0', desc: 'Fill tank to 80%+ capacity', coins: 25 },
-            { id: 'first_breed', name: 'Circle of Life', icon: '\uD83D\uDC23', desc: 'First successful breeding', coins: 20 },
-            { id: 'perfect_water', name: 'Crystal Clear', icon: '\uD83D\uDCA7', desc: 'All params safe for 20 ticks', coins: 30 },
-            { id: 'plant_master', name: 'Green Thumb', icon: '\uD83C\uDF3F', desc: 'Grow 4+ plants in a tank', coins: 20 },
-            { id: 'disease_cure', name: 'Fish Doctor', icon: '\uD83E\uDE7A', desc: 'Cure a fish disease', coins: 15 },
-            { id: 'day_30', name: 'Dedicated Keeper', icon: '\u2B50', desc: 'Reach day 30', coins: 35 },
-            { id: 'day_100', name: 'Master Aquarist', icon: '\uD83C\uDFC6', desc: 'Reach day 100', coins: 75 },
-            { id: 'five_species', name: 'Biodiversity', icon: '\uD83C\uDF0D', desc: '5 different species in tank', coins: 25 },
-            { id: 'all_equipment', name: 'Fully Equipped', icon: '\uD83D\uDD27', desc: 'All equipment level 2+', coins: 40 },
-            { id: 'ocean_sustain', name: 'Sustainable Fisher', icon: '\uD83C\uDF0A', desc: '20 years without collapse', coins: 30 },
-            { id: 'quiz_ace', name: 'Marine Biologist', icon: '\uD83E\uDDEC', desc: '10 correct quiz answers', coins: 30 },
-            { id: 'ten_breeds', name: 'Fish Breeder', icon: '\uD83E\uDDEC', desc: 'Breed 10 total fry', coins: 40 },
-            { id: 'first_upgrade', name: 'Upgrade!', icon: '\u2B06\uFE0F', desc: 'First equipment upgrade', coins: 10 },
-            { id: 'coin_100', name: 'Savings Account', icon: '\uD83D\uDCB0', desc: 'Earn 100 total coins', coins: 15 },
-            { id: 'anatomy_5', name: 'Anatomy Scholar', icon: '\uD83D\uDD2C', desc: 'Study 5 species anatomy', coins: 20 }
+            { id: 'first_fish', name: __alloT('stem.aquarium.first_splash', 'First Splash'), icon: '\uD83D\uDC1F', desc: __alloT('stem.aquarium.add_your_first_fish', 'Add your first fish'), coins: 10 },
+            { id: 'full_tank', name: __alloT('stem.aquarium.full_house', 'Full House'), icon: '\uD83C\uDFE0', desc: __alloT('stem.aquarium.fill_tank_to_80_capacity', 'Fill tank to 80%+ capacity'), coins: 25 },
+            { id: 'first_breed', name: __alloT('stem.aquarium.circle_of_life', 'Circle of Life'), icon: '\uD83D\uDC23', desc: __alloT('stem.aquarium.first_successful_breeding', 'First successful breeding'), coins: 20 },
+            { id: 'perfect_water', name: __alloT('stem.aquarium.crystal_clear', 'Crystal Clear'), icon: '\uD83D\uDCA7', desc: __alloT('stem.aquarium.all_params_safe_for_20_ticks', 'All params safe for 20 ticks'), coins: 30 },
+            { id: 'plant_master', name: __alloT('stem.aquarium.green_thumb', 'Green Thumb'), icon: '\uD83C\uDF3F', desc: __alloT('stem.aquarium.grow_4_plants_in_a_tank', 'Grow 4+ plants in a tank'), coins: 20 },
+            { id: 'disease_cure', name: __alloT('stem.aquarium.fish_doctor', 'Fish Doctor'), icon: '\uD83E\uDE7A', desc: __alloT('stem.aquarium.cure_a_fish_disease', 'Cure a fish disease'), coins: 15 },
+            { id: 'day_30', name: __alloT('stem.aquarium.dedicated_keeper', 'Dedicated Keeper'), icon: '\u2B50', desc: __alloT('stem.aquarium.reach_day_30', 'Reach day 30'), coins: 35 },
+            { id: 'day_100', name: __alloT('stem.aquarium.master_aquarist', 'Master Aquarist'), icon: '\uD83C\uDFC6', desc: __alloT('stem.aquarium.reach_day_100', 'Reach day 100'), coins: 75 },
+            { id: 'five_species', name: __alloT('stem.aquarium.biodiversity', 'Biodiversity'), icon: '\uD83C\uDF0D', desc: __alloT('stem.aquarium.5_different_species_in_tank', '5 different species in tank'), coins: 25 },
+            { id: 'all_equipment', name: __alloT('stem.aquarium.fully_equipped', 'Fully Equipped'), icon: '\uD83D\uDD27', desc: __alloT('stem.aquarium.all_equipment_level_2', 'All equipment level 2+'), coins: 40 },
+            { id: 'ocean_sustain', name: __alloT('stem.aquarium.sustainable_fisher', 'Sustainable Fisher'), icon: '\uD83C\uDF0A', desc: __alloT('stem.aquarium.20_years_without_collapse', '20 years without collapse'), coins: 30 },
+            { id: 'quiz_ace', name: __alloT('stem.aquarium.marine_biologist', 'Marine Biologist'), icon: '\uD83E\uDDEC', desc: __alloT('stem.aquarium.10_correct_quiz_answers', '10 correct quiz answers'), coins: 30 },
+            { id: 'ten_breeds', name: __alloT('stem.aquarium.fish_breeder', 'Fish Breeder'), icon: '\uD83E\uDDEC', desc: __alloT('stem.aquarium.breed_10_total_fry', 'Breed 10 total fry'), coins: 40 },
+            { id: 'first_upgrade', name: 'Upgrade!', icon: '\u2B06\uFE0F', desc: __alloT('stem.aquarium.first_equipment_upgrade', 'First equipment upgrade'), coins: 10 },
+            { id: 'coin_100', name: __alloT('stem.aquarium.savings_account', 'Savings Account'), icon: '\uD83D\uDCB0', desc: __alloT('stem.aquarium.earn_100_total_coins', 'Earn 100 total coins'), coins: 15 },
+            { id: 'anatomy_5', name: __alloT('stem.aquarium.anatomy_scholar', 'Anatomy Scholar'), icon: '\uD83D\uDD2C', desc: __alloT('stem.aquarium.study_5_species_anatomy', 'Study 5 species anatomy'), coins: 20 }
           ];
 
           var TUTORIAL_STEPS = [
-            { id: 'welcome', title: 'Welcome to Aquarium Lab!', msg: 'Build and manage your own aquatic ecosystem. Select a tank type to begin.' },
-            { id: 'add_fish', title: 'Stock Your Tank', msg: 'Add fish from the species list. Watch the bioload meter!' },
-            { id: 'run_sim', title: 'Start the Simulation', msg: 'Press Play to begin the ecosystem simulation.' },
-            { id: 'feed', title: 'Feed Your Fish', msg: 'Fish get hungry. Feed flakes or live food, but avoid overfeeding!' },
-            { id: 'water_change', title: 'Water Maintenance', msg: 'Do water changes when ammonia or nitrite rises.' },
-            { id: 'earn_coins', title: 'Earn Coins!', msg: 'Healthy tanks earn daily coins. Spend on species and upgrades!' },
-            { id: 'shop', title: 'Visit the Shop', msg: 'Tap the Shop tab to buy new fish and upgrade equipment.' }
+            { id: 'welcome', title: __alloT('stem.aquarium.welcome_to_aquarium_lab', 'Welcome to Aquarium Lab!'), msg: 'Build and manage your own aquatic ecosystem. Select a tank type to begin.' },
+            { id: 'add_fish', title: __alloT('stem.aquarium.stock_your_tank', 'Stock Your Tank'), msg: 'Add fish from the species list. Watch the bioload meter!' },
+            { id: 'run_sim', title: __alloT('stem.aquarium.start_the_simulation', 'Start the Simulation'), msg: 'Press Play to begin the ecosystem simulation.' },
+            { id: 'feed', title: __alloT('stem.aquarium.feed_your_fish', 'Feed Your Fish'), msg: 'Fish get hungry. Feed flakes or live food, but avoid overfeeding!' },
+            { id: 'water_change', title: __alloT('stem.aquarium.water_maintenance', 'Water Maintenance'), msg: 'Do water changes when ammonia or nitrite rises.' },
+            { id: 'earn_coins', title: __alloT('stem.aquarium.earn_coins', 'Earn Coins!'), msg: 'Healthy tanks earn daily coins. Spend on species and upgrades!' },
+            { id: 'shop', title: __alloT('stem.aquarium.visit_the_shop', 'Visit the Shop'), msg: 'Tap the Shop tab to buy new fish and upgrade equipment.' }
           ];
 
           // ── Current state ──
@@ -13807,17 +13808,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'ich', title: 'White Spot Disease (Ich)', icon: '\u26A0\uFE0F', desc: 'You notice tiny white spots on your fish\u2019s fins and body. Ichthyophthirius multifiliis is highly contagious and can be fatal if untreated.', category: 'disease',
+              id: 'ich', title: __alloT('stem.aquarium.white_spot_disease_ich', 'White Spot Disease (Ich)'), icon: '\u26A0\uFE0F', desc: __alloT('stem.aquarium.you_notice_tiny_white_spots_on_your_fi', 'You notice tiny white spots on your fish\u2019s fins and body. Ichthyophthirius multifiliis is highly contagious and can be fatal if untreated.'), category: 'disease',
 
               educational: 'Ich is caused by a ciliated protozoan parasite. It burrows under the skin, creating white cysts. The parasite has a 3-stage life cycle \u2014 it\u2019s only vulnerable to treatment during the free-swimming stage.',
 
               choices: [
 
-                { label: '\uD83C\uDF21\uFE0F Raise temperature to 86\u00B0F', effect: { temp: 86, ammonia: 0.1 }, outcome: 'The higher temperature speeds up the parasite\u2019s life cycle, making treatment more effective. Fish are slightly stressed by the heat but the ich is clearing.', xp: 5 },
+                { label: __alloT('stem.aquarium.raise_temperature_to_86_f', '\uD83C\uDF21\uFE0F Raise temperature to 86\u00B0F'), effect: { temp: 86, ammonia: 0.1 }, outcome: 'The higher temperature speeds up the parasite\u2019s life cycle, making treatment more effective. Fish are slightly stressed by the heat but the ich is clearing.', xp: 5 },
 
-                { label: '\uD83E\uDDEA Add aquarium salt (1 tsp/gal)', effect: { ammonia: 0.05 }, outcome: 'Salt disrupts the parasite\u2019s osmotic balance. After 3 days, the white spots are fading. Scaleless fish like corydoras may be slightly irritated.', xp: 4 },
+                { label: __alloT('stem.aquarium.add_aquarium_salt_1_tsp_gal', '\uD83E\uDDEA Add aquarium salt (1 tsp/gal)'), effect: { ammonia: 0.05 }, outcome: 'Salt disrupts the parasite\u2019s osmotic balance. After 3 days, the white spots are fading. Scaleless fish like corydoras may be slightly irritated.', xp: 4 },
 
-                { label: '\u274C Do nothing and observe', effect: { ammonia: 0.3 }, outcome: 'The ich spreads rapidly. Two fish are now heavily infected and showing labored breathing. Immediate action is now critical.', xp: 1 }
+                { label: __alloT('stem.aquarium.do_nothing_and_observe', '\u274C Do nothing and observe'), effect: { ammonia: 0.3 }, outcome: 'The ich spreads rapidly. Two fish are now heavily infected and showing labored breathing. Immediate action is now critical.', xp: 1 }
 
               ]
 
@@ -13825,17 +13826,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'finrot', title: 'Fin Rot Detected', icon: '\uD83E\uDE78', desc: 'One of your fish has ragged, discolored fin edges \u2014 a sign of bacterial fin rot. Poor water quality is usually the root cause.', category: 'disease',
+              id: 'finrot', title: __alloT('stem.aquarium.fin_rot_detected', 'Fin Rot Detected'), icon: '\uD83E\uDE78', desc: __alloT('stem.aquarium.one_of_your_fish_has_ragged_discolored', 'One of your fish has ragged, discolored fin edges \u2014 a sign of bacterial fin rot. Poor water quality is usually the root cause.'), category: 'disease',
 
               educational: 'Fin rot is caused by gram-negative bacteria (Aeromonas, Pseudomonas) that thrive in dirty water. Clean water is the #1 treatment \u2014 medications are secondary.',
 
               choices: [
 
-                { label: '\uD83D\uDCA7 25% water change + clean filter', effect: { ammonia: -0.2, nitrite: -0.1 }, outcome: 'Excellent choice! The water quality improves dramatically. Over the next week, the damaged fins begin regenerating with clear tissue.', xp: 6 },
+                { label: __alloT('stem.aquarium.25_water_change_clean_filter', '\uD83D\uDCA7 25% water change + clean filter'), effect: { ammonia: -0.2, nitrite: -0.1 }, outcome: 'Excellent choice! The water quality improves dramatically. Over the next week, the damaged fins begin regenerating with clear tissue.', xp: 6 },
 
-                { label: '\uD83D\uDC8A Dose antibiotics immediately', effect: { ammonia: 0.15 }, outcome: 'The antibiotics help, but also kill beneficial bacteria in your filter. Next time, try clean water first \u2014 it\u2019s usually sufficient.', xp: 3 },
+                { label: __alloT('stem.aquarium.dose_antibiotics_immediately', '\uD83D\uDC8A Dose antibiotics immediately'), effect: { ammonia: 0.15 }, outcome: 'The antibiotics help, but also kill beneficial bacteria in your filter. Next time, try clean water first \u2014 it\u2019s usually sufficient.', xp: 3 },
 
-                { label: '\u274C Ignore it', effect: { ammonia: 0.4 }, outcome: 'The fin rot progresses to body rot. The fish\u2019s immune system is now compromised. This could have been prevented with a water change.', xp: 0 }
+                { label: __alloT('stem.aquarium.ignore_it', '\u274C Ignore it'), effect: { ammonia: 0.4 }, outcome: 'The fin rot progresses to body rot. The fish\u2019s immune system is now compromised. This could have been prevented with a water change.', xp: 0 }
 
               ]
 
@@ -13845,17 +13846,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'heater_fail', title: 'Heater Malfunction!', icon: '\uD83C\uDF21\uFE0F', desc: 'Your heater thermostat is stuck on high! Water temperature is climbing rapidly toward 88\u00B0F. Your fish are showing signs of thermal stress.', category: 'equipment',
+              id: 'heater_fail', title: __alloT('stem.aquarium.heater_malfunction', 'Heater Malfunction!'), icon: '\uD83C\uDF21\uFE0F', desc: __alloT('stem.aquarium.your_heater_thermostat_is_stuck_on_hig', 'Your heater thermostat is stuck on high! Water temperature is climbing rapidly toward 88\u00B0F. Your fish are showing signs of thermal stress.'), category: 'equipment',
 
               educational: 'Heater malfunctions are one of the most dangerous aquarium emergencies. Above 86\u00B0F, dissolved oxygen drops significantly. Many fish can tolerate brief temperature spikes but prolonged exposure causes organ damage.',
 
               choices: [
 
-                { label: '\u26A1 Unplug heater + add ice bag', effect: { temp: -6 }, outcome: 'Quick thinking! The ice bag slowly cools the water back to safe range. You\u2019ll need to monitor and replace the heater.', xp: 6 },
+                { label: __alloT('stem.aquarium.unplug_heater_add_ice_bag', '\u26A1 Unplug heater + add ice bag'), effect: { temp: -6 }, outcome: 'Quick thinking! The ice bag slowly cools the water back to safe range. You\u2019ll need to monitor and replace the heater.', xp: 6 },
 
-                { label: '\uD83D\uDCA8 Point a fan across water surface', effect: { temp: -3 }, outcome: 'Evaporative cooling helps reduce temperature gradually. The water drops a few degrees but may not be enough. Good emergency measure!', xp: 4 },
+                { label: __alloT('stem.aquarium.point_a_fan_across_water_surface', '\uD83D\uDCA8 Point a fan across water surface'), effect: { temp: -3 }, outcome: 'Evaporative cooling helps reduce temperature gradually. The water drops a few degrees but may not be enough. Good emergency measure!', xp: 4 },
 
-                { label: '\u274C Unplug heater only', effect: { temp: -1 }, outcome: 'The temperature will slowly drift down, but tropical fish need some heat. Monitor closely and get a replacement heater soon.', xp: 2 }
+                { label: __alloT('stem.aquarium.unplug_heater_only', '\u274C Unplug heater only'), effect: { temp: -1 }, outcome: 'The temperature will slowly drift down, but tropical fish need some heat. Monitor closely and get a replacement heater soon.', xp: 2 }
 
               ]
 
@@ -13863,17 +13864,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'filter_clog', title: 'Filter Flow Reduced', icon: '\u2699\uFE0F', desc: 'Your filter output is barely trickling. Debris has built up in the intake and media. Without filtration, ammonia will spike quickly.', category: 'equipment',
+              id: 'filter_clog', title: __alloT('stem.aquarium.filter_flow_reduced', 'Filter Flow Reduced'), icon: '\u2699\uFE0F', desc: __alloT('stem.aquarium.your_filter_output_is_barely_trickling', 'Your filter output is barely trickling. Debris has built up in the intake and media. Without filtration, ammonia will spike quickly.'), category: 'equipment',
 
               educational: 'Filters house your nitrogen cycle bacteria (Nitrosomonas + Nitrospira). Never clean filter media in tap water \u2014 the chlorine kills the beneficial bacteria. Always rinse in old tank water!',
 
               choices: [
 
-                { label: '\uD83D\uDCA7 Rinse media in old tank water', effect: { ammonia: -0.1 }, outcome: 'Perfect technique! The filter flow is restored while preserving the bacterial colony. Your nitrogen cycle stays intact.', xp: 6 },
+                { label: __alloT('stem.aquarium.rinse_media_in_old_tank_water', '\uD83D\uDCA7 Rinse media in old tank water'), effect: { ammonia: -0.1 }, outcome: 'Perfect technique! The filter flow is restored while preserving the bacterial colony. Your nitrogen cycle stays intact.', xp: 6 },
 
-                { label: '\uD83D\uDDD1\uFE0F Replace all filter media', effect: { ammonia: 0.3 }, outcome: 'The filter runs great, but you\u2019ve lost ALL your beneficial bacteria. Expect an ammonia spike in 2-3 days as the cycle restarts.', xp: 2 },
+                { label: __alloT('stem.aquarium.replace_all_filter_media', '\uD83D\uDDD1\uFE0F Replace all filter media'), effect: { ammonia: 0.3 }, outcome: 'The filter runs great, but you\u2019ve lost ALL your beneficial bacteria. Expect an ammonia spike in 2-3 days as the cycle restarts.', xp: 2 },
 
-                { label: '\u274C Deal with it later', effect: { ammonia: 0.5 }, outcome: 'Without proper filtration, ammonia and waste build up rapidly. Your fish are gasping at the surface for oxygen.', xp: 0 }
+                { label: __alloT('stem.aquarium.deal_with_it_later', '\u274C Deal with it later'), effect: { ammonia: 0.5 }, outcome: 'Without proper filtration, ammonia and waste build up rapidly. Your fish are gasping at the surface for oxygen.', xp: 0 }
 
               ]
 
@@ -13883,17 +13884,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'algae_bloom', title: 'Green Algae Bloom!', icon: '\uD83C\uDF3F', desc: 'Your tank water has turned pea-soup green overnight. A massive algae bloom has erupted, likely from excess nutrients and light.', category: 'ecology',
+              id: 'algae_bloom', title: __alloT('stem.aquarium.green_algae_bloom', 'Green Algae Bloom!'), icon: '\uD83C\uDF3F', desc: __alloT('stem.aquarium.your_tank_water_has_turned_pea_soup_gr', 'Your tank water has turned pea-soup green overnight. A massive algae bloom has erupted, likely from excess nutrients and light.'), category: 'ecology',
 
               educational: 'Algae blooms are caused by excess phosphates and nitrates combined with too much light (>10 hours/day). They\u2019re not immediately dangerous but reduce oxygen at night and look unsightly.',
 
               choices: [
 
-                { label: '\uD83D\uDD26 Blackout for 3 days (cover tank)', effect: { nitrate: -5 }, outcome: 'Without light, the algae dies off. After 3 days of darkness, the water clears. Reduce your light schedule to prevent recurrence.', xp: 5 },
+                { label: __alloT('stem.aquarium.blackout_for_3_days_cover_tank', '\uD83D\uDD26 Blackout for 3 days (cover tank)'), effect: { nitrate: -5 }, outcome: 'Without light, the algae dies off. After 3 days of darkness, the water clears. Reduce your light schedule to prevent recurrence.', xp: 5 },
 
-                { label: '\uD83E\uDDA0 Add algae-eating fish (Oto)', effect: { nitrate: -2 }, outcome: 'The otocinclus help with surface algae, but green water algae is too small for them. Partial improvement, but a blackout would be more effective.', xp: 3 },
+                { label: __alloT('stem.aquarium.add_algae_eating_fish_oto', '\uD83E\uDDA0 Add algae-eating fish (Oto)'), effect: { nitrate: -2 }, outcome: 'The otocinclus help with surface algae, but green water algae is too small for them. Partial improvement, but a blackout would be more effective.', xp: 3 },
 
-                { label: '\uD83D\uDCA7 50% water change', effect: { ammonia: -0.1, nitrate: -10 }, outcome: 'The water change dilutes nutrients and clears some algae, but it may return if the root cause (excess light/nutrients) isn\u2019t addressed.', xp: 4 }
+                { label: __alloT('stem.aquarium.50_water_change', '\uD83D\uDCA7 50% water change'), effect: { ammonia: -0.1, nitrate: -10 }, outcome: 'The water change dilutes nutrients and clears some algae, but it may return if the root cause (excess light/nutrients) isn\u2019t addressed.', xp: 4 }
 
               ]
 
@@ -13901,17 +13902,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'snail_invasion', title: 'Snail Population Explosion!', icon: '\uD83D\uDC0C', desc: 'Tiny snails are everywhere! They hitchhiked in on a plant and have multiplied rapidly. While not harmful, they\u2019re covering your glass.', category: 'ecology',
+              id: 'snail_invasion', title: __alloT('stem.aquarium.snail_population_explosion', 'Snail Population Explosion!'), icon: '\uD83D\uDC0C', desc: __alloT('stem.aquarium.tiny_snails_are_everywhere_they_hitchh', 'Tiny snails are everywhere! They hitchhiked in on a plant and have multiplied rapidly. While not harmful, they\u2019re covering your glass.'), category: 'ecology',
 
               educational: 'Pest snails (bladder snails, Malaysian trumpet snails) reproduce asexually \u2014 one snail can become hundreds. They\u2019re actually beneficial detritivores but can indicate overfeeding.',
 
               choices: [
 
-                { label: '\uD83C\uDF7D\uFE0F Reduce feeding (snails eat leftovers)', effect: { ammonia: -0.15 }, outcome: 'Smart approach! With less excess food, the snail population naturally declines over 2-3 weeks. Bonus: your water quality improves too.', xp: 6 },
+                { label: __alloT('stem.aquarium.reduce_feeding_snails_eat_leftovers', '\uD83C\uDF7D\uFE0F Reduce feeding (snails eat leftovers)'), effect: { ammonia: -0.15 }, outcome: 'Smart approach! With less excess food, the snail population naturally declines over 2-3 weeks. Bonus: your water quality improves too.', xp: 6 },
 
-                { label: '\uD83E\uDD9E Add an assassin snail', effect: {}, outcome: 'The assassin snail is a natural predator. Over time, it hunts down the pest snails. A biological control approach \u2014 very elegant!', xp: 5 },
+                { label: __alloT('stem.aquarium.add_an_assassin_snail', '\uD83E\uDD9E Add an assassin snail'), effect: {}, outcome: 'The assassin snail is a natural predator. Over time, it hunts down the pest snails. A biological control approach \u2014 very elegant!', xp: 5 },
 
-                { label: '\uD83D\uDEAB Remove them manually', effect: {}, outcome: 'You pick out dozens, but miss the tiny ones and eggs. They\u2019ll be back. This is a never-ending battle without addressing the root cause.', xp: 2 }
+                { label: __alloT('stem.aquarium.remove_them_manually', '\uD83D\uDEAB Remove them manually'), effect: {}, outcome: 'You pick out dozens, but miss the tiny ones and eggs. They\u2019ll be back. This is a never-ending battle without addressing the root cause.', xp: 2 }
 
               ]
 
@@ -13919,17 +13920,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'plant_melt', title: 'Aquatic Plants Melting', icon: '\uD83C\uDF42', desc: 'Several of your live plants are turning brown and dissolving. The leaves are becoming translucent and falling apart.', category: 'ecology',
+              id: 'plant_melt', title: __alloT('stem.aquarium.aquatic_plants_melting', 'Aquatic Plants Melting'), icon: '\uD83C\uDF42', desc: __alloT('stem.aquarium.several_of_your_live_plants_are_turnin', 'Several of your live plants are turning brown and dissolving. The leaves are becoming translucent and falling apart.'), category: 'ecology',
 
               educational: 'New aquatic plants often \"melt\" as they transition from emersed (above-water) to submersed growth. This is normal! Iron and CO2 deficiency can also cause melting in established plants.',
 
               choices: [
 
-                { label: '\uD83E\uDDEA Add root tabs + liquid fertilizer', effect: { nitrate: 3 }, outcome: 'The iron and micronutrients give the plants what they need. New, submersed-growth leaves begin sprouting within a week.', xp: 5 },
+                { label: __alloT('stem.aquarium.add_root_tabs_liquid_fertilizer', '\uD83E\uDDEA Add root tabs + liquid fertilizer'), effect: { nitrate: 3 }, outcome: 'The iron and micronutrients give the plants what they need. New, submersed-growth leaves begin sprouting within a week.', xp: 5 },
 
-                { label: '\u2702\uFE0F Trim dead leaves, leave roots', effect: {}, outcome: 'Good practice! Removing dead material prevents it from decaying and spiking ammonia. Healthy roots will send up new growth.', xp: 4 },
+                { label: __alloT('stem.aquarium.trim_dead_leaves_leave_roots', '\u2702\uFE0F Trim dead leaves, leave roots'), effect: {}, outcome: 'Good practice! Removing dead material prevents it from decaying and spiking ammonia. Healthy roots will send up new growth.', xp: 4 },
 
-                { label: '\uD83D\uDDD1\uFE0F Remove all dying plants', effect: { ammonia: 0.1, nitrate: 5 }, outcome: 'Without plants absorbing nitrate, your water quality may suffer. Plants also provide hiding spots that reduce fish stress.', xp: 1 }
+                { label: __alloT('stem.aquarium.remove_all_dying_plants', '\uD83D\uDDD1\uFE0F Remove all dying plants'), effect: { ammonia: 0.1, nitrate: 5 }, outcome: 'Without plants absorbing nitrate, your water quality may suffer. Plants also provide hiding spots that reduce fish stress.', xp: 1 }
 
               ]
 
@@ -13939,17 +13940,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'ph_crash', title: 'Sudden pH Crash!', icon: '\u2697\uFE0F', desc: 'Your pH has dropped from 7.2 to 6.0 overnight! Fish are showing signs of acidosis: clamped fins, rapid gill movement, and lethargy.', category: 'water',
+              id: 'ph_crash', title: __alloT('stem.aquarium.sudden_ph_crash', 'Sudden pH Crash!'), icon: '\u2697\uFE0F', desc: __alloT('stem.aquarium.your_ph_has_dropped_from_7_2_to_6_0_ov', 'Your pH has dropped from 7.2 to 6.0 overnight! Fish are showing signs of acidosis: clamped fins, rapid gill movement, and lethargy.'), category: 'water',
 
               educational: 'pH crashes happen when KH (carbonate hardness) is depleted. KH acts as a buffer \u2014 without it, pH becomes unstable. Adding crushed coral or baking soda restores buffering capacity.',
 
               choices: [
 
-                { label: '\uD83E\uDDF1 Add crushed coral to filter', effect: { pH: 1.0 }, outcome: 'The crushed coral slowly dissolves, raising KH and stabilizing pH around 7.2. This provides long-term buffering. Excellent choice!', xp: 6 },
+                { label: __alloT('stem.aquarium.add_crushed_coral_to_filter', '\uD83E\uDDF1 Add crushed coral to filter'), effect: { pH: 1.0 }, outcome: 'The crushed coral slowly dissolves, raising KH and stabilizing pH around 7.2. This provides long-term buffering. Excellent choice!', xp: 6 },
 
-                { label: '\uD83E\uDDEA Add baking soda (1 tsp/5 gal)', effect: { pH: 0.6 }, outcome: 'The pH rises quickly back toward neutral. Be careful \u2014 sudden pH changes can be as stressful as the crash itself. Slow and steady wins.', xp: 4 },
+                { label: __alloT('stem.aquarium.add_baking_soda_1_tsp_5_gal', '\uD83E\uDDEA Add baking soda (1 tsp/5 gal)'), effect: { pH: 0.6 }, outcome: 'The pH rises quickly back toward neutral. Be careful \u2014 sudden pH changes can be as stressful as the crash itself. Slow and steady wins.', xp: 4 },
 
-                { label: '\uD83D\uDCA7 Large water change (50%)', effect: { pH: 0.4, ammonia: -0.2 }, outcome: 'The fresh water brings pH up somewhat, but without addressing the low KH, the pH will crash again within days.', xp: 3 }
+                { label: __alloT('stem.aquarium.large_water_change_50', '\uD83D\uDCA7 Large water change (50%)'), effect: { pH: 0.4, ammonia: -0.2 }, outcome: 'The fresh water brings pH up somewhat, but without addressing the low KH, the pH will crash again within days.', xp: 3 }
 
               ]
 
@@ -13957,17 +13958,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'cloudy_water', title: 'Mysterious Cloudiness', icon: '\uD83C\uDF2B\uFE0F', desc: 'Your crystal-clear water has become milky white. It happened within hours and the fish seem unaffected so far.', category: 'water',
+              id: 'cloudy_water', title: __alloT('stem.aquarium.mysterious_cloudiness', 'Mysterious Cloudiness'), icon: '\uD83C\uDF2B\uFE0F', desc: __alloT('stem.aquarium.your_crystal_clear_water_has_become_mi', 'Your crystal-clear water has become milky white. It happened within hours and the fish seem unaffected so far.'), category: 'water',
 
               educational: 'Milky white cloudiness is a bacterial bloom \u2014 millions of free-floating heterotrophic bacteria. This is common in new tanks or after a major disturbance. It\u2019s usually harmless and self-resolving.',
 
               choices: [
 
-                { label: '\u23F3 Wait it out (bacterial bloom)', effect: { ammonia: 0.1 }, outcome: 'Correct diagnosis! The bloom runs out of food after 2-3 days and clears on its own. Your tank\u2019s ecosystem is simply rebalancing.', xp: 5 },
+                { label: __alloT('stem.aquarium.wait_it_out_bacterial_bloom', '\u23F3 Wait it out (bacterial bloom)'), effect: { ammonia: 0.1 }, outcome: 'Correct diagnosis! The bloom runs out of food after 2-3 days and clears on its own. Your tank\u2019s ecosystem is simply rebalancing.', xp: 5 },
 
-                { label: '\uD83D\uDCA7 Small daily water changes (10%)', effect: { ammonia: -0.05 }, outcome: 'The gentle water changes remove some bacteria without disrupting the cycle. Combined with patience, the water clears in a few days.', xp: 5 },
+                { label: __alloT('stem.aquarium.small_daily_water_changes_10', '\uD83D\uDCA7 Small daily water changes (10%)'), effect: { ammonia: -0.05 }, outcome: 'The gentle water changes remove some bacteria without disrupting the cycle. Combined with patience, the water clears in a few days.', xp: 5 },
 
-                { label: '\uD83E\uDDEA Add water clarifier chemical', effect: { ammonia: 0.05 }, outcome: 'The clarifier clumps particles for the filter to catch. It works visually but doesn\u2019t address why the bloom happened. A band-aid solution.', xp: 2 }
+                { label: __alloT('stem.aquarium.add_water_clarifier_chemical', '\uD83E\uDDEA Add water clarifier chemical'), effect: { ammonia: 0.05 }, outcome: 'The clarifier clumps particles for the filter to catch. It works visually but doesn\u2019t address why the bloom happened. A band-aid solution.', xp: 2 }
 
               ]
 
@@ -13977,17 +13978,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'aggression', title: 'Fish Aggression Alert!', icon: '\uD83D\uDCA2', desc: 'One of your larger fish is chasing and nipping at the others. You can see torn fins on the smaller fish. Tank harmony is disrupted.', category: 'behavioral',
+              id: 'aggression', title: __alloT('stem.aquarium.fish_aggression_alert', 'Fish Aggression Alert!'), icon: '\uD83D\uDCA2', desc: __alloT('stem.aquarium.one_of_your_larger_fish_is_chasing_and', 'One of your larger fish is chasing and nipping at the others. You can see torn fins on the smaller fish. Tank harmony is disrupted.'), category: 'behavioral',
 
               educational: 'Aggression often stems from territorial behavior, breeding instincts, or overcrowding. Rearranging decorations breaks established territories and can reset the social hierarchy.',
 
               choices: [
 
-                { label: '\uD83C\uDFE0 Rearrange decorations', effect: {}, outcome: 'Brilliant strategy! Moving the decor disrupts the bully\u2019s claimed territory. All fish have to re-establish boundaries, reducing aggression.', xp: 5 },
+                { label: __alloT('stem.aquarium.rearrange_decorations', '\uD83C\uDFE0 Rearrange decorations'), effect: {}, outcome: 'Brilliant strategy! Moving the decor disrupts the bully\u2019s claimed territory. All fish have to re-establish boundaries, reducing aggression.', xp: 5 },
 
-                { label: '\uD83C\uDF3F Add more hiding spots', effect: {}, outcome: 'More plants and caves give smaller fish escape routes. Line-of-sight breaks are key to peaceful tanks. The nipping decreases significantly.', xp: 5 },
+                { label: __alloT('stem.aquarium.add_more_hiding_spots', '\uD83C\uDF3F Add more hiding spots'), effect: {}, outcome: 'More plants and caves give smaller fish escape routes. Line-of-sight breaks are key to peaceful tanks. The nipping decreases significantly.', xp: 5 },
 
-                { label: '\uD83D\uDCD0 Check if tank is overcrowded', effect: {}, outcome: 'You review your stocking \u2014 the bioload is high. Sometimes the only solution is to rehome the aggressive individual.', xp: 4 }
+                { label: __alloT('stem.aquarium.check_if_tank_is_overcrowded', '\uD83D\uDCD0 Check if tank is overcrowded'), effect: {}, outcome: 'You review your stocking \u2014 the bioload is high. Sometimes the only solution is to rehome the aggressive individual.', xp: 4 }
 
               ]
 
@@ -13995,17 +13996,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'breeding', title: 'Breeding Behavior Spotted!', icon: '\uD83D\uDC95', desc: 'Two fish are performing an elaborate courtship dance! The male is displaying vibrant colors and the female appears to have a rounded belly.', category: 'behavioral',
+              id: 'breeding', title: __alloT('stem.aquarium.breeding_behavior_spotted', 'Breeding Behavior Spotted!'), icon: '\uD83D\uDC95', desc: __alloT('stem.aquarium.two_fish_are_performing_an_elaborate_c', 'Two fish are performing an elaborate courtship dance! The male is displaying vibrant colors and the female appears to have a rounded belly.'), category: 'behavioral',
 
               educational: 'Successful breeding requires stable water chemistry, proper temperature, and adequate nutrition. Many livebearers (guppies, mollies, platys) breed readily. Egg-layers need specific conditions.',
 
               choices: [
 
-                { label: '\uD83C\uDF31 Add breeding box / plants', effect: {}, outcome: 'The dense plants provide cover for fry. Within days, you spot tiny baby fish hiding among the leaves! Your population may grow.', xp: 5 },
+                { label: __alloT('stem.aquarium.add_breeding_box_plants', '\uD83C\uDF31 Add breeding box / plants'), effect: {}, outcome: 'The dense plants provide cover for fry. Within days, you spot tiny baby fish hiding among the leaves! Your population may grow.', xp: 5 },
 
-                { label: '\uD83C\uDF21\uFE0F Optimize conditions for spawning', effect: { temp: 1 }, outcome: 'The slightly warmer water and good nutrition encourage spawning. Nature takes its course \u2014 this is natural population dynamics!', xp: 4 },
+                { label: __alloT('stem.aquarium.optimize_conditions_for_spawning', '\uD83C\uDF21\uFE0F Optimize conditions for spawning'), effect: { temp: 1 }, outcome: 'The slightly warmer water and good nutrition encourage spawning. Nature takes its course \u2014 this is natural population dynamics!', xp: 4 },
 
-                { label: '\uD83D\uDC40 Just observe and enjoy', effect: {}, outcome: 'You watch the beautiful natural behavior unfold. Even if fry don\u2019t survive, witnessing courtship displays is one of the joys of fishkeeping.', xp: 3 }
+                { label: __alloT('stem.aquarium.just_observe_and_enjoy', '\uD83D\uDC40 Just observe and enjoy'), effect: {}, outcome: 'You watch the beautiful natural behavior unfold. Even if fry don\u2019t survive, witnessing courtship displays is one of the joys of fishkeeping.', xp: 3 }
 
               ]
 
@@ -14013,17 +14014,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'new_cycle', title: 'Nitrogen Cycle Kick-starting', icon: '\uD83D\uDD04', desc: 'You notice ammonia is rising but nitrite is still zero. Your tank is in the early stages of cycling \u2014 beneficial bacteria haven\u2019t colonized yet.', category: 'water',
+              id: 'new_cycle', title: __alloT('stem.aquarium.nitrogen_cycle_kick_starting', 'Nitrogen Cycle Kick-starting'), icon: '\uD83D\uDD04', desc: __alloT('stem.aquarium.you_notice_ammonia_is_rising_but_nitri', 'You notice ammonia is rising but nitrite is still zero. Your tank is in the early stages of cycling \u2014 beneficial bacteria haven\u2019t colonized yet.'), category: 'water',
 
               educational: 'The nitrogen cycle is the single most important concept in fishkeeping. Ammonia \u2192 Nitrite \u2192 Nitrate. It takes 4-6 weeks to fully establish. Patience is the key.',
 
               choices: [
 
-                { label: '\uD83E\uDDA0 Add bottled bacteria starter', effect: { ammonia: -0.2 }, outcome: 'The commercial bacteria boost jump-starts colonization. You should see nitrite appear within a week as the first bacteria convert ammonia.', xp: 5 },
+                { label: __alloT('stem.aquarium.add_bottled_bacteria_starter', '\uD83E\uDDA0 Add bottled bacteria starter'), effect: { ammonia: -0.2 }, outcome: 'The commercial bacteria boost jump-starts colonization. You should see nitrite appear within a week as the first bacteria convert ammonia.', xp: 5 },
 
-                { label: '\uD83D\uDCA7 Small daily water changes', effect: { ammonia: -0.15 }, outcome: 'Keeping ammonia below 2 ppm protects your fish while the cycle establishes. This is the gold standard for fish-in cycling.', xp: 6 },
+                { label: __alloT('stem.aquarium.small_daily_water_changes', '\uD83D\uDCA7 Small daily water changes'), effect: { ammonia: -0.15 }, outcome: 'Keeping ammonia below 2 ppm protects your fish while the cycle establishes. This is the gold standard for fish-in cycling.', xp: 6 },
 
-                { label: '\u274C Add more fish to speed it up', effect: { ammonia: 0.6 }, outcome: 'More fish = more ammonia. But your bacteria can\u2019t keep up yet! This overloads the system and puts all fish at risk. Less is more during cycling.', xp: 0 }
+                { label: __alloT('stem.aquarium.add_more_fish_to_speed_it_up', '\u274C Add more fish to speed it up'), effect: { ammonia: 0.6 }, outcome: 'More fish = more ammonia. But your bacteria can\u2019t keep up yet! This overloads the system and puts all fish at risk. Less is more during cycling.', xp: 0 }
 
               ]
 
@@ -14031,17 +14032,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'power_outage', title: 'Power Outage Simulation', icon: '\u26A1', desc: 'The power goes out! Your heater, filter, and lights all stop. Without filtration, oxygen levels will drop. Without the heater, temperature will fall.', category: 'equipment',
+              id: 'power_outage', title: __alloT('stem.aquarium.power_outage_simulation', 'Power Outage Simulation'), icon: '\u26A1', desc: __alloT('stem.aquarium.the_power_goes_out_your_heater_filter_', 'The power goes out! Your heater, filter, and lights all stop. Without filtration, oxygen levels will drop. Without the heater, temperature will fall.'), category: 'equipment',
 
               educational: 'During power outages, oxygen is the #1 concern. Battery-powered air pumps are essential emergency gear. Most tropical fish can survive 4-6 hours without heat but suffocate faster without water movement.',
 
               choices: [
 
-                { label: '\uD83E\uDEAB Battery air pump + blanket on tank', effect: { temp: -2 }, outcome: 'The air pump maintains oxygen while the blanket insulates heat. Your fish barely notice the outage. You were prepared!', xp: 6 },
+                { label: __alloT('stem.aquarium.battery_air_pump_blanket_on_tank', '\uD83E\uDEAB Battery air pump + blanket on tank'), effect: { temp: -2 }, outcome: 'The air pump maintains oxygen while the blanket insulates heat. Your fish barely notice the outage. You were prepared!', xp: 6 },
 
-                { label: '\uD83D\uDCA8 Manually agitate water surface', effect: { temp: -3, ammonia: 0.1 }, outcome: 'Stirring the water with a cup adds oxygen. It\u2019s labor-intensive but effective short-term. Temperature slowly drops.', xp: 4 },
+                { label: __alloT('stem.aquarium.manually_agitate_water_surface', '\uD83D\uDCA8 Manually agitate water surface'), effect: { temp: -3, ammonia: 0.1 }, outcome: 'Stirring the water with a cup adds oxygen. It\u2019s labor-intensive but effective short-term. Temperature slowly drops.', xp: 4 },
 
-                { label: '\u274C Wait for power to return', effect: { temp: -5, ammonia: 0.3 }, outcome: 'After 3 hours, oxygen drops critically. Some fish are gasping at the surface. The temperature is falling steadily. An emergency kit would have prevented this.', xp: 1 }
+                { label: __alloT('stem.aquarium.wait_for_power_to_return', '\u274C Wait for power to return'), effect: { temp: -5, ammonia: 0.3 }, outcome: 'After 3 hours, oxygen drops critically. Some fish are gasping at the surface. The temperature is falling steadily. An emergency kit would have prevented this.', xp: 1 }
 
               ]
 
@@ -14049,17 +14050,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             {
 
-              id: 'test_results', title: 'Unexpected Water Test Results', icon: '\uD83E\uDDEA', desc: 'Your weekly water test shows nitrate at 80+ ppm! Your fish seem fine now, but this level of nitrate suppresses immune function over time.', category: 'water',
+              id: 'test_results', title: __alloT('stem.aquarium.unexpected_water_test_results', 'Unexpected Water Test Results'), icon: '\uD83E\uDDEA', desc: __alloT('stem.aquarium.your_weekly_water_test_shows_nitrate_a', 'Your weekly water test shows nitrate at 80+ ppm! Your fish seem fine now, but this level of nitrate suppresses immune function over time.'), category: 'water',
 
               educational: 'High nitrate is the "silent killer." Fish acclimate gradually and seem fine, but chronic exposure stunts growth, fades color, and weakens immunity. Regular water changes are the #1 prevention.',
 
               choices: [
 
-                { label: '\uD83D\uDCA7 50% water change + gravel vacuum', effect: { nitrate: -30, ammonia: -0.1 }, outcome: 'A thorough water change and gravel vacuum removes trapped detritus. Nitrate drops to safe levels. Schedule weekly changes to prevent buildup.', xp: 6 },
+                { label: __alloT('stem.aquarium.50_water_change_gravel_vacuum', '\uD83D\uDCA7 50% water change + gravel vacuum'), effect: { nitrate: -30, ammonia: -0.1 }, outcome: 'A thorough water change and gravel vacuum removes trapped detritus. Nitrate drops to safe levels. Schedule weekly changes to prevent buildup.', xp: 6 },
 
-                { label: '\uD83C\uDF3F Add fast-growing live plants', effect: { nitrate: -15 }, outcome: 'Floating plants like duckweed and hornwort are nitrogen-absorbing machines. They\u2019ll help keep nitrate in check between water changes.', xp: 5 },
+                { label: __alloT('stem.aquarium.add_fast_growing_live_plants', '\uD83C\uDF3F Add fast-growing live plants'), effect: { nitrate: -15 }, outcome: 'Floating plants like duckweed and hornwort are nitrogen-absorbing machines. They\u2019ll help keep nitrate in check between water changes.', xp: 5 },
 
-                { label: '\u274C It will come down on its own', effect: { nitrate: 10 }, outcome: 'Nitrate doesn\u2019t decrease on its own \u2014 only water changes, plants, or special media remove it. Your fish\u2019s long-term health is at risk.', xp: 0 }
+                { label: __alloT('stem.aquarium.it_will_come_down_on_its_own', '\u274C It will come down on its own'), effect: { nitrate: 10 }, outcome: 'Nitrate doesn\u2019t decrease on its own \u2014 only water changes, plants, or special media remove it. Your fish\u2019s long-term health is at risk.', xp: 0 }
 
               ]
 
@@ -14309,7 +14310,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             pH: {
 
-              name: 'pH (Power of Hydrogen)',
+              name: __alloT('stem.aquarium.ph_power_of_hydrogen', 'pH (Power of Hydrogen)'),
 
               icon: '\u2697\uFE0F',
 
@@ -14333,7 +14334,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             temp: {
 
-              name: 'Temperature',
+              name: __alloT('stem.aquarium.temperature', 'Temperature'),
 
               icon: '\uD83C\uDF21\uFE0F',
 
@@ -14359,7 +14360,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             ammonia: {
 
-              name: 'Ammonia (NH\u2083/NH\u2084\u207A)',
+              name: __alloT('stem.aquarium.ammonia_nh_nh', 'Ammonia (NH\u2083/NH\u2084\u207A)'),
 
               icon: '\u2620\uFE0F',
 
@@ -14385,7 +14386,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             nitrite: {
 
-              name: 'Nitrite (NO\u2082\u207B)',
+              name: __alloT('stem.aquarium.nitrite_no', 'Nitrite (NO\u2082\u207B)'),
 
               icon: '\u26A0\uFE0F',
 
@@ -14413,7 +14414,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             nitrate: {
 
-              name: 'Nitrate (NO\u2083\u207B)',
+              name: __alloT('stem.aquarium.nitrate_no', 'Nitrate (NO\u2083\u207B)'),
 
               icon: '\uD83C\uDF3F',
 
@@ -14437,7 +14438,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             salinity: {
 
-              name: 'Salinity',
+              name: __alloT('stem.aquarium.salinity', 'Salinity'),
 
               icon: '\uD83E\uDDC2',
 
@@ -14459,7 +14460,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             dissolvedO2: {
 
-              name: 'Dissolved Oxygen (O\u2082)',
+              name: __alloT('stem.aquarium.dissolved_oxygen_o', 'Dissolved Oxygen (O\u2082)'),
 
               icon: '\uD83D\uDCA8',
 
@@ -14483,7 +14484,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             co2: {
 
-              name: 'Carbon Dioxide (CO\u2082)',
+              name: __alloT('stem.aquarium.carbon_dioxide_co', 'Carbon Dioxide (CO\u2082)'),
 
               icon: '\uD83C\uDF2B\uFE0F',
 
@@ -15352,18 +15353,25 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               if (newHour >= 24) { newHour = 0; newDay++; }
 
+              // newLog + tank are needed by the daily-reward/perfect-water block below, but were
+              // originally declared LATER (newLog ~L15398, tank ~L15528) — so this block read them
+              // before assignment (undefined) and threw on EVERY tick, freezing the whole sim.
+              // Declare them here (both are pure: a log clone + a tank lookup, no dependencies).
+              var newLog = _eventLog.slice();
+              var tank = TANK_TYPES.find(function (t) { return t.id === _selectedTank; });
+
               // ═══ DAILY COIN REWARD (when day advances) ═══
               if (newHour === 0) {
                 var _tankHealth = 0;
-                if (wc.ammonia < 0.5) _tankHealth += 25;
-                if (wc.nitrite < 0.3) _tankHealth += 25;
-                if (wc.nitrate < 40) _tankHealth += 25;
+                if (newChem.ammonia < 0.5) _tankHealth += 25;
+                if (newChem.nitrite < 0.3) _tankHealth += 25;
+                if (newChem.nitrate < 40) _tankHealth += 25;
                 var _avgH = 0; var _hKeys = Object.keys(_hungerLevels || {});
                 _hKeys.forEach(function (k) { _avgH += (_hungerLevels[k] || 50); });
                 if (_hKeys.length > 0) _avgH = _avgH / _hKeys.length;
                 if (_avgH < 70) _tankHealth += 25;
                 var _dc = _tankHealth >= 75 ? 3 : _tankHealth >= 50 ? 2 : _tankHealth >= 25 ? 1 : 0;
-                if (_finalTankFish.length > 0 && _dc > 0) {
+                if (_tankFish.length > 0 && _dc > 0) {
                   aq.coins = (aq.coins || 0) + _dc;
                   aq.totalCoinsEarned = (aq.totalCoinsEarned || 0) + _dc;
                   newLog.push({ tick: newTick, msg: '\uD83D\uDCB0 Daily: +' + _dc + ' coins (health ' + _tankHealth + '%)' });
@@ -15385,7 +15393,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 }
               }
               // Perfect water tracking
-              var _safe = wc.ammonia < 0.25 && wc.nitrite < 0.25 && wc.nitrate < 40 && Math.abs(wc.pH - tank.pH) < 0.5;
+              var _safe = newChem.ammonia < 0.25 && newChem.nitrite < 0.25 && newChem.nitrate < 40 && tank && Math.abs(newChem.pH - tank.pH) < 0.5;
               aq.perfectWaterTicks = _safe ? (aq.perfectWaterTicks || 0) + 1 : 0;
               if (aq.perfectWaterTicks >= 20 && !(aq.unlockedAchievements || {})['perfect_water']) {
                 aq.unlockedAchievements = Object.assign({}, aq.unlockedAchievements || {});
@@ -15395,7 +15403,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                 newLog.push({ tick: newTick, msg: '\uD83D\uDCA7 Achievement: Crystal Clear!' });
               }
 
-              var newLog = _eventLog.slice();
+              // newLog declared above (before the daily-reward block) — re-cloning here would
+              // discard the coin/achievement entries that block just pushed.
 
               // XP for maintaining healthy parameters
 
@@ -15991,7 +16000,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var getTankHealth = function () {
 
-            if (!waterChem || tankFish.length === 0) return { score: 100, tips: [{ icon: '\uD83D\uDC1F', text: 'Add some fish to get started!', color: 'text-cyan-600' }] };
+            if (!waterChem || tankFish.length === 0) return { score: 100, tips: [{ icon: '\uD83D\uDC1F', text: __alloT('stem.aquarium.add_some_fish_to_get_started', 'Add some fish to get started!'), color: 'text-cyan-600' }] };
 
             var score = 100;
 
@@ -16055,7 +16064,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             if (tips.length === 0) {
 
-              tips.push({ icon: '\uD83C\uDF1F', text: 'Excellent tank management! All parameters in safe range. Your nitrogen cycle is established.', color: 'text-green-600' });
+              tips.push({ icon: '\uD83C\uDF1F', text: __alloT('stem.aquarium.excellent_tank_management_all_paramete', 'Excellent tank management! All parameters in safe range. Your nitrogen cycle is established.'), color: 'text-green-600' });
 
             }
 
@@ -16067,11 +16076,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var OCEAN_SPECIES = [
 
-            { id: 'sardines', name: 'Sardines', icon: '🐟', r: 0.4, K: 1000, value: 1, desc: 'Fast-reproducing small fish. Foundation of the marine food web.' },
+            { id: 'sardines', name: __alloT('stem.aquarium.sardines', 'Sardines'), icon: '🐟', r: 0.4, K: 1000, value: 1, desc: __alloT('stem.aquarium.fast_reproducing_small_fish_foundation', 'Fast-reproducing small fish. Foundation of the marine food web.') },
 
-            { id: 'tuna', name: 'Tuna', icon: '🐠', r: 0.15, K: 400, value: 8, desc: 'Mid-level predator. High commercial value but slow to recover.' },
+            { id: 'tuna', name: __alloT('stem.aquarium.tuna', 'Tuna'), icon: '🐠', r: 0.15, K: 400, value: 8, desc: __alloT('stem.aquarium.mid_level_predator_high_commercial_val', 'Mid-level predator. High commercial value but slow to recover.') },
 
-            { id: 'sharks', name: 'Sharks', icon: '🦈', r: 0.05, K: 100, value: 3, desc: 'Apex predator. Extremely slow reproduction — vulnerable to overfishing.' }
+            { id: 'sharks', name: __alloT('stem.aquarium.sharks', 'Sharks'), icon: '🦈', r: 0.05, K: 100, value: 3, desc: __alloT('stem.aquarium.apex_predator_extremely_slow_reproduct', 'Apex predator. Extremely slow reproduction — vulnerable to overfishing.') }
 
           ];
 
@@ -16183,15 +16192,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var OCEAN_ZONES = [
 
-            { id: 'sunlight', name: 'Sunlight Zone (Epipelagic)', depth: '0-200m', light: '100%', temp: '20-25°C', color: '#38bdf8', species: ['clownfish', 'dolphin', 'jellyfish', 'turtle'] },
+            { id: 'sunlight', name: __alloT('stem.aquarium.sunlight_zone_epipelagic', 'Sunlight Zone (Epipelagic)'), depth: '0-200m', light: '100%', temp: '20-25°C', color: '#38bdf8', species: ['clownfish', 'dolphin', 'jellyfish', 'turtle'] },
 
-            { id: 'twilight', name: 'Twilight Zone (Mesopelagic)', depth: '200-1000m', light: '1%', temp: '5-20°C', color: '#1e40af', species: ['squid', 'hatchetfish', 'swordfish'] },
+            { id: 'twilight', name: __alloT('stem.aquarium.twilight_zone_mesopelagic', 'Twilight Zone (Mesopelagic)'), depth: '200-1000m', light: '1%', temp: '5-20°C', color: '#1e40af', species: ['squid', 'hatchetfish', 'swordfish'] },
 
-            { id: 'midnight', name: 'Midnight Zone (Bathypelagic)', depth: '1000-4000m', light: '0%', temp: '2-5°C', color: '#1e1b4b', species: ['anglerfish', 'gulpereel', 'giantsquid'] },
+            { id: 'midnight', name: __alloT('stem.aquarium.midnight_zone_bathypelagic', 'Midnight Zone (Bathypelagic)'), depth: '1000-4000m', light: '0%', temp: '2-5°C', color: '#1e1b4b', species: ['anglerfish', 'gulpereel', 'giantsquid'] },
 
-            { id: 'abyssal', name: 'Abyssal Zone (Abyssopelagic)', depth: '4000-6000m', light: '0%', temp: '1-2°C', color: '#0f0a2e', species: ['tubeworms', 'seacucumber'] },
+            { id: 'abyssal', name: __alloT('stem.aquarium.abyssal_zone_abyssopelagic', 'Abyssal Zone (Abyssopelagic)'), depth: '4000-6000m', light: '0%', temp: '1-2°C', color: '#0f0a2e', species: ['tubeworms', 'seacucumber'] },
 
-            { id: 'hadal', name: 'Hadal Zone (Trenches)', depth: '6000-11000m', light: '0%', temp: '1-4°C', color: '#050210', species: ['amphipod', 'snailfish'] }
+            { id: 'hadal', name: __alloT('stem.aquarium.hadal_zone_trenches', 'Hadal Zone (Trenches)'), depth: '6000-11000m', light: '0%', temp: '1-4°C', color: '#050210', species: ['amphipod', 'snailfish'] }
 
           ];
 
@@ -16199,45 +16208,45 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var MARINE_SPECIES = [
 
-            { id: 'clownfish', name: 'Clownfish', icon: '🐠', zone: 'sunlight', habitat: 'Shelters among venomous tentacles of Heteractis magnifica anemones on Indo-Pacific coral reefs', diet: 'Omnivore — algae, zooplankton, and leftover scraps from its host anemone', status: 'LC', fact: 'Lives in symbiosis with venomous sea anemones.', quiz: 'What protects clownfish from anemone stings?' },
+            { id: 'clownfish', name: __alloT('stem.aquarium.clownfish_2', 'Clownfish'), icon: '🐠', zone: 'sunlight', habitat: 'Shelters among venomous tentacles of Heteractis magnifica anemones on Indo-Pacific coral reefs', diet: 'Omnivore — algae, zooplankton, and leftover scraps from its host anemone', status: 'LC', fact: __alloT('stem.aquarium.lives_in_symbiosis_with_venomous_sea_a', 'Lives in symbiosis with venomous sea anemones.'), quiz: 'What protects clownfish from anemone stings?' },
 
-            { id: 'dolphin', name: 'Bottlenose Dolphin', icon: '🐬', zone: 'sunlight', habitat: 'Temperate and tropical open oceans, coastal bays, and estuaries worldwide', diet: 'Carnivore — fish, squid, and crustaceans hunted cooperatively using echolocation', status: 'LC', fact: 'Dolphins sleep with one eye open — one brain hemisphere at a time.', quiz: 'How do dolphins breathe while sleeping?' },
+            { id: 'dolphin', name: __alloT('stem.aquarium.bottlenose_dolphin', 'Bottlenose Dolphin'), icon: '🐬', zone: 'sunlight', habitat: 'Temperate and tropical open oceans, coastal bays, and estuaries worldwide', diet: 'Carnivore — fish, squid, and crustaceans hunted cooperatively using echolocation', status: 'LC', fact: __alloT('stem.aquarium.dolphins_sleep_with_one_eye_open_one_b', 'Dolphins sleep with one eye open — one brain hemisphere at a time.'), quiz: 'How do dolphins breathe while sleeping?' },
 
-            { id: 'jellyfish', name: 'Moon Jellyfish', icon: '🪼', zone: 'sunlight', habitat: 'Surface waters of temperate and tropical coastal seas, often near estuaries and harbors', diet: 'Carnivore — traps plankton, fish eggs, and tiny crustaceans on its mucus-covered bell', status: 'LC', fact: 'Jellyfish have no brain, heart, or blood — just a nerve net.', quiz: 'What body system do jellyfish lack?' },
+            { id: 'jellyfish', name: __alloT('stem.aquarium.moon_jellyfish', 'Moon Jellyfish'), icon: '🪼', zone: 'sunlight', habitat: 'Surface waters of temperate and tropical coastal seas, often near estuaries and harbors', diet: 'Carnivore — traps plankton, fish eggs, and tiny crustaceans on its mucus-covered bell', status: 'LC', fact: __alloT('stem.aquarium.jellyfish_have_no_brain_heart_or_blood', 'Jellyfish have no brain, heart, or blood — just a nerve net.'), quiz: 'What body system do jellyfish lack?' },
 
-            { id: 'turtle', name: 'Green Sea Turtle', icon: '🐢', zone: 'sunlight', habitat: 'Tropical seagrass meadows and coral reefs; nests on sandy beaches across the Atlantic and Pacific', diet: 'Herbivore — seagrass and algae; juveniles also eat jellyfish and sponges', status: 'EN', fact: 'Sea turtles navigate using Earth\'s magnetic field.', quiz: 'How do sea turtles find their nesting beaches?' },
+            { id: 'turtle', name: __alloT('stem.aquarium.green_sea_turtle', 'Green Sea Turtle'), icon: '🐢', zone: 'sunlight', habitat: 'Tropical seagrass meadows and coral reefs; nests on sandy beaches across the Atlantic and Pacific', diet: 'Herbivore — seagrass and algae; juveniles also eat jellyfish and sponges', status: 'EN', fact: __alloT('stem.aquarium.sea_turtles_navigate_using_earth_s_mag', 'Sea turtles navigate using Earth\'s magnetic field.'), quiz: 'How do sea turtles find their nesting beaches?' },
 
-            { id: 'squid', name: 'Firefly Squid', icon: '🦑', zone: 'twilight', habitat: 'Western Pacific mesopelagic zone (200-600m), migrating to the surface at night off Japan\'s Toyama Bay', diet: 'Carnivore — small fish, crustaceans, and other squids caught during nightly vertical migrations', status: 'LC', fact: 'Firefly squid produce bioluminescent light from photophores.', quiz: 'What is the light-producing ability of deep sea creatures called?' },
+            { id: 'squid', name: __alloT('stem.aquarium.firefly_squid', 'Firefly Squid'), icon: '🦑', zone: 'twilight', habitat: 'Western Pacific mesopelagic zone (200-600m), migrating to the surface at night off Japan\'s Toyama Bay', diet: 'Carnivore — small fish, crustaceans, and other squids caught during nightly vertical migrations', status: 'LC', fact: __alloT('stem.aquarium.firefly_squid_produce_bioluminescent_l', 'Firefly squid produce bioluminescent light from photophores.'), quiz: 'What is the light-producing ability of deep sea creatures called?' },
 
-            { id: 'hatchetfish', name: 'Hatchetfish', icon: '🐟', zone: 'twilight', habitat: 'Mesopelagic waters (200-1000m) in tropical and temperate oceans worldwide', diet: 'Carnivore — copepods, ostracods, and other tiny crustaceans caught during diel vertical migration', status: 'LC', fact: 'Uses counter-illumination to hide from predators below.', quiz: 'Why do hatchetfish have light organs on their belly?' },
+            { id: 'hatchetfish', name: __alloT('stem.aquarium.hatchetfish', 'Hatchetfish'), icon: '🐟', zone: 'twilight', habitat: 'Mesopelagic waters (200-1000m) in tropical and temperate oceans worldwide', diet: 'Carnivore — copepods, ostracods, and other tiny crustaceans caught during diel vertical migration', status: 'LC', fact: __alloT('stem.aquarium.uses_counter_illumination_to_hide_from', 'Uses counter-illumination to hide from predators below.'), quiz: 'Why do hatchetfish have light organs on their belly?' },
 
-            { id: 'swordfish', name: 'Swordfish', icon: '🐟', zone: 'twilight', habitat: 'Epipelagic to mesopelagic zones of tropical and temperate oceans; dives to 550m to hunt', diet: 'Carnivore — slashes through schools of mackerel, squid, and crustaceans with its bill', status: 'LC', fact: 'Swordfish heat their eyes and brain to hunt in cold deep waters.', quiz: 'What unique adaptation helps swordfish hunt in cold water?' },
+            { id: 'swordfish', name: __alloT('stem.aquarium.swordfish', 'Swordfish'), icon: '🐟', zone: 'twilight', habitat: 'Epipelagic to mesopelagic zones of tropical and temperate oceans; dives to 550m to hunt', diet: 'Carnivore — slashes through schools of mackerel, squid, and crustaceans with its bill', status: 'LC', fact: __alloT('stem.aquarium.swordfish_heat_their_eyes_and_brain_to', 'Swordfish heat their eyes and brain to hunt in cold deep waters.'), quiz: 'What unique adaptation helps swordfish hunt in cold water?' },
 
-            { id: 'anglerfish', name: 'Anglerfish', icon: '🐡', zone: 'midnight', habitat: 'Bathypelagic darkness (1000-4000m) throughout the world\'s deep oceans', diet: 'Carnivore — ambush predator that lures fish and crustaceans with a bioluminescent esca', status: 'LC', fact: 'The glowing lure is a bioluminescent bacteria colony.', quiz: 'What zone does the anglerfish inhabit?' },
+            { id: 'anglerfish', name: __alloT('stem.aquarium.anglerfish', 'Anglerfish'), icon: '🐡', zone: 'midnight', habitat: 'Bathypelagic darkness (1000-4000m) throughout the world\'s deep oceans', diet: 'Carnivore — ambush predator that lures fish and crustaceans with a bioluminescent esca', status: 'LC', fact: __alloT('stem.aquarium.the_glowing_lure_is_a_bioluminescent_b', 'The glowing lure is a bioluminescent bacteria colony.'), quiz: 'What zone does the anglerfish inhabit?' },
 
-            { id: 'gulpereel', name: 'Gulper Eel', icon: '🐍', zone: 'midnight', habitat: 'Bathypelagic to abyssopelagic zones (1000-3000m) in tropical and temperate deep oceans', diet: 'Carnivore — engulfs fish and shrimp whole using a massively expandable, hinged jaw', status: 'LC', fact: 'Can unhinge its jaw to swallow prey larger than itself.', quiz: 'What adaptation lets the gulper eel eat large prey?' },
+            { id: 'gulpereel', name: __alloT('stem.aquarium.gulper_eel', 'Gulper Eel'), icon: '🐍', zone: 'midnight', habitat: 'Bathypelagic to abyssopelagic zones (1000-3000m) in tropical and temperate deep oceans', diet: 'Carnivore — engulfs fish and shrimp whole using a massively expandable, hinged jaw', status: 'LC', fact: __alloT('stem.aquarium.can_unhinge_its_jaw_to_swallow_prey_la', 'Can unhinge its jaw to swallow prey larger than itself.'), quiz: 'What adaptation lets the gulper eel eat large prey?' },
 
-            { id: 'giantsquid', name: 'Giant Squid', icon: '🦑', zone: 'midnight', habitat: 'Bathypelagic waters (300-1000m) of all the world\'s oceans, from sub-Arctic to subtropical', diet: 'Carnivore — captures deep-sea fish and other squids with two long, club-tipped tentacles', status: 'LC', fact: 'Has the largest eyes in the animal kingdom — up to 10 inches across.', quiz: 'How large can a giant squid\'s eyes grow?' },
+            { id: 'giantsquid', name: __alloT('stem.aquarium.giant_squid', 'Giant Squid'), icon: '🦑', zone: 'midnight', habitat: 'Bathypelagic waters (300-1000m) of all the world\'s oceans, from sub-Arctic to subtropical', diet: 'Carnivore — captures deep-sea fish and other squids with two long, club-tipped tentacles', status: 'LC', fact: __alloT('stem.aquarium.has_the_largest_eyes_in_the_animal_kin', 'Has the largest eyes in the animal kingdom — up to 10 inches across.'), quiz: 'How large can a giant squid\'s eyes grow?' },
 
-            { id: 'tubeworms', name: 'Giant Tube Worms', icon: '🪱', zone: 'abyssal', habitat: 'Clustered around superheated hydrothermal vents on mid-ocean ridges (e.g., East Pacific Rise)', diet: 'Chemosynthetic — internal sulfur-oxidizing bacteria convert H₂S into organic nutrients', status: 'LC', fact: 'They have no mouth or stomach — bacteria inside them convert chemicals to energy.', quiz: 'What process do tube worm symbionts use instead of photosynthesis?' },
+            { id: 'tubeworms', name: __alloT('stem.aquarium.giant_tube_worms', 'Giant Tube Worms'), icon: '🪱', zone: 'abyssal', habitat: 'Clustered around superheated hydrothermal vents on mid-ocean ridges (e.g., East Pacific Rise)', diet: 'Chemosynthetic — internal sulfur-oxidizing bacteria convert H₂S into organic nutrients', status: 'LC', fact: __alloT('stem.aquarium.they_have_no_mouth_or_stomach_bacteria', 'They have no mouth or stomach — bacteria inside them convert chemicals to energy.'), quiz: 'What process do tube worm symbionts use instead of photosynthesis?' },
 
-            { id: 'seacucumber', name: 'Sea Cucumber', icon: '🥒', zone: 'abyssal', habitat: 'Soft sediment of the abyssal plain (4000-6000m), comprising 90% of deep-sea megafauna biomass', diet: 'Detritivore — sifts organic particles and bacteria from seafloor sediment through tentacle-like feeding appendages', status: 'LC', fact: 'Can expel their internal organs as a defense and regrow them.', quiz: 'What defense mechanism do sea cucumbers use?' },
+            { id: 'seacucumber', name: __alloT('stem.aquarium.sea_cucumber', 'Sea Cucumber'), icon: '🥒', zone: 'abyssal', habitat: 'Soft sediment of the abyssal plain (4000-6000m), comprising 90% of deep-sea megafauna biomass', diet: 'Detritivore — sifts organic particles and bacteria from seafloor sediment through tentacle-like feeding appendages', status: 'LC', fact: __alloT('stem.aquarium.can_expel_their_internal_organs_as_a_d', 'Can expel their internal organs as a defense and regrow them.'), quiz: 'What defense mechanism do sea cucumbers use?' },
 
-            { id: 'amphipod', name: 'Supergiant Amphipod', icon: '🦐', zone: 'hadal', habitat: 'Hadal trenches below 6000m, notably the Mariana and Kermadec Trenches', diet: 'Scavenger — consumes carrion falls (dead fish and whales) that sink to extreme depths', status: 'LC', fact: 'Found 7 miles deep in the Mariana Trench.', quiz: 'What is the deepest ocean trench on Earth?' },
+            { id: 'amphipod', name: __alloT('stem.aquarium.supergiant_amphipod', 'Supergiant Amphipod'), icon: '🦐', zone: 'hadal', habitat: 'Hadal trenches below 6000m, notably the Mariana and Kermadec Trenches', diet: 'Scavenger — consumes carrion falls (dead fish and whales) that sink to extreme depths', status: 'LC', fact: __alloT('stem.aquarium.found_7_miles_deep_in_the_mariana_tren', 'Found 7 miles deep in the Mariana Trench.'), quiz: 'What is the deepest ocean trench on Earth?' },
 
-            { id: 'snailfish', name: 'Mariana Snailfish', icon: '🐟', zone: 'hadal', habitat: 'Record-holding depth of 8,178m in the Mariana Trench, living in total darkness under crushing pressure', diet: 'Carnivore — feeds on small amphipods and other hadal invertebrates at extreme depth', status: 'LC', fact: 'Deepest-living fish ever recorded at 8,178 meters.', quiz: 'What is the deepest-living fish species discovered?' },
+            { id: 'snailfish', name: __alloT('stem.aquarium.mariana_snailfish', 'Mariana Snailfish'), icon: '🐟', zone: 'hadal', habitat: 'Record-holding depth of 8,178m in the Mariana Trench, living in total darkness under crushing pressure', diet: 'Carnivore — feeds on small amphipods and other hadal invertebrates at extreme depth', status: 'LC', fact: __alloT('stem.aquarium.deepest_living_fish_ever_recorded_at_8', 'Deepest-living fish ever recorded at 8,178 meters.'), quiz: 'What is the deepest-living fish species discovered?' },
 
-            { id: 'mantaray', name: 'Manta Ray', icon: '🐟', zone: 'sunlight', habitat: 'Tropical and subtropical surface waters near coral reefs, seamounts, and oceanic islands', diet: 'Filter feeder — strains zooplankton and small fish through gill raker plates while doing barrel rolls', status: 'VU', fact: 'Mantas have the largest brain-to-body ratio of any fish.', quiz: 'What type of feeding do manta rays use?' },
+            { id: 'mantaray', name: __alloT('stem.aquarium.manta_ray', 'Manta Ray'), icon: '🐟', zone: 'sunlight', habitat: 'Tropical and subtropical surface waters near coral reefs, seamounts, and oceanic islands', diet: 'Filter feeder — strains zooplankton and small fish through gill raker plates while doing barrel rolls', status: 'VU', fact: __alloT('stem.aquarium.mantas_have_the_largest_brain_to_body_', 'Mantas have the largest brain-to-body ratio of any fish.'), quiz: 'What type of feeding do manta rays use?' },
 
-            { id: 'bluewhale', name: 'Blue Whale', icon: '🐋', zone: 'sunlight', habitat: 'All major oceans, migrating between polar feeding grounds and tropical breeding waters', diet: 'Filter feeder — consumes up to 4 tons of Antarctic krill per day using 300+ baleen plates', status: 'EN', fact: 'The largest animal ever — their heart is the size of a small car.', quiz: 'What is the largest animal that has ever lived?' },
+            { id: 'bluewhale', name: __alloT('stem.aquarium.blue_whale', 'Blue Whale'), icon: '🐋', zone: 'sunlight', habitat: 'All major oceans, migrating between polar feeding grounds and tropical breeding waters', diet: 'Filter feeder — consumes up to 4 tons of Antarctic krill per day using 300+ baleen plates', status: 'EN', fact: __alloT('stem.aquarium.the_largest_animal_ever_their_heart_is', 'The largest animal ever — their heart is the size of a small car.'), quiz: 'What is the largest animal that has ever lived?' },
 
-            { id: 'seahorse', name: 'Seahorse', icon: '🐟', zone: 'sunlight', habitat: 'Sheltered seagrass beds, mangrove roots, and coral rubble in tropical and temperate shallows', diet: 'Carnivore — ambush-feeds on mysid shrimp and copepods by rapidly snapping its tubular snout', status: 'VU', fact: 'Males carry and give birth to the babies — unique in the animal kingdom.', quiz: 'Which seahorse parent carries the eggs?' },
+            { id: 'seahorse', name: __alloT('stem.aquarium.seahorse', 'Seahorse'), icon: '🐟', zone: 'sunlight', habitat: 'Sheltered seagrass beds, mangrove roots, and coral rubble in tropical and temperate shallows', diet: 'Carnivore — ambush-feeds on mysid shrimp and copepods by rapidly snapping its tubular snout', status: 'VU', fact: __alloT('stem.aquarium.males_carry_and_give_birth_to_the_babi', 'Males carry and give birth to the babies — unique in the animal kingdom.'), quiz: 'Which seahorse parent carries the eggs?' },
 
-            { id: 'octopus', name: 'Dumbo Octopus', icon: '🐙', zone: 'midnight', habitat: 'Near the seafloor at extreme depths (3000-7000m) in every ocean, the deepest-living octopus genus', diet: 'Carnivore — swallows worms, copepods, and isopods whole near the deep-ocean floor', status: 'LC', fact: 'Named for their ear-like fins. Three hearts pump blue blood.', quiz: 'How many hearts does an octopus have?' },
+            { id: 'octopus', name: __alloT('stem.aquarium.dumbo_octopus', 'Dumbo Octopus'), icon: '🐙', zone: 'midnight', habitat: 'Near the seafloor at extreme depths (3000-7000m) in every ocean, the deepest-living octopus genus', diet: 'Carnivore — swallows worms, copepods, and isopods whole near the deep-ocean floor', status: 'LC', fact: __alloT('stem.aquarium.named_for_their_ear_like_fins_three_he', 'Named for their ear-like fins. Three hearts pump blue blood.'), quiz: 'How many hearts does an octopus have?' },
 
-            { id: 'nautilus', name: 'Nautilus', icon: '🐚', zone: 'twilight', habitat: 'Deep fore-reef slopes (200-700m) of the Indo-Pacific, ascending to shallow reefs at night to feed', diet: 'Scavenger — dead fish, crustacean molts, and detritus detected by chemosensory tentacles', status: 'VU', fact: 'A living fossil — virtually unchanged for 500 million years.', quiz: 'How long have nautiluses existed?' },
+            { id: 'nautilus', name: __alloT('stem.aquarium.nautilus', 'Nautilus'), icon: '🐚', zone: 'twilight', habitat: 'Deep fore-reef slopes (200-700m) of the Indo-Pacific, ascending to shallow reefs at night to feed', diet: 'Scavenger — dead fish, crustacean molts, and detritus detected by chemosensory tentacles', status: 'VU', fact: __alloT('stem.aquarium.a_living_fossil_virtually_unchanged_fo', 'A living fossil — virtually unchanged for 500 million years.'), quiz: 'How long have nautiluses existed?' },
 
-            { id: 'coelacanth', name: 'Coelacanth', icon: '🐟', zone: 'twilight', habitat: 'Deep volcanic caves and overhangs (150-700m) off the Comoros Islands and South Africa', diet: 'Carnivore — slow drift-hunter of cuttlefish, squid, snipefish, and small sharks', status: 'CR', fact: 'Thought extinct for 66 million years until rediscovered in 1938!', quiz: 'When was the coelacanth rediscovered?' }
+            { id: 'coelacanth', name: __alloT('stem.aquarium.coelacanth', 'Coelacanth'), icon: '🐟', zone: 'twilight', habitat: 'Deep volcanic caves and overhangs (150-700m) off the Comoros Islands and South Africa', diet: 'Carnivore — slow drift-hunter of cuttlefish, squid, snipefish, and small sharks', status: 'CR', fact: __alloT('stem.aquarium.thought_extinct_for_66_million_years_u', 'Thought extinct for 66 million years until rediscovered in 1938!'), quiz: 'When was the coelacanth rediscovered?' }
 
           ];
 
@@ -16297,47 +16306,110 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           // ═══ RENDER ═══
 
-          var modeColors = { tank: 'cyan', ocean: 'blue', marine: 'indigo', learn: 'emerald', quiz: 'amber', waterlab: 'violet', designer: 'pink' };
+          var modeColors = { tank: 'cyan', ocean: 'blue', marine: 'indigo', learn: 'emerald', quiz: 'amber', waterlab: 'violet', designer: 'pink', stressHunt: 'rose' };
 
           var mColor = modeColors[mode] || 'cyan';
 
+          var modeTabs = [
+            { id: 'tank', icon: '\uD83D\uDC20', label: __alloT('stem.aquarium.aquarium_lab', 'Aquarium Lab'), activeClass: 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/25' },
+            { id: 'ocean', icon: '\uD83C\uDF0A', label: __alloT('stem.aquarium.ocean_ecology', 'Ocean Ecology'), activeClass: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' },
+            { id: 'marine', icon: '\uD83D\uDD2C', label: __alloT('stem.aquarium.marine_science', 'Marine Science'), activeClass: 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25' },
+            { id: 'learn', icon: '\uD83D\uDCD6', label: __alloT('stem.aquarium.learn', 'Learn'), activeClass: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25' },
+            { id: 'quiz', icon: '\uD83C\uDFAF', label: __alloT('stem.aquarium.quiz', 'Quiz'), activeClass: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25' },
+            { id: 'waterlab', icon: '\uD83E\uDDEA', label: __alloT('stem.aquarium.water_lab', 'Water Lab'), activeClass: 'bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-500/25' },
+            { id: 'designer', icon: '\u270F\uFE0F', label: __alloT('stem.aquarium.designer', 'Designer'), activeClass: 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/25' },
+            { id: 'stressHunt', icon: '\uD83D\uDC1F', label: __alloT('stem.aquarium.stress_lab', 'Stress Lab'), activeClass: 'bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-500/25' }
+          ];
+
+          var activeModeMeta = modeTabs.filter(function (tab) { return tab.id === mode; })[0] || modeTabs[0];
+          var activeTankMeta = selectedTank ? TANK_TYPES.filter(function (tank) { return tank.id === selectedTank; })[0] : null;
+          var missionRoutes = [
+            { id: 'cycle', mode: 'tank', icon: '\uD83D\uDC20', title: __alloT('stem.aquarium.route_cycle_tank', 'Cycle a living tank'), detail: __alloT('stem.aquarium.route_cycle_tank_detail', 'Watch fish waste become chemistry data.'), tone: 'from-cyan-50 to-sky-50 border-cyan-200 text-cyan-900' },
+            { id: 'chem', mode: 'waterlab', icon: '\uD83E\uDDEA', title: __alloT('stem.aquarium.route_balance_chemistry', 'Balance chemistry'), detail: __alloT('stem.aquarium.route_balance_chemistry_detail', 'Test pH, ammonia, nitrite, nitrate, oxygen.'), tone: 'from-violet-50 to-fuchsia-50 border-violet-200 text-violet-900' },
+            { id: 'design', mode: 'designer', icon: '\u270F\uFE0F', title: __alloT('stem.aquarium.route_design_habitat', 'Design a habitat'), detail: __alloT('stem.aquarium.route_design_habitat_detail', 'Build a compatible stocking plan.'), tone: 'from-pink-50 to-rose-50 border-pink-200 text-pink-900' },
+            { id: 'ocean', mode: 'ocean', icon: '\uD83C\uDF0A', title: __alloT('stem.aquarium.route_ocean_systems', 'Model ocean systems'), detail: __alloT('stem.aquarium.route_ocean_systems_detail', 'Track plankton, fisheries, acidification.'), tone: 'from-blue-50 to-cyan-50 border-blue-200 text-blue-900' }
+          ];
 
 
-          return React.createElement("div", { className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-300" },
+
+          return React.createElement("div", { className: "space-y-4 max-w-5xl mx-auto animate-in fade-in duration-300", 'data-aquarium-tool': 'true' },
 
 
 
             // ── Header ──
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-2" },
+            React.createElement("div", {
+              className: "rounded-2xl overflow-hidden border border-cyan-200 bg-gradient-to-br from-white via-cyan-50 to-sky-100 shadow-sm",
+              'data-aquarium-focus-panel': 'true'
+            },
 
-              React.createElement("button", {
+              React.createElement("div", { className: "p-4 sm:p-5 flex flex-col gap-4" },
 
-                onClick: function () { setStemLabTool(null); updMulti({ simRunning: false }); },
+                React.createElement("div", { className: "flex items-start gap-3" },
 
-                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools'
+                  React.createElement("button", {
 
-              }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
+                    onClick: function () { setStemLabTool(null); updMulti({ simRunning: false }); },
 
-              React.createElement("h3", { className: "text-lg font-bold bg-gradient-to-r from-cyan-700 via-blue-600 to-indigo-700 bg-clip-text text-transparent" }, "\uD83D\uDC20 Aquaculture & Ocean Lab"),
+                    className: "mt-0.5 p-2 hover:bg-white/80 rounded-xl transition-colors border border-transparent hover:border-cyan-200", 'aria-label': __alloT('stem.aquarium.back_to_tools', 'Back to tools')
 
-              React.createElement("div", { className: "flex items-center gap-2 ml-auto" },
+                  }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-                React.createElement("button", { "aria-label": "Snapshot",
+                  React.createElement("div", { className: "flex-1 min-w-0" },
+                    React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-cyan-700" }, __alloT('stem.aquarium.tank_systems_mission', 'Tank Systems Mission')),
+                    React.createElement("h3", { className: "text-xl sm:text-2xl font-black text-slate-900 leading-tight" }, __alloT('stem.aquarium.aquaculture_ocean_lab', "\uD83D\uDC20 Aquaculture & Ocean Lab")),
+                    React.createElement("p", { className: "text-[12px] sm:text-sm text-slate-700 leading-relaxed max-w-2xl mt-1" },
+                      __alloT('stem.aquarium.aquarium_focus_copy', 'Keep a miniature ecosystem stable: choose a tank, stock it carefully, read the water chemistry, and connect those choices to ocean-scale systems.'))
+                  ),
 
-                  onClick: function () {
+                  React.createElement("button", { "aria-label": __alloT('stem.aquarium.snapshot', "Snapshot"),
 
-                    var snap = { id: 'aqua-' + Date.now(), tool: 'aquarium', label: mode === 'tank' ? 'Tank: ' + (selectedTank || 'none') : mode === 'ocean' ? 'Ocean Year ' + oceanYear : 'Marine Science', data: Object.assign({}, d), timestamp: Date.now() };
+                    onClick: function () {
 
-                    setToolSnapshots(function (prev) { return prev.concat([snap]); });
+                      var snap = { id: 'aqua-' + Date.now(), tool: 'aquarium', label: mode === 'tank' ? 'Tank: ' + (selectedTank || 'none') : mode === 'ocean' ? 'Ocean Year ' + oceanYear : 'Marine Science', data: Object.assign({}, d), timestamp: Date.now() };
 
-                    if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
+                      setToolSnapshots(function (prev) { return prev.concat([snap]); });
 
-                  },
+                      if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
 
-                  className: "text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all"
+                    },
 
-                }, "\uD83D\uDCF8 Snapshot")
+                    className: "hidden sm:inline-flex items-center justify-center text-[11px] font-black text-cyan-900 bg-white/85 hover:bg-white border border-cyan-200 rounded-full px-3 py-1.5 transition-all shadow-sm"
+
+                  }, __alloT('stem.aquarium.snapshot_2', "\uD83D\uDCF8 Snapshot"))
+
+                ),
+
+                React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-4 gap-2", 'data-aquarium-status-strip': 'true' },
+                  [
+                    { k: 'mode', label: __alloT('stem.aquarium.current_path', 'Current path'), value: activeModeMeta.icon + ' ' + activeModeMeta.label },
+                    { k: 'tank', label: __alloT('stem.aquarium.active_tank', 'Active tank'), value: activeTankMeta ? activeTankMeta.name : __alloT('stem.aquarium.not_chosen_yet', 'Not chosen yet') },
+                    { k: 'fish', label: __alloT('stem.aquarium.living_stock', 'Living stock'), value: (tankFish || []).length + ' fish' },
+                    { k: 'day', label: __alloT('stem.aquarium.sim_day', 'Sim day'), value: selectedTank ? ('Day ' + (simDay || 0)) : __alloT('stem.aquarium.ready', 'Ready') }
+                  ].map(function (stat) {
+                    return React.createElement("div", { key: stat.k, className: "rounded-xl bg-white/80 border border-white/80 px-3 py-2 shadow-sm" },
+                      React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-500" }, stat.label),
+                      React.createElement("div", { className: "text-[12px] font-black text-slate-900 truncate" }, stat.value)
+                    );
+                  })
+                ),
+
+                React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2" },
+                  missionRoutes.map(function (route) {
+                    var selectedRoute = mode === route.mode;
+                    return React.createElement("button", {
+                      key: route.id,
+                      onClick: function () { upd('mode', route.mode); },
+                      className: "text-left rounded-xl border p-3 bg-gradient-to-br " + route.tone + " transition-all hover:-translate-y-0.5 hover:shadow-md " + (selectedRoute ? "ring-2 ring-cyan-400" : "")
+                    },
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-lg", 'aria-hidden': 'true' }, route.icon),
+                        React.createElement("span", { className: "text-[12px] font-black" }, route.title)
+                      ),
+                      React.createElement("p", { className: "mt-1 text-[11px] leading-snug opacity-80" }, route.detail)
+                    );
+                  })
+                )
 
               )
 
@@ -16353,40 +16425,26 @@ var d = (labToolData && labToolData._aquarium) || {};
             // on the new lighter background. Active tabs keep their
             // existing per-mode color treatment.
             React.createElement("div", {
-              className: "flex gap-1 rounded-xl p-1.5",
+              className: "grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-1 rounded-2xl p-1.5",
+              role: "tablist",
+              'aria-label': __alloT('stem.aquarium.aquarium_sections', 'Aquarium sections'),
               style: {
                 background: "linear-gradient(180deg,#e0f2fe 0%,#bae6fd 60%,#7dd3fc 100%)",
                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.7),inset 0 -1px 0 rgba(2,132,199,0.10),0 4px 14px -10px rgba(15,23,42,0.10)"
               }
             },
 
-              [
-
-                { id: 'tank', icon: '\uD83D\uDC20', label: 'Aquarium Lab' },
-
-                { id: 'ocean', icon: '\uD83C\uDF0A', label: 'Ocean Ecology' },
-
-                { id: 'marine', icon: '\uD83D\uDD2C', label: 'Marine Science' },
-
-                { id: 'learn', icon: '\uD83D\uDCD6', label: 'Learn' },
-
-                { id: 'quiz', icon: '\uD83C\uDFAF', label: 'Quiz' },
-
-                { id: 'waterlab', icon: '\uD83E\uDDEA', label: 'Water Lab' },
-
-                { id: 'designer', icon: '\u270F\uFE0F', label: 'Designer' },
-
-                { id: 'stressHunt', icon: '\uD83D\uDC1F', label: 'Stress Lab' }
-
-              ].map(function (tab) {
+              modeTabs.map(function (tab) {
 
                 return React.createElement("button", { key: tab.id,
 
                   onClick: function () { upd('mode', tab.id); },
+                  role: "tab",
+                  'aria-selected': mode === tab.id,
 
-                  className: "flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 " + (mode === tab.id ? "bg-gradient-to-r from-" + modeColors[tab.id] + "-500 to-" + modeColors[tab.id] + "-600 text-white shadow-lg shadow-" + modeColors[tab.id] + "-500/25" : "text-cyan-900 hover:text-sky-800 hover:bg-white/70")
+                  className: "min-h-[48px] px-2 rounded-xl text-[12px] font-black transition-all duration-200 flex flex-col items-center justify-center gap-0.5 " + (mode === tab.id ? tab.activeClass : "text-cyan-900 hover:text-sky-800 hover:bg-white/75")
 
-                }, tab.icon, " ", tab.label);
+                }, React.createElement("span", { className: "text-base leading-none", 'aria-hidden': 'true' }, tab.icon), React.createElement("span", { className: "leading-tight" }, tab.label));
 
               })
 
@@ -16395,13 +16453,13 @@ var d = (labToolData && labToolData._aquarium) || {};
             // ── Topic-accent hero band per mode ──
             (function() {
               var MODE_META = {
-                tank:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC20', title: 'Aquarium Lab \u2014 keep a closed ecosystem alive',  hint: 'pH, ammonia, nitrite, nitrate \u2014 the nitrogen cycle is the entire game. Bacteria on filter media convert toxic NH\u2083 \u2192 NO\u2082\u207B \u2192 NO\u2083\u207B. Cycle a tank for 4-6 weeks BEFORE adding fish; the bacteria need time.' },
-                ocean:  { accent: '#1e40af', soft: 'rgba(30,64,175,0.10)',  icon: '\uD83C\uDF0A', title: 'Ocean Ecology \u2014 the planet\u2019s biggest biome',  hint: 'Oceans cover 71% of Earth, hold 97% of water, produce ~50% of atmospheric O\u2082 (phytoplankton). Acidification (CO\u2082 + H\u2082O \u2192 H\u2082CO\u2083) has dropped surface pH 0.1 since 1900 \u2014 30% more acidic in chemistry terms.' },
-                marine: { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDD2C', title: 'Marine Science \u2014 careers + research methods',     hint: 'Marine biology, oceanography, fisheries, conservation. CTD profilers measure conductivity/temperature/depth. Acoustic surveys count whales by song. Tagging studies follow sharks across oceans \u2014 most science you\u2019ll never see.' },
-                learn:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDCD6', title: 'Learn \u2014 long-form curriculum',                       hint: 'Deep-dive articles on cycling, water chemistry, plants, breeding, saltwater, biotopes, disease, and aquascaping. Pick a topic from the sidebar; read at your pace.' },
-                quiz:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\uD83C\uDFAF', title: 'Quiz Lab \u2014 50-question test bank',                  hint: 'Multiple choice across chemistry, cycling, stocking, plants, equipment, health, saltwater, marine biology, and conservation. Filter by category, retry, build a score.' },
-                waterlab: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)',  icon: '\uD83E\uDDEA', title: 'Water Chemistry Simulator',                          hint: 'Adjust pH / KH / GH / TDS / DO / temp / CO\u2082 sliders and see live diagnosis. Load scenarios (new tank, old tank, planted, reef, overstocked) to inspect parameters and recommended actions.' },
-                designer: { accent: '#db2777', soft: 'rgba(219,39,119,0.10)',  icon: '\u270F\uFE0F', title: 'Tank Designer \u2014 SVG stocking visualizer',           hint: 'Pick tank size, add fish from a 60-species catalog, place plants. See stocking compatibility (temp, pH, schooling, size) flag conflicts as you build.' }
+                tank:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC20', title: __alloT('stem.aquarium.aquarium_lab_keep_a_closed_ecosystem_a', 'Aquarium Lab \u2014 keep a closed ecosystem alive'),  hint: __alloT('stem.aquarium.ph_ammonia_nitrite_nitrate_the_nitroge', 'pH, ammonia, nitrite, nitrate \u2014 the nitrogen cycle is the entire game. Bacteria on filter media convert toxic NH\u2083 \u2192 NO\u2082\u207B \u2192 NO\u2083\u207B. Cycle a tank for 4-6 weeks BEFORE adding fish; the bacteria need time.') },
+                ocean:  { accent: '#1e40af', soft: 'rgba(30,64,175,0.10)',  icon: '\uD83C\uDF0A', title: __alloT('stem.aquarium.ocean_ecology_the_planet_s_biggest_bio', 'Ocean Ecology \u2014 the planet\u2019s biggest biome'),  hint: __alloT('stem.aquarium.oceans_cover_71_of_earth_hold_97_of_wa', 'Oceans cover 71% of Earth, hold 97% of water, produce ~50% of atmospheric O\u2082 (phytoplankton). Acidification (CO\u2082 + H\u2082O \u2192 H\u2082CO\u2083) has dropped surface pH 0.1 since 1900 \u2014 30% more acidic in chemistry terms.') },
+                marine: { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDD2C', title: __alloT('stem.aquarium.marine_science_careers_research_method', 'Marine Science \u2014 careers + research methods'),     hint: __alloT('stem.aquarium.marine_biology_oceanography_fisheries_', 'Marine biology, oceanography, fisheries, conservation. CTD profilers measure conductivity/temperature/depth. Acoustic surveys count whales by song. Tagging studies follow sharks across oceans \u2014 most science you\u2019ll never see.') },
+                learn:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDCD6', title: __alloT('stem.aquarium.learn_long_form_curriculum', 'Learn \u2014 long-form curriculum'),                       hint: __alloT('stem.aquarium.deep_dive_articles_on_cycling_water_ch', 'Deep-dive articles on cycling, water chemistry, plants, breeding, saltwater, biotopes, disease, and aquascaping. Pick a topic from the sidebar; read at your pace.') },
+                quiz:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\uD83C\uDFAF', title: __alloT('stem.aquarium.quiz_lab_50_question_test_bank', 'Quiz Lab \u2014 50-question test bank'),                  hint: __alloT('stem.aquarium.multiple_choice_across_chemistry_cycli', 'Multiple choice across chemistry, cycling, stocking, plants, equipment, health, saltwater, marine biology, and conservation. Filter by category, retry, build a score.') },
+                waterlab: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)',  icon: '\uD83E\uDDEA', title: __alloT('stem.aquarium.water_chemistry_simulator', 'Water Chemistry Simulator'),                          hint: __alloT('stem.aquarium.adjust_ph_kh_gh_tds_do_temp_co_sliders', 'Adjust pH / KH / GH / TDS / DO / temp / CO\u2082 sliders and see live diagnosis. Load scenarios (new tank, old tank, planted, reef, overstocked) to inspect parameters and recommended actions.') },
+                designer: { accent: '#db2777', soft: 'rgba(219,39,119,0.10)',  icon: '\u270F\uFE0F', title: __alloT('stem.aquarium.tank_designer_svg_stocking_visualizer', 'Tank Designer \u2014 SVG stocking visualizer'),           hint: __alloT('stem.aquarium.pick_tank_size_add_fish_from_a_60_spec', 'Pick tank size, add fish from a 60-species catalog, place plants. See stocking compatibility (temp, pH, schooling, size) flag conflicts as you build.') }
               };
               var meta = MODE_META[mode] || MODE_META.tank;
               return React.createElement('div', {
@@ -16440,14 +16498,14 @@ var d = (labToolData && labToolData._aquarium) || {};
               ),
               React.createElement("p", { className: "text-xs opacity-90 mb-2" }, TUTORIAL_STEPS[tutorialStep].msg),
               React.createElement("div", { className: "flex gap-2" },
-                React.createElement("button", { "aria-label": "Skip tutorial",
+                React.createElement("button", { "aria-label": __alloT('stem.aquarium.skip_tutorial', "Skip tutorial"),
                   onClick: advanceTutorial,
                   className: "px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-all"
                 }, tutorialStep < TUTORIAL_STEPS.length - 1 ? "Next \u2192" : "Got it!"),
-                React.createElement("button", { "aria-label": "Skip tutorial",
+                React.createElement("button", { "aria-label": __alloT('stem.aquarium.skip_tutorial_2', "Skip tutorial"),
                   onClick: dismissTutorial,
                   className: "px-3 py-1 hover:bg-white/10 rounded-lg text-[11px] opacity-70 transition-all"
-                }, "Skip tutorial")
+                }, __alloT('stem.aquarium.skip_tutorial_3', "Skip tutorial"))
               )
             ),
 
@@ -16501,13 +16559,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   ),
 
-                  React.createElement("button", { "aria-label": "Close",
+                  React.createElement("button", { "aria-label": __alloT('stem.aquarium.close', "Close"),
 
                     onClick: closeAnatomy,
 
                     className: "ml-auto px-3 py-1 text-xs font-bold text-slate-300 bg-slate-800/60 hover:bg-slate-700/80 rounded-full transition-all border border-slate-600/30"
 
-                  }, "\u2715 Close")
+                  }, __alloT('stem.aquarium.close_2', "\u2715 Close"))
 
                 ),
 
@@ -16677,7 +16735,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   sp.fact && React.createElement("div", { className: "bg-indigo-500/10 rounded-xl p-3 border border-indigo-400/20" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-indigo-300 mb-0.5" }, "\uD83D\uDCA1 Did You Know?"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-indigo-300 mb-0.5" }, __alloT('stem.aquarium.did_you_know', "\uD83D\uDCA1 Did You Know?")),
 
                     React.createElement("p", { className: "text-[11px] text-indigo-200/80 leading-relaxed" }, sp.fact)
 
@@ -16687,7 +16745,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   extraInfo.override && React.createElement("div", { className: "bg-cyan-500/10 rounded-xl p-3 border border-cyan-400/20" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-300 mb-0.5" }, "\uD83E\uDDAC Unique Anatomy"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-300 mb-0.5" }, __alloT('stem.aquarium.unique_anatomy', "\uD83E\uDDAC Unique Anatomy")),
 
                     React.createElement("p", { className: "text-[11px] text-cyan-200/80 leading-relaxed" }, extraInfo.override)
 
@@ -16697,7 +16755,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   extraInfo.locomotion && React.createElement("div", { className: "bg-emerald-500/10 rounded-xl p-3 border border-emerald-400/20" },
 
-                    React.createElement("p", { className: "text-[11px] font-bold text-emerald-300 mb-0.5" }, "\uD83C\uDFCA How It Moves"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-emerald-300 mb-0.5" }, __alloT('stem.aquarium.how_it_moves', "\uD83C\uDFCA How It Moves")),
 
                     React.createElement("p", { className: "text-[11px] text-emerald-200/80 leading-relaxed" }, extraInfo.locomotion)
 
@@ -16721,7 +16779,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   // XP button
 
-                  React.createElement("button", { "aria-label": "I Studied This! (+2 XP)",
+                  React.createElement("button", { "aria-label": __alloT('stem.aquarium.i_studied_this_2_xp', "I Studied This! (+2 XP)"),
 
                     onClick: function () {
 
@@ -16733,7 +16791,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     className: "w-full py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg shadow-indigo-500/25 active:scale-[0.98]"
 
-                  }, "\uD83C\uDF93 I Studied This! (+2 XP)")
+                  }, __alloT('stem.aquarium.i_studied_this_2_xp_2', "\uD83C\uDF93 I Studied This! (+2 XP)"))
 
                 )
 
@@ -16747,50 +16805,84 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             // ═══════════════ MODE 1: AQUARIUM LAB ═══════════════
 
-            mode === 'tank' && !selectedTank && React.createElement("div", { className: "space-y-3" },
+            mode === 'tank' && !selectedTank && React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-4", 'data-aquarium-tank-launch': 'true' },
 
-              React.createElement("h4", { className: "text-sm font-bold text-cyan-700" }, "\uD83D\uDC1F Choose Your Tank"),
+              React.createElement("div", { className: "lg:col-span-4 rounded-2xl border border-cyan-200 bg-white p-4 shadow-sm" },
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[0.14em] text-cyan-700" }, __alloT('stem.aquarium.choose_your_tank', "\uD83D\uDC1F Choose Your Tank")),
+
+                React.createElement("h4", { className: "text-lg font-black text-slate-900 mt-1" }, __alloT('stem.aquarium.starter_ecosystem', 'Starter ecosystem')),
+
+                React.createElement("p", { className: "text-[12px] text-slate-700 leading-relaxed mt-2" },
+                  __alloT('stem.aquarium.starter_ecosystem_copy', 'Pick a habitat, add stock slowly, and watch the water chemistry respond. A smaller bioload gives the bacteria time to keep up.')),
+
+                React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2" },
+                  [
+                    { label: __alloT('stem.aquarium.safe_chemistry', 'Safe chemistry'), value: 'NH\u2083 0 ppm' },
+                    { label: __alloT('stem.aquarium.weekly_action', 'Weekly action'), value: '25% water' },
+                    { label: __alloT('stem.aquarium.stocking_rule', 'Stocking rule'), value: 'Low bioload' },
+                    { label: __alloT('stem.aquarium.plant_bonus', 'Plant bonus'), value: 'Nitrate sink' }
+                  ].map(function (item) {
+                    return React.createElement("div", { key: item.label, className: "rounded-xl bg-cyan-50 border border-cyan-100 p-2" },
+                      React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-700" }, item.label),
+                      React.createElement("div", { className: "text-[12px] font-black text-slate-900" }, item.value)
+                    );
+                  })
+                ),
+
+                React.createElement("div", { className: "mt-4 rounded-xl bg-gradient-to-br from-slate-900 to-cyan-950 p-3 text-white overflow-hidden relative" },
+                  React.createElement("div", { className: "absolute inset-0 opacity-30", style: { background: 'radial-gradient(circle at 20% 20%, rgba(34,211,238,0.55), transparent 35%), radial-gradient(circle at 85% 60%, rgba(14,165,233,0.35), transparent 34%)' } }),
+                  React.createElement("div", { className: "relative z-10 text-[11px] font-bold text-cyan-100" }, __alloT('stem.aquarium.first_lab_goal', 'First lab goal')),
+                  React.createElement("div", { className: "relative z-10 text-[13px] font-black mt-1" }, __alloT('stem.aquarium.first_lab_goal_copy', 'Reach Day 3 with stable ammonia and at least one healthy fish.'))
+                )
+
+              ),
+
+              React.createElement("div", { className: "lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-3" },
 
                 TANK_TYPES.map(function (tank) {
-
+                  var isSalt = tank.salinity > 0;
+                  var diffLabel = tank.diff <= 1 ? __alloT('stem.aquarium.beginner', 'Beginner') : tank.diff === 2 ? __alloT('stem.aquarium.intermediate', 'Intermediate') : __alloT('stem.aquarium.advanced', 'Advanced');
+                  var waterTone = isSalt ? 'from-blue-600 via-cyan-500 to-teal-300' : 'from-cyan-500 via-sky-400 to-emerald-300';
                   return React.createElement("button", { "aria-label": "Select tank: " + tank.name,
 
                     key: tank.id,
 
                     onClick: function () { initTank(tank.id); },
 
-                    className: "group p-4 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-cyan-500/10 bg-gradient-to-br from-white via-cyan-50/50 to-sky-50 border-cyan-600 hover:border-cyan-400"
+                    className: "group rounded-2xl border-2 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/10 bg-white border-cyan-200 hover:border-cyan-500 overflow-hidden"
 
                   },
 
-                    React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-
-                      React.createElement("span", { className: "text-xl" }, tank.name.split(' ')[0]),
-
-                      React.createElement("span", { className: "text-xs font-bold text-cyan-800" }, tank.name.split(' ').slice(1).join(' ')),
-
-                      React.createElement("span", { className: "ml-auto text-[11px] text-amber-600 font-bold" }, '\u2B50'.repeat(tank.diff))
-
+                    React.createElement("div", { className: "h-24 bg-gradient-to-br " + waterTone + " relative overflow-hidden" },
+                      React.createElement("div", { className: "absolute inset-x-0 top-0 h-7 opacity-40", style: { background: 'repeating-linear-gradient(110deg, rgba(255,255,255,0.45) 0 16px, rgba(255,255,255,0.08) 16px 34px)' } }),
+                      React.createElement("div", { className: "absolute bottom-0 inset-x-0 h-6 bg-amber-900/30" }),
+                      React.createElement("div", { className: "absolute left-4 top-4 text-3xl drop-shadow", 'aria-hidden': 'true' }, tank.name.split(' ')[0]),
+                      React.createElement("div", { className: "absolute right-3 top-3 rounded-full bg-white/85 text-[10px] font-black text-slate-800 px-2 py-1 border border-white" }, diffLabel),
+                      React.createElement("div", { className: "absolute left-5 bottom-4 flex gap-1" },
+                        [0, 1, 2, 3, 4].map(function (i) {
+                          return React.createElement("span", { key: i, className: "block w-1.5 h-1.5 rounded-full bg-white/70", style: { transform: 'translateY(' + ((i % 2) * 4) + 'px)' } });
+                        })
+                      )
                     ),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, tank.desc),
+                    React.createElement("div", { className: "p-4" },
+                      React.createElement("div", { className: "flex items-start gap-2" },
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("div", { className: "text-sm font-black text-slate-900 truncate" }, tank.name.split(' ').slice(1).join(' ') || tank.name),
+                          React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mt-1" }, tank.desc)
+                        ),
+                        React.createElement("span", { className: "text-[11px] text-amber-600 font-black whitespace-nowrap" }, '\u2B50'.repeat(tank.diff))
+                      ),
 
-                    React.createElement("div", { className: "flex gap-2 text-[11px] text-cyan-600" },
+                      React.createElement("div", { className: "mt-3 flex flex-wrap gap-1.5 text-[10px] font-bold" },
+                        React.createElement("span", { className: "rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 px-2 py-1" }, tank.size + " gal"),
+                        React.createElement("span", { className: "rounded-full bg-sky-50 text-sky-800 border border-sky-200 px-2 py-1" }, tank.temp + "\u00B0F"),
+                        React.createElement("span", { className: "rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-1" }, "pH " + tank.pH),
+                        tank.salinity > 0 && React.createElement("span", { className: "rounded-full bg-blue-50 text-blue-800 border border-blue-200 px-2 py-1" }, tank.salinity + " ppt")
+                      ),
 
-                      React.createElement("span", null, tank.size + " gal"),
-
-                      React.createElement("span", null, "\u2022"),
-
-                      React.createElement("span", null, tank.temp + "\u00B0F"),
-
-                      React.createElement("span", null, "\u2022"),
-
-                      React.createElement("span", null, "pH " + tank.pH),
-
-                      tank.salinity > 0 && React.createElement("span", null, "\u2022 " + tank.salinity + " ppt")
-
+                      React.createElement("div", { className: "mt-3 text-[11px] font-black text-cyan-800 group-hover:text-cyan-950" }, __alloT('stem.aquarium.start_this_tank', 'Start this tank') + ' \u2192')
                     )
 
                   );
@@ -16848,33 +16940,33 @@ var d = (labToolData && labToolData._aquarium) || {};
                   open: (simDay || 0) <= 1,
                   className: "rounded-xl border border-cyan-300 bg-gradient-to-br from-cyan-50 to-sky-50"
                 },
-                  React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-cyan-800" }, "📜 How to keep this tank alive (click to toggle)"),
+                  React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-cyan-800" }, __alloT('stem.aquarium.how_to_keep_this_tank_alive_click_to_t', "📜 How to keep this tank alive (click to toggle)")),
                   React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[11px] text-slate-700" },
                     React.createElement("div", null,
-                      React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, "🎯 Goal"),
+                      React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, __alloT('stem.aquarium.goal', "🎯 Goal")),
                       React.createElement("p", { className: "leading-relaxed" },
-                        "Keep your fish alive and the water in safe ranges. Aquarium-hour ticks past while you watch. Fish wastes turn into ammonia (NH₃). Ammonia is toxic at 1 ppm. Your job: don't let it stay there.")
+                        __alloT('stem.aquarium.keep_your_fish_alive_and_the_water_in_', "Keep your fish alive and the water in safe ranges. Aquarium-hour ticks past while you watch. Fish wastes turn into ammonia (NH₃). Ammonia is toxic at 1 ppm. Your job: don't let it stay there."))
                     ),
                     React.createElement("div", null,
-                      React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, "🔬 The nitrogen cycle (the whole game)"),
+                      React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, __alloT('stem.aquarium.the_nitrogen_cycle_the_whole_game', "🔬 The nitrogen cycle (the whole game)")),
                       React.createElement("ol", { className: "list-decimal list-inside space-y-1 leading-relaxed" },
-                        React.createElement("li", null, React.createElement("strong", null, "Ammonia (NH₃)"), " is produced by fish waste. Highly toxic. Burns gills."),
-                        React.createElement("li", null, React.createElement("em", null, "Nitrosomonas"), " bacteria oxidize NH₃ → ", React.createElement("strong", null, "Nitrite (NO₂)"), ". Also toxic. Causes brown-blood disease."),
-                        React.createElement("li", null, React.createElement("em", null, "Nitrobacter"), " bacteria oxidize NO₂ → ", React.createElement("strong", null, "Nitrate (NO₃)"), ". Much less toxic, removed by plants or water changes."),
-                        React.createElement("li", null, "Real-world: this takes 4-6 weeks to establish from scratch. In this sim the bacteria are pre-seeded so you can play, but you still have to ", React.createElement("strong", null, "not overwhelm them"), ".")
+                        React.createElement("li", null, React.createElement("strong", null, __alloT('stem.aquarium.ammonia_nh', "Ammonia (NH₃)")), __alloT('stem.aquarium.is_produced_by_fish_waste_highly_toxic', " is produced by fish waste. Highly toxic. Burns gills.")),
+                        React.createElement("li", null, React.createElement("em", null, __alloT('stem.aquarium.nitrosomonas', "Nitrosomonas")), __alloT('stem.aquarium.bacteria_oxidize_nh', " bacteria oxidize NH₃ → "), React.createElement("strong", null, __alloT('stem.aquarium.nitrite_no_2', "Nitrite (NO₂)")), __alloT('stem.aquarium.also_toxic_causes_brown_blood_disease', ". Also toxic. Causes brown-blood disease.")),
+                        React.createElement("li", null, React.createElement("em", null, __alloT('stem.aquarium.nitrobacter', "Nitrobacter")), __alloT('stem.aquarium.bacteria_oxidize_no', " bacteria oxidize NO₂ → "), React.createElement("strong", null, __alloT('stem.aquarium.nitrate_no_2', "Nitrate (NO₃)")), __alloT('stem.aquarium.much_less_toxic_removed_by_plants_or_w', ". Much less toxic, removed by plants or water changes.")),
+                        React.createElement("li", null, __alloT('stem.aquarium.real_world_this_takes_4_6_weeks_to_est', "Real-world: this takes 4-6 weeks to establish from scratch. In this sim the bacteria are pre-seeded so you can play, but you still have to "), React.createElement("strong", null, __alloT('stem.aquarium.not_overwhelm_them', "not overwhelm them")), ".")
                       )
                     ),
                     React.createElement("div", null,
-                      React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, "🛠 Your key actions"),
+                      React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, __alloT('stem.aquarium.your_key_actions', "🛠 Your key actions")),
                       React.createElement("ul", { className: "list-disc list-inside space-y-1 leading-relaxed" },
-                        React.createElement("li", null, React.createElement("strong", null, "Feed"), ": fish need food, but extra food becomes ammonia. Feed about once per day."),
-                        React.createElement("li", null, React.createElement("strong", null, "25% water change"), ": dilutes ammonia + nitrate by ~50% in one move. Use when chemistry trends red."),
-                        React.createElement("li", null, React.createElement("strong", null, "Plants"), ": absorb nitrate and produce oxygen by day. Bioload check: don't stock more fish than the bar allows."),
-                        React.createElement("li", null, React.createElement("strong", null, "Speed control"), ": pause to read, run 1×-5× to watch the cycle unfold. Days advance every tick.")
+                        React.createElement("li", null, React.createElement("strong", null, "Feed"), __alloT('stem.aquarium.fish_need_food_but_extra_food_becomes_', ": fish need food, but extra food becomes ammonia. Feed about once per day.")),
+                        React.createElement("li", null, React.createElement("strong", null, __alloT('stem.aquarium.25_water_change', "25% water change")), __alloT('stem.aquarium.dilutes_ammonia_nitrate_by_50_in_one_m', ": dilutes ammonia + nitrate by ~50% in one move. Use when chemistry trends red.")),
+                        React.createElement("li", null, React.createElement("strong", null, __alloT('stem.aquarium.plants', "Plants")), __alloT('stem.aquarium.absorb_nitrate_and_produce_oxygen_by_d', ": absorb nitrate and produce oxygen by day. Bioload check: don't stock more fish than the bar allows.")),
+                        React.createElement("li", null, React.createElement("strong", null, __alloT('stem.aquarium.speed_control', "Speed control")), __alloT('stem.aquarium.pause_to_read_run_1_5_to_watch_the_cyc', ": pause to read, run 1×-5× to watch the cycle unfold. Days advance every tick."))
                       )
                     ),
                     React.createElement("div", { className: "text-[10px] italic text-slate-600 pt-1 border-t border-cyan-200" },
-                      "Tip: click any chemistry card below for its safe range + 'what to do' guide. The cards turn amber or red when a value drifts out of the safe zone.")
+                      __alloT('stem.aquarium.tip_click_any_chemistry_card_below_for', "Tip: click any chemistry card below for its safe range + 'what to do' guide. The cards turn amber or red when a value drifts out of the safe zone."))
                   )
                 ),
 
@@ -16900,13 +16992,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                    React.createElement("button", { "aria-label": "Back",
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.back', "Back"),
 
                       onClick: function () { updMulti({ selectedTank: null, simRunning: false }); },
 
                       className: "text-xs text-cyan-600 hover:text-cyan-800 font-bold"
 
-                    }, "\u2190 Back"),
+                    }, __alloT('stem.aquarium.back_2', "\u2190 Back")),
 
                     React.createElement("span", { className: "text-sm font-bold text-cyan-800" }, tank.name),
 
@@ -16922,17 +17014,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex items-center gap-1.5" },
 
-                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "\u23F1 Speed:"),
+                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, __alloT('stem.aquarium.speed', "\u23F1 Speed:")),
 
                     [
 
-                      { spd: 0, label: '\u23F8', tip: 'Pause' },
+                      { spd: 0, label: '\u23F8', tip: __alloT('stem.aquarium.pause', 'Pause') },
 
-                      { spd: 1, label: '\u25B6', tip: 'Normal (2s/tick)' },
+                      { spd: 1, label: '\u25B6', tip: __alloT('stem.aquarium.normal_2s_tick', 'Normal (2s/tick)') },
 
-                      { spd: 2, label: '\u23E9', tip: 'Fast (1s/tick)' },
+                      { spd: 2, label: '\u23E9', tip: __alloT('stem.aquarium.fast_1s_tick', 'Fast (1s/tick)') },
 
-                      { spd: 5, label: '\u23ED', tip: 'Turbo (0.4s/tick)' }
+                      { spd: 5, label: '\u23ED', tip: __alloT('stem.aquarium.turbo_0_4s_tick', 'Turbo (0.4s/tick)') }
 
                     ].map(function (s) {
 
@@ -16972,11 +17064,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   // Tank lighting toggle — day/moonlight/night
                   React.createElement("div", { className: "flex items-center gap-1.5 mt-2" },
-                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "\uD83D\uDCA1 Light:"),
+                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, __alloT('stem.aquarium.light_2', "\uD83D\uDCA1 Light:")),
                     [
-                      { id: 'day', label: '\u2600\uFE0F Day', color: 'bg-amber-100 text-amber-700 border-amber-300' },
-                      { id: 'blue', label: '\uD83D\uDD35 Moonlight', color: 'bg-blue-100 text-blue-700 border-blue-300' },
-                      { id: 'night', label: '\uD83C\uDF19 Night', color: 'bg-slate-700 text-slate-200 border-slate-500' }
+                      { id: 'day', label: __alloT('stem.aquarium.day', '\u2600\uFE0F Day'), color: 'bg-amber-100 text-amber-700 border-amber-300' },
+                      { id: 'blue', label: __alloT('stem.aquarium.moonlight', '\uD83D\uDD35 Moonlight'), color: 'bg-blue-100 text-blue-700 border-blue-300' },
+                      { id: 'night', label: __alloT('stem.aquarium.night', '\uD83C\uDF19 Night'), color: 'bg-slate-700 text-slate-200 border-slate-500' }
                     ].map(function(lm) {
                       var active = (d.tankLight || 'day') === lm.id;
                       return React.createElement("button", {
@@ -16997,9 +17089,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-cyan-700" }, "\uD83E\uDDEA Water Chemistry"),
+                    React.createElement("h4", { className: "text-xs font-bold text-cyan-700" }, __alloT('stem.aquarium.water_chemistry', "\uD83E\uDDEA Water Chemistry")),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, "Tap any card for details")
+                    React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, __alloT('stem.aquarium.tap_any_card_for_details', "Tap any card for details"))
 
                   ),
 
@@ -17009,7 +17101,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       { key: 'pH', label: 'pH', val: waterChem.pH.toFixed(1) },
 
-                      { key: 'temp', label: 'Temp', val: waterChem.temp.toFixed(0) + '\u00B0F' },
+                      { key: 'temp', label: __alloT('stem.aquarium.temp', 'Temp'), val: waterChem.temp.toFixed(0) + '\u00B0F' },
 
                       { key: 'ammonia', label: 'NH\u2083', val: waterChem.ammonia.toFixed(2) + ' ppm' },
 
@@ -17017,7 +17109,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       { key: 'nitrate', label: 'NO\u2083', val: waterChem.nitrate.toFixed(1) + ' ppm' },
 
-                      { key: 'salinity', label: 'Salt', val: waterChem.salinity + ' ppt' },
+                      { key: 'salinity', label: __alloT('stem.aquarium.salt', 'Salt'), val: waterChem.salinity + ' ppt' },
 
                       { key: 'dissolvedO2', label: 'O\u2082', val: (waterChem.dissolvedO2 !== undefined ? waterChem.dissolvedO2.toFixed(1) : '7.0') + ' mg/L' },
 
@@ -17031,10 +17123,10 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       // Status-tinted card background so red/amber/green
                       // reads at a glance without having to click each card.
-                      var cardBg = st === 'bad'  ? 'bg-rose-50 border-rose-300'
+                      var cardBg = st === 'danger'  ? 'bg-rose-50 border-rose-300'
                                  : st === 'warn' ? 'bg-amber-50 border-amber-300'
                                  :                 'bg-emerald-50 border-emerald-300';
-                      var activeBg = st === 'bad'  ? 'bg-rose-100 ring-2 ring-rose-400 shadow-lg'
+                      var activeBg = st === 'danger'  ? 'bg-rose-100 ring-2 ring-rose-400 shadow-lg'
                                    : st === 'warn' ? 'bg-amber-100 ring-2 ring-amber-400 shadow-lg'
                                    :                 'bg-white ring-2 ring-cyan-400 shadow-lg';
 
@@ -17084,7 +17176,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("div", { className: "bg-cyan-50 rounded-lg p-2" },
 
-                          React.createElement("p", { className: "font-bold text-cyan-700 mb-0.5" }, "\uD83D\uDCD6 What is it?"),
+                          React.createElement("p", { className: "font-bold text-cyan-700 mb-0.5" }, __alloT('stem.aquarium.what_is_it', "\uD83D\uDCD6 What is it?")),
 
                           React.createElement("p", { className: "text-slate-600" }, info.what)
 
@@ -17092,7 +17184,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("div", { className: "bg-green-50 rounded-lg p-2" },
 
-                          React.createElement("p", { className: "font-bold text-green-700 mb-0.5" }, "\u2705 Safe Range"),
+                          React.createElement("p", { className: "font-bold text-green-700 mb-0.5" }, __alloT('stem.aquarium.safe_range', "\u2705 Safe Range")),
 
                           React.createElement("p", { className: "text-slate-600" }, info.safeRange)
 
@@ -17100,7 +17192,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("div", { className: "bg-red-50 rounded-lg p-2" },
 
-                          React.createElement("p", { className: "font-bold text-red-700 mb-0.5" }, "\u26A0\uFE0F Why It's Dangerous"),
+                          React.createElement("p", { className: "font-bold text-red-700 mb-0.5" }, __alloT('stem.aquarium.why_it_s_dangerous', "\u26A0\uFE0F Why It's Dangerous")),
 
                           React.createElement("p", { className: "text-slate-600" }, info.danger)
 
@@ -17108,7 +17200,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         mathStr && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-2" },
 
-                          React.createElement("p", { className: "font-bold text-indigo-700 mb-0.5" }, "\uD83E\uDDEE Current Math"),
+                          React.createElement("p", { className: "font-bold text-indigo-700 mb-0.5" }, __alloT('stem.aquarium.current_math', "\uD83E\uDDEE Current Math")),
 
                           React.createElement("pre", { className: "text-[11px] text-slate-600 font-mono whitespace-pre-wrap" }, mathStr)
 
@@ -17116,7 +17208,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("div", { className: "bg-amber-50 rounded-lg p-2" },
 
-                          React.createElement("p", { className: "font-bold text-amber-700 mb-0.5" }, "\uD83D\uDCA1 How to Fix"),
+                          React.createElement("p", { className: "font-bold text-amber-700 mb-0.5" }, __alloT('stem.aquarium.how_to_fix', "\uD83D\uDCA1 How to Fix")),
 
                           React.createElement("p", { className: "text-slate-600" }, info.fix)
 
@@ -17136,7 +17228,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-200" }, "Nitrosomonas"),
+                    React.createElement("span", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.nitrosomonas_2', "Nitrosomonas")),
 
                     React.createElement("span", null, " \u2192 "),
 
@@ -17144,13 +17236,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-200" }, "Nitrobacter"),
+                    React.createElement("span", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.nitrobacter_2', "Nitrobacter")),
 
                     React.createElement("span", null, " \u2192 "),
 
                     React.createElement("span", { className: "font-bold text-green-500" }, "NO\u2083"),
 
-                    React.createElement("span", { className: "ml-1 text-slate-200" }, "(Nitrogen Cycle)")
+                    React.createElement("span", { className: "ml-1 text-slate-600" }, __alloT('stem.aquarium.nitrogen_cycle', "(Nitrogen Cycle)"))
 
                   )
 
@@ -17180,7 +17272,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     ? React.createElement("div", { className: "text-center py-4 text-sm text-emerald-400 italic" },
 
-                      "\uD83C\uDF3E No plants yet \u2014 add some to boost O\u2082 and absorb nitrates!"
+                      __alloT('stem.aquarium.no_plants_yet_add_some_to_boost_o_and_', "\uD83C\uDF3E No plants yet \u2014 add some to boost O\u2082 and absorb nitrates!")
 
                     )
 
@@ -17236,13 +17328,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           ),
 
-                          React.createElement("button", { "aria-label": "Remove plant",
+                          React.createElement("button", { "aria-label": __alloT('stem.aquarium.remove_plant', "Remove plant"),
 
                             onClick: function () { removePlant(idx); },
 
                             className: "text-[11px] text-red-400 hover:text-red-600 font-bold px-1",
 
-                            title: "Remove plant"
+                            title: __alloT('stem.aquarium.remove_plant_2', "Remove plant")
 
                           }, "\u2715")
 
@@ -17256,7 +17348,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   tankPlants.length < 8 && React.createElement("div", { className: "mt-2" },
 
-                    React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 mb-1" }, "\u2795 Add a Plant:"),
+                    React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 mb-1" }, __alloT('stem.aquarium.add_a_plant', "\u2795 Add a Plant:")),
 
                     React.createElement("div", { className: "grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto" },
 
@@ -17306,9 +17398,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     "\uD83D\uDCA1 ",
 
-                    React.createElement("strong", null, "Ecosystem Tip: "),
+                    React.createElement("strong", null, __alloT('stem.aquarium.ecosystem_tip', "Ecosystem Tip: ")),
 
-                    "Plants produce O\u2082 during the day via photosynthesis but consume it at night. Balance fish load with plant biomass to keep dissolved oxygen stable. Too many nutrients without enough plants can trigger algae blooms!"
+                    __alloT('stem.aquarium.plants_produce_o_during_the_day_via_ph', "Plants produce O\u2082 during the day via photosynthesis but consume it at night. Balance fish load with plant biomass to keep dissolved oxygen stable. Too many nutrients without enough plants can trigger algae blooms!")
 
                   )
 
@@ -17356,7 +17448,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-                      React.createElement("h4", { className: "text-xs font-bold text-pink-700" }, "\uD83D\uDC9E Breeding Status"),
+                      React.createElement("h4", { className: "text-xs font-bold text-pink-700" }, __alloT('stem.aquarium.breeding_status', "\uD83D\uDC9E Breeding Status")),
 
                       React.createElement("span", { className: "text-[11px] text-pink-700 bg-pink-100/60 rounded-full px-2 py-0.5" }, "\uD83D\uDC23 " + totalFryBorn + " fry born")
 
@@ -17454,9 +17546,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       "\uD83D\uDCA1 ",
 
-                      React.createElement("strong", null, "Breeding Tip: "),
+                      React.createElement("strong", null, __alloT('stem.aquarium.breeding_tip', "Breeding Tip: ")),
 
-                      "Keep water clean, stress low, and fish well-fed. Plants provide hiding spots for fry, boosting survival. Predators in the tank will eat vulnerable fry!"
+                      __alloT('stem.aquarium.keep_water_clean_stress_low_and_fish_w', "Keep water clean, stress low, and fish well-fed. Plants provide hiding spots for fry, boosting survival. Predators in the tank will eat vulnerable fry!")
 
                     )
 
@@ -17478,7 +17570,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                      React.createElement("span", { className: "text-xs font-bold text-slate-600" }, React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDC1F "), "Bioload"),
+                      React.createElement("span", { className: "text-xs font-bold text-slate-600" }, React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDC1F "), __alloT('stem.aquarium.bioload', "Bioload")),
 
                       React.createElement("span", { className: "text-xs font-mono " + (loadPct > 80 ? 'text-red-600' : loadPct > 60 ? 'text-amber-600' : 'text-green-600') }, bioStatus + " \u2014 " + currentLoad + " / " + maxLoad + " (" + loadPct + "%)")
 
@@ -18087,13 +18179,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, "\u2795 Add Fish"),
+                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, __alloT('stem.aquarium.add_fish', "\u2795 Add Fish")),
 
                   React.createElement("div", { className: "flex flex-wrap gap-1" },
 
                     species.map(function (sp) {
 
-                      return React.createElement("button", { "aria-label": "Add Fish",
+                      return React.createElement("button", { "aria-label": __alloT('stem.aquarium.add_fish_2', "Add Fish"),
 
                         key: sp.id,
 
@@ -18123,7 +18215,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         className: "px-2 py-0.5 text-[11px] bg-cyan-100 text-cyan-800 rounded-full cursor-pointer hover:bg-red-100 hover:text-red-700 transition-all",
 
-                        title: "Click to remove"
+                        title: __alloT('stem.aquarium.click_to_remove', "Click to remove")
 
                       }, (sp ? sp.icon + " " + sp.name : fId) + " \u00D7");
 
@@ -18141,7 +18233,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex gap-2" },
 
-                    React.createElement("button", { "aria-label": "Toggle aquarium simulation",
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.toggle_aquarium_simulation', "Toggle aquarium simulation"),
 
                       onClick: function () {
 
@@ -18171,15 +18263,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
 
-                    React.createElement("button", { "aria-label": "Water",
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.water', "Water"),
 
                       onClick: doWaterChange,
 
                       className: "px-3 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-xs hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-600"
 
-                    }, "\uD83D\uDCA7 Water"),
+                    }, __alloT('stem.aquarium.water_2', "\uD83D\uDCA7 Water")),
 
-                    React.createElement("button", { "aria-label": "Flake",
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.flake', "Flake"),
 
                       onClick: feedFish,
 
@@ -18187,9 +18279,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-600")
 
-                    }, "\uD83C\uDF7D\uFE0F Flake"),
+                    }, __alloT('stem.aquarium.flake_2', "\uD83C\uDF7D\uFE0F Flake")),
 
-                    React.createElement("button", { "aria-label": "Live",
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.live', "Live"),
 
                       onClick: feedLive,
 
@@ -18197,7 +18289,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-600")
 
-                    }, "\uD83E\uDD90 Live")
+                    }, __alloT('stem.aquarium.live_2', "\uD83E\uDD90 Live"))
 
                   ),
 
@@ -18205,7 +18297,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex gap-2" },
 
-                    React.createElement("button", { "aria-label": "Toggle Lights",
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.toggle_lights', "Toggle Lights"),
 
                       onClick: toggleLights,
 
@@ -18213,7 +18305,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     }, lightsOn ? "\uD83D\uDCA1 Lights On" : "\uD83C\uDF19 Lights Off"),
 
-                    React.createElement("button", { "aria-label": "Medicate Fish",
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.medicate_fish', "Medicate Fish"),
 
                       onClick: medicateFish,
 
@@ -18221,7 +18313,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     }, "\uD83D\uDC8A Medicate" + (Object.keys(fishSickness).length > 0 ? " (" + Object.keys(fishSickness).length + ")" : "")),
 
-                    React.createElement("button", { "aria-label": "Clean Glass",
+                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.clean_glass', "Clean Glass"),
 
                       onClick: cleanGlass,
 
@@ -18241,7 +18333,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-sm" }, "\uD83C\uDF7D\uFE0F"),
 
-                      React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Feeding Report"),
+                      React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.aquarium.feeding_report', "Feeding Report")),
 
                       React.createElement("button", { onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[11px] text-slate-600" }, "\u2715")
 
@@ -18251,7 +18343,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "Fish Fed"),
+                        React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.fish_fed', "Fish Fed")),
 
                         React.createElement("div", { className: "text-sm font-bold text-amber-700" }, feedingLog.fishCount)
 
@@ -18259,7 +18351,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "Hunger \u2193"),
+                        React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.hunger', "Hunger \u2193")),
 
                         React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + feedingLog.avgHungerDrop + " avg")
 
@@ -18267,7 +18359,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "NH\u2083 \u2191"),
+                        React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.aquarium.nh', "NH\u2083 \u2191")),
 
                         React.createElement("div", { className: "text-sm font-bold text-red-600" }, "+" + feedingLog.ammoniaAdded.toFixed(2))
 
@@ -18307,7 +18399,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-sm" }, health.score >= 80 ? '\uD83C\uDF1F' : health.score >= 50 ? '\u26A0\uFE0F' : '\uD83D\uDEA8'),
 
-                      React.createElement("span", { className: "text-xs font-bold " + scoreColor }, "Tank Health"),
+                      React.createElement("span", { className: "text-xs font-bold " + scoreColor }, __alloT('stem.aquarium.tank_health', "Tank Health")),
 
                       React.createElement("span", { className: "text-lg font-bold ml-auto " + scoreColor }, health.score + "/100")
 
@@ -18339,7 +18431,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, "\uD83C\uDF7D\uFE0F Fish Hunger Status"),
+                  React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, __alloT('stem.aquarium.fish_hunger_status', "\uD83C\uDF7D\uFE0F Fish Hunger Status")),
 
                   React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
 
@@ -18439,11 +18531,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("div", { className: "space-y-2" },
 
-                      React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, '\u2696\uFE0F What do you do?'),
+                      React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, __alloT('stem.aquarium.what_do_you_do', '\u2696\uFE0F What do you do?')),
 
                       (aiEvent.choices || []).map(function (choice, idx) {
 
-                        return React.createElement("button", { "aria-label": "Resolve A I Event",
+                        return React.createElement("button", { "aria-label": __alloT('stem.aquarium.resolve_a_i_event', "Resolve A I Event"),
 
                           key: idx,
 
@@ -18507,7 +18599,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("div", { className: "w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full", style: { animation: 'spin 1s linear infinite' } }),
 
-                    React.createElement("span", { className: "text-xs font-bold text-blue-600" }, '\uD83E\uDD16 AI is analyzing your tank conditions...')
+                    React.createElement("span", { className: "text-xs font-bold text-blue-600" }, __alloT('stem.aquarium.ai_is_analyzing_your_tank_conditions', '\uD83E\uDD16 AI is analyzing your tank conditions...'))
 
                   )
 
@@ -18590,29 +18682,29 @@ var d = (labToolData && labToolData._aquarium) || {};
                 open: !oceanScenario || oceanYear === 0,
                 className: "rounded-xl border border-blue-300 bg-gradient-to-br from-blue-50 to-sky-50"
               },
-                React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-blue-800" }, "\uD83D\uDCDC How fisheries management works (click to toggle)"),
+                React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-blue-800" }, __alloT('stem.aquarium.how_fisheries_management_works_click_t', "\uD83D\uDCDC How fisheries management works (click to toggle)")),
                 React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[11px] text-slate-700" },
                   React.createElement("div", null,
-                    React.createElement("div", { className: "font-black mb-1 text-blue-900" }, "\uD83C\uDFAF What you're doing"),
+                    React.createElement("div", { className: "font-black mb-1 text-blue-900" }, __alloT('stem.aquarium.what_you_re_doing', "\uD83C\uDFAF What you're doing")),
                     React.createElement("p", { className: "leading-relaxed" },
-                      "You're a fisheries manager. Each year you set policy: how much to harvest, how much ocean to protect, what mesh size to require. Three species (sardines, tuna, sharks) grow on logistic curves and prey on each other. Push too hard and the population crashes; harvest too little and fishers leave town. Find the balance.")
+                      __alloT('stem.aquarium.you_re_a_fisheries_manager_each_year_y', "You're a fisheries manager. Each year you set policy: how much to harvest, how much ocean to protect, what mesh size to require. Three species (sardines, tuna, sharks) grow on logistic curves and prey on each other. Push too hard and the population crashes; harvest too little and fishers leave town. Find the balance."))
                   ),
                   React.createElement("div", null,
-                    React.createElement("div", { className: "font-black mb-1 text-blue-900" }, "\uD83D\uDC1F The four control knobs"),
+                    React.createElement("div", { className: "font-black mb-1 text-blue-900" }, __alloT('stem.aquarium.the_four_control_knobs', "\uD83D\uDC1F The four control knobs")),
                     React.createElement("ul", { className: "list-disc list-inside space-y-1 leading-relaxed" },
-                      React.createElement("li", null, React.createElement("strong", null, "Harvest rate"), ": % of population you fish each year. Above 50% = red zone, collapse risk."),
-                      React.createElement("li", null, React.createElement("strong", null, "Marine Protected Area (MPA) %"), ": fraction of the ocean closed to fishing. Acts as a population reservoir; high MPAs prevent collapse."),
-                      React.createElement("li", null, React.createElement("strong", null, "Mesh size"), ": small mesh catches juveniles + bycatch; large mesh only catches mature fish. Larger = more sustainable, fewer non-target species caught."),
-                      React.createElement("li", null, React.createElement("strong", null, "Season"), ": Open / Closed. Closed seasons let breeders spawn before harvest resumes.")
+                      React.createElement("li", null, React.createElement("strong", null, __alloT('stem.aquarium.harvest_rate', "Harvest rate")), __alloT('stem.aquarium.of_population_you_fish_each_year_above', ": % of population you fish each year. Above 50% = red zone, collapse risk.")),
+                      React.createElement("li", null, React.createElement("strong", null, __alloT('stem.aquarium.marine_protected_area_mpa', "Marine Protected Area (MPA) %")), __alloT('stem.aquarium.fraction_of_the_ocean_closed_to_fishin', ": fraction of the ocean closed to fishing. Acts as a population reservoir; high MPAs prevent collapse.")),
+                      React.createElement("li", null, React.createElement("strong", null, __alloT('stem.aquarium.mesh_size', "Mesh size")), __alloT('stem.aquarium.small_mesh_catches_juveniles_bycatch_l', ": small mesh catches juveniles + bycatch; large mesh only catches mature fish. Larger = more sustainable, fewer non-target species caught.")),
+                      React.createElement("li", null, React.createElement("strong", null, __alloT('stem.aquarium.season', "Season")), __alloT('stem.aquarium.open_closed_closed_seasons_let_breeder', ": Open / Closed. Closed seasons let breeders spawn before harvest resumes."))
                     )
                   ),
                   React.createElement("div", null,
-                    React.createElement("div", { className: "font-black mb-1 text-blue-900" }, "\uD83D\uDCC9 Collapse: the failure mode"),
+                    React.createElement("div", { className: "font-black mb-1 text-blue-900" }, __alloT('stem.aquarium.collapse_the_failure_mode', "\uD83D\uDCC9 Collapse: the failure mode")),
                     React.createElement("p", { className: "leading-relaxed" },
-                      "When a species drops below 10% of its carrying capacity (K), it has collapsed. Real-world example: Atlantic cod (1992 Newfoundland) collapsed from over-fishing and hasn't recovered 30+ years later. Sharks below 10% of K is also catastrophic because they're the top predator, and removing them cascades down the food web.")
+                      __alloT('stem.aquarium.when_a_species_drops_below_10_of_its_c', "When a species drops below 10% of its carrying capacity (K), it has collapsed. Real-world example: Atlantic cod (1992 Newfoundland) collapsed from over-fishing and hasn't recovered 30+ years later. Sharks below 10% of K is also catastrophic because they're the top predator, and removing them cascades down the food web."))
                   ),
                   React.createElement("div", { className: "text-[10px] italic text-slate-600 pt-1 border-t border-blue-200" },
-                    "Tip: try Free Play first to see how the populations move year over year. Then take a scenario (Feed the Town, Recovery Plan, Balanced Eco) for a target.")
+                    __alloT('stem.aquarium.tip_try_free_play_first_to_see_how_the', "Tip: try Free Play first to see how the populations move year over year. Then take a scenario (Feed the Town, Recovery Plan, Balanced Eco) for a target."))
                 )
               ),
 
@@ -18636,8 +18728,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                   statusBg = failed ? 'rgba(220,38,38,0.12)' : done ? 'rgba(34,197,94,0.15)' : 'rgba(56,189,248,0.18)';
                   statusBorder = statusColor + '66';
                   info = {
-                    title: '\uD83C\uDFC6 Feed the Town',
-                    goal: 'Sustain a productive harvest for 10 years without any species collapsing.',
+                    title: __alloT('stem.aquarium.feed_the_town', '\uD83C\uDFC6 Feed the Town'),
+                    goal: __alloT('stem.aquarium.sustain_a_productive_harvest_for_10_ye', 'Sustain a productive harvest for 10 years without any species collapsing.'),
                     progress: 'Year ' + oceanYear + ' / 10' + (failed ? ' \u00B7 COLLAPSED' : done ? ' \u00B7 COMPLETE' : ''),
                     coach: failed ? 'A species collapsed. Reset and try a lower harvest + higher MPA.' : (oceanYear >= 7 ? 'Almost there. Hold the line.' : 'Watch shark population: top-predator collapse cascades down.')
                   };
@@ -18647,8 +18739,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                   statusBg = sharkAt ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)';
                   statusBorder = statusColor + '66';
                   info = {
-                    title: '\uD83D\uDEE0 Recovery Plan',
-                    goal: 'Stocks have collapsed. Rebuild sharks back to at least 50 individuals.',
+                    title: __alloT('stem.aquarium.recovery_plan', '\uD83D\uDEE0 Recovery Plan'),
+                    goal: __alloT('stem.aquarium.stocks_have_collapsed_rebuild_sharks_b', 'Stocks have collapsed. Rebuild sharks back to at least 50 individuals.'),
                     progress: 'Sharks: ' + (pop.sharks || 0) + ' / 50' + (sharkAt ? ' \u00B7 COMPLETE' : ''),
                     coach: sharkAt ? 'Recovery achieved. You can keep going to see steady-state.' : 'Set harvest near 0, MPA high (60-80%). Recovery takes years; advance time + 5.'
                   };
@@ -18658,8 +18750,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                   statusBg = balanced ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)';
                   statusBorder = statusColor + '66';
                   info = {
-                    title: '\u2696 Balanced Eco',
-                    goal: 'Keep ALL THREE species above 50% of their carrying capacity.',
+                    title: __alloT('stem.aquarium.balanced_eco', '\u2696 Balanced Eco'),
+                    goal: __alloT('stem.aquarium.keep_all_three_species_above_50_of_the', 'Keep ALL THREE species above 50% of their carrying capacity.'),
                     progress: '\uD83D\uDC1F ' + sardPct + '% \u00B7 \uD83D\uDC1F ' + tunaPct + '% \u00B7 \uD83E\uDD88 ' + sharkPct + '%' + (balanced ? ' \u00B7 BALANCED \u2713' : ''),
                     coach: balanced ? 'All three are healthy. Hold steady.' : 'Lowest species drives the strategy. Boost it with MPA + lower harvest.'
                   };
@@ -18667,8 +18759,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                   // free play
                   statusColor = '#0369a1'; statusBg = 'rgba(56,189,248,0.18)'; statusBorder = statusColor + '66';
                   info = {
-                    title: '\uD83C\uDF0A Free Play',
-                    goal: 'Experiment freely. No win condition.',
+                    title: __alloT('stem.aquarium.free_play', '\uD83C\uDF0A Free Play'),
+                    goal: __alloT('stem.aquarium.experiment_freely_no_win_condition', 'Experiment freely. No win condition.'),
                     progress: 'Year ' + oceanYear,
                     coach: 'Try different harvest + MPA combos. Reset anytime. Pick a scenario for a target.'
                   };
@@ -18691,13 +18783,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 [
 
-                  { id: 'free', label: '\uD83C\uDF0A Free Play', desc: 'Manage fisheries freely' },
+                  { id: 'free', label: __alloT('stem.aquarium.free_play_2', '\uD83C\uDF0A Free Play'), desc: __alloT('stem.aquarium.manage_fisheries_freely', 'Manage fisheries freely') },
 
-                  { id: 'feed', label: '\uD83C\uDFC6 Feed the Town', desc: 'Sustain harvest for 10 years' },
+                  { id: 'feed', label: __alloT('stem.aquarium.feed_the_town_2', '\uD83C\uDFC6 Feed the Town'), desc: __alloT('stem.aquarium.sustain_harvest_for_10_years', 'Sustain harvest for 10 years') },
 
-                  { id: 'recover', label: '\uD83D\uDEE0\uFE0F Recovery Plan', desc: 'Rebuild collapsed stocks' },
+                  { id: 'recover', label: __alloT('stem.aquarium.recovery_plan_2', '\uD83D\uDEE0\uFE0F Recovery Plan'), desc: __alloT('stem.aquarium.rebuild_collapsed_stocks', 'Rebuild collapsed stocks') },
 
-                  { id: 'balance', label: '\u2696\uFE0F Balanced Eco', desc: 'Keep all species above 50' }
+                  { id: 'balance', label: __alloT('stem.aquarium.balanced_eco_2', '\u2696\uFE0F Balanced Eco'), desc: __alloT('stem.aquarium.keep_all_species_above_50', 'Keep all species above 50') }
 
                 ].map(function (sc) {
 
@@ -18787,7 +18879,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               oceanHistory.length > 1 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
-                React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, "\uD83D\uDCC8 Population History", React.createElement("span", { className: "text-[11px] text-slate-600 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
+                React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, __alloT('stem.aquarium.population_history', "\uD83D\uDCC8 Population History"), React.createElement("span", { className: "text-[11px] text-slate-600 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
 
                 React.createElement("div", { className: "relative", style: { height: '96px' } },
 
@@ -18857,13 +18949,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 React.createElement("div", { className: "flex gap-3 mt-4 text-[11px]" },
 
-                  React.createElement("span", { className: "font-bold", style: { color: '#0ea5e9' } }, "\u25CF Sardines"),
+                  React.createElement("span", { className: "font-bold", style: { color: '#0ea5e9' } }, __alloT('stem.aquarium.sardines_2', "\u25CF Sardines")),
 
-                  React.createElement("span", { className: "font-bold", style: { color: '#2563eb' } }, "\u25CF Tuna"),
+                  React.createElement("span", { className: "font-bold", style: { color: '#2563eb' } }, __alloT('stem.aquarium.tuna_2', "\u25CF Tuna")),
 
-                  React.createElement("span", { className: "font-bold", style: { color: '#4f46e5' } }, "\u25CF Sharks"),
+                  React.createElement("span", { className: "font-bold", style: { color: '#4f46e5' } }, __alloT('stem.aquarium.sharks_2', "\u25CF Sharks")),
 
-                  React.createElement("span", { className: "ml-auto font-bold", style: { color: 'rgba(239,68,68,0.5)', fontSize: '8px' } }, "- - K = Carrying Capacity")
+                  React.createElement("span", { className: "ml-auto font-bold", style: { color: 'rgba(239,68,68,0.5)', fontSize: '8px' } }, __alloT('stem.aquarium.k_carrying_capacity', "- - K = Carrying Capacity"))
 
                 )
 
@@ -18875,7 +18967,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               React.createElement("div", { className: "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 rounded-2xl p-4 border border-blue-200/60 shadow-sm space-y-3" },
 
-                React.createElement("h4", { className: "text-xs font-bold text-blue-700" }, "\u2699\uFE0F Fishery Controls"),
+                React.createElement("h4", { className: "text-xs font-bold text-blue-700" }, __alloT('stem.aquarium.fishery_controls', "\u2699\uFE0F Fishery Controls")),
 
 
 
@@ -18885,7 +18977,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex justify-between text-xs mb-1" },
 
-                    React.createElement("span", { className: "font-bold text-slate-600" }, "\uD83C\uDFA3 Harvest Rate"),
+                    React.createElement("span", { className: "font-bold text-slate-600" }, __alloT('stem.aquarium.harvest_rate_2', "\uD83C\uDFA3 Harvest Rate")),
 
                     React.createElement("span", { className: "font-mono " + (harvestRate > 50 ? "text-red-600" : "text-green-600") }, harvestRate + "%")
 
@@ -18911,7 +19003,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", { className: "flex justify-between text-xs mb-1" },
 
-                    React.createElement("span", { className: "font-bold text-slate-600" }, "\uD83C\uDFDD\uFE0F Marine Protected Area"),
+                    React.createElement("span", { className: "font-bold text-slate-600" }, __alloT('stem.aquarium.marine_protected_area', "\uD83C\uDFDD\uFE0F Marine Protected Area")),
 
                     React.createElement("span", { className: "font-mono text-green-600" }, mpaPercent + "% protected")
 
@@ -18935,7 +19027,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 React.createElement("div", { className: "flex items-center gap-2" },
 
-                  React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83E\uDE7A Mesh Size"),
+                  React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.aquarium.mesh_size_2', "\uD83E\uDE7A Mesh Size")),
 
                   ['small', 'medium', 'large'].map(function (m) {
 
@@ -18961,7 +19053,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 React.createElement("div", { className: "flex items-center gap-3" },
 
-                  React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83D\uDCC5 Season"),
+                  React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.aquarium.season_2', "\uD83D\uDCC5 Season")),
 
                   React.createElement("button", { onClick: function () { upd('isOpenSeason', !isOpenSeason); },
 
@@ -18981,13 +19073,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 [
 
-                  { label: 'Year', val: oceanYear, icon: '\uD83D\uDCC5' },
+                  { label: __alloT('stem.aquarium.year', 'Year'), val: oceanYear, icon: '\uD83D\uDCC5' },
 
-                  { label: 'Revenue', val: '$' + oceanRevenue.toLocaleString(), icon: '\uD83D\uDCB0' },
+                  { label: __alloT('stem.aquarium.revenue', 'Revenue'), val: '$' + oceanRevenue.toLocaleString(), icon: '\uD83D\uDCB0' },
 
-                  { label: 'Bycatch', val: oceanBycatch, icon: '\u26A0\uFE0F' },
+                  { label: __alloT('stem.aquarium.bycatch', 'Bycatch'), val: oceanBycatch, icon: '\u26A0\uFE0F' },
 
-                  { label: 'Status', val: oceanCollapsed ? 'COLLAPSED' : 'Healthy', icon: oceanCollapsed ? '\u274C' : '\u2705' }
+                  { label: __alloT('stem.aquarium.status', 'Status'), val: oceanCollapsed ? 'COLLAPSED' : 'Healthy', icon: oceanCollapsed ? '\u274C' : '\u2705' }
 
                 ].map(function (s) {
 
@@ -19009,15 +19101,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               React.createElement("div", { className: "flex gap-2" },
 
-                React.createElement("button", { "aria-label": "Advance 1 Year",
+                React.createElement("button", { "aria-label": __alloT('stem.aquarium.advance_1_year', "Advance 1 Year"),
 
                   onClick: stepOcean,
 
                   className: "flex-1 py-2.5 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 active:scale-[0.98]"
 
-                }, "\u23E9 Advance 1 Year"),
+                }, __alloT('stem.aquarium.advance_1_year_2', "\u23E9 Advance 1 Year")),
 
-                React.createElement("button", { "aria-label": "Reset Ocean",
+                React.createElement("button", { "aria-label": __alloT('stem.aquarium.reset_ocean', "Reset Ocean"),
 
                   onClick: function () { for (var i = 0; i < 5; i++) stepOcean(); },
 
@@ -19025,13 +19117,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 }, "\u23E9\u00D75"),
 
-                React.createElement("button", { "aria-label": "Reset ocean simulation",
+                React.createElement("button", { "aria-label": __alloT('stem.aquarium.reset_ocean_simulation', "Reset ocean simulation"),
 
                   onClick: resetOcean,
 
                   className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all"
 
-                }, "\u21BA Reset")
+                }, __alloT('stem.aquarium.reset', "\u21BA Reset"))
 
               )
 
@@ -19051,20 +19143,20 @@ var d = (labToolData && labToolData._aquarium) || {};
                 open: !d.selectedSpecies && (quizScore.total || 0) === 0,
                 className: "rounded-xl border border-teal-300 bg-gradient-to-br from-teal-50 to-cyan-50"
               },
-                React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-teal-800" }, "📜 What you're exploring (click to toggle)"),
+                React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-teal-800" }, __alloT('stem.aquarium.what_you_re_exploring_click_to_toggle', "📜 What you're exploring (click to toggle)")),
                 React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[11px] text-slate-700" },
                   React.createElement("div", null,
-                    React.createElement("div", { className: "font-black mb-1 text-teal-900" }, "🌊 The five ocean zones"),
+                    React.createElement("div", { className: "font-black mb-1 text-teal-900" }, __alloT('stem.aquarium.the_five_ocean_zones', "🌊 The five ocean zones")),
                     React.createElement("p", { className: "leading-relaxed" },
-                      "The ocean is layered by depth. Each layer has its own pressure, temperature, light, and creatures adapted to those conditions. Tap a zone band below to see species that live there.")
+                      __alloT('stem.aquarium.the_ocean_is_layered_by_depth_each_lay', "The ocean is layered by depth. Each layer has its own pressure, temperature, light, and creatures adapted to those conditions. Tap a zone band below to see species that live there."))
                   ),
                   React.createElement("ul", { className: "grid grid-cols-1 md:grid-cols-5 gap-1 text-[10px] leading-tight" },
                     [
-                      { name: 'Sunlight (Epipelagic)',  depth: '0-200 m',       fact: 'Photosynthesis happens here. 90% of marine life.' },
-                      { name: 'Twilight (Mesopelagic)', depth: '200-1,000 m',   fact: 'Dim light. Bioluminescence appears.' },
-                      { name: 'Midnight (Bathypelagic)',depth: '1,000-4,000 m', fact: 'Total darkness. Pressure 100x surface.' },
-                      { name: 'Abyssal',                depth: '4,000-6,000 m', fact: 'Near freezing. Whale falls = entire ecosystems.' },
-                      { name: 'Hadal (Trenches)',       depth: '6,000-11,000 m',fact: 'Mariana Trench. Pressure 1,100x surface.' }
+                      { name: __alloT('stem.aquarium.sunlight_epipelagic', 'Sunlight (Epipelagic)'),  depth: '0-200 m',       fact: __alloT('stem.aquarium.photosynthesis_happens_here_90_of_mari', 'Photosynthesis happens here. 90% of marine life.') },
+                      { name: __alloT('stem.aquarium.twilight_mesopelagic', 'Twilight (Mesopelagic)'), depth: '200-1,000 m',   fact: __alloT('stem.aquarium.dim_light_bioluminescence_appears', 'Dim light. Bioluminescence appears.') },
+                      { name: __alloT('stem.aquarium.midnight_bathypelagic', 'Midnight (Bathypelagic)'),depth: '1,000-4,000 m', fact: __alloT('stem.aquarium.total_darkness_pressure_100x_surface', 'Total darkness. Pressure 100x surface.') },
+                      { name: __alloT('stem.aquarium.abyssal', 'Abyssal'),                depth: '4,000-6,000 m', fact: __alloT('stem.aquarium.near_freezing_whale_falls_entire_ecosy', 'Near freezing. Whale falls = entire ecosystems.') },
+                      { name: __alloT('stem.aquarium.hadal_trenches', 'Hadal (Trenches)'),       depth: '6,000-11,000 m',fact: __alloT('stem.aquarium.mariana_trench_pressure_1_100x_surface', 'Mariana Trench. Pressure 1,100x surface.') }
                     ].map(function(z, i) {
                       return React.createElement("li", { key: i, className: 'rounded p-1.5 bg-white/70 border border-teal-200' },
                         React.createElement("div", { className: 'font-bold text-teal-800' }, z.name),
@@ -19074,7 +19166,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     })
                   ),
                   React.createElement("div", { className: "text-[10px] italic text-slate-600 pt-1 border-t border-teal-200" },
-                    "🎯 Goal: tap each zone to expand it, click a species to learn its habitat / diet / status, then test yourself with the quiz below. Aim to answer 10 questions to unlock the deep-sea biodiversity badge.")
+                    __alloT('stem.aquarium.goal_tap_each_zone_to_expand_it_click_', "🎯 Goal: tap each zone to expand it, click a species to learn its habitat / diet / status, then test yourself with the quiz below. Aim to answer 10 questions to unlock the deep-sea biodiversity badge."))
                 )
               ),
 
@@ -19099,11 +19191,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                     borderLeft: '4px solid ' + statusColor
                   }
                 },
-                  React.createElement("div", { className: "text-[12px] font-black", style: { color: statusColor } }, '🔬 Marine Science'),
+                  React.createElement("div", { className: "text-[12px] font-black", style: { color: statusColor } }, __alloT('stem.aquarium.marine_science_2', '🔬 Marine Science')),
                   React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🌊 Zones: ' + zonesExplored + '/5')),
                   React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🐠 Species: ' + speciesClicked + '/' + totalSpecies)),
                   React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🧠 Quiz: ' + quizCorrect + '/' + quizDone + (quizDone > 0 ? ' (' + Math.round(quizCorrect / quizDone * 100) + '%)' : ''))),
-                  quizComplete && React.createElement("div", { className: "ml-auto text-[11px] font-bold", style: { color: statusColor } }, '🏅 Badge unlocked')
+                  quizComplete && React.createElement("div", { className: "ml-auto text-[11px] font-bold", style: { color: statusColor } }, __alloT('stem.aquarium.badge_unlocked', '🏅 Badge unlocked'))
                 );
               })(),
 
@@ -19163,7 +19255,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       }),
 
-                      zoneSpecies.length === 0 && React.createElement("span", { className: "text-[11px] text-white/50 italic" }, "Few species survive here")
+                      zoneSpecies.length === 0 && React.createElement("span", { className: "text-[11px] text-white/50 italic" }, __alloT('stem.aquarium.few_species_survive_here', "Few species survive here"))
 
                     )
 
@@ -19239,13 +19331,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               React.createElement("div", { className: "flex gap-2 items-center" },
 
-                React.createElement("button", { "aria-label": "Marine Science Quiz",
+                React.createElement("button", { "aria-label": __alloT('stem.aquarium.marine_science_quiz', "Marine Science Quiz"),
 
                   onClick: generateQuiz,
 
                   className: "flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md"
 
-                }, "\uD83E\uDDE0 Marine Science Quiz"),
+                }, __alloT('stem.aquarium.marine_science_quiz_2', "\uD83E\uDDE0 Marine Science Quiz")),
 
                 quizScore.total > 0 && React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "\u2705 " + quizScore.correct + "/" + quizScore.total)
 
@@ -19287,13 +19379,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("p", { className: "text-xs font-bold " + (quizQ.correct ? "text-green-600" : "text-red-600") }, quizQ.correct ? "\u2705 Correct! +3 XP" : "\u274C The answer is: " + quizQ.answer),
 
-                  React.createElement("button", { "aria-label": "Next Question",
+                  React.createElement("button", { "aria-label": __alloT('stem.aquarium.next_question', "Next Question"),
 
                     onClick: generateQuiz,
 
                     className: "mt-1 px-3 py-1 text-[11px] font-bold bg-indigo-500 text-white rounded-full hover:bg-indigo-600"
 
-                  }, "Next Question \u2192")
+                  }, __alloT('stem.aquarium.next_question_2', "Next Question \u2192"))
 
                 )
 
@@ -19315,11 +19407,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement('div', { className: 'rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-3' },
                   React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
                     React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\ud83d\udcd6'),
-                    React.createElement('h3', { className: 'text-base font-black text-emerald-900' }, 'Aquarium Curriculum Library'),
+                    React.createElement('h3', { className: 'text-base font-black text-emerald-900' }, __alloT('stem.aquarium.aquarium_curriculum_library', 'Aquarium Curriculum Library')),
                     React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-emerald-700 bg-white border border-emerald-300 rounded-full px-2 py-0.5' }, LEARN_LIBRARY.length + ' articles')
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
-                    'Long-form articles on the science and craft of keeping aquariums. Each piece reads in under 12 minutes. Use the category filter to narrow the list, then click any article to open the full text on the right.')
+                    __alloT('stem.aquarium.long_form_articles_on_the_science_and_', 'Long-form articles on the science and craft of keeping aquariums. Each piece reads in under 12 minutes. Use the category filter to narrow the list, then click any article to open the full text on the right.'))
                 ),
                 React.createElement('div', { className: 'flex flex-wrap gap-1' },
                   categories.map(function (c) {
@@ -19358,7 +19450,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         ),
                         React.createElement('h2', { className: 'text-xl font-black text-emerald-900 leading-tight' }, active.title),
                         active.keyIdea && React.createElement('p', { className: 'mt-1.5 text-[12px] italic text-emerald-800 bg-emerald-50 border-l-4 border-emerald-400 rounded-r px-3 py-1.5' },
-                          React.createElement('strong', null, 'Key idea: '), active.keyIdea)
+                          React.createElement('strong', null, __alloT('stem.aquarium.key_idea', 'Key idea: ')), active.keyIdea)
                       ),
                       React.createElement('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, active.summary),
                       React.createElement('div', { className: 'space-y-2.5' },
@@ -19370,7 +19462,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         })
                       ),
                       active.furtherReading && active.furtherReading.length > 0 && React.createElement('div', { className: 'pt-2 mt-2 border-t border-emerald-200' },
-                        React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-emerald-700 mb-1' }, 'Further reading'),
+                        React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-emerald-700 mb-1' }, __alloT('stem.aquarium.further_reading', 'Further reading')),
                         React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5 text-[11px] text-slate-600' },
                           active.furtherReading.map(function (r, i) { return React.createElement('li', { key: i }, r); })
                         )
@@ -19413,19 +19505,19 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement('div', { className: 'rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-3' },
                   React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                     React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\ud83c\udfaf'),
-                    React.createElement('h3', { className: 'text-base font-black text-amber-900' }, 'Aquarium Quiz Lab'),
+                    React.createElement('h3', { className: 'text-base font-black text-amber-900' }, __alloT('stem.aquarium.aquarium_quiz_lab', 'Aquarium Quiz Lab')),
                     React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-amber-800 bg-white border border-amber-300 rounded-full px-2 py-0.5' }, AQUARIUM_QUIZ_BANK.length + ' questions')
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
-                    'Test yourself on aquarium science: chemistry, cycling, stocking, plants, equipment, health, saltwater, marine biology, and conservation. Filter by category or difficulty, work through at your pace, and review explanations after each answer.')
+                    __alloT('stem.aquarium.test_yourself_on_aquarium_science_chem', 'Test yourself on aquarium science: chemistry, cycling, stocking, plants, equipment, health, saltwater, marine biology, and conservation. Filter by category or difficulty, work through at your pace, and review explanations after each answer.'))
                 ),
                 // Stats row
                 React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                   [
-                    { label: 'Answered', value: answeredCount + '/' + totalQuestions, accent: '#2563eb' },
-                    { label: 'Correct', value: correctCount, accent: '#16a34a' },
-                    { label: 'Accuracy', value: (answeredCount > 0 ? pct + '%' : '\u2014'), accent: '#7c3aed' },
-                    { label: 'Streak', value: (d.quizStreak || 0), accent: '#f59e0b' }
+                    { label: __alloT('stem.aquarium.answered', 'Answered'), value: answeredCount + '/' + totalQuestions, accent: '#2563eb' },
+                    { label: __alloT('stem.aquarium.correct', 'Correct'), value: correctCount, accent: '#16a34a' },
+                    { label: __alloT('stem.aquarium.accuracy', 'Accuracy'), value: (answeredCount > 0 ? pct + '%' : '\u2014'), accent: '#7c3aed' },
+                    { label: __alloT('stem.aquarium.streak', 'Streak'), value: (d.quizStreak || 0), accent: '#f59e0b' }
                   ].map(function (s, i) {
                     return React.createElement('div', { key: i, className: 'rounded-xl border-2 bg-white p-2.5 text-center', style: { borderColor: s.accent + '44' } },
                       React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-slate-500' }, s.label),
@@ -19436,7 +19528,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 // Filters
                 React.createElement('div', { className: 'rounded-xl bg-white border border-amber-200 p-2.5 space-y-2' },
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-amber-700 mb-1' }, 'Category'),
+                    React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-amber-700 mb-1' }, __alloT('stem.aquarium.category', 'Category')),
                     React.createElement('div', { className: 'flex flex-wrap gap-1' },
                       quizCategories.map(function (c) {
                         var sel = c === quizCategory;
@@ -19448,7 +19540,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     )
                   ),
                   React.createElement('div', null,
-                    React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-amber-700 mb-1' }, 'Difficulty'),
+                    React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-amber-700 mb-1' }, __alloT('stem.aquarium.difficulty', 'Difficulty')),
                     React.createElement('div', { className: 'flex flex-wrap gap-1' },
                       ['All', 'easy', 'medium', 'hard'].map(function (dif) {
                         var sel = dif === quizDifficulty;
@@ -19502,7 +19594,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     })
                   ),
                   quizAnswers[currentQ.id] !== undefined && React.createElement('div', { className: 'rounded-xl border-2 border-amber-300 bg-amber-50 p-3 text-[12px] text-slate-800' },
-                    React.createElement('div', { className: 'font-extrabold text-amber-900 mb-1' }, '\u2014 Explanation'),
+                    React.createElement('div', { className: 'font-extrabold text-amber-900 mb-1' }, __alloT('stem.aquarium.explanation', '\u2014 Explanation')),
                     React.createElement('p', { className: 'leading-relaxed' }, currentQ.explanation)
                   ),
                   React.createElement('div', { className: 'flex flex-wrap gap-2 pt-1' },
@@ -19512,27 +19604,27 @@ var d = (labToolData && labToolData._aquarium) || {};
                         updMulti({ quizCurrent: prev, quizShowExplanation: false });
                       },
                       className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-50'
-                    }, '\u2190 Previous'),
+                    }, __alloT('stem.aquarium.previous', '\u2190 Previous')),
                     React.createElement('button', {
                       onClick: function () {
                         var next = (quizCurrent + 1) % filteredQuiz.length;
                         updMulti({ quizCurrent: next, quizShowExplanation: false });
                       },
                       className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-amber-600 text-white border-2 border-amber-600 hover:bg-amber-700'
-                    }, 'Next Question \u2192'),
+                    }, __alloT('stem.aquarium.next_question_3', 'Next Question \u2192')),
                     React.createElement('button', {
                       onClick: function () {
                         updMulti({ quizAnswers: {}, quizCurrent: 0, quizShowExplanation: false, quizStreak: 0 });
                       },
                       className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-white border-2 border-red-300 text-red-700 hover:bg-red-50'
-                    }, '\u21bb Reset All Answers'),
+                    }, __alloT('stem.aquarium.reset_all_answers', '\u21bb Reset All Answers')),
                     React.createElement('button', {
                       onClick: function () {
                         var unanswered = filteredQuiz.findIndex(function (q) { return quizAnswers[q.id] === undefined; });
                         if (unanswered >= 0) updMulti({ quizCurrent: unanswered, quizShowExplanation: false });
                       },
                       className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-white border-2 border-blue-300 text-blue-700 hover:bg-blue-50'
-                    }, '\u2924 Jump to next unanswered')
+                    }, __alloT('stem.aquarium.jump_to_next_unanswered', '\u2924 Jump to next unanswered'))
                   )
                 ),
                 // Question grid / minimap
@@ -19551,7 +19643,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         onClick: function () { updMulti({ quizCurrent: i, quizShowExplanation: answered }); },
                         title: 'Q' + (i + 1) + ' \u00b7 ' + q.category,
                         style: { background: bg, color: fg, boxShadow: ring },
-                        className: 'aspect-square rounded text-[9px] font-black flex items-center justify-center'
+                        className: 'aspect-square rounded text-[10px] font-black flex items-center justify-center'
                       }, i + 1);
                     })
                   )
@@ -19579,34 +19671,34 @@ var d = (labToolData && labToolData._aquarium) || {};
               var sliderKeys = ['pH', 'ammonia', 'nitrite', 'nitrate', 'KH', 'GH', 'TDS', 'temp', 'DO', 'CO2'];
               // Diagnose state
               var alerts = [];
-              if (params.ammonia > 0.25) alerts.push({ severity: 'critical', text: 'Ammonia is toxic. >0.25 ppm damages gills. Immediate water change required.' });
-              else if (params.ammonia > 0.05) alerts.push({ severity: 'warning', text: 'Trace ammonia \u2014 re-check cycle, reduce feeding, partial water change.' });
-              if (params.nitrite > 0.25) alerts.push({ severity: 'critical', text: 'Nitrite oxidizes hemoglobin (brown blood). Add aquarium salt; do a 30-50% water change.' });
-              else if (params.nitrite > 0.05) alerts.push({ severity: 'warning', text: 'Nitrite trace \u2014 cycle is incomplete or bacteria stressed.' });
-              if (params.nitrate > 60) alerts.push({ severity: 'warning', text: 'Nitrate is elevated. Schedule larger water changes; consider live plants for absorption.' });
-              else if (params.nitrate > 40) alerts.push({ severity: 'info', text: 'Nitrate above 40 ppm \u2014 comfortable upper limit. Water change recommended this week.' });
-              if (params.pH < 6.0) alerts.push({ severity: 'warning', text: 'pH below 6 may stall nitrifying bacteria. Raise KH with crushed coral.' });
-              if (params.pH > 8.5) alerts.push({ severity: 'warning', text: 'pH above 8.5 is too alkaline for most tropicals. Use peat or RO blend.' });
-              if (params.KH < 2 && params.pH < 6.5) alerts.push({ severity: 'critical', text: 'Low KH + low pH = unstable. pH can crash overnight. Add crushed coral or alkalinity buffer.' });
-              if (params.temp < 70 && params.temp > 60) alerts.push({ severity: 'info', text: 'Temperature okay for coldwater species (goldfish, white clouds). Wrong for tropicals.' });
-              if (params.temp > 84) alerts.push({ severity: 'warning', text: 'High temperature stresses fish and lowers dissolved oxygen. Add fans, lower heater.' });
-              if (params.DO < 5) alerts.push({ severity: 'critical', text: 'Dissolved oxygen is dangerously low. Increase surface agitation and air stones.' });
-              if (params.CO2 > 35) alerts.push({ severity: 'warning', text: 'CO\u2082 above 35 ppm risks gassing fish. Reduce injection rate; verify drop checker.' });
-              if (alerts.length === 0) alerts.push({ severity: 'success', text: 'All parameters within healthy ranges. Maintain current schedule.' });
+              if (params.ammonia > 0.25) alerts.push({ severity: 'critical', text: __alloT('stem.aquarium.ammonia_is_toxic_0_25_ppm_damages_gill', 'Ammonia is toxic. >0.25 ppm damages gills. Immediate water change required.') });
+              else if (params.ammonia > 0.05) alerts.push({ severity: 'warning', text: __alloT('stem.aquarium.trace_ammonia_re_check_cycle_reduce_fe', 'Trace ammonia \u2014 re-check cycle, reduce feeding, partial water change.') });
+              if (params.nitrite > 0.25) alerts.push({ severity: 'critical', text: __alloT('stem.aquarium.nitrite_oxidizes_hemoglobin_brown_bloo', 'Nitrite oxidizes hemoglobin (brown blood). Add aquarium salt; do a 30-50% water change.') });
+              else if (params.nitrite > 0.05) alerts.push({ severity: 'warning', text: __alloT('stem.aquarium.nitrite_trace_cycle_is_incomplete_or_b', 'Nitrite trace \u2014 cycle is incomplete or bacteria stressed.') });
+              if (params.nitrate > 60) alerts.push({ severity: 'warning', text: __alloT('stem.aquarium.nitrate_is_elevated_schedule_larger_wa', 'Nitrate is elevated. Schedule larger water changes; consider live plants for absorption.') });
+              else if (params.nitrate > 40) alerts.push({ severity: 'info', text: __alloT('stem.aquarium.nitrate_above_40_ppm_comfortable_upper', 'Nitrate above 40 ppm \u2014 comfortable upper limit. Water change recommended this week.') });
+              if (params.pH < 6.0) alerts.push({ severity: 'warning', text: __alloT('stem.aquarium.ph_below_6_may_stall_nitrifying_bacter', 'pH below 6 may stall nitrifying bacteria. Raise KH with crushed coral.') });
+              if (params.pH > 8.5) alerts.push({ severity: 'warning', text: __alloT('stem.aquarium.ph_above_8_5_is_too_alkaline_for_most_', 'pH above 8.5 is too alkaline for most tropicals. Use peat or RO blend.') });
+              if (params.KH < 2 && params.pH < 6.5) alerts.push({ severity: 'critical', text: __alloT('stem.aquarium.low_kh_low_ph_unstable_ph_can_crash_ov', 'Low KH + low pH = unstable. pH can crash overnight. Add crushed coral or alkalinity buffer.') });
+              if (params.temp < 70 && params.temp > 60) alerts.push({ severity: 'info', text: __alloT('stem.aquarium.temperature_okay_for_coldwater_species', 'Temperature okay for coldwater species (goldfish, white clouds). Wrong for tropicals.') });
+              if (params.temp > 84) alerts.push({ severity: 'warning', text: __alloT('stem.aquarium.high_temperature_stresses_fish_and_low', 'High temperature stresses fish and lowers dissolved oxygen. Add fans, lower heater.') });
+              if (params.DO < 5) alerts.push({ severity: 'critical', text: __alloT('stem.aquarium.dissolved_oxygen_is_dangerously_low_in', 'Dissolved oxygen is dangerously low. Increase surface agitation and air stones.') });
+              if (params.CO2 > 35) alerts.push({ severity: 'warning', text: __alloT('stem.aquarium.co_above_35_ppm_risks_gassing_fish_red', 'CO\u2082 above 35 ppm risks gassing fish. Reduce injection rate; verify drop checker.') });
+              if (alerts.length === 0) alerts.push({ severity: 'success', text: __alloT('stem.aquarium.all_parameters_within_healthy_ranges_m', 'All parameters within healthy ranges. Maintain current schedule.') });
               return React.createElement('div', { className: 'space-y-3' },
                 React.createElement('div', { className: 'rounded-2xl border-2 border-violet-300 bg-gradient-to-br from-violet-50 via-white to-purple-50 p-3' },
                   React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                     React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\ud83e\uddea'),
-                    React.createElement('h3', { className: 'text-base font-black text-violet-900' }, 'Water Chemistry Simulator'),
+                    React.createElement('h3', { className: 'text-base font-black text-violet-900' }, __alloT('stem.aquarium.water_chemistry_simulator_2', 'Water Chemistry Simulator')),
                     React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-violet-800 bg-white border border-violet-300 rounded-full px-2 py-0.5' }, sliderKeys.length + ' parameters')
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
-                    'Drag the sliders to see how water chemistry parameters interact. The diagnosis panel updates in real time with warnings, recommended actions, and color-coded ideal ranges. Load a scenario from the right column to compare healthy vs. stressed tanks.')
+                    __alloT('stem.aquarium.drag_the_sliders_to_see_how_water_chem', 'Drag the sliders to see how water chemistry parameters interact. The diagnosis panel updates in real time with warnings, recommended actions, and color-coded ideal ranges. Load a scenario from the right column to compare healthy vs. stressed tanks.'))
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-12 gap-3' },
                   // Sliders column
                   React.createElement('div', { className: 'lg:col-span-7 rounded-2xl bg-white border-2 border-violet-200 p-3 space-y-2.5' },
-                    React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide' }, '\u2014 Parameters'),
+                    React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide' }, __alloT('stem.aquarium.parameters', '\u2014 Parameters')),
                     sliderKeys.map(function (k) {
                       var c = CHEMISTRY_SLIDER_DEFAULTS[k]; var v = params[k];
                       var isIdeal = v >= c.ideal[0] && v <= c.ideal[1];
@@ -19632,7 +19724,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             className: 'w-full relative z-10'
                           })
                         ),
-                        React.createElement('div', { className: 'flex justify-between text-[9px] font-mono text-slate-500' },
+                        React.createElement('div', { className: 'flex justify-between text-[10px] font-mono text-slate-500' },
                           React.createElement('span', null, c.min + ' ' + c.unit),
                           React.createElement('span', { className: 'text-green-700 font-bold' }, 'ideal: ' + c.ideal[0] + '\u2013' + c.ideal[1] + ' ' + c.unit),
                           React.createElement('span', null, c.max + ' ' + c.unit)
@@ -19642,9 +19734,33 @@ var d = (labToolData && labToolData._aquarium) || {};
                   ),
                   // Right column \u2014 diagnosis + scenarios
                   React.createElement('div', { className: 'lg:col-span-5 space-y-3' },
+                    // Nitrogen-cycle STAGE indicator — reads the current ammonia/nitrite/nitrate and shows
+                    // where THIS tank sits in the cycle (the core fishkeeping concept). The static
+                    // NH3->NO2->NO3 diagram elsewhere explains the path; this shows your position on it.
+                    (function () {
+                      var amm = +params.ammonia || 0, ni = +params.nitrite || 0, na = +params.nitrate || 0;
+                      var stageIdx = (amm < 0.25 && ni < 0.25 && na >= 5) ? 3 : (ni >= 0.25 ? 2 : (amm >= 0.25 ? 1 : 0));
+                      var STAGES = [
+                        { k: 'Fresh', color: '#64748b', desc: __alloT('stem.aquarium.new_water_no_ammonia_source_yet_cyclin', 'New water, no ammonia source yet — cycling has not begun.') },
+                        { k: 'NH₃ spike', color: '#dc2626', desc: __alloT('stem.aquarium.ammonia_is_rising_toxic_nitrosomonas_b', 'Ammonia is rising (toxic). Nitrosomonas bacteria begin converting it to nitrite.') },
+                        { k: 'NO₂⁻ spike', color: '#ea580c', desc: __alloT('stem.aquarium.nitrite_is_rising_also_toxic_nitrobact', 'Nitrite is rising (also toxic). Nitrobacter/Nitrospira convert it to nitrate.') },
+                        { k: 'Cycled', color: '#16a34a', desc: __alloT('stem.aquarium.ammonia_nitrite_0_nitrate_present_bact', 'Ammonia & nitrite ≈ 0, nitrate present — bacteria established. Safe; keep nitrate down with water changes.') }
+                      ];
+                      return React.createElement('div', { className: 'rounded-2xl border-2 border-violet-300 bg-white p-3' },
+                        React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, __alloT('stem.aquarium.nitrogen_cycle_stage', '— Nitrogen cycle stage')),
+                        React.createElement('div', { className: 'flex items-center gap-1 mb-2 flex-wrap' },
+                          STAGES.map(function (s, i) {
+                            return React.createElement(React.Fragment, { key: s.k },
+                              i > 0 && React.createElement('span', { className: 'text-slate-300 text-[10px]' }, '→'),
+                              React.createElement('span', { className: 'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (i === stageIdx ? 'text-white shadow' : 'text-slate-400 bg-slate-100'), style: i === stageIdx ? { background: s.color } : {} }, s.k));
+                          })
+                        ),
+                        React.createElement('p', { className: 'text-[11px] text-slate-700 leading-snug' }, STAGES[stageIdx].desc)
+                      );
+                    })(),
                     // Diagnosis
                     React.createElement('div', { className: 'rounded-2xl border-2 border-violet-300 bg-white p-3' },
-                      React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, '\u2014 Live Diagnosis'),
+                      React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, __alloT('stem.aquarium.live_diagnosis', '\u2014 Live Diagnosis')),
                       React.createElement('div', { className: 'space-y-1.5' },
                         alerts.map(function (a, i) {
                           var palette = a.severity === 'critical' ? { bg: 'bg-red-50', border: 'border-red-400', text: 'text-red-900', icon: '\u26d4' }
@@ -19658,8 +19774,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                     ),
                     // Scenarios
                     React.createElement('div', { className: 'rounded-2xl border-2 border-violet-300 bg-white p-3' },
-                      React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, '\u2014 Scenario Library'),
-                      React.createElement('p', { className: 'text-[10.5px] text-slate-600 italic mb-2' }, 'Click any scenario to load its parameters into the sliders.'),
+                      React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, __alloT('stem.aquarium.scenario_library', '\u2014 Scenario Library')),
+                      React.createElement('p', { className: 'text-[10.5px] text-slate-600 italic mb-2' }, __alloT('stem.aquarium.click_any_scenario_to_load_its_paramet', 'Click any scenario to load its parameters into the sliders.')),
                       React.createElement('div', { className: 'space-y-1' },
                         CHEMISTRY_SCENARIO_RECIPES.map(function (r) {
                           return React.createElement('button', { key: r.id,
@@ -19690,11 +19806,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                     ),
                     React.createElement('p', { className: 'text-[11.5px] text-slate-700 mb-2 italic' }, active.story),
                     React.createElement('div', { className: 'rounded-lg bg-white border border-violet-300 p-2 mb-2' },
-                      React.createElement('div', { className: 'text-[10px] font-bold text-violet-800 uppercase tracking-wide mb-1' }, '\u2014 Diagnosis'),
+                      React.createElement('div', { className: 'text-[10px] font-bold text-violet-800 uppercase tracking-wide mb-1' }, __alloT('stem.aquarium.diagnosis', '\u2014 Diagnosis')),
                       React.createElement('p', { className: 'text-[11.5px] text-slate-800' }, active.diagnosis)
                     ),
                     React.createElement('div', { className: 'rounded-lg bg-white border border-violet-300 p-2' },
-                      React.createElement('div', { className: 'text-[10px] font-bold text-violet-800 uppercase tracking-wide mb-1' }, '\u2014 Recommended Actions'),
+                      React.createElement('div', { className: 'text-[10px] font-bold text-violet-800 uppercase tracking-wide mb-1' }, __alloT('stem.aquarium.recommended_actions', '\u2014 Recommended Actions')),
                       React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5 text-[11.5px] text-slate-800' },
                         active.actions.map(function (a, i) { return React.createElement('li', { key: i }, a); })
                       )
@@ -19756,20 +19872,20 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement('div', { className: 'rounded-2xl border-2 border-pink-300 bg-gradient-to-br from-pink-50 via-white to-rose-50 p-3' },
                   React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                     React.createElement('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '\u270f\ufe0f'),
-                    React.createElement('h3', { className: 'text-base font-black text-pink-900' }, 'Tank Designer'),
+                    React.createElement('h3', { className: 'text-base font-black text-pink-900' }, __alloT('stem.aquarium.tank_designer', 'Tank Designer')),
                     React.createElement('span', { className: 'ml-auto text-[10px] font-bold text-pink-800 bg-white border border-pink-300 rounded-full px-2 py-0.5' }, DESIGNER_FISH_CATALOG.length + ' species, ' + DESIGNER_PLANT_CATALOG.length + ' plants')
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed' },
-                    'Pick a tank size, choose fish from the catalog, and watch the SVG visualization update. Compatibility checks flag temperature mismatches, pH conflicts, schooling minimums, and overstocking in real time.')
+                    __alloT('stem.aquarium.pick_a_tank_size_choose_fish_from_the_', 'Pick a tank size, choose fish from the catalog, and watch the SVG visualization update. Compatibility checks flag temperature mismatches, pH conflicts, schooling minimums, and overstocking in real time.'))
                 ),
                 // Tank size selector
                 React.createElement('div', { className: 'rounded-xl bg-white border-2 border-pink-200 p-2.5' },
-                  React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-pink-700 mb-1.5' }, '\u2014 Tank Size'),
+                  React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-pink-700 mb-1.5' }, __alloT('stem.aquarium.tank_size', '\u2014 Tank Size')),
                   React.createElement('div', { className: 'flex flex-wrap gap-1' },
                     [
-                      { gal: 5,   name: '5g Nano' },
-                      { gal: 10,  name: '10g Standard' },
-                      { gal: 20,  name: '20g Long' },
+                      { gal: 5,   name: __alloT('stem.aquarium.5g_nano', '5g Nano') },
+                      { gal: 10,  name: __alloT('stem.aquarium.10g_standard', '10g Standard') },
+                      { gal: 20,  name: __alloT('stem.aquarium.20g_long', '20g Long') },
                       { gal: 30,  name: '30g' },
                       { gal: 55,  name: '55g' },
                       { gal: 75,  name: '75g' },
@@ -19841,7 +19957,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-12 gap-3' },
                   React.createElement('div', { className: 'lg:col-span-7 rounded-2xl bg-white border-2 border-pink-200 p-3 space-y-2' },
                     React.createElement('div', { className: 'flex items-center justify-between' },
-                      React.createElement('h4', { className: 'text-[12px] font-extrabold text-pink-900 uppercase tracking-wide' }, '\u2014 Current Stocking'),
+                      React.createElement('h4', { className: 'text-[12px] font-extrabold text-pink-900 uppercase tracking-wide' }, __alloT('stem.aquarium.current_stocking', '\u2014 Current Stocking')),
                       React.createElement('div', { className: 'flex items-center gap-1.5' },
                         ['fish', 'plants'].map(function (p) {
                           var sel = picker === p;
@@ -19853,9 +19969,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                       )
                     ),
                     stockList.length === 0 && plantList.length === 0 && React.createElement('p', { className: 'text-[11px] text-slate-500 italic py-2' },
-                      'No fish or plants added yet. Click items in the catalog on the right.'),
+                      __alloT('stem.aquarium.no_fish_or_plants_added_yet_click_item', 'No fish or plants added yet. Click items in the catalog on the right.')),
                     stockList.length > 0 && React.createElement('div', null,
-                      React.createElement('div', { className: 'text-[10px] font-bold text-pink-700 mb-1' }, 'Fish'),
+                      React.createElement('div', { className: 'text-[10px] font-bold text-pink-700 mb-1' }, __alloT('stem.aquarium.fish', 'Fish')),
                       React.createElement('div', { className: 'space-y-0.5' },
                         stockList.map(function (s, si) {
                           var f = DESIGNER_FISH_CATALOG.filter(function (x) { return x.id === s.id; })[0]; if (!f) return null;
@@ -19878,7 +19994,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       )
                     ),
                     plantList.length > 0 && React.createElement('div', { className: 'pt-1' },
-                      React.createElement('div', { className: 'text-[10px] font-bold text-green-700 mb-1' }, 'Plants'),
+                      React.createElement('div', { className: 'text-[10px] font-bold text-green-700 mb-1' }, __alloT('stem.aquarium.plants_2', 'Plants')),
                       React.createElement('div', { className: 'space-y-0.5' },
                         plantList.map(function (s, si) {
                           var pl = DESIGNER_PLANT_CATALOG.filter(function (x) { return x.id === s.id; })[0]; if (!pl) return null;
@@ -19903,8 +20019,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                     // Stats footer
                     (stockList.length > 0 || plantList.length > 0) && React.createElement('div', { className: 'pt-2 mt-1 border-t border-pink-200 text-[11px] flex flex-wrap gap-3' },
                       React.createElement('span', null, React.createElement('span', { className: 'font-bold text-pink-800' }, 'Tank: '), tankSize + 'g'),
-                      React.createElement('span', null, React.createElement('span', { className: 'font-bold text-pink-800' }, 'Total fish: '), totalFish),
-                      React.createElement('span', null, React.createElement('span', { className: 'font-bold text-pink-800' }, 'Fish inches: '), totalFishInches.toFixed(1)),
+                      React.createElement('span', null, React.createElement('span', { className: 'font-bold text-pink-800' }, __alloT('stem.aquarium.total_fish', 'Total fish: ')), totalFish),
+                      React.createElement('span', null, React.createElement('span', { className: 'font-bold text-pink-800' }, __alloT('stem.aquarium.fish_inches', 'Fish inches: ')), totalFishInches.toFixed(1)),
                       React.createElement('span', null, React.createElement('span', { className: 'font-bold text-pink-800' }, 'Capacity: '), (capacityRatio * 100).toFixed(0) + '%')
                     ),
                     // Conflicts
@@ -19919,7 +20035,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement('button', {
                       onClick: function () { updMulti({ designerStock: [], designerPlants: [] }); },
                       className: 'mt-1 px-2.5 py-1 text-[10px] font-bold bg-white border-2 border-red-300 text-red-700 rounded-full hover:bg-red-50'
-                    }, '\u21bb Clear all')
+                    }, __alloT('stem.aquarium.clear_all', '\u21bb Clear all'))
                   ),
                   // Catalog picker
                   React.createElement('div', { className: 'lg:col-span-5 rounded-2xl bg-white border-2 border-pink-200 p-3' },
@@ -19960,7 +20076,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             React.createElement('span', { className: 'inline-block w-4 h-4 rounded-full flex-shrink-0', style: { background: f.color, border: '1px solid ' + f.accent } }),
                             React.createElement('div', { className: 'flex-1 min-w-0' },
                               React.createElement('div', { className: 'text-[11px] font-bold text-slate-800 truncate' }, f.common),
-                              React.createElement('div', { className: 'text-[9px] text-slate-500 italic truncate' }, f.sci + ' \u00b7 ' + f.adultSize + '" \u00b7 ' + f.minGallons + 'g+ \u00b7 ' + f.careLevel)
+                              React.createElement('div', { className: 'text-[10px] text-slate-500 italic truncate' }, f.sci + ' \u00b7 ' + f.adultSize + '" \u00b7 ' + f.minGallons + 'g+ \u00b7 ' + f.careLevel)
                             ),
                             existing && React.createElement('span', { className: 'text-[10px] font-black text-pink-700 bg-pink-100 rounded-full px-1.5' }, '\u00d7' + existing.qty)
                           )
@@ -19983,7 +20099,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             React.createElement('span', { className: 'inline-block w-4 h-4 rounded flex-shrink-0', style: { background: pl.color } }),
                             React.createElement('div', { className: 'flex-1 min-w-0' },
                               React.createElement('div', { className: 'text-[11px] font-bold text-slate-800 truncate' }, pl.common),
-                              React.createElement('div', { className: 'text-[9px] text-slate-500 italic truncate' }, pl.sci + ' \u00b7 ' + pl.heightInches + '" \u00b7 ' + pl.light + ' light \u00b7 CO\u2082: ' + pl.co2)
+                              React.createElement('div', { className: 'text-[10px] text-slate-500 italic truncate' }, pl.sci + ' \u00b7 ' + pl.heightInches + '" \u00b7 ' + pl.light + ' light \u00b7 CO\u2082: ' + pl.co2)
                             ),
                             existing && React.createElement('span', { className: 'text-[10px] font-black text-green-700 bg-green-100 rounded-full px-1.5' }, '\u00d7' + existing.qty)
                           )
@@ -20006,13 +20122,13 @@ var d = (labToolData && labToolData._aquarium) || {};
               else if (stress < 1.5) state = 'warning';
               else state = 'critical';
               var sm = {
-                healthy:  { label: '🟢 Healthy', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'All parameters within tolerance. Fish thriving.' },
-                warning:  { label: '🟡 Warning', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Elevated toxins or temp drift. Investigate cause.' },
-                critical: { label: '🔴 Critical', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Acute toxicity / thermal stress. Imminent harm.' }
+                healthy:  { label: __alloT('stem.aquarium.healthy', '🟢 Healthy'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.aquarium.all_parameters_within_tolerance_fish_t', 'All parameters within tolerance. Fish thriving.') },
+                warning:  { label: __alloT('stem.aquarium.warning', '🟡 Warning'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.aquarium.elevated_toxins_or_temp_drift_investig', 'Elevated toxins or temp drift. Investigate cause.') },
+                critical: { label: __alloT('stem.aquarium.critical', '🔴 Critical'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.aquarium.acute_toxicity_thermal_stress_imminent', 'Acute toxicity / thermal stress. Imminent harm.') }
               }[state];
               return h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 shadow-sm space-y-3' },
-                h('h3', { className: 'text-sm font-black text-cyan-700' }, '🐟 Fish stress discovery'),
-                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for ammonia, nitrite, temperature. Discrete 3-state stress level. No score, no reveal.'),
+                h('h3', { className: 'text-sm font-black text-cyan-700' }, __alloT('stem.aquarium.fish_stress_discovery', '🐟 Fish stress discovery')),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.aquarium.sliders_for_ammonia_nitrite_temperatur', 'Sliders for ammonia, nitrite, temperature. Discrete 3-state stress level. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
@@ -20029,22 +20145,22 @@ var d = (labToolData && labToolData._aquarium) || {};
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.ammonia, n: iq.nitrite, t: iq.tempC, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ ammonia: 0.1, nitrite: 0.05, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.ammonia, n: iq.nitrite, t: iq.tempC, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.aquarium.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ ammonia: 0.1, nitrite: 0.05, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.aquarium.reset_2', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which parameter is most toxic at what level?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.aquarium.hypothesis_which_parameter_is_most_tox', 'Hypothesis: Which parameter is most toxic at what level?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.aquarium.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Real tropical tanks: NH₃ should be 0. Investigate why.'),
-                    h('li', null, 'How does temperature change NH₃ toxicity? (Hint: pH/ionization)'))),
+                    h('li', null, __alloT('stem.aquarium.real_tropical_tanks_nh_should_be_0_inv', 'Real tropical tanks: NH₃ should be 0. Investigate why.')),
+                    h('li', null, __alloT('stem.aquarium.how_does_temperature_change_nh_toxicit', 'How does temperature change NH₃ toxicity? (Hint: pH/ionization)')))),
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I understand — explain in own words'),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain why nitrogen cycle balance is critical for fish health.',
+                  __alloT('stem.aquarium.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.aquarium.explain_why_nitrogen_cycle_balance_is_', 'Explain why nitrogen cycle balance is critical for fish health.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 3-state stress marker; no toxicity score; no reveal — by design.')
+                h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.aquarium.design_note_discrete_3_state_stress_ma', 'Design note: discrete 3-state stress marker; no toxicity score; no reveal — by design.'))
               );
             })()
 

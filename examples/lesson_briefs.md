@@ -1,5 +1,7 @@
 # Lesson Briefs for `library.html`
 
+> **Planning snapshot (2026-07-09):** These are example-generation parameter sheets, not a live inventory of `library.html`. Before following any line-number instruction or assuming a card is still missing, check the current library page and `examples/` files.
+
 Each section below is a **parameter sheet** for one missing lesson card on `library.html`. You'll plug these parameters into AlloFlow's own pipeline and let AlloFlow generate the source text, analysis, glossary, quiz, and other outputs.
 
 ## How AlloFlow generates a lesson (workflow per lesson)
@@ -46,7 +48,7 @@ Reload `library.html` and verify the Download button on that card now serves a w
 
 The file's actual content is Civil War, not Revolution. Two valid fixes:
 
-1. **Generate an American Revolution lesson, save it as `american_revolution.json`, and update line 209 of `library.html`** so its href points to the new file. Keep `civil_war.json` and optionally add a new card for it elsewhere on the page (e.g., grades 6-8 social studies).
+1. **Generate an American Revolution lesson, save it as `american_revolution.json`, and update the matching card in `library.html`** so its href points to the new file. Keep `civil_war.json` and optionally add a new card for it elsewhere on the page (e.g., grades 6-8 social studies).
 
 2. **Rewrite the card on `library.html` to match the file.** Update lines 205-208 so the title says "The American Civil War," update the description, and swap the standards to ones that fit Civil War content (e.g., C3 D2.His.4.6-8 for middle school, CCSS.ELA-LITERACY.RH.6-8.6).
 
@@ -382,7 +384,7 @@ Set: **5th Grade**
 | **Quiz** | MCQ count: 8 (3 causes, 2 events, 2 figures, 1 perspective) · Reflection count: 1 · DOK Level: Level 3 |
 | **Sentence Frames** | "From the perspective of __, the Revolution meant __." |
 
-After generating, **also update `library.html` line 209** to point to the new file: change `./examples/civil_war.json` to `./examples/american_revolution.json`.
+After generating, **also update the matching `library.html` card** to point to the new file: change `./examples/civil_war.json` to `./examples/american_revolution.json` if that stale href is still present.
 
 ---
 

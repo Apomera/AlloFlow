@@ -1,9 +1,8 @@
 // anchor_charts_source.jsx
-// Anchor Charts — EL Education classroom-staple visual reference.
+// Anchor Charts — classroom visual reference.
 //
 // A poster-style class-co-created artifact (title + N labeled sections with
-// bullets + simple icons). AI-generated structure, student/teacher-refined,
-// peer-critiqued via the annotation suite's I-notice/I-wonder protocol.
+// bullets + simple icons). AI-generated structure, student/teacher-refined.
 //
 // Hand-drawn aesthetic: marker palette, Patrick Hand / Permanent Marker
 // display fonts, paper texture, slight section-block jitter.
@@ -85,6 +84,28 @@ const MARKER_PALETTE = [
 
 const _markerFor = (idx) => MARKER_PALETTE[idx % MARKER_PALETTE.length];
 
+const ANCHOR_CHART_TYPE_META = {
+  reference: { label: 'Reference', layout: 'reference', caption: 'Keep this visible for quick reminders during the lesson.' },
+  process: { label: 'Process', layout: 'process', caption: 'Follow the steps in order.', badge: 'number', badgeColor: '#9a3412' },
+  'concept-map': { label: 'Concept map', layout: 'concept-map', caption: 'Central idea branches into...' },
+  comparison: { label: 'Comparison', layout: 'comparison', caption: 'Compare side by side.' },
+  strategy: { label: 'Strategy', layout: 'reference', caption: 'Choose a move, try it, then check your thinking.', badge: 'GO', badgeColor: '#1d4ed8' },
+  vocabulary: { label: 'Vocabulary', layout: 'grid', caption: 'Connect each term to a student-friendly meaning.' },
+  routine: { label: 'Routine', layout: 'process', caption: 'Use this routine the same way each time.', badge: 'number', badgeColor: '#0f766e' },
+  'worked-example': { label: 'Worked example', layout: 'process', caption: 'Model the thinking from start to finish.', badge: 'number', badgeColor: '#6d28d9' },
+  'criteria-success': { label: 'Success criteria', layout: 'reference', caption: 'Look for these signs of strong work.', badge: 'OK', badgeColor: '#15803d' },
+  misconception: { label: 'Misconceptions', layout: 'grid', caption: 'Spot the mix-up, then fix it.', badge: 'FIX', badgeColor: '#b91c1c' },
+  'question-guide': { label: 'Question guide', layout: 'reference', caption: 'Use these questions to deepen thinking.', badge: '?', badgeColor: '#7e22ce' },
+};
+
+const _chartTypeMeta = (chartType) => ANCHOR_CHART_TYPE_META[String(chartType || 'reference')] || ANCHOR_CHART_TYPE_META.reference;
+const _layoutForChartType = (chartType) => _chartTypeMeta(chartType).layout || 'reference';
+const _badgeForChartType = (chartType, idx) => {
+  const meta = _chartTypeMeta(chartType);
+  if (meta.badge === 'number') return String((idx || 0) + 1);
+  return meta.badge || '';
+};
+
 // Stable pseudo-random jitter per section so sections don't twitch on every render.
 // Returns a value in [-0.9, 0.9] degrees. Uses Math.abs on the hash first because
 // JS's % operator preserves the sign of the dividend (e.g. -7 % 21 === -7), so
@@ -105,73 +126,6 @@ const _iconPromptBiased = (basePrompt, markerName) => {
   const safe = (basePrompt || 'simple object').toString().trim();
   return `${safe}. Simple hand-drawn classroom-anchor-chart marker sketch in ${markerName} ink. White background. No text or letters. Single subject, centered, clean outline, no shading. Thick marker strokes. Children's classroom poster style.`;
 };
-
-// ── Critique Overlay (wraps annotation suite with EL preset) ────────────
-const AnchorChartCritiqueOverlay = React.memo((props) => {
-  const isOpen = !!props.isOpen;
-  const onClose = props.onClose || (() => {});
-  const chartId = props.chartId;
-  const annotations = Array.isArray(props.annotations) ? props.annotations : [];
-  const onAnnotationsChange = props.onAnnotationsChange || (() => {});
-  const isTeacherMode = !!props.isTeacherMode;
-  const annoApi = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AnnotationSuite) || null;
-
-  if (!isOpen) return null;
-  if (!annoApi) {
-    return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-        <div className="bg-white rounded-xl shadow-xl p-6 max-w-md text-center">
-          <p className="text-sm text-slate-700">Critique overlay is loading. Please try again in a moment.</p>
-          <button onClick={onClose} className="mt-4 px-4 py-1.5 text-sm font-bold bg-slate-200 rounded-full">Close</button>
-        </div>
-      </div>
-    );
-  }
-
-  // EL "I notice / I wonder" preset — two sticky-note templates pinned to the
-  // top of the toolbar. Falls back gracefully if the annotation suite API
-  // doesn't expose template injection in this version.
-  const elTemplates = [
-    { id: 'el-notice', label: 'I notice…', prefill: 'I notice ', color: 'amber' },
-    { id: 'el-wonder', label: 'I wonder…', prefill: 'I wonder ', color: 'sky' },
-  ];
-
-  // Render the annotation-suite Overlay + Toolbar. Annotation suite manages
-  // its own click-handling and node placement; we pass annotations through
-  // and listen for changes.
-  const Overlay = annoApi.Overlay;
-  const Toolbar = annoApi.Toolbar;
-  return (
-    <div className="fixed inset-0 z-[60] pointer-events-none">
-      <div className="absolute inset-0 pointer-events-auto">
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-amber-50 to-transparent p-3 border-b border-amber-200 shadow-sm flex items-center justify-between" data-help-key="anchor_chart_critique_panel">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">📌</span>
-            <div>
-              <div className="font-black text-sm text-amber-900">Critique Mode</div>
-              <div className="text-[11px] text-amber-700">Drop sticky notes anywhere on the chart. Use the I notice / I wonder protocol.</div>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="px-3 py-1.5 text-xs font-bold text-amber-900 bg-white border border-amber-300 rounded-full hover:bg-amber-100"
-            aria-label="Close critique mode"
-          >Done</button>
-        </div>
-        {Toolbar ? <Toolbar templates={elTemplates} isTeacherMode={isTeacherMode} /> : null}
-        {Overlay ? (
-          <Overlay
-            scopeId={`anchor-chart-${chartId || 'unknown'}`}
-            annotations={annotations}
-            onAnnotationsChange={onAnnotationsChange}
-            isTeacherMode={isTeacherMode}
-            presetTemplates={elTemplates}
-          />
-        ) : null}
-      </div>
-    </div>
-  );
-});
 
 // ── Section block ───────────────────────────────────────────────────────
 const AnchorChartSection = React.memo((props) => {
@@ -258,7 +212,7 @@ const AnchorChartSection = React.memo((props) => {
         boxShadow: '0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.06)',
         transform: `rotate(${jitter}deg)`,
         borderRadius: '6px',
-        padding: '14px 14px 14px 18px',
+        padding: isEditing ? '34px 14px 14px 18px' : '14px 14px 14px 18px',
         margin: '12px 6px',
       }}
     >
@@ -284,12 +238,13 @@ const AnchorChartSection = React.memo((props) => {
           )}
           {isEditing && onRegenIcon ? (
             <button
+              type="button"
               onClick={() => onRegenIcon(sectionIndex)}
               disabled={isRegeneratingIcon}
               title="Regenerate icon"
-              aria-label="Regenerate icon"
+              aria-label={`Regenerate icon for ${label || `section ${sectionIndex + 1}`}`}
               className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-white border-2 text-xs flex items-center justify-center hover:bg-amber-50"
-              style={{ borderColor: marker.hex, color: marker.hex }}
+              style={{ borderColor: marker.hex, color: marker.ink }}
             >↻</button>
           ) : null}
         </div>
@@ -365,9 +320,10 @@ const AnchorChartSection = React.memo((props) => {
                         aria-label={`Bullet ${idx + 1}`}
                       />
                       <button
+                        type="button"
                         onClick={() => removeBullet(idx)}
-                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
-                        aria-label="Remove bullet"
+                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
+                        aria-label={`Remove bullet ${idx + 1} from ${label || `section ${sectionIndex + 1}`}`}
                       >✕</button>
                     </>
                   ) : (
@@ -379,9 +335,11 @@ const AnchorChartSection = React.memo((props) => {
           </ul>
           {isEditing ? (
             <button
+              type="button"
               onClick={addBullet}
               className="mt-2 text-[11px] font-bold px-2 py-0.5 rounded-full border"
-              style={{ color: marker.hex, borderColor: marker.hex, background: 'white' }}
+              style={{ color: marker.ink, borderColor: marker.hex, background: 'white' }}
+              aria-label={`Add bullet to ${label || `section ${sectionIndex + 1}`}`}
             >+ Add bullet</button>
           ) : null}
           {/* Inline icon-prompt editor — only visible in edit mode. Lets the
@@ -389,10 +347,12 @@ const AnchorChartSection = React.memo((props) => {
           {isEditing ? (
             <div className="mt-2 pt-2 border-t border-dashed border-slate-300">
               <button
+                type="button"
                 onClick={() => setShowIconEditor((v) => !v)}
                 className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
-                style={{ color: marker.hex, background: marker.soft }}
+                style={{ color: marker.ink, background: marker.soft }}
                 aria-expanded={showIconEditor}
+                aria-label={`${showIconEditor ? 'Hide' : 'Show'} icon prompt editor for ${label || `section ${sectionIndex + 1}`}`}
               >{showIconEditor ? '▼ Hide icon prompt' : '▸ Edit icon prompt'}</button>
               {showIconEditor ? (
                 <div className="space-y-2 mt-2">
@@ -408,10 +368,12 @@ const AnchorChartSection = React.memo((props) => {
                     />
                     {onRegenIcon ? (
                       <button
+                        type="button"
                         onClick={() => { commitIconPrompt(); onRegenIcon(sectionIndex); }}
                         disabled={isRegeneratingIcon}
                         className="text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
-                        style={{ color: marker.hex, borderColor: marker.hex, background: 'white' }}
+                        style={{ color: marker.ink, borderColor: marker.hex, background: 'white' }}
+                        aria-label={`Generate icon for ${label || `section ${sectionIndex + 1}`}`}
                       >{isRegeneratingIcon ? '⏳ Generating…' : '✨ Generate icon'}</button>
                     ) : null}
                   </div>
@@ -426,10 +388,12 @@ const AnchorChartSection = React.memo((props) => {
                         aria-label="Refine icon prompt"
                       />
                       <button
+                        type="button"
                         onClick={handleRefineIcon}
                         disabled={isRefining || !refinePrompt.trim()}
                         className="text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
                         style={{ color: '#0369a1', borderColor: '#38bdf8', background: 'white' }}
+                        aria-label={`Refine icon for ${label || `section ${sectionIndex + 1}`}`}
                       >
                         {isRefining ? '⏳ Refining…' : '🪄 Refine with AI'}
                       </button>
@@ -453,6 +417,24 @@ const AnchorChartView = React.memo((props) => {
   const callImagen = props.callImagen || null;
   const callGeminiImageEdit = props.callGeminiImageEdit || (typeof window !== 'undefined' && window.callGeminiImageEdit) || null;
   const t = props.t || ((k, d) => d || k);
+  const activeSessionCode = props.activeSessionCode || null;
+  const onPlayPictionary = typeof props.onPlayPictionary === 'function' ? props.onPlayPictionary : null;
+
+  // Derive chart data DEFENSIVELY — generatedContent can briefly be null or a
+  // different resource type during the full-pack run (activeView flips to
+  // 'anchor-chart' before the content object is populated). EVERY hook below
+  // must run unconditionally (Rules of Hooks); the type gate that returns null
+  // lives AFTER all hooks, just before the JSX.
+  const data = (generatedContent && generatedContent.data) || {};
+  const title = data.title || '';
+  const chartType = data.chartType || 'reference';
+  // Type-aware layout: chartType shapes presentation, not just a badge.
+  const chartMeta = _chartTypeMeta(chartType);
+  const chartLabel = chartMeta.label || 'Anchor chart';
+  const layout = _layoutForChartType(chartType);
+  const sections = Array.isArray(data.sections) ? data.sections : [];
+  const lessonRef = data.lessonRef || {};
+  const interactive = data.interactive || { armed: false, rubric: '' };
 
   const [isGeneratingRubric, setIsGeneratingRubric] = React.useState(false);
 
@@ -492,31 +474,17 @@ const AnchorChartView = React.memo((props) => {
     }
   };
 
-  // Bridge to Concept Pictionary — when present + session active, surfaces a
-  // "Play Pictionary with these terms" button that hands the chart's section
-  // labels to the Pictionary host as the round's concept candidates.
-  const activeSessionCode = props.activeSessionCode || null;
-  const onPlayPictionary = typeof props.onPlayPictionary === 'function' ? props.onPlayPictionary : null;
-
-  if (!generatedContent || generatedContent.type !== 'anchor-chart') return null;
-  const data = generatedContent.data || {};
-  const title = data.title || '';
-  const chartType = data.chartType || 'reference';
-  const sections = Array.isArray(data.sections) ? data.sections : [];
-  const lessonRef = data.lessonRef || {};
-  const annotations = Array.isArray(data.annotations) ? data.annotations : [];
-
   const [isEditing, setIsEditing] = React.useState(false);
-  const [showCritique, setShowCritique] = React.useState(false);
   const [regenIdx, setRegenIdx] = React.useState(-1);
   const [exportState, setExportState] = React.useState('idle');  // 'idle' | 'rendering' | 'error'
   const paperRef = React.useRef(null);
+  const interactiveDialogRef = React.useRef(null);
+  const rubricTextareaRef = React.useRef(null);
   // ── Interactive mode (Phase 10) ──
   // When `interactive.armed`, students see blanked bullets + input fields and
   // can submit for AI feedback graded against `interactive.rubric`. Teacher
   // arms / disarms via the dialog. State lives on `data.interactive` so it
-  // round-trips through save/load.
-  const interactive = data.interactive || { armed: false, rubric: '' };
+  // round-trips through save/load. (`interactive` is derived defensively above.)
   const [showInteractiveDialog, setShowInteractiveDialog] = React.useState(false);
   const [rubricDraft, setRubricDraft] = React.useState(interactive.rubric || '');
   React.useEffect(() => { setRubricDraft(interactive.rubric || ''); }, [interactive.rubric, generatedContent && generatedContent.id]);
@@ -530,15 +498,22 @@ const AnchorChartView = React.memo((props) => {
     }
   }, [showInteractiveDialog, t]);
   React.useEffect(() => {
-    if (!showCritique) return;
-    if (typeof window !== 'undefined' && typeof window.alloAnnounce === 'function') {
-      window.alloAnnounce((t && t('anchor_chart.critique_dialog_opened_aria')) || 'Critique mode dialog opened.', 'assertive');
-    }
-  }, [showCritique, t]);
+    if (!showInteractiveDialog) return;
+    const timer = setTimeout(() => {
+      const target = rubricTextareaRef.current || interactiveDialogRef.current;
+      if (target && typeof target.focus === 'function') target.focus();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [showInteractiveDialog]);
   // Student-side state: answers keyed by section id+idx, and grading result.
   const [studentAnswers, setStudentAnswers] = React.useState({}); // { [sectionId]: { [idx]: text } }
   const [gradingState, setGradingState] = React.useState('idle'); // 'idle' | 'submitting' | 'done' | 'error'
-  const [gradingResult, setGradingResult] = React.useState(null); // { accuracyScore, thoughtfulnessScore, feedback, xpAwarded } | null
+  const [gradingResult, setGradingResult] = React.useState(null); // { strength, growthNudge, xpAwarded, hadPriorXp } | null
+  // Anti-regrind guard (mirrors the note-taking module): only XP ABOVE this
+  // session's previous best for this chart is awarded, so resubmitting can't
+  // farm XP. Local-only — resets on reload, which also clears the answers.
+  const [awardedXp, setAwardedXp] = React.useState(0);
+  React.useEffect(() => { setAwardedXp(0); }, [generatedContent && generatedContent.id]);
   const callGeminiProp = props.callGemini || (typeof window !== 'undefined' && window.callGemini) || null;
   const addXpProp = typeof props.addXp === 'function' ? props.addXp : null;
   const addToastProp = typeof props.addToast === 'function' ? props.addToast : (msg) => { try { console.log('[anchor-toast]', msg); } catch (_) {} };
@@ -553,7 +528,7 @@ const AnchorChartView = React.memo((props) => {
   // Each section's `iconPrompt` is biased toward the hand-drawn marker look.
   const triedRef = React.useRef({});
   React.useEffect(() => {
-    if (!callImagen) return;
+    if (!callImagen || !generatedContent) return;
     sections.forEach((s, idx) => {
       if (!s) return;
       const key = `${generatedContent.id}::${s.id || idx}`;
@@ -576,14 +551,16 @@ const AnchorChartView = React.memo((props) => {
             console.warn('[AnchorChart] auto-strip failed', stripErr);
           }
         }
-        handleNoteUpdate('sections', (data.sections || []).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
-      }).catch(() => { /* swallow — section renders placeholder */ });
+        // Functional update so the parallel per-section icon writes merge against the LATEST
+        // sections instead of a stale snapshot — otherwise the last callImagen to resolve wins and
+        // clobbers the other sections' icons (only one would ever show).
+        handleNoteUpdate('sections', (prevSections) => (Array.isArray(prevSections) ? prevSections : (data.sections || [])).map((sec, i) => i === idx ? { ...sec, iconUrl: finalUrl } : sec));
+      }).catch((e) => { console.warn('[AnchorChart] auto icon-gen failed', e && (e.message || e)); });
     });
-  }, [generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
+  }, [generatedContent && generatedContent.id, sections.length, callImagen, callGeminiImageEdit]);
 
   const updateSection = (idx, nextSection) => {
-    const next = sections.map((s, i) => i === idx ? nextSection : s);
-    handleNoteUpdate('sections', next);
+    handleNoteUpdate('sections', (prevSections) => (Array.isArray(prevSections) ? prevSections : sections).map((s, i) => i === idx ? nextSection : s));
   };
   const handleRegenIcon = async (idx) => {
     if (!callImagen) return;
@@ -605,7 +582,7 @@ const AnchorChartView = React.memo((props) => {
         }
       }
       if (url) updateSection(idx, { ...s, iconUrl: url });
-    } catch (_) { /* ignore */ }
+    } catch (e) { console.warn('[AnchorChart] icon regen failed', e && (e.message || e)); }
     finally { setRegenIdx(-1); }
   };
   const handleTitleChange = (e) => handleNoteUpdate('title', e.target.value);
@@ -615,9 +592,6 @@ const AnchorChartView = React.memo((props) => {
   };
   const handleRemoveSection = (idx) => {
     handleNoteUpdate('sections', sections.filter((_, i) => i !== idx));
-  };
-  const handleAnnotationsChange = (nextAnnotations) => {
-    handleNoteUpdate('annotations', Array.isArray(nextAnnotations) ? nextAnnotations : []);
   };
   // PNG export: lazy-loads html2canvas, waits for fonts to be ready (so the
   // Patrick Hand / Permanent Marker display fonts render correctly instead of
@@ -663,6 +637,13 @@ const AnchorChartView = React.memo((props) => {
     if (next === sections) return;
     handleNoteUpdate('sections', next);
   };
+  const handleMoveSection = (idx, direction) => {
+    if (direction === 'up') {
+      handleReorderSection(idx, idx - 1);
+    } else if (direction === 'down') {
+      handleReorderSection(idx, idx + 2);
+    }
+  };
   // ── Interactive mode handlers ──
   const handleArmInteractive = () => {
     const trimmed = (rubricDraft || '').trim();
@@ -673,6 +654,28 @@ const AnchorChartView = React.memo((props) => {
   const handleDisarmInteractive = () => {
     handleNoteUpdate('interactive', { armed: false, rubric: interactive.rubric || '' });
     addToastProp('Interactive mode off');
+  };
+  const handleInteractiveDialogKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setShowInteractiveDialog(false);
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    const dialog = interactiveDialogRef.current;
+    if (!dialog) return;
+    const focusable = Array.from(dialog.querySelectorAll('button, textarea, input, select, a[href], [tabindex]:not([tabindex="-1"])'))
+      .filter((el) => !el.disabled && el.getAttribute('aria-hidden') !== 'true');
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   };
   const handleStudentAnswerChange = (sectionId, bulletIdx, text) => {
     setStudentAnswers((prev) => {
@@ -723,7 +726,7 @@ const AnchorChartView = React.memo((props) => {
         `Section: ${a.section}\n` + a.answers.map((t, i) => `  ${i + 1}. ${t}`).join('\n')
       ).join('\n\n');
       const prompt = [
-        'You are an encouraging K-12 teacher grading a student\'s anchor chart submission.',
+        'You are an encouraging K-12 teacher giving feedback on a student\'s anchor chart submission. You are NOT a grader — the student does NOT see a numeric score.',
         '',
         'TOPIC: ' + (title || '(no title)'),
         '',
@@ -736,14 +739,15 @@ const AnchorChartView = React.memo((props) => {
         'STUDENT\'S ANSWERS:',
         answerBlock,
         '',
-        'Grade the student on TWO dimensions, each 0-100:',
-        '  - accuracyScore: how factually accurate + on-topic their answers are vs. the rubric',
-        '  - thoughtfulnessScore: how thoughtful, original, and developed their answers are (not just one-word responses)',
+        'Give strengths-first feedback: lead with ONE specific thing the student did well, quoting their own words. Then ONE concrete growth nudge — not a list. If their work is already solid, make the nudge an elaboration: connect to prior knowledge, a real-world example, or an analogy of their own. Keep each to 1-2 sentences.',
         '',
-        'Then suggest XP: 0-30 = brief/off-topic; 30-60 = developing; 60-90 = solid; 90-120 = exceptional. Cap at 120.',
+        'Also provide INTERNAL rubric scores — the student will NOT see these; they only drive an XP award:',
+        '  - accuracyScore 0-100: factual accuracy + on-topic vs the rubric',
+        '  - thoughtfulnessScore 0-100: how developed/original (not one-word answers)',
+        'Suggest XP from those: 0-30 = brief/off-topic; 30-60 = developing; 60-90 = solid; 90-120 = exceptional. Cap at 120.',
         '',
         'Reply ONLY with valid JSON, no markdown:',
-        '{"accuracyScore": <int 0-100>, "thoughtfulnessScore": <int 0-100>, "feedback": "<2-3 sentence supportive specific feedback>", "suggestedXP": <int 0-120>}'
+        '{"strength": "<1-2 sentences, quote their words>", "growthNudge": "<1-2 sentences, one next step>", "accuracyScore": <int 0-100>, "thoughtfulnessScore": <int 0-100>, "suggestedXP": <int 0-120>}'
       ].join('\n');
       const raw = await callGeminiProp(prompt);
       // Robust JSON extraction (strip any code fences if model added them)
@@ -751,16 +755,18 @@ const AnchorChartView = React.memo((props) => {
       txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
       const m = txt.match(/\{[\s\S]*\}/);
       const parsed = m ? JSON.parse(m[0]) : JSON.parse(txt);
-      const accuracy = Math.max(0, Math.min(100, Math.round(parsed.accuracyScore || 0)));
-      const thoughtfulness = Math.max(0, Math.min(100, Math.round(parsed.thoughtfulnessScore || 0)));
-      const xp = Math.max(0, Math.min(120, Math.round(parsed.suggestedXP || 0)));
-      const feedback = String(parsed.feedback || '').slice(0, 800);
-      const result = { accuracyScore: accuracy, thoughtfulnessScore: thoughtfulness, feedback: feedback, xpAwarded: xp };
+      const xpRaw = Math.max(0, Math.min(120, Math.round(parsed.suggestedXP || 0)));
+      // Anti-regrind: only award XP above this session's previous best for the chart.
+      const delta = Math.max(0, xpRaw - awardedXp);
+      const strength = String(parsed.strength || '').slice(0, 600);
+      const growthNudge = String(parsed.growthNudge || '').slice(0, 600);
+      const result = { strength: strength, growthNudge: growthNudge, xpAwarded: delta, hadPriorXp: awardedXp > 0 && delta === 0 };
       setGradingResult(result);
       setGradingState('done');
-      if (xp > 0 && addXpProp) {
-        addXpProp(xp);
-        addToastProp(`✨ +${xp} XP earned!`);
+      if (delta > 0 && addXpProp) {
+        addXpProp(delta);
+        setAwardedXp(xpRaw);
+        addToastProp(`✨ +${delta} XP earned!`);
       }
     } catch (err) {
       console.warn('[AnchorChart] grading failed', err && err.message);
@@ -768,6 +774,13 @@ const AnchorChartView = React.memo((props) => {
       addToastProp('AI grading hit an error. Try again in a moment.');
     }
   };
+
+  // Type gate AFTER all hooks (Rules of Hooks): if this isn't an anchor-chart
+  // resource — e.g. a transient render during the full-pack run, where activeView
+  // flips to 'anchor-chart' before generatedContent is populated — render nothing.
+  // Every hook above already ran, so the hook count stays constant across renders
+  // and React won't throw "Rendered more hooks than during the previous render."
+  if (!generatedContent || generatedContent.type !== 'anchor-chart') return null;
 
   return (
     <div className="ac-root max-w-5xl mx-auto px-4 py-6" data-help-key="anchor_chart_view_panel">
@@ -785,6 +798,22 @@ const AnchorChartView = React.memo((props) => {
           font-family: "Permanent Marker", "Patrick Hand", cursive;
           letter-spacing: 0.02em;
         }
+        .ac-root button:focus-visible,
+        .ac-root input:focus-visible,
+        .ac-root textarea:focus-visible {
+          outline: 3px solid #1d4ed8;
+          outline-offset: 2px;
+        }
+        .ac-root button:disabled {
+          cursor: not-allowed;
+        }
+        @media (forced-colors: active) {
+          .ac-root button:focus-visible,
+          .ac-root input:focus-visible,
+          .ac-root textarea:focus-visible {
+            outline: 3px solid Highlight;
+          }
+        }
         @media print {
           .ac-no-print { display: none !important; }
           .ac-section { box-shadow: none !important; }
@@ -795,7 +824,7 @@ const AnchorChartView = React.memo((props) => {
         <div className="text-[11px] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-2">
           <span>📋</span> Anchor Chart
           {chartType && chartType !== 'reference' ? (
-            <span className="px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full text-amber-900 capitalize">{chartType}</span>
+            <span className="px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full text-amber-900">{chartLabel}</span>
           ) : null}
         </div>
         <div className="flex items-center gap-2">
@@ -806,12 +835,6 @@ const AnchorChartView = React.memo((props) => {
             aria-label={isEditing ? 'Finish editing' : 'Edit chart'}
             data-help-key="anchor_chart_edit_toggle"
           >{isEditing ? '✓ Done editing' : '✎ Edit'}</button>
-          <button
-            onClick={() => setShowCritique(true)}
-            className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-sky-800 border-sky-300 hover:bg-sky-50"
-            aria-label="Open critique mode"
-            data-help-key="anchor_chart_critique_mode_toggle"
-          >📌 Critique mode</button>
           {/* Interactive mode toggle — teacher only. Shows "Armed" badge when on. */}
           {isTeacherMode ? (
             interactive.armed ? (
@@ -889,13 +912,33 @@ const AnchorChartView = React.memo((props) => {
             </div>
           ) : null}
         </div>
-        <div className="ac-sections">
+        {chartMeta.caption ? (
+          layout === 'concept-map' ? (
+          <div className="flex flex-col items-center mb-1">
+            <div style={{ width: 2, height: 16, background: '#cbb27e' }} aria-hidden="true" />
+            <div className="text-[11px] text-amber-700/80 italic">{chartMeta.caption}</div>
+          </div>
+          ) : (
+            <div className="text-center text-[11px] text-amber-700/80 italic mb-1">{chartMeta.caption}</div>
+          )
+        ) : null}
+        <div
+          className="ac-sections"
+          style={
+            layout === 'comparison'
+              ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', alignItems: 'start' }
+              : layout === 'concept-map' || layout === 'grid'
+              ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', alignItems: 'start' }
+              : undefined
+          }
+        >
           {sections.map((s, idx) => {
             const isDraggingThis = dragSrcIdx === idx;
             const isDropTarget = isEditing && dragSrcIdx >= 0 && dragSrcIdx !== idx && dragOverIdx === idx;
+            const badgeText = _badgeForChartType(chartType, idx);
             return (
+              <React.Fragment key={s.id || idx}>
               <div
-                key={s.id || idx}
                 className="relative group"
                 onDragOver={(e) => {
                   if (!isEditing || dragSrcIdx < 0) return;
@@ -918,6 +961,9 @@ const AnchorChartView = React.memo((props) => {
                   transition: 'opacity 0.15s',
                 }}
               >
+                {badgeText ? (
+                  <div aria-hidden="true" style={{ position: 'absolute', top: -10, left: -10, zIndex: 6, minWidth: 28, height: 28, padding: '0 7px', borderRadius: '999px', background: chartMeta.badgeColor || '#dd6b20', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Permanent Marker","Patrick Hand",cursive', fontSize: badgeText.length > 2 ? '12px' : '15px', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{badgeText}</div>
+                ) : null}
                 {isDropTarget ? (
                   <div className="absolute -top-1 left-2 right-2 h-1 bg-amber-500 rounded-full shadow-md pointer-events-none z-10" aria-hidden="true" />
                 ) : null}
@@ -925,9 +971,7 @@ const AnchorChartView = React.memo((props) => {
                   <div
                     className="absolute top-3 -left-1 text-amber-700 text-base opacity-30 group-hover:opacity-90 cursor-grab active:cursor-grabbing select-none ac-no-print"
                     title="Drag to reorder"
-                    aria-label={`Drag handle for section ${idx + 1}`}
-                    role="button"
-                    tabIndex={-1}
+                    aria-hidden="true"
                     draggable={true}
                     onDragStart={(e) => {
                       setDragSrcIdx(idx);
@@ -937,6 +981,33 @@ const AnchorChartView = React.memo((props) => {
                     onDragEnd={() => { setDragSrcIdx(-1); setDragOverIdx(-1); }}
                     style={{ userSelect: 'none' }}
                   >⋮⋮</div>
+                ) : null}
+                {isEditing ? (
+                  <div className="absolute top-1 right-1 z-10 flex items-center gap-1 ac-no-print" role="group" aria-label={`Reorder or remove section ${idx + 1}`}>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveSection(idx, 'up')}
+                      disabled={idx === 0}
+                      className="w-7 h-7 text-xs font-black rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100 disabled:opacity-45"
+                      aria-label={`Move section ${idx + 1} up`}
+                      title="Move section up"
+                    >↑</button>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveSection(idx, 'down')}
+                      disabled={idx === sections.length - 1}
+                      className="w-7 h-7 text-xs font-black rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100 disabled:opacity-45"
+                      aria-label={`Move section ${idx + 1} down`}
+                      title="Move section down"
+                    >↓</button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSection(idx)}
+                      className="h-7 px-2 text-xs font-bold rounded-full border bg-white text-red-700 border-red-300 hover:bg-red-50"
+                      aria-label={`Remove section ${idx + 1}`}
+                      title="Remove section"
+                    >✕</button>
+                  </div>
                 ) : null}
                 <AnchorChartSection
                   section={s}
@@ -959,32 +1030,29 @@ const AnchorChartView = React.memo((props) => {
                   callGeminiImageEdit={callGeminiImageEdit}
                   addToast={addToastProp}
                 />
-                {isEditing ? (
-                  <button
-                    onClick={() => handleRemoveSection(idx)}
-                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1.5 py-0.5 bg-white/80 rounded-full border border-slate-200"
-                    aria-label={`Remove section ${idx + 1}`}
-                  >✕ remove</button>
-                ) : null}
               </div>
+              {/* Process layout: a downward connector between consecutive steps. */}
+              {layout === 'process' && idx < sections.length - 1 ? (
+                <div className="flex justify-center" aria-hidden="true" style={{ margin: '-2px 0 2px' }}>
+                  <span style={{ fontSize: '24px', color: '#b7791f', lineHeight: 1 }}>↓</span>
+                </div>
+              ) : null}
+              </React.Fragment>
             );
           })}
-          {isEditing ? (
-            <div className="text-center mt-3 space-y-2">
-              <button
-                onClick={handleAddSection}
-                className="px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50"
-                data-help-key="anchor_chart_add_section"
-              >+ Add section</button>
-              {sections.length > 1 ? (
-                <div className="text-[11px] text-amber-700/70 italic">Tip: drag the ⋮⋮ handle on any section to reorder.</div>
-              ) : null}
-            </div>
-          ) : null}
         </div>
-        <div className="text-[11px] text-amber-700/70 italic text-center mt-4 ac-no-print">
-          Saved to your history. Open Critique mode to leave I notice / I wonder notes for peers.
-        </div>
+        {isEditing ? (
+          <div className="text-center mt-3 space-y-2">
+            <button
+              onClick={handleAddSection}
+              className="px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50"
+              data-help-key="anchor_chart_add_section"
+            >+ Add section</button>
+            {sections.length > 1 ? (
+              <div className="text-[11px] text-amber-700/70 italic">Tip: use the arrow buttons or drag the handle on any section to reorder.</div>
+            ) : null}
+          </div>
+        ) : null}
         {/* Student submit panel — visible only when interactive armed + viewer is student */}
         {interactive.armed && !isTeacherMode ? (
           <div className="mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4">
@@ -1001,26 +1069,25 @@ const AnchorChartView = React.memo((props) => {
               >{gradingState === 'submitting' ? '⏳ Grading…' : '✨ Submit for AI feedback'}</button>
             </div>
             {gradingState === 'done' && gradingResult ? (
-              <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200">
-                <div className="flex items-center gap-4 mb-2">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] font-bold uppercase text-emerald-700">Accuracy</span>
-                    <span className="text-lg font-black text-emerald-700">{gradingResult.accuracyScore}</span>
-                    <span className="text-[10px] text-emerald-700/70">/100</span>
+              <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2">
+                {gradingResult.strength ? (
+                  <div className="bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5">What you did well</div>
+                    <div className="text-sm text-slate-800 leading-relaxed">{gradingResult.strength}</div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] font-bold uppercase text-sky-700">Thoughtfulness</span>
-                    <span className="text-lg font-black text-sky-700">{gradingResult.thoughtfulnessScore}</span>
-                    <span className="text-[10px] text-sky-700/70">/100</span>
+                ) : null}
+                {gradingResult.growthNudge ? (
+                  <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5">One thing to try next</div>
+                    <div className="text-sm text-slate-800 leading-relaxed">{gradingResult.growthNudge}</div>
                   </div>
-                  {gradingResult.xpAwarded > 0 ? (
-                    <div className="ml-auto px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-sm font-black">
-                      ✨ +{gradingResult.xpAwarded} XP
-                    </div>
-                  ) : null}
-                </div>
-                {gradingResult.feedback ? (
-                  <div className="text-sm text-slate-800 italic leading-relaxed">{gradingResult.feedback}</div>
+                ) : null}
+                {gradingResult.xpAwarded > 0 ? (
+                  <div className="flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1">
+                    <span aria-hidden="true">✨</span><span>+{gradingResult.xpAwarded} XP earned</span>
+                  </div>
+                ) : gradingResult.hadPriorXp ? (
+                  <div className="text-center text-[11px] italic text-slate-500">You've already earned XP here — improve your answers to earn more.</div>
                 ) : null}
               </div>
             ) : null}
@@ -1037,15 +1104,18 @@ const AnchorChartView = React.memo((props) => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="ac-interactive-dialog-title"
+          aria-describedby="ac-interactive-dialog-desc"
+          onKeyDown={handleInteractiveDialogKeyDown}
           onClick={(e) => { if (e.target === e.currentTarget) setShowInteractiveDialog(false); }}
         >
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5">
+          <div ref={interactiveDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5">
             <h2 id="ac-interactive-dialog-title" className="text-lg font-black text-fuchsia-900 mb-2">🎯 Arm Interactive Mode</h2>
-            <p className="text-sm text-slate-700 mb-3 leading-relaxed">
+            <p id="ac-interactive-dialog-desc" className="text-sm text-slate-700 mb-3 leading-relaxed">
               Students will see your section labels but <strong>no bullet text</strong> — they fill in their own answers and submit for AI feedback. The AI grades against your rubric (not your specific phrasing).
             </p>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">Rubric / Key concepts</label>
             <textarea
+              ref={rubricTextareaRef}
               value={rubricDraft}
               onChange={(e) => setRubricDraft(e.target.value)}
               placeholder="What should the student demonstrate? List key concepts, important facts, or rubric criteria. Example: 'Should mention photosynthesis converts light to chemical energy, name chloroplasts as the site, and explain why oxygen is a byproduct.'"
@@ -1078,14 +1148,6 @@ const AnchorChartView = React.memo((props) => {
           </div>
         </div>
       ) : null}
-      <AnchorChartCritiqueOverlay
-        isOpen={showCritique}
-        onClose={() => setShowCritique(false)}
-        chartId={generatedContent.id}
-        annotations={annotations}
-        onAnnotationsChange={handleAnnotationsChange}
-        isTeacherMode={isTeacherMode}
-      />
     </div>
   );
 });

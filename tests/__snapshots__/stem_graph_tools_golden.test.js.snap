@@ -7,7 +7,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 34,
   "paths": 0,
-  "sha": "cf52c3d626b5ea1a",
+  "sha": "fbc5c321bbf37d0d",
   "svgs": 0,
 }
 `;
@@ -17,9 +17,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 29,
   "circles": 1,
   "inputs": 9,
-  "lengthBucket": 101,
+  "lengthBucket": 120,
   "paths": 0,
-  "sha": "212a9067d7119fe8",
+  "sha": "16f7656aa7ad8254",
   "svgs": 2,
 }
 `;
@@ -31,19 +31,19 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 9,
   "lengthBucket": 58,
   "paths": 0,
-  "sha": "4359e6b2e2cfca21",
+  "sha": "2f1a17e63b06283e",
   "svgs": 1,
 }
 `;
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for dataStudio 1`] = `
 {
-  "buttons": 31,
+  "buttons": 24,
   "circles": 0,
-  "inputs": 9,
-  "lengthBucket": 78,
+  "inputs": 5,
+  "lengthBucket": 55,
   "paths": 0,
-  "sha": "54e23a49cd67fc5e",
+  "sha": "833e1c2ac6cacb67",
   "svgs": 1,
 }
 `;
@@ -67,7 +67,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 0,
   "lengthBucket": 34,
   "paths": 0,
-  "sha": "a0027d1ce81f3fab",
+  "sha": "94f12affa8c3ee81",
   "svgs": 0,
 }
 `;
@@ -89,9 +89,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 26,
   "circles": 0,
   "inputs": 6,
-  "lengthBucket": 67,
+  "lengthBucket": 68,
   "paths": 0,
-  "sha": "92315faedbfdeb06",
+  "sha": "4363d03513e5aaf6",
   "svgs": 0,
 }
 `;
@@ -101,34 +101,34 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 30,
   "circles": 0,
   "inputs": 7,
-  "lengthBucket": 76,
+  "lengthBucket": 92,
   "paths": 0,
-  "sha": "ce71cb4ad1f46dbb",
+  "sha": "99f58d4dbcabbc75",
   "svgs": 1,
 }
 `;
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for logicLab 1`] = `
 {
-  "buttons": 35,
-  "circles": 0,
+  "buttons": 41,
+  "circles": 3,
   "inputs": 1,
-  "lengthBucket": 87,
-  "paths": 0,
-  "sha": "58d70676473c7412",
-  "svgs": 0,
+  "lengthBucket": 124,
+  "paths": 1,
+  "sha": "09efa68587a1bd5b",
+  "svgs": 1,
 }
 `;
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for probability 1`] = `
 {
-  "buttons": 31,
-  "circles": 0,
+  "buttons": 37,
+  "circles": 6,
   "inputs": 4,
-  "lengthBucket": 67,
-  "paths": 0,
-  "sha": "433817beff269655",
-  "svgs": 0,
+  "lengthBucket": 100,
+  "paths": 1,
+  "sha": "136c88a7d97a1187",
+  "svgs": 2,
 }
 `;
 
@@ -137,9 +137,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 21,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 41,
+  "lengthBucket": 64,
   "paths": 0,
-  "sha": "65642df007b85ea4",
+  "sha": "edc645da00c5479c",
   "svgs": 0,
 }
 `;

@@ -10,10 +10,14 @@ import { describe, it, beforeAll, expect } from 'vitest';
 import { loadAlloModule } from './setup.js';
 
 let sanitize;
+let prepareResources;
+let estimateBytes;
 
 beforeAll(() => {
   loadAlloModule('firestore_sync_module.js');
   sanitize = window.sanitizeHistoryForCloud;
+  prepareResources = window.prepareSessionResourcesForWrite;
+  estimateBytes = window.estimateJsonBytes;
 });
 
 describe('sanitizeHistoryForCloud — cloud privacy boundary', () => {
@@ -79,5 +83,55 @@ describe('sanitizeHistoryForCloud — cloud privacy boundary', () => {
     const serialized = JSON.stringify(sanitize(history));
     expect(serialized).not.toContain('RAWVOICEAUDIOBASE64');
     expect(serialized).not.toContain('RAWIMAGEBASE64');
+  });
+});
+
+describe('prepareSessionResourcesForWrite — live session Firestore size guard', () => {
+  it('is registered', () => {
+    expect(typeof prepareResources).toBe('function');
+    expect(typeof estimateBytes).toBe('function');
+  });
+
+  it('strips binary-like payloads before session sync', () => {
+    const out = prepareResources([
+      {
+        id: 'visual-1',
+        type: 'image',
+        data: {
+          title: 'Visual Prompt',
+          imageUrl: 'data:image/png;base64,' + 'A'.repeat(4000),
+          nested: { audioRecording: 'data:audio/webm;base64,' + 'B'.repeat(4000) },
+        },
+      },
+    ], { maxBytes: 20000 });
+
+    const serialized = JSON.stringify(out.resources);
+    expect(serialized).not.toContain('data:image/png;base64');
+    expect(serialized).not.toContain('data:audio/webm;base64');
+    expect(out.resources[0].data.imageUrl).toBeNull();
+    expect(out.resources[0].data.nested.audioRecording).toBeNull();
+  });
+
+  it('keeps the newest resources when the payload must be trimmed', () => {
+    const out = prepareResources([
+      { id: 'old', type: 'leveled-text', data: { text: 'A'.repeat(5000) } },
+      { id: 'middle', type: 'quiz', data: { text: 'B'.repeat(2000) } },
+      { id: 'new', type: 'exit-ticket', data: { text: 'C'.repeat(500) } },
+    ], { maxBytes: 3000 });
+
+    expect(out.droppedCount).toBeGreaterThan(0);
+    expect(out.resources.at(-1).id).toBe('new');
+    expect(estimateBytes(out.resources)).toBeLessThanOrEqual(out.maxBytes);
+  });
+
+  it('compacts a single oversized resource instead of returning an over-limit payload', () => {
+    const out = prepareResources([
+      { id: 'huge', type: 'document', title: 'Huge Document', data: { text: 'X'.repeat(200000) } },
+    ], { maxBytes: 2000 });
+
+    expect(out.resources).toHaveLength(1);
+    expect(out.resources[0]).toMatchObject({ id: 'huge', type: 'document', title: 'Huge Document', syncTruncated: true });
+    expect(estimateBytes(out.resources)).toBeLessThanOrEqual(out.maxBytes);
+    expect(out.overLimit).toBe(false);
   });
 });

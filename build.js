@@ -9,6 +9,7 @@
  *   node build.js --mode=dev     Load modules from local paths (for npm start)
  *   node build.js --mode=prod    Load modules from CDN with auto-detected git hash
  *   node build.js --mode=prod --hash=abc1234   Use a specific hash
+ *   node build.js --copy-student-shell        Publish the compiled app at public/app/
  *
  * What it does:
  *   1. Reads AlloFlowANTI.txt
@@ -20,6 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { createHash } = require('crypto');
 
 // ── Parse CLI args ──────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -44,6 +46,95 @@ const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'AlloFlowANTI.txt');
 const OUTPUT = path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx');
 const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
+const STUDENT_SHELL_BUILD_DIR = path.join(ROOT, 'prismflow-deploy', 'build');
+const STUDENT_SHELL_PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public', 'app');
+const STUDENT_SHELL_CDN_DIR = path.join(ROOT, 'app');
+const STUDENT_SHELL_ENTRIES = [
+    'index.html',
+    'asset-manifest.json',
+    'manifest.json',
+    'sw.js',
+    'qrcode.js',
+    'static',
+];
+const CLOUDFLARE_MAX_FILE_BYTES = 25 * 1024 * 1024;
+
+function publishStudentShell() {
+    const sourceIndex = path.join(STUDENT_SHELL_BUILD_DIR, 'index.html');
+    if (!fs.existsSync(sourceIndex)) {
+        throw new Error('Compiled app not found. Run npm run build in prismflow-deploy first.');
+    }
+
+    const html = fs.readFileSync(sourceIndex, 'utf8');
+    if (!html.includes('<div id="root"></div>') || Buffer.byteLength(html, 'utf8') < 1024
+        || !html.includes('./static/js/main.') || !html.includes('./static/css/main.')) {
+        throw new Error('Compiled split shell is missing its root or hashed boot assets.');
+    }
+
+    fs.rmSync(STUDENT_SHELL_PUBLIC_DIR, { recursive: true, force: true });
+    fs.mkdirSync(STUDENT_SHELL_PUBLIC_DIR, { recursive: true });
+
+    for (const entry of STUDENT_SHELL_ENTRIES) {
+        const src = path.join(STUDENT_SHELL_BUILD_DIR, entry);
+        if (!fs.existsSync(src)) continue;
+        const dest = path.join(STUDENT_SHELL_PUBLIC_DIR, entry);
+        if (fs.statSync(src).isDirectory()) {
+            fs.cpSync(src, dest, { recursive: true });
+        } else {
+            fs.copyFileSync(src, dest);
+        }
+    }
+
+    const publishedIndex = path.join(STUDENT_SHELL_PUBLIC_DIR, 'index.html');
+    let publishedHtml = fs.readFileSync(publishedIndex, 'utf8');
+    // postbuild may preserve readable or minified service-worker registration.
+    const rootSwRegistration = /navigator\.serviceWorker\.register\((['"])\/sw\.js\1,\s*\{\s*updateViaCache:\s*(['"])none\2\s*\}\)/;
+    if (!rootSwRegistration.test(publishedHtml)) {
+        throw new Error('Student shell service-worker registration anchor was not found.');
+    }
+    publishedHtml = publishedHtml.replace(
+        rootSwRegistration,
+        "navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' })"
+    );
+    fs.writeFileSync(publishedIndex, publishedHtml, 'utf8');
+
+    const publishedSw = path.join(STUDENT_SHELL_PUBLIC_DIR, 'sw.js');
+    let sw = fs.readFileSync(publishedSw, 'utf8');
+    if (!sw.includes("const CACHE_NAME = 'alloflow-v") || !sw.includes("keys.filter(k => k !== CACHE_NAME)")) {
+        throw new Error('Student shell service-worker cache anchors were not found.');
+    }
+    sw = sw
+        .replace("const CACHE_NAME = 'alloflow-v", "const CACHE_NAME = 'alloflow-student-shell-v")
+        .replace("keys.filter(k => k !== CACHE_NAME)", "keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME)");
+    fs.writeFileSync(publishedSw, sw, 'utf8');
+
+    let copiedFiles = 0;
+    const oversized = [];
+    const scan = (dir) => {
+        for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+            const itemPath = path.join(dir, item.name);
+            if (item.isDirectory()) scan(itemPath);
+            else if (item.isFile()) {
+                copiedFiles += 1;
+                if (fs.statSync(itemPath).size >= CLOUDFLARE_MAX_FILE_BYTES) {
+                    oversized.push(path.relative(ROOT, itemPath));
+                }
+            }
+        }
+    };
+    scan(STUDENT_SHELL_PUBLIC_DIR);
+    if (oversized.length) {
+        throw new Error('Student shell contains Cloudflare-ineligible files: ' + oversized.join(', '));
+    }
+
+    fs.rmSync(STUDENT_SHELL_CDN_DIR, { recursive: true, force: true });
+    fs.cpSync(STUDENT_SHELL_PUBLIC_DIR, STUDENT_SHELL_CDN_DIR, { recursive: true });
+
+    console.log('Published student shell: ' + path.relative(ROOT, STUDENT_SHELL_PUBLIC_DIR)
+        + ' + ' + path.relative(ROOT, STUDENT_SHELL_CDN_DIR)
+        + ' (' + copiedFiles + ' files each, split shell with precached assets)');
+}
+
 
 // ── CDN base (May 12 2026) ──────────────────────────────────────
 // Switched from jsdelivr (cdn.jsdelivr.net/gh/Apomera/AlloFlow@<hash>/<file>)
@@ -71,6 +162,11 @@ const MODULES = [
     {
         name: 'SubmissionCrypto',
         filename: 'submission_crypto_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AlloCrypto',
+        filename: 'allo_crypto_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -354,6 +450,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'CinematicStudio',
+        filename: 'cinematic_studio_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AlloStudio',
+        filename: 'studio_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'BrandProfile',
         filename: 'brand_profile_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -396,6 +502,26 @@ const MODULES = [
     {
         name: 'CommunityCatalog',
         filename: 'catalog_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ReadingLibrary',
+        filename: 'reading_library_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LinguaPractice',
+        filename: 'lingua_practice_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'TestPrepHub',
+        filename: 'test_prep_hub_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'TimelineStudio',
+        filename: 'timeline_studio_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -451,6 +577,57 @@ const MODULES = [
     {
         name: 'MindMap',
         filename: 'mind_map_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        // Shared ConceptGraph format + spine + adapters (acg/v1). No loadModule()
+        // call in AlloFlowANTI.txt — Throughline lazy-loads it from the CDN at
+        // click time; this entry just gets it copied to prismflow-deploy/public.
+        name: 'ConceptGraphEngine',
+        filename: 'concept_graph_engine_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        // Orbitable WebGL 3D renderer for acg/v1 (lazy-loaded by Throughline's
+        // "View in 3D"; lazy-loads three.js itself, falls back to the outline).
+        name: 'ConceptGraph3D',
+        filename: 'concept_graph_3d_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        // Method-of-loci 3D walk for the 'Memory Palace' organizer (lazy-loaded
+        // by view_renderers; shares the three.js download with ConceptGraph3D).
+        name: 'MemoryPalace',
+        filename: 'memory_palace_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        // Gemini primitive-assembly sculptures (p3d/1) — lazy sidecar of the
+        // Memory Palace / AlloHaven 3D walks.
+        name: 'Prim3D',
+        filename: 'prim3d_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        // Reusable WebXR layer (allovr/1) — feature-detected Enter-VR + rig +
+        // controllers + locomotion + comfort vignette + grab, for any three.js
+        // STEM scene. Lazy sidecar (loaded only when a headset is present).
+        name: 'AlloVR',
+        filename: 'allo_vr_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        // Giant primitive landmarks (landmark/1) — one per room in the 3D worlds;
+        // renders via Prim3D at building scale. Lazy sidecar of the haven walk.
+        name: 'Landmark',
+        filename: 'landmark_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        // CC0 collectibles catalog + GLTFLoader (glblib/1) — the shop lane, with
+        // a Prim3D fallback so items render before any .glb asset exists.
+        name: 'GlbLibrary',
+        filename: 'glb_library_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -619,6 +796,26 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'OpenGrooveCore',
+        filename: 'music_studio/open_groove_core.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'OpenGrooveScheduler',
+        filename: 'music_studio/open_groove_scheduler.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'OpenGrooveAudio',
+        filename: 'music_studio/open_groove_audio.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'OpenGrooveStudio',
+        filename: 'music_studio/open_groove_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'ClozeInteractionPanel',
         filename: 'view_cloze_interaction_panel_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -744,6 +941,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'PdCore',
+        filename: 'pd_core_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'EscapeRoomModule',
         filename: 'escape_room_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -755,13 +957,31 @@ const MODULES = [
 const PLUGIN_FILES = [
     'error_reporter_module.js',
     'ai_backend_module.js',
+    'psychometric_probes.json',
+    'psychometric_math_probes.json',
+    'psychometric_literacy_probes.json',
     'kokoro_tts_loader.js',
     'piper_tts_loader.js',
+    'liblouis_braille_loader.js',
+    'sre_loader.js',
+    'mathlive_loader.js',
+    'phonics_g2p_loader.js',
+    'translate_loader.js',
+    'dictionary_loader.js',
+    'sd_turbo_loader.js',
     'stem_lab/stem_tool_arccity.js',
     'stem_lab/stem_tool_dna.js',
     'stem_lab/stem_tool_unitconvert.js',
     'stem_lab/stem_tool_logiclab.js',
     'stem_lab/stem_tool_cellular.js',
+    'stem_lab/stem_tool_accesslens.js',
+    'stem_lab/stem_tool_alphafold.js',
+    'stem_lab/stem_tool_datalab.js',
+    'stem_lab/stem_tool_simshelf.js',
+    'stem_lab/stem_tool_circuitshelf.js',
+    'stem_lab/stem_tool_moleculeshelf.js',
+    'stem_lab/stem_tool_particlelab3d.js',
+    'stem_lab/stem_tool_zoomgallery.js',
     'stem_lab/stem_tool_probability.js',
     'stem_lab/stem_tool_calculus.js',
     'stem_lab/stem_tool_galaxy.js',
@@ -775,6 +995,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_angles.js',
     'stem_lab/stem_tool_archstudio.js',
     'stem_lab/stem_tool_geometryworld.js',
+    'stem_lab/stem_tool_geologyexplorer.js',
     'stem_lab/stem_tool_cyberdefense.js',
     'stem_lab/stem_tool_physics.js',
     'stem_lab/stem_tool_watercycle.js',
@@ -792,13 +1013,13 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_universe.js',
     'stem_lab/stem_tool_economicslab.js',
     'stem_lab/stem_tool_graphcalc.js',
-    'stem_lab/stem_tool_algebraCAS.js',
+    'stem_lab/stem_tool_algebracas.js',  // lowercase = the git filename (camelCase never got its CDN hash bumped — audit B5 casing)
     'stem_lab/stem_tool_circuit.js',
     'stem_lab/stem_tool_a11yauditor.js',
     'stem_lab/stem_tool_worldbuilder.js',
     'stem_lab/stem_tool_flightsim.js',
-    // atcTower entry moved to the catch-up batch below with the correct camelCase
-    // filename (matches the actual stem_tool_atcTower.js on disk + GitHub).
+    // atcTower entry moved to the catch-up batch below; the on-disk + git filename is LOWERCASE
+    // stem_tool_atctower.js (a camelCase entry 404s on case-sensitive CDNs — audit B5, 2026-06-28).
     'stem_lab/stem_tool_music.js',
     'stem_lab/stem_tool_climateExplorer.js',
     'stem_lab/stem_tool_renewables.js',
@@ -846,7 +1067,7 @@ const PLUGIN_FILES = [
     // Catch-up batch (Apr 30 2026): tools that were live in AlloFlowANTI/App.jsx
     // toolModules array but missing here, so build.js couldn't bump their CDN
     // hash. Fixed alongside the atcTower casing + playlab/throwlab full wiring.
-    'stem_lab/stem_tool_atcTower.js',
+    'stem_lab/stem_tool_atctower.js',  // lowercase = the on-disk + git filename (camelCase 404s on case-sensitive CDNs — audit B5)
     'stem_lab/stem_tool_throwlab.js',
     'stem_lab/stem_tool_playlab.js',
     'stem_lab/stem_tool_assessmentliteracy.js',
@@ -868,7 +1089,11 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_printingpress.js',
     'stem_lab/stem_tool_aquaculture.js',
     'stem_lab/stem_tool_fisherlab.js',
-    'stem_lab/stem_tool_atcTower.js',
+    // dinolab + lumen are live tools (referenced in toolModules) but were missing here, so build.js
+    // never bumped their CDN hash → Cloudflare served stale code (audit B4, 2026-06-28).
+    'stem_lab/stem_tool_dinolab.js',
+    'stem_lab/stem_tool_lumen.js',
+    'stem_lab/stem_tool_forge.js',  // Tool Forge — teacher-gated plugin-authoring harness (Phase A; go-live is Aaron's call)
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_standards_alignment.js',  // standards alignment data + helper used by sel_tool_*.js About views
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
@@ -939,6 +1164,17 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_selfadvocacy.js',
     'sel_hub/sel_tool_sociallab.js',
     'sel_hub/sel_tool_voicedetective.js'
+];
+
+// Companion-window assets used by STEM Lab launchers. These are not JS modules,
+// so they must be copied as folders into prismflow-deploy/public for clean builds.
+const COMPANION_ASSET_DIRS = [
+    'alphafold_explorer',
+    'circuit_shelf',
+    'molecule_shelf',
+    'sim_shelf',
+    'timeline_studio',
+    'zoom_gallery'
 ];
 
 // ── Source → Module compilation ─────────────────────────────────
@@ -1015,7 +1251,7 @@ const COMPILE_PAIRS = [
             return (
                 '(function() {\n'
                 + "'use strict';\n"
-                + '  // WCAG 2.1 AA: Accessibility CSS\n'
+                + '  // WCAG 2.2 AA: Accessibility CSS\n'
                 + '  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }\n'
                 + "if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }\n"
                 + compiled
@@ -1033,13 +1269,20 @@ const COMPILE_PAIRS = [
         modPath: path.join(ROOT, 'gemini_api_module.js'),
         publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'gemini_api_module.js'),
         wrap(src) {
-            const compiled = compileJsx(src);
+            // gemini_api_source.jsx is PURE JS (no JSX). Running it through
+            // compileJsx (Babel) re-printed the source into a different ~804-line
+            // form that DRIFTED from the canonical 686-line raw-wrap produced by
+            // _build_gemini_api_module.js (→ _build_simple_iife) on EVERY build —
+            // so the two builders fought and gemini_api had to be re-minified by
+            // hand on consecutive deploys (@3271ffd0, @8bc35926). Raw-wrap it
+            // BYTE-FOR-BYTE like _build_simple_iife (and like DocPipeline above)
+            // so both builders produce identical bytes and the drift is now
+            // structurally impossible. Keep this matching _build_simple_iife.
             return (
-                '(function() {\n'
-                + "'use strict';\n"
-                + "if (window.AlloModules && window.AlloModules.GeminiAPI) { console.log('[CDN] GeminiAPI already loaded, skipping'); return; }\n"
-                + compiled
-                + '\n})();\n'
+                '(function(){"use strict";\n'
+                + 'if(window.AlloModules&&window.AlloModules.GeminiAPI){console.log("[CDN] GeminiAPI already loaded, skipping"); return;}\n'
+                + src.trim() + '\n'
+                + '})();\n'
             );
         },
     },
@@ -1134,6 +1377,24 @@ const COMPILE_PAIRS = [
             );
         },
     },
+    {
+        // ── immersive_reader ── Reading overlays (Focus/Speed/Bionic/Crawl/Karaoke)
+        // + toolbar. JSX-bearing. Unlike the Babel-compiled pairs above, this module
+        // is built with esbuild (--jsx=transform) via the canonical builder in
+        // _build_immersive_reader_module.js, whose preamble injects the React-hook
+        // aliases, lazy lucide-icon shims, and window.AlloLanguageContext binding.
+        // Both this pair and that script's CLI call the SAME buildImmersiveReaderModule()
+        // so they can never drift (cf. the gemini_api double-builder incident).
+        // Onboarded 2026-07-07 after the FocusReaderOverlay `studentTakeTick is not
+        // defined` crash — now covered by check_free_vars + this compile/dirty-tree guard.
+        name: 'ImmersiveReader',
+        srcPath: path.join(ROOT, 'immersive_reader_source.jsx'),
+        modPath: path.join(ROOT, 'immersive_reader_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'immersive_reader_module.js'),
+        wrap(src) {
+            return require('./_build_immersive_reader_module.js').buildImmersiveReaderModule(src);
+        },
+    },
 ];
 
 function compileSources() {
@@ -1180,6 +1441,17 @@ function compileSources() {
     return results;
 }
 
+// Publish the postbuild output into the Cloudflare Pages public tree without
+// duplicating the hundreds of megabytes of teaching assets already served there.
+if (hasFlag('copy-student-shell')) {
+    try {
+        publishStudentShell();
+        process.exit(0);
+    } catch (error) {
+        console.error('Student shell publish failed: ' + error.message);
+        process.exit(1);
+    }
+}
 // Standalone compile mode — run just the compilation step and exit.
 if (args.includes('--compile')) {
     console.log('── Compiling source modules ──');
@@ -1365,6 +1637,26 @@ if (mode === 'prod') {
 // ── Transform URLs ──────────────────────────────────────────────
 let replacementCount = 0;
 
+// Contract modules pinned by content hash (see EXCEPTION note below).
+const CONTENT_HASH_PINNED = new Set([
+    'student_interaction_module.js',
+    'view_student_join_panel_module.js',
+    'view_student_save_adventure_module.js',
+    'view_socratic_chat_module.js',
+]);
+const _contentHashCache = {};
+function contentHashPin(filename) {
+    if (!CONTENT_HASH_PINNED.has(filename)) return null;
+    if (!_contentHashCache[filename]) {
+        try {
+            _contentHashCache[filename] = createHash('sha256').update(fs.readFileSync(path.join(ROOT, filename))).digest('hex').slice(0, 8);
+        } catch (e) {
+            console.warn(`  ⚠️  content-hash pin failed for ${filename} (${e.message}); falling back to git hash`);
+            _contentHashCache[filename] = '';
+        }
+    }
+    return _contentHashCache[filename] || null;
+}
 content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
     const moduleDef = MODULES.find(m => m.name === moduleName);
     if (!moduleDef) {
@@ -1377,11 +1669,20 @@ content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
         // Point to local file for hot-reloading during development
         newUrl = `./${moduleDef.filename}`;
     } else {
-        // Production: Cloudflare Pages serves the file from its edge network.
-        // No @hash needed — Cloudflare auto-invalidates by content on each push.
+        // Production: Cloudflare Pages serves from its edge network, which caches
+        // by filename and can serve a STALE copy of large stable-named files — the
+        // 1.9MB doc_pipeline_module.js got stuck across deploys while small modules
+        // refreshed. Append the deploy hash as a cache-buster so every deploy is a
+        // NEW URL the edge has never cached → always fresh. (The earlier "Cloudflare
+        // auto-invalidates by content" assumption was false for the big file.)
         // moduleDef.cdnBase (legacy jsdelivr URL) is left in the MODULES table
         // but unused; kept for diff readability if we ever need to switch back.
-        newUrl = `${CLOUDFLARE_CDN_BASE}/${moduleDef.filename}`;
+        // EXCEPTION: student-facing contract modules pin by CONTENT hash
+        // (sha256-8 of the generated file) — tests/student_accessibility_
+        // contracts.test.js asserts host tags match the file, so a stale edge
+        // can never serve an old student module the host doesn't expect, and
+        // unchanged files keep a stable (cacheable) URL across deploys.
+        newUrl = `${CLOUDFLARE_CDN_BASE}/${moduleDef.filename}?v=${contentHashPin(moduleDef.filename) || gitHash}`;
     }
 
     replacementCount++;
@@ -1472,6 +1773,7 @@ if (dryRun) {
         'word_sounds_module.js',
         'teacher_module.js',
         'ui_strings.js',
+        'qrcode.js',
         'escape_room_module.js',
         // stem_lab hub
         'stem_lab/stem_lab_module.js'
@@ -1500,7 +1802,18 @@ if (dryRun) {
             copyCount++;
         }
     });
-    console.log(`📦 Auto-copied ${copyCount} module/plugin files to prismflow-deploy/public/`);
+    let assetDirCopyCount = 0;
+    COMPANION_ASSET_DIRS.forEach(d => {
+        const src = path.join(ROOT, d);
+        const dest = path.join(PUBLIC_DIR, d);
+        if (fs.existsSync(src)) {
+            fs.rmSync(dest, { recursive: true, force: true });
+            fs.mkdirSync(path.dirname(dest), { recursive: true });
+            fs.cpSync(src, dest, { recursive: true });
+            assetDirCopyCount++;
+        }
+    });
+    console.log(`📦 Auto-copied ${copyCount} module/plugin files and ${assetDirCopyCount} companion asset folders to prismflow-deploy/public/`);
 
     // Show next steps
     console.log('\n── Next Steps ──');

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-child-labor-primary-source-set-card",
+  "title": "Library of Congress: Child Labor Primary Sources",
+  "description": "A LOC source card for child labor photographs, documents, and social reform materials.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Child labor",
+    "Progressive Era",
+    "Primary sources",
+    "Social reform"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/child-labor/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Library of Congress child labor sources include reform photography, documents, and classroom materials that show work conditions and public arguments for change."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for photo analysis, ethical discussion, historical empathy, and connecting evidence to reform movements and labor law."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Review Library of Congress item pages for rights and reproduction notes before mirroring individual photographs or documents."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

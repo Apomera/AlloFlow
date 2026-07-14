@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-ocean-exploration-card",
+  "title": "NOAA Ocean Exploration",
+  "description": "A NOAA source card about ocean exploration, mapping, deep-sea science, and expeditions.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": [
+    "Ocean exploration",
+    "Deep sea",
+    "Mapping",
+    "Technology"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Ocean Exploration",
+    "url": "https://oceanexplorer.noaa.gov/discover/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA Ocean Exploration resources share expeditions, deep-sea observations, seafloor mapping, remotely operated vehicles, and discoveries from poorly known ocean regions."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for inquiry reading about technology, maps, unknown environments, and how exploration produces evidence."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NOAA materials are generally U.S. government work, but resource collections may link to partners or offsite materials. Check item-level rights before mirroring linked resources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

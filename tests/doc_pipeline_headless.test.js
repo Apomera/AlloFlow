@@ -14,6 +14,8 @@
 // suite. This harness covers the logic + reporting layers, which is what runs headless.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 let pipeline;
@@ -46,6 +48,33 @@ describe('pipeline factory runs headless with injected state (Phase 1 seam)', ()
     expect(typeof pipeline.generateAuditReportHtml).toBe('function');
     expect(typeof pipeline.generateAccessibilityReportHtml).toBe('function');
     expect(typeof pipeline.sanitizeStyleForWCAG).toBe('function');
+  });
+});
+
+describe('brainstorm mind-map renders (regression: undeclared sourceTopic/pageTitle threw)', () => {
+  // 2026-07-02: the mind-map center label read two UNDECLARED identifiers — a ReferenceError
+  // that killed the WHOLE resource export whenever a brainstorm rendered in mind-map mode.
+  // Fixed to use the section title (escaped). This exercises the exact branch.
+  const brainstormItem = {
+    id: 'brainstorm-1',
+    type: 'brainstorm',
+    title: 'Photosynthesis <Ideas>',
+    data: [
+      { title: 'Light energy', description: 'Chlorophyll absorbs light' },
+      { title: 'Water uptake', connection: 'Roots to leaves' },
+    ],
+  };
+  // NB: brainstorm is a teacher-copy resource (generateResourceHTML returns '' for
+  // !isTeacher) — pass isTeacher=true to reach the mind-map branch.
+  it('interactive mode: renders the escaped title as the center bubble + one spoke per idea', () => {
+    const html = pipeline.generateResourceHTML(brainstormItem, true, {}, { brainstormDisplayMode: 'mindmap' });
+    expect(html).toContain('Photosynthesis &lt;Ideas&gt;'); // escaped — this is AI/user content in HTML
+    expect((html.match(/data-spoke-idx=/g) || []).length).toBe(2); // one interactive spoke per idea
+  });
+  it('worksheet mode: same branch, blank spokes for students', () => {
+    const html = pipeline.generateResourceHTML(brainstormItem, true, {}, { brainstormDisplayMode: 'mindmap', isWorksheet: true });
+    expect(html).toContain('alloflow-mindmap-spoke');
+    expect(html).toContain('How to use:');
   });
 });
 
@@ -83,13 +112,18 @@ describe('REAL generateAuditReportHtml (Generator A) renders the honest, parity-
     expect(html).toContain('96%');
   });
   it('uses honest agreement labels, not psychometric coefficient names', () => {
-    expect(html).toContain('Auditor Agreement (heuristic index)');
-    expect(html).toContain('Auditor Agreement (consistency heuristic)');
+    expect(html).toContain('Cross-pass agreement (heuristic index)');
+    expect(html).toContain('Cross-pass agreement (consistency heuristic)');
   });
   it('contains none of the prior overclaims', () => {
     expect(html).not.toContain('inter-rater reliability');
     expect(html).not.toContain('(ICC, SEM, CV)');
     expect(html).not.toContain("Cronbach's α (pragmatic hybrid)");
+    // Credibility sweep 2026-06-13: N passes of one AI model are self-consistency,
+    // not independent triangulation. The report must not imply independent reviewers.
+    expect(html).not.toContain('independent auditors');
+    expect(html).not.toContain('triangulated across');
+    expect(html).not.toContain('AI triangulation');
   });
 });
 
@@ -123,13 +157,42 @@ describe('REAL generateAccessibilityReportHtml (Generator B, the conformance rep
     expect(html).toContain('96%');
   });
   it('uses honest agreement labels and the reworded heuristics disclaimer', () => {
-    expect(html).toContain('Auditor Agreement (heuristic index)');
-    expect(html).toContain('Auditor Agreement (consistency heuristic)');
+    expect(html).toContain('Cross-pass agreement (heuristic index)');
+    expect(html).toContain('Cross-pass agreement (consistency heuristic)');
     expect(html).toContain('agreement heuristics computed across multiple AI audit passes');
   });
   it('contains none of the prior overclaims', () => {
     expect(html).not.toContain('inter-rater reliability');
     expect(html).not.toContain("Cronbach's α (pragmatic hybrid)");
+  });
+});
+
+describe('REAL generateAuditReportHtml escapes the filename + AI fields (#10 XSS)', () => {
+  it('a malicious filename and AI summary appear only escaped — no live <img>/<script>', () => {
+    const data = {
+      score: 72,
+      summary: '</div><script>window.__pwned=1</script>',
+      verificationAudit: { issues: [{ issue: '<img src=x onerror=alert(1)> missing alt', wcag: '1.1.1' }] },
+    };
+    const html = pipeline.generateAuditReportHtml(data, '<img src=x onerror=alert(2)>.pdf');
+    // no executable injection survives
+    expect(html).not.toContain('<script>window.__pwned');
+    expect(html).not.toContain('<img src=x onerror');
+    // the escaped forms are present (so content isn't dropped, just neutralized)
+    expect(html).toContain('&lt;img src=x onerror=alert(2)&gt;.pdf'); // filename in <title> + body
+    expect(html).toContain('&lt;script&gt;window.__pwned');           // AI summary neutralized
+  });
+});
+
+describe('batch Compliance Dashboard escapes user/AI fields (#9 XSS, anti-drift)', () => {
+  const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+  it('the dashboard wraps filename, error, and violation strings in esc()', () => {
+    expect(viewSrc).toContain('esc(f.fileName)');     // chart-bar title attr + table cell
+    expect(viewSrc).toContain("esc(f.error || '')");  // status error
+    expect(viewSrc).toContain('esc(v)');              // AI-derived violation string
+    // and the raw (unescaped) sinks are gone
+    expect(viewSrc).not.toContain("title=\"' + f.fileName");
+    expect(viewSrc).not.toContain("'<span>' + v + '</span>");
   });
 });
 

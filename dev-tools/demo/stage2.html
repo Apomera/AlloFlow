@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8" /><title>veraPDF Stage 2 (headless)</title>
+<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
+</head><body>
+<pre id="out">starting…</pre>
+<script>
+  const out = document.getElementById('out');
+  function log(m) { out.textContent += '\n' + m; console.log('[stage2] ' + m); }
+  (async () => {
+    window.__done = null;
+    try {
+      log('cheerpjInit…');
+      const t0 = performance.now();
+      await cheerpjInit();
+      log('init ok ' + Math.round(performance.now() - t0) + 'ms');
+      // args overridable via ?args=a|b|c  (default = validate sample.pdf as PDF/UA-1)
+      const qs = new URLSearchParams(location.search);
+      const args = qs.get('args') ? qs.get('args').split('|') : ['--flavour', 'ua1', '--format', 'text', '/app/sample.pdf'];
+      log('running GreenfieldCliWrapper ' + JSON.stringify(args) + ' …');
+      const t1 = performance.now();
+      const code = await cheerpjRunMain('org.verapdf.apps.GreenfieldCliWrapper', '/app/verapdf-cli.jar', ...args);
+      const ms = Math.round(performance.now() - t1);
+      log('veraPDF exited code=' + code + ' in ' + ms + 'ms');
+      window.__done = { ok: true, code: code, ms: ms };
+    } catch (e) {
+      log('ERROR: ' + (e && e.message || e));
+      window.__done = { ok: false, err: String(e && e.message || e) };
+    }
+  })();
+</script>
+</body></html>

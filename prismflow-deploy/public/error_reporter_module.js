@@ -10,7 +10,7 @@
  *   badge in the bottom-right ONLY after at least one error is captured.
  * - Clicking the badge opens a modal with the captured log + metadata
  *   (URL, user agent, viewport size, timestamps).
- * - "Send to Aaron" pre-fills a Google Form with the report and opens it
+ * - "Send to Developers" pre-fills a Google Form with the report and opens it
  *   in a new tab so the user reviews before submitting (privacy-respecting
  *   — no silent fetch).
  *
@@ -42,13 +42,45 @@
   var ENTRY_STEPS  = '1969020676';  // Steps to Reproduce / What were you doing?
   var ENTRY_BROWSER = '937961519';  // Browser & Device
 
+  // Primary submit path: the community Cloudflare Worker → PRIVATE KV. Bug reports carry error
+  // logs + free text that can include FERPA-sensitive data, so they go to private KV, NOT the
+  // public repo. If the worker is unreachable (e.g. not yet deployed), we fall back to the
+  // pre-filled Google Form (private responses Sheet) so a report is never lost.
+  var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitBug';
+
   var STORAGE_KEY = 'alloflow_error_log';
   var STORAGE_PREFS = 'alloflow_error_log_prefs';
   var MAX_BUFFERED = 50;
 
+  // App build tag: on desktop the UA carries alloflow-desktop/<version>; on
+  // the web there is no stable equivalent, so entries tag as 'web'.
+  var APP_BUILD_TAG = (function () {
+    try {
+      var m = navigator.userAgent.match(/alloflow-desktop\/([\d.]+)/);
+      return m ? 'desktop-' + m[1] : 'web';
+    } catch (e) { return 'web'; }
+  })();
+
   // ── Initial state (rehydrated from localStorage) ──
+  // Rehydration honesty (field-caught 2026-07-06): a report filed from 0.2.4
+  // opened with a wall of 0.2.2-era entries — every timestamp PREDATED the
+  // install — because the buffer persists across app upgrades. Stale entries
+  // make fixed bugs look alive, so on load we drop (a) entries captured by a
+  // DIFFERENT desktop build, and (b) entries matching the ignore list (they
+  // were captured before the pattern was added).
   var buffer = (function () {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    try {
+      var stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      if (!Array.isArray(stored)) return [];
+      return stored.filter(function (entry) {
+        if (!entry || typeof entry !== 'object') return false;
+        if (entry.v && entry.v !== APP_BUILD_TAG) return false;
+        // shouldIgnore's pattern list initializes later in this module scope;
+        // a throw here must skip the CHECK, not wipe the whole buffer.
+        try { if (shouldIgnore(entry.message)) return false; } catch (e) {}
+        return true;
+      });
+    }
     catch (e) { return []; }
   })();
   var prefs = (function () {
@@ -74,6 +106,14 @@
   // facing "⚠ N errors" badge meaningful instead of trivially-true.
   var IGNORE_MESSAGE_PATTERNS = [
     /ResizeObserver loop /,    // ResizeObserver loop completed / limit exceeded
+    // onnxruntime perf ADVISORIES from local-AI workers (Kokoro TTS, SD-Turbo,
+    // whisper). "Some nodes were not assigned to the preferred execution
+    // providers" + its follow-up line are expected on every session init —
+    // ORT deliberately pins shape ops to CPU — but they arrive via stderr/
+    // console.error and were landing in teacher bug reports as ERRORs.
+    /VerifyEachNodeIsAssignedToAnEp/,
+    /Some nodes were not assigned to the preferred execution providers/,
+    /Rerunning with verbose output on a non-minimal build/,
   ];
 
   function shouldIgnore(message) {
@@ -87,15 +127,31 @@
 
   function record(level, message, stack, source, line, column) {
     if (shouldIgnore(message)) return;
+    var msg = String(message || '').slice(0, 2000);
+    // Coalesce a repeat of the most recent entry (same level + message) into a count rather than
+    // flooding the log, the badge, and the 50-slot buffer — e.g. a recurring 401 auth error that
+    // fires every few seconds. The first ts is kept; lastTs + count track the repeats so the
+    // report/panel show one line with "×N" instead of N identical rows.
+    var last = buffer.length ? buffer[buffer.length - 1] : null;
+    if (last && last.level === level && last.message === msg) {
+      last.count = (last.count || 1) + 1;
+      last.lastTs = new Date().toISOString();
+      persistBuffer();
+      updateBadge();
+      refreshPanelIfOpen();
+      return;
+    }
     var entry = {
       ts: new Date().toISOString(),
       level: level,                                    // 'error' | 'warn'
-      message: String(message || '').slice(0, 2000),
+      message: msg,
       stack: stack ? String(stack).slice(0, 2000) : '',
       source: source ? String(source).slice(0, 200) : '',
       line: line || 0,
       column: column || 0,
-      url: window.location.href.slice(0, 300)
+      url: window.location.href.slice(0, 300),
+      count: 1,
+      v: APP_BUILD_TAG   // which app build captured this — stale-entry pruning key
     };
     buffer.push(entry);
     while (buffer.length > MAX_BUFFERED) buffer.shift();
@@ -167,7 +223,7 @@
     var errorsOnly = buffer.filter(function (e) { return e.level === 'error'; });
     var entriesToInclude = (errorsOnly.length === 0 ? buffer : errorsOnly).slice(-15);
     var what = entriesToInclude.map(function (e, i) {
-      var head = '[' + (i + 1) + '] ' + e.ts + '  ' + e.level.toUpperCase() + '\n' + e.message;
+      var head = '[' + (i + 1) + '] ' + e.ts + '  ' + e.level.toUpperCase() + (e.count > 1 ? ('  (repeated ×' + e.count + (e.lastTs ? ', last ' + e.lastTs : '') + ')') : '') + '\n' + e.message;
       if (e.source && e.line) head += '\n  at ' + e.source + ':' + e.line + ':' + e.column;
       if (e.stack) head += '\n' + e.stack;
       return head;
@@ -210,7 +266,12 @@
     badge.type = 'button';
     badge.setAttribute('aria-label', 'View captured errors and report a bug');
     badge.style.cssText = [
-      'position:fixed', 'bottom:16px', 'right:16px', 'z-index:2147483646',
+      // Bottom-LEFT diagnostics cluster (2026-06-19): the reading-tools FAB stack (ruler/line-focus/
+      // dictation) owns bottom-RIGHT, and the pipeline diagnostics-log button was also bottom-right —
+      // a bottom-right error badge stacked on top of them on small screens. The badge now sits at the
+      // bottom-LEFT corner; the diagnostics-log button stacks just above it. Keep the small badge below
+      // modal/first-run layers; the report panel itself still opens at maximum priority.
+      'position:fixed', 'bottom:16px', 'left:16px', 'z-index:9000',
       'padding:8px 14px', 'border-radius:999px',
       'background:#dc2626', 'color:#fff', 'border:2px solid #fff',
       'font:700 13px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
@@ -227,6 +288,10 @@
   function updateBadge() {
     var errCount = buffer.filter(function (e) { return e.level === 'error'; }).length;
     if (!document.body) return; // still booting
+    if (document.body && document.body.classList.contains('alloflow-launchpad-active')) {
+      if (badge) badge.style.display = 'none';
+      return;
+    }
     if (errCount === 0) {
       if (badge) badge.style.display = 'none';
       return;
@@ -252,6 +317,7 @@
       '<span>' + e.level + '</span>' +
       '<span style="color:#64748b;font-weight:500;">#' + (idx + 1) + '</span>' +
       '<span style="color:#64748b;font-weight:500;">' + escapeHtml(e.ts) + '</span>' +
+      (e.count > 1 ? '<span style="background:' + color + ';color:#fff;font-weight:700;padding:1px 6px;border-radius:999px;">×' + e.count + '</span>' : '') +
       '</header>' +
       '<pre style="margin:0;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#1e293b;white-space:pre-wrap;word-break:break-word;">' +
       escapeHtml(e.message) + escapeHtml(loc) +
@@ -275,7 +341,7 @@
       '<header style="padding:14px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f8fafc;">' +
         '<div>' +
           '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">⚠ AlloFlow Error Reporter</h2>' +
-          '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to Aaron with one click.</p>' +
+          '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.</p>' +
         '</div>' +
         '<button id="aer-close" type="button" aria-label="Close error reporter" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
       '</header>' +
@@ -306,7 +372,7 @@
         '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;flex:1;min-width:200px;">' +
           'The form opens in a new tab pre-filled with this log. You can edit it before submitting.' +
         '</p>' +
-        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Aaron</button>' +
+        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Developers</button>' +
       '</footer>' +
     '</div>';
   }
@@ -411,31 +477,41 @@
       }
     };
     if ($('aer-send')) $('aer-send').onclick = function () {
-      try {
-        var url = buildPrefilledFormUrl();
-        // Defensive: Google Forms imposes a URL length limit (~8000-ish chars).
-        // If we exceed, drop stack traces from older entries.
-        if (url.length > 7500) {
-          var p = buildReportPayload();
-          // Trim "what" payload more aggressively
-          p.whatHappened = p.whatHappened.slice(0, 6000) + '\n\n[Log truncated due to URL length limit]';
-          url = FORM_BASE +
-            '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
-            '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
-            '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
-            '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
-        }
-        var win = window.open(url, '_blank', 'noopener,noreferrer');
-        if (!win) {
-          // Pop-up blocked — copy URL to clipboard and tell user
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).catch(function () {});
+      var btn = $('aer-send');
+      // Fallback: the original Google-Form path (private responses Sheet), used if the worker POST fails.
+      var openFormFallback = function () {
+        try {
+          var url = buildPrefilledFormUrl();
+          // Defensive: Google Forms imposes a URL length limit (~8000-ish chars).
+          // If we exceed, drop stack traces from older entries.
+          if (url.length > 7500) {
+            var p = buildReportPayload();
+            p.whatHappened = p.whatHappened.slice(0, 6000) + '\n\n[Log truncated due to URL length limit]';
+            url = FORM_BASE +
+              '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
+              '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
+              '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
+              '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
           }
-          if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
-        }
-      } catch (e) {
-        origConsoleError('[ErrorReporter] Submit failed:', e);
-      }
+          var win = window.open(url, '_blank', 'noopener,noreferrer');
+          if (!win) {
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).catch(function () {}); }
+            if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
+          }
+        } catch (e) { origConsoleError('[ErrorReporter] Submit failed:', e); }
+      };
+      // Primary: POST to the worker → private KV. No new tab, no PII to a public surface.
+      var p = buildReportPayload();
+      var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: (location.href || '').slice(0, 500) };
+      btn.disabled = true; btn.textContent = 'Sending…';
+      var done = function (text, color) { if (!$('aer-send')) return; var b = $('aer-send'); b.textContent = text; if (color) b.style.background = color; setTimeout(closePanel, 1300); };
+      var fail = function () { if ($('aer-send')) { $('aer-send').disabled = false; $('aer-send').textContent = '📬 Send to Developers'; } openFormFallback(); };
+      try {
+        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
+          .then(function (res) { if (res.ok && res.j && res.j.ok) done('Sent ✓ Thank you!', '#15803d'); else fail(); })
+          .catch(function () { fail(); });
+      } catch (_) { fail(); }
     };
   }
 

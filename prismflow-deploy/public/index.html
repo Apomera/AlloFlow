@@ -13,45 +13,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
   <script>
-    // Pre-load cleanup: delete ALL Firestore/Firebase IndexedDB databases
-    // to prevent lock contention on page reload.
-    // This runs BEFORE the main deferred bundle, giving the browser time
-    // to release any stale database connections.
-    (function () {
-      try {
-        if (indexedDB && indexedDB.databases) {
-          indexedDB.databases().then(function (dbs) {
-            dbs.forEach(function (dbInfo) {
-              if (dbInfo.name && (
-                dbInfo.name.includes('firestore') ||
-                dbInfo.name.includes('firebase') ||
-                dbInfo.name.includes('FirebaseLocalStorage')
-              )) {
-                console.log('[AlloFlow] Clearing stale DB:', dbInfo.name);
-                indexedDB.deleteDatabase(dbInfo.name);
-              }
-            });
-          }).catch(function () { });
-        }
-      } catch (e) { }
-    })();
-  </script>
-  <script>
     // Register service worker to cache assets and bypass QUIC protocol issues
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then(function (reg) {
         console.log('[AlloFlow] Service worker registered');
-        // Auto-reload when a new service worker takes over
+        // Download updates quietly. They activate after open AlloFlow tabs close,
+        // so a deployment never interrupts a live classroom or QR join.
         reg.addEventListener('updatefound', function () {
           var newSW = reg.installing;
-          if (newSW) {
-            newSW.addEventListener('statechange', function () {
-              if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
-                console.log('[AlloFlow] New SW activated — reloading for fresh content');
-                window.location.reload();
-              }
-            });
-          }
+          if (!newSW) return;
+          newSW.addEventListener('statechange', function () {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              window.__alloUpdateReady = true;
+              window.dispatchEvent(new CustomEvent('alloflow:update-ready'));
+            }
+          });
         });
       }).catch(function (err) {
         console.warn('[AlloFlow] SW registration failed:', err);

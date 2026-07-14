@@ -1,0 +1,53 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-26104-that-scholarship-boy",
+  "title": "That scholarship boy",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Boys -- Conduct of life -- Juvenile fiction",
+    "Schools -- Juvenile fiction"
+  ],
+  "authors": [
+    "Leslie, Emma"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/26104"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/26104/pg26104.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"That scholarship boy\" by Leslie, Emma. Metadata tags include: Boys -- Conduct of life -- Juvenile fiction; Schools -- Juvenile fiction."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 71
+  }
+}

@@ -25,14 +25,14 @@ describe('doc_pipeline · axe-core CDN mirror chain', () => {
       expect(urls.length).toBeGreaterThanOrEqual(3);
       const hosts = new Set(urls.map(u => new URL(u).host));
       expect(hosts.size).toBeGreaterThanOrEqual(3);
-      // jsdelivr/unpkg use axe-core@4.10.3; cdnjs uses axe-core/4.10.3
-      for (const u of urls) expect(u).toMatch(/axe-core[@/]4\.10\.3/);
+      // jsdelivr/unpkg use axe-core@4.12.1; cdnjs uses axe-core/4.12.1
+      for (const u of urls) expect(u).toMatch(/axe-core[@/]4\.12\.1/);
     });
 
     it(`${label}: no load site uses a lone hardcoded axe URL anymore`, () => {
       // Every literal axe URL must live inside the _AXE_CDN_URLS definition —
       // count occurrences: exactly the 1 jsdelivr + 1 unpkg + 1 cdnjs in the list.
-      const literals = (text.match(/https:\/\/[^'"\s]*axe-core[@/]4\.10\.3[^'"\s]*/g) || []);
+      const literals = (text.match(/https:\/\/[^'"\s]*axe-core[@/]4\.12\.1[^'"\s]*/g) || []);
       expect(literals.length).toBe(3);
     });
 

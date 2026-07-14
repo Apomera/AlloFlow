@@ -1,0 +1,401 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AlloStudio golden exports > pins process notes and portfolio summary products without image bytes 1`] = `
+{
+  "artifact": {
+    "id": "allostudio-1751477000000-photosynthesis-checkpoint",
+    "itemCount": 7,
+    "items": [
+      {
+        "id": "overview",
+        "privacy": "summary",
+        "text": "Objects: 7. Text blocks: 4. Images: 1. Accessibility status: review.",
+        "title": "Studio product overview",
+      },
+      {
+        "id": "worksheet-questions",
+        "privacy": "summary",
+        "text": "1. Why does light matter?",
+        "title": "Worksheet questions",
+      },
+      {
+        "id": "o3",
+        "privacy": "summary",
+        "text": "Photosynthesis Checkpoint",
+        "title": "Main heading",
+      },
+      {
+        "id": "o4",
+        "privacy": "summary",
+        "text": "Instructions: answer the question using evidence from the diagram.",
+        "title": "Text block 2",
+      },
+      {
+        "id": "o5",
+        "privacy": "summary",
+        "text": "1. Why does light matter?",
+        "title": "Section heading",
+      },
+      {
+        "id": "o7",
+        "privacy": "summary",
+        "text": "Use the diagram and mention how light energy becomes stored energy.",
+        "title": "Text block 4",
+      },
+      {
+        "id": "o8",
+        "privacy": "full",
+        "text": "Chloroplast diagram",
+        "title": "Image 1",
+      },
+    ],
+    "kindLabel": "Accessible Worksheet",
+    "lifecycleStatus": "review",
+    "title": "Photosynthesis Checkpoint",
+    "type": "allostudio-document",
+  },
+  "processDigest": {
+    "aiMentions": 2,
+    "length": 500,
+    "sha": "461bf48e3297f92a",
+  },
+}
+`;
+
+exports[`AlloStudio golden exports > pins the linear worksheet bridge export contract 1`] = `
+{
+  "absoluteItems": 0,
+  "answerSpaces": 1,
+  "h1": 1,
+  "h2": 0,
+  "hidden": 0,
+  "images": 0,
+  "length": 1218,
+  "paragraphs": 3,
+  "sha": "5c797ca9b26edeeb",
+}
+`;
+
+exports[`AlloStudio golden exports > pins the pixel-faithful accessible HTML export contract 1`] = `
+{
+  "absoluteItems": 7,
+  "answerSpaces": 0,
+  "h1": 1,
+  "h2": 1,
+  "hidden": 2,
+  "images": 1,
+  "length": 2332,
+  "paragraphs": 2,
+  "sha": "71022d4d280b117e",
+}
+`;
+
+exports[`AlloStudio golden exports > pins the saved-document replay shape 1`] = `
+{
+  "canvas": {
+    "background": {
+      "fill": "#ffffff",
+    },
+    "h": 1056,
+    "preset": "letter-portrait",
+    "w": 816,
+  },
+  "objects": [
+    {
+      "alt": "",
+      "decorative": true,
+      "fill": "#dcfce7",
+      "frame": {
+        "h": 156,
+        "rotation": 0,
+        "w": 816,
+        "x": 0,
+        "y": 0,
+      },
+      "id": "o2",
+      "role": "",
+      "shape": "rect",
+      "text": "",
+      "type": "shape",
+    },
+    {
+      "alt": "",
+      "decorative": false,
+      "fill": "",
+      "frame": {
+        "h": 64,
+        "rotation": 0,
+        "w": 720,
+        "x": 48,
+        "y": 44,
+      },
+      "id": "o3",
+      "role": "heading1",
+      "shape": "",
+      "text": "Photosynthesis Checkpoint",
+      "type": "text",
+    },
+    {
+      "alt": "",
+      "decorative": false,
+      "fill": "",
+      "frame": {
+        "h": 56,
+        "rotation": 0,
+        "w": 688,
+        "x": 64,
+        "y": 132,
+      },
+      "id": "o4",
+      "role": "body",
+      "shape": "",
+      "text": "Instructions: answer the question using evidence from the diagram.",
+      "type": "text",
+    },
+    {
+      "alt": "",
+      "decorative": false,
+      "fill": "",
+      "frame": {
+        "h": 42,
+        "rotation": 0,
+        "w": 460,
+        "x": 64,
+        "y": 224,
+      },
+      "id": "o5",
+      "role": "heading2",
+      "shape": "",
+      "text": "1. Why does light matter?",
+      "type": "text",
+    },
+    {
+      "alt": "",
+      "decorative": true,
+      "fill": "#f8fafc",
+      "frame": {
+        "h": 144,
+        "rotation": 0,
+        "w": 460,
+        "x": 64,
+        "y": 292,
+      },
+      "id": "o6",
+      "role": "",
+      "shape": "rect",
+      "text": "",
+      "type": "shape",
+    },
+    {
+      "alt": "",
+      "decorative": false,
+      "fill": "",
+      "frame": {
+        "h": 56,
+        "rotation": 0,
+        "w": 460,
+        "x": 64,
+        "y": 454,
+      },
+      "id": "o7",
+      "role": "body",
+      "shape": "",
+      "text": "Use the diagram and mention how light energy becomes stored energy.",
+      "type": "text",
+    },
+    {
+      "alt": "Chloroplast diagram",
+      "decorative": false,
+      "fill": "",
+      "frame": {
+        "h": 192,
+        "rotation": 0,
+        "w": 192,
+        "x": 560,
+        "y": 226,
+      },
+      "id": "o8",
+      "role": "",
+      "shape": "",
+      "text": "",
+      "type": "image",
+    },
+  ],
+  "ops": [
+    {
+      "actor": "user",
+      "seq": 1,
+      "target": "",
+      "template": "allostudio-golden",
+      "type": "doc.template",
+    },
+    {
+      "actor": "user",
+      "seq": 2,
+      "target": "",
+      "template": "",
+      "type": "object.add",
+    },
+    {
+      "actor": "user",
+      "seq": 3,
+      "target": "",
+      "template": "",
+      "type": "object.add",
+    },
+    {
+      "actor": "user",
+      "seq": 4,
+      "target": "",
+      "template": "",
+      "type": "object.add",
+    },
+    {
+      "actor": "user",
+      "seq": 5,
+      "target": "",
+      "template": "",
+      "type": "object.add",
+    },
+    {
+      "actor": "user",
+      "seq": 6,
+      "target": "",
+      "template": "",
+      "type": "object.add",
+    },
+    {
+      "actor": "user",
+      "seq": 7,
+      "target": "",
+      "template": "",
+      "type": "object.add",
+    },
+    {
+      "actor": "import",
+      "seq": 8,
+      "target": "",
+      "template": "",
+      "type": "object.add",
+    },
+    {
+      "actor": "ai",
+      "seq": 9,
+      "target": "o7",
+      "template": "",
+      "type": "object.update",
+    },
+  ],
+  "title": "Photosynthesis Checkpoint",
+}
+`;
+
+exports[`AlloStudio golden readiness summaries > pins accessibility checklist and AI edit proposal summaries 1`] = `
+{
+  "checklist": [
+    {
+      "count": 0,
+      "key": "alt",
+      "severity": "pass",
+      "status": "pass",
+    },
+    {
+      "count": 0,
+      "key": "contrast",
+      "severity": "pass",
+      "status": "pass",
+    },
+    {
+      "count": 0,
+      "key": "text",
+      "severity": "pass",
+      "status": "pass",
+    },
+    {
+      "count": 1,
+      "key": "structure",
+      "severity": "review",
+      "status": "review",
+    },
+    {
+      "count": 0,
+      "key": "objects",
+      "severity": "pass",
+      "status": "pass",
+    },
+  ],
+  "proposal": {
+    "changes": [
+      {
+        "after": "Instructions: explain the role of light energy in one complete sentence.",
+        "before": "Instructions: answer the question using evidence from the diagram.",
+        "kind": "Text",
+        "notes": [
+          "Text changed",
+          "Text style checked",
+        ],
+        "objectLabel": "Instructions: answer the question using evidence",
+        "safety": "Previewed before apply",
+        "targetId": "o4",
+        "title": "Instructions: answer the question using evidence",
+      },
+      {
+        "after": "Diagram of a chloroplast used in photosynthesis.",
+        "before": "Chloroplast diagram",
+        "kind": "Image",
+        "notes": [
+          "Alt text changed",
+        ],
+        "objectLabel": "Image: Chloroplast diagram",
+        "safety": "No image pixels changed",
+        "targetId": "o8",
+        "title": "Image: Chloroplast diagram",
+      },
+      {
+        "after": "",
+        "before": "Instructions: answer the question using evidence",
+        "kind": "Text",
+        "notes": [
+          "Object removed",
+        ],
+        "objectLabel": "Instructions: answer the question using evidence",
+        "safety": "Undo restores it",
+        "targetId": "o4",
+        "title": "Remove: Instructions: answer the question using evidence",
+      },
+    ],
+    "ops": [
+      {
+        "patch": {
+          "runs": [
+            {
+              "style": {
+                "align": "left",
+                "bold": false,
+                "color": "#111827",
+                "size": 17,
+              },
+              "text": "Instructions: explain the role of light energy in one complete sentence.",
+            },
+          ],
+        },
+        "target": "o4",
+        "type": "object.update",
+      },
+      {
+        "patch": {
+          "alt": "Diagram of a chloroplast used in photosynthesis.",
+        },
+        "target": "o8",
+        "type": "object.update",
+      },
+      {
+        "target": "o4",
+        "type": "object.remove",
+      },
+    ],
+    "rejected": [],
+    "summary": "Improve clarity and describe the visual",
+  },
+}
+`;

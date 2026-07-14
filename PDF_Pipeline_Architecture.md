@@ -1,6 +1,6 @@
 # AlloFlow PDF Accessibility Pipeline — Technical Architecture
 
-> **⚠ DEPRECATED — April 2026.** This document is a historical snapshot from April 1, 2026 and has drifted from the current implementation (phase count, deterministic fix count, Phase 3c surgical tools, and several export formats differ).
+> **⚠ DEPRECATED — April 2026.** This document is a historical snapshot from April 1, 2026 and has drifted from the current implementation (phase count, deterministic fix count, Phase 3c surgical tools, export formats, AI model names, and the native tagged-PDF / veraPDF / font-embedding subsystems all differ or are absent).
 >
 > **Canonical reference:** [PIPELINE_ARCHITECTURE.md](PIPELINE_ARCHITECTURE.md). Use that for collaborator onboarding, audits, and documentation updates. This file is retained for historical context only and will not be updated further.
 

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-mars-science-card",
+  "title": "NASA Mars Exploration",
+  "description": "A NASA source card about Mars science, rovers, orbiters, geology, climate, and habitability questions.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Astronomy",
+    "Mars",
+    "Geology",
+    "Exploration"
+  ],
+  "authors": [
+    "NASA Science"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mars/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Mars resources introduce the planet through geology, atmosphere, water evidence, robotic missions, and the search for past habitable environments."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for claim-evidence-reasoning work about how scientists infer past conditions from rocks, images, chemistry, and orbital measurements."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 63
+  }
+}

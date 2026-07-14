@@ -13,5 +13,20 @@ export default defineConfig({
     // `node tests/translation_pipeline.test.js`.
     exclude: ['node_modules/**', 'tests/translation_pipeline.test.js'],
     globals: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'text', 'html'],
+      reportsDirectory: './coverage',
+      all: false,
+      include: ['*_module.js', 'stem_lab/**/*.js', 'sel_hub/**/*.js'],
+      exclude: ['tests/**', 'node_modules/**', 'prismflow-deploy/**', '**/*_source.jsx', 'coverage/**'],
+      // KNOWN LIMITATION: most unit tests load CDN modules via the loadAlloModule
+      // `new Function()` eval harness (tests/setup.js), and @vitest/coverage-v8 does
+      // NOT instrument eval'd scripts — so those modules report ~0% even though they
+      // are exercised. `npm run test:coverage` is therefore only meaningful for code
+      // genuinely ESM-imported by tests. Making module coverage real would require
+      // refactoring the harness to import the modules (they're window-registering
+      // IIFEs today) — a separate, larger task.
+    },
   },
 });

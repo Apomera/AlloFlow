@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-great-depression-new-deal-primary-source-set-card",
+  "title": "Library of Congress: Great Depression and New Deal Sources",
+  "description": "A LOC source card for Great Depression and New Deal primary sources.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Great Depression",
+    "New Deal",
+    "Primary sources",
+    "Economics"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/?q=great+depression+new+deal"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Library of Congress Great Depression and New Deal materials feature photographs, government documents, posters, songs, and accounts of economic hardship and response."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for interpreting visual evidence, connecting economics with lived experience, and comparing policy choices across communities."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Library of Congress item pages provide rights statements. Confirm the rights status of photographs, recordings, and documents before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

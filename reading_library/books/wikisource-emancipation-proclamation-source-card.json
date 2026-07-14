@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-emancipation-proclamation-source-card",
+  "title": "Emancipation Proclamation",
+  "description": "A Wikisource source card for the Emancipation Proclamation and Civil War history.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Civil War",
+    "Abolition",
+    "Primary sources",
+    "U.S. history"
+  ],
+  "authors": [
+    "Abraham Lincoln"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Emancipation_Proclamation",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Emancipation_Proclamation"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Emancipation Proclamation is a central Civil War document for studying executive power, slavery, military policy, and constitutional change."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for precise reading of legal language, historical geography, audience, limits, and consequences."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Wikisource hosts public-domain and freely licensed texts. Check the linked work page for its specific license and source notes before assigning or mirroring."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

@@ -55,6 +55,18 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
   // Phase E hotfix: surface real errors to console so we can debug missing deps
   // instead of silently degrading to "Sorry, something went wrong".
   const _DEBUG_UDL_CHAT = true;
+  // Builds the Step-by-Step vs Full Pack chooser (rendered as buttons by
+  // UDLGuideModal). `stage` names the guided-flow stage that consumes the
+  // answer; `keywords` keeps typed replies (incl. localized) working.
+  const buildStepPackChoices = (text, stage) => ({
+      role: 'model', type: 'choices', stage, text,
+      choices: [
+          { label: t('chat_guide.flow.option_step') || 'Step-by-Step', value: 'step',
+            keywords: ['step', (t('chat_guide.flow.keyword_step') || '').toLowerCase()].filter(Boolean) },
+          { label: t('chat_guide.flow.option_pack') || 'Full Pack', value: 'pack',
+            keywords: ['pack', 'full', 'auto', (t('chat_guide.flow.keyword_pack') || '').toLowerCase()].filter(Boolean) }
+      ]
+  });
     const textToSend = typeof manualText === 'string' ? manualText : udlInput;
     if (!textToSend.trim()) return;
     const userMsg = { role: 'user', text: textToSend };
@@ -63,9 +75,34 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
     setIsChatProcessing(true);
     try {
         let intentData = null;
-        if (isAutoFillMode && guidedFlowState.isFlowActive && guidedFlowState.currentStage) {
+        // If the most recent bot message is a pending on-screen choice (the
+        // Step-by-Step vs Full Pack buttons) and the reply names one of its
+        // options, route it into the guided flow deterministically. Without
+        // this, a "pack" reply arriving after the flow flags were dropped
+        // falls through to the generic intent parser, which reads "pack" as
+        // the .allopack export command and opens the Export menu instead of
+        // generating a full pack.
+        const _lastBotMsg = udlMessages.length > 0 ? udlMessages[udlMessages.length - 1] : null;
+        const _pendingChoiceMsg = (_lastBotMsg && _lastBotMsg.role === 'model' && _lastBotMsg.type === 'choices' && _lastBotMsg.stage) ? _lastBotMsg : null;
+        const _choiceReply = textToSend.trim().toLowerCase();
+        const _choiceHit = _pendingChoiceMsg && Array.isArray(_pendingChoiceMsg.choices)
+            ? _pendingChoiceMsg.choices.find(c => c && (String(c.value).toLowerCase() === _choiceReply ||
+                (Array.isArray(c.keywords) && c.keywords.some(k => k && _choiceReply.includes(String(k).toLowerCase())))))
+            : null;
+        const _isBareChoice = !!(_choiceHit && String(_choiceHit.value).toLowerCase() === _choiceReply);
+        const _activeStage = (isAutoFillMode && guidedFlowState.isFlowActive && guidedFlowState.currentStage) ? guidedFlowState.currentStage : null;
+        const _effectiveStage = _activeStage || (_choiceHit ? _pendingChoiceMsg.stage : null);
+        if (_effectiveStage && !_activeStage) {
+            setIsAutoFillMode(true);
+            setGuidedFlowState(prev => ({ ...prev, isFlowActive: true, currentStage: _effectiveStage }));
+        }
+        if (_effectiveStage) {
              const lowerInput = textToSend.toLowerCase();
-             const intentResult = await detectWorkflowIntent(textToSend, guidedFlowState.currentStage, udlMessages.slice(-3));
+             // A direct button/keyword answer needs no LLM intent pass — and must
+             // not risk a STOP misread killing the flow mid-question.
+             const intentResult = _choiceHit
+                 ? { intent: 'CONFIRM', modification: null }
+                 : await detectWorkflowIntent(textToSend, _effectiveStage, udlMessages.slice(-3));
              const isAffirmative = intentResult.intent === 'CONFIRM' || intentResult.intent === 'MODIFY';
              const isNegative = intentResult.intent === 'SKIP';
              const sendBotMsg = (text) => {
@@ -79,7 +116,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  setIsChatProcessing(false);
                  return;
              }
-             switch (guidedFlowState.currentStage) {
+             switch (_effectiveStage) {
                  case 'source':
                      if (isNegative) {
                          sendBotMsg("Okay, skipping source generation. Moving to manual input mode.");
@@ -155,13 +192,14 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  case 'initial_choice':
                      const localizedPackKeyword = t('chat_guide.flow.keyword_pack').toLowerCase();
                      if (lowerInput.includes('pack') || lowerInput.includes('auto') || lowerInput.includes('full') || (localizedPackKeyword && lowerInput.includes(localizedPackKeyword))) {
+                         const pendingBlueprintContext = _isBareChoice ? "" : textToSend.trim();
                          sendBotMsg(t('chat_guide.pack.count_selection'));
-                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection' }));
+                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection', pendingBlueprintContext }));
                          setIsChatProcessing(false);
                          return;
                      }
                      setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.blueprint.analyzing') }]);
-                     const userContext = textToSend;
+                     const userContext = _isBareChoice ? "" : textToSend;
                      const generateBlueprint = async (countPreference, context = "") => {
                          setIsChatProcessing(true);
                          try {
@@ -174,21 +212,17 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                  history.map(h => h.type),
                                  countPreference
                              );
-                             const initialSelection = {};
-                             if (config.recommendedResources) {
-                                 config.recommendedResources.forEach(r => initialSelection[r] = true);
-                             }
-                             setActiveBlueprint(config);
+                            setActiveBlueprint(config);
                              setUdlMessages(prev => [...prev, {
                                  role: 'model',
                                  type: 'blueprint',
                                  text: t('chat_guide.blueprint.presented')
                              }]);
-                             setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review' }));
+                             setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
                          } catch (e) {
                              warnLog("Unhandled error:", e);
                              setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.blueprint.error') }]);
-                             setGuidedFlowState(prev => ({ ...prev, currentStage: 'analysis' }));
+                             setGuidedFlowState(prev => ({ ...prev, currentStage: 'analysis', pendingBlueprintContext: null }));
                          } finally {
                              setIsChatProcessing(false);
                          }
@@ -212,6 +246,12 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          }
                      }
                      const countDisplay = targetCount === 'All' ? t('chat_guide.pack.comprehensive') : targetCount;
+                     const countOnlyPattern = /^\s*(auto|all|everything|\d+)(\s+(resources?|steps?|items?))?\s*$/i;
+                     const countStepContext = countOnlyPattern.test(textToSend) ? "" : textToSend.trim();
+                     const blueprintContext = [guidedFlowState.pendingBlueprintContext, countStepContext]
+                         .map(v => (v || "").trim())
+                         .filter(Boolean)
+                         .join("\n");
                      sendBotMsg(t('chat_guide.pack.designing', { count: countDisplay }));
                      setIsChatProcessing(true);
                      try {
@@ -220,45 +260,43 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              gradeLevel,
                              standardsInput,
                              leveledTextLanguage,
-                             "",
+                             blueprintContext,
                              history.map(h => h.type),
                              targetCount
-                         );
-                         setActiveBlueprint(config);
-                         const initialSelection = {};
-                         if (config.recommendedResources) {
-                             config.recommendedResources.forEach(r => initialSelection[r] = true);
-                         }
-                         setUdlMessages(prev => [...prev, {
+                        );
+                        setActiveBlueprint(config);
+                        setUdlMessages(prev => [...prev, {
                              role: 'model',
                              type: 'blueprint',
                              text: t('chat_guide.blueprint.presented')
                          }]);
-                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review' }));
+                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
                      } catch (e) {
                          warnLog("Unhandled error:", e);
                          sendBotMsg(t('chat_guide.pack.error'));
-                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'analysis' }));
+                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'analysis', pendingBlueprintContext: null }));
                      } finally {
                          setIsChatProcessing(false);
                      }
                      return;
                  case 'blueprint_review':
-                     const isExecutionCommand = /go|start|run|execute|confirm|yes|proceed/i.test(textToSend);
+                     const reviewInput = textToSend.trim().toLowerCase();
+                     const hasBlueprintEditRequest = /\b(add|remove|change|edit|modify|revise|instead|but|except|focus|include|exclude|replace|make)\b/i.test(textToSend);
+                     const isExecutionCommand = /^(please\s+)?(go|go ahead|start|start it|run|run it|execute|execute it|confirm|yes|yes please|y|proceed|generate|generate it|looks good|do it|let'?s go)(\s+(now|please))?[.!]?$/i.test(reviewInput) && !hasBlueprintEditRequest;
                      if (isExecutionCommand) {
-                         handleExecuteBlueprint();
-                         setGuidedFlowState(prev => ({ ...prev, isFlowActive: false }));
+                         try {
+                             setGuidedFlowState(prev => ({ ...prev, isFlowActive: false }));
+                             await Promise.resolve(handleExecuteBlueprint());
+                         } finally {
+                             setIsChatProcessing(false);
+                         }
                      } else {
                          setIsChatProcessing(true);
                          sendBotMsg(t('common.adjusting') + "...");
                          try {
-                             const updatedConfig = await modifyBlueprintWithAI(activeBlueprint, textToSend);
-                             setActiveBlueprint(updatedConfig);
-                             const newSelection = {};
-                             if (updatedConfig.recommendedResources) {
-                                 updatedConfig.recommendedResources.forEach(r => newSelection[r] = true);
-                             }
-                             sendBotMsg(t('chat_guide.blueprint.updated'));
+                            const updatedConfig = await modifyBlueprintWithAI(activeBlueprint, textToSend);
+                            setActiveBlueprint(updatedConfig);
+                            sendBotMsg(t('chat_guide.blueprint.updated'));
                          } catch (e) {
                              sendBotMsg(t('chat_guide.blueprint.change_fail'));
                          } finally {
@@ -286,7 +324,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          sendBotMsg(t('chat_guide.flow.running_analysis'));
                          const resultItem = await handleGenerate('analysis');
                          if (isShowMeMode) performHighlight('tour-tool-analysis');
-                         sendBotMsg("Analysis complete. How would you like to proceed with the rest of the lesson?\n\n1. **Step-by-Step:** We continue building resources one by one (Glossary next).\n2. **Full Pack:** I generate the complete resource pack instantly based on this analysis.\n\n(Type 'Step' or 'Pack')");
+                         setUdlMessages(prev => [...prev, buildStepPackChoices("Analysis complete. How would you like to proceed with the rest of the lesson?\n\n1. **Step-by-Step:** We continue building resources one by one (Glossary next).\n2. **Full Pack:** I generate the complete resource pack instantly based on this analysis.", 'post_analysis_route')]);
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'post_analysis_route' }));
                          setIsChatProcessing(false);
                          return;
@@ -300,8 +338,9 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      break;
                  case 'post_analysis_route':
                      if (lowerInput.includes('pack') || lowerInput.includes('full') || lowerInput.includes('auto')) {
+                         const pendingBlueprintContext = _isBareChoice ? "" : textToSend.trim();
                          sendBotMsg(t('chat_guide.pack.count_selection'));
-                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection' }));
+                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection', pendingBlueprintContext }));
                      }
                      else {
                          const context = getWorkflowContext();
@@ -796,14 +835,14 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                               lastBotQuestion: hasInput ? "mode_selection" : "cold_start",
                               isFlowActive: true
                          });
-                         let msg = "";
                          if (hasInput) {
                               const snippet = sourceTopic || inputText.substring(0, 40).replace(/\n/g, ' ') + "...";
-                              msg = `I've detected source material ("${snippet}").\n\nHow would you like to proceed?\n\n1. **Step-by-Step:** We build resources one by one together.\n2. **Full Pack:** I analyze the text and generate a complete lesson pack instantly.\n\n(Type 'Step' or 'Pack')`;
+                              const msg = `I've detected source material ("${snippet}").\n\nHow would you like to proceed?\n\n1. **Step-by-Step:** We build resources one by one together.\n2. **Full Pack:** I analyze the text and generate a complete lesson pack instantly.`;
+                              setUdlMessages(prev => [...prev, buildStepPackChoices(msg, 'initial_choice')]);
                          } else {
-                              msg = "Let's build your lesson sequentially. First step: **Source Material**.\n\nDo you have a **Link** to an article, or a **Topic** you'd like to generate text for?";
+                              const msg = "Let's build your lesson sequentially. First step: **Source Material**.\n\nDo you have a **Link** to an article, or a **Topic** you'd like to generate text for?";
+                              setUdlMessages(prev => [...prev, { role: 'model', text: msg }]);
                          }
-                         setUdlMessages(prev => [...prev, { role: 'model', text: msg }]);
                     } else {
                         const genMsg = t('chat.generating_resource');
                         setUdlMessages(prev => [...prev, { role: 'model', text: genMsg }]);

@@ -19,10 +19,10 @@ if (!result || !result.code) { console.error('Babel transform failed'); process.
 
 const moduleSrc = `/**
  * AlloFlow View - Project Settings Modal
- * Extracted from AlloFlowANTI.txt isProjectSettingsOpen block (223 lines body).
- * Teacher-side toggles for: dictation, Socratic tutor, free response, persona
- * free response. Plus XP unlock thresholds (adventure, base, storybook).
- * Backdrop click + Escape both dismiss. Display-only outside of toggle setters.
+ * Progressive-disclosure teacher controls with Guided, Balanced, and Open
+ * presets; four everyday learner-support choices; and advanced identity,
+ * tutor-guidance, XP, Adventure permission, privacy, and locking controls.
+ * Backdrop click + Escape both dismiss; settings update the host state directly.
  */
 (function() {
   'use strict';

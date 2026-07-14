@@ -1,6 +1,11 @@
-# Behavior Lens i18n Tooling
+# i18n Tooling
 
-Two scripts that keep `behavior_lens_module.js` translatable end-to-end:
+Scripts that keep AlloFlow translatable end-to-end — key extraction, per-language
+gap reporting, incremental translation, orphan cleanup, a blocking Spanglish guard,
+and community-correction ingest. (Originally built around `behavior_lens_module.js`;
+the gap/merge/guard tooling now applies repo-wide.)
+
+> **Currency note (2026-07-09):** The repo currently has 63 mirrored `lang/*.js` pack files. Re-run the gap/staleness tools before using older sample counts below for planning.
 
 ## 1. `extract_behavior_lens_keys.cjs`
 
@@ -68,7 +73,7 @@ GEMINI_API_KEY=... node dev-tools/i18n/merge_missing_translations.cjs --concurre
 
 Each touched pack gets a `*.bak.<timestamp>` backup. Output validates that the LLM returned every input key and ignores any extras it hallucinated.
 
-**Cost estimate:** ~46 new keys × 56 langs × ~50 output tokens ≈ 130K output tokens. Single-digit USD on `gemini-3-flash-preview`.
+**Token scale estimate:** ~46 new keys x 63 languages x ~50 output tokens is about 145K output tokens before prompt overhead. Check current provider pricing and the active model before running an apply pass.
 
 ## 4. `verify_orphans_full_repo.cjs` + `purge_dead_orphans.cjs`
 
@@ -82,7 +87,7 @@ node dev-tools/i18n/verify_orphans_full_repo.cjs
 # Dry-run preview
 node dev-tools/i18n/purge_dead_orphans.cjs
 
-# Apply: remove from ui_strings.js + all 56 lang packs (each backs up first)
+# Apply: remove from ui_strings.js + all mirrored lang packs (63 pack files as of 2026-07-09; each backs up first)
 node dev-tools/i18n/purge_dead_orphans.cjs --write
 ```
 
@@ -96,7 +101,38 @@ When new keys are added to source:
 4. **Translate the delta** with `merge_missing_translations.cjs` (incremental, cheap) OR `dev-tools/build_language_pack.cjs --lang="<Language Name>"` (full rebuild, expensive — only when a pack is severely out of date).
 5. **Re-run the gap report** to confirm `missingKeys` dropped to 0 for the updated pack.
 
-## 4. Verification
+## 6. Safety-string Spanglish guard — `check_safety_string_spanglish.cjs`
+
+A blocking CI guard (added June 2026) that catches half-translated `alerts.*` /
+`confirms.*` strings — native text with English words still embedded, which the
+exact-match passthrough metric does not detect. Script-aware + cognate-safe
+(non-Latin packs flag Latin residue; Latin-script packs use an English-only word
+set so Romance cognates like "note" don't false-positive). Excludes `maay_maay`.
+
+```bash
+npm run verify:spanglish          # or: node dev-tools/i18n/check_safety_string_spanglish.cjs
+```
+
+Wired into `verify_all.cjs` and the `verify:gate` CI chain — a new half-translated
+safety string blocks deploy.
+
+## 7. Community translation corrections — `ingest_translation_feedback.cjs`
+
+Applies multilingual-user correction suggestions submitted in-app
+(`translation_feedback_module.js` → Cloudflare worker `/submitTranslation` →
+`translations/pending/*.json`). Validates each (lang→slug map, key exists,
+placeholder integrity, no new Spanglish, no-op rejection), then a **manual review
+gate** before anything lands.
+
+```bash
+# Dry-run: validate pending corrections, write feedback_patches/<slug>.json
+node dev-tools/i18n/ingest_translation_feedback.cjs
+
+# Apply accepted corrections to lang/* and archive to translations/applied/
+node dev-tools/i18n/ingest_translation_feedback.cjs --apply
+```
+
+## 8. Verification
 
 Two scripts confirm the i18n chain is healthy:
 

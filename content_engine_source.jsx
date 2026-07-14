@@ -6,6 +6,11 @@ var cleanJson = window.__alloUtils && window.__alloUtils.cleanJson;
 if (!cleanJson) cleanJson = function(t) { try { return JSON.parse(t); } catch(e) { return null; } };
 var processGrounding = window.__alloUtils && window.__alloUtils.processGrounding;
 if (!processGrounding) processGrounding = function(t) { return t; };
+// This is a SEPARATELY-loaded CDN module, so the main bundle's `let safeJsonParse` is not in scope — a
+// bare call ReferenceErrors (swallowed by the dialogue try/catch → Dialogue mode silently never produced
+// its formatted SPEAKER: script). Shim from window.__alloUtils like cleanJson/processGrounding above.
+var safeJsonParse = window.__alloUtils && window.__alloUtils.safeJsonParse;
+if (!safeJsonParse) safeJsonParse = function(t) { try { return t ? JSON.parse(t) : null; } catch(e) { return null; } };
 
 var createContentEngine = function(deps) {
   var callGemini = deps.callGemini;
@@ -172,6 +177,16 @@ var createContentEngine = function(deps) {
       if (/^#{1,6}\s+/.test(trimmed) && trimmed.length > 150) return line.replace(/^#{1,6}\s+/, '');
       return line;
     });
+    // Outline safety: keep exactly ONE H1 (the title). Any later '# ' line is
+    // demoted to '## ' so screen-reader outlines and exports never see two H1s.
+    var _seenH1 = false;
+    repairedLines = repairedLines.map(function(line) {
+      if (/^#\s+/.test(line.trim())) {
+        if (!_seenH1) { _seenH1 = true; return line; }
+        return line.replace(/^(\s*)#\s+/, '$1## ');
+      }
+      return line;
+    });
     var finalLines = [];
     for (var i = 0; i < repairedLines.length; i++) {
       var line = repairedLines[i];
@@ -226,15 +241,23 @@ var createContentEngine = function(deps) {
     var decodeSuperscript = function(str) { return parseInt(str.split('').map(function(c){return reverseMap[c];}).join(''), 10); };
     var usedCitations = new Set();
     var repairedText = text.replace(/(\[)?⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾(\]\([^)]+\))?/g, function(match, bracket, digits, linkPart) {
-      var citNum = decodeSuperscript(digits); usedCitations.add(citNum);
+      var citNum = decodeSuperscript(digits);
+      // B7 (2026-06-28): an unmapped superscript → decodeSuperscript = NaN; without this guard
+      // groundingChunks[NaN - 1] = groundingChunks[-1] (the LAST source) silently repairs the citation
+      // to the WRONG source, and usedCitations.add(NaN) pollutes tracking. Fail safe: leave it untouched.
+      if (!Number.isInteger(citNum) || citNum < 1) return match;
+      usedCitations.add(citNum);
       if (bracket && linkPart) return match;
+      // B6 (2026-06-28): strip a bare out-of-range citation (index past the available sources) instead of
+      // leaving a dangling ⁽N⁾ that matches no bibliography entry — mirrors the multi-chunk path's _keepInRange.
+      if (citNum > groundingChunks.length) return '';
       var chunk = groundingChunks[citNum - 1];
       return (chunk && chunk.web && chunk.web.uri) ? '[⁽' + digits + '⁾](' + chunk.web.uri + ')' : '⁽' + digits + '⁾';
     });
     return repairedText;
   };
   // Filter non-educational sources (YouTube music, IMDB, Rotten Tomatoes, social media, shopping)
-  var _rejectSourceUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /twitter\.com|x\.com/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
+  var _rejectSourceUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /\/\/(?:[^/]*\.)?(?:twitter|x)\.com(?:[/:?#]|$)/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
   var _rejectSourceTitle = [/official\s*(music\s*)?video/i, /\(official\s*video\)/i, /\blyrics?\b/i, /\bremaster(ed)?\b/i, /\bmovie\s*trailer\b/i, /\bfull\s*movie\b/i];
   var filterSources = function(chunks) {
     if (!chunks || !Array.isArray(chunks)) return chunks;
@@ -246,13 +269,65 @@ var createContentEngine = function(deps) {
       return true;
     });
   };
+  // Citation-support statistics (builder-review A3, 2026-07-01). Gemini's own
+  // groundingMetadata.groundingSupports maps RESPONSE-TEXT SEGMENTS to the grounding
+  // chunks that back them — the engine's own record of which passages it tied to
+  // sources. We never consumed it, so a real URL could ride a fabricated claim with
+  // no signal to the reader. This computes, per raw section: (a) how much of the
+  // text the engine tied to sources at all, and (b) how many citation-reference
+  // sites ("[Sources N]" in the raw response, matched with the same pattern the
+  // conversion pass uses) sit OUTSIDE any supported segment — decorative citations.
+  // Deterministic (reads the engine's own map; no extra AI calls). Pure → testable.
+  var computeGroundingSupportStats = function (text, groundingMetadata) {
+    var out = { totalChars: 0, supportedChars: 0, citationsTotal: 0, citationsUnsupported: 0, hasSupports: false };
+    try {
+      var s = String(text || '');
+      out.totalChars = s.length;
+      var supports = groundingMetadata && Array.isArray(groundingMetadata.groundingSupports) ? groundingMetadata.groundingSupports : null;
+      var ranges = [];
+      if (supports && supports.length) {
+        out.hasSupports = true;
+        for (var i = 0; i < supports.length; i++) {
+          var seg = supports[i] && supports[i].segment;
+          if (!seg || typeof seg.endIndex !== 'number') continue;
+          var a = typeof seg.startIndex === 'number' ? seg.startIndex : 0; // Gemini omits startIndex when 0
+          ranges.push([Math.max(0, a), Math.min(s.length, seg.endIndex)]);
+        }
+        ranges.sort(function (x, y) { return x[0] - y[0]; });
+        var covered = 0, curA = -1, curB = -1;
+        for (var j = 0; j < ranges.length; j++) {
+          var r = ranges[j];
+          if (r[0] > curB) { if (curB > curA) covered += curB - curA; curA = r[0]; curB = r[1]; }
+          else if (r[1] > curB) { curB = r[1]; }
+        }
+        if (curB > curA) covered += curB - curA;
+        out.supportedChars = covered;
+      }
+      var re = /\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, m;
+      while ((m = re.exec(s))) {
+        out.citationsTotal++;
+        if (out.hasSupports) {
+          var pos = m.index, ok = false;
+          for (var k = 0; k < ranges.length; k++) { if (pos >= ranges[k][0] - 40 && pos <= ranges[k][1] + 40) { ok = true; break; } }
+          if (!ok) out.citationsUnsupported++;
+        }
+      }
+    } catch (_) {}
+    return out;
+  };
+
   var generateBibliographyString = function(metadata, citationStyle, title) {
-    citationStyle = citationStyle || 'Links Only'; title = title || 'Verified Sources';
+    // Honesty (2026-06-21): these entries are raw AI-search grounding chunks — Gemini can ground on a
+    // mismatched/wrong page and the links are often ephemeral redirects. Do NOT title them "Verified
+    // Sources" (the old default — it overclaimed) and DO carry a verify-before-citing caveat so a teacher
+    // never hands a student an unverified link presented as authoritative.
+    citationStyle = citationStyle || 'Links Only'; title = title || 'Referenced Sources';
     if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
     var chunks = filterSources(metadata.groundingChunks);
     if (chunks.length === 0) return "";
-    var bib = '\n\n### ' + title + '\n\n';
-    chunks.forEach(function(chunk, i) { var t = (chunk.web && chunk.web.title) || "Unknown Source"; var u = (chunk.web && chunk.web.uri) || "#"; bib += (i+1) + '. [' + t + '](' + u + ')\n\n'; });
+    var _caveat = (t && t('content.sources_unverified_note')) || 'These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it.';
+    var bib = '\n\n### ' + title + '\n\n*' + _caveat + '*\n\n';
+    chunks.forEach(function(chunk, i) { var _ti = (chunk.web && chunk.web.title) || "Unknown Source"; var u = (chunk.web && chunk.web.uri) || "#"; bib += (i+1) + '. [' + _ti + '](' + u + ')\n\n'; });
     return bib;
   };
   var sanitizeRawUrls = function(text) {
@@ -295,12 +370,66 @@ var createContentEngine = function(deps) {
     cleaned = cleaned.replace(/\n{4,}/g, '\n\n\n');
     return cleaned.trim();
   };
+  // ── Deterministic header guards (2026-07-02) ──
+  // The generation prompts ASK for '## ' section headers but nothing enforced
+  // them, so whether an H2 appeared depended on model compliance — the root
+  // cause of "header 2 sometimes missing" in generated source text. These
+  // repairs run on generation output only, never on user-typed text.
+  var ensureSectionHeader = function(text, title) {
+    if (!text || !title) return text;
+    var cleanTitle = String(title).replace(/^#+\s*/, '').trim();
+    if (cleanTitle.length > 120) cleanTitle = cleanTitle.slice(0, 117) + '…';
+    var lines = String(text).split('\n');
+    var firstIdx = -1;
+    for (var i = 0; i < lines.length; i++) { if (lines[i].trim().length > 0) { firstIdx = i; break; } }
+    if (firstIdx === -1) return text;
+    var first = lines[firstIdx].trim();
+    // "##Title" (missing space) → "## Title"; letters only so "#1 reason" prose survives.
+    var noSpace = first.match(/^(#{1,4})([A-Za-z].*)$/);
+    if (noSpace) first = noSpace[1] + ' ' + noSpace[2];
+    if (/^#{1,6}\s+/.test(first)) {
+      // A header came back — force it to level 2 (sections sit under the # title).
+      lines[firstIdx] = first.replace(/^#{1,6}\s+/, '## ');
+      return lines.join('\n');
+    }
+    // Whole-line bold pretending to be a header → real H2.
+    var bold = first.match(/^\*\*([^*]{2,100})\*\*:?\s*$/);
+    if (bold && !/[.!?:]\s*$/.test(bold[1])) {
+      lines[firstIdx] = '## ' + bold[1].trim();
+      return lines.join('\n');
+    }
+    // The model may open with a sentence and place the header a line or two
+    // in — don't double-add if an H2-H4 shows up in the first 3 content lines.
+    var seen = 0;
+    for (var j = firstIdx; j < lines.length && seen < 3; j++) {
+      var tr = lines[j].trim();
+      if (!tr) continue;
+      seen++;
+      if (/^#{2,4}\s+/.test(tr)) return lines.join('\n');
+    }
+    return '## ' + cleanTitle + '\n\n' + lines.join('\n');
+  };
+  var promoteBoldLineHeaders = function(text) {
+    if (!text) return text;
+    var lines = String(text).split('\n');
+    var firstContentIdx = -1;
+    for (var i = 0; i < lines.length; i++) { if (lines[i].trim().length > 0) { firstContentIdx = i; break; } }
+    return lines.map(function(line, idx) {
+      if (idx === firstContentIdx) return line; // first content line is title territory
+      var m = line.trim().match(/^\*\*([^*]{2,60})\*\*$/);
+      if (!m) return line;
+      var inner = m[1].trim();
+      if (/[.!?:]$/.test(inner)) return line;          // sentence / "**Maya:**" speaker label — real emphasis
+      if (inner.split(/\s+/).length > 10) return line; // headers are short
+      return '## ' + inner;
+    }).join('\n');
+  };
   var getStructureForLength = function(lengthInput) {
     var length = parseInt(lengthInput) || 0;
-    if (length <= 350) return "Structure: Write exactly 2 paragraphs. Do not use section headers.";
-    if (length <= 650) return "Structure: Write exactly 4 sections. Each section must have a header and exactly 2 paragraphs.";
-    if (length <= 1000) return "Structure: Write exactly 6 sections. Each section must have a header and 2-3 paragraphs.";
-    return "Structure: Write exactly 8 sections. Each section must have a header and 3 paragraphs.";
+    if (length <= 350) return "Structure: Write exactly 2 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short 2-5 word title) and contain 1-2 paragraphs.";
+    if (length <= 650) return "Structure: Write exactly 4 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short title) and contain exactly 2 paragraphs.";
+    if (length <= 1000) return "Structure: Write exactly 6 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short title) and contain 2-3 paragraphs.";
+    return "Structure: Write exactly 8 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short title) and contain 3 paragraphs.";
   };
   var _s = function() { return window.__contentEngineState || {}; };
   var _bindState;
@@ -538,7 +667,10 @@ var createContentEngine = function(deps) {
            let fullDocument = `Title: ${effTopic}\n\n`;
            const wordsPerSection = Math.ceil(targetWords / sections.length);
            let allGroundingChunks = [];
+           // A3: doc-level aggregation of the engine's own claim↔source support map.
+           let _supportAgg = { totalChars: 0, supportedChars: 0, citationsTotal: 0, citationsUnsupported: 0, sectionsWithSupports: 0 };
            let currentCitationOffset = 0;
+           let _sectionFailures = 0; // sections skipped because even the no-grounding fallback hard-failed (rate-limit) — surfaced after the loop instead of aborting the whole doc
            // Track per-section text so each subsequent prompt can include a recap of
            // what's already been written. Without this, Gemini sees only the section
            // title + the same research brief every chunk — the result is near-
@@ -613,7 +745,7 @@ var createContentEngine = function(deps) {
                    ------------------------------------------------
                    IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
                    ` : ''}
-                   This is a single self-contained article — write an engaging opening AND a summary conclusion. No section heading — the article stands on its own.
+                   This is a single self-contained article — write an engaging opening AND a summary conclusion. Structure the body with short '## ' section headers exactly as the Structure instruction below specifies.
                    ${effStandards ? `STANDARD ALIGNMENT: This article supports "${effStandards}". Embed examples, vocabulary, and rhetorical structures that let a student demonstrate the skills/knowledge in the standard — don't just touch the topic. If the standard calls for a cognitive move (compare, cite evidence, analyze structure, evaluate, etc.), the prose should model that move explicitly so a student reading it sees the skill in action.` : ''}
                    STRICT INSTRUCTIONS:
                    ${effIncludeCitations ? `
@@ -623,7 +755,7 @@ var createContentEngine = function(deps) {
                    ` : ''}
                    4. Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Do NOT summarize.
                    5. Do NOT include a "Sources", "References", "Works Cited", or "Bibliography" section — the citation list is appended automatically from grounding metadata.
-                   6. Do NOT emit a "## ${effTopic}" heading or any other top-level heading — begin directly with the article prose.
+                   6. Do NOT emit a "# " title line or any heading that just repeats "${effTopic}" — the document title is added automatically. Section headers must be NEW short descriptive '## ' titles.
                    ${structureInstruction}
                    ${toneSpecificInstruction}
                    ${effVocabulary ? `Key Vocabulary to Include: ${effVocabulary}` : ''}
@@ -690,7 +822,18 @@ You MUST:
                            await new Promise(r => setTimeout(r, 1500));
                        } else {
                            warnLog(`[Citations] ⚠️ Section ${i + 1}/${sections.length} ("${sectionTitle}") grounding failed after ${attempt + 1} attempts, falling back to no-grounding. Citations for this section will be missing.`);
-                           result = await callGemini(sectionPrompt, false, false);
+                           try {
+                               result = await callGemini(sectionPrompt, false, false);
+                           } catch (fallbackErr) {
+                               // Don't let ONE section's hard failure (quota/auth/transient) abort the WHOLE
+                               // multi-section document — skip this section, keep everything built so far, and
+                               // surface it. (Was: unguarded → the error escaped the loop into the outer catch,
+                               // discarding all prior sections with no bibliography and no resume.)
+                               warnLog(`[Citations] ✗ Section ${i + 1}/${sections.length} ("${sectionTitle}") failed even without grounding: ${fallbackErr && fallbackErr.message}. Skipping it; keeping the rest of the document.`);
+                               result = '';
+                               _sectionFailures++;
+                               groundingSuccess = true; // stop retrying this section; move on
+                           }
                        }
                    }
                }
@@ -726,6 +869,17 @@ You MUST:
                                  return converted.length > 0 ? ' ' + converted.join(' ') : '';
                              });
                              allGroundingChunks = [...allGroundingChunks, ...result.groundingMetadata.groundingChunks];
+                             // A3: score this section against the engine's own support map
+                             // BEFORE any text mutation (segment indices refer to the raw
+                             // response). Failure is non-fatal — stats simply stay zero.
+                             try {
+                                 const _sup = computeGroundingSupportStats(rawSection, result.groundingMetadata);
+                                 _supportAgg.totalChars += _sup.totalChars;
+                                 _supportAgg.supportedChars += _sup.supportedChars;
+                                 _supportAgg.citationsTotal += _sup.citationsTotal;
+                                 _supportAgg.citationsUnsupported += _sup.citationsUnsupported;
+                                 if (_sup.hasSupports) _supportAgg.sectionsWithSupports++;
+                             } catch (_) {}
                              currentCitationOffset += chunkCount;
                         }
                         // Sanitize orphan brackets that could break markdown link rendering
@@ -743,6 +897,11 @@ You MUST:
                    sectionText = String(result || "");
                }
                sectionText = sectionText.replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+               // Deterministic guard: the prompt asks for '## ${sectionTitle}' but the
+               // model sometimes skips it or emits bold/wrong level — enforce it so the
+               // H2 always survives. Single-section docs skip this (a '## topic' header
+               // under the '# topic' title would be a redundant duplicate).
+               if (sections.length > 1) sectionText = ensureSectionHeader(sectionText, sectionTitle);
                sectionTexts.push(sectionText);
                fullDocument += sectionText + "\n\n";
                setInputText(fullDocument);
@@ -833,6 +992,19 @@ You MUST:
                 // Generate bibliography from reordered chunks so its numbers match body.
                 var masterMetadata = { groundingChunks: _renum.reorderedChunks };
                 fullDocument += generateBibliographyString(masterMetadata, 'Links Only', "Source Text References");
+                // A3: citation-support disclosure — surfaces the engine's OWN accounting of
+                // which passages it tied to sources. A citation number links a passage to a
+                // source; it does not guarantee the source states the claim. When the
+                // grounding engine reports unmatched citation sites, say so on the artifact.
+                if (_supportAgg.sectionsWithSupports > 0 && _supportAgg.totalChars > 0) {
+                    var _supPct = Math.round(100 * _supportAgg.supportedChars / _supportAgg.totalChars);
+                    fullDocument += '\n*Source-support check (automated, from the grounding engine\'s own map): '
+                      + _supPct + '% of the generated text is directly tied to the sources above'
+                      + (_supportAgg.citationsUnsupported > 0
+                          ? '; ' + _supportAgg.citationsUnsupported + ' of ' + _supportAgg.citationsTotal + ' citation sites could not be matched to a supported passage — verify those claims against their sources before relying on them'
+                          : '')
+                      + '. A citation links a passage to a source; it does not guarantee the source states the claim.*\n';
+                }
                 fullDocument = validateAndRepairCitations(fullDocument, _renum.reorderedChunks);
                 // Citation spacing normalization (mirrors the former short-path cleanup).
                 // Multi-chunk per-section processing only moved trailing periods; it did
@@ -863,6 +1035,23 @@ You MUST:
                     // 5. Final collapse of 2+ tabs/spaces (preserve newlines).
                     .replace(/[ \t]{2,}/g, ' ');
            }
+           // Ungrounded-content disclosure (builder-review A2, 2026-07-01). By default
+           // (includeSourceCitations=false) — or when grounding returned no usable
+           // sources — the document is UN-SOURCED AI prose, and nothing anywhere told
+           // the reader that. Label the ARTIFACT itself (it gets printed and handed to
+           // students far from the app's UI), mirroring the honesty rules the PDF
+           // pipeline applies to its reports. Appended last so it renders as a footer.
+           if (!effIncludeCitations || allGroundingChunks.length === 0) {
+               fullDocument += '\n\n---\n\n*About this document: drafted with AI assistance'
+                 + (effIncludeCitations ? ' — web grounding returned no citable sources for this topic' : ' without source citations enabled')
+                 + '. Facts, figures, and quotations have not been verified against cited sources — review for accuracy before classroom use.*\n';
+           }
+           // Surface a partial generation instead of silently shipping a doc with empty sections (the
+           // no-grounding fallback above now degrades a hard-failed section to empty rather than aborting).
+           if (_sectionFailures > 0) {
+               warnLog(`[Generate] ${_sectionFailures} of ${sections.length} section(s) could not be generated (AI rate-limited) — kept the rest.`);
+               try { addToast('⚠ ' + _sectionFailures + ' of ' + sections.length + ' section(s) could not be generated (the AI service was rate-limited) — the rest were kept. Re-run to fill the gaps.', 'warning'); } catch (_) {}
+           }
            if (effIncludeCitations) {
                 const finalCitCount = (fullDocument.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
 
@@ -879,6 +1068,7 @@ You MUST:
                    addToast(t('toasts.citations_unavailable'), "info");
                }
            }
+           fullDocument = promoteBoldLineHeaders(fullDocument);
            fullDocument = cleanSourceMetaCommentary(fullDocument);
            fullDocument = repairSourceMarkdown(fullDocument);
            setInputText(fullDocument);
@@ -1215,7 +1405,10 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           for (const line of dialogueData.dialogue) {
             const speakerName = line.speaker === 'learner' ? learnerName.toUpperCase() : guideName.toUpperCase();
             const action = line.action ? ` ${line.action}` : '';
-            formattedScript += `**${speakerName}:**${action} ${line.line}\n\n`;
+            // B8 (2026-06-28): guard line.line the same way as line.action — a dialogue object missing
+            // its `line` field otherwise interpolates the literal string "undefined" into the script.
+            const lineText = line.line ? ` ${line.line}` : '';
+            formattedScript += `**${speakerName}:**${action}${lineText}\n\n`;
           }
           text = formattedScript.trim();
         } else {
@@ -1568,7 +1761,9 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 Phrase: "${originalText}",
                 Output Language: ${outputLang}.
                 ${outputLang !== 'English' ? `Provide the explanation in ${outputLang} first. Then add a new line with "**English:**" followed by the English explanation.` : ''}
-                IMPORTANT: Do NOT include bare URLs in your explanation. Reference sources only by name.
+                IMPORTANT: Do not include URLs, citations, source names, or source attributions.
+                Do not say "according to" a dictionary or imply that you consulted an external source.
+                This is an AI-generated, context-aware explanation for the student's reading level.
                 ${dialectInstruction}
                 Return ONLY the explanation.
               `;
@@ -1588,6 +1783,21 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       } finally {
       }
   };
+  // Authoritative dictionary (Wiktionary via dictionaryapi.dev, offline-cached) shown
+  // BESIDE the AI's grade-leveled definition — triangulation + a non-AI knowledge source.
+  // Fallback-safe: on any miss/failure the Define popup keeps its AI-only behaviour.
+  const attachDictionary = (word) => {
+      (async () => {
+          try {
+              if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') && window.__alloLoadPlugin) {
+                  await Promise.race([window.__alloLoadPlugin('dictionary_loader.js'), new Promise(r => setTimeout(r, 6000))]);
+              }
+              if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function')) return;
+              const entry = await window.AlloDictionary.lookup(word);
+              if (entry) setDefinitionData(prev => (prev && prev.word === word ? { ...prev, dictionary: entry } : prev));
+          } catch (_e) {}
+      })();
+  };
   const handleWordClick = async (rawWord, e) => {
       if (interactionMode !== 'define') return;
       e.stopPropagation();
@@ -1601,6 +1811,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           x,
           y
       });
+      attachDictionary(word);
       try {
           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
           const prompt = `
@@ -1609,7 +1820,9 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             Output Language: ${outputLang}.
             ${outputLang !== 'English' ? `Provide the definition in ${outputLang} first. Then add a new line with "**English:**" followed by the English definition.` : ''}
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
-            IMPORTANT: Do NOT include bare URLs in your definition. Reference sources only by name.
+            IMPORTANT: Do not include URLs, citations, source names, or source attributions.
+            Do not say "according to" a dictionary or imply that you consulted an external source.
+            This is an AI-generated, context-aware explanation for the student's reading level.
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
           const result = await callGemini(prompt);
@@ -1645,6 +1858,22 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       // fall back to English as the analysis language in that ambiguous case.
       const _phLang = (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages')
           ? leveledTextLanguage : 'English';
+      // Authoritative pronunciation alongside the AI phonics: real recording (dict.audio)
+      // + authoritative IPA (dict.phonetic) as a quiet third source. English-only, fallback-safe.
+      if (_phLang === 'English') {
+          (async () => {
+              try {
+                  if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') && window.__alloLoadPlugin) {
+                      await Promise.race([window.__alloLoadPlugin('dictionary_loader.js'), new Promise(r => setTimeout(r, 6000))]);
+                  }
+                  if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function')) return;
+                  const dEntry = await window.AlloDictionary.lookup(word);
+                  if (dEntry && reqId === _phonicsReqId) {
+                      setPhonicsData(prev => (reqId === _phonicsReqId && prev && prev.word === word ? { ...prev, dictionary: { phonetic: dEntry.phonetic, audio: dEntry.audio } } : prev));
+                  }
+              } catch (_e) {}
+          })();
+      }
       try {
           const prompt = _phLang === 'English'
               ? `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`
@@ -1815,6 +2044,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           y
       });
       setSelectionMenu(null);
+      attachDictionary(word);
       try {
           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
           const prompt = `
@@ -1823,6 +2053,9 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             Output Language: ${outputLang}.
             ${outputLang !== 'English' ? `Provide the definition in ${outputLang} first. Then add a new line with "**English:**" followed by the English definition.` : ''}
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
+            IMPORTANT: Do not include URLs, citations, source names, or source attributions.
+            Do not say "according to" a dictionary or imply that you consulted an external source.
+            This is an AI-generated, context-aware explanation for the student's reading level.
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
           const result = await callGemini(prompt);

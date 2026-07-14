@@ -113,6 +113,11 @@ const StudentQuizOverlay = React.memo(({
     setHasAnswered(true);
     setSelectedOptionIndex(optionIndex);
     try {
+      // FERPA-first transport: boss answers ride the P2P quiz channel when
+      // it's up (shell hook; answer lands only on the teacher device).
+      // Firestore quizState.responses stays strictly as the fallback.
+      const p2pSend = typeof window !== 'undefined' && window.__alloQuizChannelSend;
+      if (typeof p2pSend === 'function' && p2pSend('boss:' + currentQuestionIndex, optionIndex)) return;
       const effectiveAppId = targetAppId || appId;
       const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
       await updateDoc(sessionRef, {
@@ -199,7 +204,7 @@ const StudentQuizOverlay = React.memo(({
     className: "text-center p-8"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-8xl mb-6"
-  }, "\uD83C\uDF89"), /*#__PURE__*/React.createElement("h2", {
+  }, "🎉"), /*#__PURE__*/React.createElement("h2", {
     className: "text-5xl font-black text-white mb-4 drop-shadow-lg"
   }, t('quiz.boss.victory_msg')), /*#__PURE__*/React.createElement("p", {
     className: "text-xl text-green-200"
@@ -209,7 +214,7 @@ const StudentQuizOverlay = React.memo(({
     className: "text-center p-8"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-8xl mb-6"
-  }, "\uD83D\uDC80"), /*#__PURE__*/React.createElement("h2", {
+  }, "💀"), /*#__PURE__*/React.createElement("h2", {
     className: "text-5xl font-black text-white mb-4 drop-shadow-lg"
   }, t('quiz.boss.class_defeat_msg')), /*#__PURE__*/React.createElement("p", {
     className: "text-xl text-red-200"
@@ -362,7 +367,7 @@ const StudentQuizOverlay = React.memo(({
     className: "flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-full px-8 py-6 rounded-3xl font-bold text-lg shadow-xl flex items-center justify-center gap-4 border-2 border-purple-300 bg-purple-50 text-purple-900"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDDE3\uFE0F"), /*#__PURE__*/React.createElement("span", null, t('quiz.poll_completed') || 'Thanks for sharing your take.'))), phase === 'revealed' && currentQuestion?.itemType !== 'likert' && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "🗣️"), /*#__PURE__*/React.createElement("span", null, t('quiz.poll_completed') || 'Thanks for sharing your take.'))), phase === 'revealed' && currentQuestion?.itemType !== 'likert' && /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: `
@@ -413,10 +418,25 @@ const TeacherGate = React.memo(({
   } = useContext(LanguageContext);
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState(false);
+  const gateRef = useRef(null);
+  useFocusTrap(gateRef, isOpen, onClose);
   if (!isOpen) return null;
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    if (passwordInput === APP_CONFIG._cfg_validation_key) {
+    // Verify against a stored PBKDF2 hash envelope (the password itself is never kept in
+    // the clear). Legacy console-set plaintext keys still work via the string branch.
+    const _key = APP_CONFIG._cfg_validation_key;
+    let _ok = false;
+    if (_key && typeof _key === 'object' && _key.kind === 'pwhash' && window.AlloModules && window.AlloModules.AlloCrypto) {
+      try {
+        _ok = await window.AlloModules.AlloCrypto.verifyPassword(passwordInput, _key);
+      } catch (_) {
+        _ok = false;
+      }
+    } else if (typeof _key === 'string') {
+      _ok = passwordInput === _key;
+    }
+    if (_ok) {
       onUnlock();
       onClose();
       setPasswordInput('');
@@ -426,6 +446,11 @@ const TeacherGate = React.memo(({
     }
   };
   return /*#__PURE__*/React.createElement("div", {
+    ref: gateRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "teacher-gate-title",
+    "aria-describedby": "teacher-gate-helper",
     className: "fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300",
     "data-help-key": "teacher_gate_modal"
   }, /*#__PURE__*/React.createElement("div", {
@@ -442,8 +467,10 @@ const TeacherGate = React.memo(({
     size: 32,
     className: "text-red-600"
   })), /*#__PURE__*/React.createElement("h2", {
+    id: "teacher-gate-title",
     className: "text-2xl font-black text-slate-800 mb-2"
   }, t('modals.teacher_gate.title')), /*#__PURE__*/React.createElement("p", {
+    id: "teacher-gate-helper",
     className: "text-slate-600 mb-6 text-sm font-medium"
   }, t('modals.teacher_gate.helper')), /*#__PURE__*/React.createElement("form", {
     onSubmit: handleSubmit,
@@ -459,10 +486,14 @@ const TeacherGate = React.memo(({
     placeholder: t('modals.teacher_gate.access_code_placeholder'),
     className: `w-full text-center text-lg p-3 border-2 rounded-xl outline-none focus:ring-4 transition-all placeholder:text-slate-600 ${error ? 'border-red-400 bg-red-50 focus:ring-red-200 text-red-900' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-indigo-900'}`,
     autoFocus: true,
+    "aria-invalid": error,
+    "aria-describedby": error ? 'teacher-gate-error' : undefined,
     "aria-label": t('modals.teacher_gate.access_code_placeholder'),
     "data-help-key": "teacher_gate_input"
-  }), String(error) && /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-red-500 mt-2 animate-pulse flex items-center justify-center gap-1"
+  }), error && /*#__PURE__*/React.createElement("p", {
+    id: "teacher-gate-error",
+    role: "alert",
+    className: "text-xs font-bold text-red-700 mt-2 flex items-center justify-center gap-1"
   }, /*#__PURE__*/React.createElement(XCircle, {
     size: 12
   }), " ", t('modals.teacher_gate.error_incorrect'))), /*#__PURE__*/React.createElement("button", {
@@ -561,7 +592,6 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-indigo-700"
   }, t('roles.teacher'))), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.like'),
     onClick: () => handleRoleClick('parent'),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_parent"
@@ -586,7 +616,6 @@ const RoleSelectionModal = React.memo(({
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2"
   }, t('roles.mic_setup')), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.confirm'),
     onClick: handleMicCheck,
     disabled: micStatus === 'granted' || micStatus === 'requesting',
     className: `flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' : micStatus === 'denied' ? 'bg-red-50 text-red-500 border border-red-100' : micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`
@@ -599,7 +628,11 @@ const RoleSelectionModal = React.memo(({
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Mic, {
     size: 14
-  }), micStatus === 'granted' ? t('roles.mic_ready') : micStatus === 'denied' ? t('roles.mic_denied') : micStatus === 'requesting' ? t('roles.mic_requesting') : t('roles.mic_enable')), micStatus === 'idle' && /*#__PURE__*/React.createElement("p", {
+  }), /*#__PURE__*/React.createElement("span", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, micStatus === 'granted' ? t('roles.mic_ready') : micStatus === 'denied' ? t('roles.mic_denied') : micStatus === 'requesting' ? t('roles.mic_requesting') : t('roles.mic_enable'))), micStatus === 'idle' && /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mt-2"
   }, t('roles.mic_tip'))))));
 });
@@ -614,9 +647,13 @@ const StudentEntryModal = React.memo(({
   const [selectedAdj, setSelectedAdj] = useState('');
   const [selectedAnimal, setSelectedAnimal] = useState('');
   const entryRef = useRef(null);
-  useFocusTrap(entryRef, isOpen);
-  const adjectives = t('codenames.adjectives') || [];
-  const animals = t('codenames.animals') || [];
+  useFocusTrap(entryRef, isOpen, onClose);
+  const adjectives = t('codenames.adjectives', {
+    returnObjects: true
+  }) || [];
+  const animals = t('codenames.animals', {
+    returnObjects: true
+  }) || [];
   const randomizeName = useCallback(() => {
     if (adjectives.length > 0 && animals.length > 0) {
       const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
@@ -641,6 +678,8 @@ const StudentEntryModal = React.memo(({
     ref: entryRef,
     role: "dialog",
     "aria-modal": "true",
+    "aria-labelledby": "student-entry-title",
+    "aria-describedby": "student-entry-description",
     className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative"
@@ -651,8 +690,10 @@ const StudentEntryModal = React.memo(({
   }, /*#__PURE__*/React.createElement(X, {
     size: 20
   })), /*#__PURE__*/React.createElement("h2", {
+    id: "student-entry-title",
     className: "text-2xl font-black text-slate-800 mb-2"
   }, t('wizard.step_codename') || 'Pick Your Codename!'), /*#__PURE__*/React.createElement("p", {
+    id: "student-entry-description",
     className: "text-slate-600 mb-6 font-medium"
   }, t('modals.student_entry_sub')), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6"
@@ -679,7 +720,10 @@ const StudentEntryModal = React.memo(({
   }, anim)))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-xl font-black text-indigo-600 tracking-tight truncate mr-2"
+    className: "text-xl font-black text-indigo-600 tracking-tight truncate mr-2",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
   }, selectedAdj, " ", selectedAnimal), /*#__PURE__*/React.createElement("button", {
     onClick: randomizeName,
     className: "p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 transition-all shrink-0",
@@ -696,7 +740,6 @@ const StudentEntryModal = React.memo(({
   }), " ", t('entry.warning')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.generate'),
     onClick: () => handleConfirm('new'),
     disabled: !selectedAdj || !selectedAnimal,
     className: "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
@@ -705,7 +748,6 @@ const StudentEntryModal = React.memo(({
     size: 18,
     className: "text-yellow-400 fill-current"
   }), " ", t('entry.start')), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.upload'),
     onClick: () => handleConfirm('load'),
     disabled: !selectedAdj || !selectedAnimal,
     className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",
@@ -714,7 +756,7 @@ const StudentEntryModal = React.memo(({
     size: 16
   }), " ", t('entry.load'))), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
-    className: "mt-4 text-sm text-slate-600 hover:text-slate-900 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded"
+    className: "mt-4 min-h-6 inline-flex items-center text-sm text-slate-600 hover:text-slate-900 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded"
   }, t('common.cancel'))));
 });
 const StudentWelcomeModal = React.memo(({
@@ -726,12 +768,14 @@ const StudentWelcomeModal = React.memo(({
     t
   } = useContext(LanguageContext);
   const welcomeRef = useRef(null);
-  useFocusTrap(welcomeRef, isOpen);
+  useFocusTrap(welcomeRef, isOpen, onClose);
   if (!isOpen) return null;
   return /*#__PURE__*/React.createElement("div", {
     ref: welcomeRef,
     role: "dialog",
     "aria-modal": "true",
+    "aria-labelledby": "student-welcome-title",
+    "aria-describedby": "student-welcome-description",
     className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 relative"
@@ -749,13 +793,14 @@ const StudentWelcomeModal = React.memo(({
     size: 48,
     className: "text-teal-600"
   }))), /*#__PURE__*/React.createElement("h2", {
+    id: "student-welcome-title",
     className: "text-2xl font-black text-slate-800 mb-2"
   }, t('modals.student_welcome')), /*#__PURE__*/React.createElement("p", {
+    id: "student-welcome-description",
     className: "text-slate-600 mb-8 font-medium"
   }, t('welcome.prompt')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.upload'),
     onClick: () => {
       onUpload();
       onClose();
@@ -765,7 +810,6 @@ const StudentWelcomeModal = React.memo(({
   }, /*#__PURE__*/React.createElement(Upload, {
     size: 20
   }), " ", t('welcome.load')), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.close'),
     onClick: onClose,
     className: "w-full p-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors active:scale-95",
     "data-help-key": "welcome_skip_btn"

@@ -14,8 +14,34 @@
       '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
       '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 textarea:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
       '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
-      '.fixed.inset-0 .text-slate-600 { color: #64748b !important; }',
-      '.fixed.inset-0 .text-gray-400 { color: #6b7280 !important; }',
+      // Light-mode-only text tweaks — scoped off dark/contrast so they do not fight
+      // the .theme-dark/.theme-contrast .allo-docsuite remap on the panel root.
+      '.fixed.inset-0:not(.theme-dark):not(.theme-contrast) .text-slate-600 { color: #64748b !important; }',
+      '.fixed.inset-0:not(.theme-dark):not(.theme-contrast) .text-gray-400 { color: #6b7280 !important; }',
+      // Supplementary theme remaps for the 15 Assessment Center Tailwind tokens not
+      // in the shared docsuite union (values mirror dev-tools/gen_docsuite_theme.cjs
+      // DARK/CONTRAST; the 232 common tokens are covered by the host docsuite block).
+      '.theme-dark .allo-docsuite .ring-blue-300 { --tw-ring-color:#1d4ed8 !important; }',
+      '.theme-dark .allo-docsuite .via-teal-50 { background-image:none !important;background-color:#042f2e !important; }',
+      '.theme-dark .allo-docsuite [class~="to-indigo-50/50"] { background-image:none !important;background-color:#1e1b4b !important; }',
+      '.theme-dark .allo-docsuite .via-violet-50 { background-image:none !important;background-color:#2e1065 !important; }',
+      '.theme-dark .allo-docsuite .via-purple-50 { background-image:none !important;background-color:#3b0764 !important; }',
+      '.theme-dark .allo-docsuite .from-orange-50 { background-image:none !important;background-color:#431407 !important; }',
+      '.theme-dark .allo-docsuite .border-pink-100 { border-color:#9d174d !important; }',
+      '.theme-dark .allo-docsuite .text-gray-400 { color:#a3b1c2 !important; }',
+      '.theme-contrast .allo-docsuite .ring-blue-300 { --tw-ring-color:#ffff00 !important; }',
+      '.theme-contrast .allo-docsuite .bg-blue-500, .theme-contrast .allo-docsuite .bg-slate-500 { background-color:#000000 !important; }',
+      '.theme-contrast .allo-docsuite .from-orange-50, .theme-contrast .allo-docsuite .from-orange-600, .theme-contrast .allo-docsuite .from-purple-500, .theme-contrast .allo-docsuite .from-red-600, .theme-contrast .allo-docsuite [class~="to-indigo-50/50"], .theme-contrast .allo-docsuite .to-sky-500, .theme-contrast .allo-docsuite .via-purple-50, .theme-contrast .allo-docsuite .via-teal-50, .theme-contrast .allo-docsuite .via-violet-50 { background-image:none !important;background-color:#000000 !important; }',
+      '.theme-contrast .allo-docsuite .border-pink-100 { border-color:#ffff00 !important; }',
+      '.theme-contrast .allo-docsuite .text-gray-400, .theme-contrast .allo-docsuite [class~="text-white/60"] { color:#ffff00 !important; }',
+      // Safety net: callout tints (bg-<color>-50) that the remap darkens often carry
+      // an inline dark text color that the class remap cannot reach. Force the
+      // container text readable in dark/contrast (child elements with their own
+      // .text-* class keep their higher-specificity remap; !important beats the
+      // non-important inline color). Neutral panels (slate/gray) are excluded — the
+      // remap + the light-only rules above already handle those.
+      '.theme-dark .allo-docsuite .bg-amber-50, .theme-dark .allo-docsuite .bg-yellow-50, .theme-dark .allo-docsuite .bg-orange-50, .theme-dark .allo-docsuite .bg-red-50, .theme-dark .allo-docsuite .bg-rose-50, .theme-dark .allo-docsuite .bg-green-50, .theme-dark .allo-docsuite .bg-emerald-50, .theme-dark .allo-docsuite .bg-teal-50, .theme-dark .allo-docsuite .bg-sky-50, .theme-dark .allo-docsuite .bg-blue-50, .theme-dark .allo-docsuite .bg-indigo-50, .theme-dark .allo-docsuite .bg-violet-50, .theme-dark .allo-docsuite .bg-purple-50, .theme-dark .allo-docsuite .bg-pink-50 { color:#e2e8f0 !important; }',
+      '.theme-contrast .allo-docsuite .bg-amber-50, .theme-contrast .allo-docsuite .bg-yellow-50, .theme-contrast .allo-docsuite .bg-orange-50, .theme-contrast .allo-docsuite .bg-red-50, .theme-contrast .allo-docsuite .bg-rose-50, .theme-contrast .allo-docsuite .bg-green-50, .theme-contrast .allo-docsuite .bg-emerald-50, .theme-contrast .allo-docsuite .bg-teal-50, .theme-contrast .allo-docsuite .bg-sky-50, .theme-contrast .allo-docsuite .bg-blue-50, .theme-contrast .allo-docsuite .bg-indigo-50, .theme-contrast .allo-docsuite .bg-violet-50, .theme-contrast .allo-docsuite .bg-purple-50, .theme-contrast .allo-docsuite .bg-pink-50 { color:#ffff00 !important; }',
     ].join('\n');
     document.head.appendChild(saA11yStyle);
   }
@@ -93,22 +119,26 @@
     '3-5': ['segmentation', 'rhyming', 'spelling', 'orf']
   };
 
-  // Lucide icons (loaded globally via CDN)
+  // Icons: the host exposes lucide icons as window.<Icon> (Object.assign(window,{…}))
+  // AND on window.AlloIcons. window.lucide is NOT set anywhere, so resolve from the
+  // host globals first, then AlloIcons, then any window.lucide, else a no-op renderer.
   var lucide = window.lucide || {};
-  var AlertCircle = lucide.AlertCircle || function() { return null; };
-  var BarChart2 = lucide.BarChart2 || function() { return null; };
-  var BarChart3 = lucide.BarChart3 || function() { return null; };
-  var ChevronLeft = lucide.ChevronLeft || function() { return null; };
-  var ClipboardList = lucide.ClipboardList || function() { return null; };
-  var Cloud = lucide.Cloud || function() { return null; };
-  var Download = lucide.Download || function() { return null; };
-  var Printer = lucide.Printer || function() { return null; };
-  var Settings = lucide.Settings || function() { return null; };
-  var ShieldCheck = lucide.ShieldCheck || function() { return null; };
-  var Trash2 = lucide.Trash2 || function() { return null; };
-  var Upload = lucide.Upload || function() { return null; };
-  var Users = lucide.Users || function() { return null; };
-  var Wifi = lucide.Wifi || function() { return null; };
+  var _AI = window.AlloIcons || {};
+  var _icon = function(name) { return window[name] || _AI[name] || lucide[name] || function() { return null; }; };
+  var AlertCircle = _icon('AlertCircle');
+  var BarChart2 = _icon('BarChart2');
+  var BarChart3 = _icon('BarChart3');
+  var ChevronLeft = _icon('ChevronLeft');
+  var ClipboardList = _icon('ClipboardList');
+  var Cloud = _icon('Cloud');
+  var Download = _icon('Download');
+  var Printer = _icon('Printer');
+  var Settings = _icon('Settings');
+  var ShieldCheck = _icon('ShieldCheck');
+  var Trash2 = _icon('Trash2');
+  var Upload = _icon('Upload');
+  var Users = _icon('Users');
+  var Wifi = _icon('Wifi');
   // ── End dependency shims ───────────────────────────────────────
 
   // ── Full-Screen Probe Overlay Component ────────────────────────
@@ -236,7 +266,7 @@
               h('span', { className: 'text-red-500' }, '\u274C ' + incorrectCount)
             ),
             // Timer
-            timer !== undefined && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+            timer !== undefined && h('div', {
               className: 'flex items-center gap-2 px-4 py-2 rounded-xl text-lg font-black tabular-nums ' +
                 (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'),
               'aria-live': 'polite'
@@ -262,11 +292,11 @@
           })
         ),
         // Instruction
-        instruction && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        instruction && h('div', {
           className: 'text-center py-2 text-xs text-slate-600 font-semibold uppercase tracking-wider bg-slate-50/50 shrink-0'
         }, instruction),
         // Main content area (probe-specific content)
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 flex items-center justify-center p-8 overflow-auto' },
+        h('div', { className: 'flex-1 flex items-center justify-center p-8 overflow-auto' },
           children
         ),
         // Bottom scoring bar (for teacher-scored probes)
@@ -298,6 +328,7 @@
   const StudentAnalyticsPanel = React.memo(({
     isOpen,
     onClose,
+    theme = 'light',
     t,
     rosterKey,
     setRosterKey,
@@ -353,15 +384,35 @@
     mathFluencyTimerRef,
     mathFluencyInputRef,
     finishMathFluencyProbe,
-    loadProbeBanks
+    loadProbeBanks,
+    // RTI goals + intervention-log handlers live in the host App scope; passed in as
+    // props so the student-detail RTI-goal overlay and intervention add/delete don't
+    // hit the free-var crash class (these were read but never declared -> ReferenceError
+    // on render). rtiGoals defaults to {} because it is dereferenced during render.
+    rtiGoals = {},
+    setRtiGoals,
+    saveInterventionLog,
+    deleteInterventionLog,
+    // Closes the Assessment Center panel when a probe/battery launches so the
+    // student sees the activity. Previously referenced as a bare (undeclared)
+    // global, so the typeof-guarded call in launchBenchmarkProbe was always a no-op.
+    setShowClassAnalytics,
+    // Opens the host Report Writer (used by the "Send to Report Writer" action).
+    openReportWriter
   }) => {
     const [importedStudents, setImportedStudents] = React.useState([]);
     const [selectedStudent, setSelectedStudent] = React.useState(null);
+    // Controlled draft for the intervention-log add form (was read/cleared via
+    // document.getElementById, which is fragile under re-render/odd student names).
+    const [interventionDraft, setInterventionDraft] = React.useState({ program: '', frequency: 'daily', minutes: '', groupSize: '', startDate: '', notes: '' });
     const [isProcessing, setIsProcessing] = React.useState(false);
-    // RTI decision-rule picker state (was read at 5 sites but never declared -> ReferenceError when
-    // that panel rendered). NOTE: this picker is a DISPLAY REFERENCE only — calculateAimline uses a
-    // FIXED consecutive-below-aimline rule (4 warn / 6 change); wiring the picker into the alert logic
-    // would change WHEN warning/critical fires and is a separate, reviewed RTI-fidelity change.
+    // RTI decision-rule picker state. `rtiDecisionRuleThreshold` is now WIRED into
+    // calculateAimline (warn at threshold consecutive points below the aimline,
+    // critical at threshold+2). Default 4 reproduces the prior fixed 4-warn/6-change
+    // rule EXACTLY. Moving the picker off default changes WHEN warning/critical fires
+    // on real student data — an RTI-fidelity change for the clinician to confirm.
+    // `rtiDecisionRuleMethod` (four_point vs median-of-last-3) is still a display
+    // reference; the median-based computation is a separate, larger change.
     const [rtiDecisionRuleMethod, setRtiDecisionRuleMethod] = React.useState('four_point');
     const [rtiDecisionRuleThreshold, setRtiDecisionRuleThreshold] = React.useState(4);
     const [isMinimized, setIsMinimized] = React.useState(false);
@@ -714,7 +765,7 @@
               data: data,
               stats: stats,
               safetyFlags: extractSafetyFlags(data),
-              lastSession: data.lastSaved || new Date().toISOString()
+              lastSession: data.lastSaved || data.timestamp || data.studentProgressSummary?.generatedAt || new Date().toISOString()
             });
           } catch (err) {
             warnLog(`Failed to parse ${file.name}:`, err);
@@ -736,8 +787,10 @@
           allNewStudents.forEach(function (student) {
             var codename = student.name;
             if (prev.students && prev.students[codename] !== undefined) {
+              var snapshotDate = new Date(student.lastSession || Date.now());
+              if (isNaN(snapshotDate.getTime())) snapshotDate = new Date();
               var snapshot = {
-                date: new Date().toISOString().split('T')[0],
+                date: snapshotDate.toISOString().split('T')[0],
                 quizAvg: student.stats.quizAvg || 0,
                 wsAccuracy: student.stats.wsAccuracy || 0,
                 wsBestStreak: student.stats.wsBestStreak || 0,
@@ -746,6 +799,13 @@
                 gamesPlayed: student.stats.gamesPlayed || 0,
                 totalActivities: student.stats.totalActivities || 0,
                 focusRatio: student.stats.focusRatio || null,
+                globalPoints: student.stats.globalPoints || student.stats.adventureXP || 0,
+                selToolsUsed: student.stats.selToolsUsed || 0,
+                selReflections: student.stats.selReflectionCount || 0,
+                selStationQuestsComplete: student.stats.selStationsCompleted || 0,
+                selStationQuestsTotal: student.stats.selStationsTotal || 0,
+                progressSummaryVersion: student.stats.summaryVersion || null,
+                progressSummaryGeneratedAt: student.stats.progressSummaryGeneratedAt || null,
                 importedFrom: student.filename
               };
               var existing = history[codename] || [];
@@ -810,15 +870,28 @@
         wordScramble: null,
         labelChallengeAvg: 0,
         labelChallengeAttempts: 0,
-        labelChallengeBest: 0
+        labelChallengeBest: 0,
+        focusRatio: null,
+        globalPoints: 0,
+        level: 1,
+        selReflectionCount: 0,
+        selToolsUsed: 0,
+        selStationsCompleted: 0,
+        selStationsTotal: 0,
+        hasProgressSummary: false,
+        summaryVersion: null,
+        progressSummaryGeneratedAt: null
       };
+      const summary = data.studentProgressSummary && typeof data.studentProgressSummary === 'object' ? data.studentProgressSummary : null;
       if (data.responses && Object.keys(data.responses).length > 0) {
         const quizScores = Object.values(data.responses).map(r => r.score || 0);
         stats.quizAvg = quizScores.length > 0 ? Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length) : 0;
         stats.totalActivities += quizScores.length;
       }
-      if (data.adventureState) {
-        stats.adventureXP = data.adventureState.xp || data.adventureState.totalXP || 0;
+      const adventure = data.adventureState || data.adventureSnapshot;
+      if (adventure) {
+        stats.adventureXP = adventure.xp || adventure.totalXP || 0;
+        stats.level = adventure.level || stats.level;
         if (stats.adventureXP > 0) stats.totalActivities++;
       }
       if (data.escapeRoomStats) {
@@ -884,6 +957,37 @@
         stats.labelChallengeAttempts = scores.length;
         stats.labelChallengeBest = Math.max(...scores);
         stats.totalActivities += scores.length;
+      }
+      if (data.focusData && data.focusData.focusRatio != null) {
+        stats.focusRatio = data.focusData.focusRatio;
+      }
+      if (summary) {
+        const overview = summary.overview || {};
+        const academic = summary.academic || {};
+        const sel = summary.sel || {};
+        const engagement = summary.engagement || {};
+        const gameplay = summary.gameplay || {};
+        stats.hasProgressSummary = true;
+        stats.summaryVersion = summary.version || 1;
+        stats.progressSummaryGeneratedAt = summary.generatedAt || null;
+        stats.quizAvg = academic.quizAverage ?? stats.quizAvg;
+        stats.fluencyWCPM = academic.fluencyWCPM ?? stats.fluencyWCPM;
+        stats.wsWordsCompleted = academic.wordSoundsWords ?? stats.wsWordsCompleted;
+        stats.wsAccuracy = academic.wordSoundsAccuracy ?? stats.wsAccuracy;
+        stats.wsBestStreak = academic.wordSoundsBestStreak ?? stats.wsBestStreak;
+        stats.adventureXP = gameplay.adventureXP ?? stats.adventureXP;
+        stats.level = gameplay.adventureLevel ?? stats.level;
+        stats.escapeCompletion = gameplay.escapeCompletion ?? stats.escapeCompletion;
+        stats.gamesPlayed = gameplay.gamesPlayed ?? stats.gamesPlayed;
+        stats.labelChallengeAvg = gameplay.labelChallengeAverage ?? stats.labelChallengeAvg;
+        stats.labelChallengeAttempts = gameplay.labelChallengeAttempts ?? stats.labelChallengeAttempts;
+        stats.totalActivities = Math.max(stats.totalActivities, overview.totalActivities || 0);
+        stats.globalPoints = overview.globalPoints ?? stats.globalPoints;
+        stats.focusRatio = engagement.focusRatio ?? stats.focusRatio;
+        stats.selReflectionCount = sel.reflectionSnapshots || 0;
+        stats.selToolsUsed = sel.toolsUsed || 0;
+        stats.selStationsCompleted = sel.stationQuestsComplete || 0;
+        stats.selStationsTotal = sel.stationQuestsTotal || 0;
       }
       return stats;
     };
@@ -1094,7 +1198,7 @@
       var probesByType = {}; probes.forEach(function(p) { var t = p.type || p.activity || 'unknown'; if (!probesByType[t] || new Date(p.date) > new Date(probesByType[t].date)) probesByType[t] = p; });
       var benchRows = Object.keys(probesByType).map(function(type) {
         var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0;
-        var nt = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm';
+        var nt = normTypeFor(type);
         var interp = interpretProbeResult(nt, score, p.grade||'1', season);
         var tl = {orf:'ORF',nwf:'NWF',lnf:'LNF',math:'Math',fluency:'ORF',missing_number:'MN',quantity_discrimination:'QD'};
         return '<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(tl[type]||type)+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center">'+(interp.pctOfBenchmark||'--')+'%</td><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:12px;color:'+interp.statusColor+';font-weight:700">'+interp.status+'</td></tr>';
@@ -1125,7 +1229,7 @@
         var scores = {};
         ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) {
           var p = latest[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0;
-          var nt = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm';
+          var nt = normTypeFor(type);
           scores[type] = { score: score, interp: interpretProbeResult(nt, score, p.grade||'1', season) };
         });
         return { name: name, tier: tier, scores: scores };
@@ -1164,6 +1268,20 @@
       nwf_cls: { 'K': { fall: 0, winter: 17, spring: 35 }, '1': { fall: 35, winter: 55, spring: 65 } },
       lnf: { 'K': { fall: 7, winter: 30, spring: 47 } },
       math_dcpm: { '1': { fall: 8, winter: 15, spring: 25 }, '2': { fall: 15, winter: 25, spring: 35 }, '3': { fall: 25, winter: 35, spring: 45 }, '4': { fall: 30, winter: 40, spring: 50 }, '5': { fall: 35, winter: 45, spring: 55 }, '6': { fall: 40, winter: 50, spring: 60 } }
+    };
+    // Map a probe's activity/type to its CBM norm table. CRITICAL for integrity:
+    // phonological-awareness measures (segmentation, blending, isolation, rhyming,
+    // spelling, syllable_*, etc.) have NO published CBM benchmark here, so they must
+    // fall through to their raw type (which has no CBM_NORMS entry) -> interpretProbeResult
+    // returns tier 0 "No norms available" instead of silently scoring a PA probe against
+    // MATH fact-fluency norms (which would produce a clinically misleading benchmark).
+    var normTypeFor = function(type) {
+      if (CBM_NORMS[type]) return type; // already a norm key (orf/nwf_cls/lnf/math_dcpm)
+      if (type === 'orf' || type === 'fluency') return 'orf';
+      if (type === 'nwf') return 'nwf_cls';
+      if (type === 'lnf') return 'lnf';
+      if (type === 'math' || type === 'missing_number' || type === 'quantity_discrimination' || type === 'dcpm') return 'math_dcpm';
+      return type; // PA / unknown -> no CBM norms -> tier 0 (accuracy-only)
     };
     var getSeason = function() { var m = new Date().getMonth(); if (m >= 7 && m <= 10) return 'fall'; if (m >= 11 || m <= 1) return 'winter'; return 'spring'; };
 
@@ -1219,7 +1337,7 @@
       else if (probeType === 'lnf') { primaryScore = results.correct; primaryLabel = 'Letters Named Correctly'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Accuracy</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + (results.totalScored > 0 ? Math.round(results.correct / results.totalScored * 100) : 0) + '%</td></tr>'; }
       else if (probeType === 'orf') { primaryScore = results.wcpm; primaryLabel = 'Words Correct Per Minute (WCPM)'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Words Attempted</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + results.wordsAttempted + '</td></tr><tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Errors</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + results.errors + '</td></tr>'; }
       else { primaryScore = results.correct || 0; primaryLabel = 'Items Correct'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Attempted</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + (results.total || 0) + '</td></tr>'; }
-      var normType = probeType === 'orf' ? 'orf' : probeType === 'nwf' ? 'nwf_cls' : probeType === 'lnf' ? 'lnf' : 'math_dcpm';
+      var normType = normTypeFor(probeType);
       var interp = interpretProbeResult(normType, primaryScore, grade, season);
       var recsHtml = interp.recommendations.length > 0 ? '<h3 style="font-size:14px;font-weight:700;color:#1e3a5f;margin:20px 0 8px;border-left:4px solid ' + interp.statusColor + ';padding-left:8px">Recommendations</h3><ul style="margin:0;padding-left:20px">' + interp.recommendations.map(function(r) { return '<li style="font-size:12px;color:#334155;margin:4px 0;line-height:1.5">' + r + '</li>'; }).join('') + '</ul>' : '';
       var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Probe Report - ' + probeLabel + '</title><style>body{font-family:system-ui,sans-serif;max-width:700px;margin:0 auto;padding:2rem;color:#1e293b;line-height:1.6}h1{font-size:1.25rem;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:0.5rem;margin:0 0 4px}h2{font-size:1rem;color:#334155;margin:16px 0 8px}.meta{color:#64748b;font-size:12px;margin-bottom:16px}.score-box{text-align:center;padding:20px;border-radius:12px;margin:16px 0}.score-num{font-size:3rem;font-weight:900}.status-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:12px;margin-top:8px}table{width:100%;border-collapse:collapse;margin:8px 0}th{background:#f1f5f9;padding:6px 12px;border:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b;text-align:left}.sig-line{margin-top:24px;display:flex;gap:24px}.sig-line div{flex:1;border-top:1px solid #cbd5e1;padding-top:4px;font-size:11px;color:#64748b}.footer{margin-top:24px;padding-top:12px;border-top:2px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center}@media print{body{padding:0.5in}}</style></head><body>' +
@@ -1316,7 +1434,7 @@
       var benchmarkRows = '', growthRows = '', interventionRows = '';
       var probesByType = {}; probes.forEach(function(p) { var t = p.type || p.activity || 'unknown'; if (!probesByType[t] || new Date(p.date) > new Date(probesByType[t].date)) probesByType[t] = p; });
       var typeLabels = { orf: 'ORF (WCPM)', nwf: 'NWF (CLS)', lnf: 'LNF', math: 'Math (DCPM)', fluency: 'ORF (WCPM)', missing_number: 'Missing Number', quantity_discrimination: 'Quantity Disc.' };
-      Object.keys(probesByType).forEach(function(type) { var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm'; var interp = interpretProbeResult(normType, score, p.grade||'1', season); benchmarkRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(typeLabels[type]||type)+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px"><span style="color:'+interp.statusColor+';font-weight:700">'+interp.status+'</span></td></tr>'; });
+      Object.keys(probesByType).forEach(function(type) { var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = normTypeFor(type); var interp = interpretProbeResult(normType, score, p.grade||'1', season); benchmarkRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(typeLabels[type]||type)+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px"><span style="color:'+interp.statusColor+';font-weight:700">'+interp.status+'</span></td></tr>'; });
       interventions.forEach(function(intv) { interventionRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(intv.program||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(intv.frequency||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(intv.minutes||'--')+' min</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(intv.startDate||'--')+'</td></tr>'; });
       var recommendation = tierResult.tier === 1 ? '<span style="color:#16a34a;font-weight:700">Continue Tier 1.</span> Reassess at next screening window.' : tierResult.tier === 2 ? '<span style="color:#d97706;font-weight:700">Tier 2 intervention needed.</span> Begin evidence-based program, monitor bi-weekly.' : '<span style="color:#dc2626;font-weight:700">Tier 3 intensive intervention.</span> Monitor weekly. Consider evaluation referral if insufficient growth.';
       var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>RTI Meeting Summary - ' + studentName + '</title><style>body{font-family:system-ui,sans-serif;max-width:750px;margin:0 auto;padding:1.5rem;color:#1e293b;line-height:1.5;font-size:12px}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px;margin:0 0 4px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}.tier-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:800;font-size:13px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 10px;border:1px solid #e2e8f0;font-size:10px;text-transform:uppercase;color:#64748b;text-align:left}.rec-box{padding:10px 14px;border-radius:8px;margin:10px 0;font-size:12px}.sig-line{display:flex;gap:20px;margin-top:16px}.sig-line div{flex:1;border-top:1px solid #cbd5e1;padding-top:3px;font-size:10px;color:#64748b}.footer{margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center}@media print{body{padding:0.4in}}</style></head><body>' +
@@ -1341,7 +1459,7 @@
         var name = s.nickname || s.name; var stats = s.stats || {}; var tier = classifyRTITier(stats);
         var studentProbes = (probeHistory && probeHistory[name]) || []; var latestByType = {};
         studentProbes.forEach(function(p) { var type = p.type || p.activity || 'unknown'; if (!latestByType[type] || new Date(p.date) > new Date(latestByType[type].date)) latestByType[type] = p; });
-        var scores = {}; ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) { var p = latestByType[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm'; scores[type] = { score: score, interp: interpretProbeResult(normType, score, p.grade||'1', season) }; });
+        var scores = {}; ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) { var p = latestByType[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = normTypeFor(type); scores[type] = { score: score, interp: interpretProbeResult(normType, score, p.grade||'1', season) }; });
         return { name: name, tier: tier, scores: scores };
       });
       studentData.sort(function(a,b) { return b.tier.tier !== a.tier.tier ? b.tier.tier - a.tier.tier : a.name.localeCompare(b.name); });
@@ -3092,8 +3210,15 @@
         localStorage.setItem('alloflow_rti_goals', JSON.stringify(updated));
       } catch {}
     };
-    const calculateAimline = (goal, dataPoints) => {
+    const calculateAimline = (goal, dataPoints, warnThreshold) => {
       if (!goal || !goal.baseline || !goal.target || !goal.targetDate) return null;
+      // RTI decision rule: `warnAt` consecutive points below the aimline raises a
+      // WARNING, `changeAt` (= warnAt + 2) raises CRITICAL. Defaults 4/6 exactly
+      // reproduce the prior hardcoded rule; the picker (rtiDecisionRuleThreshold)
+      // shifts it. NOTE: non-default thresholds change WHEN alerts fire on real
+      // student data — a clinical (RTI-fidelity) change to confirm before relying on.
+      const warnAt = (typeof warnThreshold === 'number' && warnThreshold > 0) ? warnThreshold : 4;
+      const changeAt = warnAt + 2;
       const baseDate = new Date(goal.baselineDate || Date.now());
       const targetDate = new Date(goal.targetDate);
       const totalWeeks = Math.max(1, Math.round((targetDate - baseDate) / (7 * 24 * 60 * 60 * 1000)));
@@ -3107,7 +3232,7 @@
       }
       let consecutiveBelow = 0;
       if (dataPoints && dataPoints.length > 0) {
-        const recent = dataPoints.slice(-6);
+        const recent = dataPoints.slice(-Math.max(6, changeAt));
         for (const dp of recent) {
           const weeksSinceBase = Math.max(0, Math.round((new Date(dp.date || Date.now()) - baseDate) / (7 * 24 * 60 * 60 * 1000)));
           const expected = goal.baseline + slope * weeksSinceBase;
@@ -3119,9 +3244,14 @@
         slope,
         totalWeeks,
         consecutiveBelow,
-        alert: consecutiveBelow >= 6 ? 'critical' : consecutiveBelow >= 4 ? 'warning' : 'ok'
+        warnThreshold: warnAt,
+        changeThreshold: changeAt,
+        alert: consecutiveBelow >= changeAt ? 'critical' : consecutiveBelow >= warnAt ? 'warning' : 'ok'
       };
     };
+    // Extend the test seam with calculateAimline (defined after the primary seam at
+    // the interpretation engine) for the RTI decision-rule regression test.
+    try { var _saiC = window.AlloModules && window.AlloModules.StudentAnalyticsInternals; if (_saiC && !_saiC.calculateAimline) _saiC.calculateAimline = calculateAimline; } catch (e) {}
     const computeCorrelation = (xValues, yValues) => {
       const n = Math.min(xValues.length, yValues.length);
       if (n < 3) return {
@@ -3275,6 +3405,7 @@
       const gradeBank = BENCHMARK_PROBE_BANKS && BENCHMARK_PROBE_BANKS[grade];
       const bank = gradeBank ? gradeBank[form] : null;
       if (activity === 'orf') {
+        if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false);
         if (typeof onLaunchORF === 'function') {
           onLaunchORF(grade, form);
         }
@@ -3386,6 +3517,27 @@
         launchScreeningSession(probeGradeLevel, mathProbeForm, nextStudent);
       }, 500);
     };
+    // Multi-subtest battery auto-advance. When a subtest finishes, the host's
+    // ORF-completion effect and the word-sounds completion handler bump
+    // currentIndex and set status:'interstitial'. This effect owns the
+    // interstitial -> running transition and launches the next subtest via the
+    // REAL launchBenchmarkProbe above. Previously this transition lived in the
+    // HOST and called a dead phantom-ref stub, so batteries stalled after the
+    // first subtest. The panel component stays mounted (renders null) while the
+    // modal is closed during each probe, so this effect keeps firing.
+    React.useEffect(() => {
+      if (!screenerSession || screenerSession.status !== 'interstitial') return;
+      const timer = setTimeout(() => {
+        const nextActivity = screenerSession.subtests[screenerSession.currentIndex];
+        if (typeof nextActivity === 'undefined') {
+          setScreenerSession(prev => prev ? { ...prev, status: 'complete' } : prev);
+          return;
+        }
+        setScreenerSession(prev => prev ? { ...prev, status: 'running' } : prev);
+        launchBenchmarkProbe(screenerSession.grade, nextActivity, screenerSession.form);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }, [screenerSession?.status, screenerSession?.currentIndex]);
     const generateFluencyScoreSheet = (result, sourceText) => {
       if (!result || !result.wordData) return;
       const rrm = calculateRunningRecordMetrics(result.wordData, result.insertions || []) || {
@@ -3468,6 +3620,23 @@
                     </div>
                 </div>`;
       };
+      const selSummaryHtml = (s.selToolsUsed || s.selReflectionCount || s.selStationsTotal) ? `
+            <div class="section-title">SEL Participation</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+                <div style="text-align: center; background: #f0fdfa; padding: 10px; border-radius: 8px; border: 1px solid #ccfbf1;">
+                    <div style="font-size: 22px; font-weight: 800; color: #0f766e;">${s.selToolsUsed || 0}</div>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700;">SEL tools used</div>
+                </div>
+                <div style="text-align: center; background: #eef2ff; padding: 10px; border-radius: 8px; border: 1px solid #c7d2fe;">
+                    <div style="font-size: 22px; font-weight: 800; color: #4f46e5;">${s.selReflectionCount || 0}</div>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700;">reflection snapshots</div>
+                </div>
+                <div style="text-align: center; background: #faf5ff; padding: 10px; border-radius: 8px; border: 1px solid #e9d5ff;">
+                    <div style="font-size: 22px; font-weight: 800; color: #7c3aed;">${s.selStationsCompleted || 0}/${s.selStationsTotal || 0}</div>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700;">station quests</div>
+                </div>
+            </div>
+            <div style="font-size: 11px; color: #64748b; font-style: italic; margin-bottom: 12px;">Counts only; private reflection text is not included in this report block.</div>` : '';
       let runningRecordHtml = '';
       const fluencyAssessments = student.data?.fluencyAssessments;
       if (fluencyAssessments?.length > 0) {
@@ -3571,6 +3740,7 @@
             ${metricBar('Label Challenge', s.labelChallengeAvg, 100, '%', '🏷️')}
             ${metricBar('Total Activities', s.totalActivities, 20, '', '📊')}
             ${metricBar('Games Played', s.gamesPlayed, 10, '', '🎮')}
+            ${selSummaryHtml}
             <div class="section-title">📋 Assessment Basis</div>
             <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
                 ${rti.reasons.map(r => `<span style="font-size: 12px; padding: 4px 10px; border-radius: 20px; background: ${tc.bg}; color: ${tc.color}; font-weight: 600; border: 1px solid ${tc.border};">${r}</span>`).join('')}
@@ -3699,8 +3869,8 @@
     };
     const handleExportCSV = () => {
       if (importedStudents.length === 0) return;
-      const headers = [t('class_analytics.student_name'), t('class_analytics.quiz_avg'), t('class_analytics.adventure_xp'), t('class_analytics.escape_completion'), t('class_analytics.fluency_wcpm'), t('class_analytics.interview_xp'), 'Word Sounds %', 'Games Played', 'Socratic Msgs', 'Label Challenge %', t('class_analytics.safety_flags'), t('class_analytics.total_activities'), t('class_analytics.last_session')].join(',');
-      const rows = importedStudents.map(student => [`"${student.name}"`, student.stats.quizAvg, student.stats.adventureXP, `${student.stats.escapeCompletion}%`, student.stats.fluencyWCPM, student.stats.interviewXP, student.stats.wsAccuracy ? `${student.stats.wsAccuracy}%` : 'N/A', student.stats.gamesPlayed || 0, student.stats.socraticMessageCount || 0, student.stats.labelChallengeAvg ? `${student.stats.labelChallengeAvg}%` : 'N/A', student.safetyFlags.length, student.stats.totalActivities, new Date(student.lastSession).toLocaleDateString()].join(','));
+      const headers = [t('class_analytics.student_name'), t('class_analytics.quiz_avg'), t('class_analytics.adventure_xp'), t('class_analytics.escape_completion'), t('class_analytics.fluency_wcpm'), t('class_analytics.interview_xp'), 'Word Sounds %', 'Games Played', 'Socratic Msgs', 'Label Challenge %', 'SEL Tools', 'SEL Reflections', t('class_analytics.safety_flags'), t('class_analytics.total_activities'), t('class_analytics.last_session')].join(',');
+      const rows = importedStudents.map(student => [`"${student.name}"`, student.stats.quizAvg, student.stats.adventureXP, `${student.stats.escapeCompletion}%`, student.stats.fluencyWCPM, student.stats.interviewXP, student.stats.wsAccuracy ? `${student.stats.wsAccuracy}%` : 'N/A', student.stats.gamesPlayed || 0, student.stats.socraticMessageCount || 0, student.stats.labelChallengeAvg ? `${student.stats.labelChallengeAvg}%` : 'N/A', student.stats.selToolsUsed || 0, student.stats.selReflectionCount || 0, student.safetyFlags.length, student.stats.totalActivities, new Date(student.lastSession).toLocaleDateString()].join(','));
       const csv = [headers, ...rows].join('\n');
       const blob = new Blob([csv], {
         type: 'text/csv;charset=utf-8;'
@@ -3750,6 +3920,7 @@
       const students = importedStudents.filter(s => s.stats.quizAvg > 0);
       if (students.length === 0) return;
       const colors = students.map(s => s.stats.quizAvg >= 80 ? '#10b981' : s.stats.quizAvg >= 60 ? '#f59e0b' : '#ef4444');
+      const _ct = theme === 'contrast' ? '#ffff00' : theme === 'dark' ? '#e2e8f0' : '#334155';
       quizChartInstance.current = new Chart(quizChartRef.current, {
         type: 'bar',
         data: {
@@ -3763,6 +3934,7 @@
           }]
         },
         options: {
+          color: _ct,
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
@@ -3797,7 +3969,7 @@
       return () => {
         if (quizChartInstance.current) quizChartInstance.current.destroy();
       };
-    }, [importedStudents, t]);
+    }, [importedStudents, t, theme]);
     React.useEffect(() => {
       if (!flagsChartRef.current || !classSummary?.totalFlags || typeof Chart === 'undefined') return;
       if (flagsChartInstance.current) flagsChartInstance.current.destroy();
@@ -3811,6 +3983,7 @@
         inappropriate_language: '#d97706',
         concerning_content: '#64748b'
       };
+      const _ct = theme === 'contrast' ? '#ffff00' : theme === 'dark' ? '#e2e8f0' : '#334155';
       flagsChartInstance.current = new Chart(flagsChartRef.current, {
         type: 'doughnut',
         data: {
@@ -3821,6 +3994,7 @@
           }]
         },
         options: {
+          color: _ct,
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
@@ -3847,7 +4021,7 @@
       return () => {
         if (flagsChartInstance.current) flagsChartInstance.current.destroy();
       };
-    }, [classSummary, t]);
+    }, [classSummary, t, theme]);
     React.useEffect(() => {
       if (!trendChartRef.current || !selectedStudent || typeof Chart === 'undefined') return;
       if (trendChartInstance.current) trendChartInstance.current.destroy();
@@ -3855,6 +4029,8 @@
       if (!assessments || assessments.length < 2) return;
       const labels = assessments.map((a, i) => a.date ? new Date(a.date).toLocaleDateString() : `#${i + 1}`);
       const wcpmData = assessments.map(a => a.wcpm || 0);
+      const _ct = theme === 'contrast' ? '#ffff00' : theme === 'dark' ? '#e2e8f0' : '#334155';
+      const _cg = theme === 'contrast' ? '#ffff00' : theme === 'dark' ? '#334155' : '#e2e8f0';
       trendChartInstance.current = new Chart(trendChartRef.current, {
         type: 'line',
         data: {
@@ -3871,6 +4047,7 @@
           }]
         },
         options: {
+          color: _ct,
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
@@ -3887,11 +4064,18 @@
             }
           },
           scales: {
+            x: {
+              grid: { color: _cg },
+              ticks: { color: _ct }
+            },
             y: {
               beginAtZero: true,
+              grid: { color: _cg },
+              ticks: { color: _ct },
               title: {
                 display: true,
-                text: 'WCPM'
+                text: 'WCPM',
+                color: _ct
               }
             }
           }
@@ -3900,7 +4084,7 @@
       return () => {
         if (trendChartInstance.current) trendChartInstance.current.destroy();
       };
-    }, [selectedStudent, t]);
+    }, [selectedStudent, t, theme]);
     const generateStudentFriendlyReport = sessionData => {
       const date = new Date().toLocaleDateString('en-US', {
         year: 'numeric',
@@ -3977,11 +4161,50 @@
       URL.revokeObjectURL(url);
       if (addToast) addToast(t('toasts.1f4ca_progress_report_has_been'), 'success');
     };
+    // WCAG 2.1.2 / 4.1.2: focus save+restore, a Tab focus-trap, and Escape-to-close
+    // for the Assessment Center dialog. The panel stays mounted while closed, so this
+    // is gated on isOpen. The keydown is bound to the dialog node, so the separate
+    // ProbeOverlay portal is unaffected; Escape closes the panel only when no in-panel
+    // sub-modal is open (otherwise the sub-modal owns that Escape).
+    var dialogRef = React.useRef(null);
+    var subModalOpenRef = React.useRef(false);
+    subModalOpenRef.current = !!(showCBMImport || showSurveyModal || showResearchSetup || showAssessmentGuide || showCustomQuestions || showRTISettings || showAutoSurveyPrompt);
+    React.useEffect(function() {
+      if (!isOpen) return undefined;
+      alloSaveFocus();
+      var node = dialogRef.current;
+      if (node && typeof node.focus === 'function') { try { node.focus(); } catch (e) {} }
+      var onKey = function(e) {
+        if (e.key === 'Escape') {
+          if (subModalOpenRef.current) return;
+          e.stopPropagation();
+          if (typeof onClose === 'function') onClose();
+          return;
+        }
+        if (e.key === 'Tab' && node) {
+          var f = node.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          if (!f.length) return;
+          var first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); if (last.focus) last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); if (first.focus) first.focus(); }
+        }
+      };
+      if (node) node.addEventListener('keydown', onKey);
+      return function() { if (node) node.removeEventListener('keydown', onKey); alloRestoreFocus(); };
+    }, [isOpen]);
     if (!isOpen) return null;
-    return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-      className: "fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in"
+    return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
+      // theme-${theme} on the portal root (a document.body sibling of the app's
+      // theme root) makes the scoped `.theme-dark .allo-docsuite` remap rules reach
+      // the card below; the card carries the `allo-docsuite` scope class.
+      className: "fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in theme-" + (theme || 'light')
     }, /*#__PURE__*/React.createElement("div", {
-      className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
+      ref: dialogRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "sa-ac-title",
+      tabIndex: -1,
+      className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
     }, /*#__PURE__*/React.createElement("div", {
       className: "p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0"
     }, /*#__PURE__*/React.createElement("div", {
@@ -3995,13 +4218,14 @@
       size: 24,
       className: "text-violet-600"
     })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+      id: "sa-ac-title",
       className: "text-xl font-bold text-slate-800"
     }, isIndependentMode ? '\u{1F4CA} My Learning Journey' : '🎯 Assessment Center'), importedStudents.length > 0 && /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-600"
     }, t('class_analytics.students_loaded', {
       count: importedStudents.length
     })))), /*#__PURE__*/React.createElement("button", {
-      "aria-label": t('common.text_field'),
+      "aria-label": t('common.close') || 'Close',
       onClick: onClose,
       className: "p-2 hover:bg-slate-200 rounded-lg transition-colors"
     }, /*#__PURE__*/React.createElement(X, {
@@ -6416,6 +6640,16 @@
         color: s.totalActivities >= 5 ? '#16a34a' : s.totalActivities >= 2 ? '#d97706' : '#dc2626',
         icon: '📊'
       }, {
+        label: 'SEL Tools',
+        value: s.selToolsUsed || 0,
+        color: (s.selToolsUsed || 0) >= 3 ? '#0f766e' : (s.selToolsUsed || 0) >= 1 ? '#0e7490' : '#64748b',
+        icon: 'SEL'
+      }, {
+        label: 'Reflections',
+        value: s.selReflectionCount || 0,
+        color: (s.selReflectionCount || 0) >= 3 ? '#7c3aed' : (s.selReflectionCount || 0) >= 1 ? '#6366f1' : '#64748b',
+        icon: 'R'
+      }, {
         label: 'Label Challenge',
         value: s.labelChallengeAvg + '%',
         color: s.labelChallengeAvg >= 80 ? '#16a34a' : s.labelChallengeAvg >= 50 ? '#d97706' : '#dc2626',
@@ -6713,15 +6947,33 @@
           alignItems: 'center',
           gap: '4px'
         }
-      }, "\uD83C\uDFAF WCPM Goal Setting"), (() => {
+      }, "\uD83C\uDFAF Progress Goal Setting"), (() => {
         const studentGoal = rtiGoals[selectedStudent.name];
-        const fluencyData = selectedStudent.data?.fluencyAssessments?.map(a => ({
-          value: a.wcpm || 0,
-          date: a.timestamp || a.date
-        })) || [];
+        const goalMetric = (studentGoal && studentGoal.metric) || 'wcpm';
+        const METRIC_LABELS = { wcpm: 'WCPM (ORF)', nwf: 'NWF (CLS)', lnf: 'LNF', segmentation: 'Segmentation', blending: 'Blending', isolation: 'Isolation', rhyming: 'Rhyming', items_per_min: 'Items / min' };
+        const metricLabel = METRIC_LABELS[goalMetric] || goalMetric;
+        // Build the progress series for the chosen measure: WCPM from
+        // fluencyAssessments, every other measure from probeHistory (where Word
+        // Sounds / NWF / LNF probes land). The aimline + 4/6 decision rule below
+        // then work for ANY measure, so K-2 students monitored on NWF/segmentation
+        // (who can't do ORF yet) finally get a goal-line, not just ORF readers.
+        const fluencyData = (goalMetric === 'wcpm')
+          ? ((selectedStudent.data?.fluencyAssessments || []).map(a => ({ value: a.wcpm || 0, date: a.timestamp || a.date })))
+          : (((probeHistory && probeHistory[selectedStudent.name]) || [])
+              .filter(p => (p.type || p.activity) === goalMetric)
+              .map(p => ({ value: (goalMetric === 'nwf' ? (p.cls || 0) : (p.correct != null ? p.correct : (p.itemsPerMin || p.dcpm || 0))), date: p.date || p.timestamp })));
         const latestWCPM = fluencyData.length > 0 ? fluencyData[fluencyData.length - 1].value : 0;
-        const aimline = studentGoal ? calculateAimline(studentGoal, fluencyData) : null;
+        const aimline = studentGoal ? calculateAimline(studentGoal, fluencyData, rtiDecisionRuleThreshold) : null;
         return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+          style: { marginBottom: '6px' }
+        }, /*#__PURE__*/React.createElement("label", {
+          style: { fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }
+        }, "Measure"), /*#__PURE__*/React.createElement("select", {
+          id: `rti-metric-${selectedStudent.name}`,
+          defaultValue: goalMetric,
+          "aria-label": "Progress-monitoring measure",
+          style: { width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '12px', fontWeight: 600 }
+        }, Object.keys(METRIC_LABELS).map(function(mk) { return /*#__PURE__*/React.createElement("option", { key: mk, value: mk }, METRIC_LABELS[mk]); }))), /*#__PURE__*/React.createElement("div", {
           style: {
             display: 'grid',
             gridTemplateColumns: '1fr 1fr 1fr',
@@ -6798,12 +7050,13 @@
             const b = document.getElementById(`rti-baseline-${selectedStudent.name}`)?.value;
             const t2 = document.getElementById(`rti-target-${selectedStudent.name}`)?.value;
             const d = document.getElementById(`rti-date-${selectedStudent.name}`)?.value;
+            const m = document.getElementById(`rti-metric-${selectedStudent.name}`)?.value || 'wcpm';
             if (b && t2 && d) {
               saveRtiGoal(selectedStudent.name, {
                 baseline: parseInt(b),
                 target: parseInt(t2),
                 targetDate: d,
-                metric: 'wcpm',
+                metric: m,
                 baselineDate: new Date().toISOString()
               });
               addToast(t('toasts.rti_goal_saved') + selectedStudent.name, 'success');
@@ -6833,7 +7086,7 @@
             color: '#475569',
             marginBottom: '4px'
           }
-        }, "\uD83D\uDCC8 Aimline: ", studentGoal.baseline, " \u2192 ", studentGoal.target, " WCPM over ", aimline.totalWeeks, " weeks", aimline.slope > 0 && /*#__PURE__*/React.createElement("span", {
+        }, "\uD83D\uDCC8 Aimline: ", studentGoal.baseline, " \u2192 ", studentGoal.target, " ", metricLabel, " over ", aimline.totalWeeks, " weeks", aimline.slope > 0 && /*#__PURE__*/React.createElement("span", {
           style: {
             color: '#16a34a'
           }
@@ -6903,10 +7156,12 @@
       }, /*#__PURE__*/React.createElement("option", {
         value: "four_point"
       }, "Four-Point Analysis"), /*#__PURE__*/React.createElement("option", {
-        value: "trend_line"
-      }, t('rti.trend_line_comparison')), /*#__PURE__*/React.createElement("option", {
-        value: "median_3"
-      }, "Median of Last 3")), rtiDecisionRuleMethod === "four_point" && /*#__PURE__*/React.createElement("div", {
+        value: "trend_line",
+        disabled: true
+      }, (t('rti.trend_line_comparison') || 'Trend-line comparison') + ' (coming soon)'), /*#__PURE__*/React.createElement("option", {
+        value: "median_3",
+        disabled: true
+      }, "Median of Last 3 (coming soon)")), rtiDecisionRuleMethod === "four_point" && /*#__PURE__*/React.createElement("div", {
         style: {
           display: "flex",
           alignItems: "center",
@@ -7029,7 +7284,8 @@
         type: "text",
         placeholder: "e.g. Wilson Reading",
         "aria-label": "Program or curriculum",
-        id: `intv-program-${selectedStudent.name}`,
+        value: interventionDraft.program,
+        onChange: e => setInterventionDraft(d => ({ ...d, program: e.target.value })),
         style: {
           width: '100%',
           border: '1px solid #e2e8f0',
@@ -7047,7 +7303,8 @@
         }
       }, "Frequency"), /*#__PURE__*/React.createElement("select", {
         "aria-label": "Intervention frequency",
-        id: `intv-freq-${selectedStudent.name}`,
+        value: interventionDraft.frequency,
+        onChange: e => setInterventionDraft(d => ({ ...d, frequency: e.target.value })),
         style: {
           width: '100%',
           border: '1px solid #e2e8f0',
@@ -7075,7 +7332,8 @@
         type: "number",
         placeholder: "30",
         "aria-label": "Minutes per session",
-        id: `intv-min-${selectedStudent.name}`,
+        value: interventionDraft.minutes,
+        onChange: e => setInterventionDraft(d => ({ ...d, minutes: e.target.value })),
         style: {
           width: '100%',
           border: '1px solid #e2e8f0',
@@ -7095,7 +7353,8 @@
         type: "number",
         placeholder: "4",
         "aria-label": "Group size",
-        id: `intv-group-${selectedStudent.name}`,
+        value: interventionDraft.groupSize,
+        onChange: e => setInterventionDraft(d => ({ ...d, groupSize: e.target.value })),
         style: {
           width: '100%',
           border: '1px solid #e2e8f0',
@@ -7121,7 +7380,8 @@
       }, t('probes.start_date')), /*#__PURE__*/React.createElement("input", {
         type: "date",
         "aria-label": "Intervention start date",
-        id: `intv-date-${selectedStudent.name}`,
+        value: interventionDraft.startDate,
+        onChange: e => setInterventionDraft(d => ({ ...d, startDate: e.target.value })),
         style: {
           width: '100%',
           border: '1px solid #e2e8f0',
@@ -7141,7 +7401,8 @@
         type: "text",
         placeholder: t('common.placeholder_optional_notes'),
         "aria-label": "Intervention notes",
-        id: `intv-notes-${selectedStudent.name}`,
+        value: interventionDraft.notes,
+        onChange: e => setInterventionDraft(d => ({ ...d, notes: e.target.value })),
         style: {
           width: '100%',
           border: '1px solid #e2e8f0',
@@ -7151,12 +7412,7 @@
         }
       }))), /*#__PURE__*/React.createElement("button", {
         onClick: () => {
-          const program = document.getElementById(`intv-program-${selectedStudent.name}`)?.value;
-          const frequency = document.getElementById(`intv-freq-${selectedStudent.name}`)?.value;
-          const minutes = document.getElementById(`intv-min-${selectedStudent.name}`)?.value;
-          const groupSize = document.getElementById(`intv-group-${selectedStudent.name}`)?.value;
-          const startDate = document.getElementById(`intv-date-${selectedStudent.name}`)?.value;
-          const notes = document.getElementById(`intv-notes-${selectedStudent.name}`)?.value;
+          const { program, frequency, minutes, groupSize, startDate, notes } = interventionDraft;
           if (program && frequency) {
             saveInterventionLog(selectedStudent.name, {
               program,
@@ -7167,10 +7423,7 @@
               notes
             });
             addToast(t('toasts.intervention_logged') + selectedStudent.name, 'success');
-            ['program', 'freq', 'min', 'group', 'date', 'notes'].forEach(f => {
-              const el = document.getElementById(`intv-${f}-${selectedStudent.name}`);
-              if (el) el.value = '';
-            });
+            setInterventionDraft({ program: '', frequency: 'daily', minutes: '', groupSize: '', startDate: '', notes: '' });
           } else {
             addToast(t('toasts.program_name_frequency_required'), 'warning');
           }
@@ -7299,7 +7552,23 @@
       className: "text-lg font-bold text-amber-600"
     }, selectedStudent.stats.wsBestStreak, "\uD83D\uDD25"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
-    }, t('class_analytics.best_streak'))), selectedStudent.data.wordSoundsState.phonemeMastery && Object.keys(selectedStudent.data.wordSoundsState.phonemeMastery).length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, t('class_analytics.best_streak'))), (function () {
+      // AAC integrity tile: items answered with the picture-symbol overlay on
+      // carry aacAssisted:true (set by the Word Sounds module). Picture-
+      // supported responding measures ACCESS, not unassisted phonological
+      // skill — surface the split so nobody pools the two silently.
+      var _wsHist = (selectedStudent.data.wordSoundsState && selectedStudent.data.wordSoundsState.history) || [];
+      var _aacCount = _wsHist.filter(function (h) { return h && h.aacAssisted; }).length;
+      if (!_aacCount) return null;
+      return /*#__PURE__*/React.createElement("div", {
+        className: "bg-white rounded-lg p-2 text-center border border-emerald-100",
+        title: t('class_analytics.aac_assisted_hint') || "Items answered with the picture-symbol overlay on. These measure supported access, not unassisted phonological skill; compare with unassisted items rather than pooling."
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "text-lg font-bold text-sky-600"
+      }, _aacCount, "/", _wsHist.length), /*#__PURE__*/React.createElement("div", {
+        className: "text-xs text-slate-600"
+      }, t('class_analytics.aac_assisted') || "AAC-assisted"));
+    })(), selectedStudent.data.wordSoundsState.phonemeMastery && Object.keys(selectedStudent.data.wordSoundsState.phonemeMastery).length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-2 text-center border border-emerald-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-purple-600"
@@ -7310,7 +7579,31 @@
     }, selectedStudent.data.wordSoundsState.badges.map((badge, bi) => /*#__PURE__*/React.createElement("span", {
       key: bi,
       className: "px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-medium"
-    }, typeof badge === 'string' ? badge : badge.name || '🏆')))), selectedStudent.stats?.gamesPlayed > 0 && /*#__PURE__*/React.createElement("div", {
+    }, typeof badge === 'string' ? badge : badge.name || '🏆')))), (function() {
+      // Most-confused sound pairs (target -> chosen), captured by trackConfusion in
+      // Word Sounds. Diagnostic gold for an interventionist (b/d reversals, vowel/
+      // minimal-pair errors). Dormant until the session persists confusionPatterns.
+      var _ws = selectedStudent.data && selectedStudent.data.wordSoundsState;
+      var _cp = (_ws && _ws.confusionPatterns) || {};
+      var _pairs = Object.keys(_cp).filter(function(k){ return Number(_cp[k]) > 0; }).sort(function(a,b){ return Number(_cp[b]) - Number(_cp[a]); }).slice(0, 8);
+      if (!_pairs.length) return null;
+      return /*#__PURE__*/React.createElement("div", {
+        className: "mb-4 p-4 bg-rose-50 border border-rose-200 rounded-xl"
+      }, /*#__PURE__*/React.createElement("h4", {
+        className: "font-bold text-rose-700 mb-1 flex items-center gap-2"
+      }, "🔀 ", t('class_analytics.confused_pairs') || "Most Confused Sounds"), /*#__PURE__*/React.createElement("p", {
+        className: "text-[11px] text-slate-600 mb-2"
+      }, t('class_analytics.confused_pairs_hint') || "Target → chosen, by frequency. Target minimal-pair contrasts the student mixes up."), /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-wrap gap-2"
+      }, _pairs.map(function(pair, ci) {
+        var parts = String(pair).split("->");
+        return /*#__PURE__*/React.createElement("span", {
+          key: ci,
+          className: "px-2 py-1 bg-white text-rose-700 rounded-full text-xs font-mono border border-rose-200",
+          title: "Target: " + (parts[0] || "?") + ", chose: " + (parts[1] || "?")
+        }, (parts[0] || "?") + " → " + (parts[1] || "?") + " ×" + _cp[pair]);
+      })));
+    })(), selectedStudent.stats?.gamesPlayed > 0 && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_games",
       className: "mb-4 p-4 bg-violet-50 border border-violet-200 rounded-xl"
     }, /*#__PURE__*/React.createElement("h4", {
@@ -7557,8 +7850,42 @@
         React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 text-sm font-bold text-slate-600" },
           '\uD83D\uDCCB ' + sortedAndFiltered.length + ' Student' + (sortedAndFiltered.length !== 1 ? 's' : '') + ' Loaded'
         ),
-        React.createElement("div", { className: "p-2 text-xs text-slate-600 text-center" },
-          'Click a student name in the Assessments tab to view their full detail profile.'
+        React.createElement("div", { className: "overflow-x-auto" },
+          React.createElement("table", { className: "w-full text-sm" },
+            React.createElement("thead", null,
+              React.createElement("tr", { className: "bg-slate-50 text-xs font-bold text-slate-600 border-b border-slate-200" },
+                [
+                  { key: 'name', label: t('class_analytics.student') || 'Student', align: 'left' },
+                  { key: 'rtiTier', label: 'RTI' },
+                  { key: 'quizAvg', label: t('class_analytics.quiz_avg') || 'Quiz' },
+                  { key: 'fluencyWCPM', label: t('class_analytics.fluency_wcpm') || 'WCPM' },
+                  { key: 'totalActivities', label: t('class_analytics.total_activities') || 'Activities' }
+                ].map(col => React.createElement("th", {
+                  scope: "col", key: col.key, onClick: () => handleSort(col.key),
+                  className: "p-2 " + (col.align === 'left' ? 'text-left' : 'text-center') + " cursor-pointer hover:bg-slate-200 select-none transition-colors"
+                }, col.label, " ", sortColumn === col.key ? (sortDirection === 'asc' ? '▲' : '▼') : ''))
+              )
+            ),
+            React.createElement("tbody", null,
+              sortedAndFiltered.map(student => {
+                const rti = classifyRTITier(student.stats);
+                return React.createElement("tr", {
+                  key: student.id,
+                  className: "border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors",
+                  tabIndex: 0,
+                  "aria-label": 'View detail profile for ' + student.name,
+                  onClick: () => { setSelectedStudent(student); setAssessmentCenterTab('assessments'); },
+                  onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedStudent(student); setAssessmentCenterTab('assessments'); } }
+                },
+                  React.createElement("td", { className: "p-2 font-medium text-slate-700" }, student.name),
+                  React.createElement("td", { className: "p-2 text-center", title: rti.label, "aria-label": rti.label }, rti.emoji + ' ' + (typeof rti.tier === 'number' ? rti.tier : '')),
+                  React.createElement("td", { className: "p-2 text-center" }, student.stats.quizAvg > 0 ? Math.round(student.stats.quizAvg) + '%' : '—'),
+                  React.createElement("td", { className: "p-2 text-center" }, student.stats.fluencyWCPM > 0 ? student.stats.fluencyWCPM : '—'),
+                  React.createElement("td", { className: "p-2 text-center" }, student.stats.totalActivities || 0)
+                );
+              })
+            )
+          )
         )
       ),
       // Empty state
@@ -7663,7 +7990,8 @@
     }, "|"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-slate-700"
     }, researchStudent),
-    React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary")),
+    React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary"),
+    React.createElement("button", { onClick: function() { try { var meta = window.AlloModules && window.AlloModules.StudentAnalytics && window.AlloModules.StudentAnalytics._meta; if (meta && typeof meta.buildReportWriterExport === 'function') meta.buildReportWriterExport(researchStudent); if (typeof openReportWriter === 'function') { if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false); openReportWriter(); addToast(t('toasts.sent_to_report_writer') || 'Sent to Report Writer \u2014 click Ingest to build the IEP packet.', 'success'); } else { addToast('Report Writer is not available in this build.', 'warning'); } } catch (e) {} }, className: "px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg text-xs font-bold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm flex items-center gap-1", title: "Send this student's RTI/CBM data to the Report Writer to build an IEP-ready packet" }, "\uD83E\uDDFE Send to Report Writer")),
     renderInsightsPanel(researchStudent), renderProbeProgressSummary(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border border-slate-400 p-4"
     }, /*#__PURE__*/React.createElement("h5", {
@@ -7857,5 +8185,219 @@
   // Register module
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.StudentAnalytics = StudentAnalyticsPanel;
-  console.log('[CDN] StudentAnalytics module registered');
+
+  // ── Reciprocal query surface (P3-1) ──────────────────────────────────────
+  // Read-only, never-throw helpers so sibling tools (Dynamic Assessment, Report
+  // Writer, the IEP bundle) can pull Assessment Center probe/RTI data the same way
+  // this panel already pulls DA sessions via DA._meta.getSessionsByStudent. Reads
+  // the host's persisted store 'alloflow_probe_history'
+  //   { [studentName]: [ { activity, grade, wcpm|itemsPerMin|correct, timestamp, ... } ] }.
+  // getStudentProbeHistory/getScreeningSummary are pure localStorage reads and always
+  // work; getRTITier + the interpret passthrough reuse the interpretation engine via
+  // the StudentAnalyticsInternals seam (populated once the panel has rendered) and
+  // return null gracefully until then.
+  var _readProbeStore = function() {
+    try { return (typeof localStorage !== 'undefined' && JSON.parse(localStorage.getItem('alloflow_probe_history') || '{}')) || {}; }
+    catch (e) { return {}; }
+  };
+  var _readInterventionLogs = function(nickname) {
+    try {
+      var all = (typeof localStorage !== 'undefined' && JSON.parse(localStorage.getItem('alloflow_intervention_logs') || '{}')) || {};
+      var arr = all[nickname];
+      return Array.isArray(arr) ? arr.slice() : [];
+    } catch (e) { return []; }
+  };
+  var _readRtiGoal = function(nickname) {
+    try {
+      var all = (typeof localStorage !== 'undefined' && JSON.parse(localStorage.getItem('alloflow_rti_goals') || '{}')) || {};
+      var g = all[nickname];
+      return (g && typeof g === 'object') ? g : null;
+    } catch (e) { return null; }
+  };
+  var _seasonFromDate = function(ts) {
+    try {
+      var mo = (ts ? new Date(ts) : new Date()).getMonth(); // 0=Jan
+      if (mo >= 7 && mo <= 10) return 'fall';     // Aug–Nov
+      if (mo === 11 || mo <= 1) return 'winter';  // Dec–Feb
+      return 'spring';                             // Mar–Jul
+    } catch (e) { return 'winter'; }
+  };
+  // Map a stored record to the (probeType, score) the engine expects; null for
+  // activities we don't confidently interpret (never guess a clinical score).
+  var _probeTypeAndScore = function(r) {
+    if (!r || !r.activity) return null;
+    var a = String(r.activity).toLowerCase();
+    if (a === 'orf') return { probeType: 'orf', score: r.wcpm != null ? r.wcpm : r.itemsPerMin };
+    if (a === 'math' || a === 'math_dcpm' || a === 'math_fluency') return { probeType: 'math_dcpm', score: r.itemsPerMin != null ? r.itemsPerMin : r.correct };
+    if (a === 'nwf' || a === 'nwf_cls') return { probeType: 'nwf_cls', score: r.itemsPerMin != null ? r.itemsPerMin : r.correct };
+    if (a === 'lnf') return { probeType: 'lnf', score: r.itemsPerMin != null ? r.itemsPerMin : r.correct };
+    return null;
+  };
+  var _internals = function() { return (window.AlloModules && window.AlloModules.StudentAnalyticsInternals) || {}; };
+  var _saMeta = {
+    version: '1.0.0',
+    storageKey: 'alloflow_probe_history',
+    getStudentProbeHistory: function(nickname) {
+      var arr = _readProbeStore()[nickname];
+      return Array.isArray(arr) ? arr.slice() : [];
+    },
+    getScreeningSummary: function(nickname) {
+      var arr = _saMeta.getStudentProbeHistory(nickname);
+      var byActivity = {};
+      for (var i = 0; i < arr.length; i++) {
+        var r = arr[i]; if (!r || !r.activity) continue;
+        var prev = byActivity[r.activity];
+        if (!prev || (r.timestamp || 0) >= (prev.timestamp || 0)) byActivity[r.activity] = r;
+      }
+      return { student: nickname, probeCount: arr.length, activities: Object.keys(byActivity), byActivity: byActivity };
+    },
+    getRTITier: function(nickname) {
+      var interp = _internals().interpretProbeResult;
+      if (typeof interp !== 'function') return null; // engine not yet populated
+      var summary = _saMeta.getScreeningSummary(nickname);
+      var perProbe = [], worst = 0, any = false;
+      for (var i = 0; i < summary.activities.length; i++) {
+        var r = summary.byActivity[summary.activities[i]];
+        var ps = _probeTypeAndScore(r);
+        if (!ps || ps.score == null || r.grade == null) continue;
+        var out = null;
+        try { out = interp(ps.probeType, ps.score, r.grade, _seasonFromDate(r.timestamp)); } catch (e) { out = null; }
+        if (out && typeof out.tier === 'number') {
+          any = true;
+          if (out.tier > worst) worst = out.tier;
+          perProbe.push({ activity: r.activity, tier: out.tier, status: out.status, score: ps.score, grade: r.grade });
+        }
+      }
+      return any ? { student: nickname, tier: worst, perProbe: perProbe } : null;
+    },
+    getInterventionLogs: function(nickname) { return _readInterventionLogs(nickname); },
+    // Per-measure chronological score series + 50th-%ile benchmark (from the latest
+    // probe's grade/season) for the IEP progress-monitoring trendline.
+    getTrendSeries: function(nickname) {
+      var arr = _saMeta.getStudentProbeHistory(nickname);
+      var interp = _internals().interpretProbeResult;
+      var goal = _readRtiGoal(nickname);
+      var byActivity = {};
+      arr.forEach(function(r) { if (r && r.activity) (byActivity[r.activity] = byActivity[r.activity] || []).push(r); });
+      var series = [];
+      Object.keys(byActivity).forEach(function(a) {
+        var recs = byActivity[a].slice().sort(function(x, y) { return (x.timestamp || 0) - (y.timestamp || 0); });
+        var points = recs.map(function(r) {
+          var v = r.wcpm != null ? r.wcpm : (r.itemsPerMin != null ? r.itemsPerMin : r.correct);
+          return { t: r.timestamp || 0, value: (typeof v === 'number' ? v : null) };
+        }).filter(function(p) { return p.value != null; });
+        if (!points.length) return;
+        // Cap to the most recent 12 points (~a 12-week weekly-probe window).
+        if (points.length > 12) points = points.slice(-12);
+        var latest = recs[recs.length - 1];
+        var ps = _probeTypeAndScore(latest);
+        var benchmark = null;
+        if (ps && ps.score != null && latest.grade != null && typeof interp === 'function') {
+          try { var out = interp(ps.probeType, ps.score, latest.grade, _seasonFromDate(latest.timestamp)); if (out && typeof out.benchmark50 === 'number') benchmark = out.benchmark50; } catch (e) {}
+        }
+        // Aimline overlay: the student's individualized goal trajectory (baseline→
+        // target). The RTI goal is a single per-student fluency goal, so it maps to
+        // the ORF series; other measures show the benchmark only.
+        var aimline = null, goalOut = null;
+        if (a === 'orf' && goal && typeof goal.baseline === 'number' && typeof goal.target === 'number' && goal.targetDate) {
+          try {
+            var baseMs = new Date(goal.baselineDate || (points[0] ? points[0].t : Date.now())).getTime();
+            var targMs = new Date(goal.targetDate).getTime();
+            var totalWeeks = Math.max(1, Math.round((targMs - baseMs) / (7 * 24 * 3600 * 1000)));
+            var slope = (goal.target - goal.baseline) / totalWeeks;
+            aimline = points.map(function(p) {
+              var wk = Math.max(0, Math.round(((p.t || Date.now()) - baseMs) / (7 * 24 * 3600 * 1000)));
+              return { t: p.t, value: Math.round(goal.baseline + slope * wk) };
+            });
+            goalOut = { baseline: goal.baseline, target: goal.target, targetDate: goal.targetDate };
+          } catch (e) { aimline = null; goalOut = null; }
+        }
+        series.push({ activity: a, label: String(a).toUpperCase(), grade: latest.grade != null ? latest.grade : null, benchmark: benchmark, aimline: aimline, goal: goalOut, points: points });
+      });
+      return series;
+    },
+    // Export bridge toward the IEP-ready packet (P3-2 keystone). Assembles a
+    // Report-Writer-ingestable payload (fact chunks + structured data + clinical
+    // caveat) from the reciprocal readers, intervention logs, and DA sessions, then
+    // stashes it on window.__alloRTIExport and dispatches 'alloRTIExportReady' —
+    // mirroring DA's exportSessionToReportWriter (__alloDAExport / alloDAExportReady).
+    // The Report Writer report-type that renders the full IEP packet consumes this.
+    buildReportWriterExport: function(nickname, opts) {
+      opts = opts || {};
+      var screeningSummary = _saMeta.getScreeningSummary(nickname);
+      var rtiTier = _saMeta.getRTITier(nickname);
+      var interventionLogs = _readInterventionLogs(nickname);
+      var daSessions = [];
+      try {
+        var DA = window.AlloModules && window.AlloModules.DynamicAssessment;
+        if (DA && DA._meta && typeof DA._meta.getSessionsByStudent === 'function') daSessions = DA._meta.getSessionsByStudent(nickname) || [];
+      } catch (e) { daSessions = []; }
+      var factChunks = [];
+      if (rtiTier) factChunks.push('RTI screening tier ' + rtiTier.tier + ' — most-concerning across ' + rtiTier.perProbe.length + ' CBM probe' + (rtiTier.perProbe.length === 1 ? '' : 's') + ' (screening, not an eligibility determination).');
+      screeningSummary.activities.forEach(function(a) {
+        var r = screeningSummary.byActivity[a];
+        var score = r.wcpm != null ? r.wcpm : (r.itemsPerMin != null ? r.itemsPerMin : r.correct);
+        if (score != null) factChunks.push('Latest ' + String(a).toUpperCase() + ' probe: ' + score + (r.grade != null ? ' (grade ' + r.grade + ')' : '') + '.');
+      });
+      if (interventionLogs.length) factChunks.push(interventionLogs.length + ' intervention' + (interventionLogs.length === 1 ? '' : 's') + ' on file: ' + interventionLogs.map(function(l) { return l && l.program; }).filter(Boolean).join(', ') + '.');
+      if (daSessions.length) factChunks.push(daSessions.length + ' Dynamic Assessment session' + (daSessions.length === 1 ? '' : 's') + ' on file (clinical observations of learning behavior, not test scores).');
+      // Deterministic, editable pre-drafted section text (mirrors DA's
+      // prePopulatedSection so the Report Writer / IEP packet slots RTI content the
+      // same way — keyed by the IEP-Ready Packet blueprint section names).
+      var probeHistory = _saMeta.getStudentProbeHistory(nickname);
+      var _fmtDate = function(ts) { try { return ts ? new Date(ts).toLocaleDateString() : ''; } catch (e) { return ''; } };
+      var _uniq = function(arr) { var out = []; for (var i = 0; i < arr.length; i++) if (arr[i] && out.indexOf(arr[i]) === -1) out.push(arr[i]); return out; };
+      var prePopulatedSections = {};
+      (function() {
+        var lines = [];
+        if (rtiTier) lines.push('Universal screening tier (most-concerning across measures): Tier ' + rtiTier.tier + '.');
+        screeningSummary.activities.forEach(function(a) {
+          var r = screeningSummary.byActivity[a];
+          var score = r.wcpm != null ? r.wcpm : (r.itemsPerMin != null ? r.itemsPerMin : r.correct);
+          var pp = ((rtiTier && rtiTier.perProbe) || []).filter(function(p) { return p.activity === a; })[0];
+          lines.push('• ' + String(a).toUpperCase() + ': ' + (score != null ? score : '—') + (r.grade != null ? ' (grade ' + r.grade + ')' : '') + (pp ? ' — ' + pp.status : '') + (r.timestamp ? ' [' + _fmtDate(r.timestamp) + ']' : ''));
+        });
+        if (!lines.length) lines.push('No CBM screening probes on file.');
+        prePopulatedSections['RTI / CBM Screening & Benchmark Summary'] = lines.join('\n') + '\n\nCBM screening interpreted against published benchmarks (Hasbrouck & Tindal 2017 for ORF; DIBELS 8th for NWF/LNF). Descriptive screening data, not an eligibility determination.';
+      })();
+      prePopulatedSections['Progress Monitoring & Goal Progress'] = probeHistory.length
+        ? (probeHistory.length + ' progress-monitoring data point' + (probeHistory.length === 1 ? '' : 's') + ' on file across ' + (_uniq(probeHistory.map(function(p) { return p.activity; })).join(', ') || 'multiple measures') + '. Interpret the trend against the student’s aimline; a change decision follows the team’s data-based decision rule.')
+        : 'No progress-monitoring data points on file yet.';
+      prePopulatedSections['Intervention Summary'] = interventionLogs.length
+        ? interventionLogs.map(function(l) { return '• ' + (l.program || 'Intervention') + ' — ' + (l.frequency || '') + ', ' + (l.minutes || '?') + ' min, group of ' + (l.groupSize || '?') + (l.startDate ? ', started ' + l.startDate : '') + (l.notes ? ' (' + l.notes + ')' : ''); }).join('\n')
+        : 'No interventions logged.';
+      prePopulatedSections['Dynamic Assessment Findings'] = daSessions.length
+        ? (daSessions.map(function(s) { return '• ' + (s.domain || 'session') + (s.modifiabilityTier && s.modifiabilityTier.label ? ' — ' + s.modifiabilityTier.label : (typeof s.modifiabilityIndex === 'number' ? ' — modifiability index ' + s.modifiabilityIndex : '')); }).join('\n') + '\n\nDynamic Assessment results are clinical observations of learning behavior, not test scores.')
+        : 'No Dynamic Assessment sessions on file.';
+      var payload = {
+        source: 'AssessmentCenter',
+        version: _saMeta.version,
+        student: nickname,
+        studentNickname: nickname,
+        generatedAt: (function() { try { return new Date().toISOString(); } catch (e) { return null; } })(),
+        rtiTier: rtiTier,
+        screeningSummary: screeningSummary,
+        probeHistory: probeHistory,
+        trendSeries: _saMeta.getTrendSeries(nickname),
+        interventionLogs: interventionLogs,
+        daSessions: daSessions,
+        factChunks: factChunks,
+        prePopulatedSections: prePopulatedSections,
+        targetSectionName: 'RTI / CBM Screening & Benchmark Summary',
+        caveat: 'CBM screening + progress-monitoring data; descriptive, not an eligibility determination. Interpret alongside standardized measures.'
+      };
+      if (opts.emit !== false) {
+        try {
+          window.__alloRTIExport = payload;
+          if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloRTIExportReady', { detail: { student: nickname } }));
+        } catch (e) {}
+      }
+      return payload;
+    },
+    interpretProbeResult: function() { var f = _internals().interpretProbeResult; return typeof f === 'function' ? f.apply(null, arguments) : null; },
+    classifyRTITier: function() { var f = _internals().classifyRTITier; return typeof f === 'function' ? f.apply(null, arguments) : null; }
+  };
+  try { StudentAnalyticsPanel._meta = _saMeta; window.AlloModules.StudentAnalytics._meta = _saMeta; } catch (e) {}
+
+  if (window.__alloDebug) console.log('[CDN] StudentAnalytics module registered');
 })();

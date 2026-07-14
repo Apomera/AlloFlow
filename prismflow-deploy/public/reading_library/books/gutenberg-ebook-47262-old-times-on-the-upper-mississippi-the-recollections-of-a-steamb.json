@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-47262-old-times-on-the-upper-mississippi-the-recollections-of-a-steamb",
+  "title": "Old Times on the Upper Mississippi: The Recollections of a Steamboat Pilot from 1854 to 1863",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Frontier and pioneer life -- Mississippi River Valley",
+    "Merrick, George Byron",
+    "Mississippi River -- Description and travel",
+    "Mississippi River -- Social life and customs -- 19th century",
+    "Mississippi River Valley -- Description and travel",
+    "Mississippi River Valley -- Social life and customs -- 19th century"
+  ],
+  "authors": [
+    "Merrick, George Byron"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/47262"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/47262/pg47262.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Old Times on the Upper Mississippi: The Recollections of a Steamboat Pilot from 1854 to 1863\" by Merrick, George Byron. Metadata tags include: Frontier and pioneer life -- Mississippi River Valley; Merrick, George Byron; Mississippi River -- Description and travel; Mississippi River -- Social life and customs -- 19th century."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 100
+  }
+}

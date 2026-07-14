@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-coastal-change-hazards-card",
+  "title": "USGS Coastal Change Hazards",
+  "description": "A USGS source card about coasts, storms, erosion, sea-level change, and coastal resilience.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Coasts",
+    "Hazards",
+    "Climate",
+    "Earth science"
+  ],
+  "authors": [
+    "USGS Coastal and Marine Hazards and Resources Program"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/programs/cmhrp",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/programs/cmhrp"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS coastal change resources explain erosion, storm impacts, shoreline movement, sea-level context, coastal maps, and science for community planning."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for place-based reading about how natural processes and human decisions shape coastlines."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS materials are generally public domain as U.S. government work, but some linked media may have separate credit or rights requirements. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

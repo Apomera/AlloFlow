@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-introduction-sociology-3e-catalog",
+  "title": "OpenStax Introduction to Sociology 3e",
+  "description": "A source card for the OpenStax Introduction to Sociology 3e textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Sociology",
+    "Textbooks",
+    "Culture",
+    "Social systems"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/introduction-sociology-3e"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Introduction to Sociology 3e covers culture, groups, socialization, inequality, institutions, population, social movements, and research methods."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for structured background before students analyze social data, community issues, institutions, or identity-focused nonfiction."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters or figures."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 54
+  }
+}

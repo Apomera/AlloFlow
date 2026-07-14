@@ -1,5 +1,7 @@
 # Vietnamese Translation Handoff
 
+> **Historical language-pack handoff (2026-07-09):** This records the May 2026 Vietnamese completion pass. The language inventory and UI key surface have grown since then; verify `lang/vietnamese.js`, its public mirror, and current i18n reports before relying on the coverage/complete status below.
+
 **Status (May 19, 2026):** 9,285 / ~9,295 keys (~100% coverage, ✓ in manifest). 142 sections complete. **PACK COMPLETE.**
 
 ## Final session summary

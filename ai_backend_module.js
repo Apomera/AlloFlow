@@ -9,6 +9,9 @@
  */
 (function() {
     'use strict';
+    const window = (typeof globalThis !== 'undefined' && globalThis.window)
+        ? globalThis.window
+        : (typeof globalThis !== 'undefined' ? globalThis : {});
 
     // ─── Duplicate-load guard ─────────────────────────────────────────
     if (window.__aiBackendModuleLoaded) return;
@@ -211,8 +214,8 @@
  * Licensed under GNU AGPL v3 (same as AlloFlow core)
  * 
  * This module provides a unified interface for all AI operations,
- * supporting multiple backends: Gemini, LocalAI, Ollama, OpenAI, Claude, or any
- * OpenAI-compatible custom endpoint.
+ * supporting multiple backends: Gemini, LocalAI, LM Studio, Ollama, OpenAI,
+ * Claude, AlloFlow Local Engine, or any OpenAI-compatible custom endpoint.
  * 
  * Usage:
  *   const ai = new AIProvider({ backend: 'gemini', apiKey, models: {...} });
@@ -278,19 +281,20 @@ const WebSearchProvider = {
     _initSearchProxy() {
         if (this._serperInitialized) return;
         this._serperInitialized = true;
-        const FIREBASE_HOST = (typeof window !== 'undefined' && window.ALLOFLOW_HOST) || 'https://prismflow-911fe.web.app';
-        if (this._isCanvas) {
-            // Canvas: must use absolute URL (hosting rewrite → cloud function)
-            this._serperProxyUrl = `${FIREBASE_HOST}/api/searchProxy`;
-            console.log('[WebSearch] Canvas detected — using absolute Serper proxy URL:', this._serperProxyUrl);
-        } else if (typeof window !== 'undefined' && (window.location.hostname.includes('prismflow') || window.location.hostname.includes('.web.app'))) {
-            // On the actual Firebase site: use relative URL (same-origin)
+        const isOwnedFirebaseHost = typeof window !== 'undefined'
+            && (/\.web\.app$/.test(window.location.hostname) || /\.firebaseapp\.com$/.test(window.location.hostname));
+        const explicitHost = typeof window !== 'undefined'
+            ? String(window.ALLOFLOW_FUNCTIONS_HOST || window.ALLOFLOW_HOST || '').replace(/\/$/, '')
+            : '';
+        if (isOwnedFirebaseHost) {
             this._serperProxyUrl = '/api/searchProxy';
-            console.log('[WebSearch] Firebase site — using relative Serper proxy URL');
+            console.log('[WebSearch] Owned Firebase site - optional authenticated search proxy enabled.');
+        } else if (explicitHost) {
+            this._serperProxyUrl = `${explicitHost}/api/searchProxy`;
+            console.log('[WebSearch] Explicit optional search proxy configured.');
         } else {
-            // Dev / other: use absolute URL
-            this._serperProxyUrl = `${FIREBASE_HOST}/api/searchProxy`;
-            console.log('[WebSearch] Dev/other — using absolute Serper proxy URL:', this._serperProxyUrl);
+            this._serperProxyUrl = null;
+            console.log('[WebSearch] No optional Firebase search proxy configured; using the environment search path.');
         }
     },
 
@@ -627,13 +631,23 @@ const WebSearchProvider = {
      * Returns real Google SERP results.
      */
     async _fetchSerper(query, maxResults) {
-        const url = `${this._serperProxyUrl}?q=${encodeURIComponent(query)}&num=${Math.min(maxResults, 10)}`;
+        const url = this._serperProxyUrl;
+        const getSecurityHeaders = typeof window !== 'undefined'
+            && window.__alloFirebase
+            && window.__alloFirebase.getFunctionSecurityHeaders;
+        if (!url || typeof getSecurityHeaders !== 'function') {
+            throw new Error('Authenticated Firebase search is not configured.');
+        }
+        const securityHeaders = await getSecurityHeaders();
 
         let response;
         try {
-            console.log(`[WebSearch] Calling Serper proxy: ${this._serperProxyUrl}`);
+            console.log('[WebSearch] Calling authenticated Serper proxy.');
             response = await fetch(url, {
+                method: 'POST',
                 mode: 'cors',
+                headers: { 'Content-Type': 'application/json', ...securityHeaders },
+                body: JSON.stringify({ query, num: Math.min(maxResults, 10) }),
                 signal: AbortSignal.timeout ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.webSearchMs) || 15000) : undefined,
             });
         } catch (fetchErr) {
@@ -830,13 +844,173 @@ if (typeof window !== 'undefined') {
 
 // ─── END WEB SEARCH PROVIDER ───────────────────────────────────────────────
 
+// ─── Local-backend allowlist (Phase 0) ─────────────────────────────────────
+// Canonical predicate for GENUINE local text backends — the ONLY backends
+// eligible for the additive streaming/chunking enhancements below. It
+// deliberately EXCLUDES the two cloud OpenAI-compatible providers that also
+// route through _openaiGenerateText:
+//     'openai' → https://api.openai.com     'claude' → https://api.anthropic.com
+// Every output-shape-changing local enhancement must gate on THIS, never on
+// `backend !== 'gemini'` (which is true for those cloud providers too).
+const LOCAL_BACKENDS = ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'custom'];
+function isLocalTextBackend(backend) {
+    return LOCAL_BACKENDS.indexOf(backend) !== -1;
+}
+const LOCAL_CONTEXT_FALLBACK = 4096;
+const LOCAL_CONTEXT_MIN = 2048;
+const LOCAL_CONTEXT_MAX = 131072;
+const LOCAL_MODEL_PROFILE_RULES = [
+    { id: 'alloflow-qwen2.5-3b', match: /qwen2?\.?5.*3b|qwen.*3b/i, contextWindow: 4096, outputTokenLimit: 1400, jsonOutputTokenLimit: 1100 },
+    { id: 'gemma-local', match: /gemma/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
+    { id: 'llama-local', match: /llama|mistral|mixtral/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
+    { id: 'qwen-local', match: /qwen/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
+];
+function clampLocalNumber(value, min, max, fallback) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n <= 0) return fallback;
+    return Math.max(min, Math.min(max, Math.round(n)));
+}
+function normalizeLocalModelId(value) {
+    return String(value || '').split(/[\\/]/).pop().replace(/\.gguf(\?.*)?$/i, '').trim();
+}
+function inferLocalContextWindow(modelId) {
+    const text = normalizeLocalModelId(modelId).toLowerCase();
+    const explicit = text.match(/(?:ctx|context|window)[-_ ]?(\d{1,3})k\b/i) || text.match(/\b(\d{1,3})k[-_ ]?(?:ctx|context|window)\b/i);
+    if (explicit) return clampLocalNumber(Number(explicit[1]) * 1024, LOCAL_CONTEXT_MIN, LOCAL_CONTEXT_MAX, LOCAL_CONTEXT_FALLBACK);
+    const plain = text.match(/\b(16|32|64|128)k\b/i);
+    if (plain) return clampLocalNumber(Number(plain[1]) * 1024, LOCAL_CONTEXT_MIN, LOCAL_CONTEXT_MAX, LOCAL_CONTEXT_FALLBACK);
+    return null;
+}
+function normalizeLocalTaskState(value) {
+    const state = String(value || '').toLowerCase();
+    return ['pass', 'fail', 'partial', 'unknown', 'unavailable'].includes(state) ? state : 'unknown';
+}
+function localProbeTestState(probe, id) {
+    if (!probe || !Array.isArray(probe.tests) || probe.tests.length === 0) return 'unknown';
+    const test = probe.tests.find((item) => item && item.id === id);
+    if (!test) return 'unknown';
+    return test.ok ? 'pass' : 'fail';
+}
+function buildLocalTaskSupportFromProbe(probe = {}) {
+    const tests = Array.isArray(probe.tests) ? probe.tests : [];
+    const passed = tests.filter((test) => test && test.ok).length;
+    return {
+        status: normalizeLocalTaskState(probe.status === 'not-running' ? 'unavailable' : probe.status),
+        generatedAt: probe.generatedAt || '',
+        passed,
+        total: tests.length,
+        simpleText: localProbeTestState(probe, 'plain-text'),
+        strictJson: localProbeTestState(probe, 'strict-json'),
+        remediationJson: localProbeTestState(probe, 'remediation-shape'),
+    };
+}
+function normalizeLocalTaskSupport(value = {}) {
+    const probeSupport = value.probe ? buildLocalTaskSupportFromProbe(value.probe) : {};
+    const support = value.taskSupport || value.support || value || {};
+    return {
+        status: normalizeLocalTaskState(support.status || probeSupport.status),
+        generatedAt: support.generatedAt || probeSupport.generatedAt || '',
+        passed: clampLocalNumber(support.passed, 0, 99, probeSupport.passed || 0),
+        total: clampLocalNumber(support.total, 0, 99, probeSupport.total || 0),
+        simpleText: normalizeLocalTaskState(support.simpleText || support.plainText || probeSupport.simpleText),
+        strictJson: normalizeLocalTaskState(support.strictJson || support.json || probeSupport.strictJson),
+        remediationJson: normalizeLocalTaskState(support.remediationJson || support.remediation || probeSupport.remediationJson),
+    };
+}
+function localModelSupportsTask(profile = {}, task = 'simple-text') {
+    const support = normalizeLocalTaskSupport(profile.taskSupport || {});
+    const normalizedTask = String(task || 'simple-text').toLowerCase();
+    if (normalizedTask === 'remediation' || normalizedTask === 'remediation-json') return support.remediationJson === 'pass';
+    if (normalizedTask === 'json' || normalizedTask === 'strict-json') return support.strictJson === 'pass';
+    return support.simpleText === 'pass';
+}
+function buildLocalModelProfile(config = {}) {
+    const backend = config.backend || 'local';
+    const supplied = config.localModelProfile || config.localModel || config.capabilities || {};
+    const modelId = normalizeLocalModelId(supplied.modelId || supplied.model || config.modelId || (config.models && config.models.default) || backend);
+    const rule = LOCAL_MODEL_PROFILE_RULES.find((item) => item.match.test(modelId)) || null;
+    const inferredContext = inferLocalContextWindow(modelId);
+    const contextWindow = clampLocalNumber(
+        supplied.contextWindow || supplied.contextSize || supplied.n_ctx || inferredContext || (rule && rule.contextWindow),
+        LOCAL_CONTEXT_MIN,
+        LOCAL_CONTEXT_MAX,
+        LOCAL_CONTEXT_FALLBACK
+    );
+    const outputTokenLimit = clampLocalNumber(
+        supplied.outputTokenLimit || supplied.safeOutputTokens || (rule && rule.outputTokenLimit) || Math.floor(contextWindow * 0.28),
+        256,
+        Math.min(8192, contextWindow),
+        Math.min(1600, Math.max(768, Math.floor(contextWindow * 0.28)))
+    );
+    const jsonOutputTokenLimit = clampLocalNumber(
+        supplied.jsonOutputTokenLimit || supplied.safeJsonOutputTokens || (rule && rule.jsonOutputTokenLimit) || Math.floor(outputTokenLimit * 0.8),
+        256,
+        outputTokenLimit,
+        Math.min(outputTokenLimit, 1200)
+    );
+    return {
+        id: supplied.id || (rule && rule.id) || 'local-default',
+        backend,
+        modelId,
+        contextWindow,
+        contextSource: supplied.contextSource || (supplied.contextWindow || supplied.contextSize || supplied.n_ctx ? 'configured' : (inferredContext ? 'model-name' : (rule ? 'profile' : 'fallback'))),
+        inputTokenBudget: clampLocalNumber(
+            supplied.inputTokenBudget || supplied.safeInputTokens || Math.floor(contextWindow * 0.55),
+            512,
+            Math.max(512, contextWindow - 512),
+            Math.max(1024, Math.floor(contextWindow * 0.55))
+        ),
+        outputTokenLimit,
+        jsonOutputTokenLimit,
+        reserveTokens: clampLocalNumber(supplied.reserveTokens, 128, 2048, 384),
+        taskSupport: normalizeLocalTaskSupport({
+            taskSupport: supplied.taskSupport,
+            probe: supplied.lastProbe || supplied.probe,
+        }),
+    };
+}
+function tuneLocalTextOptions(prompt, opts = {}, profile = buildLocalModelProfile()) {
+    const requested = clampLocalNumber(opts.maxTokens, 1, 65536, 8192);
+    const approxPromptTokens = Math.max(1, Math.ceil(String(prompt || '').length / 4));
+    const profileLimit = opts.json ? profile.jsonOutputTokenLimit : profile.outputTokenLimit;
+    const roomForOutput = profile.contextWindow - approxPromptTokens - profile.reserveTokens;
+    const roomLimit = roomForOutput > 0 ? roomForOutput : Math.max(128, Math.floor(profileLimit / 2));
+    const maxTokens = clampLocalNumber(
+        Math.min(requested, profileLimit, roomLimit),
+        128,
+        Math.max(128, profile.contextWindow),
+        Math.min(requested, profileLimit)
+    );
+    return {
+        maxTokens,
+        promptTokens: approxPromptTokens,
+        requestedMaxTokens: requested,
+        contextWindow: profile.contextWindow,
+        clamped: maxTokens !== requested,
+        promptLikelyTooLarge: approxPromptTokens + profile.reserveTokens >= profile.contextWindow,
+    };
+}
+// Terminal-marker sentinel for OpenAI SSE ("data: [DONE]"); a Symbol can never
+// collide with real streamed content.
+const STREAM_DONE = (typeof Symbol === 'function') ? Symbol('alloflow.stream.done') : ' __ALLO_STREAM_DONE__';
+if (typeof window !== 'undefined') {
+    window.AIBackendLocal = {
+        LOCAL_BACKENDS: LOCAL_BACKENDS.slice(),
+        isLocalTextBackend,
+        buildLocalModelProfile,
+        tuneLocalTextOptions,
+        buildLocalTaskSupportFromProbe,
+        localModelSupportsTask,
+    };
+}
+
 class AIProvider {
 
     /**
      * @param {Object} config
-     * @param {string} config.backend - 'gemini' | 'openai' | 'localai' | 'ollama' | 'claude' | 'custom'
+     * @param {string} config.backend - 'gemini' | 'openai' | 'localai' | 'lmstudio' | 'ollama' | 'claude' | 'alloflow-local' | 'custom'
      * @param {string} [config.apiKey] - API key (empty string for Canvas mode)
-     * @param {string} [config.baseUrl] - Base URL for the API (required for localai/ollama/custom)
+     * @param {string} [config.baseUrl] - Base URL for the API (required for local/custom backends)
      * @param {Object} [config.models] - Model name overrides
      * @param {boolean} [config.isCanvasEnv] - Whether running in Gemini Canvas
      * @param {Function} [config.fetchWithRetry] - Retry wrapper function (fetchWithExponentialBackoff)
@@ -885,9 +1059,18 @@ class AIProvider {
         if (this.backend === 'ollama' && !config.models?.vision) {
             this.models.vision = 'moondream';
         }
-        if ((this.backend === 'ollama' || this.backend === 'localai') && !config.models?.tts) {
+        if ((this.backend === 'ollama' || this.backend === 'localai' || this.backend === 'lmstudio') && !config.models?.tts) {
             this.models.tts = 'kokoro';
         }
+        this.localModelProfile = buildLocalModelProfile({
+            backend: this.backend,
+            models: this.models,
+            modelId: config.modelId,
+            localModel: config.localModel,
+            localModelProfile: config.localModelProfile,
+            capabilities: config.capabilities,
+        });
+        this._localRuntimeProfileAt = 0;
 
         this._debugLog(`[AIProvider] Initialized: backend=${this.backend}, isCanvas=${this.isCanvasEnv}`);
     }
@@ -896,15 +1079,53 @@ class AIProvider {
         switch (this.backend) {
             case 'gemini': return 'https://generativelanguage.googleapis.com/v1beta';
             case 'localai': return 'http://localhost:8080';
+            case 'lmstudio': return 'http://localhost:1234';
             case 'ollama': return 'http://localhost:11434';
             case 'openai': return 'https://api.openai.com';
             case 'claude': return 'https://api.anthropic.com';
+            case 'alloflow-local': return 'http://localhost:32173';
             case 'custom': return 'http://localhost:8080';
             default: return 'https://generativelanguage.googleapis.com/v1beta';
         }
     }
 
     // ─── TEXT GENERATION ──────────────────────────────────────────────
+
+    async _refreshAlloFlowLocalProfileFromRuntime() {
+        if (this.backend !== 'alloflow-local') return this.localModelProfile;
+        if (typeof fetch !== 'function') return this.localModelProfile;
+        const now = Date.now();
+        if (this._localRuntimeProfileAt && now - this._localRuntimeProfileAt < 30000) {
+            return this.localModelProfile;
+        }
+        this._localRuntimeProfileAt = now;
+        try {
+            const response = await fetch('/api/engine/status', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+            if (!response || !response.ok) return this.localModelProfile;
+            const status = await response.json();
+            const cap = status.capability || {};
+            const modelId = (status.model && (status.model.name || status.model.url)) || (status.engine && status.engine.modelUrl) || this.models.default;
+            this.localModelProfile = buildLocalModelProfile({
+                backend: this.backend,
+                models: this.models,
+                modelId,
+                localModelProfile: {
+                    id: cap.profileId || cap.id,
+                    modelId,
+                    contextWindow: cap.contextSize || cap.contextWindow,
+                    contextSource: cap.contextSource,
+                    safeInputTokens: cap.safeInputTokens,
+                    safeOutputTokens: cap.safeOutputTokens,
+                    safeJsonOutputTokens: cap.safeJsonOutputTokens,
+                    taskSupport: status.taskSupport || (status.lastProbe && status.lastProbe.taskSupport),
+                    lastProbe: status.lastProbe,
+                },
+            });
+        } catch (err) {
+            this._debugLog('[AIProvider] local engine capability probe skipped:', err && err.message ? err.message : err);
+        }
+        return this.localModelProfile;
+    }
 
     /**
      * Generate text from a prompt.
@@ -918,21 +1139,37 @@ class AIProvider {
      * @param {number} [opts.maxTokens=8192] - Max output tokens
      * @returns {Promise<string|Object>} Generated text (or {text, groundingMetadata} if search=true)
      */
-    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192 } = {}) {
+    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null } = {}) {
         if (!prompt) return json ? '{}' : '';
         this._debugLog(`[AIProvider] generateText: backend=${this.backend}, json=${json}, search=${search}`);
+        let effectiveMaxTokens = maxTokens;
+        let localUsage = null;
+        if (isLocalTextBackend(this.backend)) {
+            await this._refreshAlloFlowLocalProfileFromRuntime();
+            localUsage = tuneLocalTextOptions(prompt, { json, maxTokens }, this.localModelProfile);
+            effectiveMaxTokens = localUsage.maxTokens;
+            if (temperature === null && json) temperature = 0;
+            if (localUsage.clamped) {
+                this._debugLog(`[AIProvider] local maxTokens clamped ${localUsage.requestedMaxTokens} -> ${effectiveMaxTokens} (ctx=${localUsage.contextWindow}, prompt~${localUsage.promptTokens})`);
+            }
+            if (localUsage.promptLikelyTooLarge) {
+                this._warnLog('[AIProvider] local prompt is near/over the model context window; a resource-level chunked path is recommended.');
+            }
+        }
 
         switch (this.backend) {
             case 'gemini':
-                return this._geminiGenerateText(prompt, { json, search, temperature, maxTokens });
+                return this._geminiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens });
             case 'claude':
-                return this._claudeGenerateText(prompt, { json, search, temperature, maxTokens });
+                return this._claudeGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens });
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
+            case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens });
+                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage });
         }
     }
 
@@ -1024,8 +1261,43 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return text || '';
     }
 
-    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens }) {
-        // OpenAI-compatible format (works with LocalAI, Ollama, OpenAI, custom endpoints)
+    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress, localProfile = null, localUsage = null } = {}) {
+        // ── Additive local-only streaming progress (opt-in; Phase 1) ──────────
+        // Cloud is untouched: gemini/claude use their own methods, and hosted
+        // 'openai' is excluded by isLocalTextBackend(). This branch engages ONLY
+        // when a progress sink is registered AND the backend is a genuine local
+        // server. It returns the SAME concatenated string the non-stream path
+        // would; ANY failure (or a buffered, non-streamable response) transparently
+        // falls through to the unchanged non-stream request below. With no sink
+        // registered, behavior is byte-identical to before.
+        const _sink = (typeof onProgress === 'function')
+            ? onProgress
+            : ((typeof window !== 'undefined' && typeof window.__alloLocalTextProgress === 'function')
+                ? window.__alloLocalTextProgress
+                : null);
+        const _localProgressBase = {
+            backend: this.backend,
+            model: (localProfile && localProfile.modelId) || this.models.default,
+            contextWindow: localProfile && localProfile.contextWindow,
+            contextSource: localProfile && localProfile.contextSource,
+            maxTokens,
+            promptTokens: localUsage && localUsage.promptTokens,
+            requestedMaxTokens: localUsage && localUsage.requestedMaxTokens,
+            clamped: localUsage && localUsage.clamped,
+            promptLikelyTooLarge: localUsage && localUsage.promptLikelyTooLarge,
+        };
+        if (_sink && !search && isLocalTextBackend(this.backend)) {
+            try {
+                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens, localProfile, localUsage }, _sink);
+                if (typeof streamed === 'string') return streamed;
+            } catch (streamErr) {
+                this._warnLog('[AIProvider] local stream progress failed — falling back to non-stream:', streamErr && streamErr.message ? streamErr.message : streamErr);
+                try { _sink({ ..._localProgressBase, phase: 'fallback', receivedChars: 0, chunks: 0, done: false }); } catch (_) {}
+                // fall through to the unchanged non-stream path
+            }
+        }
+
+        // OpenAI-compatible format (works with LocalAI, LM Studio, OpenAI, AlloFlow Local, custom endpoints)
         const url = this.backend === 'ollama'
             ? `${this.baseUrl}/api/chat`
             : `${this.baseUrl}/v1/chat/completions`;
@@ -1036,25 +1308,43 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             effectivePrompt = await this._webSearchAugment(prompt);
         }
 
-        const payload = {
-            model: this.models.default,
-            messages: [{ role: 'user', content: effectivePrompt }],
-            max_tokens: maxTokens,
-            ...(json ? { response_format: { type: 'json_object' } } : {}),
-            ...(temperature !== null ? { temperature } : {}),
-        };
+        const payload = this.backend === 'ollama'
+            ? {
+                model: this.models.default,
+                messages: [{ role: 'user', content: effectivePrompt }],
+                stream: false,
+                ...(json ? { format: 'json' } : {}),
+                options: {
+                    num_predict: maxTokens,
+                    ...(temperature !== null ? { temperature } : {}),
+                },
+            }
+            : {
+                model: this.models.default,
+                messages: [{ role: 'user', content: effectivePrompt }],
+                max_tokens: maxTokens,
+                ...(json ? { response_format: { type: 'json_object' } } : {}),
+                ...(temperature !== null ? { temperature } : {}),
+            };
 
         const headers = { 'Content-Type': 'application/json' };
         if (this.apiKey) {
             headers['Authorization'] = `Bearer ${this.apiKey}`;
         }
 
-        const response = await this._fetchWithRetry(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(payload),
-        });
-        const data = await response.json();
+        let data;
+        try {
+            const response = await this._fetchWithRetry(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(payload),
+            });
+            data = await response.json();
+        } finally {
+            if (_sink && isLocalTextBackend(this.backend)) {
+                try { _sink({ ..._localProgressBase, phase: 'done', done: true }); } catch (_) {}
+            }
+        }
 
         const text = this.backend === 'ollama'
             ? data.message?.content || ''
@@ -1067,6 +1357,130 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return text;
     }
 
+    // ── Additive local-only streaming helper (Phase 1) ────────────────────────
+    // Streams an OpenAI-compatible (SSE) or Ollama (NDJSON) local completion,
+    // firing `sink({ phase, backend, receivedChars, chunks, done })` as deltas
+    // arrive, and returns the SAME final string the non-stream path produces.
+    // Throws on any transport/parse problem so the caller falls back cleanly.
+    async _openaiStreamText(prompt, { json, temperature, maxTokens, localProfile = null, localUsage = null }, sink) {
+        const isOllama = this.backend === 'ollama';
+        const url = isOllama
+            ? `${this.baseUrl}/api/chat`
+            : `${this.baseUrl}/v1/chat/completions`;
+        const progressBase = {
+            backend: this.backend,
+            model: (localProfile && localProfile.modelId) || this.models.default,
+            contextWindow: localProfile && localProfile.contextWindow,
+            contextSource: localProfile && localProfile.contextSource,
+            maxTokens,
+            promptTokens: localUsage && localUsage.promptTokens,
+            requestedMaxTokens: localUsage && localUsage.requestedMaxTokens,
+            clamped: localUsage && localUsage.clamped,
+            promptLikelyTooLarge: localUsage && localUsage.promptLikelyTooLarge,
+        };
+
+        const payload = isOllama
+            ? {
+                model: this.models.default,
+                messages: [{ role: 'user', content: prompt }],
+                stream: true,
+                ...(json ? { format: 'json' } : {}),
+                options: {
+                    num_predict: maxTokens,
+                    ...(temperature != null ? { temperature } : {}),
+                },
+            }
+            : {
+                model: this.models.default,
+                messages: [{ role: 'user', content: prompt }],
+                max_tokens: maxTokens,
+                stream: true,
+                ...(json ? { response_format: { type: 'json_object' } } : {}),
+                ...(temperature != null ? { temperature } : {}),
+            };
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;
+
+        try { sink({ ...progressBase, phase: 'request', receivedChars: 0, chunks: 0, done: false }); } catch (_) {}
+
+        const response = await this._fetchWithRetry(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload),
+        });
+
+        const body = response && response.body;
+        if (!body || typeof body.getReader !== 'function') {
+            // An injected fetchWithRetry may buffer/clone the response, so the
+            // stream is gone — bail to the non-stream path.
+            throw new Error('response body is not a readable stream');
+        }
+
+        const reader = body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let acc = '';
+        let chunks = 0;
+        const emit = (done) => {
+            try {
+                sink({ ...progressBase, phase: 'stream', receivedChars: acc.length, chunks, done: Boolean(done) });
+            } catch (_) { /* a broken sink must never break generation */ }
+        };
+        const consume = (line) => {
+            const piece = isOllama ? this._parseOllamaStreamLine(line) : this._parseOpenAiStreamLine(line);
+            if (piece === STREAM_DONE || !piece) return;
+            acc += piece;
+            chunks++;
+            emit(false);
+        };
+
+        try {
+            for (;;) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                let nl;
+                while ((nl = buffer.indexOf('\n')) >= 0) {
+                    const line = buffer.slice(0, nl).trim();
+                    buffer = buffer.slice(nl + 1);
+                    if (line) consume(line);
+                }
+            }
+            const tail = buffer.trim();
+            if (tail) consume(tail);
+        } finally {
+            try { if (typeof reader.releaseLock === 'function') reader.releaseLock(); } catch (_) { /* ignore */ }
+        }
+
+        emit(true);
+        return acc;
+    }
+
+    // Parse one line of an Ollama /api/chat streaming response (NDJSON).
+    // Returns the incremental content string ('' when the line carries none).
+    _parseOllamaStreamLine(line) {
+        try {
+            const obj = JSON.parse(line);
+            if (obj && obj.message && typeof obj.message.content === 'string') return obj.message.content;
+        } catch (_) { /* keep-alive / partial line — skip */ }
+        return '';
+    }
+
+    // Parse one line of an OpenAI-compatible SSE stream.
+    // Returns incremental content, STREAM_DONE for the terminal marker, or ''.
+    _parseOpenAiStreamLine(line) {
+        if (line.indexOf('data:') === 0) line = line.slice(5).trim();
+        if (!line) return '';
+        if (line === '[DONE]') return STREAM_DONE;
+        try {
+            const obj = JSON.parse(line);
+            const delta = obj && obj.choices && obj.choices[0] && obj.choices[0].delta;
+            if (delta && typeof delta.content === 'string') return delta.content;
+        } catch (_) { /* comment / partial line — skip */ }
+        return '';
+    }
+
     /**
      * Perform web search and augment prompt with results.
      * Uses DuckDuckGo Instant Answers API (free, no key required).
@@ -1074,7 +1488,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     async _webSearchAugment(prompt) {
         try {
             if (typeof window !== 'undefined' && window.WebSearchProvider) {
-                const { contextPrompt, groundingMetadata } = await window.WebSearchProvider.search(prompt, 10, searchQuery);
+                const { contextPrompt, groundingMetadata } = await window.WebSearchProvider.search(prompt, 10);
                 if (contextPrompt) {
                     this._lastSearchMetadata = groundingMetadata;
                     return contextPrompt + prompt;
@@ -1132,16 +1546,52 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @param {number} [opts.quality=0.7] - JPEG quality
      * @returns {Promise<string>} data:image URL
      */
-    async generateImage(prompt, { width = 300, quality = 0.7 } = {}) {
-        this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
+    _isSdTurboEligibleImageError(err) {
+        if (!err) return false;
+        const msg = String(err.message || err || '');
+        if (/Safety|Block|content\s*policy|policy/i.test(msg)) return false;
+        return Boolean(err.isConfigState || err.isRateLimited || /401|403|429|503|quota|RESOURCE_EXHAUSTED|Rate limited|rate limit/i.test(msg));
+    }
 
-        // Check imageProvider override from AI Backend Settings
-        const _imgOvr = this._imageProvider || null;
-        if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
-        if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
-        if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
+    async _trySdTurboImage(prompt, width, quality) {
+        const win = (typeof globalThis !== 'undefined' && globalThis.window)
+            ? globalThis.window
+            : ((typeof window !== 'undefined' && window.document) ? window : null);
+        if (this.isCanvasEnv || !win) return null;
+        try {
+            if (win._sdTurbo?.ready && typeof win._sdTurbo.generate === 'function') {
+                const localUrl = await win._sdTurbo.generate(prompt);
+                if (localUrl) {
+                    this._debugLog('[AIProvider] ✅ Image generated via local SD-Turbo');
+                    return await this._optimizeImage(localUrl, width, quality);
+                }
+            }
+        } catch (err) {
+            this._warnLog(`[AIProvider] Local SD-Turbo image generation failed: ${err?.message || err}`);
+        }
+        return null;
+    }
 
-        // Default: route by backend
+    _kickoffSdTurboLoad() {
+        const win = (typeof globalThis !== 'undefined' && globalThis.window)
+            ? globalThis.window
+            : ((typeof window !== 'undefined' && window.document) ? window : null);
+        if (this.isCanvasEnv || !win) return false;
+        if (win._sdTurbo?.ready || win.__sdTurboDownloading || typeof win.__loadSdTurbo !== 'function') return false;
+        const nav = win.navigator || (typeof navigator !== 'undefined' ? navigator : null);
+        if (nav && !nav.gpu) return false;
+        win.__sdTurboDownloading = true;
+        Promise.resolve(win.__loadSdTurbo(() => {})).then(
+            () => { win.__sdTurboDownloading = false; },
+            (err) => {
+                win.__sdTurboDownloading = false;
+                this._warnLog(`[AIProvider] SD-Turbo preload failed: ${err?.message || err}`);
+            }
+        );
+        return true;
+    }
+
+    async _generateImageByBackend(prompt, width, quality) {
         switch (this.backend) {
             case 'gemini':
                 return this._geminiGenerateImage(prompt, width, quality);
@@ -1149,10 +1599,48 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             // Claude doesn't support image generation — fall through to OpenAI-compatible
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
+            case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiGenerateImage(prompt, width, quality);
+        }
+    }
+
+    async generateImage(prompt, { width = 300, quality = 0.7 } = {}) {
+        this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
+
+        // Check imageProvider override from AI Backend Settings
+        const _imgOvr = this._imageProvider || null;
+        if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
+
+        if (_imgOvr === 'sd-local') {
+            const local = await this._trySdTurboImage(prompt, width, quality);
+            if (local) return local;
+            this._kickoffSdTurboLoad();
+            if (!this.apiKey && this.backend === 'gemini') {
+                const err = new Error('Local image generator is still preparing and no cloud image API key is configured.');
+                err.isConfigState = true;
+                throw err;
+            }
+        }
+
+        const runPrimary = () => {
+            if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
+            if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
+            return this._generateImageByBackend(prompt, width, quality);
+        };
+
+        try {
+            return await runPrimary();
+        } catch (err) {
+            if (this._isSdTurboEligibleImageError(err)) {
+                const local = await this._trySdTurboImage(prompt, width, quality);
+                if (local) return local;
+                if (_imgOvr === 'sd-local') this._kickoffSdTurboLoad();
+            }
+            throw err;
         }
     }
 
@@ -1306,8 +1794,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64);
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
             case 'claude':
+            case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64);
@@ -1426,8 +1916,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return this._geminiAnalyzeImage(prompt, base64Data, mimeType);
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
             case 'claude':
+            case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiAnalyzeImage(prompt, base64Data, mimeType);
@@ -1514,14 +2006,20 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return this._geminiAnalyzeAudio(prompt, base64Data, mimeType);
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
             case 'claude':
+            case 'alloflow-local':
             case 'custom':
             default:
-                // Most non-Gemini backends don't accept audio inline; fail
-                // with a clear error so the caller falls back to local
-                // Whisper transcription + text-only grading path.
-                throw new Error('Audio input not supported on this backend (' + this.backend + '). Use Whisper for transcription, then text grading.');
+                // Most non-Gemini backends don't accept audio inline. For oral-
+                // reading fluency the on-device path is now real: the desktop
+                // School Box runs a managed whisper.cpp server (/api/asr/*) and
+                // fluency_module.js exposes transcribeAudioLocal / analyzeFluencyLocal
+                // (transcribe on-device, then align to the passage). This throw
+                // remains for other audio-grading callers (e.g. AlloHaven) that
+                // still expect a single analyze-and-grade call.
+                throw new Error('Audio input not supported on this backend (' + this.backend + '). For reading fluency use window.analyzeFluencyLocal (on-device whisper.cpp); otherwise transcribe first, then grade text.');
         }
     }
 
@@ -1601,8 +2099,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return this._geminiTTS(text, voice, speed);
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
             case 'claude':
+            case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiTTS(text, voice, speed);
@@ -1866,6 +2366,20 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 // Make available globally (for inline usage in AlloFlowANTI.txt)
 if (typeof window !== 'undefined') {
     window.AIProvider = AIProvider;
+}
+
+// Node/CommonJS export — test harness only. Guarded so the browser <script>
+// load is unaffected (`module` is undefined there). Purely additive.
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        AIProvider,
+        LOCAL_BACKENDS: LOCAL_BACKENDS.slice(),
+        isLocalTextBackend,
+        buildLocalModelProfile,
+        tuneLocalTextOptions,
+        buildLocalTaskSupportFromProbe,
+        localModelSupportsTask,
+    };
 }
 
     console.log('[AI Backend Module] Loaded: WebSearchProvider + AIProvider + Firebase Shim Factory');

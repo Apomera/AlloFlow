@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_companionplanting.js — Companion Planting Lab (standalone CDN module)
 // Three Sisters garden simulator with Sims-style management, seasons, soil science
@@ -33,6 +43,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
 
 (function() {
   'use strict';
+
+  // ── Audio + WCAG (auto-injected) ──
+  var _plantAC = null;
+  function getPlantAC() { if (!_plantAC) { try { _plantAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_plantAC && _plantAC.state==="suspended") { try { _plantAC.resume(); } catch(e) {} } return _plantAC; }
+  function plantTone(f,d,tp,v) { var ac=getPlantAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxPlantClick() { plantTone(600,0.03,"sine",0.04); }
+  function sfxPlantSuccess() { plantTone(523,0.08,"sine",0.07); setTimeout(function(){plantTone(659,0.08,"sine",0.07);},70); setTimeout(function(){plantTone(784,0.1,"sine",0.08);},140); }
+  if(!document.getElementById("plant-a11y")){var _s=document.createElement("style");_s.id="plant-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-companionplanting')) return;
@@ -48,11 +67,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
 
 
   window.StemLab.registerTool('companionPlanting', {
-    icon: '🔬',
-    label: 'companionPlanting',
-    desc: '',
+    icon: '\uD83C\uDF31',
+    label: "Companion Planting Lab",
+    desc: "Grow a Three Sisters garden by season, manage soil and pests, and learn which plants help or harm each other.",
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'plant_three_sisters', label: 'Plant all Three Sisters (corn, beans, squash)', icon: '\uD83C\uDF3D', check: function(d) { return d.cornPlanted && d.beansPlanted && d.squashPlanted; }, progress: function(d) { var c = (d.cornPlanted ? 1 : 0) + (d.beansPlanted ? 1 : 0) + (d.squashPlanted ? 1 : 0); return c + '/3 planted'; } },
+      { id: 'complete_harvest', label: 'Complete a harvest cycle', icon: '\uD83C\uDF3E', check: function(d) { return (d.harvestCount || 0) >= 1; }, progress: function(d) { return (d.harvestCount || 0) >= 1 ? 'Harvested!' : 'Growing...'; } },
+      { id: 'harvest_3_times', label: 'Complete 3 harvest cycles', icon: '\uD83C\uDFC6', check: function(d) { return (d.harvestCount || 0) >= 3; }, progress: function(d) { return (d.harvestCount || 0) + '/3 harvests'; } },
+      { id: 'view_soil_science', label: 'Explore the soil science panel', icon: '\uD83E\uDDEA', check: function(d) { return !!d.showSoilDetail; }, progress: function(d) { return d.showSoilDetail ? 'Explored!' : 'Not yet'; } },
+      { id: 'learn_culture', label: 'Read about Indigenous agricultural knowledge', icon: '\uD83C\uDF0E', check: function(d) { return !!d.showCulture; }, progress: function(d) { return d.showCulture ? 'Read!' : 'Not yet'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -67,6 +93,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -108,6 +135,8 @@ var d = (labToolData.companionPlanting) || {};
 
 
           // ── State defaults ──
+
+          var gardenMode = d.gardenMode || 'sisters'; // 'sisters' | 'community'
 
           var phase = d.phase || 'plant';  // 'plant' | 'grow' | 'harvest'
 
@@ -261,19 +290,19 @@ var d = (labToolData.companionPlanting) || {};
 
           var _EVENTS = [
 
-            { id: 'rain', emoji: '🌧️', title: 'Heavy Rain', desc: 'A downpour soaks the soil! Nitrogen leaches with runoff.', effects: { moisture: 40, nitrogenLevel: -5 }, lesson: 'Nutrient leaching: Heavy rain washes soluble nitrogen deeper into soil, away from plant roots. Cover crops and mulch help prevent this.' },
+            { id: 'rain', emoji: '🌧️', title: __alloT('stem.companionplanting.heavy_rain', 'Heavy Rain'), desc: __alloT('stem.companionplanting.a_downpour_soaks_the_soil_nitrogen_lea', 'A downpour soaks the soil! Nitrogen leaches with runoff.'), effects: { moisture: 40, nitrogenLevel: -5 }, lesson: 'Nutrient leaching: Heavy rain washes soluble nitrogen deeper into soil, away from plant roots. Cover crops and mulch help prevent this.' },
 
-            { id: 'aphids', emoji: '🐛', title: 'Aphid Outbreak', desc: 'Aphids swarm the garden!', effects: { pestPressure: 30 }, lesson: 'Biological pest control: Aphids feed on plant sap. Ladybugs, lacewings, and parasitic wasps are natural predators that control aphid populations without chemicals.' },
+            { id: 'aphids', emoji: '🐛', title: __alloT('stem.companionplanting.aphid_outbreak', 'Aphid Outbreak'), desc: __alloT('stem.companionplanting.aphids_swarm_the_garden', 'Aphids swarm the garden!'), effects: { pestPressure: 30 }, lesson: 'Biological pest control: Aphids feed on plant sap. Ladybugs, lacewings, and parasitic wasps are natural predators that control aphid populations without chemicals.' },
 
-            { id: 'pollinators', emoji: '🐝', title: 'Pollinator Visit', desc: 'Bees and butterflies visit the garden!', effects: { plantHealth: 15 }, lesson: 'Pollination biology: Squash flowers especially depend on pollinators. Companion planting attracts diverse pollinators, improving fruit set across all crops.' },
+            { id: 'pollinators', emoji: '🐝', title: __alloT('stem.companionplanting.pollinator_visit', 'Pollinator Visit'), desc: __alloT('stem.companionplanting.bees_and_butterflies_visit_the_garden', 'Bees and butterflies visit the garden!'), effects: { plantHealth: 15 }, lesson: 'Pollination biology: Squash flowers especially depend on pollinators. Companion planting attracts diverse pollinators, improving fruit set across all crops.' },
 
-            { id: 'wind', emoji: '🌪️', title: 'Wind Storm', desc: 'Strong winds stress the plants.', effects: { plantHealth: -10, moisture: -10 }, lesson: 'Windbreak design: Dense planting and tall stalks (like corn) create natural windbreaks. Bean vines wrapped around corn stalks add structural stability.' },
+            { id: 'wind', emoji: '🌪️', title: __alloT('stem.companionplanting.wind_storm', 'Wind Storm'), desc: __alloT('stem.companionplanting.strong_winds_stress_the_plants', 'Strong winds stress the plants.'), effects: { plantHealth: -10, moisture: -10 }, lesson: 'Windbreak design: Dense planting and tall stalks (like corn) create natural windbreaks. Bean vines wrapped around corn stalks add structural stability.' },
 
-            { id: 'ladybugs', emoji: '🐞', title: 'Ladybug Arrival', desc: 'Ladybugs colonize the garden!', effects: { pestPressure: -25 }, lesson: 'Beneficial insects: A single ladybug eats ~5,000 aphids in its lifetime. Companion planting creates habitat diversity that attracts these natural pest controllers.' },
+            { id: 'ladybugs', emoji: '🐞', title: __alloT('stem.companionplanting.ladybug_arrival', 'Ladybug Arrival'), desc: __alloT('stem.companionplanting.ladybugs_colonize_the_garden', 'Ladybugs colonize the garden!'), effects: { pestPressure: -25 }, lesson: 'Beneficial insects: A single ladybug eats ~5,000 aphids in its lifetime. Companion planting creates habitat diversity that attracts these natural pest controllers.' },
 
-            { id: 'heatwave', emoji: '☀️', title: 'Heat Wave', desc: 'Scorching heat dries the soil.', effects: { moisture: -20, soilTemp: 5 }, lesson: 'Microclimate management: Squash leaves shade the soil, reducing temperature by up to 10°F and cutting evaporation by 50%. This living mulch is nature\'s AC.' },
+            { id: 'heatwave', emoji: '☀️', title: __alloT('stem.companionplanting.heat_wave', 'Heat Wave'), desc: __alloT('stem.companionplanting.scorching_heat_dries_the_soil', 'Scorching heat dries the soil.'), effects: { moisture: -20, soilTemp: 5 }, lesson: 'Microclimate management: Squash leaves shade the soil, reducing temperature by up to 10°F and cutting evaporation by 50%. This living mulch is nature\'s AC.' },
 
-            { id: 'mycorrhiza', emoji: '🍄', title: 'Mycorrhizal Bloom', desc: 'Beneficial fungi spread through the root zone!', effects: { nitrogenLevel: 15, plantHealth: 10 }, lesson: 'Fungal symbiosis: Mycorrhizal fungi extend plant root systems 100-1000×, trading soil minerals for plant sugars. This underground network connects all three sisters.' }
+            { id: 'mycorrhiza', emoji: '🍄', title: __alloT('stem.companionplanting.mycorrhizal_bloom', 'Mycorrhizal Bloom'), desc: __alloT('stem.companionplanting.beneficial_fungi_spread_through_the_ro', 'Beneficial fungi spread through the root zone!'), effects: { nitrogenLevel: 15, plantHealth: 10 }, lesson: 'Fungal symbiosis: Mycorrhizal fungi extend plant root systems 100-1000×, trading soil minerals for plant sugars. This underground network connects all three sisters.' }
 
           ];
 
@@ -283,15 +312,15 @@ var d = (labToolData.companionPlanting) || {};
 
           var _ACTIONS = [
 
-            { id: 'water', emoji: '💧', label: 'Water', effect: function () { return { moisture: 25 }; }, cooldownDays: 4, tip: 'Irrigate the soil' },
+            { id: 'water', emoji: '💧', label: __alloT('stem.companionplanting.water', 'Water'), effect: function () { return { moisture: 25 }; }, cooldownDays: 4, tip: __alloT('stem.companionplanting.irrigate_the_soil', 'Irrigate the soil') },
 
-            { id: 'compost', emoji: '🧱', label: 'Compost', effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 6, tip: 'Add organic compost' },
+            { id: 'compost', emoji: '🧱', label: __alloT('stem.companionplanting.compost', 'Compost'), effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 6, tip: __alloT('stem.companionplanting.add_organic_compost', 'Add organic compost') },
 
-            { id: 'weed', emoji: '🧹', label: 'Weed', effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 3, tip: 'Remove weeds' },
+            { id: 'weed', emoji: '🧹', label: __alloT('stem.companionplanting.weed', 'Weed'), effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 3, tip: __alloT('stem.companionplanting.remove_weeds', 'Remove weeds') },
 
-            { id: 'inspect', emoji: '🔍', label: 'Inspect', effect: function () { return { pestPressure: -5 }; }, cooldownDays: 2, tip: 'Check for pests' },
+            { id: 'inspect', emoji: '🔍', label: __alloT('stem.companionplanting.inspect', 'Inspect'), effect: function () { return { pestPressure: -5 }; }, cooldownDays: 2, tip: __alloT('stem.companionplanting.check_for_pests', 'Check for pests') },
 
-            { id: 'mulch', emoji: '🍂', label: 'Mulch', effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 5, tip: 'Spread organic mulch' }
+            { id: 'mulch', emoji: '🍂', label: __alloT('stem.companionplanting.mulch', 'Mulch'), effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 5, tip: __alloT('stem.companionplanting.spread_organic_mulch', 'Spread organic mulch') }
 
           ];
 
@@ -395,136 +424,136 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 1: PLANT_FAMILIES ===
           var PLANT_FAMILIES = [
-            { name: 'Solanaceae (Nightshade)', icon: '\uD83C\uDF45', members: 'Tomato, pepper, potato, eggplant', rotation: 'Never follow with another nightshade! 3-year rotation minimum.', nutrients: 'Heavy feeders \u2014 need lots of nitrogen and phosphorus.', color: '#ef4444' },
-            { name: 'Fabaceae (Legume)', icon: '\uD83E\uDED8', members: 'Bean, pea, lentil, clover', rotation: 'Plant AFTER heavy feeders to replenish nitrogen. Great cover crop.', nutrients: 'Nitrogen fixers \u2014 add 50-200 lbs N/acre to soil!', color: '#22c55e' },
-            { name: 'Brassicaceae (Cabbage)', icon: '\uD83E\uDD6C', members: 'Broccoli, cabbage, kale, radish, turnip', rotation: 'Avoid following with other brassicas. Susceptible to clubroot.', nutrients: 'Heavy feeders \u2014 need calcium and sulfur.', color: '#3b82f6' },
-            { name: 'Cucurbitaceae (Gourd)', icon: '\uD83C\uDF83', members: 'Squash, cucumber, melon, zucchini', rotation: 'Rotate every 2 years. Susceptible to powdery mildew.', nutrients: 'Heavy feeders \u2014 need compost-rich, well-drained soil.', color: '#f59e0b' },
-            { name: 'Poaceae (Grass)', icon: '\uD83C\uDF3E', members: 'Corn, wheat, rice, oats', rotation: 'Follow with legumes to rebuild nitrogen.', nutrients: 'Very heavy feeders \u2014 corn removes 150+ lbs N/acre.', color: '#8b5cf6' },
-            { name: 'Apiaceae (Carrot)', icon: '\uD83E\uDD55', members: 'Carrot, parsley, dill, celery, fennel', rotation: '2-3 year rotation. Attract beneficial insects when flowering.', nutrients: 'Light feeders \u2014 too much nitrogen causes forking in root crops.', color: '#f97316' },
-            { name: 'Allium (Onion)', icon: '\uD83E\uDDC5', members: 'Onion, garlic, leek, chive, shallot', rotation: 'Good rotation crop \u2014 sulfur compounds suppress soil diseases.', nutrients: 'Moderate feeders \u2014 need potassium for bulb development.', color: '#ec4899' },
-            { name: 'Asteraceae (Daisy)', icon: '\uD83C\uDF3B', members: 'Sunflower, lettuce, artichoke, marigold', rotation: 'Sunflowers can deplete soil; follow with legumes.', nutrients: 'Variable \u2014 sunflowers are heavy feeders, lettuce is light.', color: '#14b8a6' }
+            { name: __alloT('stem.companionplanting.solanaceae_nightshade', 'Solanaceae (Nightshade)'), icon: '\uD83C\uDF45', members: 'Tomato, pepper, potato, eggplant', rotation: 'Never follow with another nightshade! 3-year rotation minimum.', nutrients: 'Heavy feeders \u2014 need lots of nitrogen and phosphorus.', color: '#ef4444' },
+            { name: __alloT('stem.companionplanting.fabaceae_legume', 'Fabaceae (Legume)'), icon: '\uD83E\uDED8', members: 'Bean, pea, lentil, clover', rotation: 'Plant AFTER heavy feeders to replenish nitrogen. Great cover crop.', nutrients: 'Nitrogen fixers \u2014 add 50-200 lbs N/acre to soil!', color: '#22c55e' },
+            { name: __alloT('stem.companionplanting.brassicaceae_cabbage', 'Brassicaceae (Cabbage)'), icon: '\uD83E\uDD6C', members: 'Broccoli, cabbage, kale, radish, turnip', rotation: 'Avoid following with other brassicas. Susceptible to clubroot.', nutrients: 'Heavy feeders \u2014 need calcium and sulfur.', color: '#3b82f6' },
+            { name: __alloT('stem.companionplanting.cucurbitaceae_gourd', 'Cucurbitaceae (Gourd)'), icon: '\uD83C\uDF83', members: 'Squash, cucumber, melon, zucchini', rotation: 'Rotate every 2 years. Susceptible to powdery mildew.', nutrients: 'Heavy feeders \u2014 need compost-rich, well-drained soil.', color: '#f59e0b' },
+            { name: __alloT('stem.companionplanting.poaceae_grass', 'Poaceae (Grass)'), icon: '\uD83C\uDF3E', members: 'Corn, wheat, rice, oats', rotation: 'Follow with legumes to rebuild nitrogen.', nutrients: 'Very heavy feeders \u2014 corn removes 150+ lbs N/acre.', color: '#8b5cf6' },
+            { name: __alloT('stem.companionplanting.apiaceae_carrot', 'Apiaceae (Carrot)'), icon: '\uD83E\uDD55', members: 'Carrot, parsley, dill, celery, fennel', rotation: '2-3 year rotation. Attract beneficial insects when flowering.', nutrients: 'Light feeders \u2014 too much nitrogen causes forking in root crops.', color: '#f97316' },
+            { name: __alloT('stem.companionplanting.allium_onion', 'Allium (Onion)'), icon: '\uD83E\uDDC5', members: 'Onion, garlic, leek, chive, shallot', rotation: 'Good rotation crop \u2014 sulfur compounds suppress soil diseases.', nutrients: 'Moderate feeders \u2014 need potassium for bulb development.', color: '#ec4899' },
+            { name: __alloT('stem.companionplanting.asteraceae_daisy', 'Asteraceae (Daisy)'), icon: '\uD83C\uDF3B', members: 'Sunflower, lettuce, artichoke, marigold', rotation: 'Sunflowers can deplete soil; follow with legumes.', nutrients: 'Variable \u2014 sunflowers are heavy feeders, lettuce is light.', color: '#14b8a6' }
           ];
 
           // === Wave 1: SOIL_TYPES ===
           var SOIL_TYPES = [
-            { name: 'Sandy', icon: '\uD83C\uDFD6\uFE0F', texture: 'Large particles, gritty', drainage: 'Excellent (too fast!)', nutrients: 'Low retention \u2014 nutrients wash through', bestFor: 'Root crops (carrots, radishes), herbs', improve: 'Add compost and mulch to retain moisture', color: '#f59e0b' },
-            { name: 'Clay', icon: '\uD83E\uDEA8', texture: 'Tiny particles, sticky when wet', drainage: 'Poor (waterlogged)', nutrients: 'High retention but hard for roots to access', bestFor: 'Brassicas, beans (once improved)', improve: 'Add gypsum, compost, and sand to improve drainage', color: '#6366f1' },
-            { name: 'Loam', icon: '\u2B50', texture: 'Perfect mix of sand, silt, clay', drainage: 'Ideal balance', nutrients: 'Excellent retention and availability', bestFor: 'Almost everything! The gardener\'s dream soil', improve: 'Maintain with regular compost additions', color: '#22c55e' },
-            { name: 'Silt', icon: '\uD83C\uDF0A', texture: 'Fine particles, smooth/silky', drainage: 'Moderate', nutrients: 'Good retention, fertile', bestFor: 'Most vegetables, especially moisture-lovers', improve: 'Add organic matter to prevent compaction', color: '#3b82f6' },
-            { name: 'Peat', icon: '\uD83E\uDEB5', texture: 'Dark, spongy organic matter', drainage: 'Retains too much water', nutrients: 'Very acidic (pH 3.5-4.5), low in minerals', bestFor: 'Blueberries, azaleas, acid-loving plants', improve: 'Add lime to raise pH, sand for drainage', color: '#854d0e' },
-            { name: 'Chalky', icon: '\u26AA', texture: 'Rocky, alkaline, white fragments', drainage: 'Very free-draining', nutrients: 'Alkaline (pH 7.5-8.5), can lock out iron and manganese', bestFor: 'Lavender, spinach, beets, cabbage', improve: 'Add sulfur to lower pH, lots of organic matter', color: '#94a3b8' }
+            { name: __alloT('stem.companionplanting.sandy', 'Sandy'), icon: '\uD83C\uDFD6\uFE0F', texture: 'Large particles, gritty', drainage: 'Excellent (too fast!)', nutrients: 'Low retention \u2014 nutrients wash through', bestFor: 'Root crops (carrots, radishes), herbs', improve: 'Add compost and mulch to retain moisture', color: '#f59e0b' },
+            { name: __alloT('stem.companionplanting.clay', 'Clay'), icon: '\uD83E\uDEA8', texture: 'Tiny particles, sticky when wet', drainage: 'Poor (waterlogged)', nutrients: 'High retention but hard for roots to access', bestFor: 'Brassicas, beans (once improved)', improve: 'Add gypsum, compost, and sand to improve drainage', color: '#6366f1' },
+            { name: __alloT('stem.companionplanting.loam', 'Loam'), icon: '\u2B50', texture: 'Perfect mix of sand, silt, clay', drainage: 'Ideal balance', nutrients: 'Excellent retention and availability', bestFor: 'Almost everything! The gardener\'s dream soil', improve: 'Maintain with regular compost additions', color: '#22c55e' },
+            { name: __alloT('stem.companionplanting.silt', 'Silt'), icon: '\uD83C\uDF0A', texture: 'Fine particles, smooth/silky', drainage: 'Moderate', nutrients: 'Good retention, fertile', bestFor: 'Most vegetables, especially moisture-lovers', improve: 'Add organic matter to prevent compaction', color: '#3b82f6' },
+            { name: __alloT('stem.companionplanting.peat', 'Peat'), icon: '\uD83E\uDEB5', texture: 'Dark, spongy organic matter', drainage: 'Retains too much water', nutrients: 'Very acidic (pH 3.5-4.5), low in minerals', bestFor: 'Blueberries, azaleas, acid-loving plants', improve: 'Add lime to raise pH, sand for drainage', color: '#854d0e' },
+            { name: __alloT('stem.companionplanting.chalky', 'Chalky'), icon: '\u26AA', texture: 'Rocky, alkaline, white fragments', drainage: 'Very free-draining', nutrients: 'Alkaline (pH 7.5-8.5), can lock out iron and manganese', bestFor: 'Lavender, spinach, beets, cabbage', improve: 'Add sulfur to lower pH, lots of organic matter', color: 'var(--allo-stem-text-soft, #94a3b8)' }
           ];
 
           // === Wave 1: GARDEN_PESTS ===
           var GARDEN_PESTS = [
-            { name: 'Aphids', icon: '\uD83D\uDC1B', damage: 'Suck plant sap, curl leaves, spread viruses', organic: 'Ladybugs, lacewings, neem oil, strong water spray', companion: 'Plant garlic, chives, or nasturtiums nearby' },
-            { name: 'Cabbage Worm', icon: '\uD83D\uDC1B', damage: 'Chew large holes in brassica leaves', organic: 'Bt (Bacillus thuringiensis) spray, row covers, hand-pick', companion: 'Plant dill or thyme to attract parasitic wasps' },
-            { name: 'Tomato Hornworm', icon: '\uD83D\uDC1B', damage: 'Devour entire tomato plants overnight', organic: 'Hand-pick (look for white cocoons = braconid wasp eggs!), Bt', companion: 'Plant borage and dill to attract predator wasps' },
-            { name: 'Squash Bug', icon: '\uD83D\uDC1E', damage: 'Pierce stems, cause wilting and plant death', organic: 'Hand-pick eggs (copper-colored, on leaf undersides), neem oil', companion: 'Plant radishes and nasturtiums as trap crops' },
-            { name: 'Japanese Beetle', icon: '\uD83D\uDC1E', damage: 'Skeletonize leaves of roses, beans, grapes', organic: 'Hand-pick into soapy water, milky spore for grubs, neem', companion: 'Plant garlic and chives; avoid linden trees nearby' },
+            { name: __alloT('stem.companionplanting.aphids', 'Aphids'), icon: '\uD83D\uDC1B', damage: 'Suck plant sap, curl leaves, spread viruses', organic: 'Ladybugs, lacewings, neem oil, strong water spray', companion: 'Plant garlic, chives, or nasturtiums nearby' },
+            { name: __alloT('stem.companionplanting.cabbage_worm', 'Cabbage Worm'), icon: '\uD83D\uDC1B', damage: 'Chew large holes in brassica leaves', organic: 'Bt (Bacillus thuringiensis) spray, row covers, hand-pick', companion: 'Plant dill or thyme to attract parasitic wasps' },
+            { name: __alloT('stem.companionplanting.tomato_hornworm', 'Tomato Hornworm'), icon: '\uD83D\uDC1B', damage: 'Devour entire tomato plants overnight', organic: 'Hand-pick (look for white cocoons = braconid wasp eggs!), Bt', companion: 'Plant borage and dill to attract predator wasps' },
+            { name: __alloT('stem.companionplanting.squash_bug', 'Squash Bug'), icon: '\uD83D\uDC1E', damage: 'Pierce stems, cause wilting and plant death', organic: 'Hand-pick eggs (copper-colored, on leaf undersides), neem oil', companion: 'Plant radishes and nasturtiums as trap crops' },
+            { name: __alloT('stem.companionplanting.japanese_beetle', 'Japanese Beetle'), icon: '\uD83D\uDC1E', damage: 'Skeletonize leaves of roses, beans, grapes', organic: 'Hand-pick into soapy water, milky spore for grubs, neem', companion: 'Plant garlic and chives; avoid linden trees nearby' },
             { name: 'Slug/Snail', icon: '\uD83D\uDC0C', damage: 'Chew irregular holes, leave slime trails, night feeders', organic: 'Beer traps, copper barriers, diatomaceous earth, iron phosphate', companion: 'Plant rosemary, lavender; avoid moist mulch near susceptible plants' },
-            { name: 'Flea Beetle', icon: '\uD83D\uDC1E', damage: 'Tiny holes ("shotgun" pattern) in leaves of brassicas, eggplant', organic: 'Row covers, sticky traps, neem oil, kaolin clay', companion: 'Plant radishes as trap crop; interplant with catnip' },
-            { name: 'Carrot Rust Fly', icon: '\uD83E\uDEB0', damage: 'Larvae tunnel into carrot roots, causing rust-colored damage', organic: 'Row covers (most effective), delayed planting, sand barriers', companion: 'Plant onions or leeks between carrot rows' },
-            { name: 'Spider Mites', icon: '\uD83D\uDD77\uFE0F', damage: 'Stippled/yellowed leaves, fine webbing, thrive in hot dry weather', organic: 'Strong water spray, neem oil, predatory mites', companion: 'Increase humidity; plant coriander and dill for predators' },
-            { name: 'Root-Knot Nematode', icon: '\uD83E\uDDA0', damage: 'Galls on roots, stunted growth, yellowing (invisible above ground)', organic: 'French marigolds (kill nematodes!), solarization, crop rotation', companion: 'Plant marigolds for at least one full season before planting susceptibles' }
+            { name: __alloT('stem.companionplanting.flea_beetle', 'Flea Beetle'), icon: '\uD83D\uDC1E', damage: 'Tiny holes ("shotgun" pattern) in leaves of brassicas, eggplant', organic: 'Row covers, sticky traps, neem oil, kaolin clay', companion: 'Plant radishes as trap crop; interplant with catnip' },
+            { name: __alloT('stem.companionplanting.carrot_rust_fly', 'Carrot Rust Fly'), icon: '\uD83E\uDEB0', damage: 'Larvae tunnel into carrot roots, causing rust-colored damage', organic: 'Row covers (most effective), delayed planting, sand barriers', companion: 'Plant onions or leeks between carrot rows' },
+            { name: __alloT('stem.companionplanting.spider_mites', 'Spider Mites'), icon: '\uD83D\uDD77\uFE0F', damage: 'Stippled/yellowed leaves, fine webbing, thrive in hot dry weather', organic: 'Strong water spray, neem oil, predatory mites', companion: 'Increase humidity; plant coriander and dill for predators' },
+            { name: __alloT('stem.companionplanting.root_knot_nematode', 'Root-Knot Nematode'), icon: '\uD83E\uDDA0', damage: 'Galls on roots, stunted growth, yellowing (invisible above ground)', organic: 'French marigolds (kill nematodes!), solarization, crop rotation', companion: 'Plant marigolds for at least one full season before planting susceptibles' }
           ];
 
           // === Wave 1: BENEFICIAL_INSECTS ===
           var BENEFICIAL_INSECTS = [
-            { name: 'Ladybug', icon: '\uD83D\uDC1E', role: 'Eats 5,000+ aphids in its lifetime', attract: 'Dill, fennel, yarrow, dandelion', color: '#ef4444' },
-            { name: 'Honeybee', icon: '\uD83D\uDC1D', role: 'Pollinates 80% of flowering plants', attract: 'Lavender, sunflower, borage, clover', color: '#f59e0b' },
-            { name: 'Green Lacewing', icon: '\uD83E\uDD97', role: '"Aphid lion" \u2014 larvae eat 200+ aphids/week', attract: 'Coreopsis, cosmos, sweet alyssum', color: '#22c55e' },
-            { name: 'Praying Mantis', icon: '\uD83E\uDD97', role: 'Ambush predator of large garden pests', attract: 'Tall grasses, shrubs for egg cases', color: '#8b5cf6' },
-            { name: 'Ground Beetle', icon: '\uD83D\uDC1E', role: 'Nocturnal predator of slugs, cutworms, root maggots', attract: 'Mulch, ground cover, logs for shelter', color: '#3b82f6' },
-            { name: 'Braconid Wasp', icon: '\uD83D\uDC1D', role: 'Parasitizes hornworms, aphids, caterpillars', attract: 'Dill, parsley, yarrow, wild carrot', color: '#f97316' },
-            { name: 'Hoverfly', icon: '\uD83D\uDC1D', role: 'Larvae eat aphids; adults are excellent pollinators', attract: 'Alyssum, calendula, fennel', color: '#14b8a6' },
-            { name: 'Earthworm', icon: '\uD83E\uDEB1', role: 'Aerates soil, creates castings (best fertilizer!)', attract: 'Organic matter, mulch, no-till practices', color: '#854d0e' }
+            { name: __alloT('stem.companionplanting.ladybug', 'Ladybug'), icon: '\uD83D\uDC1E', role: 'Eats 5,000+ aphids in its lifetime', attract: 'Dill, fennel, yarrow, dandelion', color: '#ef4444' },
+            { name: __alloT('stem.companionplanting.honeybee', 'Honeybee'), icon: '\uD83D\uDC1D', role: 'Pollinates 80% of flowering plants', attract: 'Lavender, sunflower, borage, clover', color: '#f59e0b' },
+            { name: __alloT('stem.companionplanting.green_lacewing', 'Green Lacewing'), icon: '\uD83E\uDD97', role: '"Aphid lion" \u2014 larvae eat 200+ aphids/week', attract: 'Coreopsis, cosmos, sweet alyssum', color: '#22c55e' },
+            { name: __alloT('stem.companionplanting.praying_mantis', 'Praying Mantis'), icon: '\uD83E\uDD97', role: 'Ambush predator of large garden pests', attract: 'Tall grasses, shrubs for egg cases', color: '#8b5cf6' },
+            { name: __alloT('stem.companionplanting.ground_beetle', 'Ground Beetle'), icon: '\uD83D\uDC1E', role: 'Nocturnal predator of slugs, cutworms, root maggots', attract: 'Mulch, ground cover, logs for shelter', color: '#3b82f6' },
+            { name: __alloT('stem.companionplanting.braconid_wasp', 'Braconid Wasp'), icon: '\uD83D\uDC1D', role: 'Parasitizes hornworms, aphids, caterpillars', attract: 'Dill, parsley, yarrow, wild carrot', color: '#f97316' },
+            { name: __alloT('stem.companionplanting.hoverfly', 'Hoverfly'), icon: '\uD83D\uDC1D', role: 'Larvae eat aphids; adults are excellent pollinators', attract: 'Alyssum, calendula, fennel', color: '#14b8a6' },
+            { name: __alloT('stem.companionplanting.earthworm', 'Earthworm'), icon: '\uD83E\uDEB1', role: 'Aerates soil, creates castings (best fertilizer!)', attract: 'Organic matter, mulch, no-till practices', color: '#854d0e' }
           ];
 
           // === Wave 2: NITROGEN_CYCLE ===
           var NITROGEN_CYCLE = [
-            { step: 1, name: 'Atmospheric N\u2082', icon: '\u2601\uFE0F', desc: '78% of air is nitrogen gas (N\u2082), but plants can\'t use it directly.', color: '#94a3b8' },
-            { step: 2, name: 'Nitrogen Fixation', icon: '\uD83E\uDDA0', desc: 'Rhizobium bacteria in bean root nodules convert N\u2082 \u2192 NH\u2083 (ammonia).', color: '#22c55e' },
-            { step: 3, name: 'Nitrification', icon: '\u2699\uFE0F', desc: 'Soil bacteria convert NH\u2083 \u2192 NO\u2082\u207B \u2192 NO\u2083\u207B (nitrate) \u2014 the form plants absorb.', color: '#3b82f6' },
-            { step: 4, name: 'Plant Uptake', icon: '\uD83C\uDF31', desc: 'Roots absorb NO\u2083\u207B from soil water. Used to build amino acids and proteins.', color: '#10b981' },
-            { step: 5, name: 'Decomposition', icon: '\uD83C\uDF42', desc: 'Dead plants/animals decompose. Decomposers release N back as NH\u2083.', color: '#f59e0b' },
-            { step: 6, name: 'Denitrification', icon: '\uD83D\uDCA8', desc: 'Anaerobic bacteria convert NO\u2083\u207B back to N\u2082 gas (lost to atmosphere).', color: '#ef4444' }
+            { step: 1, name: __alloT('stem.companionplanting.atmospheric_n', 'Atmospheric N\u2082'), icon: '\u2601\uFE0F', desc: __alloT('stem.companionplanting.78_of_air_is_nitrogen_gas_n_but_plants', '78% of air is nitrogen gas (N\u2082), but plants can\'t use it directly.'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
+            { step: 2, name: __alloT('stem.companionplanting.nitrogen_fixation', 'Nitrogen Fixation'), icon: '\uD83E\uDDA0', desc: __alloT('stem.companionplanting.rhizobium_bacteria_in_bean_root_nodule', 'Rhizobium bacteria in bean root nodules convert N\u2082 \u2192 NH\u2083 (ammonia).'), color: '#22c55e' },
+            { step: 3, name: __alloT('stem.companionplanting.nitrification', 'Nitrification'), icon: '\u2699\uFE0F', desc: __alloT('stem.companionplanting.soil_bacteria_convert_nh_no_no_nitrate', 'Soil bacteria convert NH\u2083 \u2192 NO\u2082\u207B \u2192 NO\u2083\u207B (nitrate) \u2014 the form plants absorb.'), color: '#3b82f6' },
+            { step: 4, name: __alloT('stem.companionplanting.plant_uptake', 'Plant Uptake'), icon: '\uD83C\uDF31', desc: __alloT('stem.companionplanting.roots_absorb_no_from_soil_water_used_t', 'Roots absorb NO\u2083\u207B from soil water. Used to build amino acids and proteins.'), color: '#10b981' },
+            { step: 5, name: __alloT('stem.companionplanting.decomposition', 'Decomposition'), icon: '\uD83C\uDF42', desc: __alloT('stem.companionplanting.dead_plants_animals_decompose_decompos', 'Dead plants/animals decompose. Decomposers release N back as NH\u2083.'), color: '#f59e0b' },
+            { step: 6, name: __alloT('stem.companionplanting.denitrification', 'Denitrification'), icon: '\uD83D\uDCA8', desc: __alloT('stem.companionplanting.anaerobic_bacteria_convert_no_back_to_', 'Anaerobic bacteria convert NO\u2083\u207B back to N\u2082 gas (lost to atmosphere).'), color: '#ef4444' }
           ];
 
           // === Wave 2: COMPOSTING_GUIDE ===
           var COMPOST_GREENS = [
-            { name: 'Fruit/veggie scraps', icon: '\uD83C\uDF4E', nitrogen: 'high' },
-            { name: 'Coffee grounds', icon: '\u2615', nitrogen: 'high' },
-            { name: 'Fresh grass clippings', icon: '\uD83C\uDF3F', nitrogen: 'high' },
-            { name: 'Plant trimmings', icon: '\u2702\uFE0F', nitrogen: 'medium' },
-            { name: 'Eggshells (calcium!)', icon: '\uD83E\uDD5A', nitrogen: 'low' },
-            { name: 'Tea bags', icon: '\uD83C\uDF75', nitrogen: 'medium' }
+            { name: __alloT('stem.companionplanting.fruit_veggie_scraps', 'Fruit/veggie scraps'), icon: '\uD83C\uDF4E', nitrogen: 'high' },
+            { name: __alloT('stem.companionplanting.coffee_grounds', 'Coffee grounds'), icon: '\u2615', nitrogen: 'high' },
+            { name: __alloT('stem.companionplanting.fresh_grass_clippings', 'Fresh grass clippings'), icon: '\uD83C\uDF3F', nitrogen: 'high' },
+            { name: __alloT('stem.companionplanting.plant_trimmings', 'Plant trimmings'), icon: '\u2702\uFE0F', nitrogen: 'medium' },
+            { name: __alloT('stem.companionplanting.eggshells_calcium', 'Eggshells (calcium!)'), icon: '\uD83E\uDD5A', nitrogen: 'low' },
+            { name: __alloT('stem.companionplanting.tea_bags', 'Tea bags'), icon: '\uD83C\uDF75', nitrogen: 'medium' }
           ];
           var COMPOST_BROWNS = [
-            { name: 'Dry leaves', icon: '\uD83C\uDF42', carbon: 'high' },
+            { name: __alloT('stem.companionplanting.dry_leaves', 'Dry leaves'), icon: '\uD83C\uDF42', carbon: 'high' },
             { name: 'Cardboard/paper', icon: '\uD83D\uDCE6', carbon: 'high' },
             { name: 'Straw/hay', icon: '\uD83C\uDF3E', carbon: 'high' },
-            { name: 'Wood chips', icon: '\uD83E\uDEB5', carbon: 'high' },
-            { name: 'Dryer lint', icon: '\uD83E\uDDF5', carbon: 'medium' },
-            { name: 'Sawdust', icon: '\uD83E\uDE9A', carbon: 'high' }
+            { name: __alloT('stem.companionplanting.wood_chips', 'Wood chips'), icon: '\uD83E\uDEB5', carbon: 'high' },
+            { name: __alloT('stem.companionplanting.dryer_lint', 'Dryer lint'), icon: '\uD83E\uDDF5', carbon: 'medium' },
+            { name: __alloT('stem.companionplanting.sawdust', 'Sawdust'), icon: '\uD83E\uDE9A', carbon: 'high' }
           ];
           var COMPOST_NEVER = ['Meat/dairy', 'Diseased plants', 'Pet waste', 'Treated wood', 'Coal ash', 'Glossy paper'];
 
           // === Wave 2: SEASONAL_CALENDAR ===
           var SEASONAL_CALENDAR = [
-            { season: 'Early Spring', icon: '\u2744\uFE0F\u2192\uD83C\uDF31', months: 'Feb-Mar', plants: ['Peas', 'Lettuce', 'Spinach', 'Radish', 'Onion sets'], tasks: 'Start seeds indoors, prepare beds, add compost', tip: 'Cool-season crops can handle light frost!' },
-            { season: 'Late Spring', icon: '\uD83C\uDF31', months: 'Apr-May', plants: ['Tomato transplants', 'Peppers', 'Beans', 'Corn', 'Squash'], tasks: 'Direct sow after last frost, mulch heavily', tip: 'The Three Sisters go in NOW after soil reaches 60\u00B0F' },
-            { season: 'Summer', icon: '\u2600\uFE0F', months: 'Jun-Aug', plants: ['Succession plant beans/lettuce', 'Start fall brassicas indoors'], tasks: 'Water deeply, manage pests, harvest regularly', tip: 'Morning watering reduces disease. Harvest daily to keep plants producing!' },
-            { season: 'Fall', icon: '\uD83C\uDF42', months: 'Sep-Nov', plants: ['Garlic (plant now!)', 'Kale', 'Spinach', 'Cover crops'], tasks: 'Plant cover crops, collect seeds, add mulch', tip: 'Garlic planted in fall produces the biggest bulbs. Cover crops prevent erosion!' },
-            { season: 'Winter', icon: '\u2744\uFE0F', months: 'Dec-Jan', plants: ['Plan next year!', 'Order seeds', 'Indoor microgreens'], tasks: 'Soil test, clean tools, review garden journal', tip: 'Use this time to design companion planting layouts for spring.' }
+            { season: 'Early Spring', icon: '\u2744\uFE0F\u2192\uD83C\uDF31', months: 'Feb-Mar', plants: ['Peas', 'Lettuce', 'Spinach', 'Radish', 'Onion sets'], tasks: 'Start seeds indoors, prepare beds, add compost', tip: __alloT('stem.companionplanting.cool_season_crops_can_handle_light_fro', 'Cool-season crops can handle light frost!') },
+            { season: 'Late Spring', icon: '\uD83C\uDF31', months: 'Apr-May', plants: ['Tomato transplants', 'Peppers', 'Beans', 'Corn', 'Squash'], tasks: 'Direct sow after last frost, mulch heavily', tip: __alloT('stem.companionplanting.the_three_sisters_go_in_now_after_soil', 'The Three Sisters go in NOW after soil reaches 60\u00B0F') },
+            { season: 'Summer', icon: '\u2600\uFE0F', months: 'Jun-Aug', plants: ['Succession plant beans/lettuce', 'Start fall brassicas indoors'], tasks: 'Water deeply, manage pests, harvest regularly', tip: __alloT('stem.companionplanting.morning_watering_reduces_disease_harve', 'Morning watering reduces disease. Harvest daily to keep plants producing!') },
+            { season: 'Fall', icon: '\uD83C\uDF42', months: 'Sep-Nov', plants: ['Garlic (plant now!)', 'Kale', 'Spinach', 'Cover crops'], tasks: 'Plant cover crops, collect seeds, add mulch', tip: __alloT('stem.companionplanting.garlic_planted_in_fall_produces_the_bi', 'Garlic planted in fall produces the biggest bulbs. Cover crops prevent erosion!') },
+            { season: 'Winter', icon: '\u2744\uFE0F', months: 'Dec-Jan', plants: ['Plan next year!', 'Order seeds', 'Indoor microgreens'], tasks: 'Soil test, clean tools, review garden journal', tip: __alloT('stem.companionplanting.use_this_time_to_design_companion_plan', 'Use this time to design companion planting layouts for spring.') }
           ];
 
           // === Wave 2: PH_SCALE ===
           var PH_PLANTS = [
-            { name: 'Blueberry', ph: [4.5, 5.5], icon: '\uD83E\uDED0' },
-            { name: 'Potato', ph: [5.0, 6.0], icon: '\uD83E\uDD54' },
-            { name: 'Strawberry', ph: [5.5, 6.5], icon: '\uD83C\uDF53' },
-            { name: 'Tomato', ph: [6.0, 7.0], icon: '\uD83C\uDF45' },
-            { name: 'Corn', ph: [6.0, 7.0], icon: '\uD83C\uDF3D' },
-            { name: 'Beans', ph: [6.0, 7.5], icon: '\uD83E\uDED8' },
-            { name: 'Squash', ph: [6.0, 7.0], icon: '\uD83C\uDF83' },
-            { name: 'Lettuce', ph: [6.0, 7.0], icon: '\uD83E\uDD6C' },
-            { name: 'Garlic', ph: [6.0, 7.0], icon: '\uD83E\uDDC4' },
-            { name: 'Asparagus', ph: [6.5, 8.0], icon: '\uD83E\uDD66' },
-            { name: 'Cabbage', ph: [6.5, 7.5], icon: '\uD83E\uDD6C' },
-            { name: 'Lavender', ph: [6.5, 8.0], icon: '\uD83D\uDC9C' }
+            { name: __alloT('stem.companionplanting.blueberry', 'Blueberry'), ph: [4.5, 5.5], icon: '\uD83E\uDED0' },
+            { name: __alloT('stem.companionplanting.potato', 'Potato'), ph: [5.0, 6.0], icon: '\uD83E\uDD54' },
+            { name: __alloT('stem.companionplanting.strawberry', 'Strawberry'), ph: [5.5, 6.5], icon: '\uD83C\uDF53' },
+            { name: __alloT('stem.companionplanting.tomato', 'Tomato'), ph: [6.0, 7.0], icon: '\uD83C\uDF45' },
+            { name: __alloT('stem.companionplanting.corn', 'Corn'), ph: [6.0, 7.0], icon: '\uD83C\uDF3D' },
+            { name: __alloT('stem.companionplanting.beans', 'Beans'), ph: [6.0, 7.5], icon: '\uD83E\uDED8' },
+            { name: __alloT('stem.companionplanting.squash', 'Squash'), ph: [6.0, 7.0], icon: '\uD83C\uDF83' },
+            { name: __alloT('stem.companionplanting.lettuce', 'Lettuce'), ph: [6.0, 7.0], icon: '\uD83E\uDD6C' },
+            { name: __alloT('stem.companionplanting.garlic', 'Garlic'), ph: [6.0, 7.0], icon: '\uD83E\uDDC4' },
+            { name: __alloT('stem.companionplanting.asparagus', 'Asparagus'), ph: [6.5, 8.0], icon: '\uD83E\uDD66' },
+            { name: __alloT('stem.companionplanting.cabbage', 'Cabbage'), ph: [6.5, 7.5], icon: '\uD83E\uDD6C' },
+            { name: __alloT('stem.companionplanting.lavender', 'Lavender'), ph: [6.5, 8.0], icon: '\uD83D\uDC9C' }
           ];
 
           // === Wave 3: GARDEN_SCENARIOS ===
           var GARDEN_SCENARIOS = [
-            { id: 1, scenario: 'Your tomato leaves have yellow spots and curling. The underside of leaves shows tiny white insects that fly when disturbed.', question: 'What pest is this, and what\'s the best companion planting solution?',
+            { id: 1, scenario: 'Your tomato leaves have yellow spots and curling. The underside of leaves shows tiny white insects that fly when disturbed.', question: __alloT('stem.companionplanting.what_pest_is_this_and_what_s_the_best_', 'What pest is this, and what\'s the best companion planting solution?'),
               options: ['Aphids \u2014 plant marigolds', 'Whiteflies \u2014 plant basil and nasturtiums', 'Spider mites \u2014 spray water', 'Leaf miners \u2014 remove leaves'], correct: 1,
               explain: 'Whiteflies! Basil\'s volatile oils repel whiteflies from tomatoes, and nasturtiums act as trap crops. This is why "tomato + basil" is the #1 companion planting pair.', concept: 'Trap Cropping & Volatile Oils' },
-            { id: 2, scenario: 'You planted beans and onions in the same bed. The beans are stunted and yellow despite good soil.', question: 'What went wrong?',
+            { id: 2, scenario: 'You planted beans and onions in the same bed. The beans are stunted and yellow despite good soil.', question: __alloT('stem.companionplanting.what_went_wrong', 'What went wrong?'),
               options: ['Too much water', 'Onions inhibit bean nitrogen fixation', 'Beans need more sun', 'Not enough compost'], correct: 1,
               explain: 'Allium compounds from onions suppress Rhizobium bacteria in bean root nodules, blocking nitrogen fixation. NEVER plant beans next to onions, garlic, or leeks!', concept: 'Allelopathic Interference' },
-            { id: 3, scenario: 'It\'s mid-summer, 95\u00B0F, and your lettuce is bolting (going to seed) and turning bitter.', question: 'What companion planting strategy could have prevented this?',
+            { id: 3, scenario: 'It\'s mid-summer, 95\u00B0F, and your lettuce is bolting (going to seed) and turning bitter.', question: __alloT('stem.companionplanting.what_companion_planting_strategy_could', 'What companion planting strategy could have prevented this?'),
               options: ['Plant lettuce with sunflowers for shade', 'Add more fertilizer', 'Water more frequently', 'Plant lettuce with beans'], correct: 0,
               explain: 'Tall companions (sunflowers, corn, pole beans on trellises) create afternoon shade that keeps lettuce cool. Lettuce bolts when soil temperature exceeds 80\u00B0F. Intercropping creates beneficial microclimates!', concept: 'Microclimate Management' },
-            { id: 4, scenario: 'Your garden has poor, compacted clay soil with low nitrogen. You can\'t add compost this year.', question: 'Which cover crop combination would best improve this soil?',
+            { id: 4, scenario: 'Your garden has poor, compacted clay soil with low nitrogen. You can\'t add compost this year.', question: __alloT('stem.companionplanting.which_cover_crop_combination_would_bes', 'Which cover crop combination would best improve this soil?'),
               options: ['Crimson clover + annual ryegrass', 'Sunflowers + corn', 'Tomatoes + peppers', 'Lettuce + spinach'], correct: 0,
               explain: 'Clover (legume) fixes nitrogen while ryegrass\'s deep roots break up clay compaction. Together, they add 100+ lbs N/acre and improve soil structure. This is companion planting for the SOIL!', concept: 'Cover Cropping & Soil Building' },
-            { id: 5, scenario: 'Cabbage moths are devastating your broccoli. You want to avoid all pesticides, even organic ones.', question: 'What biological control strategy uses companion planting?',
+            { id: 5, scenario: 'Cabbage moths are devastating your broccoli. You want to avoid all pesticides, even organic ones.', question: __alloT('stem.companionplanting.what_biological_control_strategy_uses_', 'What biological control strategy uses companion planting?'),
               options: ['Plant mint everywhere', 'Plant dill and yarrow to attract parasitic wasps', 'Plant more broccoli', 'Move broccoli indoors'], correct: 1,
               explain: 'Dill and yarrow attract braconid wasps, which lay eggs inside cabbage moth caterpillars (biological control). The wasps are harmless to humans but devastating to pests. This is called "farmscaping."', concept: 'Biological Control & Farmscaping' },
-            { id: 6, scenario: 'You notice your squash plants have flowers but no fruit is forming.', question: 'What\'s the most likely problem?',
+            { id: 6, scenario: 'You notice your squash plants have flowers but no fruit is forming.', question: __alloT('stem.companionplanting.what_s_the_most_likely_problem', 'What\'s the most likely problem?'),
               options: ['Too much nitrogen', 'Lack of pollinators', 'Wrong soil pH', 'Overwatering'], correct: 1,
               explain: 'Squash requires insect pollination! Each flower opens for just one day. Plant borage, lavender, or sunflowers nearby to attract bees. In small gardens, you can hand-pollinate with a paintbrush.', concept: 'Pollination Ecology' },
-            { id: 7, scenario: 'After 3 years of growing tomatoes in the same spot, yields are declining and plants show disease.', question: 'What principle have you violated?',
+            { id: 7, scenario: 'After 3 years of growing tomatoes in the same spot, yields are declining and plants show disease.', question: __alloT('stem.companionplanting.what_principle_have_you_violated', 'What principle have you violated?'),
               options: ['Companion planting', 'Crop rotation', 'Succession planting', 'Intercropping'], correct: 1,
               explain: 'Crop rotation! Growing the same family in the same spot builds up soil-borne diseases (especially Fusarium, Verticillium). Rotate nightshades (tomato, pepper, potato) with legumes, then brassicas, then root crops.', concept: 'Crop Rotation & Disease Prevention' },
-            { id: 8, scenario: 'Your neighbor planted a black walnut tree 20 feet from your garden fence. Your tomatoes near the fence are dying.', question: 'What is killing your tomatoes?',
+            { id: 8, scenario: 'Your neighbor planted a black walnut tree 20 feet from your garden fence. Your tomatoes near the fence are dying.', question: __alloT('stem.companionplanting.what_is_killing_your_tomatoes', 'What is killing your tomatoes?'),
               options: ['Shade from the tree', 'Juglone toxicity from walnut roots', 'Root competition for water', 'Walnut pollen allergy'], correct: 1,
               explain: 'Black walnuts produce juglone, a chemical that kills tomatoes, peppers, potatoes, and azaleas within the root zone (50-80 feet!). This is allelopathy \u2014 chemical warfare between plants. Plant walnut-tolerant species instead.', concept: 'Allelopathy' },
-            { id: 9, scenario: 'You have a 4x8 raised bed and want to maximize food production using companion planting.', question: 'Which combination produces the most food per square foot?',
+            { id: 9, scenario: 'You have a 4x8 raised bed and want to maximize food production using companion planting.', question: __alloT('stem.companionplanting.which_combination_produces_the_most_fo', 'Which combination produces the most food per square foot?'),
               options: ['Only tomatoes (monoculture)', 'Three Sisters (corn, beans, squash)', 'Just lettuce rows', 'Separate crops in each quadrant'], correct: 1,
               explain: 'The Three Sisters polyculture produces 20-30% MORE calories per acre than monoculture corn alone! Vertical stacking (corn), nitrogen fixation (beans), and ground cover (squash) maximize every dimension of the growing space.', concept: 'Polyculture Yield Advantage' },
-            { id: 10, scenario: 'You want to reduce your garden\'s water usage by 40% without losing production.', question: 'Which companion planting strategy helps the most with water conservation?',
+            { id: 10, scenario: 'You want to reduce your garden\'s water usage by 40% without losing production.', question: __alloT('stem.companionplanting.which_companion_planting_strategy_help', 'Which companion planting strategy helps the most with water conservation?'),
               options: ['Plant drought-resistant varieties only', 'Use squash as living mulch between rows', 'Water at night', 'Dig deeper beds'], correct: 1,
               explain: 'Living mulch (squash, clover, sweet potato vines) shades soil, reducing evaporation by 40-60% and soil temperature by 10\u00B0F. This is exactly why squash is a "Sister" \u2014 it\'s nature\'s mulch!', concept: 'Living Mulch & Water Conservation' }
           ];
@@ -547,14 +576,14 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 3: GARDEN_QUICK_REF ===
           var GARDEN_QUICK_REF = [
-            { title: 'The Three Sisters', content: 'Corn (structure) + Beans (nitrogen) + Squash (mulch). 7,000 year-old polyculture.', icon: '\uD83C\uDF3D', color: '#22c55e' },
-            { title: 'Crop Rotation Rule', content: 'Legumes \u2192 Brassicas \u2192 Nightshades \u2192 Root crops. Never repeat a family in the same spot!', icon: '\uD83D\uDD04', color: '#3b82f6' },
-            { title: 'Compost Ratio', content: '3 parts Brown (carbon) : 1 part Green (nitrogen). Keep moist, turn weekly.', icon: '\u267B\uFE0F', color: '#f59e0b' },
-            { title: 'Soil pH Sweet Spot', content: 'Most vegetables prefer pH 6.0-7.0. Test annually. Add lime to raise, sulfur to lower.', icon: '\u2696\uFE0F', color: '#8b5cf6' },
-            { title: 'Watering Rule', content: 'Deep and infrequent > shallow and often. Morning watering prevents fungal disease.', icon: '\uD83D\uDCA7', color: '#06b6d4' },
-            { title: 'Pest Control Ladder', content: 'Prevention \u2192 Companion planting \u2192 Beneficial insects \u2192 Physical barriers \u2192 Organic sprays (last resort).', icon: '\uD83D\uDC1E', color: '#ef4444' },
-            { title: 'Succession Planting', content: 'Plant new seeds every 2-3 weeks for continuous harvest instead of one big crop.', icon: '\uD83D\uDCC5', color: '#10b981' },
-            { title: 'Mulch Everything', content: '2-4 inches of organic mulch retains moisture, suppresses weeds, and feeds soil as it decomposes.', icon: '\uD83C\uDF42', color: '#854d0e' }
+            { title: __alloT('stem.companionplanting.the_three_sisters', 'The Three Sisters'), content: __alloT('stem.companionplanting.corn_structure_beans_nitrogen_squash_m', 'Corn (structure) + Beans (nitrogen) + Squash (mulch). 7,000 year-old polyculture.'), icon: '\uD83C\uDF3D', color: '#22c55e' },
+            { title: __alloT('stem.companionplanting.crop_rotation_rule', 'Crop Rotation Rule'), content: __alloT('stem.companionplanting.legumes_brassicas_nightshades_root_cro', 'Legumes \u2192 Brassicas \u2192 Nightshades \u2192 Root crops. Never repeat a family in the same spot!'), icon: '\uD83D\uDD04', color: '#3b82f6' },
+            { title: __alloT('stem.companionplanting.compost_ratio', 'Compost Ratio'), content: __alloT('stem.companionplanting.3_parts_brown_carbon_1_part_green_nitr', '3 parts Brown (carbon) : 1 part Green (nitrogen). Keep moist, turn weekly.'), icon: '\u267B\uFE0F', color: '#f59e0b' },
+            { title: __alloT('stem.companionplanting.soil_ph_sweet_spot', 'Soil pH Sweet Spot'), content: __alloT('stem.companionplanting.most_vegetables_prefer_ph_6_0_7_0_test', 'Most vegetables prefer pH 6.0-7.0. Test annually. Add lime to raise, sulfur to lower.'), icon: '\u2696\uFE0F', color: '#8b5cf6' },
+            { title: __alloT('stem.companionplanting.watering_rule', 'Watering Rule'), content: __alloT('stem.companionplanting.deep_and_infrequent_shallow_and_often_', 'Deep and infrequent > shallow and often. Morning watering prevents fungal disease.'), icon: '\uD83D\uDCA7', color: '#06b6d4' },
+            { title: __alloT('stem.companionplanting.pest_control_ladder', 'Pest Control Ladder'), content: __alloT('stem.companionplanting.prevention_companion_planting_benefici', 'Prevention \u2192 Companion planting \u2192 Beneficial insects \u2192 Physical barriers \u2192 Organic sprays (last resort).'), icon: '\uD83D\uDC1E', color: '#ef4444' },
+            { title: __alloT('stem.companionplanting.succession_planting', 'Succession Planting'), content: __alloT('stem.companionplanting.plant_new_seeds_every_2_3_weeks_for_co', 'Plant new seeds every 2-3 weeks for continuous harvest instead of one big crop.'), icon: '\uD83D\uDCC5', color: '#10b981' },
+            { title: __alloT('stem.companionplanting.mulch_everything', 'Mulch Everything'), content: __alloT('stem.companionplanting.2_4_inches_of_organic_mulch_retains_mo', '2-4 inches of organic mulch retains moisture, suppresses weeds, and feeds soil as it decomposes.'), icon: '\uD83C\uDF42', color: '#854d0e' }
           ];
 
           // Wave 3 state
@@ -568,32 +597,32 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 4: FARMING_COMPARISON ===
           var FARMING_SYSTEMS = [
-            { id: 'industrial', name: 'Industrial Monoculture', icon: '\uD83C\uDFED', color: '#ef4444',
+            { id: 'industrial', name: __alloT('stem.companionplanting.industrial_monoculture', 'Industrial Monoculture'), icon: '\uD83C\uDFED', color: '#ef4444',
               energy: { input: 10, output: 1, unit: 'calories fossil fuel per calorie food', eroi: 0.1 },
               water: { usage: 'High (irrigation-dependent)', efficiency: '40-60% reaches crop' },
               chemicals: { fertilizer: '150-200 lbs N/acre synthetic', pesticides: '2-5 lbs/acre/year', herbicides: 'Heavy (Roundup-dependent)' },
               carbon: { emission: '+3.5 tons CO\u2082/acre/year', sequestration: 'None (releases soil carbon)', net: 'Large net emitter' },
-              biodiversity: { score: 15, desc: '1 crop species, few insects, depleted soil life' },
+              biodiversity: { score: 15, desc: __alloT('stem.companionplanting.1_crop_species_few_insects_depleted_so', '1 crop species, few insects, depleted soil life') },
               soil: { health: 'Declining (compaction, erosion)', organic: 'Drops 50% in 50 years' },
               yield: { short: 'High (with inputs)', long: 'Declining without increasing inputs' },
               pros: ['High short-term yield', 'Mechanization efficient', 'Cheap per calorie (subsidized)'],
               cons: ['Fossil fuel dependent', 'Soil degradation', 'Water pollution', 'Biodiversity loss', 'Antibiotic resistance'] },
-            { id: 'companion', name: 'Companion Planting / Polyculture', icon: '\uD83C\uDF3D', color: '#22c55e',
+            { id: 'companion', name: __alloT('stem.companionplanting.companion_planting_polyculture', 'Companion Planting / Polyculture'), icon: '\uD83C\uDF3D', color: '#22c55e',
               energy: { input: 1, output: 3, unit: 'calories fossil fuel per calorie food', eroi: 3.0 },
               water: { usage: 'Low-moderate (living mulch conserves)', efficiency: '80-95% reaches crop' },
               chemicals: { fertilizer: '0 synthetic (nitrogen-fixing legumes)', pesticides: '0 synthetic (biological control)', herbicides: '0 (living mulch suppresses weeds)' },
               carbon: { emission: '-1.5 tons CO\u2082/acre/year', sequestration: 'Active (soil carbon building)', net: 'Net carbon sink!' },
-              biodiversity: { score: 85, desc: '10+ species, diverse insects, rich soil microbiome' },
+              biodiversity: { score: 85, desc: __alloT('stem.companionplanting.10_species_diverse_insects_rich_soil_m', '10+ species, diverse insects, rich soil microbiome') },
               soil: { health: 'Improving (root diversity, organic matter)', organic: 'Increases 1-2% per decade' },
               yield: { short: 'Moderate per crop (but total higher)', long: 'Increasing as soil improves' },
               pros: ['Builds soil', 'No chemical inputs', 'Water efficient', 'Carbon negative', 'Resilient to pests'],
               cons: ['More labor-intensive', 'Harder to mechanize', 'Requires knowledge', 'Lower per-crop yield'] },
-            { id: 'regenerative', name: 'Regenerative Agriculture', icon: '\uD83C\uDF31', color: '#10b981',
+            { id: 'regenerative', name: __alloT('stem.companionplanting.regenerative_agriculture', 'Regenerative Agriculture'), icon: '\uD83C\uDF31', color: '#10b981',
               energy: { input: 1, output: 5, unit: 'calories fossil fuel per calorie food', eroi: 5.0 },
               water: { usage: 'Very low (soil holds 20,000 gal/acre per 1% OM)', efficiency: '90%+ (healthy soil = sponge)' },
               chemicals: { fertilizer: '0 (compost + cover crops)', pesticides: '0 (integrated pest management)', herbicides: '0 (cover crop suppression)' },
               carbon: { emission: '-3.0 tons CO\u2082/acre/year', sequestration: 'Maximum (no-till + cover crops + compost)', net: 'Powerful carbon sink' },
-              biodiversity: { score: 95, desc: 'Maximized above and below ground; wildlife corridors' },
+              biodiversity: { score: 95, desc: __alloT('stem.companionplanting.maximized_above_and_below_ground_wildl', 'Maximized above and below ground; wildlife corridors') },
               soil: { health: 'Rapidly improving', organic: 'Can increase 1% per year with best practices' },
               yield: { short: 'Lower in transition (years 1-3)', long: 'Matches or exceeds conventional after year 5' },
               pros: ['Reverses climate change', 'Eliminates input costs', 'Drought resilient', 'Maximum nutrition', 'Profitable long-term'],
@@ -614,18 +643,18 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 4: PERMACULTURE_PRINCIPLES ===
           var PERMACULTURE_PRINCIPLES = [
-            { num: 1, name: 'Observe & Interact', icon: '\uD83D\uDC41\uFE0F', desc: 'Spend a full year observing your land before making major changes. Where does water flow? Where is sun/shade? What already grows?', example: 'Watch where puddles form after rain \u2014 that\'s where to plant water-loving crops.' },
-            { num: 2, name: 'Catch & Store Energy', icon: '\u2600\uFE0F', desc: 'Harvest energy when abundant (sun, rain, fertility) and store for times of need.', example: 'Rain barrels catch water; compost stores nutrients; root cellars store food.' },
-            { num: 3, name: 'Obtain a Yield', icon: '\uD83C\uDF3E', desc: 'Ensure you\'re getting useful output from your work. Every element should serve a function.', example: 'A fence could also be a trellis for beans, producing food AND boundary.' },
-            { num: 4, name: 'Apply Self-Regulation', icon: '\u267B\uFE0F', desc: 'Create systems that self-correct. Reduce the need for external inputs.', example: 'Companion planting creates pest control that works automatically.' },
-            { num: 5, name: 'Use Renewable Resources', icon: '\uD83C\uDF3F', desc: 'Prefer renewable over non-renewable. Sunlight, compost, rainwater over fossil fuels.', example: 'Use composted leaves instead of synthetic fertilizer; saves $200+/year.' },
-            { num: 6, name: 'Produce No Waste', icon: '\u2740', desc: 'Every output becomes input for another element. "Waste" is just a resource without a user.', example: 'Kitchen scraps \u2192 compost \u2192 soil \u2192 vegetables \u2192 kitchen scraps (closed loop).' },
-            { num: 7, name: 'Design from Patterns', icon: '\uD83C\uDF00', desc: 'Learn nature\'s patterns (spirals, branches, waves) and apply them to garden design.', example: 'Herb spirals use vertical space efficiently; keyhole gardens maximize edge effect.' },
-            { num: 8, name: 'Integrate, Don\'t Segregate', icon: '\uD83E\uDD1D', desc: 'Place elements so they support each other. Every element serves multiple functions.', example: 'The Three Sisters: each plant serves 2-3 functions for the others.' },
-            { num: 9, name: 'Small & Slow Solutions', icon: '\uD83D\uDC22', desc: 'Start small. Small systems are easier to maintain and adapt.', example: 'Start with one 4\u00D78 bed, not an acre. Master that first.' },
-            { num: 10, name: 'Use & Value Diversity', icon: '\uD83C\uDF08', desc: 'Diversity = resilience. Monocultures fail; polycultures thrive.', example: '20 crop species resist disease better than 1. If one fails, others compensate.' },
-            { num: 11, name: 'Use Edges & Margins', icon: '\u3030\uFE0F', desc: 'The edge between two ecosystems is the most productive zone.', example: 'Forest edges, pond margins, and garden borders support the most biodiversity.' },
-            { num: 12, name: 'Creatively Use Change', icon: '\uD83C\uDF0A', desc: 'Embrace succession and change. Design for evolution, not stasis.', example: 'A fallen tree becomes habitat for fungi, insects, and new plants.' }
+            { num: 1, name: __alloT('stem.companionplanting.observe_interact', 'Observe & Interact'), icon: '\uD83D\uDC41\uFE0F', desc: __alloT('stem.companionplanting.spend_a_full_year_observing_your_land_', 'Spend a full year observing your land before making major changes. Where does water flow? Where is sun/shade? What already grows?'), example: 'Watch where puddles form after rain \u2014 that\'s where to plant water-loving crops.' },
+            { num: 2, name: __alloT('stem.companionplanting.catch_store_energy', 'Catch & Store Energy'), icon: '\u2600\uFE0F', desc: __alloT('stem.companionplanting.harvest_energy_when_abundant_sun_rain_', 'Harvest energy when abundant (sun, rain, fertility) and store for times of need.'), example: 'Rain barrels catch water; compost stores nutrients; root cellars store food.' },
+            { num: 3, name: __alloT('stem.companionplanting.obtain_a_yield', 'Obtain a Yield'), icon: '\uD83C\uDF3E', desc: __alloT('stem.companionplanting.ensure_you_re_getting_useful_output_fr', 'Ensure you\'re getting useful output from your work. Every element should serve a function.'), example: 'A fence could also be a trellis for beans, producing food AND boundary.' },
+            { num: 4, name: __alloT('stem.companionplanting.apply_self_regulation', 'Apply Self-Regulation'), icon: '\u267B\uFE0F', desc: __alloT('stem.companionplanting.create_systems_that_self_correct_reduc', 'Create systems that self-correct. Reduce the need for external inputs.'), example: 'Companion planting creates pest control that works automatically.' },
+            { num: 5, name: __alloT('stem.companionplanting.use_renewable_resources', 'Use Renewable Resources'), icon: '\uD83C\uDF3F', desc: __alloT('stem.companionplanting.prefer_renewable_over_non_renewable_su', 'Prefer renewable over non-renewable. Sunlight, compost, rainwater over fossil fuels.'), example: 'Use composted leaves instead of synthetic fertilizer; saves $200+/year.' },
+            { num: 6, name: __alloT('stem.companionplanting.produce_no_waste', 'Produce No Waste'), icon: '\u2740', desc: __alloT('stem.companionplanting.every_output_becomes_input_for_another', 'Every output becomes input for another element. "Waste" is just a resource without a user.'), example: 'Kitchen scraps \u2192 compost \u2192 soil \u2192 vegetables \u2192 kitchen scraps (closed loop).' },
+            { num: 7, name: __alloT('stem.companionplanting.design_from_patterns', 'Design from Patterns'), icon: '\uD83C\uDF00', desc: __alloT('stem.companionplanting.learn_nature_s_patterns_spirals_branch', 'Learn nature\'s patterns (spirals, branches, waves) and apply them to garden design.'), example: 'Herb spirals use vertical space efficiently; keyhole gardens maximize edge effect.' },
+            { num: 8, name: __alloT('stem.companionplanting.integrate_don_t_segregate', 'Integrate, Don\'t Segregate'), icon: '\uD83E\uDD1D', desc: __alloT('stem.companionplanting.place_elements_so_they_support_each_ot', 'Place elements so they support each other. Every element serves multiple functions.'), example: 'The Three Sisters: each plant serves 2-3 functions for the others.' },
+            { num: 9, name: __alloT('stem.companionplanting.small_slow_solutions', 'Small & Slow Solutions'), icon: '\uD83D\uDC22', desc: __alloT('stem.companionplanting.start_small_small_systems_are_easier_t', 'Start small. Small systems are easier to maintain and adapt.'), example: 'Start with one 4\u00D78 bed, not an acre. Master that first.' },
+            { num: 10, name: __alloT('stem.companionplanting.use_value_diversity', 'Use & Value Diversity'), icon: '\uD83C\uDF08', desc: __alloT('stem.companionplanting.diversity_resilience_monocultures_fail', 'Diversity = resilience. Monocultures fail; polycultures thrive.'), example: '20 crop species resist disease better than 1. If one fails, others compensate.' },
+            { num: 11, name: __alloT('stem.companionplanting.use_edges_margins', 'Use Edges & Margins'), icon: '\u3030\uFE0F', desc: __alloT('stem.companionplanting.the_edge_between_two_ecosystems_is_the', 'The edge between two ecosystems is the most productive zone.'), example: 'Forest edges, pond margins, and garden borders support the most biodiversity.' },
+            { num: 12, name: __alloT('stem.companionplanting.creatively_use_change', 'Creatively Use Change'), icon: '\uD83C\uDF0A', desc: __alloT('stem.companionplanting.embrace_succession_and_change_design_f', 'Embrace succession and change. Design for evolution, not stasis.'), example: 'A fallen tree becomes habitat for fungi, insects, and new plants.' }
           ];
 
           // === Wave 4: WATER_FOOTPRINT ===
@@ -644,21 +673,110 @@ var d = (labToolData.companionPlanting) || {};
 
           // === Wave 4: REGEN_PRACTICES ===
           var REGEN_PRACTICES = [
-            { name: 'No-Till / Minimal Tillage', icon: '\uD83D\uDEAB', benefit: 'Preserves soil structure, mycorrhizal networks, and earthworm tunnels. Reduces CO\u2082 release.', impact: 'Saves 1 ton CO\u2082/acre/year. Reduces erosion 90%.', difficulty: 'Medium' },
-            { name: 'Cover Cropping', icon: '\uD83C\uDF3F', benefit: 'Living roots feed soil biology year-round. Prevents erosion. Fixes nitrogen (legume covers).', impact: 'Adds 50-150 lbs N/acre free. Increases organic matter 0.5%/year.', difficulty: 'Easy' },
-            { name: 'Composting', icon: '\u267B\uFE0F', benefit: 'Recycles nutrients, feeds soil microbiome, improves water retention.', impact: '1 inch of compost holds 20,000 extra gallons water/acre.', difficulty: 'Easy' },
-            { name: 'Crop Rotation', icon: '\uD83D\uDD04', benefit: 'Breaks pest/disease cycles. Balances nutrient demands. Builds diverse soil biology.', impact: 'Reduces pesticide need 50-80%. Increases yield 10-25%.', difficulty: 'Easy' },
-            { name: 'Mulching', icon: '\uD83C\uDF42', benefit: 'Suppresses weeds, retains moisture, moderates temperature, feeds soil as it decomposes.', impact: 'Cuts water use 40-60%. Eliminates most weeding.', difficulty: 'Easy' },
-            { name: 'Agroforestry', icon: '\uD83C\uDF33', benefit: 'Trees + crops together. Shade, windbreaks, deep nutrient cycling, carbon storage.', impact: 'Sequesters 5-10 tons CO\u2082/acre/year. Creates microclimates.', difficulty: 'Hard' },
-            { name: 'Integrated Pest Management', icon: '\uD83D\uDC1E', benefit: 'Biological control first, chemicals last resort. Preserves beneficial insects.', impact: 'Reduces pesticide use 70-90%. Saves $50-200/acre.', difficulty: 'Medium' },
-            { name: 'Rainwater Harvesting', icon: '\uD83D\uDCA7', benefit: 'Capture roof/land runoff for irrigation. Reduces municipal water dependence.', impact: '1 inch rain on 1,000 sq ft roof = 623 gallons free water.', difficulty: 'Medium' },
-            { name: 'Biochar', icon: '\uD83D\uDD25', benefit: 'Charcoal added to soil stores carbon for 1000+ years and improves nutrient retention.', impact: 'Sequesters carbon permanently. Improves CEC (nutrient holding capacity).', difficulty: 'Medium' },
-            { name: 'Silvopasture', icon: '\uD83D\uDC04', benefit: 'Trees + livestock + pasture. Animals fertilize trees; trees shade animals; grass feeds both.', impact: 'Most carbon-sequestering agricultural practice on Earth.', difficulty: 'Hard' }
+            { name: __alloT('stem.companionplanting.no_till_minimal_tillage', 'No-Till / Minimal Tillage'), icon: '\uD83D\uDEAB', benefit: 'Preserves soil structure, mycorrhizal networks, and earthworm tunnels. Reduces CO\u2082 release.', impact: 'Saves 1 ton CO\u2082/acre/year. Reduces erosion 90%.', difficulty: 'Medium' },
+            { name: __alloT('stem.companionplanting.cover_cropping', 'Cover Cropping'), icon: '\uD83C\uDF3F', benefit: 'Living roots feed soil biology year-round. Prevents erosion. Fixes nitrogen (legume covers).', impact: 'Adds 50-150 lbs N/acre free. Increases organic matter 0.5%/year.', difficulty: 'Easy' },
+            { name: __alloT('stem.companionplanting.composting', 'Composting'), icon: '\u267B\uFE0F', benefit: 'Recycles nutrients, feeds soil microbiome, improves water retention.', impact: '1 inch of compost holds 20,000 extra gallons water/acre.', difficulty: 'Easy' },
+            { name: __alloT('stem.companionplanting.crop_rotation', 'Crop Rotation'), icon: '\uD83D\uDD04', benefit: 'Breaks pest/disease cycles. Balances nutrient demands. Builds diverse soil biology.', impact: 'Reduces pesticide need 50-80%. Increases yield 10-25%.', difficulty: 'Easy' },
+            { name: __alloT('stem.companionplanting.mulching', 'Mulching'), icon: '\uD83C\uDF42', benefit: 'Suppresses weeds, retains moisture, moderates temperature, feeds soil as it decomposes.', impact: 'Cuts water use 40-60%. Eliminates most weeding.', difficulty: 'Easy' },
+            { name: __alloT('stem.companionplanting.agroforestry', 'Agroforestry'), icon: '\uD83C\uDF33', benefit: 'Trees + crops together. Shade, windbreaks, deep nutrient cycling, carbon storage.', impact: 'Sequesters 5-10 tons CO\u2082/acre/year. Creates microclimates.', difficulty: 'Hard' },
+            { name: __alloT('stem.companionplanting.integrated_pest_management', 'Integrated Pest Management'), icon: '\uD83D\uDC1E', benefit: 'Biological control first, chemicals last resort. Preserves beneficial insects.', impact: 'Reduces pesticide use 70-90%. Saves $50-200/acre.', difficulty: 'Medium' },
+            { name: __alloT('stem.companionplanting.rainwater_harvesting', 'Rainwater Harvesting'), icon: '\uD83D\uDCA7', benefit: 'Capture roof/land runoff for irrigation. Reduces municipal water dependence.', impact: '1 inch rain on 1,000 sq ft roof = 623 gallons free water.', difficulty: 'Medium' },
+            { name: __alloT('stem.companionplanting.biochar', 'Biochar'), icon: '\uD83D\uDD25', benefit: 'Charcoal added to soil stores carbon for 1000+ years and improves nutrient retention.', impact: 'Sequesters carbon permanently. Improves CEC (nutrient holding capacity).', difficulty: 'Medium' },
+            { name: __alloT('stem.companionplanting.silvopasture', 'Silvopasture'), icon: '\uD83D\uDC04', benefit: 'Trees + livestock + pasture. Animals fertilize trees; trees shade animals; grass feeds both.', impact: 'Most carbon-sequestering agricultural practice on Earth.', difficulty: 'Hard' }
           ];
 
 
 
           // ── Canvas Renderer ──
+
+          var gardenWorkspace = d.gardenWorkspace || 'operate';
+          var plantedCount = (cornPlanted ? 1 : 0) + (beansPlanted ? 1 : 0) + (squashPlanted ? 1 : 0);
+          var avgSynergy = Math.round((synCornBeans + synBeansSoil + synSquashAll) / 3);
+          var ecosystemScore = Math.round((soilHealth * 0.45) + (plantHealth * 0.25) + (avgSynergy * 0.2) + ((100 - pestPressure) * 0.1));
+          var gardenAlerts = [];
+          if (moisture < 35) gardenAlerts.push({ label: 'Dry soil', action: 'Water soon', color: '#2563eb' });
+          if (nitrogenLevel < 35) gardenAlerts.push({ label: 'Low nitrogen', action: 'Compost or add beans', color: '#059669' });
+          if (pestPressure > 55) gardenAlerts.push({ label: 'Pest pressure', action: 'Inspect plants', color: '#dc2626' });
+          if (weedCover > 55) gardenAlerts.push({ label: 'Weeds spreading', action: 'Weed or mulch', color: '#ea580c' });
+          if (plantHealth < 55) gardenAlerts.push({ label: 'Plant stress', action: 'Stabilize the bed', color: '#be123c' });
+          var nextGardenMove = phase === 'plant'
+            ? (allPlanted ? 'Start the growth simulation' : 'Plant all three sisters')
+            : phase === 'grow'
+              ? (gardenAlerts[0] ? gardenAlerts[0].action : 'Advance the season')
+              : 'Review the harvest and begin another cycle';
+          var gardenProgress = phase === 'plant' ? Math.round((plantedCount / 3) * 34) : phase === 'grow' ? 34 + Math.round((growthTime / 100) * 46) : 92;
+          var missionSteps = [
+            { label: 'Plant', complete: phase !== 'plant' || allPlanted, active: phase === 'plant' },
+            { label: 'Grow', complete: phase === 'harvest', active: phase === 'grow' },
+            { label: 'Harvest', complete: harvestCount > 0, active: phase === 'harvest' }
+          ];
+          var workspaceTabs = [
+            { id: 'operate', icon: '\uD83C\uDF31', label: 'Garden Ops', desc: 'Plant, manage, and harvest the live bed.', intent: 'Keep the simulation loop front and center.', accent: '#047857', soft: '#ecfdf5', border: '#a7f3d0' },
+            { id: 'science', icon: '\uD83E\uDDEA', label: 'Science Lab', desc: 'Three Sisters evidence, soil science, and quiz.', intent: 'Unpack why the garden system works.', accent: '#4f46e5', soft: '#eef2ff', border: '#c7d2fe' },
+            { id: 'systems', icon: '\uD83C\uDF0E', label: 'Systems', desc: 'Food miles, water, carbon, and regenerative practices.', intent: 'Connect the bed to larger food systems.', accent: '#0f766e', soft: '#f0fdfa', border: '#99f6e4' },
+            { id: 'reference', icon: '\uD83D\uDCD6', label: 'Field Guide', desc: 'Pairs, pests, soil, rotation, calendar, and culture.', intent: 'Look up practical garden knowledge on demand.', accent: '#b45309', soft: '#fffbeb', border: '#fde68a' },
+            { id: 'inquiry', icon: '\uD83D\uDD0E', label: 'Inquiry', desc: 'Run a density-ratio investigation.', intent: 'Experiment with crop balance before explaining the pattern.', accent: '#7c3aed', soft: '#f5f3ff', border: '#ddd6fe' }
+          ];
+          var activeWorkspace = workspaceTabs.filter(function(tab) { return tab.id === gardenWorkspace; })[0] || workspaceTabs[0];
+          var activeWorkspaceStats = ({
+            operate: [
+              { label: 'Current focus', value: nextGardenMove },
+              { label: 'Readiness', value: allPlanted ? 'Ready' : plantedCount + '/3 planted' },
+              { label: 'Garden alerts', value: gardenAlerts.length ? gardenAlerts.length + ' active' : 'Clear' }
+            ],
+            science: [
+              { label: 'Evidence panel', value: showSciencePanel ? 'Open' : 'Closed' },
+              { label: 'Quiz', value: quizActive ? 'Active' : 'Ready' },
+              { label: 'Scenario score', value: gardenScenarioScore + '/' + gardenScenarioTotal }
+            ],
+            systems: [
+              { label: 'Farm compare', value: d.showFarmCompare ? 'Open' : 'Closed' },
+              { label: 'Food miles', value: d.showFoodMiles ? 'Open' : 'Closed' },
+              { label: 'Carbon lens', value: d.showRegen ? 'Open' : 'Ready' }
+            ],
+            reference: [
+              { label: 'Quick cards', value: d.showGardenRef ? 'Open' : 'Closed' },
+              { label: 'Pair guide', value: d.showPairs ? 'Open' : 'Closed' },
+              { label: 'Pest guide', value: d.showPests ? 'Open' : 'Closed' }
+            ],
+            inquiry: [
+              { label: 'Question', value: 'Density ratio' },
+              { label: 'Trial log', value: ((d.synergyHunt && d.synergyHunt.log) || []).length + '/8' },
+              { label: 'Explanation', value: d.synergyHunt && d.synergyHunt.understood ? 'Started' : 'Not yet' }
+            ]
+          })[gardenWorkspace] || [];
+          function setSynergyHunt(patch) {
+            var current = d.synergyHunt || { cornDensity: 50, beanDensity: 30, squashDensity: 20, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            upd('synergyHunt', Object.assign({}, current, patch));
+          }
+          var workspaceActionSets = {
+            operate: [
+              { label: showSoilDetail ? 'Hide soil detail' : 'Open soil detail', sub: 'Needs and chemistry', onClick: function() { upd('showSoilDetail', !showSoilDetail); } },
+              { label: compareMode ? 'Hide comparison' : 'Compare polyculture', sub: 'See monoculture contrast', onClick: function() { upd('compareMode', !compareMode); } },
+              { label: 'Community garden', sub: 'Switch to plot planner', onClick: function() { upd('gardenMode', 'community'); } }
+            ],
+            science: [
+              { label: showSciencePanel ? 'Hide evidence' : 'Open evidence', sub: 'Three Sisters science', onClick: function() { upd('showSciencePanel', !showSciencePanel); } },
+              { label: quizActive ? 'Hide quiz' : 'Start quiz', sub: 'Check understanding', onClick: function() { upd('quizActive', !quizActive); upd('quizAnswer', ''); upd('quizFeedback', ''); } },
+              { label: d.showNitrogen ? 'Hide nitrogen cycle' : 'Nitrogen cycle', sub: 'Follow bean chemistry', onClick: function() { upd('showNitrogen', !d.showNitrogen); } }
+            ],
+            systems: [
+              { label: d.showFarmCompare ? 'Hide farm compare' : 'Compare farms', sub: 'Industrial vs regenerative', onClick: function() { upd('showFarmCompare', !d.showFarmCompare); } },
+              { label: d.showFoodMiles ? 'Hide food miles' : 'Food miles', sub: 'Transport and carbon', onClick: function() { upd('showFoodMiles', !d.showFoodMiles); } },
+              { label: d.showWaterFoot ? 'Hide water lens' : 'Water footprint', sub: 'Virtual water use', onClick: function() { upd('showWaterFoot', !d.showWaterFoot); } }
+            ],
+            reference: [
+              { label: d.showGardenRef ? 'Hide quick cards' : 'Quick cards', sub: 'Planting reminders', onClick: function() { upd('showGardenRef', !d.showGardenRef); } },
+              { label: d.showPairs ? 'Hide pair guide' : 'Pair guide', sub: 'Friends and conflicts', onClick: function() { upd('showPairs', !d.showPairs); } },
+              { label: showCulture ? 'Hide origins' : 'Origins', sub: 'Cultural context', onClick: function() { upd('showCulture', !showCulture); } }
+            ],
+            inquiry: [
+              { label: 'Balanced trio', sub: '35 / 35 / 35 trial', onClick: function() { setSynergyHunt({ cornDensity: 35, beanDensity: 35, squashDensity: 35 }); } },
+              { label: 'Overcrowd trial', sub: 'Test competition', onClick: function() { setSynergyHunt({ cornDensity: 70, beanDensity: 45, squashDensity: 35 }); } },
+              { label: 'Show prompts', sub: 'Open reflection cues', onClick: function() { setSynergyHunt({ stuckRevealed: true }); } }
+            ]
+          };
+          var activeWorkspaceActions = workspaceActionSets[gardenWorkspace] || [];
 
           var _lastGardenCanvas = null;
 
@@ -682,6 +800,9 @@ var d = (labToolData.companionPlanting) || {};
 
             _lastGardenCanvas = canvasEl;
 
+            // Cancel any orphaned animation from previous mount
+            if (canvasEl._gardenAnim) { cancelAnimationFrame(canvasEl._gardenAnim); canvasEl._gardenAnim = null; }
+
             if (canvasEl._gardenInit) return;
 
             canvasEl._gardenInit = true;
@@ -695,6 +816,10 @@ var d = (labToolData.companionPlanting) || {};
             var dpr = 2;
 
             var tick = 0;
+            var animStartTime = performance.now();
+            var _cachedSeason = -1;
+            var _cachedSkyGrad = null;
+            var _cachedGroundGrad = null;
 
             var _gt = growthTime;
 
@@ -711,6 +836,22 @@ var d = (labToolData.companionPlanting) || {};
             canvasEl.setAttribute('data-squash', squashPlanted ? '1' : '0');
 
             canvasEl.setAttribute('data-compare', compareMode ? '1' : '0');
+
+            // These six drive the season tint, day counter, and pest/weed/moisture/health canvas
+            // visuals; draw() reads them every frame but they were NEVER written — so the garden was
+            // permanently stuck at Spring / day 0 / moisture 60 / pest 0 / weed 0 / health 100.
+
+            canvasEl.setAttribute('data-season', seasonIndex);
+
+            canvasEl.setAttribute('data-day', day);
+
+            canvasEl.setAttribute('data-moisture', Math.round(moisture));
+
+            canvasEl.setAttribute('data-pest', Math.round(pestPressure));
+
+            canvasEl.setAttribute('data-weed', Math.round(weedCover));
+
+            canvasEl.setAttribute('data-health', Math.round(plantHealth));
 
 
 
@@ -1580,7 +1721,14 @@ var d = (labToolData.companionPlanting) || {};
 
             function draw() {
 
-              tick++;
+              // Self-terminate if the canvas detached — this loop rescheduled unconditionally with no
+              // in-frame guard (unlike the drawCG/drawMicro loops), relying only on the React ref(null)
+              // path; this is the fail-safe if that path is ever missed.
+              if (!document.contains(canvasEl)) { cancelAnimationFrame(canvasEl._gardenAnim); return; }
+
+              // Use time-based animation for smooth, frame-rate-independent motion
+              var elapsed = (performance.now() - animStartTime) / 1000; // seconds (continuous float)
+              tick = elapsed * 60; // continuous (NOT rounded) — smoother sin() curves
 
               // Read data attrs for latest state
 
@@ -1612,9 +1760,14 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Season-aware Sky ──
-
-              var dayPhase = (Math.sin(tick * 0.003) + 1) / 2;
+              // ── Day/night cycle (sawtooth: sun rises east, sets west, then night) ──
+              // Total cycle ≈ 40s: ~28s day + ~12s night. Sun travels one direction only.
+              var cycleProgress = ((elapsed * 0.025) % 1);  // 0..1 looping
+              var DAY_FRACTION = 0.7;
+              var isNight = cycleProgress >= DAY_FRACTION;
+              var dayPhase = isNight ? 0 : (cycleProgress / DAY_FRACTION);     // 0..1 across daytime, used for sun position
+              var nightPhase = isNight ? ((cycleProgress - DAY_FRACTION) / (1 - DAY_FRACTION)) : 0;  // 0..1 across nighttime
+              var dayBrightness = isNight ? 0 : Math.sin(dayPhase * Math.PI);  // 0 at dawn/dusk, 1 at noon
 
               var seasonSkies = [
 
@@ -1628,43 +1781,83 @@ var d = (labToolData.companionPlanting) || {};
 
               ];
 
+              // Ground gradient stops per season — declared here (not at first paint pass below)
+              // because the cached-gradient block reads it before the original declaration site.
+              var groundColors = [
+                ['#7CB342', '#558B2F', '#33691E'],  // spring
+                ['#8BC34A', '#689F38', '#33691E'],  // summer
+                ['#A1887F', '#795548', '#4E342E'],  // autumn
+                ['#B0BEC5', '#78909C', '#546E7A']   // winter
+              ];
+
               var ssky = seasonSkies[_season];
 
-              var skyGrad = ctx.createLinearGradient(0, 0, 0, cH * 0.45);
-
-              skyGrad.addColorStop(0, 'hsl(' + ssky.topH + ',' + Math.round(ssky.topS + dayPhase * 10) + '%,' + Math.round(ssky.topL + dayPhase * 10) + '%)');
-
-              skyGrad.addColorStop(1, 'hsl(' + ssky.botH + ',' + Math.round(ssky.botS + dayPhase * 15) + '%,' + Math.round(ssky.botL + dayPhase * 8) + '%)');
-
-              ctx.fillStyle = skyGrad;
-
+              // Cache sky gradient — only rebuild when season changes (not every frame)
+              if (_cachedSeason !== _season) {
+                _cachedSeason = _season;
+                _cachedSkyGrad = ctx.createLinearGradient(0, 0, 0, cH * 0.45);
+                _cachedSkyGrad.addColorStop(0, 'hsl(' + ssky.topH + ',' + ssky.topS + '%,' + ssky.topL + '%)');
+                _cachedSkyGrad.addColorStop(1, 'hsl(' + ssky.botH + ',' + ssky.botS + '%,' + ssky.botL + '%)');
+                // Also cache ground gradient per season
+                var gc2 = groundColors[_season];
+                _cachedGroundGrad = ctx.createLinearGradient(0, cH * 0.4, 0, cH);
+                _cachedGroundGrad.addColorStop(0, gc2[0]); _cachedGroundGrad.addColorStop(0.3, gc2[1]); _cachedGroundGrad.addColorStop(1, gc2[2]);
+              }
+              // Apply day/night overlay on top of cached season sky gradient
+              ctx.fillStyle = _cachedSkyGrad;
               ctx.fillRect(0, 0, cW, cH * 0.45);
+              if (!isNight) {
+                // Warm noon tint, peaks at noon, fades at dawn/dusk
+                ctx.fillStyle = 'rgba(255,255,200,' + (dayBrightness * 0.06) + ')';
+                ctx.fillRect(0, 0, cW, cH * 0.45);
+              } else {
+                // Dark blue overlay deepens toward midnight, lifts toward dawn
+                var nightDark = Math.sin(nightPhase * Math.PI) * 0.55 + 0.25;
+                ctx.fillStyle = 'rgba(15,20,55,' + nightDark + ')';
+                ctx.fillRect(0, 0, cW, cH * 0.45);
+                // Stars (twinkle)
+                for (var st = 0; st < 14; st++) {
+                  var sxs = (st * 73.3) % cW;
+                  var sys = ((st * 41.7) % (cH * 0.35)) + 6;
+                  var twinkle = 0.35 + 0.55 * Math.sin(tick * 0.05 + st * 1.7);
+                  ctx.fillStyle = 'rgba(255,255,255,' + (twinkle * nightDark * 1.3) + ')';
+                  ctx.beginPath(); ctx.arc(sxs, sys, 0.9, 0, Math.PI * 2); ctx.fill();
+                }
+              }
 
 
 
-              // Sun (smaller in winter, bigger in summer)
-
-              var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
-
-              var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
-
-              var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
-
-              var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
-
-              sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
-
-              sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
-
-              sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
-
-              ctx.fillStyle = sunGlow;
-
-              ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
-
-              ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
-
-              ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+              // Sun (day) or Moon (night) — same arc east → west, only one visible at a time
+              if (!isNight) {
+                // Sun: smaller in winter, bigger in summer; tinted gray-blue in winter
+                var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
+                var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
+                var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
+                var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
+                sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
+                sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
+                sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
+                ctx.fillStyle = sunGlow;
+                ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
+                ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
+                ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+              } else {
+                // Moon: traverses east → west during night, with crescent shadow
+                var moonSize = 12;
+                var moonX = cW * 0.15 + cW * 0.7 * nightPhase;
+                var moonY = cH * 0.05 + Math.sin(nightPhase * Math.PI) * cH * -0.12 + cH * 0.15;
+                var moonGlow = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonSize * 3);
+                moonGlow.addColorStop(0, 'rgba(220,220,240,0.85)');
+                moonGlow.addColorStop(0.5, 'rgba(200,200,220,0.2)');
+                moonGlow.addColorStop(1, 'rgba(200,200,220,0)');
+                ctx.fillStyle = moonGlow;
+                ctx.fillRect(moonX - moonSize * 4, moonY - moonSize * 4, moonSize * 8, moonSize * 8);
+                ctx.fillStyle = '#E8E8F0';
+                ctx.beginPath(); ctx.arc(moonX, moonY, moonSize, 0, Math.PI * 2); ctx.fill();
+                // Subtle crescent shadow
+                ctx.fillStyle = 'rgba(60,70,100,0.4)';
+                ctx.beginPath(); ctx.arc(moonX + moonSize * 0.4, moonY - moonSize * 0.1, moonSize * 0.85, 0, Math.PI * 2); ctx.fill();
+              }
 
 
 
@@ -1719,30 +1912,9 @@ var d = (labToolData.companionPlanting) || {};
 
 
               // ── Ground (season-tinted) ──
+              // groundColors declared earlier alongside seasonSkies (cached-gradient block reads it).
 
-              var groundColors = [
-
-                ['#7CB342', '#558B2F', '#33691E'],  // spring
-
-                ['#8BC34A', '#689F38', '#33691E'],  // summer
-
-                ['#A1887F', '#795548', '#4E342E'],  // autumn
-
-                ['#B0BEC5', '#78909C', '#546E7A']   // winter
-
-              ];
-
-              var gc = groundColors[_season];
-
-              var groundGrad = ctx.createLinearGradient(0, cH * 0.4, 0, cH);
-
-              groundGrad.addColorStop(0, gc[0]);
-
-              groundGrad.addColorStop(0.3, gc[1]);
-
-              groundGrad.addColorStop(1, gc[2]);
-
-              ctx.fillStyle = groundGrad;
+              ctx.fillStyle = _cachedGroundGrad || '#5a7040';
 
               ctx.fillRect(0, cH * 0.4, cW, cH * 0.6);
 
@@ -2124,13 +2296,13 @@ var d = (labToolData.companionPlanting) || {};
 
                 var _seasonOverlays = [
 
-                  { color: 'rgba(100,200,100,', emoji: '🌱', name: 'Spring' },
+                  { color: 'rgba(100,200,100,', emoji: '🌱', name: __alloT('stem.companionplanting.spring', 'Spring') },
 
-                  { color: 'rgba(255,200,50,', emoji: '☀️', name: 'Summer' },
+                  { color: 'rgba(255,200,50,', emoji: '☀️', name: __alloT('stem.companionplanting.summer', 'Summer') },
 
-                  { color: 'rgba(180,120,50,', emoji: '🍂', name: 'Autumn' },
+                  { color: 'rgba(180,120,50,', emoji: '🍂', name: __alloT('stem.companionplanting.autumn', 'Autumn') },
 
-                  { color: 'rgba(180,200,230,', emoji: '❄️', name: 'Winter' }
+                  { color: 'rgba(180,200,230,', emoji: '❄️', name: __alloT('stem.companionplanting.winter', 'Winter') }
 
                 ];
 
@@ -2238,9 +2410,9 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", { className: "flex justify-between mb-0.5" },
 
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, label),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, label),
 
-                  React.createElement("span", { className: "text-[10px] font-bold", style: { color: c.text } }, Math.round(value) + (unit || '%'))
+                  React.createElement("span", { className: "text-[11px] font-bold", style: { color: c.text } }, Math.round(value) + (unit || '%'))
 
                 ),
 
@@ -2258,7 +2430,3987 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-          return React.createElement("div", { className: "space-y-4 animate-in fade-in duration-200" },
+
+          // ═══════════════════════════════════════════════════════════════
+          // COMMUNITY GARDEN SIMULATOR — comprehensive ecosystem management
+          // ═══════════════════════════════════════════════════════════════
+
+          // ── Plant Database ──
+          var CG_PLANTS = {
+            tomato:    { emoji: '🍅', label: __alloT('stem.companionplanting.tomato_2', 'Tomato'),    days: 80, water: 3, sun: 3, nEffect: -1, family: 'nightshade', harvest: 15, cost: 8, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.heavy_feeder_needs_support_mild_drough', 'Heavy feeder, needs support. Mild drought stress improves flavor.') },
+            corn:      { emoji: '🌽', label: __alloT('stem.companionplanting.corn_2', 'Corn'),      days: 90, water: 2, sun: 3, nEffect: -1, family: 'grass', harvest: 12, cost: 5, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.wind_pollinated_plant_in_blocks_provid', 'Wind-pollinated. Plant in blocks. Provides trellis for beans.') },
+            beans:     { emoji: '🫘', label: __alloT('stem.companionplanting.beans_2', 'Beans'),     days: 60, water: 2, sun: 2, nEffect: 2,  family: 'legume', harvest: 10, cost: 4, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.nitrogen_fixer_via_rhizobium_bacteria_', 'Nitrogen fixer via rhizobium bacteria in root nodules.') },
+            squash:    { emoji: '🎃', label: __alloT('stem.companionplanting.squash_2', 'Squash'),    days: 95, water: 3, sun: 3, nEffect: -1, family: 'cucurbit', harvest: 14, cost: 7, needsPoll: true,  pollinator: false, desc: __alloT('stem.companionplanting.needs_pollinators_living_mulch_suppres', 'Needs pollinators. Living mulch suppresses weeds.') },
+            lettuce:   { emoji: '🥬', label: __alloT('stem.companionplanting.lettuce_2', 'Lettuce'),   days: 30, water: 3, sun: 1, nEffect: 0,  family: 'daisy', harvest: 5, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.fast_cool_crop_bolts_in_heat_75_f_perf', 'Fast cool crop. Bolts in heat >75°F. Perfect for shade.') },
+            carrot:    { emoji: '🥕', label: __alloT('stem.companionplanting.carrot', 'Carrot'),    days: 70, water: 2, sun: 2, nEffect: 0,  family: 'umbel', harvest: 8, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.deep_roots_break_compaction_high_n_cau', 'Deep roots break compaction. High N causes forking.') },
+            pepper:    { emoji: '🌶️', label: __alloT('stem.companionplanting.pepper', 'Pepper'),    days: 75, water: 2, sun: 3, nEffect: -1, family: 'nightshade', harvest: 12, cost: 7, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.water_stress_increases_capsaicin_heat_', 'Water stress increases capsaicin (heat). Needs warm soil.') },
+            onion:     { emoji: '🧅', label: __alloT('stem.companionplanting.onion', 'Onion'),     days: 65, water: 2, sun: 2, nEffect: 0,  family: 'allium', harvest: 7, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.sulfur_compounds_repel_carrot_fly_aphi', 'Sulfur compounds repel carrot fly, aphids, beetles.') },
+            potato:    { emoji: '🥔', label: __alloT('stem.companionplanting.potato_2', 'Potato'),    days: 85, water: 3, sun: 2, nEffect: -1, family: 'nightshade', harvest: 13, cost: 5, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.heavy_feeder_blight_risk_if_near_tomat', 'Heavy feeder. Blight risk if near tomatoes. Prefers acidic soil.') },
+            cucumber:  { emoji: '🥒', label: __alloT('stem.companionplanting.cucumber', 'Cucumber'),  days: 55, water: 3, sun: 2, nEffect: 0,  family: 'cucurbit', harvest: 9, cost: 5, needsPoll: true,  pollinator: false, desc: __alloT('stem.companionplanting.needs_pollinators_for_fruit_water_stre', 'Needs pollinators for fruit. Water stress causes bitterness.') },
+            peas:      { emoji: '🟢', label: __alloT('stem.companionplanting.peas', 'Peas'),      days: 55, water: 2, sun: 2, nEffect: 2,  family: 'legume', harvest: 8, cost: 4, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.cool_season_nitrogen_fixer_dies_in_sum', 'Cool season nitrogen fixer. Dies in summer heat.') },
+            broccoli:  { emoji: '🥦', label: __alloT('stem.companionplanting.broccoli', 'Broccoli'),  days: 65, water: 3, sun: 2, nEffect: -1, family: 'brassica', harvest: 11, cost: 5, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.cool_crop_bolts_in_heat_80_f_cabbage_m', 'Cool crop. Bolts in heat >80°F. Cabbage moth target.') },
+            basil:     { emoji: '🌿', label: __alloT('stem.companionplanting.basil', 'Basil'),     days: 40, water: 2, sun: 3, nEffect: 0,  family: 'mint', harvest: 6, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.repels_thrips_whiteflies_classic_tomat', 'Repels thrips, whiteflies. Classic tomato companion.') },
+            marigold:  { emoji: '🌼', label: __alloT('stem.companionplanting.marigold', 'Marigold'),  days: 45, water: 1, sun: 3, nEffect: 0,  family: 'daisy', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.root_exudates_kill_nematodes_best_util', 'Root exudates kill nematodes. Best utility flower.') },
+            sunflower: { emoji: '🌻', label: __alloT('stem.companionplanting.sunflower', 'Sunflower'), days: 70, water: 2, sun: 3, nEffect: 0,  family: 'daisy', harvest: 7, cost: 3, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.top_pollinator_attractor_allelopathic_', 'Top pollinator attractor. Allelopathic to some plants.') },
+            mint:      { emoji: '🍃', label: __alloT('stem.companionplanting.mint', 'Mint'),      days: 35, water: 3, sun: 1, nEffect: 0,  family: 'mint', harvest: 4, cost: 2, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.repels_aphids_warning_spreads_via_unde', 'Repels aphids — WARNING: spreads via underground runners!') },
+            dill:      { emoji: '🌾', label: __alloT('stem.companionplanting.dill', 'Dill'),      days: 40, water: 1, sun: 2, nEffect: 0,  family: 'umbel', harvest: 5, cost: 2, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.attracts_ladybugs_lacewings_parasitic_', 'Attracts ladybugs, lacewings, parasitic wasps.') },
+            rosemary:  { emoji: '🫒', label: __alloT('stem.companionplanting.rosemary', 'Rosemary'),  days: 90, water: 1, sun: 3, nEffect: 0,  family: 'mint', harvest: 6, cost: 4, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.perennial_deters_cabbage_moth_bean_bee', 'Perennial. Deters cabbage moth, bean beetles.') },
+            lavender:  { emoji: '💜', label: __alloT('stem.companionplanting.lavender_2', 'Lavender'),  days: 80, water: 1, sun: 3, nEffect: 0,  family: 'mint', harvest: 5, cost: 4, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.exceptional_bee_attractor_deters_moths', 'Exceptional bee attractor. Deters moths, fleas.') },
+            nasturtium:{ emoji: '🧡', label: __alloT('stem.companionplanting.nasturtium', 'Nasturtium'),days: 35, water: 2, sun: 2, nEffect: 0,  family: 'nasturtium', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  desc: __alloT('stem.companionplanting.trap_crop_aphids_colonize_it_instead_o', 'Trap crop — aphids colonize it instead of veggies. Edible!') },
+            clover:    { emoji: '☘️', label: __alloT('stem.companionplanting.clover', 'Clover'),    days: 25, water: 1, sun: 1, nEffect: 3,  family: 'legume', harvest: 1, cost: 1, needsPoll: false, pollinator: true,  regen: true, desc: __alloT('stem.companionplanting.cover_crop_fixes_nitrogen_living_mulch', 'Cover crop: fixes nitrogen + living mulch + attracts bees.') },
+            radish:    { emoji: '🔴', label: __alloT('stem.companionplanting.radish', 'Radish'),    days: 25, water: 2, sun: 2, nEffect: 0,  family: 'brassica', harvest: 3, cost: 1, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.fastest_crop_trap_crop_for_flea_beetle', 'Fastest crop. Trap crop for flea beetles. Loosens soil.') },
+            borage:    { emoji: '💙', label: __alloT('stem.companionplanting.borage', 'Borage'),    days: 60, water: 1, sun: 3, nEffect: 0,  family: 'borage', harvest: 4, cost: 2, needsPoll: false, pollinator: true,  regen: true, native: true, desc: __alloT('stem.companionplanting.top_bee_attractor_deep_taproots_mine_m', 'Top bee attractor. Deep taproots mine minerals from subsoil. Edible flowers. Self-seeds.') },
+            comfrey:   { emoji: '🌿', label: __alloT('stem.companionplanting.comfrey', 'Comfrey'),   days: 50, water: 2, sun: 2, nEffect: 1,  family: 'borage', harvest: 2, cost: 2, needsPoll: false, pollinator: true,  regen: true, desc: __alloT('stem.companionplanting.dynamic_accumulator_deep_roots_pull_nu', 'Dynamic accumulator — deep roots pull nutrients up. Cut-and-drop mulch. Permaculture staple.') },
+            buckwheat: { emoji: '🌾', label: __alloT('stem.companionplanting.buckwheat', 'Buckwheat'), days: 30, water: 1, sun: 3, nEffect: 0,  family: 'buckwheat', harvest: 2, cost: 1, needsPoll: false, pollinator: true,  regen: true, desc: __alloT('stem.companionplanting.fast_cover_crop_suppresses_weeds_attra', 'Fast cover crop. Suppresses weeds, attracts hoverflies, phosphorus accumulator. Till in as green manure.') },
+            yarrow:    { emoji: '🤍', label: __alloT('stem.companionplanting.yarrow', 'Yarrow'),    days: 70, water: 1, sun: 3, nEffect: 0,  family: 'daisy', harvest: 3, cost: 2, needsPoll: false, pollinator: true,  regen: true, native: true, desc: __alloT('stem.companionplanting.native_perennial_attracts_ladybugs_lac', 'Native perennial. Attracts ladybugs, lacewings, parasitic wasps. Medicinal. Drought-proof.') },
+            bee_hotel: { emoji: '🏨', label: __alloT('stem.companionplanting.bee_hotel', 'Bee Hotel'),  days: 10, water: 0, sun: 2, nEffect: 0,  family: 'structure', harvest: 0, cost: 5, needsPoll: false, pollinator: true, regen: true, isStructure: true, desc: __alloT('stem.companionplanting.nesting_habitat_for_solitary_bees_maso', 'Nesting habitat for solitary bees (mason bees, leafcutter bees). Boosts pollination in a 3-cell radius. Solitary bees pollinate 95% of wild plants!') },
+            compost_bin: { emoji: '♻️', label: __alloT('stem.companionplanting.compost_bin', 'Compost Bin'), days: 15, water: 0, sun: 0, nEffect: 2, family: 'structure', harvest: 0, cost: 4, needsPoll: false, pollinator: false, regen: true, isStructure: true, desc: __alloT('stem.companionplanting.converts_organic_matter_into_rich_humu', 'Converts organic matter into rich humus. Boosts nitrogen and soil health in adjacent cells. The ultimate closed-loop nutrient cycle.') },
+            rain_barrel: { emoji: '🛢️', label: __alloT('stem.companionplanting.rain_barrel', 'Rain Barrel'), days: 5, water: 0, sun: 0, nEffect: 0, family: 'structure', harvest: 0, cost: 3, needsPoll: false, pollinator: false, regen: true, isStructure: true, desc: __alloT('stem.companionplanting.captures_rainwater_for_irrigation_redu', 'Captures rainwater for irrigation. Reduces moisture decay rate for the whole garden by 20%. Free water from the sky!') },
+            // ── Perennial Plants (persist across years, increasing yields) ──
+            strawberry: { emoji: '🍓', label: __alloT('stem.companionplanting.strawberry_2', 'Strawberry'), days: 60, water: 3, sun: 3, nEffect: -1, family: 'rose', harvest: 12, cost: 6, needsPoll: true, pollinator: false, perennial: true, yearsToMature: 1, desc: __alloT('stem.companionplanting.perennial_first_year_yield_is_low_doub', 'Perennial. First-year yield is low; doubles in year 2. Runners spread to fill gaps. Great ground cover.') },
+            asparagus:  { emoji: '🌱', label: __alloT('stem.companionplanting.asparagus_2', 'Asparagus'),  days: 120, water: 2, sun: 3, nEffect: 0, family: 'asparagus', harvest: 18, cost: 8, needsPoll: false, pollinator: false, perennial: true, yearsToMature: 3, desc: __alloT('stem.companionplanting.perennial_don_t_harvest_for_3_years_th', 'Perennial. Don\'t harvest for 3 years! Then produces for 20+ years. Deep roots improve soil structure.') },
+            blueberry:  { emoji: '🫐', label: __alloT('stem.companionplanting.blueberry_2', 'Blueberry'),  days: 100, water: 3, sun: 3, nEffect: 0, family: 'heath', harvest: 20, cost: 10, needsPoll: true, pollinator: false, perennial: true, yearsToMature: 3, desc: __alloT('stem.companionplanting.perennial_needs_acidic_soil_ph_4_5_5_5', 'Perennial. Needs ACIDIC soil (pH 4.5-5.5). Takes 3 years to mature. Partner with azaleas.') },
+            garlic:     { emoji: '🧄', label: __alloT('stem.companionplanting.garlic_2', 'Garlic'),     days: 90, water: 1, sun: 2, nEffect: 0, family: 'allium', harvest: 8, cost: 3, needsPoll: false, pollinator: false, desc: __alloT('stem.companionplanting.plant_in_fall_harvest_in_spring_strong', 'Plant in fall, harvest in spring. Strong pest repellent. Deters aphids, spider mites, Japanese beetles.') },
+            rhubarb:    { emoji: '🟥', label: __alloT('stem.companionplanting.rhubarb', 'Rhubarb'),    days: 90, water: 2, sun: 2, nEffect: 0, family: 'buckwheat', harvest: 10, cost: 5, needsPoll: false, pollinator: false, perennial: true, yearsToMature: 2, desc: __alloT('stem.companionplanting.perennial_don_t_harvest_year_1_leaves_', 'Perennial. Don\'t harvest year 1. Leaves are toxic (oxalic acid) — only eat the stalks! Produces for 10+ years.') }
+          };
+
+          // ── Companion Interactions (bidirectional) ──
+          // Positive = growth bonus + pest reduction. Negative = growth penalty + disease risk.
+          var CG_COMPANIONS = [
+            { a: 'tomato', b: 'basil', bonus: 15, desc: __alloT('stem.companionplanting.basil_repels_tomato_hornworm_and_white', 'Basil repels tomato hornworm and whiteflies') },
+            { a: 'tomato', b: 'marigold', bonus: 10, desc: __alloT('stem.companionplanting.marigold_roots_kill_soil_nematodes', 'Marigold roots kill soil nematodes') },
+            { a: 'tomato', b: 'carrot', bonus: 8, desc: __alloT('stem.companionplanting.tomato_shade_protects_carrots_in_summe', 'Tomato shade protects carrots in summer') },
+            { a: 'tomato', b: 'nasturtium', bonus: 12, desc: __alloT('stem.companionplanting.nasturtium_lures_aphids_away_from_toma', 'Nasturtium lures aphids away from tomatoes') },
+            { a: 'tomato', b: 'potato', bonus: -20, desc: __alloT('stem.companionplanting.same_family_share_blight_and_beetle_pe', 'Same family — share blight and beetle pests!') },
+            { a: 'tomato', b: 'dill', bonus: -10, desc: __alloT('stem.companionplanting.mature_dill_stunts_tomato_growth', 'Mature dill stunts tomato growth') },
+            { a: 'corn', b: 'beans', bonus: 18, desc: __alloT('stem.companionplanting.beans_fix_nitrogen_corn_provides_a_tre', 'Beans fix nitrogen; corn provides a trellis') },
+            { a: 'corn', b: 'squash', bonus: 15, desc: __alloT('stem.companionplanting.squash_shades_soil_corn_blocks_wind', 'Squash shades soil; corn blocks wind') },
+            { a: 'beans', b: 'squash', bonus: 12, desc: __alloT('stem.companionplanting.living_mulch_nitrogen_thriving_squash', 'Living mulch + nitrogen = thriving squash') },
+            { a: 'beans', b: 'onion', bonus: -15, desc: __alloT('stem.companionplanting.onion_sulfur_compounds_inhibit_bean_rh', 'Onion sulfur compounds inhibit bean rhizobium') },
+            { a: 'carrot', b: 'onion', bonus: 15, desc: __alloT('stem.companionplanting.onion_repels_carrot_fly_carrots_repel_', 'Onion repels carrot fly; carrots repel onion fly') },
+            { a: 'carrot', b: 'dill', bonus: -12, desc: __alloT('stem.companionplanting.dill_cross_pollinates_and_stunts_carro', 'Dill cross-pollinates and stunts carrot roots') },
+            { a: 'lettuce', b: 'radish', bonus: 10, desc: __alloT('stem.companionplanting.radish_loosens_soil_for_shallow_lettuc', 'Radish loosens soil for shallow lettuce roots') },
+            { a: 'lettuce', b: 'sunflower', bonus: 8, desc: __alloT('stem.companionplanting.sunflower_provides_afternoon_shade_for', 'Sunflower provides afternoon shade for lettuce') },
+            { a: 'cucumber', b: 'dill', bonus: 12, desc: __alloT('stem.companionplanting.dill_attracts_predatory_wasps_that_eat', 'Dill attracts predatory wasps that eat cucumber beetles') },
+            { a: 'cucumber', b: 'sunflower', bonus: 10, desc: __alloT('stem.companionplanting.sunflower_attracts_pollinators_for_cuc', 'Sunflower attracts pollinators for cucumber flowers') },
+            { a: 'pepper', b: 'basil', bonus: 10, desc: __alloT('stem.companionplanting.basil_deters_aphids_and_improves_peppe', 'Basil deters aphids and improves pepper flavor') },
+            { a: 'broccoli', b: 'rosemary', bonus: 12, desc: __alloT('stem.companionplanting.rosemary_repels_cabbage_moth_larvae', 'Rosemary repels cabbage moth larvae') },
+            { a: 'broccoli', b: 'nasturtium', bonus: 10, desc: __alloT('stem.companionplanting.nasturtium_traps_cabbage_aphids', 'Nasturtium traps cabbage aphids') },
+            { a: 'peas', b: 'carrot', bonus: 10, desc: __alloT('stem.companionplanting.peas_fix_nitrogen_that_carrots_need', 'Peas fix nitrogen that carrots need') },
+            { a: 'peas', b: 'onion', bonus: -12, desc: __alloT('stem.companionplanting.allium_family_inhibits_legume_nitrogen', 'Allium family inhibits legume nitrogen fixation') },
+            { a: 'potato', b: 'beans', bonus: 10, desc: __alloT('stem.companionplanting.beans_fix_nitrogen_potatoes_provide_gr', 'Beans fix nitrogen; potatoes provide ground cover') },
+            { a: 'potato', b: 'sunflower', bonus: -8, desc: __alloT('stem.companionplanting.allelopathic_sunflower_chemicals_stunt', 'Allelopathic sunflower chemicals stunt potatoes') },
+            { a: 'marigold', b: 'beans', bonus: 8, desc: __alloT('stem.companionplanting.marigold_attracts_beneficial_insects_t', 'Marigold attracts beneficial insects to bean flowers') },
+            { a: 'lavender', b: 'rosemary', bonus: 8, desc: __alloT('stem.companionplanting.mediterranean_herbs_thrive_together_at', 'Mediterranean herbs thrive together; attract pollinators') },
+            { a: 'mint', b: 'broccoli', bonus: 10, desc: __alloT('stem.companionplanting.mint_deters_flea_beetles_on_brassicas', 'Mint deters flea beetles on brassicas') },
+            { a: 'clover', b: 'corn', bonus: 12, desc: __alloT('stem.companionplanting.clover_fixes_nitrogen_and_prevents_ero', 'Clover fixes nitrogen and prevents erosion') },
+            { a: 'clover', b: 'tomato', bonus: 10, desc: __alloT('stem.companionplanting.living_mulch_retains_moisture_around_t', 'Living mulch retains moisture around tomatoes') },
+            { a: 'borage', b: 'tomato', bonus: 15, desc: __alloT('stem.companionplanting.borage_attracts_pollinators_and_repels', 'Borage attracts pollinators and repels tomato hornworm') },
+            { a: 'borage', b: 'squash', bonus: 12, desc: __alloT('stem.companionplanting.borage_is_the_1_bee_attractor_essentia', 'Borage is the #1 bee attractor — essential for squash pollination') },
+            { a: 'comfrey', b: 'tomato', bonus: 10, desc: __alloT('stem.companionplanting.comfrey_deep_roots_mine_potassium_cut_', 'Comfrey deep roots mine potassium — cut leaves make perfect tomato mulch') },
+            { a: 'comfrey', b: 'potato', bonus: 12, desc: __alloT('stem.companionplanting.comfrey_leaves_as_mulch_provide_potass', 'Comfrey leaves as mulch provide potassium that potatoes crave') },
+            { a: 'buckwheat', b: 'cucumber', bonus: 10, desc: __alloT('stem.companionplanting.buckwheat_attracts_hoverflies_whose_la', 'Buckwheat attracts hoverflies whose larvae eat cucumber aphids') },
+            { a: 'buckwheat', b: 'lettuce', bonus: 8, desc: __alloT('stem.companionplanting.fast_buckwheat_cover_suppresses_weeds_', 'Fast buckwheat cover suppresses weeds around slow lettuce') },
+            { a: 'yarrow', b: 'beans', bonus: 10, desc: __alloT('stem.companionplanting.yarrow_attracts_parasitic_wasps_that_c', 'Yarrow attracts parasitic wasps that control bean beetles') },
+            { a: 'yarrow', b: 'broccoli', bonus: 12, desc: __alloT('stem.companionplanting.yarrow_attracts_lacewings_that_devour_', 'Yarrow attracts lacewings that devour cabbage aphids') }
+          ];
+
+          // ── Invasive Species Events ──
+          var CG_INVASIVES = [
+            { id: 'mint_spread', emoji: '🍃⚠️', label: __alloT('stem.companionplanting.mint_invasion', 'Mint Invasion!'), desc: __alloT('stem.companionplanting.your_mint_has_spread_to_adjacent_plots', 'Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.'), trigger: 'mint', spreadTo: 1, lesson: 'Mint is one of the most aggressive garden spreaders. Always plant mint in containers or isolated beds. Its underground stolons can travel several feet per season.' },
+            { id: 'japanese_beetle', emoji: '🪲', label: __alloT('stem.companionplanting.japanese_beetles', 'Japanese Beetles!'), desc: __alloT('stem.companionplanting.metallic_green_beetles_are_devouring_l', 'Metallic green beetles are devouring leaves! They skeletonize foliage and damage fruit.'), damage: 15, targets: ['tomato', 'beans', 'basil'], lesson: 'Japanese beetles (Popillia japonica) were accidentally introduced to the US in 1916. Hand-picking, neem oil, and milky spore disease (which kills grubs) are organic controls.' },
+            { id: 'aphid_swarm', emoji: '🦠', label: __alloT('stem.companionplanting.aphid_swarm', 'Aphid Swarm!'), desc: __alloT('stem.companionplanting.tiny_sap_sucking_insects_coat_the_stem', 'Tiny sap-sucking insects coat the stems. They multiply explosively — one aphid can produce 80 offspring per week!'), damage: 12, targets: ['lettuce', 'pepper', 'broccoli', 'peas'], lesson: 'Aphids reproduce asexually when conditions are good, producing live young without mating. Ladybugs eat 50+ aphids per day. Dill and nasturtium attract natural predators.' },
+            { id: 'cabbage_moth', emoji: '🦋⚠️', label: __alloT('stem.companionplanting.cabbage_white_moths', 'Cabbage White Moths!'), desc: __alloT('stem.companionplanting.white_butterflies_are_laying_eggs_on_y', 'White butterflies are laying eggs on your brassicas. The green caterpillars will devour leaves.'), damage: 18, targets: ['broccoli'], lesson: 'Pieris rapae caterpillars eat 3x their body weight daily. Row covers prevent egg-laying. Rosemary and thyme planted nearby confuse moths with strong scent.' },
+            { id: 'bindweed', emoji: '🌀', label: __alloT('stem.companionplanting.bindweed_invasion', 'Bindweed Invasion!'), desc: __alloT('stem.companionplanting.twisting_vines_are_strangling_your_pla', 'Twisting vines are strangling your plants! Bindweed can grow 3-6 feet per season and regenerates from root fragments.'), damage: 20, spreadTo: 2, lesson: 'Convolvulus arvensis roots can extend 20+ feet deep. A single root fragment of 2 inches can regenerate. Repeated cutting exhausts root reserves over 2-3 seasons. Mulching heavily suppresses emergence.' },
+            { id: 'tomato_blight', emoji: '🟤', label: __alloT('stem.companionplanting.late_blight', 'Late Blight!'), desc: __alloT('stem.companionplanting.brown_patches_spread_across_leaves_thi', 'Brown patches spread across leaves. This is the same disease that caused the Irish Potato Famine!'), damage: 25, targets: ['tomato', 'potato'], lesson: 'Phytophthora infestans spreads via airborne spores in cool, wet conditions. Crop rotation and avoiding overhead watering are key defenses. Never plant tomatoes where potatoes grew last season.' },
+            { id: 'spotted_lanternfly', emoji: '🪰', label: __alloT('stem.companionplanting.spotted_lanternfly', 'Spotted Lanternfly!'), desc: __alloT('stem.companionplanting.these_invasive_insects_from_asia_suck_', 'These invasive insects from Asia suck sap and excrete sticky honeydew that grows sooty mold.'), damage: 14, targets: ['sunflower', 'cucumber', 'squash'], lesson: 'Lycorma delicatula arrived in Pennsylvania in 2014 on stone shipments. They lay egg masses on any flat surface. Reporting sightings to your state agriculture department helps track their spread.' }
+          ];
+
+          // ── Achievement definitions ──
+          var CG_ACHIEVEMENTS = [
+            { id: 'first_harvest', emoji: '🌱', label: __alloT('stem.companionplanting.first_harvest', 'First Harvest'), desc: __alloT('stem.companionplanting.harvest_your_first_crop', 'Harvest your first crop'), check: function(s) { return s.totalHarvested >= 1; } },
+            { id: 'companion5', emoji: '🤝', label: __alloT('stem.companionplanting.companion_master', 'Companion Master'), desc: __alloT('stem.companionplanting.5_positive_companion_pairs_active', '5+ positive companion pairs active'), check: function(s) { return s.activeBonuses >= 5; } },
+            { id: 'pollinator', emoji: '🐝', label: __alloT('stem.companionplanting.pollinator_paradise', 'Pollinator Paradise'), desc: __alloT('stem.companionplanting.plant_3_pollinator_attracting_species', 'Plant 3+ pollinator-attracting species'), check: function(s) { return s.pollinatorPlants >= 3; } },
+            { id: 'biodiversity', emoji: '🌍', label: __alloT('stem.companionplanting.biodiversity_champion', 'Biodiversity Champion'), desc: __alloT('stem.companionplanting.10_different_species_planted', '10+ different species planted'), check: function(s) { return s.uniqueSpecies >= 10; } },
+            { id: 'nitrogen', emoji: '⚗️', label: __alloT('stem.companionplanting.nitrogen_master', 'Nitrogen Master'), desc: __alloT('stem.companionplanting.keep_soil_nitrogen_above_60_for_10_day', 'Keep soil nitrogen above 60 for 10+ days'), check: function(s) { return s.nitrogenDays >= 10; } },
+            { id: 'defender', emoji: '⚔️', label: __alloT('stem.companionplanting.invasive_defender', 'Invasive Defender'), desc: __alloT('stem.companionplanting.successfully_manage_an_invasive_event', 'Successfully manage an invasive event'), check: function(s) { return s.invasivesManaged >= 1; } },
+            { id: 'rotation', emoji: '🔄', label: __alloT('stem.companionplanting.rotation_expert', 'Rotation Expert'), desc: __alloT('stem.companionplanting.complete_3_seasons_with_crop_rotation', 'Complete 3 seasons with crop rotation'), check: function(s) { return s.seasonsRotated >= 3; } },
+            { id: 'organic', emoji: '🌿', label: __alloT('stem.companionplanting.organic_grower', 'Organic Grower'), desc: __alloT('stem.companionplanting.reach_harvest_without_any_plant_dying', 'Reach harvest without any plant dying'), check: function(s) { return s.noDeaths && s.totalHarvested >= 3; } },
+            { id: 'market', emoji: '💰', label: __alloT('stem.companionplanting.market_star', 'Market Star'), desc: __alloT('stem.companionplanting.earn_100_harvest_points_in_one_season', 'Earn 100+ harvest points in one season'), check: function(s) { return s.seasonPoints >= 100; } },
+            { id: 'three_sisters', emoji: '🌽', label: __alloT('stem.companionplanting.three_sisters', 'Three Sisters'), desc: __alloT('stem.companionplanting.plant_corn_beans_squash_as_neighbors', 'Plant corn + beans + squash as neighbors'), check: function(s) { return s.hasSisters; } },
+            { id: 'regenerative', emoji: '♻️', label: __alloT('stem.companionplanting.regenerative_gardener', 'Regenerative Gardener'), desc: __alloT('stem.companionplanting.plant_3_regenerative_species_comfrey_c', 'Plant 3+ regenerative species (comfrey, clover, buckwheat, yarrow, borage)'), check: function(s) { return s.regenCount >= 3; } },
+            { id: 'soil_healer', emoji: '🌍', label: __alloT('stem.companionplanting.soil_healer', 'Soil Healer'), desc: __alloT('stem.companionplanting.maintain_nitrogen_above_50_with_only_l', 'Maintain nitrogen above 50 with only legumes (no compost action)'), check: function(s) { return s.nitrogenFromLegumes; } }
+          ];
+
+          // ── Garden Challenges — guided scenarios ──
+          var CG_CHALLENGES = [
+            { id: 'pollinator_rescue', emoji: '🐝', title: __alloT('stem.companionplanting.pollinator_rescue', 'Pollinator Rescue'),
+              difficulty: 'Beginner', ngss: 'LS2.A: Interdependent Relationships',
+              desc: __alloT('stem.companionplanting.a_local_farm_s_cucumber_and_squash_yie', 'A local farm\'s cucumber and squash yields are crashing because pollinators have disappeared. Design a garden that attracts pollinators AND produces food.'),
+              goal: __alloT('stem.companionplanting.harvest_3_pollinator_dependent_crops_c', 'Harvest 3+ pollinator-dependent crops (cucumber, squash) with at least 3 pollinator plants nearby.'),
+              hint: __alloT('stem.companionplanting.marigold_sunflower_lavender_borage_and', 'Marigold, sunflower, lavender, borage, and nasturtium all attract bees and butterflies. Plant them NEAR your cucumbers and squash.'),
+              check: function(grid) {
+                var pollCrops = 0; var pollPlants = 0;
+                grid.forEach(function(c) { if (!c.plantId) return; var p = CG_PLANTS[c.plantId]; if (!p) return; if (p.needsPoll && c.growthDay >= p.days) pollCrops++; if (p.pollinator) pollPlants++; });
+                return pollCrops >= 3 && pollPlants >= 3;
+              }
+            },
+            { id: 'nitrogen_crisis', emoji: '⚗️', title: __alloT('stem.companionplanting.the_nitrogen_crisis', 'The Nitrogen Crisis'),
+              difficulty: 'Intermediate', ngss: 'LS2.B: Cycles of Matter',
+              desc: __alloT('stem.companionplanting.after_years_of_corn_monoculture_this_s', 'After years of corn monoculture, this soil is depleted (nitrogen starts at 10). Restore soil fertility using ONLY biological nitrogen fixation — no compost allowed!'),
+              goal: __alloT('stem.companionplanting.raise_nitrogen_above_60_using_only_leg', 'Raise nitrogen above 60 using only legumes (beans, peas, clover).'),
+              hint: __alloT('stem.companionplanting.legumes_have_symbiotic_bacteria_rhizob', 'Legumes have symbiotic bacteria (Rhizobium) in their root nodules that convert atmospheric N₂ into plant-available ammonium. This is how nature makes fertilizer.'),
+              setup: { nitrogen: 10, moisture: 40 },
+              check: function(grid, state) { return state.nitrogen >= 60; }
+            },
+            { id: 'pest_gauntlet', emoji: '🐛', title: __alloT('stem.companionplanting.pest_gauntlet', 'Pest Gauntlet'),
+              difficulty: 'Intermediate', ngss: 'LS2.C: Ecosystem Dynamics',
+              desc: __alloT('stem.companionplanting.design_a_garden_that_can_survive_a_ful', 'Design a garden that can survive a full summer of pest pressure WITHOUT any weeding actions. Use only companion planting and beneficial insect attraction for defense.'),
+              goal: __alloT('stem.companionplanting.keep_average_plant_health_above_60_thr', 'Keep average plant health above 60% through summer with 8+ plants and no weeding.'),
+              hint: __alloT('stem.companionplanting.dill_attracts_parasitic_wasps_nasturti', 'Dill attracts parasitic wasps. Nasturtium is a trap crop. Marigold kills nematodes. Yarrow attracts ladybugs. Build your defense through biodiversity!'),
+              check: function(grid, state) {
+                var planted = 0; var totalHealth = 0;
+                grid.forEach(function(c) { if (c.plantId) { planted++; totalHealth += c.health; } });
+                return planted >= 8 && (totalHealth / Math.max(1, planted)) > 60 && state.season === 1;
+              }
+            },
+            { id: 'rotation_master', emoji: '🔄', title: __alloT('stem.companionplanting.four_season_rotation', 'Four-Season Rotation'),
+              difficulty: 'Advanced', ngss: 'LS2.D: Social Interactions',
+              desc: __alloT('stem.companionplanting.practice_the_4_year_crop_rotation_syst', 'Practice the 4-year crop rotation system: Year 1 legumes → Year 2 brassicas → Year 3 nightshades → Year 4 root crops. No family should repeat in the same plot.'),
+              goal: __alloT('stem.companionplanting.complete_4_seasons_with_proper_family_', 'Complete 4 seasons with proper family rotation in every cell. Zero rotation warnings.'),
+              hint: __alloT('stem.companionplanting.season_1_beans_peas_clover_season_2_br', 'Season 1: beans, peas, clover. Season 2: broccoli, radish. Season 3: tomato, pepper, potato. Season 4: carrot, onion. Each season, move families to new plots.'),
+              check: function(grid, state) { return (state.cellHistory && Object.keys(state.cellHistory).length >= 8 && state.seasonsRotated >= 4); }
+            },
+            { id: 'regen_garden', emoji: '♻️', title: __alloT('stem.companionplanting.the_regenerative_garden', 'The Regenerative Garden'),
+              difficulty: 'Advanced', ngss: 'ESS3.C: Human Impacts',
+              desc: __alloT('stem.companionplanting.build_a_garden_that_improves_the_ecosy', 'Build a garden that IMPROVES the ecosystem over time. Start with degraded soil and transform it into a thriving, self-sustaining food forest.'),
+              goal: __alloT('stem.companionplanting.achieve_ecosystem_score_80_with_3_rege', 'Achieve ecosystem score 80+ with 3+ regenerative plants, 5+ families, and nitrogen above 50.'),
+              hint: __alloT('stem.companionplanting.comfrey_buckwheat_and_yarrow_heal_soil', 'Comfrey, buckwheat, and yarrow heal soil. Clover and beans fix nitrogen. Borage attracts pollinators. A regenerative garden feeds itself.'),
+              setup: { nitrogen: 15, moisture: 30 },
+              check: function(grid, state) {
+                var regen = 0; var fams = {};
+                grid.forEach(function(c) { if (!c.plantId) return; var p = CG_PLANTS[c.plantId]; if (!p) return; fams[p.family] = true; if (p.regen) regen++; });
+                return regen >= 3 && Object.keys(fams).length >= 5 && state.nitrogen >= 50;
+              }
+            },
+            { id: 'three_sisters_community', emoji: '🌽', title: __alloT('stem.companionplanting.three_sisters_in_the_community', 'Three Sisters in the Community'),
+              difficulty: 'Beginner', ngss: 'LS2.A: Interdependent Relationships',
+              desc: __alloT('stem.companionplanting.the_three_sisters_corn_beans_squash_is', 'The Three Sisters (corn, beans, squash) is a 7,000-year-old agricultural system from Indigenous Mesoamerican and Haudenosaunee traditions. Plant them as neighbors and watch the synergy.'),
+              goal: __alloT('stem.companionplanting.plant_corn_beans_and_squash_adjacent_t', 'Plant corn, beans, and squash adjacent to each other and harvest all three.'),
+              hint: __alloT('stem.companionplanting.corn_provides_a_trellis_for_beans_bean', 'Corn provides a trellis for beans. Beans fix nitrogen for corn. Squash shades the soil and suppresses weeds. Together, they provide complete nutrition.'),
+              check: function(grid) { var has = {}; grid.forEach(function(c) { if (c.plantId) has[c.plantId] = true; }); return has.corn && has.beans && has.squash; }
+            }
+          ];
+          // ── Community Garden State ──
+          var cg = d.communityGarden || {};
+          var cgActiveChallenge = cg.activeChallenge || null;
+          var cgCompletedChallenges = cg.completedChallenges || [];
+          var cgObservedVisitors = cg.observedVisitors || [];
+          var cgGrid = cg.grid || []; // Array of 16 cells: { plantId: null|string, growthDay: 0, health: 100, watered: false, pests: 0 }
+          var cgDay = cg.day || 0;
+          var cgSeason = Math.floor((cgDay % 120) / 30); // 0=spring, 1=summer, 2=autumn, 3=winter
+          var cgNitrogen = typeof cg.nitrogen === 'number' ? cg.nitrogen : 50;
+          var cgMoisture = typeof cg.moisture === 'number' ? cg.moisture : 60;
+          var cgScore = cg.score || 0;
+          var cgTotalHarvested = cg.totalHarvested || 0;
+          var cgAchievements = cg.achievements || [];
+          var cgEventLog = cg.eventLog || [];
+          var cgActiveEvent = cg.activeEvent || null;
+          var cgPhase = cg.phase || 'plan'; // 'plan' | 'grow' | 'harvest'
+          var cgSelectedPlant = cg.selectedPlant || null;
+          var cgSpeed = cg.speed || 1;
+          var cgMaximized = cg.maximized === true;
+          var cgSeasonHistory = cg.seasonHistory || []; // tracks what was planted each season for rotation
+
+          // ── Enhanced Soil Chemistry (NPK + pH + organic matter) ──
+          var cgPhosphorus = typeof cg.phosphorus === 'number' ? cg.phosphorus : 40;
+          var cgPotassium = typeof cg.potassium === 'number' ? cg.potassium : 45;
+          var cgPH = typeof cg.pH === 'number' ? cg.pH : 6.5;
+          var cgOrganicMatter = typeof cg.organicMatter === 'number' ? cg.organicMatter : 3.0;
+
+          // ── Economics ──
+          var cgBudget = typeof cg.budget === 'number' ? cg.budget : 50.00;
+          var cgRevenue = cg.revenue || 0;
+          var cgExpenses = cg.expenses || 0;
+
+          // ── Pest Lifecycle ──
+          var cgPestPop = typeof cg.pestPop === 'number' ? cg.pestPop : 0;
+          var cgBeneficialPop = typeof cg.beneficialPop === 'number' ? cg.beneficialPop : 5;
+
+          // ── Multi-Year ──
+          var cgYear = cg.year || 1;
+
+          // ── AI Advisor cooldown ──
+          var cgAdvisorCooldown = cg.advisorCooldown || 0;
+          var cgAdvisorResponse = cg.advisorResponse || null;
+          var cgLastFeedback = cg.lastFeedback || null;
+          var cgPlantFilter = cg.plantFilter || 'all';
+
+          // NPK consumption rates per plant (per growth day)
+          var PLANT_NPK = {
+            tomato: { n: -2.5, p: -2, k: -1.5, idealPH: [6.0, 6.8] },
+            corn: { n: -3, p: -1.5, k: -1, idealPH: [6.0, 7.0] },
+            beans: { n: 2, p: -0.5, k: -0.5, idealPH: [6.0, 7.0] },
+            squash: { n: -2, p: -1.5, k: -2, idealPH: [6.0, 7.0] },
+            lettuce: { n: -1, p: -0.5, k: -0.5, idealPH: [6.0, 7.0] },
+            carrot: { n: -0.5, p: -1.5, k: -1, idealPH: [6.0, 6.8] },
+            pepper: { n: -2, p: -2, k: -1.5, idealPH: [6.0, 6.8] },
+            onion: { n: -1, p: -1, k: -0.5, idealPH: [6.0, 7.0] },
+            potato: { n: -2.5, p: -2, k: -2.5, idealPH: [4.8, 6.5] },
+            cucumber: { n: -1.5, p: -1, k: -1, idealPH: [6.0, 7.0] },
+            peas: { n: 1.5, p: -0.5, k: -0.5, idealPH: [6.0, 7.5] },
+            broccoli: { n: -2.5, p: -1.5, k: -1, idealPH: [6.0, 7.0] },
+            basil: { n: -0.5, p: -0.3, k: -0.3, idealPH: [6.0, 7.0] },
+            marigold: { n: 0, p: -0.2, k: -0.2, idealPH: [6.0, 7.5] },
+            sunflower: { n: -1, p: -1, k: -0.5, idealPH: [6.0, 7.5] },
+            radish: { n: -0.3, p: -0.3, k: -0.3, idealPH: [6.0, 7.0] },
+            clover: { n: 3, p: -0.2, k: -0.2, idealPH: [6.0, 7.0] },
+            // Perennials
+            strawberry: { n: -1, p: -1, k: -1.5, idealPH: [5.5, 6.5] },
+            asparagus: { n: -1.5, p: -1, k: -1, idealPH: [6.5, 7.5] },
+            blueberry: { n: -0.5, p: -0.5, k: -0.5, idealPH: [4.5, 5.5] },
+            garlic: { n: -1, p: -0.5, k: -0.5, idealPH: [6.0, 7.0] },
+            rhubarb: { n: -1.5, p: -1, k: -1, idealPH: [6.0, 6.8] }
+          };
+
+          // Market prices for harvest revenue
+          var MARKET_PRICES = {
+            tomato: 3.50, corn: 2.00, beans: 2.50, squash: 3.00, lettuce: 2.00,
+            carrot: 1.50, pepper: 4.00, onion: 1.50, potato: 1.00, cucumber: 2.00,
+            peas: 3.00, broccoli: 3.50, basil: 5.00, radish: 1.00, sunflower: 2.00,
+            strawberry: 6.00, asparagus: 5.50, blueberry: 8.00, garlic: 4.00, rhubarb: 3.00
+          };
+
+          // Initialize grid if empty
+          if (cgGrid.length === 0) {
+            cgGrid = [];
+            for (var gi = 0; gi < 16; gi++) {
+              cgGrid.push({ plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 });
+            }
+          }
+
+          // ── CG helper: update community garden state ──
+          function cgUpd(patch) {
+            setLabToolData(function(prev) {
+              var cp = Object.assign({}, prev.companionPlanting || {});
+              cp.communityGarden = Object.assign({}, cp.communityGarden || {}, patch);
+              return Object.assign({}, prev, { companionPlanting: cp });
+            });
+          }
+
+          // ── CG helper: get companion bonus for a cell ──
+          function cgLogActivity(icon, title, detail) {
+            var nextLog = cgEventLog.concat([{ icon: icon, title: title, detail: detail, day: cgDay, ts: Date.now() }]).slice(-12);
+            cgUpd({ eventLog: nextLog });
+          }
+
+          function getCellBonus(grid, idx) {
+            var cell = grid[idx];
+            if (!cell || !cell.plantId) return { total: 0, pairs: [] };
+            var cols = 4;
+            var row = Math.floor(idx / cols);
+            var col = idx % cols;
+            var neighbors = [];
+            if (row > 0) neighbors.push(idx - cols);
+            if (row < 3) neighbors.push(idx + cols);
+            if (col > 0) neighbors.push(idx - 1);
+            if (col < 3) neighbors.push(idx + 1);
+            // Diagonals
+            if (row > 0 && col > 0) neighbors.push(idx - cols - 1);
+            if (row > 0 && col < 3) neighbors.push(idx - cols + 1);
+            if (row < 3 && col > 0) neighbors.push(idx + cols - 1);
+            if (row < 3 && col < 3) neighbors.push(idx + cols + 1);
+
+            var total = 0;
+            var pairs = [];
+            neighbors.forEach(function(ni) {
+              var nc = grid[ni];
+              if (!nc || !nc.plantId) return;
+              CG_COMPANIONS.forEach(function(comp) {
+                if ((comp.a === cell.plantId && comp.b === nc.plantId) || (comp.b === cell.plantId && comp.a === nc.plantId)) {
+                  total += comp.bonus;
+                  pairs.push(comp);
+                }
+              });
+            });
+            return { total: total, pairs: pairs };
+          }
+
+          // ── CG: advance one day ──
+          // ── Beneficial Events (positive ecosystem feedback) ──
+          var CG_GOOD_EVENTS = [
+            { id: 'ladybugs', emoji: '🐞', label: __alloT('stem.companionplanting.ladybug_colony', 'Ladybug Colony!'), desc: __alloT('stem.companionplanting.ladybugs_have_moved_in_a_single_ladybu', 'Ladybugs have moved in! A single ladybug eats 50+ aphids per day.'), effect: function(grid) { return grid.map(function(c) { return c.plantId ? Object.assign({}, c, { pests: Math.max(0, c.pests - 15) }) : c; }); }, lesson: 'Ladybugs (Coccinellidae) eat up to 5,000 aphids in their lifetime. Dill, yarrow, and marigolds attract them by providing nectar and habitat.' },
+            { id: 'rain', emoji: '🌧️', label: __alloT('stem.companionplanting.spring_rain', 'Spring Rain!'), desc: __alloT('stem.companionplanting.a_gentle_soaking_rain_replenishes_the_', 'A gentle soaking rain replenishes the soil.'), moistureBoost: 30, lesson: 'Plants prefer slow, deep watering over frequent shallow sprinkles. Soil organic matter acts like a sponge, holding 20× its weight in water.' },
+            { id: 'mycorrhiza', emoji: '🍄', label: __alloT('stem.companionplanting.mycorrhizal_bloom_2', 'Mycorrhizal Bloom!'), desc: __alloT('stem.companionplanting.beneficial_fungi_have_colonized_the_ro', 'Beneficial fungi have colonized the root zone, extending root reach by 100×.'), nitrogenBoost: 10, healthBoost: 8, lesson: 'Mycorrhizal fungi form symbiotic networks with 90% of plant species. They trade soil minerals for plant sugars. This underground "wood wide web" connects plants and can even transfer warning chemicals.' },
+            { id: 'earthworms', emoji: '🪱', label: __alloT('stem.companionplanting.earthworm_surge', 'Earthworm Surge!'), desc: __alloT('stem.companionplanting.earthworm_populations_are_thriving_the', 'Earthworm populations are thriving! They aerate soil and recycle nutrients.'), nitrogenBoost: 8, lesson: 'Charles Darwin studied earthworms for 39 years. A healthy garden has 100-500 worms per square meter. Their castings contain 5× more nitrogen and 7× more phosphorus than surrounding soil.' },
+            { id: 'pollinators', emoji: '🦋', label: __alloT('stem.companionplanting.pollinator_migration', 'Pollinator Migration!'), desc: __alloT('stem.companionplanting.monarch_butterflies_are_passing_throug', 'Monarch butterflies are passing through! Pollinator-dependent crops get a boost.'), effect: function(grid) { return grid.map(function(c) { if (c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].needsPoll) return Object.assign({}, c, { health: Math.min(100, c.health + 10) }); return c; }); }, lesson: 'Monarch butterflies migrate up to 3,000 miles. Pollinator gardens along their route provide critical refueling stops. One in three bites of food depends on pollinators.' }
+          ];
+
+          // ── Crop rotation history per cell ──
+          var cgCellHistory = cg.cellHistory || {}; // { "0": ["tomato", "beans"], "1": ["corn"] ... }
+
+          function cgAdvanceDay() {
+            var newGrid = cgGrid.map(function(cell, idx) {
+              if (!cell.plantId) return cell;
+              var plant = CG_PLANTS[cell.plantId];
+              if (!plant) return cell;
+              var c = Object.assign({}, cell);
+              var bonus = getCellBonus(cgGrid, idx);
+
+              // Crop rotation penalty: same family in same cell as last season
+              var rotationPenalty = 0;
+              var history = cgCellHistory[idx] || [];
+              if (history.length > 0) {
+                var lastPlant = CG_PLANTS[history[history.length - 1]];
+                if (lastPlant && lastPlant.family === plant.family) {
+                  rotationPenalty = 0.3; // 30% growth penalty + disease risk
+                  if (Math.random() < 0.02) c.pests = Math.min(100, c.pests + 15); // soil-borne disease
+                }
+              }
+
+              // Soil health bonus — diverse garden = healthier soil
+              var uniqueFamilies = {};
+              cgGrid.forEach(function(gc) { if (gc.plantId) { var gp = CG_PLANTS[gc.plantId]; if (gp) uniqueFamilies[gp.family] = true; } });
+              var biodiversityBonus = Math.min(0.2, Object.keys(uniqueFamilies).length * 0.025); // up to +20% for 8 families
+
+              // Growth
+              var seasonGrowth = [1.0, 1.4, 0.6, 0.0][cgSeason];
+              var growthRate = seasonGrowth * (1 + bonus.total / 100) * (1 - rotationPenalty) * (1 + biodiversityBonus);
+              if (cgMoisture < 20) growthRate *= 0.3;
+              if (c.pests > 30) growthRate *= 0.7;
+              if (cgNitrogen < 15 && plant.nEffect < 0) growthRate *= 0.5; // heavy feeders suffer in depleted soil
+              c.growthDay = Math.min(plant.days, c.growthDay + growthRate);
+
+              // Health
+              if (cgMoisture < 15) c.health = Math.max(0, c.health - 2);
+              if (cgMoisture > 90) c.health = Math.max(0, c.health - 1); // overwatering — root rot
+              if (c.pests > 50) c.health = Math.max(0, c.health - 1.5);
+              if (bonus.total < -10) c.health = Math.max(0, c.health - 0.5);
+              if (bonus.total > 10) c.health = Math.min(100, c.health + 0.3);
+              if (rotationPenalty > 0) c.health = Math.max(0, c.health - 0.3);
+
+              // Pest accumulation (reduced by companion bonuses and biodiversity)
+              var pestRate = [0.4, 0.8, 0.3, 0.05][cgSeason];
+              if (bonus.total > 0) pestRate *= Math.max(0.2, 1 - bonus.total / 50);
+              pestRate *= (1 - biodiversityBonus); // biodiversity reduces pest pressure
+              c.pests = Math.min(100, c.pests + pestRate);
+
+              c.watered = false;
+              return c;
+            });
+
+            // Structure effects
+            var hasRainBarrel = newGrid.some(function(c) { return c.plantId === 'rain_barrel'; });
+            var hasCompostBin = newGrid.some(function(c) { return c.plantId === 'compost_bin'; });
+
+            // Global moisture decay (rain barrel reduces by 20%)
+            var moistureDecay = [1.5, 2.5, 1.0, 0.5][cgSeason];
+            if (hasRainBarrel) moistureDecay *= 0.8;
+            var newMoisture = Math.max(0, cgMoisture - moistureDecay);
+
+            // Nitrogen: legumes add, heavy feeders subtract. Compost bin adds passive nitrogen.
+            var nDelta = hasCompostBin ? 0.5 : 0;
+            newGrid.forEach(function(cell) {
+              if (!cell.plantId) return;
+              var p = CG_PLANTS[cell.plantId];
+              if (p) nDelta += p.nEffect * 0.3;
+            });
+            var newNitrogen = Math.max(0, Math.min(100, cgNitrogen + nDelta));
+
+            // Random event check — both threats AND benefits
+            var newEvent = cgActiveEvent;
+            var extraMoisture = 0;
+            var extraNitrogen = 0;
+            if (!cgActiveEvent && cgDay > 5 && Math.random() < 0.18) {
+              var plantedIds = newGrid.filter(function(c) { return c.plantId; }).map(function(c) { return c.plantId; });
+              var pollinatorCount = plantedIds.filter(function(id) { return CG_PLANTS[id] && CG_PLANTS[id].pollinator; }).length;
+              var uniqueFams = {};
+              plantedIds.forEach(function(id) { var p = CG_PLANTS[id]; if (p) uniqueFams[p.family] = true; });
+              var diversity = Object.keys(uniqueFams).length;
+
+              // Higher biodiversity = more likely to get good events
+              var goodChance = Math.min(0.6, 0.2 + diversity * 0.05 + pollinatorCount * 0.05);
+
+              if (Math.random() < goodChance) {
+                // Beneficial event
+                var goodEvent = CG_GOOD_EVENTS[Math.floor(Math.random() * CG_GOOD_EVENTS.length)];
+                newEvent = { emoji: goodEvent.emoji, label: goodEvent.label, desc: goodEvent.desc, lesson: goodEvent.lesson, isGood: true };
+                if (goodEvent.effect) newGrid = goodEvent.effect(newGrid);
+                if (goodEvent.moistureBoost) extraMoisture = goodEvent.moistureBoost;
+                if (goodEvent.nitrogenBoost) extraNitrogen = goodEvent.nitrogenBoost;
+                if (goodEvent.healthBoost) {
+                  newGrid = newGrid.map(function(c) { return c.plantId ? Object.assign({}, c, { health: Math.min(100, c.health + goodEvent.healthBoost) }) : c; });
+                }
+              } else {
+                // Threat event
+                var possibleInvasives = CG_INVASIVES.filter(function(inv) {
+                  if (inv.trigger) return plantedIds.indexOf(inv.trigger) !== -1;
+                  if (inv.targets) return inv.targets.some(function(t) { return plantedIds.indexOf(t) !== -1; });
+                  return true;
+                });
+                if (possibleInvasives.length > 0) {
+                  newEvent = possibleInvasives[Math.floor(Math.random() * possibleInvasives.length)];
+                  if (newEvent.damage) {
+                    newGrid = newGrid.map(function(cell) {
+                      if (!cell.plantId) return cell;
+                      if (newEvent.targets && newEvent.targets.indexOf(cell.plantId) === -1) return cell;
+                      return Object.assign({}, cell, { health: Math.max(0, cell.health - newEvent.damage), pests: Math.min(100, cell.pests + 10) });
+                    });
+                  }
+                }
+              }
+            }
+
+            // ── Enhanced Soil Chemistry: NPK + pH + Organic Matter ──
+            var pDelta = 0; var kDelta = 0; var omDelta = 0;
+            newGrid.forEach(function(cell) {
+              if (!cell.plantId) return;
+              var npk = PLANT_NPK[cell.plantId];
+              if (npk) {
+                pDelta += npk.p * 0.3;
+                kDelta += npk.k * 0.3;
+              }
+            });
+            if (hasCompostBin) { pDelta += 0.3; kDelta += 0.3; omDelta += 0.1; }
+            // Cover crops build organic matter
+            newGrid.forEach(function(cell) {
+              if (cell.plantId && CG_PLANTS[cell.plantId] && CG_PLANTS[cell.plantId].regen) omDelta += 0.05;
+            });
+            var newP = Math.max(0, Math.min(100, cgPhosphorus + pDelta));
+            var newK = Math.max(0, Math.min(100, cgPotassium + kDelta));
+            var newOM = Math.max(0.5, Math.min(10, cgOrganicMatter + omDelta));
+            // pH drift: legumes slightly acidify, lime crops raise. Slow drift toward 6.5 naturally.
+            var phDrift = (6.5 - cgPH) * 0.005; // natural buffering
+            var newPH = Math.max(4.0, Math.min(8.5, cgPH + phDrift));
+
+            // Organic matter improves moisture retention
+            var omMoistureBonus = (newOM - 3) * 0.1; // each 1% above baseline = 10% less moisture loss
+            if (omMoistureBonus > 0) newMoisture += omMoistureBonus;
+
+            // pH lockout affects growth (applied to health)
+            newGrid = newGrid.map(function(cell) {
+              if (!cell.plantId) return cell;
+              var npk = PLANT_NPK[cell.plantId];
+              if (npk && npk.idealPH) {
+                if (newPH < npk.idealPH[0] || newPH > npk.idealPH[1]) {
+                  // pH outside ideal range — nutrient lockout reduces health
+                  return Object.assign({}, cell, { health: Math.max(0, cell.health - 0.5) });
+                }
+              }
+              // Low phosphorus hurts fruiting crops
+              if (newP < 15 && CG_PLANTS[cell.plantId] && CG_PLANTS[cell.plantId].needsPoll) {
+                return Object.assign({}, cell, { health: Math.max(0, cell.health - 0.3) });
+              }
+              return cell;
+            });
+
+            // ── Pest Lifecycle Model ──
+            var plantedCount = newGrid.filter(function(c) { return c.plantId && !CG_PLANTS[c.plantId].isStructure; }).length;
+            var seasonPestMul = [0.5, 1.2, 0.4, 0.05][cgSeason];
+            // Companion pest suppression
+            var companionRepel = 0;
+            newGrid.forEach(function(c) {
+              if (c.plantId && (c.plantId === 'marigold' || c.plantId === 'nasturtium' || c.plantId === 'onion' || c.plantId === 'garlic' || c.plantId === 'basil')) companionRepel += 0.08;
+            });
+            var newPestPop = Math.max(0, cgPestPop * (1 + 0.06 * seasonPestMul - companionRepel) + (plantedCount > 4 ? 0.3 * seasonPestMul : 0));
+            // Beneficials eat pests
+            var newBeneficialPop = Math.max(0, cgBeneficialPop + newPestPop * 0.02 - 0.1);
+            var pollinatorPlants = newGrid.filter(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].pollinator; }).length;
+            newBeneficialPop += pollinatorPlants * 0.05; // flowers attract beneficials
+            newPestPop = Math.max(0, newPestPop - newBeneficialPop * 0.15); // beneficials consume pests
+            // Apply pest population to individual cell pest levels
+            if (newPestPop > 10) {
+              newGrid = newGrid.map(function(c) {
+                if (!c.plantId || CG_PLANTS[c.plantId].isStructure) return c;
+                return Object.assign({}, c, { pests: Math.min(100, c.pests + newPestPop * 0.05) });
+              });
+            }
+
+            // ── Multi-Year: season rollover + year advancement ──
+            var newDay = cgDay + 1;
+            var newYear = cgYear;
+            if (newDay > 0 && newDay % 120 === 0) {
+              newYear = cgYear + 1;
+              // Perennials persist; annuals die at year boundary
+              newGrid = newGrid.map(function(cell) {
+                if (!cell.plantId) return cell;
+                var plant = CG_PLANTS[cell.plantId];
+                if (plant && plant.perennial) {
+                  // Perennials survive and get stronger
+                  return Object.assign({}, cell, { growthDay: Math.max(0, cell.growthDay - 10), health: Math.min(100, cell.health + 5) });
+                }
+                // Annuals die at year end
+                return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 };
+              });
+            }
+
+            var readyAfterDay = newGrid.filter(function(cell) { var readyPlant = cell.plantId && CG_PLANTS[cell.plantId]; return readyPlant && cell.growthDay >= readyPlant.days && cell.health > 20; }).length;
+            var dayFeedback = newEvent ? { icon: newEvent.emoji, title: newEvent.label, detail: newEvent.desc, tone: newEvent.isGood ? 'success' : 'warning' } : { icon: '\uD83D\uDCC5', title: 'Day ' + (newDay % 30 + 1) + ' complete', detail: 'Moisture is ' + Math.round(Math.min(100, Math.max(0, newMoisture + extraMoisture))) + '%. ' + (readyAfterDay ? readyAfterDay + ' crop' + (readyAfterDay !== 1 ? 's are' : ' is') + ' ready to harvest.' : 'Growth advanced across the garden.'), tone: readyAfterDay ? 'celebrate' : 'info' };
+
+            cgUpd({
+              grid: newGrid,
+              day: newDay,
+              year: newYear,
+              nitrogen: Math.min(100, newNitrogen + extraNitrogen),
+              moisture: Math.min(100, Math.max(0, newMoisture + extraMoisture)),
+              phosphorus: newP,
+              potassium: newK,
+              pH: Math.round(newPH * 10) / 10,
+              organicMatter: Math.round(newOM * 100) / 100,
+              pestPop: Math.round(newPestPop * 10) / 10,
+              beneficialPop: Math.round(newBeneficialPop * 10) / 10,
+              activeEvent: newEvent,
+              advisorCooldown: Math.max(0, cgAdvisorCooldown - 1),
+              lastFeedback: dayFeedback
+            });
+            cgLogActivity(dayFeedback.icon, dayFeedback.title, dayFeedback.detail);
+          }
+
+          // ── CG: plant in cell ──
+          function cgPlantCell(idx) {
+            if (!cgSelectedPlant || cgPhase !== 'plan') return false;
+            var plant = CG_PLANTS[cgSelectedPlant];
+            if (!plant) return false;
+            // Economics: deduct seed cost from budget
+            var seedCost = plant.cost ? plant.cost * 0.10 : 0.50; // cost field is points; convert to dollars
+            if (cgBudget < seedCost) {
+              if (addToast) addToast('\uD83D\uDCB0 Not enough budget! Need $' + seedCost.toFixed(2) + ' (have $' + cgBudget.toFixed(2) + ')', 'info');
+              return false;
+            }
+            var newGrid = cgGrid.slice();
+            newGrid[idx] = { plantId: cgSelectedPlant, growthDay: 0, health: 100, watered: false, pests: 0 };
+            cgUpd({ grid: newGrid, budget: Math.round((cgBudget - seedCost) * 100) / 100, expenses: cgExpenses + seedCost, lastFeedback: { icon: '\uD83C\uDF31', title: 'Plot planted', detail: plant.label + ' added to plot ' + (idx + 1) + '. Cost ' + seedCost.toFixed(2) + ' dollars.', tone: 'success' } });
+            if (awardStemXP) awardStemXP('companion_garden_plant', 5, 'Planted ' + cgSelectedPlant);
+            // Visible success feedback (UDL: confirm the action across modalities)
+            var plantEmoji = plant.emoji || '\uD83C\uDF31';
+            var plantName = plant.label || plant.name || cgSelectedPlant;
+            cgLogActivity(plantEmoji, 'Planted ' + plantName, 'Plot ' + (idx + 1) + ' started.');
+            if (addToast) addToast(plantEmoji + ' Planted ' + plantName + '! \u2212$' + seedCost.toFixed(2) + ' \u00B7 +5 XP', 'success');
+            if (stemBeep) { try { stemBeep(523, 0.1, 0.1); } catch (e) {} }
+            return true;
+          }
+
+          // ── CG: remove plant from cell ──
+          function cgRemoveCell(idx) {
+            if (cgPhase !== 'plan') return;
+            var newGrid = cgGrid.slice();
+            newGrid[idx] = { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 };
+            cgUpd({ grid: newGrid, lastFeedback: { icon: '\u21A9\uFE0F', title: 'Plot cleared', detail: 'Plot ' + (idx + 1) + ' is ready for a new crop.', tone: 'info' } });
+          }
+
+          // Trigger a visual action-burst on the garden canvas.
+          // Safe no-op if the canvas is not mounted yet.
+          function cgFireActionBurst(kind) {
+            try {
+              var el = window.__cgCanvasEl;
+              if (el) { el._actionBurst = { kind: kind, t0: performance.now() }; }
+            } catch (e) { /* silent */ }
+          }
+
+          // ── CG: water action ──
+          function cgWater() {
+            if (cgMoisture >= 90) { cgUpd({ lastFeedback: { icon: '\uD83D\uDCA7', title: 'Watering skipped', detail: 'Soil is already saturated. Let it drain to avoid root rot.', tone: 'warning' } }); if (addToast) addToast('Soil is already wet. Let it drain first.', 'info'); return; }
+            cgUpd({ moisture: Math.min(100, cgMoisture + 25), lastFeedback: { icon: '\uD83D\uDCA7', title: 'Garden watered', detail: 'Moisture +' + Math.min(25, 100 - cgMoisture) + '%; now ' + Math.min(100, cgMoisture + 25) + '%.', tone: 'success' } });
+            cgLogActivity('\uD83D\uDCA7', 'Watered garden', 'Moisture increased to ' + Math.min(100, cgMoisture + 25) + ' percent.');
+            if (awardStemXP) awardStemXP('companion_garden_water', 3, 'Watered garden');
+            cgFireActionBurst("water");
+            if (stemBeep) { try { stemBeep(659, 0.1, 0.1); } catch (e) {} }
+            if (addToast) addToast("💧 Watered the garden! +25% moisture · +3 XP", "success");
+          }
+
+          // ── CG: weed action ──
+          function cgWeed() {
+            var newGrid = cgGrid.map(function(cell) {
+              if (!cell.plantId) return cell;
+              return Object.assign({}, cell, { pests: Math.max(0, cell.pests - 20) });
+            });
+            cgUpd({ grid: newGrid, lastFeedback: { icon: '\uD83E\uDDF9', title: 'Garden weeded', detail: 'Pest pressure fell by up to 20 points on every planted plot.', tone: 'success' } });
+            cgLogActivity('\uD83E\uDDF9', 'Weeded garden', 'Pest pressure dropped across planted plots.');
+            if (awardStemXP) awardStemXP('companion_garden_weed', 3, 'Weeded garden');
+            cgFireActionBurst("weed");
+            if (stemBeep) { try { stemBeep(587, 0.1, 0.1); } catch (e) {} }
+            if (addToast) addToast("🌿 Weeded! Pests reduced on all plants · +3 XP", "success");
+          }
+
+          // ── CG: compost action (enhanced: adds NPK + OM) ──
+          function cgCompost() {
+            cgUpd({
+              nitrogen: Math.min(100, cgNitrogen + 15),
+              phosphorus: Math.min(100, cgPhosphorus + 8),
+              potassium: Math.min(100, cgPotassium + 5),
+              organicMatter: Math.min(10, cgOrganicMatter + 0.3),
+              lastFeedback: { icon: '\u267B\uFE0F', title: 'Soil amended', detail: 'N +15, P +8, K +5, and organic matter +0.3%.', tone: 'success' }
+            });
+            cgLogActivity('\u267B\uFE0F', 'Added compost', 'Soil nutrients and organic matter increased.');
+            if (awardStemXP) awardStemXP('companion_garden_compost', 3, 'Added compost');
+            cgFireActionBurst("compost");
+            if (stemBeep) { try { stemBeep(440, 0.1, 0.1); } catch (e) {} }
+            if (addToast) addToast('\u267B\uFE0F Compost added: +15N +8P +5K +0.3% OM', 'success');
+          }
+
+          // ── CG: soil amendment actions ──
+          function cgAddLime() {
+            var cost = 0.50;
+            if (cgBudget < cost) { if (addToast) addToast('\uD83D\uDCB0 Need $' + cost.toFixed(2), 'info'); return; }
+            cgUpd({ pH: Math.min(8.5, Math.round((cgPH + 0.3) * 10) / 10), budget: Math.round((cgBudget - cost) * 100) / 100, expenses: cgExpenses + cost });
+            if (addToast) addToast('\uD83E\uDEA8 Lime added: pH raised to ' + Math.min(8.5, Math.round((cgPH + 0.3) * 10) / 10), 'success');
+          }
+          function cgAddSulfur() {
+            var cost = 0.50;
+            if (cgBudget < cost) { if (addToast) addToast('\uD83D\uDCB0 Need $' + cost.toFixed(2), 'info'); return; }
+            cgUpd({ pH: Math.max(4.0, Math.round((cgPH - 0.3) * 10) / 10), budget: Math.round((cgBudget - cost) * 100) / 100, expenses: cgExpenses + cost });
+            if (addToast) addToast('\uD83D\uDFE1 Sulfur added: pH lowered to ' + Math.max(4.0, Math.round((cgPH - 0.3) * 10) / 10), 'success');
+          }
+
+          // ── IPM (Integrated Pest Management) Actions ──
+          function cgIPMAction(action) {
+            var cost = { ladybugs: 1.50, neem: 1.00, handpick: 0, rowcovers: 2.00 }[action] || 0;
+            if (cgBudget < cost) { if (addToast) addToast('\uD83D\uDCB0 Need $' + cost.toFixed(2), 'info'); return; }
+            var newPest = cgPestPop;
+            var newBen = cgBeneficialPop;
+            var msg = '';
+            if (action === 'ladybugs') {
+              newPest *= 0.5; newBen += 10;
+              msg = '\uD83D\uDC1E Released ladybugs! -50% pests, +10 beneficials';
+            } else if (action === 'neem') {
+              newPest *= 0.7; newBen *= 0.9;
+              msg = '\uD83C\uDF3F Neem spray: -30% all pests, -10% beneficials (broad-spectrum)';
+            } else if (action === 'handpick') {
+              newPest = Math.max(0, newPest - 20);
+              msg = '\u270B Hand-picked pests: -20 pest population (free but labor-intensive)';
+            } else if (action === 'rowcovers') {
+              // Reduce future pest growth for 10 days
+              newPest *= 0.6;
+              msg = '\uD83E\uDDF5 Row covers installed: -40% current pests, blocks new entry';
+            }
+            var newGrid = cgGrid.map(function(c) {
+              if (!c.plantId) return c;
+              var reduction = action === 'ladybugs' ? 15 : action === 'neem' ? 10 : action === 'handpick' ? 8 : 5;
+              return Object.assign({}, c, { pests: Math.max(0, c.pests - reduction) });
+            });
+            cgUpd({
+              grid: newGrid,
+              pestPop: Math.round(newPest * 10) / 10,
+              beneficialPop: Math.round(newBen * 10) / 10,
+              budget: Math.round((cgBudget - cost) * 100) / 100,
+              expenses: cgExpenses + cost
+            });
+            if (addToast) addToast(msg, 'success');
+            if (awardStemXP) awardStemXP('companion_garden_ipm', 5, 'Pest management action');
+          }
+
+          // ── AI Garden Advisor (Gemini) ──
+          function cgAskAdvisor() {
+            if (!callGemini) { if (addToast) addToast('AI advisor requires Gemini API', 'info'); return; }
+            if (cgAdvisorCooldown > 0) { if (addToast) addToast('Advisor available in ' + cgAdvisorCooldown + ' more days', 'info'); return; }
+            cgUpd({ advisorCooldown: 30, advisorResponse: 'Thinking...' });
+            var planted = cgGrid.filter(function(c) { return c.plantId; }).map(function(c) {
+              var p = CG_PLANTS[c.plantId];
+              return c.plantId + ' (health:' + Math.round(c.health) + '%, growth:' + Math.round(c.growthDay) + '/' + (p ? p.days : '?') + ', pests:' + Math.round(c.pests) + ')';
+            }).join(', ');
+            var seasonNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
+            var prompt = 'You are a friendly, knowledgeable garden advisor for a K-12 student\'s companion planting simulator.\n\n' +
+              'GARDEN STATUS:\n' +
+              '- Season: ' + seasonNames[cgSeason] + ', Day ' + cgDay + ', Year ' + cgYear + '\n' +
+              '- Soil: N=' + Math.round(cgNitrogen) + '/100, P=' + Math.round(cgPhosphorus) + '/100, K=' + Math.round(cgPotassium) + '/100, pH=' + cgPH + ', OM=' + cgOrganicMatter + '%\n' +
+              '- Moisture: ' + Math.round(cgMoisture) + '/100\n' +
+              '- Pest pressure: ' + Math.round(cgPestPop) + ' pests, ' + Math.round(cgBeneficialPop) + ' beneficials\n' +
+              '- Budget: $' + cgBudget.toFixed(2) + ' (spent $' + cgExpenses.toFixed(2) + ', earned $' + cgRevenue.toFixed(2) + ')\n' +
+              '- Plants: ' + (planted || 'none planted yet') + '\n\n' +
+              'Give 3 SHORT, specific, actionable tips (2 sentences each max). Focus on the most urgent issue. Use simple language for students. Include one fun science fact.';
+            callGemini(prompt, true).then(function(result) {
+              var text = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+              cgUpd({ advisorResponse: text.substring(0, 600) });
+              if (addToast) addToast('\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor has tips!', 'success');
+            }).catch(function() {
+              cgUpd({ advisorResponse: 'The advisor is thinking... try again later. In the meantime: check your soil nutrients (NPK), water regularly, and plant companions together!' });
+            });
+          }
+
+          // ── CG: dismiss event ──
+          // ── SEL Reflection Prompts ──
+          // Connect garden mechanics to social-emotional learning
+          var CG_SEL_REFLECTIONS = {
+            first_harvest: {
+              emoji: '🌾', title: __alloT('stem.companionplanting.patience_pays_off', 'Patience Pays Off'),
+              prompt: __alloT('stem.companionplanting.your_first_harvest_took_many_days_of_c', 'Your first harvest took many days of care. Think about a goal in your life that takes patience. What helps you keep going when progress feels slow?'),
+              competency: 'Self-Management', connection: 'Plants teach us that growth is invisible most of the time. The roots grow before the fruit.'
+            },
+            pest_event: {
+              emoji: '🐛', title: __alloT('stem.companionplanting.dealing_with_setbacks', 'Dealing with Setbacks'),
+              prompt: __alloT('stem.companionplanting.pests_damaged_your_garden_how_did_you_', 'Pests damaged your garden. How did you respond? When something goes wrong in your life, do you react quickly or take time to think about the best response?'),
+              competency: 'Self-Awareness', connection: 'In gardens and in life, the first reaction isn\'t always the best one. Observation before action leads to better outcomes.'
+            },
+            companion_discovery: {
+              emoji: '🤝', title: __alloT('stem.companionplanting.better_together', 'Better Together'),
+              prompt: __alloT('stem.companionplanting.you_discovered_that_some_plants_help_e', 'You discovered that some plants help each other grow. Who in your life helps you grow? How do you help them?'),
+              competency: 'Relationship Skills', connection: 'Companion planting works because different strengths complement each other. No plant — and no person — thrives alone.'
+            },
+            rotation_lesson: {
+              emoji: '🔄', title: __alloT('stem.companionplanting.learning_from_the_past', 'Learning from the Past'),
+              prompt: __alloT('stem.companionplanting.planting_the_same_thing_in_the_same_pl', 'Planting the same thing in the same place causes problems. Can you think of a time when doing the same thing over and over stopped working? What did you change?'),
+              competency: 'Responsible Decision-Making', connection: 'Crop rotation teaches us that what worked before might not work now. Adapting to change is a strength, not a failure.'
+            },
+            biodiversity_win: {
+              emoji: '🌍', title: __alloT('stem.companionplanting.strength_in_diversity', 'Strength in Diversity'),
+              prompt: __alloT('stem.companionplanting.your_diverse_garden_attracted_more_hel', 'Your diverse garden attracted more helpful insects and resisted pests better. How does diversity make communities stronger? What happens when everyone thinks and acts the same way?'),
+              competency: 'Social Awareness', connection: 'Ecosystems and communities are both stronger when they include many different kinds. Monocultures — in gardens and in groups — are fragile.'
+            },
+            invasive_managed: {
+              emoji: '⚔️', title: __alloT('stem.companionplanting.protecting_what_matters', 'Protecting What Matters'),
+              prompt: __alloT('stem.companionplanting.you_managed_an_invasive_species_that_t', 'You managed an invasive species that threatened your garden. Is there ever a time in your life when you had to stand up to protect something you cared about?'),
+              competency: 'Responsible Decision-Making', connection: 'Standing up for your garden — or your values — takes courage and persistence. Not every problem has a quick fix.'
+            }
+          };
+          var cgJournal = cg.journal || []; // Array of { id, ts, response }
+          var cgActiveReflection = cg.activeReflection || null;
+          var cgReflectionResponse = cg.reflectionResponse || '';
+          var cgSeenReflections = cg.seenReflections || {};
+
+          function cgTriggerReflection(id) {
+            if (cgSeenReflections[id]) return; // only show each once
+            var ref = CG_SEL_REFLECTIONS[id];
+            if (!ref) return;
+            cgUpd({ activeReflection: id, reflectionResponse: '' });
+          }
+
+          function cgSubmitReflection() {
+            if (!cgActiveReflection || !cgReflectionResponse.trim()) return;
+            var newJournal = (cgJournal || []).concat([{
+              id: cgActiveReflection,
+              ts: new Date().toISOString(),
+              response: cgReflectionResponse.trim()
+            }]);
+            var newSeen = Object.assign({}, cgSeenReflections);
+            newSeen[cgActiveReflection] = true;
+            cgUpd({ journal: newJournal, activeReflection: null, reflectionResponse: '', seenReflections: newSeen });
+            if (addToast) addToast('📝 Reflection saved to your Garden Journal!', 'success');
+            if (awardStemXP) awardStemXP('companion_garden_reflect', 15, 'Saved garden reflection'); // XP for reflecting
+          }
+
+          function cgDismissEvent() {
+            var managed = cgAchievements.indexOf('defender') === -1 && cgActiveEvent ? 1 : 0;
+            cgUpd({ activeEvent: null });
+            if (managed && awardStemXP) awardStemXP('companion_garden_event', 10, 'Managed garden event');
+            // Trigger SEL reflection for invasive events
+            if (cgActiveEvent && !cgActiveEvent.isGood) {
+              if (managed) cgTriggerReflection('invasive_managed');
+              else cgTriggerReflection('pest_event');
+            }
+          }
+
+          // ── CG: harvest ready crops ──
+          function cgHarvest() {
+            var points = 0;
+            var harvested = 0;
+            var harvestRevenue = 0;
+            var newGrid = cgGrid.map(function(cell) {
+              if (!cell.plantId) return cell;
+              var plant = CG_PLANTS[cell.plantId];
+              if (!plant) return cell;
+              if (cell.growthDay >= plant.days && cell.health > 20) {
+                var bonus = getCellBonus(cgGrid, cgGrid.indexOf(cell));
+                var yieldMult = 1 + Math.max(0, bonus.total) / 100;
+                // Perennial maturity bonus: yield increases with years
+                if (plant.perennial && plant.yearsToMature && cgYear < plant.yearsToMature) {
+                  yieldMult *= 0.3; // immature perennial — reduced yield
+                } else if (plant.perennial && cgYear >= (plant.yearsToMature || 1)) {
+                  yieldMult *= 1 + Math.min(1, (cgYear - plant.yearsToMature) * 0.2); // mature perennials yield more each year
+                }
+                // Pollination check
+                if (plant.needsPoll) {
+                  var hasBeeHotel = cgGrid.some(function(c2) { return c2.plantId === 'bee_hotel'; });
+                  var hasNearbyPollinator = hasBeeHotel;
+                  if (!hasNearbyPollinator) {
+                    var cellIdx = cgGrid.indexOf(cell);
+                    var cols = 4; var crow = Math.floor(cellIdx / cols); var ccol = cellIdx % cols;
+                    for (var pr = Math.max(0, crow - 2); pr <= Math.min(3, crow + 2) && !hasNearbyPollinator; pr++) {
+                      for (var pc = Math.max(0, ccol - 2); pc <= Math.min(3, ccol + 2); pc++) {
+                        var np = cgGrid[pr * cols + pc];
+                        if (np && np.plantId && CG_PLANTS[np.plantId] && CG_PLANTS[np.plantId].pollinator && np.plantId !== 'bee_hotel') { hasNearbyPollinator = true; break; }
+                      }
+                    }
+                  }
+                  if (!hasNearbyPollinator) yieldMult *= 0.5;
+                }
+                var healthMult = cell.health / 100;
+                var cropPoints = Math.round(plant.harvest * yieldMult * healthMult);
+                points += cropPoints;
+                // Economics: calculate revenue from market price
+                var price = MARKET_PRICES[cell.plantId] || 1.50;
+                harvestRevenue += Math.round(price * yieldMult * healthMult * 100) / 100;
+                harvested++;
+                // Perennials don't get removed — they reset growth for next cycle
+                if (plant.perennial) {
+                  return Object.assign({}, cell, { growthDay: 0, watered: false });
+                }
+                return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 };
+              }
+              return cell;
+            });
+            if (harvested > 0) {
+              // Record cell history for crop rotation tracking
+              var newHistory = Object.assign({}, cgCellHistory);
+              cgGrid.forEach(function(cell, idx) {
+                if (cell.plantId && cell.growthDay >= (CG_PLANTS[cell.plantId] || {}).days) {
+                  var h2 = (newHistory[idx] || []).slice();
+                  h2.push(cell.plantId);
+                  if (h2.length > 4) h2 = h2.slice(-4); // keep last 4 seasons
+                  newHistory[idx] = h2;
+                }
+              });
+              cgUpd({
+                grid: newGrid,
+                score: cgScore + points,
+                totalHarvested: cgTotalHarvested + harvested,
+                cellHistory: newHistory,
+                budget: Math.round((cgBudget + harvestRevenue) * 100) / 100,
+                revenue: cgRevenue + harvestRevenue,
+                lastFeedback: { icon: '\uD83C\uDF3E', title: 'Harvest complete', detail: harvested + ' crop' + (harvested !== 1 ? 's' : '') + ' earned ' + points + ' points and ' + harvestRevenue.toFixed(2) + ' dollars.', tone: 'celebrate' }
+              });
+              cgLogActivity('\uD83C\uDF3E', 'Harvested ' + harvested + ' crop' + (harvested !== 1 ? 's' : ''), points + ' points and ' + harvestRevenue.toFixed(2) + ' dollars earned.');
+              if (addToast) addToast('\uD83C\uDF3E Harvested ' + harvested + ' crop' + (harvested !== 1 ? 's' : '') + ' for ' + points + ' pts + $' + harvestRevenue.toFixed(2) + ' revenue!', 'success');
+              // SEL: first harvest reflection
+              if (cgTotalHarvested === 0) setTimeout(function() { cgTriggerReflection('first_harvest'); }, 1000);
+              // SEL: biodiversity check
+              var harvestFams = {}; cgGrid.forEach(function(c2) { if (c2.plantId) { var p2 = CG_PLANTS[c2.plantId]; if (p2) harvestFams[p2.family] = true; } });
+              if (Object.keys(harvestFams).length >= 5) setTimeout(function() { cgTriggerReflection('biodiversity_win'); }, 1500);
+              if (awardStemXP) awardStemXP('companion_garden_harvest', harvested * 8, 'Harvested ' + harvested + ' crops');
+            }
+          }
+
+          // ── CG: start growing ──
+          function cgStartGrowing() {
+            var hasPlants = cgGrid.some(function(c) { return c.plantId; });
+            if (!hasPlants) { if (addToast) addToast('Plant something first!', 'info'); return; }
+            cgUpd({ phase: 'grow', lastFeedback: { icon: '\u25B6\uFE0F', title: 'Growing season started', detail: 'Advance days, watch moisture and pests, then harvest mature crops.', tone: 'success' } });
+            if (awardStemXP) awardStemXP('companion_garden_grow', 10, 'Started growing season');
+          }
+
+          // ── CG: compute stats for achievements ──
+          function cgRecordVisitor(visitor) {
+            if (cgObservedVisitors.indexOf(visitor.id) !== -1) return;
+            var nextObserved = cgObservedVisitors.concat([visitor.id]);
+            cgUpd({ observedVisitors: nextObserved, lastFeedback: { icon: visitor.icon, title: visitor.name + ' added to field notes', detail: visitor.evidence + ' Observation ' + nextObserved.length + ' of 5 recorded.', tone: 'celebrate' } });
+            cgLogActivity(visitor.icon, 'Observed ' + visitor.name, visitor.evidence);
+            if (awardStemXP) awardStemXP('companion_visitor_' + visitor.id, 8, 'Recorded ' + visitor.name);
+            if (addToast) addToast(visitor.icon + ' Wildlife observation recorded! +8 XP', 'success');
+          }
+
+          function cgApplyStarterPlan(plan) {
+            var ids = plan.plants.slice(0, 16);
+            while (ids.length < 16) ids.push(null);
+            var planCost = ids.reduce(function(sum, id) { var plant = id && CG_PLANTS[id]; return sum + (plant ? (plant.cost ? plant.cost * 0.10 : 0.50) : 0); }, 0);
+            planCost = Math.round(planCost * 100) / 100;
+            if (cgBudget < planCost) {
+              cgUpd({ lastFeedback: { icon: '\uD83D\uDCB0', title: 'Plan needs more funds', detail: plan.title + ' costs ' + planCost.toFixed(2) + ' dollars. Your budget is ' + cgBudget.toFixed(2) + '.', tone: 'warning' } });
+              if (addToast) addToast('Not enough budget for this starter plan.', 'info');
+              return;
+            }
+            var starterGrid = ids.map(function(id) { return { plantId: id, growthDay: 0, health: 100, watered: false, pests: 0 }; });
+            cgUpd({ grid: starterGrid, budget: Math.round((cgBudget - planCost) * 100) / 100, expenses: cgExpenses + planCost, selectedPlant: null, lastFeedback: { icon: plan.icon, title: plan.title + ' planted', detail: plan.feedback + ' Cost: ' + planCost.toFixed(2) + ' dollars.', tone: 'success' } });
+            cgLogActivity(plan.icon, 'Started ' + plan.title, plan.feedback);
+            if (awardStemXP) awardStemXP('companion_garden_starter', 10, 'Used starter garden plan');
+            if (addToast) addToast(plan.icon + ' ' + plan.title + ' is ready to grow!', 'success');
+          }
+
+          function cgComputeStats() {
+            var uniqueSpecies = {};
+            var pollinatorPlants = 0;
+            var activeBonuses = 0;
+            var hasSisters = false;
+            var pollinatorList = ['marigold', 'sunflower', 'lavender', 'dill', 'nasturtium', 'clover'];
+            cgGrid.forEach(function(cell, idx) {
+              if (!cell.plantId) return;
+              uniqueSpecies[cell.plantId] = true;
+              if (pollinatorList.indexOf(cell.plantId) !== -1) pollinatorPlants++;
+              var bonus = getCellBonus(cgGrid, idx);
+              activeBonuses += bonus.pairs.filter(function(p) { return p.bonus > 0; }).length;
+            });
+            // Check Three Sisters
+            var planted = Object.keys(uniqueSpecies);
+            if (planted.indexOf('corn') !== -1 && planted.indexOf('beans') !== -1 && planted.indexOf('squash') !== -1) {
+              // Check adjacency
+              cgGrid.forEach(function(cell, idx) {
+                if (cell.plantId !== 'corn') return;
+                var bonus = getCellBonus(cgGrid, idx);
+                var neighborPlants = [];
+                var cols = 4;
+                var row = Math.floor(idx / cols); var col = idx % cols;
+                [[row-1,col],[row+1,col],[row,col-1],[row,col+1]].forEach(function(rc) {
+                  if (rc[0] >= 0 && rc[0] < 4 && rc[1] >= 0 && rc[1] < 4) {
+                    var ni = rc[0] * cols + rc[1];
+                    if (cgGrid[ni] && cgGrid[ni].plantId) neighborPlants.push(cgGrid[ni].plantId);
+                  }
+                });
+                if (neighborPlants.indexOf('beans') !== -1 && neighborPlants.indexOf('squash') !== -1) hasSisters = true;
+              });
+            }
+            return {
+              uniqueSpecies: Object.keys(uniqueSpecies).length,
+              pollinatorPlants: pollinatorPlants,
+              activeBonuses: activeBonuses / 2, // each pair counted twice
+              hasSisters: hasSisters,
+              totalHarvested: cgTotalHarvested,
+              seasonPoints: cgScore,
+              noDeaths: cgGrid.every(function(c) { return !c.plantId || c.health > 0; }),
+              nitrogenDays: cg.nitrogenDays || 0,
+              invasivesManaged: cg.invasivesManaged || 0,
+              seasonsRotated: (cgSeasonHistory || []).length,
+              regenCount: cgGrid.filter(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].regen; }).length,
+              nitrogenFromLegumes: cgNitrogen >= 50 && cgGrid.some(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].nEffect > 0; })
+            };
+          }
+
+
+          // ═══════════════════════════════════════
+          // COMMUNITY GARDEN UI — render function
+          // ═══════════════════════════════════════
+          // ═══════════════════════════════════════════════════════
+          // MICROSCOPE MODE — zoom into the invisible science
+          // Makes molecular chemistry, cell biology, and fungal
+          // networks visible to students
+          // ═══════════════════════════════════════════════════════
+          var cgMicroscopeCell = cg.microscopeCell; // index of cell being examined, or null
+          var cgMicroscopeLayer = cg.microscopeLayer || 'roots'; // 'roots' | 'chemistry' | 'cells' | 'fungi'
+
+          function renderMicroscope() {
+            var h = React.createElement;
+            var idx = cgMicroscopeCell;
+            var cell = cgGrid[idx];
+            if (!cell || !cell.plantId) return null;
+            var plant = CG_PLANTS[cell.plantId];
+            if (!plant) return null;
+            var bonus = getCellBonus(cgGrid, idx);
+            var growthPct = Math.min(100, Math.round((cell.growthDay / plant.days) * 100));
+            var isLegume = plant.nEffect > 0;
+            var isRegen = plant.regen;
+            var neighbors = [];
+            var cols = 4; var row = Math.floor(idx / cols); var col = idx % cols;
+            [[row-1,col],[row+1,col],[row,col-1],[row,col+1],[row-1,col-1],[row-1,col+1],[row+1,col-1],[row+1,col+1]].forEach(function(rc) {
+              if (rc[0] >= 0 && rc[0] < 4 && rc[1] >= 0 && rc[1] < 4) {
+                var nc = cgGrid[rc[0] * cols + rc[1]];
+                if (nc && nc.plantId) neighbors.push(CG_PLANTS[nc.plantId]);
+              }
+            });
+            var hasNeighborLegume = neighbors.some(function(n) { return n && n.nEffect > 0; });
+            var hasNeighborPollinator = neighbors.some(function(n) { return n && n.pollinator; });
+
+            var layers = [
+              { id: 'roots', emoji: '🌱', label: __alloT('stem.companionplanting.root_system', 'Root System') },
+              { id: 'chemistry', emoji: '⚗️', label: __alloT('stem.companionplanting.soil_chemistry', 'Soil Chemistry') },
+              { id: 'cells', emoji: '🔬', label: __alloT('stem.companionplanting.cell_biology', 'Cell Biology') },
+              { id: 'fungi', emoji: '🍄', label: __alloT('stem.companionplanting.fungal_network', 'Fungal Network') }
+            ];
+
+            return h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-indigo-400 p-4 space-y-3 text-white' },
+              // Header
+              h('div', { className: 'flex items-center justify-between' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { className: 'text-2xl' }, '🔬'),
+                  h('div', null,
+                    h('div', { className: 'font-bold text-sm' }, 'Microscope: ' + plant.emoji + ' ' + plant.label),
+                    h('div', { className: 'text-[11px] text-indigo-300' }, __alloT('stem.companionplanting.zoom_into_the_invisible_world_beneath_', 'Zoom into the invisible world beneath the garden')))),
+                h('button', { onClick: function() { cgUpd({ microscopeCell: null }); }, className: 'transition-colors px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold' }, __alloT('stem.companionplanting.back_to_garden', '← Back to Garden'))),
+
+              // Layer tabs — ARIA tablist with keyboard navigation
+              h('div', { className: 'flex gap-1', role: 'tablist', 'aria-label': __alloT('stem.companionplanting.microscope_science_layers', 'Microscope science layers') },
+                layers.map(function(layer, li) {
+                  var active = cgMicroscopeLayer === layer.id;
+                  return h('button', { key: layer.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
+                    'aria-label': layer.label + ' microscope layer',
+                    onClick: function() { cgUpd({ microscopeLayer: layer.id }); },
+                    onKeyDown: function(ev) {
+                      if (ev.key === 'ArrowRight') { ev.preventDefault(); cgUpd({ microscopeLayer: layers[(li + 1) % layers.length].id }); }
+                      else if (ev.key === 'ArrowLeft') { ev.preventDefault(); cgUpd({ microscopeLayer: layers[(li - 1 + layers.length) % layers.length].id }); }
+                    },
+                    className: 'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                  }, h('span', { 'aria-hidden': 'true' }, layer.emoji), layer.label);
+                })),
+
+              // ── Microscope Canvas: animated biological visualization ──
+              h('canvas', {
+                'aria-label': 'Microscope visualization of ' + plant.label + ' — ' + cgMicroscopeLayer + ' layer',
+                style: { width: '100%', height: '180px', borderRadius: '10px', display: 'block', border: '1px solid rgba(99,102,241,0.3)' },
+                ref: function(mcvEl) {
+                  if (!mcvEl) return;
+                  var mx = mcvEl.getContext('2d');
+                  var MW = mcvEl.width = mcvEl.offsetWidth * 2; var MH = mcvEl.height = 360;
+                  if (mcvEl._microAnim) cancelAnimationFrame(mcvEl._microAnim);
+                  var mStart = performance.now();
+                  var activeLayer = cgMicroscopeLayer;
+                  var isLeg = isLegume;
+                  var mHealth = cell.health;
+                  var mMoist = cgMoisture;
+                  function drawMicro() {
+                    mcvEl._microAnim = requestAnimationFrame(drawMicro);
+                    var mt = (performance.now() - mStart) / 1000;
+                    mx.clearRect(0, 0, MW, MH);
+
+                    if (activeLayer === 'roots') {
+                      // Underground soil cross-section with root system
+                      var soilG = mx.createLinearGradient(0, 0, 0, MH);
+                      soilG.addColorStop(0, '#5a4030'); soilG.addColorStop(0.3, '#4a3525'); soilG.addColorStop(1, '#3a2a1a');
+                      mx.fillStyle = soilG; mx.fillRect(0, 0, MW, MH);
+                      // Soil particles (sand, clay, organic)
+                      mx.fillStyle = 'rgba(180,150,100,0.15)';
+                      for (var sp = 0; sp < 60; sp++) {
+                        mx.beginPath(); mx.arc((sp * 71 + 13) % MW, (sp * 43 + 17) % MH, 2 + (sp % 4), 0, Math.PI * 2); mx.fill();
+                      }
+                      // Main taproot / fibrous roots
+                      mx.strokeStyle = '#8aaa60'; mx.lineWidth = 3;
+                      mx.beginPath(); mx.moveTo(MW / 2, 0); mx.quadraticCurveTo(MW / 2 + Math.sin(mt * 0.5) * 5, MH * 0.5, MW / 2, MH * 0.85); mx.stroke();
+                      // Lateral roots
+                      for (var lr = 0; lr < 8; lr++) {
+                        var ry = MH * (0.15 + lr * 0.08);
+                        var side = lr % 2 === 0 ? 1 : -1;
+                        var rootLen = 30 + lr * 12 + Math.sin(mt * 0.8 + lr) * 5;
+                        mx.strokeStyle = 'rgba(138,170,96,' + (0.6 - lr * 0.05) + ')'; mx.lineWidth = 2 - lr * 0.15;
+                        mx.beginPath(); mx.moveTo(MW / 2, ry);
+                        mx.quadraticCurveTo(MW / 2 + side * rootLen * 0.6, ry + 5, MW / 2 + side * rootLen, ry + 10 + Math.sin(mt + lr) * 3);
+                        mx.stroke();
+                        // Root hairs
+                        for (var rh = 0; rh < 4; rh++) {
+                          var rhx = MW / 2 + side * rootLen * (0.3 + rh * 0.2);
+                          mx.strokeStyle = 'rgba(138,170,96,0.3)'; mx.lineWidth = 0.5;
+                          mx.beginPath(); mx.moveTo(rhx, ry + rh * 2);
+                          mx.lineTo(rhx + side * (5 + Math.sin(mt * 2 + rh + lr) * 3), ry + rh * 2 + 4); mx.stroke();
+                        }
+                      }
+                      // Rhizobium nodules (if legume)
+                      if (isLeg) {
+                        mx.fillStyle = '#cc6666';
+                        for (var nd = 0; nd < 5; nd++) {
+                          var nx = MW / 2 + (nd % 2 === 0 ? -1 : 1) * (15 + nd * 8);
+                          var ny = MH * (0.25 + nd * 0.1);
+                          var nr = 4 + Math.sin(mt * 2 + nd) * 1;
+                          mx.beginPath(); mx.arc(nx, ny, nr, 0, Math.PI * 2); mx.fill();
+                          // Pulsing glow
+                          mx.fillStyle = 'rgba(200,100,100,' + (0.15 + Math.sin(mt * 3 + nd) * 0.1) + ')';
+                          mx.beginPath(); mx.arc(nx, ny, nr * 2, 0, Math.PI * 2); mx.fill();
+                          mx.fillStyle = '#cc6666';
+                        }
+                        // N2 symbols floating up
+                        mx.fillStyle = '#88ccff'; mx.font = 'bold 10px monospace';
+                        for (var n2 = 0; n2 < 3; n2++) {
+                          var n2y = MH * 0.3 - (mt * 15 + n2 * 40) % (MH * 0.3);
+                          mx.globalAlpha = 0.4 + Math.sin(mt + n2) * 0.2;
+                          mx.fillText('N\u2082', MW / 2 - 30 + n2 * 30 + Math.sin(mt + n2) * 10, n2y);
+                        }
+                        mx.globalAlpha = 1;
+                      }
+                      // Water droplets moving through soil
+                      mx.fillStyle = 'rgba(100,180,255,0.4)';
+                      for (var wd = 0; wd < 6; wd++) {
+                        var wdx = (wd * 67 + mt * 20) % MW;
+                        var wdy = (wd * 41 + mt * 30) % MH;
+                        mx.beginPath(); mx.arc(wdx, wdy, 2, 0, Math.PI * 2); mx.fill();
+                      }
+
+                    } else if (activeLayer === 'cells') {
+                      // Plant cell cross-section
+                      mx.fillStyle = '#0a2010'; mx.fillRect(0, 0, MW, MH);
+                      // Cell wall (rectangular)
+                      var cMargin = 30;
+                      mx.strokeStyle = '#6aaa40'; mx.lineWidth = 6;
+                      mx.strokeRect(cMargin, cMargin, MW - cMargin * 2, MH - cMargin * 2);
+                      // Cell membrane (just inside wall)
+                      mx.strokeStyle = 'rgba(100,180,100,0.5)'; mx.lineWidth = 2;
+                      mx.strokeRect(cMargin + 8, cMargin + 8, MW - cMargin * 2 - 16, MH - cMargin * 2 - 16);
+                      // Large central vacuole
+                      var vacX = MW * 0.5; var vacY = MH * 0.5;
+                      mx.fillStyle = 'rgba(80,160,220,0.15)';
+                      mx.beginPath(); mx.ellipse(vacX, vacY, MW * 0.28, MH * 0.28, 0, 0, Math.PI * 2); mx.fill();
+                      mx.strokeStyle = 'rgba(80,160,220,0.3)'; mx.lineWidth = 1;
+                      mx.beginPath(); mx.ellipse(vacX, vacY, MW * 0.28, MH * 0.28, 0, 0, Math.PI * 2); mx.stroke();
+                      mx.fillStyle = 'rgba(100,180,240,0.08)'; mx.font = '10px system-ui'; mx.textAlign = 'center';
+                      mx.fillText('Central Vacuole', vacX, vacY + 4);
+                      // Nucleus
+                      var nucX = MW * 0.3; var nucY = MH * 0.35;
+                      mx.fillStyle = 'rgba(150,100,180,0.4)'; mx.beginPath(); mx.arc(nucX, nucY, 22, 0, Math.PI * 2); mx.fill();
+                      mx.strokeStyle = 'rgba(180,120,200,0.6)'; mx.lineWidth = 2; mx.beginPath(); mx.arc(nucX, nucY, 22, 0, Math.PI * 2); mx.stroke();
+                      // Nucleolus
+                      mx.fillStyle = 'rgba(200,150,220,0.6)'; mx.beginPath(); mx.arc(nucX + 3, nucY - 2, 7, 0, Math.PI * 2); mx.fill();
+                      // Label
+                      mx.fillStyle = '#c0a0e0'; mx.font = 'bold 9px system-ui'; mx.fillText('Nucleus', nucX, nucY + 32);
+                      // Chloroplasts (green ovals, scattered)
+                      for (var ch = 0; ch < 12; ch++) {
+                        var chx = cMargin + 50 + (ch * 43) % (MW - cMargin * 2 - 80);
+                        var chy = cMargin + 50 + (ch * 29) % (MH - cMargin * 2 - 80);
+                        // Avoid overlapping nucleus and vacuole
+                        var distNuc = Math.sqrt((chx - nucX) * (chx - nucX) + (chy - nucY) * (chy - nucY));
+                        var distVac = Math.sqrt((chx - vacX) * (chx - vacX) + (chy - vacY) * (chy - vacY));
+                        if (distNuc < 35 || distVac < MW * 0.25) continue;
+                        mx.fillStyle = 'rgba(50,160,50,' + (0.5 + Math.sin(mt * 2 + ch) * 0.15) + ')';
+                        mx.beginPath(); mx.ellipse(chx, chy, 8, 4, ch * 0.5 + Math.sin(mt * 0.5 + ch) * 0.2, 0, Math.PI * 2); mx.fill();
+                        // Thylakoid stacks (internal lines)
+                        mx.strokeStyle = 'rgba(30,120,30,0.4)'; mx.lineWidth = 0.5;
+                        for (var th = -2; th <= 2; th++) {
+                          mx.beginPath(); mx.moveTo(chx - 5, chy + th * 1.5); mx.lineTo(chx + 5, chy + th * 1.5); mx.stroke();
+                        }
+                      }
+                      mx.fillStyle = '#60cc60'; mx.font = 'bold 8px system-ui'; mx.textAlign = 'left';
+                      mx.fillText('Chloroplasts', cMargin + 12, MH - cMargin - 8);
+                      // Mitochondria (orange ovals)
+                      for (var mi = 0; mi < 6; mi++) {
+                        var mix = MW * 0.6 + (mi * 37) % (MW * 0.3);
+                        var miy = MH * 0.55 + (mi * 23) % (MH * 0.3);
+                        mx.fillStyle = 'rgba(220,130,50,' + (0.4 + Math.sin(mt * 1.5 + mi) * 0.1) + ')';
+                        mx.beginPath(); mx.ellipse(mix, miy, 6, 3, mi * 0.8, 0, Math.PI * 2); mx.fill();
+                        // Cristae folds
+                        mx.strokeStyle = 'rgba(180,100,30,0.3)'; mx.lineWidth = 0.5;
+                        mx.beginPath(); mx.moveTo(mix - 3, miy); mx.quadraticCurveTo(mix, miy - 2, mix + 3, miy); mx.stroke();
+                      }
+                      mx.fillStyle = '#e0a050'; mx.font = 'bold 8px system-ui'; mx.textAlign = 'right';
+                      mx.fillText('Mitochondria', MW - cMargin - 12, MH - cMargin - 8);
+                      // ER (endoplasmic reticulum) — wavy lines near nucleus
+                      mx.strokeStyle = 'rgba(180,180,100,0.25)'; mx.lineWidth = 1;
+                      for (var er = 0; er < 5; er++) {
+                        mx.beginPath();
+                        for (var ex = 0; ex < 8; ex++) {
+                          var erx = nucX + 30 + ex * 12; var ery = nucY - 20 + er * 10 + Math.sin(mt * 1.5 + ex + er) * 3;
+                          if (ex === 0) mx.moveTo(erx, ery); else mx.lineTo(erx, ery);
+                        }
+                        mx.stroke();
+                      }
+                      // Lens vignette
+                      mx.globalAlpha = 0.3;
+                      var vg2 = mx.createRadialGradient(MW / 2, MH / 2, MH * 0.35, MW / 2, MH / 2, MH * 0.55);
+                      vg2.addColorStop(0, 'transparent'); vg2.addColorStop(1, '#000');
+                      mx.fillStyle = vg2; mx.fillRect(0, 0, MW, MH);
+                      mx.globalAlpha = 1;
+
+                    } else if (activeLayer === 'chemistry') {
+                      // Soil cross-section with NPK particles
+                      mx.fillStyle = '#1a1a2e'; mx.fillRect(0, 0, MW, MH);
+                      // NPK molecules floating
+                      var molecules = [
+                        { label: 'NO\u2083\u207B', color: '#4ade80', count: Math.round(cgNitrogen / 10) },
+                        { label: 'PO\u2084\u00B3\u207B', color: '#60a5fa', count: Math.round(cgPhosphorus / 12) },
+                        { label: 'K\u207A', color: '#a78bfa', count: Math.round(cgPotassium / 12) }
+                      ];
+                      molecules.forEach(function(mol, mi2) {
+                        mx.fillStyle = mol.color; mx.font = 'bold 10px monospace';
+                        for (var mc = 0; mc < mol.count; mc++) {
+                          var mcx = (mc * 67 + mi2 * 90 + Math.sin(mt * 0.5 + mc + mi2) * 20) % (MW - 40) + 20;
+                          var mcy = (mc * 43 + mi2 * 60 + Math.cos(mt * 0.3 + mc) * 15) % (MH - 40) + 20;
+                          mx.globalAlpha = 0.4 + Math.sin(mt * 2 + mc + mi2) * 0.2;
+                          mx.fillText(mol.label, mcx, mcy);
+                        }
+                      });
+                      mx.globalAlpha = 1;
+                      // pH indicator bar
+                      mx.fillStyle = 'rgba(0,0,0,0.5)'; mx.fillRect(MW * 0.1, MH - 40, MW * 0.8, 20);
+                      var phGrad = mx.createLinearGradient(MW * 0.1, 0, MW * 0.9, 0);
+                      phGrad.addColorStop(0, '#ef4444'); phGrad.addColorStop(0.35, '#fbbf24'); phGrad.addColorStop(0.5, '#22c55e'); phGrad.addColorStop(0.65, '#3b82f6'); phGrad.addColorStop(1, '#8b5cf6');
+                      mx.fillStyle = phGrad; mx.fillRect(MW * 0.1 + 2, MH - 38, MW * 0.8 - 4, 16);
+                      // pH marker
+                      var phPos = MW * 0.1 + ((cgPH - 4) / 4.5) * MW * 0.8;
+                      mx.fillStyle = '#fff'; mx.beginPath();
+                      mx.moveTo(phPos, MH - 42); mx.lineTo(phPos - 5, MH - 50); mx.lineTo(phPos + 5, MH - 50); mx.fill();
+                      mx.font = 'bold 9px system-ui'; mx.textAlign = 'center'; mx.fillText('pH ' + cgPH, phPos, MH - 54);
+                      // Labels
+                      mx.fillStyle = '#999'; mx.font = '8px system-ui'; mx.textAlign = 'left'; mx.fillText('Acidic (4)', MW * 0.1, MH - 10);
+                      mx.textAlign = 'right'; mx.fillText('Alkaline (8.5)', MW * 0.9, MH - 10);
+
+                    } else if (activeLayer === 'fungi') {
+                      // Underground network visualization
+                      mx.fillStyle = '#1a0a20'; mx.fillRect(0, 0, MW, MH);
+                      // Mycelial network (branching lines)
+                      mx.strokeStyle = 'rgba(180,140,220,0.3)'; mx.lineWidth = 1;
+                      var nodes = [];
+                      for (var fn = 0; fn < 15; fn++) {
+                        nodes.push({ x: (fn * 71 + 30) % (MW - 60) + 30, y: (fn * 47 + 20) % (MH - 40) + 20 });
+                      }
+                      // Draw connections
+                      nodes.forEach(function(n1, i1) {
+                        nodes.forEach(function(n2, i2) {
+                          if (i2 <= i1) return;
+                          var d2 = Math.sqrt((n1.x - n2.x) * (n1.x - n2.x) + (n1.y - n2.y) * (n1.y - n2.y));
+                          if (d2 > 130) return;
+                          var pulse = 0.15 + Math.sin(mt * 1.5 + i1 + i2) * 0.1;
+                          mx.strokeStyle = 'rgba(180,140,220,' + pulse + ')'; mx.lineWidth = 0.8;
+                          mx.beginPath(); mx.moveTo(n1.x, n1.y);
+                          mx.quadraticCurveTo((n1.x + n2.x) / 2 + Math.sin(mt + i1) * 10, (n1.y + n2.y) / 2 + Math.cos(mt + i2) * 8, n2.x, n2.y);
+                          mx.stroke();
+                        });
+                      });
+                      // Nodes (root connection points)
+                      nodes.forEach(function(n, ni) {
+                        var nPulse = 0.5 + Math.sin(mt * 2 + ni * 1.5) * 0.3;
+                        mx.fillStyle = 'rgba(180,140,220,' + nPulse + ')';
+                        mx.beginPath(); mx.arc(n.x, n.y, 3 + Math.sin(mt * 1.5 + ni) * 1, 0, Math.PI * 2); mx.fill();
+                      });
+                      // Nutrient transfer particles flowing along connections
+                      mx.fillStyle = 'rgba(100,255,180,0.6)';
+                      for (var np = 0; np < 8; np++) {
+                        var nIdx = np % nodes.length; var nIdx2 = (np + 3) % nodes.length;
+                        var npT = (mt * 0.4 + np * 0.3) % 1;
+                        var npx = nodes[nIdx].x + (nodes[nIdx2].x - nodes[nIdx].x) * npT;
+                        var npy = nodes[nIdx].y + (nodes[nIdx2].y - nodes[nIdx].y) * npT;
+                        mx.beginPath(); mx.arc(npx, npy, 2, 0, Math.PI * 2); mx.fill();
+                      }
+                      // Plant root anchors at top
+                      mx.fillStyle = '#6a9a50';
+                      for (var pa = 0; pa < 4; pa++) {
+                        var pax = MW * (0.15 + pa * 0.23);
+                        mx.beginPath(); mx.moveTo(pax - 8, 0); mx.lineTo(pax, 25); mx.lineTo(pax + 8, 0); mx.fill();
+                        mx.fillStyle = '#8aba60'; mx.font = '8px system-ui'; mx.textAlign = 'center';
+                        mx.fillText('Root ' + (pa + 1), pax, 35); mx.fillStyle = '#6a9a50';
+                      }
+                    }
+
+                    // Microscope lens border overlay (all layers)
+                    mx.strokeStyle = 'rgba(99,102,241,0.4)'; mx.lineWidth = 3;
+                    mx.beginPath(); mx.arc(MW / 2, MH / 2, Math.min(MW, MH) * 0.47, 0, Math.PI * 2); mx.stroke();
+                    // Crosshair
+                    mx.strokeStyle = 'rgba(255,255,255,0.08)'; mx.lineWidth = 0.5;
+                    mx.beginPath(); mx.moveTo(MW / 2, 10); mx.lineTo(MW / 2, MH - 10); mx.stroke();
+                    mx.beginPath(); mx.moveTo(10, MH / 2); mx.lineTo(MW - 10, MH / 2); mx.stroke();
+                    // Magnification label
+                    mx.fillStyle = 'rgba(255,255,255,0.3)'; mx.font = 'bold 9px monospace'; mx.textAlign = 'right';
+                    mx.fillText(activeLayer === 'cells' ? '400x' : activeLayer === 'fungi' ? '50x' : activeLayer === 'roots' ? '10x' : '100x', MW - 15, 18);
+                  }
+                  drawMicro();
+                  var mobs = new MutationObserver(function() {
+                    if (!document.contains(mcvEl)) { cancelAnimationFrame(mcvEl._microAnim); mobs.disconnect(); }
+                  });
+                  mobs.observe(document.body, { childList: true, subtree: true });
+                }
+              }),
+
+              // ── ROOT SYSTEM VIEW ──
+              cgMicroscopeLayer === 'roots' && h('div', { className: 'bg-gradient-to-b from-amber-900/30 to-amber-950/50 rounded-xl p-4 space-y-3 border border-amber-700/30' },
+                h('div', { className: 'text-sm font-bold text-amber-200' }, '🌱 Root Architecture of ' + plant.label),
+                h('div', { className: 'text-xs text-amber-100/80 leading-relaxed space-y-2' },
+                  h('p', null, plant.family === 'umbel' || plant.plantId === 'carrot'
+                    ? '📐 Taproot system — one deep primary root (up to 12" for carrots) that mines water and minerals from deep soil layers. Side rootlets branch off to absorb nearby nutrients.'
+                    : plant.family === 'grass'
+                    ? '🌾 Fibrous root system — a dense mat of thin roots that hold soil in place and absorb water efficiently from the top 6" of soil. Corn roots can extend 6 feet laterally.'
+                    : '🔀 Branching root system — primary and secondary roots spread outward and downward, creating a zone of nutrient uptake called the rhizosphere.'),
+                  isLegume && h('div', { className: 'bg-emerald-900/40 rounded-lg p-3 border border-emerald-500/30' },
+                    h('div', { className: 'font-bold text-emerald-300 text-xs mb-1' }, __alloT('stem.companionplanting.root_nodules_nitrogen_fixation', '🔴 Root Nodules (Nitrogen Fixation)')),
+                    h('p', null, __alloT('stem.companionplanting.swollen_pink_red_nodules_on_the_roots_', 'Swollen pink/red nodules on the roots contain billions of Rhizobium bacteria. These bacteria have an enzyme called nitrogenase that breaks the triple bond of atmospheric N₂ — one of the strongest chemical bonds in nature.')),
+                    h('p', { className: 'mt-1 font-mono text-emerald-400 text-center text-sm' }, __alloT('stem.companionplanting.n_8h_8e_16atp_2nh_h_16adp', 'N₂ + 8H⁺ + 8e⁻ + 16ATP → 2NH₃ + H₂ + 16ADP')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.this_reaction_converts_inert_nitrogen_', 'This reaction converts inert nitrogen gas into ammonia (NH₃), which plant roots can absorb. It\'s the biological equivalent of the industrial Haber-Bosch process — but at room temperature, using only sunlight energy.'))),
+                  h('div', { className: 'bg-slate-800/50 rounded-lg p-3 border border-slate-600/30' },
+                    h('div', { className: 'font-bold text-slate-300 text-xs mb-1' }, __alloT('stem.companionplanting.water_transport_osmosis', '💧 Water Transport (Osmosis)')),
+                    h('p', null, __alloT('stem.companionplanting.root_hairs_increase_surface_area_by_10', 'Root hairs increase surface area by 100×. Water enters by osmosis — moving from low solute concentration (soil) to high (root cells). The path: soil → root hair → cortex → xylem → stem → leaves.')),
+                    h('p', { className: 'mt-1 font-mono text-blue-400 text-center text-sm' }, __alloT('stem.companionplanting.soil_root_h_o_flows_into_root', 'Ψ_soil > Ψ_root → H₂O flows into root')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.water_potential_drives_the_flow_transp', 'Water potential (Ψ) drives the flow. Transpiration from leaves creates negative pressure that pulls water up — like a straw. A large tree can move 100+ gallons per day this way.'))))),
+
+              // ── SOIL CHEMISTRY VIEW ──
+              cgMicroscopeLayer === 'chemistry' && h('div', { className: 'bg-gradient-to-b from-slate-800/50 to-slate-900/50 rounded-xl p-4 space-y-3 border border-slate-600/30' },
+                h('div', { className: 'text-sm font-bold text-blue-200' }, '⚗️ Soil Chemistry Around ' + plant.label),
+                h('div', { className: 'text-xs text-slate-200/80 leading-relaxed space-y-2' },
+                  // NPK
+                  h('div', { className: 'bg-indigo-900/40 rounded-lg p-3 border border-indigo-500/30' },
+                    h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, __alloT('stem.companionplanting.the_npk_cycle', '🧪 The NPK Cycle')),
+                    h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+                      h('div', { className: 'text-center bg-blue-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-400' }, 'N'), h('div', { className: 'text-[11px] text-blue-300' }, __alloT('stem.companionplanting.nitrogen', 'Nitrogen')), h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.drives_leaf_growth', 'Drives leaf growth'))),
+                      h('div', { className: 'text-center bg-orange-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-orange-400' }, 'P'), h('div', { className: 'text-[11px] text-orange-300' }, __alloT('stem.companionplanting.phosphorus', 'Phosphorus')), h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.drives_roots_fruit', 'Drives roots & fruit'))),
+                      h('div', { className: 'text-center bg-purple-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-purple-400' }, 'K'), h('div', { className: 'text-[11px] text-purple-300' }, __alloT('stem.companionplanting.potassium', 'Potassium')), h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.drives_health_water', 'Drives health & water')))),
+                    h('p', null, plant.nEffect < 0
+                      ? '⬇️ ' + plant.label + ' is a heavy feeder — it consumes nitrogen faster than the soil replaces it. Without legume neighbors or compost, nitrogen depletes over time.'
+                      : plant.nEffect > 0
+                      ? '⬆️ ' + plant.label + ' ADDS nitrogen through biological fixation. Rhizobium bacteria in root nodules convert N₂ gas into plant-available NH₄⁺.'
+                      : '↔️ ' + plant.label + ' has moderate nutrient needs. It takes what it needs without depleting or enriching the soil significantly.')),
+                  // Companion chemistry
+                  bonus.pairs.length > 0 && h('div', { className: 'bg-emerald-900/40 rounded-lg p-3 border border-emerald-500/30' },
+                    h('div', { className: 'font-bold text-emerald-300 text-xs mb-1' }, __alloT('stem.companionplanting.companion_chemistry_active', '🧬 Companion Chemistry (Active)')),
+                    bonus.pairs.map(function(p, i) {
+                      return h('div', { key: i, className: 'mb-1 text-xs' },
+                        h('span', { className: p.bonus > 0 ? 'text-emerald-400' : 'text-red-400' }, (p.bonus > 0 ? '✅ +' : '⚠️ ') + p.bonus + '% '),
+                        h('span', { className: 'text-slate-300' }, p.desc));
+                    })),
+                  // Allelopathy
+                  h('div', { className: 'bg-amber-900/30 rounded-lg p-3 border border-amber-600/30' },
+                    h('div', { className: 'font-bold text-amber-300 text-xs mb-1' }, __alloT('stem.companionplanting.allelopathy_chemical_warfare', '☠️ Allelopathy (Chemical Warfare)')),
+                    h('p', null, __alloT('stem.companionplanting.some_plants_release_chemicals_from_the', 'Some plants release chemicals from their roots that inhibit competitors. Sunflowers release heliannuol. Black walnut releases juglone. Even decomposing brassica leaves release glucosinolates that can suppress the next crop.')),
+                    h('p', { className: 'mt-1 font-mono text-amber-400 text-center text-sm' }, __alloT('stem.companionplanting.root_exudates_soil_neighboring_root_up', 'Root exudates → soil → neighboring root uptake → growth inhibition'))))),
+
+              // ── CELL BIOLOGY VIEW ──
+              cgMicroscopeLayer === 'cells' && h('div', { className: 'bg-gradient-to-b from-green-900/30 to-green-950/50 rounded-xl p-4 space-y-3 border border-green-600/30' },
+                h('div', { className: 'text-sm font-bold text-green-200' }, '🔬 Inside a ' + plant.label + ' Cell'),
+                h('div', { className: 'text-xs text-green-100/80 leading-relaxed space-y-2' },
+                  // Photosynthesis
+                  h('div', { className: 'bg-green-900/40 rounded-lg p-3 border border-green-500/30' },
+                    h('div', { className: 'font-bold text-green-300 text-xs mb-1' }, __alloT('stem.companionplanting.photosynthesis_chloroplasts', '☀️ Photosynthesis (Chloroplasts)')),
+                    h('p', null, __alloT('stem.companionplanting.inside_each_leaf_cell_hundreds_of_chlo', 'Inside each leaf cell, hundreds of chloroplasts capture photons of sunlight. Chlorophyll molecules absorb red and blue light (reflecting green — that\'s why plants look green). The energy splits water molecules and drives carbon fixation:')),
+                    h('p', { className: 'mt-1 font-mono text-green-400 text-center text-sm' }, __alloT('stem.companionplanting.6co_6h_o_light_c_h_o_6o', '6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.this_single_equation_sustains_nearly_a', 'This single equation sustains nearly all life on Earth. The glucose (C₆H₁₂O₆) becomes the plant\'s energy and building material. The oxygen (O₂) is released — every breath you take was made by a plant.'))),
+                  // Cellular respiration
+                  h('div', { className: 'bg-orange-900/30 rounded-lg p-3 border border-orange-500/30' },
+                    h('div', { className: 'font-bold text-orange-300 text-xs mb-1' }, __alloT('stem.companionplanting.cellular_respiration_mitochondria', '🔥 Cellular Respiration (Mitochondria)')),
+                    h('p', null, __alloT('stem.companionplanting.at_night_and_always_in_roots_mitochond', 'At night (and always, in roots), mitochondria reverse the process — burning glucose to release energy for growth:')),
+                    h('p', { className: 'mt-1 font-mono text-orange-400 text-center text-sm' }, __alloT('stem.companionplanting.c_h_o_6o_6co_6h_o_36_atp', 'C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + 36 ATP')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.atp_is_the_universal_energy_currency_o', 'ATP is the universal energy currency of life. Every cell process — growth, division, nutrient transport — spends ATP. A growing plant produces and consumes millions of ATP molecules per second.'))),
+                  // Cell wall & turgor
+                  h('div', { className: 'bg-blue-900/30 rounded-lg p-3 border border-blue-500/30' },
+                    h('div', { className: 'font-bold text-blue-300 text-xs mb-1' }, __alloT('stem.companionplanting.cell_wall_turgor_pressure', '🧱 Cell Wall & Turgor Pressure')),
+                    h('p', null, __alloT('stem.companionplanting.plant_cells_have_a_rigid_cellulose_wal', 'Plant cells have a rigid cellulose wall (animals don\'t). Water pressure inside the cell (turgor) pushes against the wall, keeping the plant upright. When a plant wilts, it\'s losing turgor pressure — the cells deflate like tiny balloons.')),
+                    h('p', { className: 'mt-1' }, cgMoisture < 30 ? '⚠️ Your soil moisture is low — this plant\'s cells are losing turgor. Water soon!' : '✅ Good moisture levels — cells are fully turgid and the plant stands strong.')),
+                  // Dynamic science meters
+                  h('div', { className: 'bg-slate-800/50 rounded-lg p-3 border border-slate-600/30' },
+                    h('div', { className: 'font-bold text-yellow-300 text-xs mb-2' }, __alloT('stem.companionplanting.live_plant_processes_right_now', '📊 Live Plant Processes (right now)')),
+                    (function() {
+                      var sunlight = [0.7, 1.0, 0.5, 0.1][cgSeason]; // seasonal sunlight
+                      var waterAvail = Math.min(1, cgMoisture / 60);
+                      var photoRate = Math.round(sunlight * waterAvail * (cell.health / 100) * 100);
+                      var respRate = Math.round((cell.health / 100) * 60); // always runs
+                      var netCarbon = photoRate - respRate;
+                      var transpRate = Math.round(sunlight * waterAvail * 80); // water loss through leaves
+                      return h('div', { className: 'space-y-2' },
+                        // Photosynthesis bar
+                        h('div', null,
+                          h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
+                            h('span', { className: 'text-green-400' }, __alloT('stem.companionplanting.photosynthesis_rate', '☀️ Photosynthesis rate')),
+                            h('span', { className: 'text-green-300 font-mono' }, photoRate + '%')),
+                          h('div', { className: 'h-2 bg-slate-700 rounded-full overflow-hidden' },
+                            h('div', { style: { width: photoRate + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))),
+                        // Respiration bar
+                        h('div', null,
+                          h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
+                            h('span', { className: 'text-orange-400' }, __alloT('stem.companionplanting.respiration_rate', '🔥 Respiration rate')),
+                            h('span', { className: 'text-orange-300 font-mono' }, respRate + '%')),
+                          h('div', { className: 'h-2 bg-slate-700 rounded-full overflow-hidden' },
+                            h('div', { style: { width: respRate + '%' }, className: 'h-full bg-gradient-to-r from-orange-500 to-red-400 rounded-full transition-all' }))),
+                        // Net carbon
+                        h('div', { className: 'text-center text-[11px] font-bold ' + (netCarbon > 0 ? 'text-green-400' : 'text-red-400') },
+                          'Net carbon: ' + (netCarbon > 0 ? '+' + netCarbon + '% → Growth!' : netCarbon + '% → Using stored energy')),
+                        h('p', { className: 'text-[11px] text-slate-200 mt-1' },
+                          cgSeason === 3 ? '❄️ Winter: minimal sunlight. Plant relies on stored sugars. Photosynthesis nearly stopped.'
+                          : cgSeason === 1 ? '☀️ Summer: peak sunlight drives maximum photosynthesis. Watch water — transpiration is high.'
+                          : cgSeason === 0 ? '🌱 Spring: increasing daylight ramps up photosynthesis. Growth accelerating.'
+                          : '🍂 Autumn: declining light slows photosynthesis. Plant preparing for dormancy.'),
+                        // Transpiration
+                        h('div', null,
+                          h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
+                            h('span', { className: 'text-blue-400' }, __alloT('stem.companionplanting.transpiration_water_loss_through_leave', '💨 Transpiration (water loss through leaves)')),
+                            h('span', { className: 'text-blue-300 font-mono' }, transpRate + '%')),
+                          h('div', { className: 'h-2 bg-slate-700 rounded-full overflow-hidden' },
+                            h('div', { style: { width: transpRate + '%' }, className: 'h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all' }))),
+                        h('p', { className: 'text-[11px] text-slate-600' }, 'Water evaporates from leaf stomata, pulling more water up from roots (transpiration stream). ' + (transpRate > 60 ? 'High transpiration — soil drying quickly!' : 'Moderate transpiration — soil moisture is stable.')));
+                    })()))),
+
+              // ── FUNGAL NETWORK VIEW ──
+              cgMicroscopeLayer === 'fungi' && h('div', { className: 'bg-gradient-to-b from-purple-900/30 to-purple-950/50 rounded-xl p-4 space-y-3 border border-purple-600/30' },
+                h('div', { className: 'text-sm font-bold text-purple-200' }, __alloT('stem.companionplanting.the_wood_wide_web', '🍄 The Wood Wide Web')),
+                h('div', { className: 'text-xs text-purple-100/80 leading-relaxed space-y-2' },
+                  h('div', { className: 'bg-purple-900/40 rounded-lg p-3 border border-purple-500/30' },
+                    h('div', { className: 'font-bold text-purple-300 text-xs mb-1' }, __alloT('stem.companionplanting.mycorrhizal_networks', '🕸️ Mycorrhizal Networks')),
+                    h('p', null, __alloT('stem.companionplanting.beneath_your_garden_an_invisible_inter', 'Beneath your garden, an invisible internet of fungal threads (hyphae) connects 90% of plant species. These mycorrhizal fungi form symbiotic partnerships with roots:')),
+                    h('div', { className: 'my-2 bg-purple-800/30 rounded-lg p-2 text-center' },
+                      h('div', { className: 'flex items-center justify-center gap-3' },
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[11px] text-purple-300' }, __alloT('stem.companionplanting.plant', 'Plant'))),
+                        h('div', { className: 'text-purple-400 text-sm' }, __alloT('stem.companionplanting.sugars_c_h_o', '← sugars (C₆H₁₂O₆)')),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🍄'), h('div', { className: 'text-[11px] text-purple-300' }, __alloT('stem.companionplanting.fungus', 'Fungus'))),
+                        h('div', { className: 'text-purple-400 text-sm' }, __alloT('stem.companionplanting.phosphorus_po', 'phosphorus (PO₄³⁻) →')),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[11px] text-purple-300' }, __alloT('stem.companionplanting.plant_2', 'Plant'))))),
+                    h('p', null, __alloT('stem.companionplanting.the_fungus_extends_the_plant_s_root_sy', 'The fungus extends the plant\'s root system by 100-1000×, accessing water and phosphorus the roots can\'t reach. In return, the plant shares 10-30% of its photosynthesized sugars. Both benefit — neither survives as well alone.'))),
+                  h('div', { className: 'bg-indigo-900/40 rounded-lg p-3 border border-indigo-500/30' },
+                    h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, __alloT('stem.companionplanting.chemical_signaling', '📡 Chemical Signaling')),
+                    h('p', null, __alloT('stem.companionplanting.when_one_plant_is_attacked_by_pests_it', 'When one plant is attacked by pests, it sends chemical alarm signals through the fungal network. Connected plants receive the warning and preemptively produce defensive compounds — before the pest even reaches them.')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.companionplanting.mother_trees_the_largest_oldest_plants', '"Mother trees" (the largest, oldest plants) share nutrients with seedlings through the network, especially shaded seedlings that can\'t photosynthesize enough on their own. The forest — and the garden — is a community, not a competition.'))),
+                  h('div', { className: 'bg-red-900/30 rounded-lg p-3 border border-red-500/30' },
+                    h('div', { className: 'font-bold text-red-300 text-xs mb-1' }, __alloT('stem.companionplanting.threats_to_the_network', '⚠️ Threats to the Network')),
+                    h('p', null, __alloT('stem.companionplanting.tilling_destroys_mycorrhizal_networks_', 'Tilling destroys mycorrhizal networks (this is why no-till farming is gaining traction). Chemical fertilizers can suppress fungal growth — the plant gets "lazy" and stops feeding its fungal partner. Garlic mustard (an invasive) releases chemicals that specifically destroy mycorrhizal fungi, devastating the entire underground ecosystem.')),
+                    h('p', { className: 'mt-1' }, neighbors.length > 0
+                      ? '🌐 This plant has ' + neighbors.length + ' neighbors. The mycorrhizal network likely connects them all, sharing nutrients and warning signals underground.'
+                      : '🏝️ This plant is isolated — fewer network connections mean less nutrient sharing and no warning signals from neighbors.')))),
+
+              // Current cell stats
+              h('div', { className: 'bg-slate-700/50 rounded-lg p-3 grid grid-cols-4 gap-2 text-center text-[11px]' },
+                h('div', null, h('div', { className: 'text-lg font-black text-emerald-400' }, growthPct + '%'), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.growth', 'Growth'))),
+                h('div', null, h('div', { className: 'text-lg font-black ' + (cell.health > 70 ? 'text-green-400' : cell.health > 40 ? 'text-yellow-400' : 'text-red-400') }, Math.round(cell.health)), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.health', 'Health'))),
+                h('div', null, h('div', { className: 'text-lg font-black ' + (bonus.total > 0 ? 'text-emerald-400' : bonus.total < 0 ? 'text-red-400' : 'text-slate-200') }, (bonus.total > 0 ? '+' : '') + bonus.total + '%'), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.companion', 'Companion'))),
+                h('div', null, h('div', { className: 'text-lg font-black text-orange-400' }, Math.round(cell.pests)), h('div', { className: 'text-slate-200' }, __alloT('stem.companionplanting.pests', 'Pests')))));
+          }
+
+          function renderCommunityGarden() {
+            var h = React.createElement;
+            var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
+            var stats = cgComputeStats();
+            var plantKeys = Object.keys(CG_PLANTS);
+            var plantedCells = cgGrid.filter(function(cell) { return !!cell.plantId; }).length;
+            var readyCells = cgGrid.filter(function(cell) { var plant = cell.plantId && CG_PLANTS[cell.plantId]; return plant && cell.growthDay >= plant.days && cell.health > 20; }).length;
+            var communityStep = cgPhase === 'plan' ? (cgSelectedPlant ? 'Place ' + CG_PLANTS[cgSelectedPlant].label + ' in an empty plot' : plantedCells ? 'Choose another crop or start the season' : 'Choose a crop, then select an empty plot') : readyCells ? 'Harvest ' + readyCells + ' ready crop' + (readyCells !== 1 ? 's' : '') : cgMoisture < 30 ? 'Water now to protect plant health' : 'Advance time and watch ecosystem signals';
+            var communityProgress = cgPhase === 'plan' ? Math.min(35, Math.round(plantedCells / 8 * 35)) : Math.min(95, 35 + Math.round((cgDay % 30) / 30 * 60));
+            var filterOptions = [{ id: 'all', label: 'All', icon: '\uD83C\uDF3F' }, { id: 'food', label: 'Food crops', icon: '\uD83E\uDD55' }, { id: 'helpers', label: 'Garden helpers', icon: '\uD83D\uDC1D' }, { id: 'regen', label: 'Regenerative', icon: '\u267B\uFE0F' }, { id: 'structures', label: 'Structures', icon: '\uD83C\uDFE1' }];
+            var starterPlans = [
+              { id: 'sisters', icon: '\uD83C\uDF3D', title: 'Three Sisters', tag: 'Companion synergy', desc: 'Corn supports beans; beans fix nitrogen; squash shades soil.', feedback: 'A classic reciprocal growing system is now active.', plants: ['corn','beans','squash','marigold','beans','corn','squash','nasturtium',null,'beans','corn','squash',null,'dill',null,'clover'] },
+              { id: 'pollinator', icon: '\uD83D\uDC1D', title: 'Pollinator Patch', tag: 'Fruit and habitat', desc: 'Pair fruiting crops with flowers that attract beneficial insects.', feedback: 'Pollinator-dependent crops now have nearby flower allies.', plants: ['tomato','basil','marigold','borage','squash','nasturtium','dill','cucumber','sunflower','pepper','lavender','yarrow',null,'clover',null,'bee_hotel'] },
+              { id: 'salad', icon: '\uD83E\uDD57', title: 'Salad Garden', tag: 'Fast first harvest', desc: 'Mix quick cool-season crops with complementary roots and legumes.', feedback: 'Fast crops and nitrogen-fixing peas create an approachable first season.', plants: ['lettuce','radish','carrot','onion','peas','lettuce','radish','carrot','dill','broccoli','lettuce','onion',null,'clover',null,'rain_barrel'] },
+              { id: 'soil', icon: '\u267B\uFE0F', title: 'Soil Builder', tag: 'Regenerative design', desc: 'Prioritize cover crops, deep roots, compost, and water capture.', feedback: 'This garden invests in future fertility and ecosystem resilience.', plants: ['clover','buckwheat','comfrey','yarrow','borage','clover','buckwheat','dill','compost_bin',null,'rain_barrel',null,'clover','nasturtium','marigold',null] }
+            ];
+            var filteredPlantKeys = plantKeys.filter(function(key) { var plant = CG_PLANTS[key]; if (cgPlantFilter === 'all') return true; if (cgPlantFilter === 'structures') return !!plant.isStructure; if (cgPlantFilter === 'regen') return !!plant.regen && !plant.isStructure; if (cgPlantFilter === 'helpers') return !!plant.pollinator || ['basil','mint','dill','rosemary','nasturtium'].indexOf(key) !== -1; return !plant.isStructure && !plant.pollinator && !plant.regen; });
+            var harmfulPairCount = 0;
+            cgGrid.forEach(function(cell, idx) { if (cell.plantId) harmfulPairCount += getCellBonus(cgGrid, idx).pairs.filter(function(pair) { return pair.bonus < 0; }).length; });
+            harmfulPairCount = Math.round(harmfulPairCount / 2);
+            var pulsePollinators = cgGrid.filter(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && CG_PLANTS[cell.plantId].pollinator; }).length;
+            var pulseNeedsPollination = cgGrid.some(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && CG_PLANTS[cell.plantId].needsPoll; });
+            var gardenPulse = [];
+            if (readyCells > 0) gardenPulse.push({ id: 'ready', level: 1, icon: '\uD83C\uDF3E', title: readyCells + ' crop' + (readyCells !== 1 ? 's are' : ' is') + ' ready', why: 'Harvest now to collect points and market revenue.', action: 'Harvest', onClick: cgHarvest, tone: 'yellow' });
+            if (cgMoisture < 30) gardenPulse.push({ id: 'dry', level: 0, icon: '\uD83D\uDCA7', title: 'Soil moisture is critical', why: 'Dry soil slows growth and eventually damages plant health.', action: 'Water now', onClick: cgWater, tone: 'blue' });
+            if (cgMoisture > 88) gardenPulse.push({ id: 'wet', level: 1, icon: '\uD83C\uDF27\uFE0F', title: 'Soil is saturated', why: 'Extra water can cause root rot. Advance time and let it drain.', tone: 'blue' });
+            if (cgNitrogen < 20) gardenPulse.push({ id: 'nitrogen', level: 0, icon: 'N', title: 'Nitrogen is depleted', why: 'Heavy feeders will grow slowly. Compost helps now; legumes help long term.', action: 'Add compost', onClick: cgCompost, tone: 'amber' });
+            if (cgPestPop > 20) gardenPulse.push({ id: 'pests', level: 0, icon: '\uD83D\uDC1B', title: 'Pest pressure is rising', why: 'Pests reduce health and growth. Weed or use targeted IPM.', action: 'Weed garden', onClick: cgWeed, tone: 'red' });
+            if (harmfulPairCount > 0) gardenPulse.push({ id: 'pairs', level: 1, icon: '\u26A0\uFE0F', title: harmfulPairCount + ' harmful neighbor pair' + (harmfulPairCount !== 1 ? 's' : ''), why: 'These neighbors suppress growth or share disease risk.', action: 'Edit layout', onClick: function() { cgUpd({ phase: 'plan', selectedPlant: null, lastFeedback: { icon: '\u26A0\uFE0F', title: 'Layout review', detail: 'Inspect red plot cards and separate harmful neighbors.', tone: 'warning' } }); }, tone: 'red' });
+            if (pulseNeedsPollination && pulsePollinators === 0) gardenPulse.push({ id: 'pollination', level: 1, icon: '\uD83D\uDC1D', title: 'Fruiting crops need pollinators', why: 'Without nearby flowers, squash and cucumber harvests can be cut in half.', action: 'Find helpers', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'helpers', lastFeedback: { icon: '\uD83D\uDC1D', title: 'Helper plants filtered', detail: 'Choose a flower or herb and place it near fruiting crops.', tone: 'info' } }); }, tone: 'purple' });
+            if (stats.activeBonuses >= 2) gardenPulse.push({ id: 'synergy', level: 2, icon: '\uD83E\uDD1D', title: stats.activeBonuses + ' helpful companion links', why: 'Your plant relationships are improving resilience and growth.', tone: 'green' });
+            gardenPulse.sort(function(left, right) { return left.level - right.level; });
+            var wildlifeCatalog = [
+              { id: 'pollinators', icon: '\uD83D\uDC1D', name: 'Bees and butterflies', clue: 'Plant nectar-rich flowers.' },
+              { id: 'ladybugs', icon: '\uD83D\uDC1E', name: 'Ladybugs', clue: 'Grow dill, yarrow, marigold, or nasturtium.' },
+              { id: 'birds', icon: '\uD83D\uDC26', name: 'Seed-eating birds', clue: 'Add a sunflower food source.' },
+              { id: 'earthworms', icon: '\uD83E\uDEB1', name: 'Earthworms', clue: 'Build organic matter or add compost.' },
+              { id: 'solitary_bees', icon: '\uD83C\uDFE8', name: 'Solitary bees', clue: 'Provide a bee hotel.' }
+            ];
+            var seasonFamilies = {};
+            cgGrid.forEach(function(cell) { if (cell.plantId && CG_PLANTS[cell.plantId]) seasonFamilies[CG_PLANTS[cell.plantId].family] = true; });
+            var seasonFamilyCount = Object.keys(seasonFamilies).length;
+            var hasForecastRainBarrel = cgGrid.some(function(cell) { return cell.plantId === 'rain_barrel'; });
+            var forecastMoistureLoss = [1.5, 2.5, 1.0, 0.5][cgSeason] * (hasForecastRainBarrel ? 0.8 : 1);
+            var forecastMoisture = Math.max(0, Math.round((cgMoisture - forecastMoistureLoss) * 10) / 10);
+            var forecastGrowth = ['Steady spring growth', 'Fast summer growth', 'Slower cool growth', 'Winter dormancy'][cgSeason];
+            var forecastPestRisk = cgSeason === 1 ? 'High' : cgSeason === 0 ? 'Moderate' : cgSeason === 2 ? 'Low' : 'Minimal';
+            var forecastAdvice = cgMoisture < 35 ? { icon: '\uD83D\uDCA7', text: 'Water before advancing to prevent drought stress.', action: 'Water now', onClick: cgWater } : cgNitrogen < 25 ? { icon: 'N', text: 'Add compost before heavy feeders lose momentum.', action: 'Add compost', onClick: cgCompost } : cgPestPop > 18 ? { icon: '\uD83D\uDC1B', text: 'Reduce pests before they damage the next day of growth.', action: 'Weed now', onClick: cgWeed } : { icon: '\u2705', text: 'Conditions are stable. Advance and observe the result.', action: 'Advance day', onClick: cgAdvanceDay };
+            var seasonGoals = [
+              { id: 'diversity', icon: '\uD83C\uDF3F', label: 'Grow 4 plant families', value: Math.min(4, seasonFamilyCount), target: 4, tip: 'Diversity makes the ecosystem more resilient.', action: 'Add diversity', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'all' }); } },
+              { id: 'companions', icon: '\uD83E\uDD1D', label: 'Build 3 helpful links', value: Math.min(3, stats.activeBonuses), target: 3, tip: 'Neighboring allies improve growth and pest resistance.', action: 'Edit neighbors', onClick: function() { cgUpd({ phase: 'plan', selectedPlant: null }); } },
+              { id: 'habitat', icon: '\uD83D\uDC1D', label: 'Create pollinator habitat', value: pulsePollinators > 0 ? 1 : 0, target: 1, tip: 'Flowers support pollinators and fruiting crops.', action: 'Find helpers', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'helpers' }); } },
+              { id: 'soil', icon: '\uD83E\uDDEA', label: 'Balance soil conditions', value: cgNitrogen >= 30 && cgMoisture >= 30 && cgMoisture <= 85 ? 1 : 0, target: 1, tip: 'Healthy moisture and nitrogen keep crops growing.', action: cgMoisture < 30 ? 'Water' : 'Add compost', onClick: cgMoisture < 30 ? cgWater : cgCompost },
+              { id: 'harvest', icon: '\uD83C\uDF3E', label: 'Complete a harvest', value: cgTotalHarvested > 0 ? 1 : 0, target: 1, tip: 'Bring one crop through the full growth cycle.', action: readyCells ? 'Harvest now' : 'Keep growing', onClick: readyCells ? cgHarvest : cgAdvanceDay }
+            ];
+            var seasonGoalProgress = Math.round(seasonGoals.reduce(function(sum, goal) { return sum + Math.min(1, goal.value / goal.target); }, 0) / seasonGoals.length * 100);
+            var gardenVisitors = [];
+            if (pulsePollinators > 0) gardenVisitors.push({ id: 'pollinators', icon: '\uD83D\uDC1D', name: 'Bees and butterflies', reason: pulsePollinators + ' pollinator habitat' + (pulsePollinators !== 1 ? 's' : ''), evidence: 'Flowers provide nectar and pollen that support crop pollination.' });
+            if (cgGrid.some(function(cell) { return ['dill','yarrow','marigold','nasturtium'].indexOf(cell.plantId) !== -1; }) || cgBeneficialPop >= 10) gardenVisitors.push({ id: 'ladybugs', icon: '\uD83D\uDC1E', name: 'Ladybugs', reason: 'Pest-control habitat', evidence: 'Dill, yarrow, marigold, and nasturtium provide food and shelter for aphid predators.' });
+            if (cgGrid.some(function(cell) { return cell.plantId === 'sunflower'; })) gardenVisitors.push({ id: 'birds', icon: '\uD83D\uDC26', name: 'Seed-eating birds', reason: 'Sunflower food source', evidence: 'Sunflower seed heads extend the garden food web beyond insects.' });
+            if (cgOrganicMatter >= 4 || cgGrid.some(function(cell) { return cell.plantId === 'compost_bin'; })) gardenVisitors.push({ id: 'earthworms', icon: '\uD83E\uDEB1', name: 'Earthworms', reason: 'Organic-rich soil', evidence: 'Organic matter feeds decomposers that aerate soil and recycle nutrients.' });
+            if (cgGrid.some(function(cell) { return cell.plantId === 'bee_hotel'; })) gardenVisitors.push({ id: 'solitary_bees', icon: '\uD83C\uDFE8', name: 'Solitary bees', reason: 'Nesting shelter', evidence: 'A bee hotel supplies nesting cavities that are scarce in simplified landscapes.' });
+
+            // Auto-advance days when in grow phase
+            // (The parent tick system handles this for Three Sisters;
+            //  for Community Garden we trigger via button clicks for clarity)
+
+            // If microscope is active, show it instead of the garden
+            if (typeof cgMicroscopeCell === 'number' && cgGrid[cgMicroscopeCell] && cgGrid[cgMicroscopeCell].plantId) {
+              return h('div', { className: 'space-y-3' }, renderMicroscope());
+            }
+
+            return h('div', { className: 'space-y-3' },
+              // ── SEL Reflection Modal ──
+              cgActiveReflection && CG_SEL_REFLECTIONS[cgActiveReflection] && (function() {
+                var ref = CG_SEL_REFLECTIONS[cgActiveReflection];
+                return h('div', { className: 'bg-gradient-to-br from-violet-50 to-indigo-50 rounded-xl border-2 border-violet-300 p-5 space-y-3 shadow-lg' },
+                  h('div', { className: 'flex items-center gap-3' },
+                    h('span', { className: 'text-3xl' }, ref.emoji),
+                    h('div', null,
+                      h('div', { className: 'font-bold text-violet-800 text-sm' }, ref.title),
+                      h('div', { className: 'text-[11px] text-violet-600 font-semibold uppercase tracking-wide' }, 'SEL: ' + ref.competency))),
+                  h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, ref.prompt),
+                  h('div', { className: 'bg-white rounded-lg p-3 border border-violet-200' },
+                    h('p', { className: 'text-xs text-violet-700 italic mb-2' }, '🌱 ' + ref.connection),
+                    h('textarea', {
+                      value: cgReflectionResponse,
+                      onChange: function(ev) { cgUpd({ reflectionResponse: ev.target.value }); },
+                      placeholder: __alloT('stem.companionplanting.write_your_reflection_here', 'Write your reflection here...'),
+                      rows: 3,
+                      'aria-label': __alloT('stem.companionplanting.your_reflection', 'Your reflection'),
+                      className: 'w-full text-sm border border-slate-400 rounded-lg p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-none'
+                    })),
+                  h('div', { className: 'flex gap-2' },
+                    h('button', { onClick: cgSubmitReflection, disabled: !cgReflectionResponse.trim(), className: 'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-40' }, __alloT('stem.companionplanting.save_to_journal', '📝 Save to Journal')),
+                    h('button', { onClick: function() { cgUpd({ activeReflection: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, __alloT('stem.companionplanting.skip', 'Skip'))));
+              })(),
+              // ── Event popup ──
+              h('section', { className: 'overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-lg', 'data-community-coach': true, 'aria-label': 'Community garden coach' },
+                h('div', { className: 'grid gap-4 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-900 p-4 text-white md:grid-cols-[minmax(0,1fr)_auto]' },
+                  h('div', null,
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-lime-200' }, 'Your garden mission'),
+                    h('div', { className: 'mt-1 text-lg font-black' }, communityStep),
+                    h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-black/25', role: 'progressbar', 'aria-label': 'Community season progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': communityProgress }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-lime-300 to-emerald-300 transition-all', style: { width: communityProgress + '%' } }))
+                  ),
+                  h('div', { className: 'grid grid-cols-3 gap-2 md:min-w-[290px]' },
+                    [{ value: plantedCells + '/16', label: 'Plots planted' }, { value: readyCells, label: 'Harvest ready' }, { value: cgBudget.toFixed(2), label: 'Dollars left' }].map(function(metric) { return h('div', { key: metric.label, className: 'rounded-xl border border-white/15 bg-white/10 p-2 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric.value), h('div', { className: 'text-[10px] text-emerald-100' }, metric.label)); })
+                  )
+                ),
+                cgLastFeedback && h('div', { className: 'flex items-start gap-3 border-t border-emerald-100 bg-emerald-50 px-4 py-3', role: 'status', 'aria-live': 'polite', 'data-community-feedback': true },
+                  h('span', { className: 'text-xl', 'aria-hidden': true }, cgLastFeedback.icon),
+                  h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-xs font-black text-emerald-900' }, cgLastFeedback.title), h('div', { className: 'mt-0.5 text-[11px] leading-relaxed text-emerald-800' }, cgLastFeedback.detail)),
+                  h('button', { onClick: function() { cgUpd({ lastFeedback: null }); }, className: 'rounded p-1 text-emerald-700 hover:bg-emerald-100', 'aria-label': 'Dismiss garden feedback' }, '\u2715')
+                )
+              ),
+
+              cgPhase === 'grow' && h('section', { className: 'rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50 via-white to-sky-50 p-3 shadow-sm', 'data-community-forecast': true, 'aria-labelledby': 'community-forecast-title' },
+                h('div', { className: 'grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]' },
+                  h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-cyan-700' }, 'Decision preview'), h('h3', { id: 'community-forecast-title', className: 'text-sm font-black text-slate-900' }, 'Tomorrow in the Garden'), h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
+                    [{ label: 'Moisture', value: forecastMoisture + '%', sub: '-' + forecastMoistureLoss.toFixed(1) + '% expected' }, { label: 'Growth', value: forecastGrowth, sub: ['Spring','Summer','Autumn','Winter'][cgSeason] + ' conditions' }, { label: 'Pest risk', value: forecastPestRisk, sub: cgBeneficialPop >= 10 ? 'Beneficial insects active' : 'Watch crop health' }].map(function(item) { return h('div', { key: item.label, className: 'rounded-xl border border-white bg-white p-2 shadow-sm' }, h('div', { className: 'text-[9px] font-black uppercase text-slate-500' }, item.label), h('div', { className: 'mt-0.5 text-[11px] font-black text-slate-800' }, item.value), h('div', { className: 'mt-0.5 text-[9px] text-slate-500' }, item.sub)); })
+                  )),
+                  h('div', { className: 'flex items-center gap-3 rounded-xl border border-cyan-100 bg-white p-3 lg:max-w-[300px]' }, h('span', { className: 'text-xl', 'aria-hidden': true }, forecastAdvice.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-[9px] font-black uppercase text-cyan-700' }, 'Before advancing'), h('div', { className: 'mt-0.5 text-[11px] leading-relaxed text-slate-700' }, forecastAdvice.text)), h('button', { onClick: forecastAdvice.onClick, className: 'shrink-0 rounded-lg bg-cyan-700 px-2 py-1.5 text-[10px] font-black text-white hover:bg-cyan-800' }, forecastAdvice.action))
+                )
+              ),
+
+              plantedCells > 0 && h('section', { className: 'rounded-2xl border border-emerald-200 bg-gradient-to-br from-white to-emerald-50 p-3 shadow-sm', 'data-community-season-goals': true, 'aria-labelledby': 'season-goals-title' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-3' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-emerald-600' }, 'Season challenge'), h('h3', { id: 'season-goals-title', className: 'text-sm font-black text-slate-900' }, seasonGoalProgress === 100 ? 'Season ecosystem goals complete!' : 'Build a thriving garden'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Complete all five goals through thoughtful garden design and care.')), h('div', { className: 'text-right' }, h('div', { className: 'text-xl font-black text-emerald-700' }, seasonGoalProgress + '%'), h('div', { className: 'text-[9px] font-bold text-slate-500' }, seasonGoals.filter(function(goal) { return goal.value >= goal.target; }).length + '/5 complete'))),
+                h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-emerald-100', role: 'progressbar', 'aria-label': 'Season ecosystem goals progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': seasonGoalProgress }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-emerald-500 to-lime-400 transition-all', style: { width: seasonGoalProgress + '%' } })),
+                h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-5' }, seasonGoals.map(function(goal) { var complete = goal.value >= goal.target; return h('div', { key: goal.id, className: 'rounded-xl border p-2 ' + (complete ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white') }, h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-lg', 'aria-hidden': true }, goal.icon), h('span', { className: 'rounded-full px-1.5 py-0.5 text-[9px] font-black ' + (complete ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600') }, complete ? 'Done' : goal.value + '/' + goal.target)), h('div', { className: 'mt-1 text-[10px] font-black text-slate-800' }, goal.label), h('div', { className: 'mt-1 text-[9px] leading-relaxed text-slate-500' }, goal.tip), !complete && h('button', { onClick: goal.onClick, className: 'mt-2 rounded-md bg-emerald-100 px-2 py-1 text-[9px] font-black text-emerald-800 hover:bg-emerald-200' }, goal.action)); }))
+              ),
+
+              cgEventLog.length > 0 && h('section', { className: 'rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-white p-3', 'data-community-activity-log': true, 'aria-labelledby': 'community-activity-title' },
+                h('div', { className: 'flex items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-violet-600' }, 'Garden story'), h('h3', { id: 'community-activity-title', className: 'text-sm font-black text-slate-900' }, 'Recent activity')), h('button', { onClick: function() { cgUpd({ showActivityLog: !cg.showActivityLog }); }, 'aria-expanded': !!cg.showActivityLog, className: 'rounded-lg border border-violet-200 bg-white px-2 py-1 text-[10px] font-black text-violet-700' }, cg.showActivityLog ? 'Show less' : 'View timeline')),
+                h('div', { className: 'mt-3 grid gap-2 ' + (cg.showActivityLog ? 'sm:grid-cols-2' : 'sm:grid-cols-3') }, cgEventLog.slice().reverse().slice(0, cg.showActivityLog ? 8 : 3).map(function(entry, entryIndex) { return h('div', { key: (entry.ts || entryIndex) + '-' + entryIndex, className: 'flex items-start gap-2 rounded-xl border border-white bg-white p-2 shadow-sm' }, h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-50 text-sm', 'aria-hidden': true }, entry.icon || '\uD83C\uDF31'), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'truncate text-[11px] font-black text-slate-800' }, entry.title || 'Garden update'), h('span', { className: 'shrink-0 text-[9px] font-bold text-violet-500' }, 'Day ' + ((entry.day || 0) % 30 + 1))), h('div', { className: 'mt-0.5 text-[9px] leading-relaxed text-slate-500' }, entry.detail || 'The garden changed.'))); }))
+              ),
+
+              plantedCells > 0 && h('section', { className: 'rounded-2xl border border-slate-200 bg-white p-3 shadow-sm', 'data-community-garden-pulse': true, 'aria-labelledby': 'garden-pulse-title' },
+                h('div', { className: 'mb-2 flex items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-slate-500' }, 'Live feedback'), h('h3', { id: 'garden-pulse-title', className: 'text-sm font-black text-slate-900' }, 'Garden Pulse')), h('span', { className: 'rounded-full px-2 py-1 text-[10px] font-black ' + (gardenPulse.some(function(item) { return item.level === 0; }) ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700') }, gardenPulse.some(function(item) { return item.level === 0; }) ? 'Action needed' : 'On track')),
+                gardenPulse.length ? h('div', { className: 'grid gap-2 sm:grid-cols-2' }, gardenPulse.slice(0, 4).map(function(item) {
+                  var palette = { red: 'border-red-200 bg-red-50 text-red-800', blue: 'border-blue-200 bg-blue-50 text-blue-800', amber: 'border-amber-200 bg-amber-50 text-amber-800', purple: 'border-purple-200 bg-purple-50 text-purple-800', yellow: 'border-yellow-200 bg-yellow-50 text-yellow-900', green: 'border-emerald-200 bg-emerald-50 text-emerald-800' };
+                  return h('div', { key: item.id, className: 'flex items-start gap-2 rounded-xl border p-3 ' + (palette[item.tone] || palette.green) }, h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-sm font-black shadow-sm', 'aria-hidden': true }, item.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-xs font-black' }, item.title), h('p', { className: 'mt-0.5 text-[11px] leading-relaxed opacity-80' }, item.why)), item.action && h('button', { onClick: item.onClick, className: 'shrink-0 rounded-lg bg-white px-2 py-1 text-[10px] font-black shadow-sm hover:shadow' }, item.action));
+                })) : h('div', { className: 'rounded-xl bg-emerald-50 p-3 text-xs font-bold text-emerald-800' }, 'All systems are stable. Advance a day and observe what changes.')
+              ),
+
+              cgActiveEvent && (function() {
+                var isGood = cgActiveEvent.isGood;
+                var bgClass = isGood ? 'bg-emerald-50 border-2 border-emerald-300' : 'bg-red-50 border-2 border-red-300';
+                var titleClass = isGood ? 'font-bold text-emerald-800' : 'font-bold text-red-800';
+                var descClass = isGood ? 'text-sm text-emerald-600' : 'text-sm text-red-600';
+                var borderClass = isGood ? 'border-emerald-200' : 'border-red-200';
+                var btnClass = isGood ? 'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-600' : 'transition-colors px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700';
+                var btnText = isGood ? '🌱 Great!' : '⚔️ Manage & Dismiss';
+                return h('div', { className: bgClass + ' rounded-xl p-4 space-y-2 animate-in slide-in-from-top' },
+                  h('div', { className: 'flex items-center gap-2' },
+                    h('span', { className: 'text-2xl' }, cgActiveEvent.emoji),
+                    h('div', null,
+                      h('div', { className: titleClass }, cgActiveEvent.label),
+                      h('div', { className: descClass }, cgActiveEvent.desc))),
+                  h('div', { className: 'bg-white rounded-lg p-3 text-xs text-slate-700 border ' + borderClass },
+                    h('strong', null, __alloT('stem.companionplanting.science', '🔬 Science: ')), cgActiveEvent.lesson),
+                  h('button', { onClick: cgDismissEvent, className: btnClass }, btnText));
+              })(),
+
+              // ── Status bar ──
+              h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold' },
+                h('span', { className: 'bg-sky-100 text-sky-800 px-3 py-1 rounded-full' }, seasonNames[cgSeason] + ' Day ' + ((cgDay % 30) + 1)),
+                h('span', { className: 'bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full' }, '💧 ' + Math.round(cgMoisture) + '%'),
+                h('span', { className: 'bg-amber-100 text-amber-800 px-3 py-1 rounded-full' }, '⚗️ N: ' + Math.round(cgNitrogen) + '%'),
+                h('span', { className: 'bg-purple-100 text-purple-800 px-3 py-1 rounded-full' }, '⭐ ' + cgScore + ' pts'),
+                h('span', { className: 'bg-slate-100 text-slate-600 px-3 py-1 rounded-full' }, '🌾 ' + cgTotalHarvested + ' harvested')),
+
+              // ── Seasonal Tip ──
+              cgPhase === 'grow' && (cgDay % 30) < 2 && (function() {
+                var tips = [
+                  { emoji: '🌱', tip: __alloT('stem.companionplanting.spring_perfect_for_cool_season_crops_l', 'Spring: Perfect for cool-season crops (lettuce, peas, radish, broccoli). Plant nitrogen-fixers now to enrich soil for summer heavy feeders.') },
+                  { emoji: '☀️', tip: __alloT('stem.companionplanting.summer_peak_growth_for_warm_season_cro', 'Summer: Peak growth for warm-season crops (tomatoes, peppers, squash). Watch moisture closely — evaporation is 2.5× higher. Pollinators are most active now!') },
+                  { emoji: '🍂', tip: __alloT('stem.companionplanting.autumn_harvest_mature_crops_before_fro', 'Autumn: Harvest mature crops before frost. Plant cover crops (clover) in empty plots to protect soil over winter. Cool-season crops can go in for a fall harvest.') },
+                  { emoji: '❄️', tip: __alloT('stem.companionplanting.winter_growth_stops_this_is_planning_s', 'Winter: Growth stops. This is planning season! Review what worked, note crop rotation for spring, and let the soil rest. Compost decomposes slowly in cold.') }
+                ];
+                var st = tips[cgSeason];
+                return h('div', { className: 'flex items-start gap-2 bg-sky-50 rounded-lg border border-sky-200 p-2 text-xs text-sky-800' },
+                  h('span', { className: 'text-lg flex-shrink-0' }, st.emoji),
+                  h('span', null, st.tip));
+              })(),
+
+              // ── Season Report Card (appears at season boundary during grow phase) ──
+              cgPhase === 'grow' && (cgDay % 30) === 0 && cgDay > 0 && (function() {
+                var stats2 = cgComputeStats();
+                var plantCount = cgGrid.filter(function(c) { return c.plantId; }).length;
+                var avgHealth = 0; cgGrid.forEach(function(c) { if (c.plantId) avgHealth += c.health; });
+                avgHealth = plantCount > 0 ? Math.round(avgHealth / plantCount) : 0;
+                var prevSeason = ['Winter', 'Spring', 'Summer', 'Autumn'][cgSeason]; // the season just ending
+                var grades = [];
+                if (stats2.uniqueSpecies >= 6) grades.push({ mark: 'A', area: 'Biodiversity', note: stats2.uniqueSpecies + ' species planted' });
+                else if (stats2.uniqueSpecies >= 3) grades.push({ mark: 'B', area: 'Biodiversity', note: stats2.uniqueSpecies + ' species — room to diversify' });
+                else grades.push({ mark: 'C', area: 'Biodiversity', note: 'Only ' + stats2.uniqueSpecies + ' species — monoculture risk' });
+                if (avgHealth >= 75) grades.push({ mark: 'A', area: 'Plant Health', note: 'Average ' + avgHealth + '% — excellent care' });
+                else if (avgHealth >= 50) grades.push({ mark: 'B', area: 'Plant Health', note: 'Average ' + avgHealth + '% — some plants struggling' });
+                else grades.push({ mark: 'C', area: 'Plant Health', note: 'Average ' + avgHealth + '% — significant stress' });
+                if (cgNitrogen >= 40) grades.push({ mark: 'A', area: 'Soil Fertility', note: 'Nitrogen at ' + Math.round(cgNitrogen) + '%' });
+                else if (cgNitrogen >= 20) grades.push({ mark: 'B', area: 'Soil Fertility', note: 'Nitrogen at ' + Math.round(cgNitrogen) + '% — could use legumes' });
+                else grades.push({ mark: 'C', area: 'Soil Fertility', note: 'Nitrogen depleted at ' + Math.round(cgNitrogen) + '%' });
+                if (stats2.pollinatorPlants >= 2) grades.push({ mark: 'A', area: 'Pollinators', note: stats2.pollinatorPlants + ' pollinator plants active' });
+                else if (stats2.pollinatorPlants >= 1) grades.push({ mark: 'B', area: 'Pollinators', note: __alloT('stem.companionplanting.some_pollinator_coverage', 'Some pollinator coverage') });
+                else grades.push({ mark: 'C', area: 'Pollinators', note: __alloT('stem.companionplanting.no_pollinator_plants_yields_suffering', 'No pollinator plants — yields suffering') });
+                var overallGPA = grades.reduce(function(s, g) { return s + (g.mark === 'A' ? 4 : g.mark === 'B' ? 3 : 2); }, 0) / grades.length;
+                var overallGrade = overallGPA >= 3.5 ? 'A' : overallGPA >= 2.5 ? 'B' : 'C';
+                var gradeColors = { A: 'text-emerald-400', B: 'text-yellow-400', C: 'text-red-400' };
+                return h('div', { className: 'bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl border-2 border-amber-400 p-4 text-white space-y-3' },
+                  h('div', { className: 'text-center' },
+                    h('div', { className: 'text-2xl' }, '📋'),
+                    h('div', { className: 'font-black text-sm' }, prevSeason + ' Season Report Card'),
+                    h('div', { className: 'text-[11px] text-slate-600' }, 'Day ' + cgDay + ' · Score: ' + cgScore + ' pts · Harvested: ' + cgTotalHarvested)),
+                  h('div', { className: 'grid grid-cols-2 gap-2' },
+                    grades.map(function(g, i) {
+                      return h('div', { key: i, className: 'bg-slate-700/50 rounded-lg p-2 flex items-center gap-2' },
+                        h('div', { className: 'text-xl font-black ' + (gradeColors[g.mark] || 'text-slate-200') }, g.mark),
+                        h('div', null,
+                          h('div', { className: 'text-[11px] font-bold text-slate-300' }, g.area),
+                          h('div', { className: 'text-[11px] text-slate-600' }, g.note)));
+                    })),
+                  h('div', { className: 'text-center' },
+                    h('div', { className: 'text-3xl font-black ' + (gradeColors[overallGrade] || '') }, overallGrade),
+                    h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.overall_season_grade', 'Overall Season Grade'))),
+                  h('div', { className: 'text-[11px] text-amber-200/70 text-center italic' },
+                    overallGrade === 'A' ? '🌟 Outstanding garden stewardship! Your ecosystem is thriving.' :
+                    overallGrade === 'B' ? '🌿 Good progress! Focus on diversity and soil health to reach the next level.' :
+                    '🌱 Keep learning! Try more companion pairs, pollinator plants, and cover crops.'));
+              })(),
+
+              // ── Plant picker (plan phase) ──
+              cgPhase === 'plan' && plantedCells === 0 && h('section', { className: 'rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-4', 'data-community-starter-plans': true, 'aria-labelledby': 'starter-plans-title' },
+                h('div', { className: 'mb-3 flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-indigo-600' }, 'Quick start'), h('h3', { id: 'starter-plans-title', className: 'mt-1 text-base font-black text-slate-900' }, 'Choose a garden story'), h('p', { className: 'mt-1 text-xs text-slate-600' }, 'Start with a purposeful layout, then inspect, revise, and make it your own.')), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[10px] font-bold text-slate-600 shadow-sm' }, 'Optional')),
+                h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' }, starterPlans.map(function(plan) {
+                  return h('button', { key: plan.id, onClick: function() { cgApplyStarterPlan(plan); }, className: 'group rounded-xl border border-white bg-white p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md' },
+                    h('div', { className: 'flex items-start justify-between gap-2' }, h('span', { className: 'text-2xl', 'aria-hidden': true }, plan.icon), h('span', { className: 'rounded-full bg-indigo-50 px-2 py-0.5 text-[9px] font-black uppercase text-indigo-700' }, plan.tag)),
+                    h('div', { className: 'mt-2 text-sm font-black text-slate-900' }, plan.title),
+                    h('div', { className: 'mt-1 text-[11px] leading-relaxed text-slate-600' }, plan.desc),
+                    h('div', { className: 'mt-2 text-[10px] font-black text-emerald-700 group-hover:text-emerald-800' }, 'Plant this layout ->')
+                  );
+                }))
+              ),
+
+              cgPhase === 'plan' && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' }, h('div', { className: 'text-xs font-bold text-emerald-800' }, __alloT('stem.companionplanting.select_a_plant_then_click_a_cell_to_pl', '🌱 Select a plant, then click a cell to place it:')), h('div', { className: 'text-[11px] font-bold text-emerald-700' }, filteredPlantKeys.length + ' choices')),
+                h('div', { className: 'mb-3 flex gap-1.5 overflow-x-auto pb-1', role: 'group', 'aria-label': 'Filter plant catalog' }, filterOptions.map(function(filter) { var active = cgPlantFilter === filter.id; return h('button', { key: filter.id, onClick: function() { cgUpd({ plantFilter: filter.id }); }, 'aria-pressed': active, className: 'whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition-all ' + (active ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-200 bg-white text-emerald-800 hover:border-emerald-400') }, h('span', { 'aria-hidden': true }, filter.icon + ' '), filter.label); })),
+                h('div', { className: 'flex flex-wrap gap-1.5' },
+                  filteredPlantKeys.map(function(key) {
+                    var p = CG_PLANTS[key];
+                    var selected = cgSelectedPlant === key;
+                    return h('button', {
+                      key: key,
+                      onClick: function() { cgUpd({ selectedPlant: selected ? null : key }); },
+                      'aria-label': p.label + (selected ? ' (selected)' : '') + ': ' + p.desc + '. ' + p.days + ' days to harvest. Water: ' + p.water + '/3. Sun: ' + p.sun + '/3.' + (p.nEffect > 0 ? ' Fixes nitrogen.' : p.nEffect < 0 ? ' Heavy feeder.' : '') + (p.pollinator ? ' Attracts pollinators.' : '') + (p.needsPoll ? ' Needs pollinators.' : ''),
+                      'aria-pressed': selected ? 'true' : 'false',
+                      title: p.label + ': ' + p.desc + ' (' + p.days + ' days)',
+                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ' + (selected ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : 'bg-white text-slate-700 border border-slate-400 hover:border-emerald-400')
+                    }, h('span', { 'aria-hidden': 'true' }, p.emoji), p.label);
+                  })),
+                // Selected plant info card
+                cgSelectedPlant && CG_PLANTS[cgSelectedPlant] && (function() {
+                  var sp = CG_PLANTS[cgSelectedPlant];
+                  var companions = CG_COMPANIONS.filter(function(c) { return c.a === cgSelectedPlant || c.b === cgSelectedPlant; });
+                  var friends = companions.filter(function(c) { return c.bonus > 0; });
+                  var enemies = companions.filter(function(c) { return c.bonus < 0; });
+                  return h('div', { className: 'mt-2 bg-white rounded-lg border border-emerald-200 p-3 space-y-2' },
+                    h('div', { className: 'flex items-center gap-2' },
+                      h('span', { className: 'text-2xl' }, sp.emoji),
+                      h('div', null,
+                        h('div', { className: 'font-bold text-sm text-slate-800' }, sp.label),
+                        h('div', { className: 'text-[11px] text-slate-600' }, sp.family + ' family · ' + sp.days + ' days · Cost: ' + sp.cost))),
+                    h('p', { className: 'text-xs text-slate-600' }, sp.desc),
+                    h('div', { className: 'flex flex-wrap gap-2 text-[11px]' },
+                      h('span', { className: 'bg-blue-50 text-blue-700 px-2 py-0.5 rounded' }, '💧'.repeat(sp.water) + ' Water'),
+                      h('span', { className: 'bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded' }, '☀️'.repeat(sp.sun) + ' Sun'),
+                      sp.nEffect > 0 && h('span', { className: 'bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.fixes_nitrogen', '⚗️ Fixes nitrogen')),
+                      sp.nEffect < 0 && h('span', { className: 'bg-red-50 text-red-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.heavy_feeder', '⚗️ Heavy feeder')),
+                      sp.needsPoll && h('span', { className: 'bg-amber-50 text-amber-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.needs_pollinators', '🐝 Needs pollinators')),
+                      sp.pollinator && h('span', { className: 'bg-purple-50 text-purple-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.attracts_pollinators', '🐝 Attracts pollinators')),
+                      sp.regen && h('span', { className: 'bg-teal-50 text-teal-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.regenerative', '♻️ Regenerative')),
+                      sp.native && h('span', { className: 'bg-green-50 text-green-700 px-2 py-0.5 rounded' }, __alloT('stem.companionplanting.native_species', '🏔️ Native species'))),
+                    companions.length > 0 && (function() {
+                      var sorted = companions.slice().sort(function(a, b) { return b.bonus - a.bonus; });
+                      var maxMag = Math.max.apply(null, sorted.map(function(c) { return Math.abs(c.bonus); }).concat([10]));
+                      var W = 240, rowH = 18, cx = 116, half = 94, padT = 16, Hh = padT + sorted.length * rowH + 4;
+                      return h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', style: { maxWidth: 300 }, role: 'img', 'aria-label': 'Companion strength for ' + sp.label + '. Green bars to the right are helpful neighbors, red bars to the left are plants to keep apart; longer bars mean a stronger effect.' },
+                        h('text', { x: cx - 4, y: 10, textAnchor: 'end', fontSize: 8, fill: '#dc2626', fontWeight: 700 }, __alloT('stem.companionplanting.keep_apart', '← keep apart')),
+                        h('text', { x: cx + 4, y: 10, textAnchor: 'start', fontSize: 8, fill: '#059669', fontWeight: 700 }, __alloT('stem.companionplanting.good_neighbor', 'good neighbor →')),
+                        h('line', { x1: cx, y1: padT - 2, x2: cx, y2: Hh - 2, stroke: '#cbd5e1', strokeWidth: 1 }),
+                        sorted.map(function(c, i) {
+                          var other = c.a === cgSelectedPlant ? c.b : c.a;
+                          var om = CG_PLANTS[other];
+                          var y = padT + i * rowH;
+                          var w = Math.abs(c.bonus) / maxMag * half;
+                          var pos = c.bonus > 0;
+                          return h('g', { key: other },
+                            h('rect', { x: pos ? cx : cx - w, y: y + 3, width: w, height: 10, rx: 2, fill: pos ? '#34d399' : '#f87171' }),
+                            h('text', { x: pos ? cx + w + 3 : cx - w - 3, y: y + 12, textAnchor: pos ? 'start' : 'end', fontSize: 9, fill: '#475569' }, (om ? om.emoji : '') + ' ' + (c.bonus > 0 ? '+' : '') + c.bonus));
+                        })
+                      );
+                    })(),
+                    friends.length > 0 && h('div', { className: 'text-[11px]' },
+                      h('span', { className: 'font-bold text-emerald-700' }, __alloT('stem.companionplanting.good_neighbors', '✅ Good neighbors: ')),
+                      friends.map(function(f) { var other = f.a === cgSelectedPlant ? f.b : f.a; return CG_PLANTS[other] ? CG_PLANTS[other].emoji + ' ' + CG_PLANTS[other].label : other; }).join(', ')),
+                    enemies.length > 0 && h('div', { className: 'text-[11px]' },
+                      h('span', { className: 'font-bold text-red-600' }, __alloT('stem.companionplanting.keep_apart_2', '⚠️ Keep apart: ')),
+                      enemies.map(function(f) { var other = f.a === cgSelectedPlant ? f.b : f.a; return CG_PLANTS[other] ? CG_PLANTS[other].emoji + ' ' + CG_PLANTS[other].label : other; }).join(', ')));
+                })()),
+
+              // ── Ecosystem Health Dashboard ──
+              cgPhase === 'grow' && (function() {
+                var pollinatorCount = cgGrid.filter(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].pollinator; }).length;
+                var uniqueFams = {};
+                cgGrid.forEach(function(c) { if (c.plantId) { var p = CG_PLANTS[c.plantId]; if (p) uniqueFams[p.family] = true; } });
+                var diversity = Object.keys(uniqueFams).length;
+                var avgHealth = 0; var plantCount = 0;
+                cgGrid.forEach(function(c) { if (c.plantId) { avgHealth += c.health; plantCount++; } });
+                avgHealth = plantCount > 0 ? Math.round(avgHealth / plantCount) : 0;
+                var avgPests = 0;
+                cgGrid.forEach(function(c) { if (c.plantId) { avgPests += c.pests; } });
+                avgPests = plantCount > 0 ? Math.round(avgPests / plantCount) : 0;
+                // Ecosystem rating
+                var regenCount = cgGrid.filter(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].regen; }).length;
+                var ecoScore = Math.round(diversity * 8 + pollinatorCount * 6 + regenCount * 4 + (avgHealth * 0.3) + ((100 - avgPests) * 0.2) + Math.min(30, cgNitrogen * 0.3));
+                var ecoLabel = ecoScore >= 80 ? '🌳 Thriving' : ecoScore >= 55 ? '🌿 Healthy' : ecoScore >= 35 ? '🌱 Developing' : '🌰 Struggling';
+                var ecoColor = ecoScore >= 80 ? 'text-emerald-700' : ecoScore >= 55 ? 'text-green-600' : ecoScore >= 35 ? 'text-yellow-600' : 'text-red-600';
+                return h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3' },
+                  h('div', { className: 'flex items-center justify-between mb-2' },
+                    h('div', { className: 'text-xs font-bold text-emerald-800' }, __alloT('stem.companionplanting.ecosystem_health', '🌍 Ecosystem Health')),
+                    h('div', { className: 'text-sm font-black ' + ecoColor }, ecoLabel + ' (' + ecoScore + ')')),
+                  h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                    h('div', { className: 'bg-white rounded-lg p-2' },
+                      h('div', { className: 'text-lg font-black text-emerald-600' }, diversity),
+                      h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.plant_families', 'Plant Families'))),
+                    h('div', { className: 'bg-white rounded-lg p-2' },
+                      h('div', { className: 'text-lg font-black text-purple-600' }, pollinatorCount),
+                      h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.pollinators', '🐝 Pollinators'))),
+                    h('div', { className: 'bg-white rounded-lg p-2' },
+                      h('div', { className: 'text-lg font-black ' + (avgHealth > 70 ? 'text-emerald-600' : avgHealth > 40 ? 'text-yellow-600' : 'text-red-600') }, avgHealth + '%'),
+                      h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.companionplanting.avg_health', 'Avg Health')))),
+                  // Ecosystem feedback
+                  h('div', { className: 'mt-2 text-[11px] text-emerald-700 space-y-0.5' },
+                    diversity < 3 && h('div', null, __alloT('stem.companionplanting.low_diversity_try_planting_more_plant_', '⚠️ Low diversity — try planting more plant families for ecosystem resilience')),
+                    pollinatorCount === 0 && h('div', null, __alloT('stem.companionplanting.no_pollinator_plants_squash_and_cucumb', '⚠️ No pollinator plants — squash and cucumber yields will suffer')),
+                    avgPests > 40 && h('div', null, __alloT('stem.companionplanting.high_pest_pressure_companion_plants_an', '🐛 High pest pressure — companion plants and weeding can help')),
+                    cgNitrogen < 20 && h('div', null, __alloT('stem.companionplanting.nitrogen_depleted_plant_legumes_beans_', '⚗️ Nitrogen depleted — plant legumes (beans, peas, clover) to fix nitrogen')),
+                    cgMoisture < 25 && h('div', null, __alloT('stem.companionplanting.soil_is_dry_water_soon_to_prevent_wilt', '💧 Soil is dry — water soon to prevent wilting')),
+                    cgMoisture > 85 && h('div', null, __alloT('stem.companionplanting.overwatered_roots_may_rot_let_soil_dra', '💧 Overwatered — roots may rot. Let soil drain.')),
+                    ecoScore >= 80 && h('div', null, __alloT('stem.companionplanting.your_garden_ecosystem_is_thriving_dive', '🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.')),
+                    regenCount >= 2 && h('div', null, __alloT('stem.companionplanting.regenerative_plants_are_healing_your_s', '♻️ Regenerative plants are healing your soil — comfrey, clover, and buckwheat build long-term fertility without synthetic inputs.')),
+                    regenCount === 0 && plantCount > 4 && h('div', null, __alloT('stem.companionplanting.no_regenerative_plants_yet_try_comfrey', '♻️ No regenerative plants yet. Try comfrey, buckwheat, yarrow, or clover — they build soil health for future seasons.'))));
+              })(),
+
+              // ── Sustainable Gardening Tips (contextual, based on garden state) ──
+              cgPhase === 'plan' && (function() {
+                var regenPlants = cgGrid.filter(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].regen; }).length;
+                var pollinators = cgGrid.filter(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].pollinator; }).length;
+                var emptyPlots = cgGrid.filter(function(c) { return !c.plantId; }).length;
+                var hasMint = cgGrid.some(function(c) { return c.plantId === 'mint'; });
+                var tips = [];
+                if (regenPlants === 0) tips.push({ emoji: '♻️', text: __alloT('stem.companionplanting.try_regenerative_plants_comfrey_buckwh', 'Try regenerative plants (comfrey, buckwheat, clover, yarrow) — they heal soil, attract beneficials, and build long-term garden health.') });
+                if (pollinators < 2 && cgGrid.some(function(c) { return c.plantId && CG_PLANTS[c.plantId] && CG_PLANTS[c.plantId].needsPoll; })) tips.push({ emoji: '🐝', text: __alloT('stem.companionplanting.your_pollinator_dependent_crops_need_n', 'Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.') });
+                if (emptyPlots > 6) tips.push({ emoji: '🌿', text: __alloT('stem.companionplanting.empty_soil_erodes_and_loses_nutrients_', 'Empty soil erodes and loses nutrients. Cover crops (clover, buckwheat) protect soil even when you\'re not growing food — like nature\'s blanket.') });
+                if (hasMint) tips.push({ emoji: '⚠️', text: __alloT('stem.companionplanting.mint_is_an_aggressive_spreader_in_real', 'Mint is an aggressive spreader! In real gardens, always plant mint in containers. Here it may invade adjacent cells — monitor carefully.') });
+                if (cgNitrogen < 25) tips.push({ emoji: '⚗️', text: __alloT('stem.companionplanting.regenerative_tip_instead_of_adding_fer', 'Regenerative tip: Instead of adding fertilizer, plant legumes (beans, peas, clover). They partner with soil bacteria to pull nitrogen from the air — free and sustainable!') });
+                if (tips.length === 0) return null;
+                return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl border border-teal-200 p-3' },
+                  h('div', { className: 'text-xs font-bold text-teal-800 mb-2' }, __alloT('stem.companionplanting.sustainable_gardening_tips', '♻️ Sustainable Gardening Tips')),
+                  h('div', { className: 'space-y-1.5' },
+                    tips.map(function(t, i) {
+                      return h('div', { key: i, className: 'flex items-start gap-2 text-[11px] text-teal-700' },
+                        h('span', { className: 'flex-shrink-0' }, t.emoji),
+                        h('span', null, t.text));
+                    })));
+              })(),
+
+              // ═══ ISOMETRIC 2.5D GARDEN CANVAS ═══
+              // Wrapped in a positioned container so a maximize/minimize button
+              // can overlay the canvas. When cgMaximized, the container becomes
+              // a fullscreen overlay (position:fixed) and the canvas grows to
+              // fill it. A React key tied to cgMaximized forces a fresh canvas
+              // mount on toggle so the ref re-runs and rebinds sizing.
+              h('div', {
+                style: cgMaximized ? {
+                  position: 'fixed', inset: 0, zIndex: 9998, background: '#0a0f15',
+                  padding: 16, display: 'flex', flexDirection: 'column'
+                } : { position: 'relative' }
+              },
+                h('canvas', {
+                key: 'cg-canvas-' + (cgMaximized ? 'max' : 'norm'),
+                role: 'application',
+                'aria-label': __alloT('stem.companionplanting.isometric_community_garden_view_click_', 'Isometric community garden view. Click plots to plant or inspect.'),
+                'aria-describedby': 'community-plot-help',
+                tabIndex: 0,
+                style: { width: '100%', height: cgMaximized ? '100%' : '540px', borderRadius: cgMaximized ? '8px' : '12px', display: 'block', cursor: cgPhase === 'plan' && cgSelectedPlant ? 'crosshair' : 'pointer', background: '#1a2810', flex: cgMaximized ? '1' : 'unset' },
+                onMouseMove: function(e) {
+                  var rect = e.currentTarget.getBoundingClientRect();
+                  var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
+                  var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
+                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 300; var iTW2 = 240; var iTH2 = 130; // must match draw-code constants
+                  var relX2 = mx - isoOX2; var relY2 = my - isoOY2;
+                  var hCol = Math.floor((relX2 / (iTW2 / 2) + relY2 / (iTH2 / 2)) / 2);
+                  var hRow = Math.floor((relY2 / (iTH2 / 2) - relX2 / (iTW2 / 2)) / 2);
+                  e.currentTarget._hoverCell = (hRow >= 0 && hRow < 4 && hCol >= 0 && hCol < 4) ? hRow * 4 + hCol : -1;
+                },
+                onMouseLeave: function(e) { e.currentTarget._hoverCell = -1; },
+                onClick: function(e) {
+                  // Isometric click detection: convert screen coords to grid cell
+                  var rect = e.currentTarget.getBoundingClientRect();
+                  var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
+                  var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
+                  // Record click location for the ripple effect (drawn in drawCG)
+                  e.currentTarget._clickRipple = { x: mx, y: my, t0: performance.now() };
+                  // Iso grid params (must match draw code)
+                  var isoOX = e.currentTarget.width / 2; var isoOY = 300;
+                  var iTW = 240; var iTH = 130; // must match draw-code constants in canvas ref below
+                  // Reverse isometric transform
+                  var relX = mx - isoOX; var relY = my - isoOY;
+                  var iCol = Math.floor((relX / (iTW / 2) + relY / (iTH / 2)) / 2);
+                  var iRow = Math.floor((relY / (iTH / 2) - relX / (iTW / 2)) / 2);
+                  if (iRow >= 0 && iRow < 4 && iCol >= 0 && iCol < 4) {
+                    var cellIdx = iRow * 4 + iCol;
+                    if (cgPhase === 'plan') {
+                      if (cgSelectedPlant && !cgGrid[cellIdx].plantId) {
+                        var plantedOk = cgPlantCell(cellIdx);
+                        // Trigger burst animation only on successful plant
+                        if (plantedOk) {
+                          var pl = CG_PLANTS[cgSelectedPlant];
+                          e.currentTarget._plantBurst = {
+                            idx: cellIdx,
+                            t0: performance.now(),
+                            emoji: (pl && pl.emoji) || '🌱',
+                            label: (pl && pl.label) || cgSelectedPlant
+                          };
+                          // Suppress the generic click ripple so the burst is the only feedback
+                          e.currentTarget._clickRipple = null;
+                        }
+                      }
+                      else if (cgGrid[cellIdx].plantId && !cgSelectedPlant) { cgRemoveCell(cellIdx); }
+                    } else if (cgPhase === 'grow' && cgGrid[cellIdx].plantId) {
+                      cgUpd({ microscopeCell: cellIdx, microscopeLayer: 'roots' });
+                    }
+                  }
+                },
+                ref: function(cvEl) {
+                  if (!cvEl) return;
+                  // Always expose the most recent canvas to action handlers
+                  // (cgWater/cgWeed/cgCompost are called from buttons outside the canvas)
+                  window.__cgCanvasEl = cvEl;
+                  if (cvEl._cgCanvasInit) return;
+                  cvEl._cgCanvasInit = true;
+                  var gctx = cvEl.getContext('2d');
+                  // Adaptive canvas resolution: track CSS size so the maximize
+                  // toggle (which changes CSS height from ~540px to 100vh) gets
+                  // proper internal resolution without blur. Re-applied via
+                  // ResizeObserver below so width/height stay in sync if the
+                  // window resizes too.
+                  var W = cvEl.width = cvEl.offsetWidth * 2;
+                  var H = cvEl.height = Math.max(760, cvEl.offsetHeight * 2);
+                  var startT = performance.now();
+                  // Isometric tile parameters. isoOY bumped 180 → 300 so the
+                  // top of the diamond sits comfortably below the horizon line
+                  // (at ~H*0.22) instead of right on it — keeps the plot
+                  // visually grounded rather than floating in the sky.
+                  var isoOX = W / 2; var isoOY = 300; // origin (center-top of grid)
+                  // Tile width/height in iso space. Bumped from 90/50 → 240/130
+                  // (~2.7×) so the 4×4 garden actually fills a meaningful share
+                  // of the canvas instead of looking like a pinpoint in the
+                  // background. Plant draws use iTW/iTH-relative offsets so they
+                  // scale proportionally; absolute plant heights (35-50 px) read
+                  // fine at this tile scale. If you change these here, also
+                  // update the matching constants in onClick + onMouseMove
+                  // handlers above so click hit-testing stays aligned.
+                  var iTW = 240; var iTH = 130;
+                  // Convert grid (row,col) to screen (x,y) center of diamond
+                  function isoToScreen(row, col) {
+                    return { x: isoOX + (col - row) * iTW / 2, y: isoOY + (col + row) * iTH / 2 };
+                  }
+                  // Pre-cache sky gradient
+                  var skyGrads = [['#87ceeb','#e0f0ff'], ['#4da6ff','#fff8e0'], ['#cc8844','#ffe8cc'], ['#8899aa','#d0dde8']].map(function(c) {
+                    var g = gctx.createLinearGradient(0, 0, 0, H * 0.25); g.addColorStop(0, c[0]); g.addColorStop(1, c[1]); return g;
+                  });
+                  // Plant visual profiles for isometric rendering
+                  var PLANT_VISUALS = {
+                    tomato: { stemColor: '#3a6b20', fruitColor: '#e53e3e', leafColor: '#4a8c30', flowerColor: '#fde047', tall: false },
+                    corn: { stemColor: '#5a8a30', fruitColor: '#f0c040', leafColor: '#6aaa40', tall: true },
+                    beans: { stemColor: '#3a7a25', fruitColor: '#558833', leafColor: '#50a030', flowerColor: '#dda0dd' },
+                    squash: { stemColor: '#4a7a20', fruitColor: '#e08020', leafColor: '#3a8a20', flowerColor: '#fbbf24', wide: true },
+                    lettuce: { stemColor: '#5aaa40', leafColor: '#70cc50', bushy: true },
+                    carrot: { stemColor: '#5a8a30', fruitColor: '#f97316', leafColor: '#60a840' },
+                    pepper: { stemColor: '#3a6b20', fruitColor: '#dc2626', leafColor: '#4a8c30' },
+                    marigold: { stemColor: '#5a8a30', leafColor: '#60a840', flowerColor: '#f59e0b' },
+                    sunflower: { stemColor: '#4a7a20', fruitColor: '#7c3a1a', leafColor: '#4a8a30', flowerColor: '#fbbf24', tall: true },
+                    strawberry: { stemColor: '#3a7020', fruitColor: '#e53e3e', leafColor: '#40a030', flowerColor: '#fff' },
+                    blueberry: { stemColor: '#4a6830', fruitColor: '#3b5998', leafColor: '#4a8040' }
+                  };
+                  var defVis = { stemColor: '#4a7a2e', fruitColor: '#888', leafColor: '#50a030' };
+
+                  // ResizeObserver: re-sync internal canvas resolution when the
+                  // CSS box changes (maximize toggle, window resize). Reads the
+                  // current offsetWidth/Height so the canvas never blurs from
+                  // CSS stretch. W/H/isoOX are referenced as closure vars in
+                  // drawCG, so reassigning here updates the next frame.
+                  if (typeof ResizeObserver !== 'undefined') {
+                    var _cgRo = new ResizeObserver(function() {
+                      W = cvEl.width = cvEl.offsetWidth * 2;
+                      H = cvEl.height = Math.max(760, cvEl.offsetHeight * 2);
+                      isoOX = W / 2;
+                    });
+                    _cgRo.observe(cvEl);
+                    cvEl._cgRo = _cgRo;
+                  }
+                  var cgReducedMotion = false;
+                  try { cgReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+                  function drawCG() {
+                    // Stop animating if the canvas was detached (e.g. maximize
+                    // toggle remounted it via React key). Prevents orphan RAF
+                    // loops leaking after unmount.
+                    if (!document.contains(cvEl)) {
+                      if (cvEl._cgRo) { try { cvEl._cgRo.disconnect(); } catch (e) {} }
+                      return;
+                    }
+                    cvEl._cgAnim = requestAnimationFrame(drawCG);
+                    var t = (performance.now() - startT) / 1000;
+                    var sSeason = cgSeason; // read directly (canvas re-mounts on state change)
+                    var grid2 = cgGrid;
+
+                    // ── Time-of-day cycle (~120s per "day") ──
+                    // todPhase 0..1 = continuous loop; map to: dawn (0-0.1), morning (0.1-0.3),
+                    // day (0.3-0.6), afternoon (0.6-0.7), dusk (0.7-0.8), night (0.8-1.0).
+                    var DAY_SECONDS = 120;
+                    var todPhase = ((t / DAY_SECONDS) % 1 + 1) % 1;
+                    var isNight = todPhase >= 0.8 || todPhase < 0.05;
+                    var isDusk = todPhase >= 0.7 && todPhase < 0.8;
+                    var isDawn = todPhase >= 0.05 && todPhase < 0.15;
+                    var nightStrength = isNight ? Math.min(1, Math.abs(todPhase < 0.05 ? (0.05 - todPhase) * 5 : (todPhase - 0.8) * 5)) : 0;
+                    var sunArcT = todPhase < 0.8 ? (todPhase - 0.05) / 0.75 : 0;  // 0..1 across the visible-sun portion (5%-80% of cycle)
+
+                    // Clear
+                    gctx.clearRect(0, 0, W, H);
+
+                    // ── Sky (season gradient + time-of-day overlay) ──
+                    gctx.fillStyle = skyGrads[sSeason] || skyGrads[0]; gctx.fillRect(0, 0, W, H * 0.25);
+                    // Time-of-day tint overlay
+                    if (isDawn) {
+                      gctx.fillStyle = 'rgba(255,180,120,0.35)';
+                      gctx.fillRect(0, 0, W, H * 0.25);
+                    } else if (isDusk) {
+                      gctx.fillStyle = 'rgba(255,120,80,0.45)';
+                      gctx.fillRect(0, 0, W, H * 0.25);
+                    } else if (isNight) {
+                      // Dark blue overlay covers whole canvas, deeper at midnight
+                      gctx.fillStyle = 'rgba(15,20,55,' + (0.55 * nightStrength) + ')';
+                      gctx.fillRect(0, 0, W, H);
+                      // Stars
+                      gctx.fillStyle = 'rgba(255,255,255,' + (0.7 * nightStrength) + ')';
+                      for (var sti = 0; sti < 25; sti++) {
+                        var sStarX = (sti * 73.3) % W;
+                        var sStarY = (sti * 41.7) % (H * 0.22) + 8;
+                        var twink = 0.5 + 0.5 * Math.sin(t * 2 + sti * 1.7);
+                        gctx.globalAlpha = twink * nightStrength;
+                        gctx.beginPath(); gctx.arc(sStarX, sStarY, 0.8, 0, Math.PI * 2); gctx.fill();
+                      }
+                      gctx.globalAlpha = 1;
+                    }
+
+                    // ── Sun OR Moon (depending on time-of-day) ──
+                    if (!isNight) {
+                      // Sun arcs east → west across the sky
+                      var sunX = W * 0.08 + sunArcT * W * 0.84;
+                      var sunY = 60 + Math.sin(sunArcT * Math.PI) * -25;  // peak at noon
+                      // Color shifts warmer at dawn/dusk
+                      var sunColor = isDawn ? '#ff9966' : isDusk ? '#ff6644' : '#ffd700';
+                      var glowColor = isDawn || isDusk ? 'rgba(255,150,100,0.18)' : 'rgba(255,215,0,0.12)';
+                      gctx.fillStyle = glowColor;
+                      gctx.beginPath(); gctx.arc(sunX, sunY, 35, 0, Math.PI * 2); gctx.fill();
+                      gctx.fillStyle = sunColor;
+                      gctx.beginPath(); gctx.arc(sunX, sunY, 20, 0, Math.PI * 2); gctx.fill();
+                    } else {
+                      // Moon arcs east → west during night portion of cycle
+                      var moonArcT = ((todPhase - 0.8) / 0.25 + 0.04) % 1;
+                      if (moonArcT < 0) moonArcT += 1;
+                      var moonX = W * 0.1 + moonArcT * W * 0.8;
+                      var moonY = 50 + Math.sin(moonArcT * Math.PI) * -20;
+                      // Glow
+                      gctx.fillStyle = 'rgba(220,220,240,' + (0.18 * nightStrength) + ')';
+                      gctx.beginPath(); gctx.arc(moonX, moonY, 28, 0, Math.PI * 2); gctx.fill();
+                      // Moon
+                      gctx.fillStyle = '#e8e8f0';
+                      gctx.beginPath(); gctx.arc(moonX, moonY, 14, 0, Math.PI * 2); gctx.fill();
+                      // Crescent shadow (subtle)
+                      gctx.fillStyle = 'rgba(60,70,100,0.35)';
+                      gctx.beginPath(); gctx.arc(moonX + 5, moonY - 1, 12, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Clouds ──
+                    if (sSeason !== 3 && !isNight) {
+                      gctx.fillStyle = isDusk ? 'rgba(255,160,120,0.3)' : isDawn ? 'rgba(255,200,180,0.3)' : 'rgba(255,255,255,0.2)';
+                      for (var cl2 = 0; cl2 < 3; cl2++) {
+                        var clx2 = (t * 10 + cl2 * W * 0.35) % (W + 120) - 60;
+                        var cly2 = 25 + cl2 * 18;
+                        gctx.beginPath(); gctx.ellipse(clx2, cly2, 30 + cl2 * 10, 10, 0, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(clx2 + 20, cly2 - 4, 20, 8, 0, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Ground plane (green grass perspective) ──
+                    var grassG = gctx.createLinearGradient(0, H * 0.22, 0, H);
+                    grassG.addColorStop(0, sSeason === 3 ? '#8899aa' : sSeason === 2 ? '#8a7a40' : '#5a8a3e');
+                    grassG.addColorStop(1, sSeason === 3 ? '#667788' : sSeason === 2 ? '#6a5a30' : '#3a6a28');
+                    gctx.fillStyle = grassG; gctx.fillRect(0, H * 0.22, W, H);
+
+                    // ── Ground texture: grass tufts scattered around the garden ──
+                    // Deterministic positions (seeded by index) so tufts don't jitter each frame.
+                    // Skipped in winter (sSeason === 3).
+                    if (sSeason !== 3) {
+                      var tuftColors = sSeason === 2
+                        ? ['rgba(120,90,30,0.55)', 'rgba(140,110,50,0.5)']  // autumn dry tones
+                        : ['rgba(50,110,40,0.55)', 'rgba(70,140,50,0.5)', 'rgba(40,90,30,0.55)']; // spring/summer
+                      for (var tf = 0; tf < 80; tf++) {
+                        // Pseudo-random scatter via cheap hash
+                        var tfx = (tf * 173 + 47) % W;
+                        var tfy = H * 0.24 + ((tf * 91 + 13) % (H * 0.74));
+                        // Skip the garden footprint (rough diamond bounds)
+                        var dx = tfx - isoOX;
+                        var dy = tfy - isoOY;
+                        if (Math.abs(dx) / (iTW * 2.2) + Math.abs(dy) / (iTH * 2.2) < 1) continue;
+                        var tfCol = tuftColors[tf % tuftColors.length];
+                        gctx.strokeStyle = tfCol;
+                        gctx.lineWidth = 1;
+                        // Tiny tuft: 3 short vertical lines
+                        gctx.beginPath();
+                        gctx.moveTo(tfx, tfy);     gctx.lineTo(tfx - 1, tfy - 3);
+                        gctx.moveTo(tfx + 1, tfy); gctx.lineTo(tfx + 1, tfy - 4);
+                        gctx.moveTo(tfx + 2, tfy); gctx.lineTo(tfx + 3, tfy - 3);
+                        gctx.stroke();
+                      }
+                      // Wildflower dots (spring/summer only)
+                      if (sSeason === 0 || sSeason === 1) {
+                        var flowerPalette = sSeason === 0
+                          ? ['#fbbf24', '#f9a8d4', '#fde047', '#fff', '#fb923c']  // spring pastels
+                          : ['#dc2626', '#f59e0b', '#8b5cf6', '#fff', '#fbbf24']; // summer brights
+                        for (var fl = 0; fl < 28; fl++) {
+                          var flx = (fl * 251 + 23) % W;
+                          var fly = H * 0.26 + ((fl * 137 + 19) % (H * 0.7));
+                          var fdx = flx - isoOX, fdy = fly - isoOY;
+                          if (Math.abs(fdx) / (iTW * 2.4) + Math.abs(fdy) / (iTH * 2.4) < 1) continue;
+                          gctx.fillStyle = flowerPalette[fl % flowerPalette.length];
+                          gctx.beginPath(); gctx.arc(flx, fly, 1.6, 0, Math.PI * 2); gctx.fill();
+                          // Tiny stem
+                          gctx.strokeStyle = 'rgba(40,90,30,0.55)';
+                          gctx.lineWidth = 0.6;
+                          gctx.beginPath(); gctx.moveTo(flx, fly + 1); gctx.lineTo(flx, fly + 4); gctx.stroke();
+                        }
+                      }
+                    }
+
+                    // ── Soft stone border around the garden diamond ──
+                    // Scatter small flat stones along the perimeter to frame the
+                    // garden so it doesn't float on plain green.
+                    (function() {
+                      var topPos = isoToScreen(-0.3, -0.3);
+                      var rightPos = isoToScreen(-0.3, 4.3);
+                      var botPos = isoToScreen(4.3, 4.3);
+                      var leftPos = isoToScreen(4.3, -0.3);
+                      var corners = [topPos, rightPos, botPos, leftPos, topPos];
+                      // Stroke a faint outline (almost invisible — sets the bounds)
+                      gctx.strokeStyle = 'rgba(120,110,90,0.18)';
+                      gctx.lineWidth = 1;
+                      gctx.beginPath();
+                      gctx.moveTo(corners[0].x, corners[0].y);
+                      for (var ci = 1; ci < corners.length; ci++) {
+                        gctx.lineTo(corners[ci].x, corners[ci].y);
+                      }
+                      gctx.stroke();
+                      // Stones at intervals along each edge
+                      var stoneColors = ['#9a9088', '#807870', '#a8a098', '#706860'];
+                      for (var edge = 0; edge < 4; edge++) {
+                        var a = corners[edge], b = corners[edge + 1];
+                        var STONES_PER_EDGE = 9;
+                        for (var st = 1; st <= STONES_PER_EDGE; st++) {
+                          var tFrac = st / (STONES_PER_EDGE + 1);
+                          // Wobble each stone slightly off the line so it looks natural
+                          var wobX = (((edge * 7 + st * 13) % 5) - 2) * 1.5;
+                          var wobY = (((edge * 11 + st * 17) % 5) - 2) * 1.2;
+                          var sx = a.x + (b.x - a.x) * tFrac + wobX;
+                          var sy = a.y + (b.y - a.y) * tFrac + wobY;
+                          gctx.fillStyle = stoneColors[(edge + st) % stoneColors.length];
+                          gctx.beginPath();
+                          gctx.ellipse(sx, sy, 3.5 + ((edge + st) % 3), 2.4, 0, 0, Math.PI * 2);
+                          gctx.fill();
+                          // Tiny highlight
+                          gctx.fillStyle = 'rgba(255,255,255,0.18)';
+                          gctx.beginPath();
+                          gctx.ellipse(sx - 0.8, sy - 0.6, 1.4, 0.8, 0, 0, Math.PI * 2);
+                          gctx.fill();
+                        }
+                      }
+                    })();
+
+                    // ── Background trees (behind garden) ──
+                    // Tree size bumped 18-30 → 32-56 so they read proportionally
+                    // against the 240×130 plot diamond. Trunk also widened from
+                    // 4px → 6px so the trunk is visible at the larger canopy size.
+                    var treeLine = isoOY - 40;
+                    gctx.fillStyle = sSeason === 3 ? 'rgba(80,90,100,0.35)' : sSeason === 2 ? 'rgba(140,100,30,0.3)' : 'rgba(35,90,25,0.35)';
+                    for (var bt = 0; bt < 8; bt++) {
+                      var btx = W * 0.08 + bt * W * 0.12;
+                      var bty = treeLine - 5 + Math.sin(bt * 2.3) * 8;
+                      var btSize = 32 + (bt % 3) * 12;
+                      // Canopy
+                      gctx.beginPath(); gctx.arc(btx, bty - btSize * 0.4, btSize, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(btx + btSize * 0.3, bty - btSize * 0.2, btSize * 0.7, 0, Math.PI * 2); gctx.fill();
+                      // Trunk
+                      gctx.fillStyle = 'rgba(80,50,20,0.3)';
+                      gctx.fillRect(btx - 3, bty, 6, 20);
+                      gctx.fillStyle = sSeason === 3 ? 'rgba(80,90,100,0.35)' : sSeason === 2 ? 'rgba(140,100,30,0.3)' : 'rgba(35,90,25,0.35)';
+                    }
+
+                    // ── Garden shed (top-right corner, isometric) ──
+                    var shedPos = isoToScreen(-1, 4);
+                    gctx.fillStyle = '#7a5a3a'; gctx.fillRect(shedPos.x - 18, shedPos.y - 30, 36, 24);
+                    gctx.fillStyle = '#6a4a2a'; // roof
+                    gctx.beginPath(); gctx.moveTo(shedPos.x - 22, shedPos.y - 30); gctx.lineTo(shedPos.x, shedPos.y - 42); gctx.lineTo(shedPos.x + 22, shedPos.y - 30); gctx.fill();
+                    gctx.fillStyle = '#5a3a1a'; gctx.fillRect(shedPos.x - 4, shedPos.y - 18, 8, 12); // door
+                    // Tiny window on shed (lit warm at night, daylight blue otherwise)
+                    var windowLit = isNight || isDusk;
+                    gctx.fillStyle = windowLit ? '#fbbf24' : '#a8d4f0';
+                    gctx.fillRect(shedPos.x - 14, shedPos.y - 26, 6, 6);
+                    if (windowLit) {
+                      // Soft warm glow extending into the night
+                      gctx.fillStyle = 'rgba(251,191,36,' + (0.2 * (nightStrength + (isDusk ? 0.5 : 0))) + ')';
+                      gctx.beginPath(); gctx.arc(shedPos.x - 11, shedPos.y - 23, 14, 0, Math.PI * 2); gctx.fill();
+                    }
+                    gctx.strokeStyle = '#5a3a1a'; gctx.lineWidth = 0.5;
+                    gctx.beginPath(); gctx.moveTo(shedPos.x - 11, shedPos.y - 26); gctx.lineTo(shedPos.x - 11, shedPos.y - 20); gctx.stroke();
+                    gctx.beginPath(); gctx.moveTo(shedPos.x - 14, shedPos.y - 23); gctx.lineTo(shedPos.x - 8, shedPos.y - 23); gctx.stroke();
+                    // Chimney (so smoke wisps from earlier render through a real chimney shape)
+                    gctx.fillStyle = '#5a3a1a'; gctx.fillRect(shedPos.x + 8, shedPos.y - 44, 5, 8);
+
+                    // ── Wind chime hanging from shed eave (sways slightly) ──
+                    var chSway = Math.sin(t * 1.2) * 1.5;
+                    var chBaseX = shedPos.x - 22;
+                    var chBaseY = shedPos.y - 30;
+                    gctx.strokeStyle = 'rgba(120,90,60,0.7)'; gctx.lineWidth = 0.6;
+                    gctx.beginPath(); gctx.moveTo(chBaseX, chBaseY); gctx.lineTo(chBaseX + chSway, chBaseY + 4); gctx.stroke();
+                    // 4 hanging tubes
+                    var chTubeColors = ['#cbd5e1', '#94a3b8', '#cbd5e1', '#94a3b8'];
+                    for (var chi = 0; chi < 4; chi++) {
+                      var chTubeX = chBaseX + chSway * (1 + chi * 0.15) - 3 + chi * 2;
+                      gctx.strokeStyle = chTubeColors[chi]; gctx.lineWidth = 1;
+                      gctx.beginPath();
+                      gctx.moveTo(chTubeX, chBaseY + 4);
+                      gctx.lineTo(chTubeX + chSway * 0.3, chBaseY + 9 + chi);
+                      gctx.stroke();
+                    }
+
+                    // ── Wheelbarrow (parked just left of shed, ground level) ──
+                    var wbX = shedPos.x - 50;
+                    var wbY = shedPos.y - 4;
+                    // Tray (parallelogram in iso)
+                    gctx.fillStyle = '#9a3a2a';
+                    gctx.beginPath();
+                    gctx.moveTo(wbX - 12, wbY - 6);
+                    gctx.lineTo(wbX + 12, wbY - 6);
+                    gctx.lineTo(wbX + 14, wbY);
+                    gctx.lineTo(wbX - 10, wbY);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Wheel
+                    gctx.fillStyle = '#3a2a1a';
+                    gctx.beginPath(); gctx.arc(wbX - 8, wbY + 4, 4, 0, Math.PI * 2); gctx.fill();
+                    gctx.fillStyle = '#5a3a2a';
+                    gctx.beginPath(); gctx.arc(wbX - 8, wbY + 4, 1.5, 0, Math.PI * 2); gctx.fill();
+                    // Handles
+                    gctx.strokeStyle = '#7a5a3a'; gctx.lineWidth = 1.5;
+                    gctx.beginPath(); gctx.moveTo(wbX + 12, wbY - 4); gctx.lineTo(wbX + 22, wbY); gctx.stroke();
+
+                    // ── Watering can leaning at shed door ──
+                    var wcX = shedPos.x + 16;
+                    var wcY = shedPos.y - 8;
+                    gctx.fillStyle = '#16a085';
+                    gctx.fillRect(wcX, wcY - 8, 7, 9);  // body
+                    gctx.beginPath();
+                    gctx.moveTo(wcX + 7, wcY - 6);
+                    gctx.lineTo(wcX + 13, wcY - 8);
+                    gctx.lineTo(wcX + 13, wcY - 5);
+                    gctx.lineTo(wcX + 7, wcY - 3);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Handle
+                    gctx.strokeStyle = '#0e6655'; gctx.lineWidth = 1;
+                    gctx.beginPath(); gctx.arc(wcX + 3, wcY - 9, 3, Math.PI, 0); gctx.stroke();
+
+                    // ── Stack of terracotta pots at shed door ──
+                    var potsX = shedPos.x - 12;
+                    var potsY = shedPos.y - 4;
+                    for (var pti = 0; pti < 3; pti++) {
+                      var ptScale = 1 - pti * 0.18;
+                      var ptW = 8 * ptScale;
+                      var ptH = 6 * ptScale;
+                      var ptY = potsY - pti * 5;
+                      // Pot body (trapezoid)
+                      gctx.fillStyle = pti === 2 ? '#c97557' : '#b85a3c';
+                      gctx.beginPath();
+                      gctx.moveTo(potsX - ptW, ptY);
+                      gctx.lineTo(potsX + ptW, ptY);
+                      gctx.lineTo(potsX + ptW * 0.78, ptY - ptH);
+                      gctx.lineTo(potsX - ptW * 0.78, ptY - ptH);
+                      gctx.closePath();
+                      gctx.fill();
+                      // Rim line
+                      gctx.strokeStyle = '#8a3a20'; gctx.lineWidth = 0.6;
+                      gctx.beginPath(); gctx.moveTo(potsX - ptW, ptY); gctx.lineTo(potsX + ptW, ptY); gctx.stroke();
+                    }
+
+                    // ── Rain barrel at right corner of shed ──
+                    var rbX = shedPos.x + 26;
+                    var rbY = shedPos.y - 4;
+                    // Barrel body (vertical wood-stave look)
+                    gctx.fillStyle = '#3a5a8a';
+                    gctx.fillRect(rbX - 6, rbY - 18, 12, 18);
+                    // Stave lines
+                    gctx.strokeStyle = 'rgba(20,40,70,0.4)'; gctx.lineWidth = 0.5;
+                    for (var stv = 1; stv < 4; stv++) {
+                      gctx.beginPath(); gctx.moveTo(rbX - 6 + stv * 3, rbY - 18); gctx.lineTo(rbX - 6 + stv * 3, rbY); gctx.stroke();
+                    }
+                    // Metal hoops
+                    gctx.strokeStyle = '#5a5a5a'; gctx.lineWidth = 1;
+                    gctx.beginPath(); gctx.moveTo(rbX - 6, rbY - 14); gctx.lineTo(rbX + 6, rbY - 14); gctx.stroke();
+                    gctx.beginPath(); gctx.moveTo(rbX - 6, rbY - 4); gctx.lineTo(rbX + 6, rbY - 4); gctx.stroke();
+                    // Open top with water inside (visible water only when moisture is high — recently rained)
+                    gctx.fillStyle = '#1a3a5a';
+                    gctx.beginPath(); gctx.ellipse(rbX, rbY - 18, 6, 1.5, 0, 0, Math.PI * 2); gctx.fill();
+                    if (cgMoisture > 60) {
+                      gctx.fillStyle = '#4a7aaa';
+                      gctx.beginPath(); gctx.ellipse(rbX, rbY - 17.5, 5, 1.2, 0, 0, Math.PI * 2); gctx.fill();
+                      // Tiny ripple
+                      if (Math.sin(t * 0.8) > 0.3) {
+                        gctx.strokeStyle = 'rgba(255,255,255,0.3)'; gctx.lineWidth = 0.4;
+                        gctx.beginPath(); gctx.ellipse(rbX, rbY - 17.5, 2, 0.5, 0, 0, Math.PI * 2); gctx.stroke();
+                      }
+                    }
+                    // Spigot at bottom (small detail)
+                    gctx.fillStyle = '#5a5a5a';
+                    gctx.fillRect(rbX + 5, rbY - 3, 3, 1.5);
+
+                    // ── Compost bin (front-left of garden, outside fence) ──
+                    var cbPos = isoToScreen(4.6, 0.2);
+                    // 3-sided wood box (front + two sides, no top)
+                    gctx.fillStyle = '#7a5a3a';
+                    // Front board
+                    gctx.fillRect(cbPos.x - 14, cbPos.y - 12, 28, 12);
+                    // Left side (perspective slant)
+                    gctx.beginPath();
+                    gctx.moveTo(cbPos.x - 14, cbPos.y - 12);
+                    gctx.lineTo(cbPos.x - 18, cbPos.y - 14);
+                    gctx.lineTo(cbPos.x - 18, cbPos.y - 2);
+                    gctx.lineTo(cbPos.x - 14, cbPos.y);
+                    gctx.closePath();
+                    gctx.fillStyle = '#6a4a2a';
+                    gctx.fill();
+                    // Right side
+                    gctx.beginPath();
+                    gctx.moveTo(cbPos.x + 14, cbPos.y - 12);
+                    gctx.lineTo(cbPos.x + 18, cbPos.y - 14);
+                    gctx.lineTo(cbPos.x + 18, cbPos.y - 2);
+                    gctx.lineTo(cbPos.x + 14, cbPos.y);
+                    gctx.closePath();
+                    gctx.fillStyle = '#6a4a2a';
+                    gctx.fill();
+                    // Slat lines on front board
+                    gctx.strokeStyle = '#5a3a1a'; gctx.lineWidth = 0.5;
+                    for (var sli = 1; sli < 4; sli++) {
+                      gctx.beginPath(); gctx.moveTo(cbPos.x - 14, cbPos.y - 12 + sli * 3); gctx.lineTo(cbPos.x + 14, cbPos.y - 12 + sli * 3); gctx.stroke();
+                    }
+                    // Compost pile inside (visible above the front board)
+                    gctx.fillStyle = '#3a2a1a';
+                    gctx.beginPath();
+                    gctx.ellipse(cbPos.x, cbPos.y - 13, 14, 4, 0, 0, Math.PI);
+                    gctx.fill();
+                    // Compost flecks (organic matter visible)
+                    var compostColors = ['#5a3a1a', '#7a5a2a', '#4a3a1a', '#8a6a3a', '#5a4a2a'];
+                    for (var cfi = 0; cfi < 8; cfi++) {
+                      var cfx = cbPos.x - 12 + (cfi * 3);
+                      var cfy = cbPos.y - 14 + Math.sin(cfi * 1.3) * 1;
+                      gctx.fillStyle = compostColors[cfi % compostColors.length];
+                      gctx.fillRect(cfx, cfy, 2, 1.2);
+                    }
+                    // Steam wisp (compost is alive — decomposition releases heat)
+                    if (sSeason !== 3) {
+                      var stPhase = (t * 0.4) % 2;
+                      if (stPhase < 1.5) {
+                        var stA = (1 - stPhase / 1.5) * 0.25;
+                        gctx.fillStyle = 'rgba(220,220,200,' + stA + ')';
+                        gctx.beginPath();
+                        gctx.arc(cbPos.x + Math.sin(stPhase * 3) * 2, cbPos.y - 16 - stPhase * 8, 2 + stPhase, 0, Math.PI * 2);
+                        gctx.fill();
+                      }
+                    }
+
+                    // ── Isometric stone paths (between rows) ──
+                    gctx.fillStyle = 'rgba(160,150,130,0.2)';
+                    for (var pr = 0; pr < 3; pr++) {
+                      // Horizontal paths between row pr and pr+1
+                      for (var pc = 0; pc < 4; pc++) {
+                        var p1 = isoToScreen(pr, pc);
+                        var p2 = isoToScreen(pr + 1, pc);
+                        var mpx = (p1.x + p2.x) / 2; var mpy = (p1.y + p2.y) / 2;
+                        gctx.beginPath(); gctx.ellipse(mpx, mpy + iTH / 4, 6, 3, 0.5, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Isometric fence perimeter ──
+                    var fenceColor = '#8a6a4a';
+                    var corners = [isoToScreen(-0.6, -0.6), isoToScreen(-0.6, 3.6), isoToScreen(3.6, 3.6), isoToScreen(3.6, -0.6)];
+                    gctx.strokeStyle = fenceColor; gctx.lineWidth = 2;
+                    gctx.beginPath();
+                    gctx.moveTo(corners[0].x, corners[0].y); gctx.lineTo(corners[1].x, corners[1].y);
+                    gctx.lineTo(corners[2].x, corners[2].y); gctx.lineTo(corners[3].x, corners[3].y);
+                    gctx.closePath(); gctx.stroke();
+                    // Fence posts at corners
+                    corners.forEach(function(fc) {
+                      gctx.fillStyle = fenceColor;
+                      gctx.fillRect(fc.x - 2, fc.y - 10, 4, 12);
+                    });
+                    // Fence rail (top wire/rail)
+                    gctx.strokeStyle = 'rgba(138,106,74,0.4)'; gctx.lineWidth = 1;
+                    gctx.beginPath();
+                    gctx.moveTo(corners[0].x, corners[0].y - 6); gctx.lineTo(corners[1].x, corners[1].y - 6);
+                    gctx.lineTo(corners[2].x, corners[2].y - 6); gctx.lineTo(corners[3].x, corners[3].y - 6);
+                    gctx.closePath(); gctx.stroke();
+
+                    // ── Birdbath (front-left of garden, just outside fence) ──
+                    var bbPos = isoToScreen(4.4, -0.8);
+                    // Pedestal (stone)
+                    gctx.fillStyle = '#8a8a90';
+                    gctx.fillRect(bbPos.x - 4, bbPos.y - 14, 8, 14);
+                    gctx.fillStyle = 'rgba(0,0,0,0.18)';  // pedestal shadow
+                    gctx.fillRect(bbPos.x - 4, bbPos.y - 8, 8, 2);
+                    // Bowl
+                    gctx.fillStyle = '#9a9aa0';
+                    gctx.beginPath(); gctx.ellipse(bbPos.x, bbPos.y - 14, 12, 4, 0, 0, Math.PI * 2); gctx.fill();
+                    // Water (lighter, with subtle ripple)
+                    gctx.fillStyle = '#6cb4d8';
+                    gctx.beginPath(); gctx.ellipse(bbPos.x, bbPos.y - 15, 9, 2.5, 0, 0, Math.PI * 2); gctx.fill();
+                    // Tiny ripple every few seconds
+                    var ripPhase = (t * 0.4) % 3;
+                    if (ripPhase < 1) {
+                      gctx.strokeStyle = 'rgba(255,255,255,' + (1 - ripPhase) * 0.4 + ')';
+                      gctx.lineWidth = 0.6;
+                      gctx.beginPath(); gctx.ellipse(bbPos.x + Math.sin(ripPhase * 6) * 2, bbPos.y - 15, 2 + ripPhase * 4, 0.6 + ripPhase * 1.5, 0, 0, Math.PI * 2); gctx.stroke();
+                    }
+
+                    // ── Garden gnome (decorative; near front-right corner) ──
+                    var gnPos = isoToScreen(4.3, 3.6);
+                    // Hat (red cone)
+                    gctx.fillStyle = '#dc2626';
+                    gctx.beginPath();
+                    gctx.moveTo(gnPos.x, gnPos.y - 18);
+                    gctx.lineTo(gnPos.x - 5, gnPos.y - 8);
+                    gctx.lineTo(gnPos.x + 5, gnPos.y - 8);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Hat band
+                    gctx.fillStyle = '#b91c1c';
+                    gctx.fillRect(gnPos.x - 5, gnPos.y - 9, 10, 1.5);
+                    // Face
+                    gctx.fillStyle = '#fde2c8';
+                    gctx.beginPath(); gctx.arc(gnPos.x, gnPos.y - 5, 3.5, 0, Math.PI * 2); gctx.fill();
+                    // Beard
+                    gctx.fillStyle = '#e5e7eb';
+                    gctx.beginPath(); gctx.ellipse(gnPos.x, gnPos.y - 2, 4, 5, 0, 0, Math.PI * 2); gctx.fill();
+                    // Body
+                    gctx.fillStyle = '#1d4ed8';
+                    gctx.beginPath();
+                    gctx.moveTo(gnPos.x - 5, gnPos.y);
+                    gctx.lineTo(gnPos.x + 5, gnPos.y);
+                    gctx.lineTo(gnPos.x + 6, gnPos.y + 6);
+                    gctx.lineTo(gnPos.x - 6, gnPos.y + 6);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Eyes (tiny)
+                    gctx.fillStyle = '#1f2937';
+                    gctx.fillRect(gnPos.x - 1.5, gnPos.y - 5, 0.8, 0.8);
+                    gctx.fillRect(gnPos.x + 0.7, gnPos.y - 5, 0.8, 0.8);
+
+                    // ── Wooden bench (community gathering spot, front-right outside fence) ──
+                    var bnPos = isoToScreen(4.6, 2.6);
+                    // Bench seat (wooden plank)
+                    gctx.fillStyle = '#8a6a3a';
+                    gctx.fillRect(bnPos.x - 18, bnPos.y - 10, 36, 4);
+                    // Backrest
+                    gctx.fillStyle = '#7a5a2a';
+                    gctx.fillRect(bnPos.x - 17, bnPos.y - 22, 34, 2);
+                    // Backrest vertical supports
+                    for (var bvi = 0; bvi < 4; bvi++) {
+                      gctx.fillRect(bnPos.x - 14 + bvi * 9.3, bnPos.y - 20, 1.5, 11);
+                    }
+                    // Legs (4 — front pair visible, back pair offset for iso)
+                    gctx.fillStyle = '#5a3a1a';
+                    gctx.fillRect(bnPos.x - 16, bnPos.y - 6, 2, 8);
+                    gctx.fillRect(bnPos.x + 14, bnPos.y - 6, 2, 8);
+                    // Wood grain lines on seat
+                    gctx.strokeStyle = 'rgba(70,50,20,0.3)';
+                    gctx.lineWidth = 0.4;
+                    gctx.beginPath(); gctx.moveTo(bnPos.x - 18, bnPos.y - 8); gctx.lineTo(bnPos.x + 18, bnPos.y - 8); gctx.stroke();
+
+                    // ── Sign post: "COMMUNITY GARDEN" (front-left of fence) ──
+                    var spPos = isoToScreen(4.5, -0.5);
+                    // Post
+                    gctx.fillStyle = '#7a5a3a';
+                    gctx.fillRect(spPos.x - 1.5, spPos.y - 24, 3, 24);
+                    // Sign board
+                    gctx.fillStyle = '#fbe4a3';
+                    gctx.fillRect(spPos.x - 22, spPos.y - 30, 44, 14);
+                    // Sign border
+                    gctx.strokeStyle = '#7a5a3a'; gctx.lineWidth = 1;
+                    gctx.strokeRect(spPos.x - 22, spPos.y - 30, 44, 14);
+                    // Sign text
+                    gctx.fillStyle = '#5a3a1a';
+                    gctx.font = 'bold 7px system-ui';
+                    gctx.textAlign = 'center';
+                    gctx.fillText('COMMUNITY', spPos.x, spPos.y - 23);
+                    gctx.fillText('GARDEN', spPos.x, spPos.y - 17);
+                    gctx.textAlign = 'left';  // reset
+
+                    // ── Isometric 4×4 Grid (diamond tiles) ──
+                    var hoverCell2 = cvEl._hoverCell;
+                    var polCount2 = 0;
+                    for (var iR = 0; iR < 4; iR++) {
+                      for (var iC = 0; iC < 4; iC++) {
+                        var pos = isoToScreen(iR, iC);
+                        var ci4 = iR * 4 + iC;
+                        var cell4 = grid2[ci4];
+                        var hasPlant = cell4 && cell4.plantId && CG_PLANTS[cell4.plantId];
+                        var pl3 = hasPlant ? CG_PLANTS[cell4.plantId] : null;
+                        if (pl3 && pl3.pollinator) polCount2++;
+                        var isHovered = hoverCell2 === ci4;
+
+                        // ── Soil tile (isometric diamond) ──
+                        // Smooth moisture darkening: dry soil is light brown, saturated is dark + slightly cooler
+                        var moisFactor = Math.min(1, Math.max(0, cgMoisture / 100));
+                        var soilDark2 = Math.round(moisFactor * 25);
+                        var moisBlue = Math.round(moisFactor * 8);  // damp soil reads slightly cooler
+                        gctx.fillStyle = hasPlant
+                          ? 'rgba(' + (100 - soilDark2) + ',' + (65 - soilDark2 * 0.4) + ',' + (30 + moisBlue) + ',0.85)'
+                          : 'rgba(' + (110 - soilDark2) + ',' + (75 - soilDark2 * 0.5) + ',' + (35 + moisBlue) + ',0.6)';
+                        gctx.beginPath();
+                        gctx.moveTo(pos.x, pos.y - iTH / 2); // top
+                        gctx.lineTo(pos.x + iTW / 2, pos.y);   // right
+                        gctx.lineTo(pos.x, pos.y + iTH / 2); // bottom
+                        gctx.lineTo(pos.x - iTW / 2, pos.y);   // left
+                        gctx.closePath(); gctx.fill();
+                        // ── Soil tile texture: deterministic pebbles + speckles ──
+                        // 5 pebbles + 7 grain-speckles per tile, positioned by tile
+                        // index so they stay stable across frames. Skipped on tiles
+                        // that have a plant (plant draws on top).
+                        if (!hasPlant) {
+                          for (var sp = 0; sp < 5; sp++) {
+                            var spAng = (ci4 * 2.1 + sp * 1.7) % (Math.PI * 2);
+                            var spDist = 6 + ((ci4 * 11 + sp * 7) % 22);
+                            var spX = pos.x + Math.cos(spAng) * spDist;
+                            var spY = pos.y + Math.sin(spAng) * spDist * (iTH / iTW);
+                            // Keep pebbles inside the diamond
+                            var spDiam = Math.abs(spX - pos.x) / (iTW / 2) + Math.abs(spY - pos.y) / (iTH / 2);
+                            if (spDiam > 0.78) continue;
+                            var spShade = (ci4 + sp) % 3;
+                            gctx.fillStyle = ['rgba(90,60,30,0.55)', 'rgba(140,110,80,0.5)', 'rgba(70,45,25,0.6)'][spShade];
+                            gctx.beginPath();
+                            gctx.ellipse(spX, spY, 1.4 + (sp % 2) * 0.6, 0.9, 0, 0, Math.PI * 2);
+                            gctx.fill();
+                            gctx.fillStyle = 'rgba(255,240,200,0.18)';
+                            gctx.beginPath();
+                            gctx.ellipse(spX - 0.5, spY - 0.4, 0.7, 0.4, 0, 0, Math.PI * 2);
+                            gctx.fill();
+                          }
+                          for (var sk = 0; sk < 7; sk++) {
+                            var skAng = (ci4 * 3.3 + sk * 2.7 + 1.2) % (Math.PI * 2);
+                            var skDist = 4 + ((ci4 * 13 + sk * 9 + 5) % 28);
+                            var skX = pos.x + Math.cos(skAng) * skDist;
+                            var skY = pos.y + Math.sin(skAng) * skDist * (iTH / iTW);
+                            var skDiam = Math.abs(skX - pos.x) / (iTW / 2) + Math.abs(skY - pos.y) / (iTH / 2);
+                            if (skDiam > 0.82) continue;
+                            gctx.fillStyle = (sk % 2 === 0) ? 'rgba(50,30,15,0.4)' : 'rgba(60,40,20,0.35)';
+                            gctx.beginPath();
+                            gctx.arc(skX, skY, 0.7, 0, Math.PI * 2);
+                            gctx.fill();
+                          }
+                        }
+                        // Tile border + hover highlight
+                        gctx.strokeStyle = isHovered ? 'rgba(251,191,36,0.6)' : hasPlant ? 'rgba(80,50,20,0.4)' : 'rgba(80,50,20,0.2)';
+                        gctx.lineWidth = isHovered ? 2 : 1; gctx.stroke();
+                        // Hover glow fill
+                        if (isHovered) {
+                          gctx.fillStyle = 'rgba(251,191,36,0.08)';
+                          gctx.beginPath();
+                          gctx.moveTo(pos.x, pos.y - iTH / 2); gctx.lineTo(pos.x + iTW / 2, pos.y);
+                          gctx.lineTo(pos.x, pos.y + iTH / 2); gctx.lineTo(pos.x - iTW / 2, pos.y);
+                          gctx.closePath(); gctx.fill();
+                        }
+                        // Soil depth side (3D effect — left and bottom faces)
+                        var depth = 8;
+                        gctx.fillStyle = 'rgba(70,45,20,0.5)';
+                        gctx.beginPath();
+                        gctx.moveTo(pos.x - iTW / 2, pos.y);
+                        gctx.lineTo(pos.x, pos.y + iTH / 2);
+                        gctx.lineTo(pos.x, pos.y + iTH / 2 + depth);
+                        gctx.lineTo(pos.x - iTW / 2, pos.y + depth);
+                        gctx.closePath(); gctx.fill();
+                        gctx.fillStyle = 'rgba(60,35,15,0.4)';
+                        gctx.beginPath();
+                        gctx.moveTo(pos.x, pos.y + iTH / 2);
+                        gctx.lineTo(pos.x + iTW / 2, pos.y);
+                        gctx.lineTo(pos.x + iTW / 2, pos.y + depth);
+                        gctx.lineTo(pos.x, pos.y + iTH / 2 + depth);
+                        gctx.closePath(); gctx.fill();
+
+                        // ── Weeds in empty plots (grow phase only) ──
+                        // 3-4 small weed sprigs per empty cell, positioned deterministically by cell index.
+                        // Subtle wind sway. Tells the player the plot needs attention.
+                        if (!hasPlant && cgPhase === 'grow' && sSeason !== 3) {
+                          var weedColor = sSeason === 2 ? 'rgba(140,120,60,0.55)' : 'rgba(110,150,80,0.55)';
+                          gctx.strokeStyle = weedColor;
+                          gctx.lineWidth = 0.8;
+                          for (var wdi = 0; wdi < 4; wdi++) {
+                            var wdAngle = (ci4 * 1.7 + wdi * 1.9) % (Math.PI * 2);
+                            var wdR = 18 + ((ci4 + wdi) % 5) * 4;
+                            var wdBaseX = pos.x + Math.cos(wdAngle) * wdR * 0.5;
+                            var wdBaseY = pos.y + Math.sin(wdAngle) * wdR * 0.25;
+                            var wdSway = Math.sin(t * 1.5 + ci4 + wdi) * 1.2;
+                            var wdH = 4 + ((ci4 + wdi) % 3) * 2;
+                            gctx.beginPath();
+                            gctx.moveTo(wdBaseX, wdBaseY);
+                            gctx.quadraticCurveTo(wdBaseX + wdSway * 0.5, wdBaseY - wdH * 0.5, wdBaseX + wdSway, wdBaseY - wdH);
+                            gctx.stroke();
+                            // Tiny weed leaf (occasional)
+                            if (wdi % 2 === 0) {
+                              gctx.fillStyle = weedColor;
+                              gctx.beginPath();
+                              gctx.ellipse(wdBaseX + wdSway * 0.7, wdBaseY - wdH * 0.6, 1.2, 0.6, wdAngle, 0, Math.PI * 2);
+                              gctx.fill();
+                            }
+                          }
+                        }
+
+                        // ── Plant rendering (isometric) ──
+                        if (hasPlant) {
+                          var vis2 = PLANT_VISUALS[cell4.plantId] || defVis;
+                          var gp2 = Math.min(1, cell4.growthDay / pl3.days);
+                          // ── Droop factor: thirsty plants visibly wilt ──
+                          // 0 = healthy turgor; 1 = severely wilted (compresses height, exaggerates lean)
+                          var droopFactor = cgMoisture < 30 ? Math.max(0, (30 - cgMoisture) / 30) : 0;
+                          var sw2 = Math.sin(t * 1.2 + ci4 * 0.7) * gp2 * 3 + droopFactor * 4 * gp2;
+                          // Drop shadow (isometric ellipse on soil surface)
+                          var shadowAlpha = 0.1 + gp2 * 0.08;
+                          gctx.fillStyle = 'rgba(0,0,0,' + shadowAlpha + ')';
+                          gctx.beginPath();
+                          gctx.ellipse(pos.x + 3, pos.y + 2, 8 + gp2 * 10, 4 + gp2 * 4, 0.3, 0, Math.PI * 2);
+                          gctx.fill();
+                          // ── Harvest-ready glow (soft pulsing aura on mature plants) ──
+                          // Lets the player spot which crops are ready to pick at a glance.
+                          if (gp2 >= 0.98 && !pl3.isStructure) {
+                            var harvestPulse = 0.5 + 0.5 * Math.sin(t * 2.5 + ci4 * 0.7);
+                            gctx.fillStyle = 'rgba(254,240,138,' + (0.18 + harvestPulse * 0.18) + ')';
+                            gctx.beginPath();
+                            gctx.ellipse(pos.x, pos.y - iTH / 4, 16 + harvestPulse * 4, 9 + harvestPulse * 2.5, 0, 0, Math.PI * 2);
+                            gctx.fill();
+                            // Sparkle dots
+                            for (var hsp = 0; hsp < 3; hsp++) {
+                              var spA = (hsp + ci4 * 0.3 + t * 1.5) % 1;
+                              if (spA < 0.4) {
+                                var spX = pos.x + Math.cos(hsp * 2.1 + ci4) * 14;
+                                var spY = pos.y - iTH / 4 - 8 + Math.sin(hsp * 2.1 + ci4) * 6 - spA * 8;
+                                gctx.fillStyle = 'rgba(254,240,138,' + (1 - spA / 0.4) * 0.85 + ')';
+                                gctx.beginPath(); gctx.arc(spX, spY, 1.2, 0, Math.PI * 2); gctx.fill();
+                              }
+                            }
+                          }
+                          var baseX = pos.x; var baseY = pos.y - iTH / 2 - 2;
+                          // sH2 reduced by droop (wilting plants slump)
+                          var sH2 = gp2 * (vis2.tall ? 50 : vis2.bushy ? 18 : vis2.wide ? 25 : 35);
+                          sH2 *= (1 - droopFactor * 0.28);
+
+                          // ── Support structures (trellis / cage / stake) — drawn BEFORE plant so plant climbs/sits in front ──
+                          if (gp2 > 0.15 && !pl3.isStructure) {
+                            var supportType = null;
+                            if (cell4.plantId === 'beans' || cell4.plantId === 'peas') supportType = 'trellis';
+                            else if (cell4.plantId === 'tomato') supportType = 'cage';
+                            else if (cell4.plantId === 'sunflower' || cell4.plantId === 'corn') supportType = 'stake';
+                            if (supportType === 'trellis') {
+                              // Bamboo A-frame trellis (3 verticals + 2 horizontal crosses)
+                              gctx.strokeStyle = 'rgba(180,140,90,0.65)'; gctx.lineWidth = 1.2;
+                              gctx.beginPath(); gctx.moveTo(baseX - 9, baseY); gctx.lineTo(baseX - 3, baseY - sH2 * 1.15); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX + 9, baseY); gctx.lineTo(baseX + 3, baseY - sH2 * 1.15); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX, baseY); gctx.lineTo(baseX, baseY - sH2 * 1.2); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 3, baseY - sH2 * 1.15); gctx.lineTo(baseX + 3, baseY - sH2 * 1.15); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 6, baseY - sH2 * 0.7); gctx.lineTo(baseX + 6, baseY - sH2 * 0.7); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 7.5, baseY - sH2 * 0.4); gctx.lineTo(baseX + 7.5, baseY - sH2 * 0.4); gctx.stroke();
+                            } else if (supportType === 'cage') {
+                              // Tomato cage (4 wire verticals + 3 horizontal rings)
+                              gctx.strokeStyle = 'rgba(110,110,130,0.55)'; gctx.lineWidth = 1;
+                              var cageH = sH2 * 1.05;
+                              gctx.beginPath(); gctx.moveTo(baseX - 7, baseY); gctx.lineTo(baseX - 7, baseY - cageH); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX + 7, baseY); gctx.lineTo(baseX + 7, baseY - cageH); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 4, baseY); gctx.lineTo(baseX - 4, baseY - cageH); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX + 4, baseY); gctx.lineTo(baseX + 4, baseY - cageH); gctx.stroke();
+                              for (var ringI = 1; ringI <= 3; ringI++) {
+                                gctx.beginPath(); gctx.ellipse(baseX, baseY - cageH * (ringI / 4), 7, 1.5, 0, 0, Math.PI * 2); gctx.stroke();
+                              }
+                            } else if (supportType === 'stake') {
+                              // Single bamboo stake behind plant + tie point at midstem
+                              gctx.strokeStyle = 'rgba(160,120,70,0.75)'; gctx.lineWidth = 1.5;
+                              gctx.beginPath(); gctx.moveTo(baseX + 2.5, baseY); gctx.lineTo(baseX + 2.5, baseY - sH2 * 1.18); gctx.stroke();
+                              if (gp2 > 0.5) {
+                                gctx.strokeStyle = 'rgba(80,60,30,0.7)'; gctx.lineWidth = 0.8;
+                                gctx.beginPath(); gctx.moveTo(baseX, baseY - sH2 * 0.5); gctx.lineTo(baseX + 5, baseY - sH2 * 0.5); gctx.stroke();
+                                gctx.beginPath(); gctx.moveTo(baseX, baseY - sH2 * 0.85); gctx.lineTo(baseX + 5, baseY - sH2 * 0.85); gctx.stroke();
+                              }
+                            }
+                          }
+
+                          if (pl3.isStructure) {
+                            // Structure icons (geometric)
+                            gctx.fillStyle = cell4.plantId === 'bee_hotel' ? '#8B6914' : cell4.plantId === 'compost_bin' ? '#5a4030' : '#4a6a8a';
+                            gctx.fillRect(baseX - 6, baseY - 12, 12, 12);
+                            gctx.fillStyle = cell4.plantId === 'rain_barrel' ? '#6a9abb' : '#7a6040';
+                            gctx.fillRect(baseX - 7, baseY - 14, 14, 3);
+                          } else {
+                            // Stem (curved with sway)
+                            gctx.strokeStyle = vis2.stemColor; gctx.lineWidth = 1.5 + gp2;
+                            gctx.beginPath(); gctx.moveTo(baseX, baseY);
+                            gctx.quadraticCurveTo(baseX + sw2 * 0.5, baseY - sH2 * 0.5, baseX + sw2, baseY - sH2);
+                            gctx.stroke();
+                            // Leaves
+                            if (gp2 > 0.2) {
+                              gctx.fillStyle = vis2.leafColor || '#50a030';
+                              var lc2 = vis2.bushy ? 6 : vis2.wide ? 4 : 3;
+                              for (var lf2 = 0; lf2 < lc2; lf2++) {
+                                var lfY2 = baseY - sH2 * (0.25 + lf2 * 0.15);
+                                var lfS2 = lf2 % 2 === 0 ? -1 : 1;
+                                var lfSz2 = (3 + gp2 * 4) * (vis2.bushy ? 1.4 : vis2.wide ? 1.6 : 1);
+                                gctx.beginPath();
+                                gctx.ellipse(baseX + lfS2 * (5 + lf2) + sw2 * (0.4 + lf2 * 0.08), lfY2,
+                                  lfSz2, lfSz2 * 0.45, lfS2 * -0.4, 0, Math.PI * 2);
+                                gctx.fill();
+                              }
+                            }
+                            // Flower
+                            if (vis2.flowerColor && gp2 > 0.5) {
+                              var ftx = baseX + sw2; var fty = baseY - sH2 - 3;
+                              gctx.fillStyle = vis2.flowerColor;
+                              for (var fp = 0; fp < 5; fp++) {
+                                var fa2 = fp * Math.PI * 2 / 5 + t * 0.3;
+                                gctx.beginPath(); gctx.ellipse(ftx + Math.cos(fa2) * 4, fty + Math.sin(fa2) * 4, 3, 1.8, fa2, 0, Math.PI * 2); gctx.fill();
+                              }
+                              gctx.fillStyle = vis2.fruitColor || '#8B6914';
+                              gctx.beginPath(); gctx.arc(ftx, fty, 2, 0, Math.PI * 2); gctx.fill();
+                            }
+                            // Fruit (at 70%+)
+                            if (vis2.fruitColor && gp2 > 0.7 && !vis2.flowerColor) {
+                              gctx.fillStyle = vis2.fruitColor;
+                              var frx2 = baseX + sw2; var fry2 = baseY - sH2 * 0.65;
+                              gctx.beginPath(); gctx.arc(frx2, fry2, 3 + gp2 * 2, 0, Math.PI * 2); gctx.fill();
+                              gctx.fillStyle = 'rgba(255,255,255,0.3)';
+                              gctx.beginPath(); gctx.arc(frx2 - 1, fry2 - 1, 1.5, 0, Math.PI * 2); gctx.fill();
+                            }
+                          }
+                          // Pest dots
+                          if (cell4.pests > 30) {
+                            gctx.fillStyle = 'rgba(220,50,50,0.6)';
+                            for (var pd3 = 0; pd3 < Math.min(3, Math.floor(cell4.pests / 25)); pd3++) {
+                              gctx.beginPath(); gctx.arc(baseX + (pd3 - 1) * 5, baseY - sH2 * 0.4 + Math.sin(t * 3 + pd3 + ci4) * 2, 2, 0, Math.PI * 2); gctx.fill();
+                            }
+                          }
+                          // Harvest glow (golden ring)
+                          if (gp2 >= 1 && cell4.health > 20) {
+                            gctx.strokeStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(t * 3 + ci4) * 0.15) + ')';
+                            gctx.lineWidth = 2;
+                            gctx.beginPath(); gctx.ellipse(pos.x, pos.y, iTW / 2 - 4, iTH / 2 - 2, 0, 0, Math.PI * 2); gctx.stroke();
+                          }
+                          // Growth sparkle
+                          if (gp2 > 0.1 && gp2 < 0.95 && sSeason < 3) {
+                            gctx.fillStyle = 'rgba(200,255,100,' + (0.3 + Math.sin(t * 5 + ci4) * 0.2) + ')';
+                            gctx.beginPath(); gctx.arc(baseX + Math.sin(t * 3 + ci4) * 8, baseY - sH2 * 0.5 - (t * 8 + ci4 * 5) % 15, 1.2, 0, Math.PI * 2); gctx.fill();
+                          }
+                        } else {
+                          // Empty plot indicator (plan phase)
+                          if (cgPhase === 'plan') {
+                            gctx.fillStyle = 'rgba(255,255,255,0.12)'; gctx.font = '14px system-ui'; gctx.textAlign = 'center';
+                            gctx.fillText('+', pos.x, pos.y + 5);
+                          }
+                        }
+
+                        // Companion glow lines (check right and down neighbors)
+                        if (hasPlant) {
+                          [ci4 + 1, ci4 + 4].forEach(function(ni3) {
+                            if (ni3 >= 16 || !grid2[ni3] || !grid2[ni3].plantId) return;
+                            if (ci4 % 4 === 3 && ni3 === ci4 + 1) return;
+                            var nPos = isoToScreen(Math.floor(ni3 / 4), ni3 % 4);
+                            var cm = CG_COMPANIONS.find(function(cp) {
+                              return (cp.a === cell4.plantId && cp.b === grid2[ni3].plantId) || (cp.b === cell4.plantId && cp.a === grid2[ni3].plantId);
+                            });
+                            if (cm) {
+                              gctx.strokeStyle = cm.bonus > 0 ? 'rgba(34,197,94,' + (0.12 + Math.sin(t * 2 + ci4) * 0.06) + ')' : 'rgba(239,68,68,' + (0.12 + Math.sin(t * 2 + ci4) * 0.06) + ')';
+                              gctx.lineWidth = 2;
+                              gctx.beginPath(); gctx.moveTo(pos.x, pos.y); gctx.lineTo(nPos.x, nPos.y); gctx.stroke();
+                            }
+                          });
+                        }
+                      }
+                    }
+
+                    // ═══════════════════════════════════════════════════════
+                    // AMBIENT WILDLIFE — makes the garden feel alive year-round
+                    // not just when the player has planted pollinator-attracting crops.
+                    // Each species respects season; counts boosted by polCount2.
+                    // ═══════════════════════════════════════════════════════
+
+                    // ── Bees (ambient + boosted by pollinator plants; daytime only) ──
+                    // Bees periodically VISIT flowering plants (pause + emit pollen burst on departure)
+                    // instead of just hovering generically. Builds a deterministic visit cycle per bee.
+                    if (sSeason !== 3 && !isNight) {  // skip in winter and at night
+                      // Find flowering plants (target candidates for landings)
+                      var floweringCells = [];
+                      for (var fci = 0; fci < 16; fci++) {
+                        var fcCell = grid2[fci];
+                        if (!fcCell || !fcCell.plantId) continue;
+                        var fcPlant = CG_PLANTS[fcCell.plantId];
+                        var fcVis = PLANT_VISUALS[fcCell.plantId];
+                        if (fcPlant && fcVis && fcVis.flowerColor && (fcCell.growthDay / fcPlant.days) > 0.5) {
+                          floweringCells.push(fci);
+                        }
+                      }
+                      var beeCount = (sSeason === 2 ? 1 : 2) + Math.min(4, polCount2);
+                      for (var bi3 = 0; bi3 < beeCount; bi3++) {
+                        // Each bee has a 14-second cycle: travel (0-50%) → land (50-75%) → leave w/ pollen burst (75-100%)
+                        var beeCycle = 14;
+                        var beePhase = ((t + bi3 * 3.5) % beeCycle) / beeCycle;
+                        var bx3, by3, isLanded = false, isLeaving = false;
+                        if (floweringCells.length > 0 && beePhase >= 0.5) {
+                          // Pick a target flowering plant deterministically per cycle
+                          var beeStage = Math.floor((t + bi3 * 3.5) / beeCycle);
+                          var tgtCell = floweringCells[(beeStage + bi3) % floweringCells.length];
+                          var tgtPos = isoToScreen(Math.floor(tgtCell / 4), tgtCell % 4);
+                          var tgtVis = PLANT_VISUALS[grid2[tgtCell].plantId];
+                          var tgtGp = Math.min(1, grid2[tgtCell].growthDay / CG_PLANTS[grid2[tgtCell].plantId].days);
+                          var tgtFlowerY = tgtPos.y - iTH / 2 - 2 - (tgtVis.tall ? 50 : 35) * tgtGp - 3;
+                          if (beePhase < 0.75) {
+                            // Landed at the flower (slight bobbing)
+                            isLanded = true;
+                            bx3 = tgtPos.x + Math.sin(t * 4) * 1;
+                            by3 = tgtFlowerY + Math.cos(t * 4) * 0.8;
+                          } else {
+                            // Leaving with a pollen burst — interpolate away from flower
+                            isLeaving = true;
+                            var leaveT = (beePhase - 0.75) / 0.25;
+                            bx3 = tgtPos.x + leaveT * (40 + bi3 * 20);
+                            by3 = tgtFlowerY - leaveT * 25;
+                            // Pollen burst (yellow particles trailing)
+                            for (var pbi = 0; pbi < 5; pbi++) {
+                              var pbT = (leaveT + pbi * 0.15) % 1;
+                              if (pbT < 0.6) {
+                                var pbX = tgtPos.x + Math.cos(pbi * 1.3) * (5 + pbT * 15);
+                                var pbY = tgtFlowerY + Math.sin(pbi * 1.3) * (5 + pbT * 12) - pbT * 8;
+                                gctx.fillStyle = 'rgba(252,211,77,' + (1 - pbT / 0.6) * 0.85 + ')';
+                                gctx.beginPath(); gctx.arc(pbX, pbY, 1 + pbT * 0.8, 0, Math.PI * 2); gctx.fill();
+                              }
+                            }
+                          }
+                        } else {
+                          // Generic ambient travel (drifting across the canvas)
+                          bx3 = (t * 20 + bi3 * 100) % (W + 60) - 30;
+                          by3 = isoOY - 20 + Math.sin(t * 1.5 + bi3 * 2.5) * 25;
+                        }
+                        // Bee body
+                        gctx.fillStyle = bi3 % 2 === 0 ? '#fbbf24' : '#f97316';
+                        gctx.beginPath(); gctx.arc(bx3, by3, 2.5, 0, Math.PI * 2); gctx.fill();
+                        // Wings (faster flap when hovering/landing)
+                        gctx.fillStyle = 'rgba(255,255,255,0.5)';
+                        var wingSpeed = isLanded ? 16 : 8;
+                        var wA2 = Math.sin(t * wingSpeed + bi3) * 0.5;
+                        gctx.beginPath(); gctx.ellipse(bx3 - 2.5, by3 - 1.5, 3, 1.8, wA2, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(bx3 + 2.5, by3 - 1.5, 3, 1.8, -wA2, 0, Math.PI * 2); gctx.fill();
+                        // Tiny pollen dot on bee's back when leaving (it picked up pollen!)
+                        if (isLeaving) {
+                          gctx.fillStyle = '#fde047';
+                          gctx.beginPath(); gctx.arc(bx3, by3 - 1, 1, 0, Math.PI * 2); gctx.fill();
+                        }
+                      }
+                    }
+
+                    // ── Butterflies (spring/summer; lazy figure-8 path; daytime only) ──
+                    if ((sSeason === 0 || sSeason === 1) && !isNight) {
+                      var btColors = ['#fda4af', '#a78bfa', '#fbbf24'];
+                      var btCount = 2 + Math.min(2, polCount2);
+                      for (var bti = 0; bti < btCount; bti++) {
+                        var btPhase = t * 0.4 + bti * 2.1;
+                        var btCx = W * (0.2 + (bti / btCount) * 0.7) + Math.sin(btPhase) * 70;
+                        var btCy = H * 0.42 + Math.sin(btPhase * 2) * 28;
+                        // Math.sin * 0.55 + 0.45 ranges [-0.10, 1.00] — Math.abs collapses the
+                        // wing-flap into a 0→1 oscillation (wings opening/closing both look the
+                        // same visually) and guarantees a non-negative ellipse radiusX below.
+                        // Floor at 0.05 so the wing never goes to a zero-width line.
+                        var wingPh = Math.max(0.05, Math.abs(Math.sin(t * 14 + bti)));
+                        var btCol = btColors[bti % btColors.length];
+                        gctx.fillStyle = btCol;
+                        // 4 wings (paired fore + hind)
+                        gctx.beginPath(); gctx.ellipse(btCx - 2.5, btCy - 1.8, 3 * wingPh, 3.5, -0.3, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(btCx + 2.5, btCy - 1.8, 3 * wingPh, 3.5, 0.3, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(btCx - 2.5, btCy + 1.5, 2.2 * wingPh, 2.6, 0.3, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(btCx + 2.5, btCy + 1.5, 2.2 * wingPh, 2.6, -0.3, 0, Math.PI * 2); gctx.fill();
+                        // Body
+                        gctx.fillStyle = '#1f2937';
+                        gctx.fillRect(btCx - 0.5, btCy - 2.5, 1, 5);
+                      }
+                    }
+
+                    // ── Birds (seasonal: V-formation migration in autumn, scattered swoop spring/summer; daytime only) ──
+                    if (sSeason !== 3 && !isNight) {
+                      gctx.strokeStyle = 'rgba(40,40,50,0.6)';
+                      gctx.lineWidth = 1.5;
+                      if (sSeason === 2) {
+                        // Autumn: V-formation migrating south
+                        var leadX = ((t * 25) % (W + 240)) - 120;
+                        var leadY = 35;
+                        var formation = [[0,0], [12,7], [-12,7], [24,14], [-24,14]];
+                        for (var fi = 0; fi < formation.length; fi++) {
+                          var bx = leadX + formation[fi][0];
+                          var by = leadY + formation[fi][1];
+                          var flap = Math.sin(t * 6 + fi * 0.4) * 2;
+                          gctx.beginPath();
+                          gctx.moveTo(bx - 5, by + flap);
+                          gctx.quadraticCurveTo(bx, by - 1.5, bx + 5, by + flap);
+                          gctx.stroke();
+                        }
+                      } else {
+                        // Spring/Summer: 3 birds scattered, swooping individually
+                        for (var bi4 = 0; bi4 < 3; bi4++) {
+                          var bcx = ((t * 18 + bi4 * W * 0.4) % (W + 100)) - 50;
+                          var bcy = 28 + Math.sin(t * 0.7 + bi4 * 1.7) * 20 + bi4 * 8;
+                          var flap2 = Math.sin(t * 7.5 + bi4 * 0.5) * 2.5;
+                          gctx.beginPath();
+                          gctx.moveTo(bcx - 6, bcy + flap2);
+                          gctx.quadraticCurveTo(bcx, bcy - 1.5, bcx + 6, bcy + flap2);
+                          gctx.stroke();
+                        }
+                      }
+                    }
+
+                    // ── Hopping rabbit cameo (every ~22s, spring/summer/autumn only) ──
+                    if (sSeason !== 3) {
+                      var rabCycle = 22;
+                      var rabPhase = (t % rabCycle) / rabCycle;
+                      if (rabPhase < 0.45) {
+                        var rabT = rabPhase / 0.45;
+                        var rx = W * 0.05 + rabT * (W * 0.9);
+                        var hopY = Math.abs(Math.sin(rabT * 16)) * -10;
+                        var ry = H * 0.93 + hopY;
+                        gctx.fillStyle = 'rgba(170,140,110,0.85)';
+                        // body
+                        gctx.beginPath(); gctx.ellipse(rx, ry, 8, 5, 0, 0, Math.PI * 2); gctx.fill();
+                        // head
+                        gctx.beginPath(); gctx.ellipse(rx + 6, ry - 4, 4, 4, 0, 0, Math.PI * 2); gctx.fill();
+                        // ears (two upright)
+                        gctx.fillStyle = 'rgba(170,140,110,0.7)';
+                        gctx.beginPath(); gctx.ellipse(rx + 5, ry - 9, 1.2, 3.5, 0, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(rx + 7, ry - 9, 1.2, 3.5, 0, 0, Math.PI * 2); gctx.fill();
+                        // cottontail
+                        gctx.fillStyle = 'rgba(255,255,255,0.8)';
+                        gctx.beginPath(); gctx.arc(rx - 7, ry - 1, 2.2, 0, Math.PI * 2); gctx.fill();
+                        // eye
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(rx + 7, ry - 4.5, 0.6, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Falling leaves (autumn only) ──
+                    if (sSeason === 2) {
+                      var leafCols = ['#dc2626', '#ea580c', '#eab308', '#ca8a04', '#b45309'];
+                      for (var li = 0; li < 14; li++) {
+                        var lx = (li * 67 + Math.sin(t * 0.6 + li) * 35) % W;
+                        var ly = ((li * 53 + t * 28) % (H + 30)) - 15;
+                        var lr = Math.sin(t * 0.8 + li) * 0.5 + t * 0.4;
+                        gctx.fillStyle = leafCols[li % leafCols.length];
+                        gctx.save();
+                        gctx.translate(lx, ly);
+                        gctx.rotate(lr);
+                        gctx.beginPath(); gctx.ellipse(0, 0, 3, 1.5, 0, 0, Math.PI * 2); gctx.fill();
+                        gctx.restore();
+                      }
+                    }
+
+                    // ── Wildflower tufts in foreground meadow (wind sway, spring/summer/autumn) ──
+                    if (sSeason !== 3) {
+                      var flowCols = ['#fbbf24', '#fda4af', '#a78bfa', '#ffffff', '#f472b6'];
+                      for (var fwi = 0; fwi < 22; fwi++) {
+                        var sway = Math.sin(t * 0.9 + fwi * 0.4) * 1.8;
+                        var fwx = ((fwi * 79) % W) + sway;
+                        var fwy = H * (0.86 + (fwi % 4) * 0.025);
+                        if (fwy > H * 0.97) continue;
+                        // Stem
+                        gctx.strokeStyle = 'rgba(80,120,60,0.55)';
+                        gctx.lineWidth = 0.8;
+                        gctx.beginPath(); gctx.moveTo(fwx - sway * 0.5, fwy + 5); gctx.lineTo(fwx, fwy); gctx.stroke();
+                        // Bloom
+                        gctx.fillStyle = sSeason === 2 ? 'rgba(202,138,4,0.7)' : flowCols[fwi % flowCols.length];
+                        gctx.beginPath(); gctx.arc(fwx, fwy, 1.7, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Shed chimney smoke (cold months — winter + chilly autumn evenings) ──
+                    if (sSeason === 3 || sSeason === 2) {
+                      for (var smi = 0; smi < 4; smi++) {
+                        var smPhase = ((t * 0.35 + smi * 0.6) % 2);
+                        if (smPhase > 1.6) continue;
+                        var smX = shedPos.x + 12 + Math.sin(smPhase * 4 + smi) * 3.5;
+                        var smY = shedPos.y - 42 - smPhase * 28;
+                        var smA = Math.max(0, (1 - smPhase / 1.6)) * 0.45;
+                        gctx.fillStyle = 'rgba(220,220,220,' + smA + ')';
+                        gctx.beginPath(); gctx.arc(smX, smY, 2.5 + smPhase * 2.2, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Squirrel cameo (climbs the side of the shed every ~30s, all seasons) ──
+                    var sqCycle = 30;
+                    var sqPhase = (t % sqCycle) / sqCycle;
+                    if (sqPhase > 0.15 && sqPhase < 0.55) {
+                      // Climbs up (15-35%) then back down (35-55%)
+                      var climbT = sqPhase < 0.35 ? (sqPhase - 0.15) / 0.2 : 1 - (sqPhase - 0.35) / 0.2;
+                      var sqX = shedPos.x - 22;  // left side of shed
+                      var sqY = shedPos.y - 6 - climbT * 24;  // up along shed wall
+                      var sqWiggle = Math.sin(t * 12) * 0.6;
+                      // Body (gray ellipse)
+                      gctx.fillStyle = 'rgba(120,110,100,0.95)';
+                      gctx.beginPath(); gctx.ellipse(sqX + sqWiggle, sqY, 4, 5, 0, 0, Math.PI * 2); gctx.fill();
+                      // Head
+                      gctx.beginPath(); gctx.arc(sqX + sqWiggle, sqY - 4, 2.5, 0, Math.PI * 2); gctx.fill();
+                      // Bushy tail (curved up)
+                      gctx.fillStyle = 'rgba(140,130,120,0.95)';
+                      gctx.beginPath();
+                      gctx.ellipse(sqX + sqWiggle - 4, sqY - 2, 3, 5, -0.5, 0, Math.PI * 2);
+                      gctx.fill();
+                      // Eye
+                      gctx.fillStyle = '#1f2937';
+                      gctx.beginPath(); gctx.arc(sqX + sqWiggle + 1.5, sqY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Perched birds on fence (always-2 in spring/summer, 1 in autumn; daytime only — they roost at night) ──
+                    if (sSeason !== 3 && !isNight) {
+                      var perchCount = sSeason === 2 ? 1 : 2;
+                      for (var pbi = 0; pbi < perchCount; pbi++) {
+                        // Position along the front fence (corner 2 → corner 3)
+                        var perchT = 0.25 + pbi * 0.35 + Math.sin(t * 0.3 + pbi) * 0.05;
+                        var pbX = corners[2].x + (corners[3].x - corners[2].x) * perchT;
+                        var pbY = corners[2].y + (corners[3].y - corners[2].y) * perchT - 8;
+                        // Occasionally hop in place
+                        var hopBoost = Math.max(0, Math.sin(t * 0.5 + pbi * 2) - 0.92) * 12;
+                        pbY -= hopBoost;
+                        // Body
+                        gctx.fillStyle = pbi === 0 ? 'rgba(190,80,60,0.9)' : 'rgba(80,90,140,0.9)';  // robin red + bluebird
+                        gctx.beginPath(); gctx.ellipse(pbX, pbY, 3.5, 2.5, 0, 0, Math.PI * 2); gctx.fill();
+                        // Head
+                        gctx.beginPath(); gctx.arc(pbX + 2.5, pbY - 1.5, 1.8, 0, Math.PI * 2); gctx.fill();
+                        // Beak
+                        gctx.fillStyle = '#fbbf24';
+                        gctx.beginPath();
+                        gctx.moveTo(pbX + 4.2, pbY - 1.5);
+                        gctx.lineTo(pbX + 5.5, pbY - 1.2);
+                        gctx.lineTo(pbX + 4.2, pbY - 0.8);
+                        gctx.closePath();
+                        gctx.fill();
+                        // Tail (small triangle)
+                        gctx.fillStyle = pbi === 0 ? 'rgba(150,60,40,0.9)' : 'rgba(50,60,110,0.9)';
+                        gctx.beginPath();
+                        gctx.moveTo(pbX - 3.5, pbY);
+                        gctx.lineTo(pbX - 6, pbY - 1.5);
+                        gctx.lineTo(pbX - 6, pbY + 1.5);
+                        gctx.closePath();
+                        gctx.fill();
+                      }
+                    }
+
+                    // ── Bird sitting on the birdbath edge (occasional, spring/summer) ──
+                    if ((sSeason === 0 || sSeason === 1) && (t % 18) < 6) {
+                      var bbBirdX = bbPos.x - 8;
+                      var bbBirdY = bbPos.y - 16;
+                      gctx.fillStyle = 'rgba(80,120,170,0.9)';
+                      gctx.beginPath(); gctx.ellipse(bbBirdX, bbBirdY, 3, 2.2, 0, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(bbBirdX + 2.2, bbBirdY - 1.4, 1.6, 0, Math.PI * 2); gctx.fill();
+                      gctx.fillStyle = '#fbbf24';
+                      gctx.beginPath();
+                      gctx.moveTo(bbBirdX + 3.6, bbBirdY - 1.4);
+                      gctx.lineTo(bbBirdX + 4.6, bbBirdY - 1.2);
+                      gctx.lineTo(bbBirdX + 3.6, bbBirdY - 0.8);
+                      gctx.closePath();
+                      gctx.fill();
+                      // Tiny splash if bird is moving
+                      if (Math.sin(t * 5) > 0.7) {
+                        gctx.fillStyle = 'rgba(255,255,255,0.6)';
+                        gctx.beginPath(); gctx.arc(bbPos.x + 3, bbPos.y - 15, 1, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Fireflies (dusk + early night, spring/summer only) ──
+                    if ((isDusk || (isNight && nightStrength < 0.7)) && (sSeason === 0 || sSeason === 1)) {
+                      var ffStrength = isDusk ? 0.5 : (1 - nightStrength);
+                      for (var ffi = 0; ffi < 12; ffi++) {
+                        var ffx = (ffi * 87 + Math.sin(t * 0.6 + ffi) * 30) % W;
+                        var ffy = H * (0.55 + (ffi % 5) * 0.06) + Math.cos(t * 0.4 + ffi) * 12;
+                        var ffBlink = Math.max(0, Math.sin(t * 1.5 + ffi * 1.3));
+                        if (ffBlink < 0.4) continue;
+                        gctx.fillStyle = 'rgba(254,240,138,' + (ffBlink * 0.85 * ffStrength) + ')';
+                        gctx.beginPath(); gctx.arc(ffx, ffy, 1.8, 0, Math.PI * 2); gctx.fill();
+                        // Glow
+                        gctx.fillStyle = 'rgba(254,240,138,' + (ffBlink * 0.25 * ffStrength) + ')';
+                        gctx.beginPath(); gctx.arc(ffx, ffy, 4.5, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Snail crossing the foreground in early morning (dawn only, slow + leaves a wet trail) ──
+                    if (isDawn && sSeason !== 3) {
+                      // Calculate snail position based on time-of-day (slow march across the foreground)
+                      var snProgress = (todPhase - 0.05) / 0.1;  // 0..1 across dawn
+                      var snX = W * 0.1 + snProgress * W * 0.5;
+                      var snY = H * 0.94;
+                      // Wet trail behind snail
+                      gctx.strokeStyle = 'rgba(180,200,220,0.45)';
+                      gctx.lineWidth = 2;
+                      gctx.beginPath();
+                      var trailLen = 60;
+                      for (var tri = 0; tri < trailLen; tri += 4) {
+                        var trX = snX - tri;
+                        var trY = snY + Math.sin(tri * 0.3) * 0.8;
+                        if (tri === 0) gctx.moveTo(trX, trY);
+                        else gctx.lineTo(trX, trY);
+                      }
+                      gctx.stroke();
+                      // Snail body (foot)
+                      gctx.fillStyle = 'rgba(180,160,140,0.9)';
+                      gctx.beginPath(); gctx.ellipse(snX, snY, 6, 2, 0, 0, Math.PI * 2); gctx.fill();
+                      // Spiral shell on top
+                      gctx.fillStyle = '#a87a4a';
+                      gctx.beginPath(); gctx.arc(snX, snY - 2.5, 4, 0, Math.PI * 2); gctx.fill();
+                      gctx.strokeStyle = '#7a4a20'; gctx.lineWidth = 0.6;
+                      // Spiral lines
+                      for (var spi = 0; spi < 3; spi++) {
+                        gctx.beginPath();
+                        gctx.arc(snX - spi * 0.3, snY - 2.5, 3.5 - spi * 1, -Math.PI * 0.7, Math.PI * 0.3);
+                        gctx.stroke();
+                      }
+                      // Eye stalks (two thin antennae with little eyes on top)
+                      gctx.strokeStyle = 'rgba(120,100,80,0.85)'; gctx.lineWidth = 0.6;
+                      gctx.beginPath(); gctx.moveTo(snX + 4, snY - 1); gctx.lineTo(snX + 6, snY - 4); gctx.stroke();
+                      gctx.beginPath(); gctx.moveTo(snX + 5, snY - 1); gctx.lineTo(snX + 7, snY - 4); gctx.stroke();
+                      gctx.fillStyle = '#1f2937';
+                      gctx.beginPath(); gctx.arc(snX + 6, snY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(snX + 7, snY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Cricket "song" — musical notes float up at night (synesthetic visual for cricket sound) ──
+                    if (isNight && nightStrength > 0.4 && sSeason !== 3) {
+                      var noteCols = ['rgba(168,85,247,', 'rgba(96,165,250,', 'rgba(244,114,182,'];
+                      for (var nti = 0; nti < 5; nti++) {
+                        var ntCycle = 5;
+                        var ntPhase = ((t + nti * 1) % ntCycle) / ntCycle;  // 0..1 rise
+                        if (ntPhase > 0.85) continue;  // pause between rises
+                        var ntX = W * (0.18 + (nti / 5) * 0.65) + Math.sin(t * 0.5 + nti * 1.7) * 8;
+                        var ntY = H * 0.85 - ntPhase * 50;
+                        var ntA = (1 - ntPhase / 0.85) * 0.65 * nightStrength;
+                        gctx.fillStyle = noteCols[nti % noteCols.length] + ntA + ')';
+                        // Eighth-note glyph: stem + flag + filled head
+                        gctx.fillRect(ntX + 1, ntY - 5, 0.8, 6);  // stem
+                        gctx.beginPath(); gctx.ellipse(ntX, ntY, 1.8, 1.2, -0.3, 0, Math.PI * 2); gctx.fill();  // head
+                        // Flag
+                        gctx.beginPath();
+                        gctx.moveTo(ntX + 1.8, ntY - 5);
+                        gctx.quadraticCurveTo(ntX + 4, ntY - 4, ntX + 3, ntY - 1.5);
+                        gctx.lineTo(ntX + 1.8, ntY - 2);
+                        gctx.closePath();
+                        gctx.fill();
+                      }
+                    }
+
+                    // ── Owl in background tree at night (silhouette + glowing eyes) ──
+                    if (isNight && nightStrength > 0.5 && sSeason !== 3) {
+                      var owlX = W * 0.32;
+                      var owlY = isoOY - 50;
+                      // Body silhouette
+                      gctx.fillStyle = 'rgba(20,15,30,0.85)';
+                      gctx.beginPath(); gctx.ellipse(owlX, owlY, 6, 8, 0, 0, Math.PI * 2); gctx.fill();
+                      // Head
+                      gctx.beginPath(); gctx.arc(owlX, owlY - 6, 4.5, 0, Math.PI * 2); gctx.fill();
+                      // Ear tufts
+                      gctx.beginPath();
+                      gctx.moveTo(owlX - 3, owlY - 9); gctx.lineTo(owlX - 4.5, owlY - 12); gctx.lineTo(owlX - 1.5, owlY - 9);
+                      gctx.closePath(); gctx.fill();
+                      gctx.beginPath();
+                      gctx.moveTo(owlX + 3, owlY - 9); gctx.lineTo(owlX + 4.5, owlY - 12); gctx.lineTo(owlX + 1.5, owlY - 9);
+                      gctx.closePath(); gctx.fill();
+                      // Eyes (glowing yellow, blink occasionally)
+                      var eyeBlink = Math.sin(t * 0.3) > 0.95 ? 0 : 1;
+                      gctx.fillStyle = 'rgba(251,191,36,' + (0.9 * eyeBlink * nightStrength) + ')';
+                      gctx.beginPath(); gctx.arc(owlX - 1.8, owlY - 6, 1, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(owlX + 1.8, owlY - 6, 1, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Dragonflies (summer, daytime; iridescent wings, fast straight-line zips) ──
+                    if (sSeason === 1 && !isNight) {
+                      var dfCount = 2;
+                      for (var dfi = 0; dfi < dfCount; dfi++) {
+                        // Each dragonfly does a 12s loop: zip across, pause, zip back
+                        var dfLoop = 12;
+                        var dfPhase = ((t + dfi * 6) % dfLoop) / dfLoop;  // 0..1
+                        var direction = Math.floor((t + dfi * 6) / dfLoop) % 2 === 0 ? 1 : -1;
+                        var dfx, dfy;
+                        if (dfPhase < 0.4) {
+                          // Zipping across
+                          var zipT = dfPhase / 0.4;
+                          dfx = direction > 0 ? zipT * W : (1 - zipT) * W;
+                          dfy = H * 0.45 + dfi * 35 + Math.sin(t * 4 + dfi) * 8;
+                        } else if (dfPhase < 0.55) {
+                          // Hovering
+                          dfx = direction > 0 ? W : 0;
+                          dfy = H * 0.45 + dfi * 35 + Math.sin(t * 4 + dfi) * 12;
+                          continue;  // off-screen during hover
+                        } else {
+                          continue;
+                        }
+                        // Long thin body (segments)
+                        var bodyAng = direction > 0 ? 0 : Math.PI;
+                        gctx.save();
+                        gctx.translate(dfx, dfy);
+                        gctx.rotate(bodyAng);
+                        // Iridescent wings (4 wings, fast flap)
+                        var wingFlap = Math.abs(Math.sin(t * 30 + dfi)) * 0.6 + 0.4;
+                        gctx.fillStyle = 'rgba(180,220,255,' + (0.45 * wingFlap) + ')';
+                        gctx.beginPath(); gctx.ellipse(-2, -3, 7 * wingFlap, 2, -0.1, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(2, -3, 7 * wingFlap, 2, 0.1, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(-2, 3, 6 * wingFlap, 1.7, 0.1, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(2, 3, 6 * wingFlap, 1.7, -0.1, 0, Math.PI * 2); gctx.fill();
+                        // Body (3 segments — thorax + abdomen)
+                        gctx.fillStyle = '#0e7490';
+                        gctx.fillRect(-2, -1, 4, 2);
+                        gctx.fillStyle = '#0891b2';
+                        gctx.fillRect(2, -0.6, 8, 1.3);
+                        // Head
+                        gctx.fillStyle = '#155e75';
+                        gctx.beginPath(); gctx.arc(-3, 0, 1.6, 0, Math.PI * 2); gctx.fill();
+                        // Eyes (large, compound)
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(-3.3, -0.8, 0.6, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(-3.3, 0.8, 0.6, 0, Math.PI * 2); gctx.fill();
+                        gctx.restore();
+                      }
+                    }
+
+                    // ── Ladybug on a random leaf (periodic, all non-winter seasons; sits ~6s then moves) ──
+                    if (sSeason !== 3 && !isNight) {
+                      var lbCycle = 14;
+                      var lbStage = Math.floor(t / lbCycle);
+                      var lbPhase = (t % lbCycle) / lbCycle;
+                      // Pick a target tile that has a plant (deterministic by stage)
+                      var plantedCells = [];
+                      for (var pci = 0; pci < 16; pci++) { if (grid2[pci] && grid2[pci].plantId) plantedCells.push(pci); }
+                      if (plantedCells.length > 0 && lbPhase < 0.45) {
+                        var targetCell = plantedCells[lbStage % plantedCells.length];
+                        var lbPos = isoToScreen(Math.floor(targetCell / 4), targetCell % 4);
+                        var lbX = lbPos.x + Math.sin(lbStage * 1.7) * 6;
+                        var lbY = lbPos.y - iTH / 2 - 18 + Math.cos(lbStage * 2.3) * 4;
+                        // Body (red dome)
+                        gctx.fillStyle = '#dc2626';
+                        gctx.beginPath(); gctx.ellipse(lbX, lbY, 2.5, 2, 0, 0, Math.PI * 2); gctx.fill();
+                        // Head (small black)
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(lbX - 2, lbY, 1, 0, Math.PI * 2); gctx.fill();
+                        // Center line down the back
+                        gctx.strokeStyle = '#1f2937'; gctx.lineWidth = 0.6;
+                        gctx.beginPath(); gctx.moveTo(lbX - 1, lbY); gctx.lineTo(lbX + 2.5, lbY); gctx.stroke();
+                        // 6 spots (3 per side)
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(lbX, lbY - 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX + 1.4, lbY - 0.5, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX + 0.5, lbY + 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX, lbY + 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX + 1.4, lbY + 0.5, 0.4, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Garden cat (orange tabby; sleeps near birdbath most of the time, walks occasionally) ──
+                    if (sSeason !== 3) {  // cat is indoors in winter
+                      var catCycle = 60;  // 60-second loop
+                      var catPhase = (t % catCycle) / catCycle;
+                      var catX, catY, catSleeping;
+                      if (catPhase < 0.7) {
+                        // Sleeping curled up next to birdbath
+                        catX = bbPos.x - 22;
+                        catY = bbPos.y - 4;
+                        catSleeping = true;
+                      } else {
+                        // Walking from birdbath toward fence and back (30% of the time)
+                        var walkT = (catPhase - 0.7) / 0.3;
+                        var walkProgress = walkT < 0.5 ? walkT * 2 : (1 - walkT) * 2;  // out then back
+                        catX = bbPos.x - 22 + walkProgress * 60;
+                        catY = bbPos.y - 4 + Math.abs(Math.sin(walkT * 24)) * -1.5;  // tiny step bounce
+                        catSleeping = false;
+                      }
+                      var catColor = '#d97706';  // orange tabby
+                      var catStripe = '#92400e';
+                      if (catSleeping) {
+                        // Curled body (loaf shape)
+                        gctx.fillStyle = catColor;
+                        gctx.beginPath(); gctx.ellipse(catX, catY, 9, 5, 0, 0, Math.PI * 2); gctx.fill();
+                        // Tail wrapped around (curve)
+                        gctx.beginPath();
+                        gctx.ellipse(catX + 6, catY + 1, 4, 2, 0.3, 0, Math.PI * 2);
+                        gctx.fill();
+                        // Head tucked
+                        gctx.beginPath(); gctx.arc(catX - 6, catY - 1, 3.5, 0, Math.PI * 2); gctx.fill();
+                        // Stripes (3 dark bands)
+                        gctx.fillStyle = catStripe;
+                        gctx.fillRect(catX - 3, catY - 3, 1.2, 4);
+                        gctx.fillRect(catX, catY - 3.5, 1.2, 4.5);
+                        gctx.fillRect(catX + 3, catY - 3, 1.2, 4);
+                        // Closed eye (just a line)
+                        gctx.strokeStyle = catStripe; gctx.lineWidth = 0.8;
+                        gctx.beginPath(); gctx.moveTo(catX - 7, catY - 1.5); gctx.lineTo(catX - 5, catY - 1.5); gctx.stroke();
+                        // Ears (two triangles)
+                        gctx.fillStyle = catColor;
+                        gctx.beginPath();
+                        gctx.moveTo(catX - 8, catY - 4); gctx.lineTo(catX - 6.5, catY - 6); gctx.lineTo(catX - 5.5, catY - 3.5);
+                        gctx.closePath(); gctx.fill();
+                        gctx.beginPath();
+                        gctx.moveTo(catX - 6, catY - 4); gctx.lineTo(catX - 4.5, catY - 6); gctx.lineTo(catX - 3.5, catY - 3.5);
+                        gctx.closePath(); gctx.fill();
+                      } else {
+                        // Walking pose (side view)
+                        gctx.fillStyle = catColor;
+                        // Body
+                        gctx.beginPath(); gctx.ellipse(catX, catY, 8, 4, 0, 0, Math.PI * 2); gctx.fill();
+                        // Head
+                        gctx.beginPath(); gctx.arc(catX + 7, catY - 2, 3.5, 0, Math.PI * 2); gctx.fill();
+                        // Ears
+                        gctx.beginPath();
+                        gctx.moveTo(catX + 5, catY - 5); gctx.lineTo(catX + 6, catY - 7); gctx.lineTo(catX + 7, catY - 4.5);
+                        gctx.closePath(); gctx.fill();
+                        gctx.beginPath();
+                        gctx.moveTo(catX + 7, catY - 5); gctx.lineTo(catX + 8, catY - 7); gctx.lineTo(catX + 9, catY - 4.5);
+                        gctx.closePath(); gctx.fill();
+                        // Tail (raised, slightly curved, swishing)
+                        var tailSwish = Math.sin(t * 4) * 1.5;
+                        gctx.strokeStyle = catColor; gctx.lineWidth = 2.5;
+                        gctx.beginPath();
+                        gctx.moveTo(catX - 7, catY - 1);
+                        gctx.quadraticCurveTo(catX - 11, catY - 5 + tailSwish, catX - 12, catY - 7);
+                        gctx.stroke();
+                        // Legs (4, stepping)
+                        var stepPhase = Math.sin(t * 8);
+                        gctx.lineWidth = 1.8;
+                        gctx.beginPath(); gctx.moveTo(catX + 5, catY + 2); gctx.lineTo(catX + 5, catY + 5 + Math.max(0, stepPhase) * -1); gctx.stroke();
+                        gctx.beginPath(); gctx.moveTo(catX + 2, catY + 2); gctx.lineTo(catX + 2, catY + 5 + Math.max(0, -stepPhase) * -1); gctx.stroke();
+                        gctx.beginPath(); gctx.moveTo(catX - 3, catY + 2); gctx.lineTo(catX - 3, catY + 5 + Math.max(0, stepPhase) * -1); gctx.stroke();
+                        gctx.beginPath(); gctx.moveTo(catX - 6, catY + 2); gctx.lineTo(catX - 6, catY + 5 + Math.max(0, -stepPhase) * -1); gctx.stroke();
+                        // Eyes (two yellow dots)
+                        gctx.fillStyle = '#eab308';
+                        gctx.beginPath(); gctx.arc(catX + 8.5, catY - 2, 0.7, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(catX + 9.5, catY - 2, 0.7, 0, Math.PI * 2); gctx.fill();
+                        // Stripes on body
+                        gctx.fillStyle = catStripe;
+                        gctx.fillRect(catX - 3, catY - 2.5, 1, 3);
+                        gctx.fillRect(catX, catY - 3, 1, 3.5);
+                        gctx.fillRect(catX + 3, catY - 2.5, 1, 3);
+                      }
+                    }
+
+                    // ── Spider web in fence corner (subtle, top-left) — small decorative detail ──
+                    var webX = corners[0].x + 8;
+                    var webY = corners[0].y - 4;
+                    gctx.strokeStyle = 'rgba(220,220,230,0.18)';
+                    gctx.lineWidth = 0.6;
+                    for (var wsi = 0; wsi < 6; wsi++) {
+                      var ang = wsi * Math.PI / 3;
+                      gctx.beginPath();
+                      gctx.moveTo(webX, webY);
+                      gctx.lineTo(webX + Math.cos(ang) * 7, webY + Math.sin(ang) * 7);
+                      gctx.stroke();
+                    }
+                    // Concentric web threads
+                    for (var wsj = 1; wsj <= 3; wsj++) {
+                      gctx.beginPath();
+                      gctx.arc(webX, webY, wsj * 2.3, 0, Math.PI * 2);
+                      gctx.stroke();
+                    }
+
+                    // ── Weather ──
+                    if (sSeason === 0 || sSeason === 2) { // Rain
+                      gctx.strokeStyle = 'rgba(100,150,220,0.12)'; gctx.lineWidth = 0.8;
+                      for (var ri4 = 0; ri4 < 15; ri4++) {
+                        var rx3 = (ri4 * 53 + t * 50) % W; var ry3 = (ri4 * 37 + t * 100) % (H * 0.5);
+                        gctx.beginPath(); gctx.moveTo(rx3, ry3); gctx.lineTo(rx3 - 1.5, ry3 + 8); gctx.stroke();
+                      }
+                    }
+                    if (sSeason === 3) { // Snow
+                      gctx.fillStyle = 'rgba(255,255,255,0.45)';
+                      for (var si4 = 0; si4 < 25; si4++) {
+                        gctx.beginPath(); gctx.arc((si4 * 41 + t * 6) % W, (si4 * 23 + t * 12) % H, 1.2 + Math.sin(si4 + t * 0.4) * 0.5, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Click ripple effect (1.2-second expanding circle on player click) ──
+                    if (cvEl._clickRipple) {
+                      var rDur = 1.2;  // seconds
+                      var rElapsed = (performance.now() - cvEl._clickRipple.t0) / 1000;
+                      if (rElapsed < rDur) {
+                        var rT = rElapsed / rDur;
+                        var rR = 5 + rT * 50;
+                        var rA = (1 - rT) * 0.55;
+                        // Outer ring
+                        gctx.strokeStyle = 'rgba(251,191,36,' + rA + ')';
+                        gctx.lineWidth = 2 * (1 - rT) + 0.5;
+                        gctx.beginPath(); gctx.arc(cvEl._clickRipple.x, cvEl._clickRipple.y, rR, 0, Math.PI * 2); gctx.stroke();
+                        // Inner softer ring
+                        gctx.strokeStyle = 'rgba(254,240,138,' + (rA * 0.6) + ')';
+                        gctx.lineWidth = 1;
+                        gctx.beginPath(); gctx.arc(cvEl._clickRipple.x, cvEl._clickRipple.y, rR * 0.6, 0, Math.PI * 2); gctx.stroke();
+                      } else {
+                        cvEl._clickRipple = null;
+                      }
+                    }
+
+                    // ── Plant burst (1.6-second celebration on successful plant) ──
+                    // Expanding green/yellow rings + sparkle particles + emoji + label
+                    // popping up briefly above the cell. UDL: high-visibility
+                    // confirmation that the planting action actually happened.
+                    if (cvEl._plantBurst) {
+                      var pbDur = 1.6;
+                      var pbElapsed = (performance.now() - cvEl._plantBurst.t0) / 1000;
+                      if (pbElapsed < pbDur) {
+                        var pbT = pbElapsed / pbDur;          // 0→1
+                        var pbCell = isoToScreen(Math.floor(cvEl._plantBurst.idx / 4), cvEl._plantBurst.idx % 4);
+                        // Three staggered expanding rings (green → yellow → green)
+                        var ringColors = ['rgba(74,222,128,', 'rgba(253,224,71,', 'rgba(34,197,94,'];
+                        for (var pri = 0; pri < 3; pri++) {
+                          var ringStart = pri * 0.12;
+                          if (pbT < ringStart) continue;
+                          var ringT = (pbT - ringStart) / (1 - ringStart);
+                          if (ringT > 1) continue;
+                          var ringR = 6 + ringT * 65;
+                          var ringA = (1 - ringT) * 0.65;
+                          gctx.strokeStyle = ringColors[pri] + ringA + ')';
+                          gctx.lineWidth = 2.5 * (1 - ringT) + 0.4;
+                          gctx.beginPath();
+                          gctx.ellipse(pbCell.x, pbCell.y, ringR, ringR * 0.55, 0, 0, Math.PI * 2);
+                          gctx.stroke();
+                        }
+                        // Sparkle particles flying outward + up
+                        var pCount = 8;
+                        for (var pp = 0; pp < pCount; pp++) {
+                          var pAng = (pp / pCount) * Math.PI * 2 + pbT * 0.5;
+                          var pDist = pbT * 55;
+                          var pPx = pbCell.x + Math.cos(pAng) * pDist;
+                          var pPy = pbCell.y - 5 + Math.sin(pAng) * pDist * 0.55 - pbT * 18; // arc up
+                          var pAlpha = (1 - pbT) * 0.85;
+                          gctx.fillStyle = (pp % 2 === 0) ? 'rgba(253,224,71,' + pAlpha + ')' : 'rgba(74,222,128,' + pAlpha + ')';
+                          gctx.beginPath(); gctx.arc(pPx, pPy, 2 + (1 - pbT) * 1.5, 0, Math.PI * 2); gctx.fill();
+                        }
+                        // Floating emoji + "Planted!" label rising above the cell (first 0.85s)
+                        if (pbT < 0.85) {
+                          var labelT = pbT / 0.85;
+                          var labelY = pbCell.y - 40 - labelT * 40;
+                          var labelA = labelT < 0.15 ? labelT / 0.15 : (1 - (labelT - 0.15) / 0.85);
+                          gctx.globalAlpha = Math.max(0, labelA);
+                          // Backdrop pill
+                          var labelText = cvEl._plantBurst.emoji + ' Planted!';
+                          gctx.font = 'bold 22px system-ui, sans-serif';
+                          var labelW = gctx.measureText(labelText).width + 22;
+                          gctx.fillStyle = 'rgba(20,40,15,0.78)';
+                          gctx.beginPath();
+                          if (gctx.roundRect) {
+                            gctx.roundRect(pbCell.x - labelW / 2, labelY - 18, labelW, 28, 14);
+                            gctx.fill();
+                          } else {
+                            gctx.fillRect(pbCell.x - labelW / 2, labelY - 18, labelW, 28);
+                          }
+                          // Text
+                          gctx.fillStyle = '#fef9c3';
+                          gctx.textAlign = 'center';
+                          gctx.textBaseline = 'middle';
+                          gctx.fillText(labelText, pbCell.x, labelY - 4);
+                          gctx.globalAlpha = 1;
+                          gctx.textAlign = 'start';
+                          gctx.textBaseline = 'alphabetic';
+                        }
+                      } else {
+                        cvEl._plantBurst = null;
+                      }
+                    }
+
+                    // ── Hover preview while a plant is selected (plan phase) ──
+                    // Empty tile + selected plant → ghost silhouette + green "Plant here" badge.
+                    // Occupied tile + selected plant → red "Already planted" badge.
+                    // UDL: lets the student preview placement before committing the action.
+                    // Ambient ecosystem visitors respond to the learner's planting choices.
+                    var ambientT = cgReducedMotion ? 0 : t;
+                    var pollinatorCells = [];
+                    var guardianCells = [];
+                    var hasSunflowerHabitat = false;
+                    grid2.forEach(function(ambientCell, ambientIdx) {
+                      if (!ambientCell.plantId || !CG_PLANTS[ambientCell.plantId]) return;
+                      var ambientPlant = CG_PLANTS[ambientCell.plantId];
+                      if (ambientPlant.pollinator) pollinatorCells.push(ambientIdx);
+                      if (['dill','yarrow','marigold','nasturtium'].indexOf(ambientCell.plantId) !== -1) guardianCells.push(ambientIdx);
+                      if (ambientCell.plantId === 'sunflower') hasSunflowerHabitat = true;
+                    });
+                    if (!isNight && pollinatorCells.length > 0 && sSeason !== 3) {
+                      var beeCount = Math.min(6, pollinatorCells.length + 1);
+                      for (var beeI = 0; beeI < beeCount; beeI++) {
+                        var beeTargetIdx = pollinatorCells[beeI % pollinatorCells.length];
+                        var beeTarget = isoToScreen(Math.floor(beeTargetIdx / 4), beeTargetIdx % 4);
+                        var beeX = beeTarget.x + Math.cos(ambientT * 1.8 + beeI * 2.2) * (24 + beeI * 4);
+                        var beeY = beeTarget.y - 42 + Math.sin(ambientT * 2.7 + beeI * 1.4) * 14;
+                        gctx.fillStyle = 'rgba(255,255,255,0.75)';
+                        gctx.beginPath(); gctx.ellipse(beeX - 3, beeY - 3, 3, 2, -0.5, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(beeX + 3, beeY - 3, 3, 2, 0.5, 0, Math.PI * 2); gctx.fill();
+                        gctx.fillStyle = '#facc15'; gctx.beginPath(); gctx.ellipse(beeX, beeY, 4, 2.5, 0, 0, Math.PI * 2); gctx.fill();
+                        gctx.strokeStyle = '#422006'; gctx.lineWidth = 1; gctx.beginPath(); gctx.moveTo(beeX - 1, beeY - 2); gctx.lineTo(beeX - 1, beeY + 2); gctx.moveTo(beeX + 2, beeY - 2); gctx.lineTo(beeX + 2, beeY + 2); gctx.stroke();
+                      }
+                    }
+                    if (guardianCells.length > 0 || cgBeneficialPop >= 10) {
+                      var ladyCount = Math.min(4, Math.max(1, guardianCells.length));
+                      for (var ladyI = 0; ladyI < ladyCount; ladyI++) {
+                        var ladyIdx = guardianCells.length ? guardianCells[ladyI % guardianCells.length] : ladyI;
+                        var ladyBase = isoToScreen(Math.floor(ladyIdx / 4), ladyIdx % 4);
+                        var ladyX = ladyBase.x - 18 + ((ambientT * 7 + ladyI * 13) % 36);
+                        var ladyY = ladyBase.y - 8 - Math.sin(ambientT + ladyI) * 3;
+                        gctx.fillStyle = '#dc2626'; gctx.beginPath(); gctx.arc(ladyX, ladyY, 3.2, 0, Math.PI * 2); gctx.fill();
+                        gctx.fillStyle = '#111827'; gctx.beginPath(); gctx.arc(ladyX, ladyY - 2.6, 1.5, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(ladyX - 1.2, ladyY, 0.7, 0, Math.PI * 2); gctx.arc(ladyX + 1.3, ladyY + 1, 0.7, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+                    if (isNight && plantedCells >= 4 && sSeason !== 3) {
+                      for (var fireI = 0; fireI < 12; fireI++) {
+                        var fireX = isoOX - 260 + ((fireI * 47 + ambientT * (5 + fireI % 3)) % 520);
+                        var fireY = isoOY - 80 + ((fireI * 31) % 260) + Math.sin(ambientT * 1.4 + fireI) * 12;
+                        var fireGlow = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(ambientT * 3 + fireI * 1.8));
+                        gctx.fillStyle = 'rgba(217,249,157,' + fireGlow + ')'; gctx.beginPath(); gctx.arc(fireX, fireY, 2.2, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+                    if (hasSunflowerHabitat && !isNight) {
+                      var birdX = ((ambientT * 22) % (W + 160)) - 80;
+                      var birdY = 105 + Math.sin(ambientT * 0.8) * 18;
+                      gctx.strokeStyle = 'rgba(30,41,59,0.65)'; gctx.lineWidth = 2; gctx.beginPath(); gctx.arc(birdX - 6, birdY, 7, Math.PI * 1.08, Math.PI * 1.85); gctx.arc(birdX + 6, birdY, 7, Math.PI * 1.15, Math.PI * 1.92); gctx.stroke();
+                    }
+
+                    if (cgPhase === 'plan' && cgSelectedPlant && hoverCell2 >= 0 && hoverCell2 < 16) {
+                      var pvCell = grid2[hoverCell2];
+                      var pvPos = isoToScreen(Math.floor(hoverCell2 / 4), hoverCell2 % 4);
+                      var pvOccupied = !!(pvCell && pvCell.plantId);
+                      var pvVis = PLANT_VISUALS[cgSelectedPlant] || defVis;
+                      var pvSelected = CG_PLANTS[cgSelectedPlant];
+                      // Gentle breathing pulse so the student sees this is a live preview
+                      var pvPulse = 0.55 + 0.25 * Math.sin(t * 5);
+
+                      if (!pvOccupied) {
+                        // Ghost plant silhouette (transparent, no fruit detail — keeps it simple)
+                        gctx.globalAlpha = 0.45 * pvPulse;
+                        // Stem
+                        gctx.strokeStyle = pvVis.stemColor;
+                        gctx.lineWidth = 2;
+                        gctx.beginPath();
+                        gctx.moveTo(pvPos.x, pvPos.y);
+                        gctx.lineTo(pvPos.x, pvPos.y - 22);
+                        gctx.stroke();
+                        // Leaves: 2 small ovals
+                        gctx.fillStyle = pvVis.leafColor;
+                        gctx.beginPath();
+                        gctx.ellipse(pvPos.x - 5, pvPos.y - 14, 6, 3.5, -0.4, 0, Math.PI * 2);
+                        gctx.fill();
+                        gctx.beginPath();
+                        gctx.ellipse(pvPos.x + 5, pvPos.y - 18, 6, 3.5, 0.4, 0, Math.PI * 2);
+                        gctx.fill();
+                        // Tiny crown / fruit hint
+                        gctx.fillStyle = pvVis.fruitColor || pvVis.flowerColor || pvVis.leafColor;
+                        gctx.beginPath();
+                        gctx.arc(pvPos.x, pvPos.y - 24, 4, 0, Math.PI * 2);
+                        gctx.fill();
+                        gctx.globalAlpha = 1;
+
+                        // Green "Plant here" badge above the tile
+                        var pvLabel = (pvSelected && pvSelected.emoji ? pvSelected.emoji + ' ' : '') + 'Plant here';
+                        gctx.font = 'bold 13px system-ui, sans-serif';
+                        var pvLW = gctx.measureText(pvLabel).width + 16;
+                        var pvBadgeY = pvPos.y - iTH * 0.5 - 14;
+                        gctx.fillStyle = 'rgba(22,101,52,0.92)';
+                        if (gctx.roundRect) {
+                          gctx.beginPath();
+                          gctx.roundRect(pvPos.x - pvLW / 2, pvBadgeY - 10, pvLW, 20, 10);
+                          gctx.fill();
+                        } else {
+                          gctx.fillRect(pvPos.x - pvLW / 2, pvBadgeY - 10, pvLW, 20);
+                        }
+                        gctx.fillStyle = '#dcfce7';
+                        gctx.textAlign = 'center';
+                        gctx.textBaseline = 'middle';
+                        gctx.fillText(pvLabel, pvPos.x, pvBadgeY);
+                        gctx.textAlign = 'start';
+                        gctx.textBaseline = 'alphabetic';
+                      } else {
+                        // Red "Already planted" badge
+                        var pvOccLabel = '⛔ Already planted';
+                        gctx.font = 'bold 12px system-ui, sans-serif';
+                        var pvOccLW = gctx.measureText(pvOccLabel).width + 14;
+                        var pvOccBadgeY = pvPos.y - iTH * 0.5 - 14;
+                        gctx.fillStyle = 'rgba(127,29,29,0.92)';
+                        if (gctx.roundRect) {
+                          gctx.beginPath();
+                          gctx.roundRect(pvPos.x - pvOccLW / 2, pvOccBadgeY - 10, pvOccLW, 20, 10);
+                          gctx.fill();
+                        } else {
+                          gctx.fillRect(pvPos.x - pvOccLW / 2, pvOccBadgeY - 10, pvOccLW, 20);
+                        }
+                        gctx.fillStyle = '#fecaca';
+                        gctx.textAlign = 'center';
+                        gctx.textBaseline = 'middle';
+                        gctx.fillText(pvOccLabel, pvPos.x, pvOccBadgeY);
+                        gctx.textAlign = 'start';
+                        gctx.textBaseline = 'alphabetic';
+                      }
+                    }
+
+                    // ── Action burst (water / weed / compost feedback) ──
+                    // Triggered by cgWater/cgWeed/cgCompost via window.__cgCanvasEl._actionBurst.
+                    // Each action gets its own color palette and particle behavior, but they
+                    // share the same 1.4s expanding-rings-and-particles pattern.
+                    if (cvEl._actionBurst) {
+                      var abDur = 1.4;
+                      var abElapsed = (performance.now() - cvEl._actionBurst.t0) / 1000;
+                      if (abElapsed < abDur) {
+                        var abT = abElapsed / abDur;
+                        var abKind = cvEl._actionBurst.kind || 'water';
+                        // Garden center as the origin
+                        var abCenter = isoToScreen(1.5, 1.5);
+                        // Palette per action
+                        var abPalette = {
+                          water:   { ring1: 'rgba(56,189,248,', ring2: 'rgba(186,230,253,', dot1: 'rgba(14,165,233,', dot2: 'rgba(125,211,252,', labelBg: 'rgba(7,89,133,0.85)', labelFg: '#e0f2fe', text: __alloT('stem.companionplanting.watered', '💧 Watered!') },
+                          weed:    { ring1: 'rgba(74,222,128,', ring2: 'rgba(254,202,202,', dot1: 'rgba(34,197,94,',  dot2: 'rgba(248,113,113,', labelBg: 'rgba(20,83,45,0.85)',  labelFg: '#dcfce7', text: __alloT('stem.companionplanting.weeded', '🌿 Weeded!') },
+                          compost: { ring1: 'rgba(180,140,90,', ring2: 'rgba(202,138,4,',  dot1: 'rgba(120,80,40,',   dot2: 'rgba(252,211,77,',  labelBg: 'rgba(69,26,3,0.85)',  labelFg: '#fef3c7', text: __alloT('stem.companionplanting.composted', '♻️ Composted!') }
+                        }[abKind] || { ring1: 'rgba(255,255,255,', ring2: 'rgba(255,255,255,', dot1: 'rgba(255,255,255,', dot2: 'rgba(255,255,255,', labelBg: 'rgba(0,0,0,0.7)', labelFg: '#fff', text: 'Action!' };
+                        // 2 expanding rings (large, scaled across whole garden footprint)
+                        for (var abr = 0; abr < 2; abr++) {
+                          var abrStart = abr * 0.14;
+                          if (abT < abrStart) continue;
+                          var abrT = (abT - abrStart) / (1 - abrStart);
+                          if (abrT > 1) continue;
+                          var abrR = 30 + abrT * 180;
+                          var abrA = (1 - abrT) * 0.6;
+                          gctx.strokeStyle = (abr === 0 ? abPalette.ring1 : abPalette.ring2) + abrA + ')';
+                          gctx.lineWidth = 3 * (1 - abrT) + 0.6;
+                          gctx.beginPath();
+                          gctx.ellipse(abCenter.x, abCenter.y, abrR, abrR * 0.5, 0, 0, Math.PI * 2);
+                          gctx.stroke();
+                        }
+                        // 16 particles flying outward (or raining down for water)
+                        var abP = 16;
+                        for (var abp = 0; abp < abP; abp++) {
+                          var abpAng = (abp / abP) * Math.PI * 2 + abp * 0.31;
+                          var abpDist = abT * 130;
+                          var abpX = abCenter.x + Math.cos(abpAng) * abpDist;
+                          var abpY;
+                          if (abKind === 'water') {
+                            // Water droplets arc inward + downward (rain pattern)
+                            abpY = abCenter.y - 80 + Math.sin(abpAng) * 40 + abT * 95;
+                          } else if (abKind === 'compost') {
+                            // Compost crumbs fall + spread
+                            abpY = abCenter.y + Math.sin(abpAng) * abpDist * 0.45 + abT * 30;
+                          } else {
+                            // Weed particles fly up + out
+                            abpY = abCenter.y + Math.sin(abpAng) * abpDist * 0.5 - abT * 35;
+                          }
+                          var abpA = (1 - abT) * 0.85;
+                          gctx.fillStyle = (abp % 2 === 0 ? abPalette.dot1 : abPalette.dot2) + abpA + ')';
+                          var abpR = (abKind === 'water' ? 2.5 : 1.8) + (1 - abT) * 1.4;
+                          gctx.beginPath();
+                          gctx.arc(abpX, abpY, abpR, 0, Math.PI * 2);
+                          gctx.fill();
+                        }
+                        // Floating action label
+                        if (abT < 0.78) {
+                          var albT = abT / 0.78;
+                          var albY = abCenter.y - 70 - albT * 36;
+                          var albA = albT < 0.18 ? albT / 0.18 : (1 - (albT - 0.18) / 0.82);
+                          gctx.globalAlpha = Math.max(0, albA);
+                          gctx.font = 'bold 24px system-ui, sans-serif';
+                          var albW = gctx.measureText(abPalette.text).width + 28;
+                          gctx.fillStyle = abPalette.labelBg;
+                          if (gctx.roundRect) {
+                            gctx.beginPath();
+                            gctx.roundRect(abCenter.x - albW / 2, albY - 20, albW, 32, 16);
+                            gctx.fill();
+                          } else {
+                            gctx.fillRect(abCenter.x - albW / 2, albY - 20, albW, 32);
+                          }
+                          gctx.fillStyle = abPalette.labelFg;
+                          gctx.textAlign = 'center';
+                          gctx.textBaseline = 'middle';
+                          gctx.fillText(abPalette.text, abCenter.x, albY - 4);
+                          gctx.globalAlpha = 1;
+                          gctx.textAlign = 'start';
+                          gctx.textBaseline = 'alphabetic';
+                        }
+                      } else {
+                        cvEl._actionBurst = null;
+                      }
+                    }
+
+                    // ── Hover tooltip (plant info card on canvas) ──
+                    if (hoverCell2 >= 0 && hoverCell2 < 16) {
+                      var hc = grid2[hoverCell2];
+                      var hPos = isoToScreen(Math.floor(hoverCell2 / 4), hoverCell2 % 4);
+                      if (hc && hc.plantId && CG_PLANTS[hc.plantId]) {
+                        var hp = CG_PLANTS[hc.plantId];
+                        var hGrow = Math.min(100, Math.round(hc.growthDay / hp.days * 100));
+                        var hBonus = getCellBonus(grid2, hoverCell2);
+                        var ttx = Math.min(W - 140, Math.max(10, hPos.x - 60));
+                        var tty = Math.max(50, hPos.y - iTH - 55);
+                        // Background
+                        gctx.fillStyle = 'rgba(0,0,0,0.8)'; gctx.beginPath();
+                        gctx.roundRect(ttx, tty, 130, 50, 6); gctx.fill();
+                        gctx.strokeStyle = 'rgba(255,255,255,0.15)'; gctx.lineWidth = 1;
+                        gctx.beginPath(); gctx.roundRect(ttx, tty, 130, 50, 6); gctx.stroke();
+                        // Content
+                        gctx.fillStyle = '#fff'; gctx.font = 'bold 11px system-ui'; gctx.textAlign = 'left';
+                        gctx.fillText(hp.label, ttx + 8, tty + 16);
+                        gctx.fillStyle = '#94a3b8'; gctx.font = '9px system-ui';
+                        gctx.fillText('Growth: ' + hGrow + '%  Health: ' + Math.round(hc.health) + '%', ttx + 8, tty + 30);
+                        var bonusCol = hBonus.total > 0 ? '#4ade80' : hBonus.total < 0 ? '#f87171' : '#94a3b8';
+                        gctx.fillStyle = bonusCol;
+                        gctx.fillText('Companion: ' + (hBonus.total > 0 ? '+' : '') + hBonus.total + '%  Pests: ' + Math.round(hc.pests), ttx + 8, tty + 43);
+                      } else if (!hc || !hc.plantId) {
+                        // Empty plot tooltip
+                        gctx.fillStyle = 'rgba(0,0,0,0.6)'; gctx.beginPath();
+                        gctx.roundRect(hPos.x - 40, hPos.y - iTH - 25, 80, 22, 4); gctx.fill();
+                        gctx.fillStyle = 'rgba(255,255,255,0.6)'; gctx.font = '9px system-ui'; gctx.textAlign = 'center';
+                        gctx.fillText(cgPhase === 'plan' ? 'Click to plant' : 'Empty plot', hPos.x, hPos.y - iTH - 10);
+                      }
+                    }
+
+                    // ── HUD overlay ──
+                    gctx.fillStyle = 'rgba(0,0,0,0.5)'; gctx.beginPath();
+                    gctx.roundRect(6, 6, 200, 30, 6); gctx.fill();
+                    gctx.font = 'bold 11px system-ui'; gctx.textAlign = 'left';
+                    gctx.fillStyle = '#fff';
+                    var seasonLabels = ['Spring', 'Summer', 'Autumn', 'Winter'];
+                    gctx.fillText(seasonLabels[sSeason] + ' \u2022 Day ' + ((cgDay % 30) + 1) + ' \u2022 Year ' + cgYear, 14, 24);
+                    gctx.font = '9px system-ui'; gctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    gctx.fillText(cgPhase === 'plan' ? 'Click a plot to plant' : 'Click a plant to inspect', 14, 48);
+                  }
+                  drawCG();
+                  var obs3 = new MutationObserver(function() {
+                    if (!document.contains(cvEl)) { cancelAnimationFrame(cvEl._cgAnim); obs3.disconnect(); cvEl._cgCanvasInit = false; }
+                  });
+                  obs3.observe(document.body, { childList: true, subtree: true });
+                }
+              }),
+                // Maximize / minimize toggle overlay button
+                h('button', {
+                  onClick: function() { cgUpd({ maximized: !cgMaximized }); },
+                  title: cgMaximized ? 'Exit maximized view' : 'Maximize garden view',
+                  'aria-label': cgMaximized ? 'Exit maximized garden view' : 'Maximize garden view',
+                  style: {
+                    position: 'absolute', top: cgMaximized ? 24 : 12, right: cgMaximized ? 24 : 12,
+                    zIndex: 10, padding: '6px 12px',
+                    background: 'rgba(15,23,42,0.85)', color: 'var(--allo-stem-text, #f1f5f9)',
+                    border: '1px solid rgba(148,163,184,0.45)', borderRadius: 8,
+                    fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)'
+                  }
+                }, cgMaximized ? '✕ Close' : '⛶ Maximize')
+              ),
+
+              // ── Companion interactions preview ──
+              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-sky-200 bg-gradient-to-r from-sky-50 via-white to-emerald-50 p-3', 'data-community-visitors': true, 'aria-labelledby': 'garden-visitors-title' },
+                h('div', { className: 'flex flex-wrap items-center gap-3' },
+                  h('div', { className: 'mr-auto' }, h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-sky-600' }, 'Living ecosystem'), h('span', { className: 'rounded-full bg-sky-100 px-2 py-0.5 text-[9px] font-black text-sky-700' }, cgObservedVisitors.length + '/5 observed')), h('h3', { id: 'garden-visitors-title', className: 'text-sm font-black text-slate-900' }, gardenVisitors.length ? 'Wildlife has discovered your garden' : 'Invite wildlife into the garden'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, gardenVisitors.length ? 'Record each visitor once to build field notes and earn discovery XP.' : 'Add flowers, sunflowers, compost, or a bee hotel to unlock ecosystem visitors.')),
+                  gardenVisitors.slice(0, 5).map(function(visitor) { var recorded = cgObservedVisitors.indexOf(visitor.id) !== -1; return h('div', { key: visitor.name, className: 'flex items-center gap-2 rounded-xl border bg-white px-3 py-2 shadow-sm ' + (recorded ? 'border-emerald-300' : 'border-white'), title: visitor.reason }, h('span', { className: 'text-xl', 'aria-hidden': true }, visitor.icon), h('div', null, h('div', { className: 'text-[11px] font-black text-slate-800' }, visitor.name), h('div', { className: 'text-[9px] text-slate-500' }, visitor.reason)), h('button', { onClick: function() { cgRecordVisitor(visitor); }, disabled: recorded, className: 'ml-1 rounded-full px-2 py-1 text-[9px] font-black ' + (recorded ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-600 text-white hover:bg-sky-700'), 'aria-label': (recorded ? 'Recorded ' : 'Record observation of ') + visitor.name }, recorded ? 'Recorded' : 'Observe +8 XP')); }),
+                  h('button', { onClick: function() { cgUpd({ showWildlifeGuide: !cg.showWildlifeGuide }); }, 'aria-expanded': !!cg.showWildlifeGuide, className: 'rounded-xl border border-sky-200 bg-white px-3 py-2 text-[10px] font-black text-sky-700 shadow-sm hover:bg-sky-50' }, cg.showWildlifeGuide ? 'Hide field guide' : 'Open field guide')
+                ),
+                cgObservedVisitors.length === wildlifeCatalog.length && h('div', { className: 'mt-3 rounded-xl border border-amber-300 bg-gradient-to-r from-amber-100 to-yellow-50 p-3 text-center', role: 'status' }, h('div', { className: 'text-lg', 'aria-hidden': true }, '\uD83C\uDFC6'), h('div', { className: 'text-sm font-black text-amber-900' }, 'Wildlife Steward collection complete!'), h('div', { className: 'text-[11px] text-amber-800' }, 'Your garden supports life above and below the soil.')),
+                cg.showWildlifeGuide && h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-5', 'data-community-wildlife-guide': true }, wildlifeCatalog.map(function(entry) {
+                  var observed = cgObservedVisitors.indexOf(entry.id) !== -1;
+                  return h('div', { key: entry.id, className: 'rounded-xl border p-3 text-center ' + (observed ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white') }, h('div', { className: 'text-2xl ' + (observed ? '' : 'grayscale opacity-25'), 'aria-hidden': true }, observed ? entry.icon : '?'), h('div', { className: 'mt-1 text-[11px] font-black ' + (observed ? 'text-emerald-800' : 'text-slate-500') }, observed ? entry.name : 'Undiscovered'), h('div', { className: 'mt-1 text-[9px] leading-relaxed text-slate-500' }, observed ? 'Recorded in field notes' : entry.clue));
+                }))
+              ),
+
+              h('section', { className: 'rounded-2xl border border-slate-200 bg-white p-3 shadow-sm', 'data-community-plot-navigator': true, 'aria-labelledby': 'community-plots-title' },
+                h('div', { className: 'mb-3 flex flex-wrap items-start justify-between gap-2' },
+                  h('div', null, h('h3', { id: 'community-plots-title', className: 'text-sm font-black text-slate-900' }, 'Garden plot navigator'), h('p', { id: 'community-plot-help', className: 'mt-0.5 text-[11px] text-slate-600' }, cgPhase === 'plan' ? (cgSelectedPlant ? 'Choose an empty plot to plant. Choose a planted plot to inspect it.' : 'Select a crop above, or choose a planted plot to inspect it.') : 'Choose any planted plot to inspect its roots, chemistry, and health.')),
+                  h('div', { className: 'flex gap-2 text-[10px] font-bold' }, h('span', { className: 'rounded-full bg-emerald-100 px-2 py-1 text-emerald-800' }, plantedCells + ' planted'), h('span', { className: 'rounded-full bg-yellow-100 px-2 py-1 text-yellow-800' }, readyCells + ' ready'))
+                ),
+                h('div', { className: 'grid grid-cols-4 gap-2', role: 'grid', 'aria-label': 'Sixteen community garden plots' },
+                  cgGrid.map(function(cell, idx) {
+                    var plotPlant = cell.plantId && CG_PLANTS[cell.plantId];
+                    var plotBonus = plotPlant ? getCellBonus(cgGrid, idx).total : 0;
+                    var plotGrowth = plotPlant ? Math.min(100, Math.round(cell.growthDay / plotPlant.days * 100)) : 0;
+                    var plotReady = !!(plotPlant && cell.growthDay >= plotPlant.days && cell.health > 20);
+                    var canPlant = cgPhase === 'plan' && cgSelectedPlant && !plotPlant;
+                    var canInspect = !!plotPlant;
+                    var plotLabel = 'Plot ' + (idx + 1) + '. ' + (plotPlant ? plotPlant.label + ', ' + plotGrowth + ' percent grown, health ' + Math.round(cell.health) + ', companion effect ' + (plotBonus > 0 ? 'plus ' : '') + plotBonus + ' percent' + (plotReady ? ', ready to harvest' : '') : canPlant ? 'Empty. Plant ' + CG_PLANTS[cgSelectedPlant].label : 'Empty');
+                    return h('button', { key: idx, role: 'gridcell', disabled: !canPlant && !canInspect, 'aria-label': plotLabel, onClick: function() { if (canPlant) { cgPlantCell(idx); } else if (canInspect) { cgUpd({ microscopeCell: idx, microscopeLayer: 'roots' }); } }, className: 'relative min-h-[82px] rounded-xl border p-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 ' + (plotReady ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-200' : plotPlant ? plotBonus < 0 ? 'border-red-200 bg-red-50 hover:border-red-400' : 'border-emerald-200 bg-emerald-50 hover:border-emerald-400' : canPlant ? 'border-dashed border-emerald-400 bg-white hover:bg-emerald-50' : 'border-dashed border-slate-200 bg-slate-50 text-slate-400') },
+                      h('div', { className: 'flex items-start justify-between gap-1' }, h('span', { className: 'text-[10px] font-black uppercase text-slate-500' }, 'Plot ' + (idx + 1)), h('span', { className: 'text-lg', 'aria-hidden': true }, plotPlant ? plotPlant.emoji : canPlant ? '+' : '?')),
+                      h('div', { className: 'mt-1 truncate text-[11px] font-black ' + (plotPlant ? 'text-slate-800' : 'text-slate-500') }, plotPlant ? plotPlant.label : canPlant ? 'Plant here' : 'Empty'),
+                      plotPlant && h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-white' }, h('div', { className: 'h-full rounded-full ' + (plotReady ? 'bg-yellow-500' : cell.health < 45 ? 'bg-red-500' : 'bg-emerald-500'), style: { width: plotGrowth + '%' } })),
+                      plotPlant && h('div', { className: 'mt-1 flex justify-between text-[9px] font-bold' }, h('span', { className: cell.health < 45 ? 'text-red-600' : 'text-slate-500' }, Math.round(cell.health) + '% health'), h('span', { className: plotBonus > 0 ? 'text-emerald-700' : plotBonus < 0 ? 'text-red-600' : 'text-slate-400' }, (plotBonus > 0 ? '+' : '') + plotBonus + '% pair')),
+                      plotReady && h('span', { className: 'absolute right-1.5 top-1.5 rounded-full bg-yellow-400 px-1.5 py-0.5 text-[8px] font-black text-yellow-950' }, 'READY')
+                    );
+                  })
+                )
+              ),
+
+              cgPhase === 'plan' && (function() {
+                var allBonuses = [];
+                cgGrid.forEach(function(cell, idx) {
+                  if (!cell.plantId) return;
+                  var b = getCellBonus(cgGrid, idx);
+                  b.pairs.forEach(function(p) {
+                    if (!allBonuses.some(function(e) { return e.desc === p.desc; })) allBonuses.push(p);
+                  });
+                });
+                if (allBonuses.length === 0) return null;
+                // SEL: trigger companion discovery reflection on first positive pair
+                if (allBonuses.some(function(b) { return b.bonus > 0; }) && !cgSeenReflections.companion_discovery) {
+                  setTimeout(function() { cgTriggerReflection('companion_discovery'); }, 500);
+                }
+                return h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-3' },
+                  h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '🔬 Active Companion Interactions (' + allBonuses.length + ')'),
+                  h('div', { className: 'space-y-1' },
+                    allBonuses.map(function(p, i) {
+                      return h('div', { key: i, className: 'flex items-center gap-2 text-[11px] rounded-lg px-2 py-1 ' + (p.bonus > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') },
+                        h('span', { className: 'font-bold' }, (p.bonus > 0 ? '✅ +' : '⚠️ ') + p.bonus + '%'),
+                        h('span', null, p.desc));
+                    })));
+              })(),
+
+              // ── Full Companion Guide (all known pairs for planted species) ──
+              cgPhase === 'plan' && (function() {
+                var planted = {};
+                cgGrid.forEach(function(c) { if (c.plantId) planted[c.plantId] = true; });
+                var plantedKeys = Object.keys(planted);
+                if (plantedKeys.length === 0) return null;
+                // Collect all relevant pairs — both planted and potential neighbors
+                var guide = [];
+                CG_COMPANIONS.forEach(function(comp) {
+                  var aPlanted = !!planted[comp.a];
+                  var bPlanted = !!planted[comp.b];
+                  if (aPlanted || bPlanted) {
+                    var already = aPlanted && bPlanted;
+                    guide.push({ comp: comp, active: already, plantedSide: aPlanted ? comp.a : comp.b, otherSide: aPlanted ? comp.b : comp.a });
+                  }
+                });
+                if (guide.length === 0) return null;
+                var friends = guide.filter(function(g) { return g.comp.bonus > 0; });
+                var enemies = guide.filter(function(g) { return g.comp.bonus < 0; });
+                return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
+                  h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.companionplanting.companion_planting_guide', '📖 Companion Planting Guide')),
+                  friends.length > 0 && h('div', { className: 'mb-2' },
+                    h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, '✅ Good Companions (' + friends.length + ')'),
+                    h('div', { className: 'space-y-0.5' },
+                      friends.slice(0, 8).map(function(g, i) {
+                        var aP = CG_PLANTS[g.comp.a]; var bP = CG_PLANTS[g.comp.b];
+                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded ' + (g.active ? 'bg-emerald-50' : 'bg-slate-50') },
+                          h('span', null, (aP ? aP.emoji : '') + ' + ' + (bP ? bP.emoji : '')),
+                          h('span', { className: 'font-bold text-emerald-600' }, '+' + g.comp.bonus + '%'),
+                          h('span', { className: 'text-slate-600 truncate' }, g.comp.desc),
+                          g.active && h('span', { className: 'text-emerald-500 ml-auto flex-shrink-0' }, __alloT('stem.companionplanting.active', '✓ Active')));
+                      }))),
+                  enemies.length > 0 && h('div', null,
+                    h('div', { className: 'text-[11px] font-bold text-red-600 mb-1' }, '⚠️ Keep Apart (' + enemies.length + ')'),
+                    h('div', { className: 'space-y-0.5' },
+                      enemies.slice(0, 6).map(function(g, i) {
+                        var aP = CG_PLANTS[g.comp.a]; var bP = CG_PLANTS[g.comp.b];
+                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded ' + (g.active ? 'bg-red-50' : 'bg-slate-50') },
+                          h('span', null, (aP ? aP.emoji : '') + ' ✕ ' + (bP ? bP.emoji : '')),
+                          h('span', { className: 'font-bold text-red-500' }, g.comp.bonus + '%'),
+                          h('span', { className: 'text-slate-600 truncate' }, g.comp.desc),
+                          g.active && h('span', { className: 'text-red-500 ml-auto flex-shrink-0' }, __alloT('stem.companionplanting.active_2', '⚠️ Active!')));
+                      }))));
+              })(),
+
+              // ── Challenge Picker / Progress ──
+              cgPhase === 'plan' && !cgActiveChallenge && h('div', { className: 'bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-3' },
+                h('div', { className: 'text-xs font-bold text-indigo-800 mb-2' }, __alloT('stem.companionplanting.garden_challenges_optional', '🎯 Garden Challenges (optional)')),
+                h('div', { className: 'grid grid-cols-2 gap-2' },
+                  CG_CHALLENGES.map(function(ch) {
+                    var completed = cgCompletedChallenges.indexOf(ch.id) !== -1;
+                    return h('button', { key: ch.id, disabled: completed,
+                      onClick: function() {
+                        var patch = { activeChallenge: ch.id };
+                        if (ch.setup) { Object.keys(ch.setup).forEach(function(k) { patch[k] = ch.setup[k]; }); }
+                        cgUpd(patch);
+                        if (addToast) addToast('🎯 Challenge started: ' + ch.title, 'info');
+                      },
+                      className: 'text-left p-2 rounded-lg border transition-all ' + (completed ? 'bg-emerald-50 border-emerald-600 opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-sm')
+                    },
+                      h('div', { className: 'flex items-center gap-1.5' },
+                        h('span', null, ch.emoji),
+                        h('span', { className: 'text-[11px] font-bold ' + (completed ? 'text-emerald-700' : 'text-slate-800') }, ch.title),
+                        completed && h('span', { className: 'text-[11px]' }, '✅')),
+                      h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, ch.difficulty + ' · ' + ch.ngss));
+                  }))),
+
+              // Active challenge banner
+              cgActiveChallenge && (function() {
+                var ch = CG_CHALLENGES.find(function(c) { return c.id === cgActiveChallenge; });
+                if (!ch) return null;
+                var isComplete = ch.check(cgGrid, { nitrogen: cgNitrogen, moisture: cgMoisture, season: cgSeason, cellHistory: cgCellHistory, seasonsRotated: (cg.seasonHistory || []).length });
+                if (isComplete && cgCompletedChallenges.indexOf(ch.id) === -1) {
+                  // Auto-complete
+                  var newCompleted = cgCompletedChallenges.concat([ch.id]);
+                  setTimeout(function() {
+                    cgUpd({ completedChallenges: newCompleted, activeChallenge: null });
+                    if (addToast) addToast('🏆 Challenge complete: ' + ch.title + '!', 'success');
+                    if (awardStemXP) awardStemXP('companion_garden_challenge', 25, 'Completed challenge: ' + ch.title);
+                  }, 100);
+                }
+                return h('div', { className: 'bg-indigo-50 rounded-xl border-2 ' + (isComplete ? 'border-emerald-400' : 'border-indigo-300') + ' p-3' },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { className: 'text-lg' }, ch.emoji),
+                    h('div', { className: 'flex-1' },
+                      h('div', { className: 'text-xs font-bold text-indigo-800' }, '🎯 ' + ch.title + (isComplete ? ' — ✅ COMPLETE!' : '')),
+                      h('div', { className: 'text-[11px] text-indigo-600' }, ch.goal)),
+                    h('button', { onClick: function() { cgUpd({ activeChallenge: null }); }, className: 'transition-colors text-xs text-slate-200 hover:text-slate-600', 'aria-label': __alloT('stem.companionplanting.close_challenge', 'Close challenge') }, '✕')),
+                  !isComplete && h('div', { className: 'text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 mt-1' }, '💡 Hint: ' + ch.hint));
+              })(),
+
+              // ── Action buttons ──
+              cgPhase === 'plan' && h('div', { className: 'rounded-xl border border-emerald-200 bg-white p-3', 'data-community-actions': true },
+                h('div', { className: 'mb-2 flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black text-slate-800' }, 'Planning actions'), h('span', { className: 'text-[11px] text-slate-500' }, plantedCells + ' of 16 plots planted')),
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                  h('button', { onClick: cgStartGrowing, disabled: plantedCells === 0, className: 'transition-all px-4 py-2 rounded-lg font-bold text-sm ' + (plantedCells ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm' : 'bg-slate-100 text-slate-400 cursor-not-allowed') }, plantedCells ? 'Start Growing - ' + plantedCells + ' plots' : 'Plant a crop to begin'),
+                  !cg.confirmClear && h('button', { onClick: function() { cgUpd({ confirmClear: true }); }, disabled: plantedCells === 0, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200 disabled:opacity-40' }, 'Clear garden'),
+                  cg.confirmClear && h('div', { className: 'flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-1' }, h('span', { className: 'px-2 text-[11px] font-bold text-red-700' }, 'Remove all plots?'), h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', activeChallenge: null, confirmClear: false, lastFeedback: { icon: '\u21BA', title: 'Garden cleared', detail: 'All 16 plots are ready for a new plan.', tone: 'info' } }); }, className: 'rounded bg-red-600 px-2 py-1 text-xs font-bold text-white' }, 'Yes, clear'), h('button', { onClick: function() { cgUpd({ confirmClear: false }); }, className: 'rounded bg-white px-2 py-1 text-xs font-bold text-slate-700' }, 'Cancel'))
+                )
+              ),
+
+              cgPhase === 'grow' && h('div', { className: 'rounded-xl border border-sky-200 bg-white p-3 shadow-sm', 'data-community-actions': true },
+                h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black text-slate-800' }, 'Garden care'), h('div', { className: 'text-[11px] text-slate-500' }, 'Choose one action, then review its impact above.')), h('span', { className: 'rounded-full px-2 py-1 text-[11px] font-black ' + (readyCells ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-600') }, readyCells + ' harvest ready')),
+                h('div', { className: 'flex gap-2 flex-wrap items-center' },
+                  h('button', { onClick: cgAdvanceDay, className: 'transition-all px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700 shadow-sm' }, 'Next Day'),
+                  h('button', { onClick: cgWater, disabled: cgMoisture >= 90, title: cgMoisture >= 90 ? 'Soil is already saturated' : 'Increase moisture by 25 percent', className: 'transition-colors px-3 py-2 rounded-lg text-sm font-bold ' + (cgMoisture >= 90 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : cgMoisture < 30 ? 'bg-blue-600 text-white ring-2 ring-blue-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200') }, 'Water ' + Math.round(cgMoisture) + '%'),
+                  h('button', { onClick: cgWeed, className: 'transition-colors px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, 'Weed'),
+                  h('button', { onClick: cgCompost, className: 'transition-colors px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, 'Compost'),
+                  h('button', { onClick: cgHarvest, disabled: readyCells === 0, 'aria-label': readyCells ? 'Harvest ' + readyCells + ' ready crops' : 'No crops ready to harvest', className: 'transition-all px-3 py-2 rounded-lg text-sm font-bold ' + (readyCells ? 'bg-yellow-400 text-yellow-950 hover:bg-yellow-300 ring-2 ring-yellow-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed') }, readyCells ? 'Harvest ' + readyCells : 'Nothing ready'),
+                  h('button', { onClick: function() { cgUpd({ phase: 'plan', lastFeedback: { icon: '\u270F', title: 'Planning mode', detail: 'Select a crop to add it, or clear a planted plot before redesigning.', tone: 'info' } }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, 'Edit Garden')
+                )
+              ),
+
+              // ── Soil Chemistry + Economics + Pest HUD ──
+              h('div', { className: 'grid grid-cols-2 gap-2' },
+                // Soil Chemistry Panel
+                h('div', { className: 'bg-gradient-to-b from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-2.5' },
+                  h('div', { className: 'text-[11px] font-bold text-amber-800 mb-1.5' }, __alloT('stem.companionplanting.soil_chemistry_2', '\uD83E\uDDEA Soil Chemistry')),
+                  h('div', { className: 'space-y-1' },
+                    [
+                      { label: 'N', val: cgNitrogen, color: '#22c55e', tip: __alloT('stem.companionplanting.nitrogen_2', 'Nitrogen') },
+                      { label: 'P', val: cgPhosphorus, color: '#3b82f6', tip: __alloT('stem.companionplanting.phosphorus_2', 'Phosphorus') },
+                      { label: 'K', val: cgPotassium, color: '#8b5cf6', tip: __alloT('stem.companionplanting.potassium_2', 'Potassium') }
+                    ].map(function(r) {
+                      return h('div', { key: r.label, className: 'flex items-center gap-1.5', title: r.tip + ': ' + Math.round(r.val) + '/100' },
+                        h('span', { className: 'text-[11px] font-bold w-3', style: { color: r.color } }, r.label),
+                        h('div', { className: 'flex-1 h-2 bg-slate-200 rounded-full overflow-hidden' },
+                          h('div', { style: { width: Math.round(r.val) + '%', backgroundColor: r.val < 15 ? '#ef4444' : r.color }, className: 'h-full rounded-full transition-all' })
+                        ),
+                        h('span', { className: 'text-[11px] text-slate-600 w-6 text-right' }, Math.round(r.val))
+                      );
+                    })
+                  ),
+                  h('div', { className: 'flex justify-between mt-1.5 text-[11px]' },
+                    h('span', { className: 'text-amber-600', title: __alloT('stem.companionplanting.soil_ph_ideal_6_0_7_0_for_most_crops', 'Soil pH (ideal 6.0-7.0 for most crops)') }, 'pH: ' + cgPH),
+                    h('span', { className: 'text-amber-600', title: __alloT('stem.companionplanting.organic_matter_higher_better_water_ret', 'Organic matter % (higher = better water retention)') }, 'OM: ' + cgOrganicMatter.toFixed(1) + '%')
+                  ),
+                  // Soil actions
+                  h('div', { className: 'flex gap-1 mt-1.5' },
+                    h('button', { onClick: cgAddLime, title: __alloT('stem.companionplanting.add_lime_to_raise_ph_0_50', 'Add lime to raise pH (+$0.50)'), className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-amber-100 text-amber-700 hover:bg-amber-200' }, __alloT('stem.companionplanting.lime', '\u2B06 Lime')),
+                    h('button', { onClick: cgAddSulfur, title: __alloT('stem.companionplanting.add_sulfur_to_lower_ph_0_50', 'Add sulfur to lower pH (+$0.50)'), className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, __alloT('stem.companionplanting.sulfur', '\u2B07 Sulfur'))
+                  )
+                ),
+                // Economics + Pest Panel
+                h('div', { className: 'space-y-2' },
+                  // Budget
+                  h('div', { className: 'bg-gradient-to-b from-green-50 to-emerald-50 rounded-xl border border-green-200 p-2.5' },
+                    h('div', { className: 'text-[11px] font-bold text-green-800 mb-1' }, __alloT('stem.companionplanting.farm_budget', '\uD83D\uDCB0 Farm Budget')),
+                    h('div', { className: 'text-lg font-black ' + (cgBudget > 20 ? 'text-green-600' : cgBudget > 5 ? 'text-amber-600' : 'text-red-600') }, '$' + cgBudget.toFixed(2)),
+                    h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-0.5' },
+                      h('span', null, 'Spent: $' + cgExpenses.toFixed(2)),
+                      h('span', null, 'Earned: $' + cgRevenue.toFixed(2))
+                    ),
+                    (cgRevenue - cgExpenses) !== 0 && h('div', { className: 'text-[11px] font-bold mt-0.5 ' + ((cgRevenue - cgExpenses) >= 0 ? 'text-green-500' : 'text-red-500') },
+                      (cgRevenue - cgExpenses) >= 0 ? '\u2B06 Profit: $' + (cgRevenue - cgExpenses).toFixed(2) : '\u2B07 Loss: $' + Math.abs(cgRevenue - cgExpenses).toFixed(2))
+                  ),
+                  // Pest ecosystem
+                  h('div', { className: 'bg-gradient-to-b from-red-50 to-orange-50 rounded-xl border border-red-200 p-2.5' },
+                    h('div', { className: 'text-[11px] font-bold text-red-800 mb-1' }, __alloT('stem.companionplanting.pest_ecosystem', '\uD83D\uDC1B Pest Ecosystem')),
+                    h('div', { className: 'flex justify-between text-[11px]' },
+                      h('span', { className: 'text-red-600' }, '\uD83D\uDC1B Pests: ' + Math.round(cgPestPop)),
+                      h('span', { className: 'text-green-600' }, '\uD83D\uDC1E Beneficials: ' + Math.round(cgBeneficialPop))
+                    ),
+                    // IPM action buttons
+                    h('div', { className: 'grid grid-cols-2 gap-1 mt-1.5' },
+                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: __alloT('stem.companionplanting.release_ladybugs_1_50', 'Release ladybugs ($1.50)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-red-100 text-red-700 hover:bg-red-200' }, __alloT('stem.companionplanting.ladybugs', '\uD83D\uDC1E Ladybugs')),
+                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: __alloT('stem.companionplanting.neem_spray_1_00', 'Neem spray ($1.00)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-orange-100 text-orange-700 hover:bg-orange-200' }, __alloT('stem.companionplanting.neem', '\uD83C\uDF3F Neem')),
+                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: __alloT('stem.companionplanting.hand_pick_pests_free', 'Hand-pick pests (free)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, __alloT('stem.companionplanting.pick', '\u270B Pick')),
+                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: __alloT('stem.companionplanting.row_covers_2_00', 'Row covers ($2.00)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-blue-100 text-blue-700 hover:bg-blue-200' }, __alloT('stem.companionplanting.covers', '\uD83E\uDDF5 Covers'))
+                    )
+                  )
+                )
+              ),
+
+              // ── Year indicator + AI Advisor ──
+              h('div', { className: 'flex items-center gap-2' },
+                h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-1.5 text-[11px] font-bold text-indigo-700' },
+                  '\uD83D\uDCC5 Year ' + cgYear + ' \u2022 ' + ['Spring', 'Summer', 'Autumn', 'Winter'][cgSeason] + ' \u2022 Day ' + (cgDay % 30 + 1)),
+                callGemini && h('button', {
+                  onClick: cgAskAdvisor,
+                  disabled: cgAdvisorCooldown > 0,
+                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-600')
+                }, cgAdvisorCooldown > 0 ? '\uD83E\uDDD1\u200D\uD83C\uDF3E Advisor (wait ' + cgAdvisorCooldown + ' days)' : '\uD83E\uDDD1\u200D\uD83C\uDF3E Ask Garden Advisor')
+              ),
+
+              // ── Advisor Response ──
+              cgAdvisorResponse && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
+                h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('span', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.companionplanting.garden_advisor', '\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor')),
+                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'transition-colors ml-auto text-[11px] text-slate-200 hover:text-slate-600' }, '\u2715')
+                ),
+                h('p', { className: 'text-[11px] text-slate-600 leading-relaxed whitespace-pre-line' }, cgAdvisorResponse)
+              ),
+
+              // ── Achievements ──
+              h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3' },
+                h('div', { className: 'text-xs font-bold text-amber-800 mb-2' }, __alloT('stem.companionplanting.achievements', '🏆 Achievements')),
+                h('div', { className: 'flex flex-wrap gap-1.5' },
+                  CG_ACHIEVEMENTS.map(function(ach) {
+                    var earned = ach.check(stats);
+                    return h('div', {
+                      key: ach.id,
+                      title: ach.desc + (earned ? ' ✅ Earned!' : ''),
+                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold ' + (earned ? 'bg-amber-200 text-amber-900 ring-1 ring-amber-400' : 'bg-white text-slate-200 opacity-60')
+                    }, h('span', null, ach.emoji), ach.label);
+                  }))),
+
+              // ── Garden Journal (SEL reflections) ──
+              cgJournal && cgJournal.length > 0 && h('div', { className: 'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-3' },
+                h('h3', { className: 'text-xs font-bold text-violet-800 mb-2' }, '📝 Garden Journal (' + cgJournal.length + ' reflection' + (cgJournal.length !== 1 ? 's' : '') + ')'),
+                h('div', { className: 'space-y-2 max-h-40 overflow-y-auto' },
+                  cgJournal.slice().reverse().map(function(entry, i) {
+                    var ref = CG_SEL_REFLECTIONS[entry.id] || {};
+                    return h('div', { key: i, className: 'bg-white rounded-lg p-2 border border-violet-100' },
+                      h('div', { className: 'flex items-center gap-2 mb-1' },
+                        h('span', null, ref.emoji || '📝'),
+                        h('span', { className: 'text-[11px] font-bold text-violet-800' }, ref.title || entry.id),
+                        h('span', { className: 'text-[11px] text-slate-600 ml-auto' }, new Date(entry.ts).toLocaleDateString())),
+                      h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, entry.response));
+                  })))
+            );
+          }
+
+
+          // ── Mode toggle + conditional render ──
+          if (gardenMode === 'community') {
+            return React.createElement('div', { className: 'space-y-4 animate-in fade-in duration-200' },
+              renderTutorial('companionPlanting', _tutCompanionPlanting),
+              React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
+                React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
+                  React.createElement('button', { onClick: function () { setStemLabTool(null); }, className: 'p-1.5 rounded-lg text-emerald-100 hover:bg-white/10 transition-colors focus:ring-2 focus:ring-emerald-300 focus:outline-none', 'aria-label': __alloT('stem.companionplanting.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: 'text-emerald-100' })),
+                  React.createElement('div', null,
+                    React.createElement('h3', { className: 'text-lg font-bold text-white' }, __alloT('stem.companionplanting.community_garden_simulator', '🏡 Community Garden Simulator')),
+                    React.createElement('p', { className: 'text-xs text-emerald-100' }, __alloT('stem.companionplanting.plan_plant_and_manage_a_diverse_garden', 'Plan, plant, and manage a diverse garden ecosystem')))),
+                React.createElement('div', { className: 'grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto' },
+                  React.createElement('button', { onClick: function() { upd('gardenMode', 'sisters'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-emerald-50' }, __alloT('stem.companionplanting.three_sisters_2', '🌽 Three Sisters')),
+                  React.createElement('button', { className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white' }, __alloT('stem.companionplanting.community_garden', '🏡 Community Garden')))),
+              renderCommunityGarden());
+          }
+
+          return React.createElement("div", { className: "max-w-6xl mx-auto space-y-4 animate-in fade-in duration-200", "data-companion-tool": true },
 
             // ── Tutorial ──
 
@@ -2268,55 +6420,60 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Header ──
 
-            React.createElement("div", { className: "flex items-center justify-between" },
+            React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" },
 
-              React.createElement("div", { className: "flex items-center gap-3" },
+              React.createElement("div", { className: "flex items-center gap-3 min-w-0" },
 
                 React.createElement("button", {
 
                   onClick: function () { setStemLabTool(null); },
 
-                  className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": "Back to tools"
+                  className: "p-1.5 rounded-lg text-emerald-100 hover:bg-white/10 transition-colors focus:ring-2 focus:ring-emerald-300 focus:outline-none", "aria-label": __alloT('stem.companionplanting.back_to_tools_2', "Back to tools")
 
-                }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                }, React.createElement(ArrowLeft, { size: 18, className: "text-emerald-100" })),
 
                 React.createElement("div", null,
 
-                  React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🌱 Companion Planting Lab"),
+                  React.createElement("h3", { className: "text-lg font-bold text-white" }, __alloT('stem.companionplanting.companion_planting_lab', "🌱 Companion Planting Lab")),
 
-                  React.createElement("p", { className: "text-xs text-slate-500" }, "The milpa / Three Sisters — 7,000+ years of agricultural science")
+                  React.createElement("p", { className: "text-xs text-emerald-100" }, __alloT('stem.companionplanting.the_milpa_three_sisters_7_000_years_of', "The milpa / Three Sisters — 7,000+ years of agricultural science"))
 
                 )
 
               ),
 
-              React.createElement("div", { className: "flex items-center gap-2" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center" },
+
+                React.createElement("button", {
+                  onClick: function () { upd('gardenMode', 'community'); },
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-600"
+                }, __alloT('stem.companionplanting.community_garden_2', "🏡 Community Garden")),
 
                 React.createElement("button", {
 
-                  onClick: function () { upd('showCulture', !showCulture); },
+                  onClick: function () { upd('gardenWorkspace', 'reference'); upd('showCulture', !showCulture); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
 
-                  "aria-label": "Cultural context"
+                  "aria-label": __alloT('stem.companionplanting.cultural_context', "Cultural context")
 
-                }, "📜 Origins"),
+                }, __alloT('stem.companionplanting.origins', "📜 Origins")),
 
-                React.createElement("button", { "aria-label": "Compare",
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.compare', "Compare"),
 
-                  onClick: function () { upd('compareMode', !compareMode); },
+                  onClick: function () { upd('gardenWorkspace', 'operate'); upd('compareMode', !compareMode); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-600' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
 
-                }, "🔬 Compare"),
+                }, __alloT('stem.companionplanting.compare_2', "🔬 Compare")),
 
-                React.createElement("button", { "aria-label": "Soil Science",
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.soil_science', "Soil Science"),
 
-                  onClick: function () { upd('showSoilDetail', !showSoilDetail); },
+                  onClick: function () { upd('gardenWorkspace', 'operate'); upd('showSoilDetail', !showSoilDetail); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
 
-                }, "🧪 Soil Science")
+                }, __alloT('stem.companionplanting.soil_science_2', "🧪 Soil Science"))
 
               )
 
@@ -2326,29 +6483,194 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Cultural Context Panel ──
 
-            showCulture && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-xl border border-amber-200 p-4 space-y-3" },
+            React.createElement("section", { className: "relative overflow-hidden rounded-2xl border border-emerald-400/30 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-900 p-4 text-white shadow-xl sm:p-5", "data-companion-mission": true, "aria-label": "Season mission" },
+              React.createElement("div", { className: "pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-lime-300/10 blur-2xl", "aria-hidden": true }),
+              React.createElement("div", { className: "relative grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center" },
+                React.createElement("div", null,
+                  React.createElement("div", { className: "mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-lime-200" }, "Interactive ecology mission"),
+                  React.createElement("div", { className: "flex items-end justify-between gap-3" }, React.createElement("h4", { className: "text-xl font-black" }, phase === 'plant' ? "Build the living system" : phase === 'grow' ? "Steward the ecosystem" : "Gather evidence & harvest"), React.createElement("span", { className: "text-xs font-black text-lime-200" }, gardenProgress + "%")),
+                  React.createElement("div", { className: "mt-3 h-2 overflow-hidden rounded-full bg-black/25", role: "progressbar", "aria-label": "Season mission progress", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": gardenProgress }, React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-lime-300 to-emerald-300 transition-all", style: { width: gardenProgress + "%" } })),
+                  React.createElement("div", { className: "mt-3 flex items-center gap-2" }, missionSteps.map(function(step,index){ return React.createElement("div", { key: step.label, className: "flex min-w-0 flex-1 items-center gap-1.5 text-[10px] font-bold " + (step.active ? "text-white" : step.complete ? "text-lime-200" : "text-emerald-200/60") }, React.createElement("span", { className: "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border " + (step.complete ? "border-lime-300 bg-lime-300 text-emerald-950" : step.active ? "border-white bg-white/15" : "border-white/20"), "aria-hidden": true }, step.complete ? "\u2713" : index + 1), React.createElement("span", { className: "truncate" }, step.label)); }))
+                ),
+                React.createElement("div", { className: "relative rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm md:min-w-[230px]" }, React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-emerald-200" }, "Recommended next"), React.createElement("div", { className: "mt-1 text-sm font-black" }, nextGardenMove), React.createElement("div", { className: "mt-1 text-[11px] text-emerald-100" }, seasonName + " | Day " + dayInSeason + " of 30"))
+              )
+            ),
 
-              React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "📜 Cultural Origins & Living Knowledge"),
+            React.createElement("div", {
+              "data-companion-command": true,
+              className: "overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-lg shadow-emerald-950/5"
+            },
+              React.createElement("div", { className: "grid gap-4 p-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]", style: { background: 'linear-gradient(135deg,#f7fee7 0%,#ecfdf5 48%,#f8fafc 100%)' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "text-[11px] font-black uppercase text-emerald-700" }, "Garden Operations"),
+                      React.createElement("h4", { className: "mt-1 text-xl font-black text-slate-900" },
+                        phase === 'plant' ? "Design the mound" : phase === 'grow' ? "Manage the growing season" : "Harvest and reset"
+                      ),
+                      React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600" },
+                        "Keep the live garden loop focused: plant the sisters, monitor soil signals, respond to events, then explore the science when ready."
+                      )
+                    ),
+                    React.createElement("div", { className: "rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-black text-emerald-800" },
+                      seasonName + " | Day " + dayInSeason + "/30"
+                    )
+                  ),
+                  React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 xl:grid-cols-4" },
+                    [
+                      { label: 'Phase', value: phase.charAt(0).toUpperCase() + phase.slice(1), sub: nextGardenMove },
+                      { label: 'Sisters planted', value: plantedCount + '/3', sub: allPlanted ? 'Polyculture ready' : 'Complete the trio' },
+                      { label: 'Ecosystem score', value: ecosystemScore + '%', sub: 'soil + health + synergy' },
+                      { label: 'Harvests', value: harvestCount, sub: totalScore + ' total score' }
+                    ].map(function(stat) {
+                      return React.createElement("div", { key: stat.label, className: "rounded-lg border border-white bg-white/85 p-3 shadow-sm" },
+                        React.createElement("div", { className: "text-[11px] font-bold uppercase text-slate-500" }, stat.label),
+                        React.createElement("div", { className: "mt-1 text-lg font-black text-slate-900" }, stat.value),
+                        React.createElement("div", { className: "text-[11px] text-slate-500" }, stat.sub)
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "rounded-lg border border-emerald-100 bg-white/80 p-3" },
+                    React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" },
+                      React.createElement("span", { className: "text-xs font-black text-slate-700" }, "Sister Roles"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-slate-500" }, "Synergy " + avgSynergy + "%")
+                    ),
+                    React.createElement("div", { className: "grid gap-2 sm:grid-cols-3" },
+                      [
+                        { key: 'cornPlanted', name: 'Corn', role: 'Living trellis', active: cornPlanted, color: '#ca8a04' },
+                        { key: 'beansPlanted', name: 'Beans', role: 'Nitrogen fixer', active: beansPlanted, color: '#16a34a' },
+                        { key: 'squashPlanted', name: 'Squash', role: 'Living mulch', active: squashPlanted, color: '#ea580c' }
+                      ].map(function(sister) {
+                        return React.createElement("button", {
+                          key: sister.name,
+                          onClick: function() {
+                            if (phase !== 'plant') return;
+                            upd(sister.key, !sister.active);
+                          },
+                          disabled: phase !== 'plant',
+                          className: "rounded-lg border p-3 text-left transition-all " + (sister.active ? 'bg-emerald-50 border-emerald-300' : 'bg-white border-slate-200 hover:border-emerald-300') + (phase !== 'plant' ? ' cursor-default' : '')
+                        },
+                          React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                            React.createElement("span", { className: "text-sm font-black", style: { color: sister.color } }, sister.name),
+                            React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold " + (sister.active ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500') }, sister.active ? 'Planted' : 'Add')
+                          ),
+                          React.createElement("div", { className: "mt-1 text-[11px] text-slate-500" }, sister.role)
+                        );
+                      })
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "rounded-lg border border-white bg-white/90 p-3 shadow-sm" },
+                    React.createElement("div", { className: "text-xs font-black text-slate-800" }, "Next Best Move"),
+                    React.createElement("div", { className: "mt-2 rounded-lg bg-emerald-50 p-3 text-sm font-black text-emerald-800" }, nextGardenMove),
+                    React.createElement("div", { className: "mt-3 space-y-2" },
+                      (gardenAlerts.length ? gardenAlerts.slice(0, 3) : [{ label: 'Garden stable', action: 'Keep observing', color: '#059669' }]).map(function(alert, ai) {
+                        return React.createElement("div", { key: ai, className: "flex items-center gap-2 rounded-lg border border-slate-100 bg-white px-2.5 py-2" },
+                          React.createElement("span", { className: "h-2.5 w-2.5 rounded-full", style: { background: alert.color } }),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, alert.label),
+                          React.createElement("span", { className: "ml-auto text-[11px] text-slate-500" }, alert.action)
+                        );
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 lg:grid-cols-1", role: "tablist", "aria-label": "Garden workspaces", "data-companion-workspaces": true },
+                    workspaceTabs.map(function(tab) {
+                      var active = gardenWorkspace === tab.id;
+                      return React.createElement("button", {
+                        key: tab.id,
+                        role: "tab",
+                        "aria-selected": active,
+                        onClick: function() { upd('gardenWorkspace', tab.id); },
+                        className: "rounded-lg border p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm " + (active ? 'text-slate-900 shadow-sm ring-1 ring-white' : 'text-slate-700'),
+                        style: { borderColor: active ? tab.accent : tab.border, background: active ? tab.soft : '#ffffff' }
+                      },
+                        React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                          React.createElement("span", { className: "flex min-w-0 items-center gap-2 text-sm font-black" },
+                            React.createElement("span", { className: "text-base", "aria-hidden": true }, tab.icon),
+                            React.createElement("span", { className: "truncate" }, tab.label)
+                          ),
+                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold", style: { background: active ? tab.accent : tab.soft, color: active ? '#ffffff' : tab.accent } }, active ? 'Active' : 'Open')
+                        ),
+                        React.createElement("p", { className: "mt-1 hidden text-[11px] leading-snug text-slate-500 sm:block" }, tab.desc),
+                        active && React.createElement("div", { className: "mt-2 text-[11px] font-semibold", style: { color: tab.accent } }, tab.intent)
+                      );
+                    })
+                  )
+                )
+              )
+            ),
+
+            React.createElement("div", {
+              "data-companion-workspace-stage": true,
+              className: "overflow-hidden rounded-xl border bg-white shadow-sm",
+              style: { borderColor: activeWorkspace.border }
+            },
+              React.createElement("div", {
+                className: "grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.85fr)]",
+                style: { background: 'linear-gradient(135deg,' + activeWorkspace.soft + ' 0%,#ffffff 56%,#f8fafc 100%)' }
+              },
+                React.createElement("div", { className: "min-w-0" },
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("span", { className: "h-2.5 w-2.5 rounded-full", style: { background: activeWorkspace.accent } }),
+                    React.createElement("span", { className: "text-[11px] font-black uppercase text-slate-500" }, "Active Workspace")
+                  ),
+                  React.createElement("h4", { className: "mt-1 text-lg font-black text-slate-900" }, activeWorkspace.label),
+                  React.createElement("p", { className: "mt-1 max-w-3xl text-sm leading-relaxed text-slate-600" }, activeWorkspace.intent),
+                  React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
+                    activeWorkspaceStats.map(function(stat) {
+                      return React.createElement("div", { key: stat.label, className: "min-w-0 rounded-lg border border-white bg-white/85 p-2.5 shadow-sm" },
+                        React.createElement("div", { className: "text-[11px] font-bold uppercase text-slate-500" }, stat.label),
+                        React.createElement("div", { className: "mt-0.5 truncate text-sm font-black text-slate-900" }, stat.value)
+                      );
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "rounded-lg border border-white bg-white/90 p-3 shadow-sm" },
+                  React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" },
+                    React.createElement("span", { className: "text-xs font-black text-slate-800" }, "Quick Actions"),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: activeWorkspace.accent } }, activeWorkspace.label)
+                  ),
+                  React.createElement("div", { className: "grid gap-2 sm:grid-cols-3 lg:grid-cols-1" },
+                    activeWorkspaceActions.map(function(action) {
+                      return React.createElement("button", {
+                        key: action.label,
+                        onClick: action.onClick,
+                        className: "min-w-0 rounded-lg border bg-white p-2.5 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm",
+                        style: { borderColor: activeWorkspace.border }
+                      },
+                        React.createElement("div", { className: "truncate text-xs font-black text-slate-900" }, action.label),
+                        React.createElement("div", { className: "mt-0.5 truncate text-[11px] text-slate-500" }, action.sub)
+                      );
+                    })
+                  )
+                )
+              )
+            ),
+
+            gardenWorkspace === 'reference' && showCulture && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-xl border border-amber-200 p-4 space-y-3" },
+
+              React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, __alloT('stem.companionplanting.cultural_origins_living_knowledge', "📜 Cultural Origins & Living Knowledge")),
 
               React.createElement("div", { className: "grid md:grid-cols-2 gap-3 text-xs text-amber-800 leading-relaxed" },
 
                 React.createElement("div", { className: "space-y-2" },
 
-                  React.createElement("p", { className: "font-bold text-amber-900" }, "Mesoamerican Origins: The Milpa"),
+                  React.createElement("p", { className: "font-bold text-amber-900" }, __alloT('stem.companionplanting.mesoamerican_origins_the_milpa', "Mesoamerican Origins: The Milpa")),
 
-                  React.createElement("p", null, "The companion planting of corn, beans, and squash — known as milpa in Mesoamerica — is one of humanity's oldest agricultural innovations. Archaeological evidence traces this system to over 7,000 years ago in present-day Mexico. Squash was domesticated ~10,000 years ago, maize ~9,000 years ago from the wild grass teosinte, and common beans ~7,000 years ago."),
+                  React.createElement("p", null, __alloT('stem.companionplanting.the_companion_planting_of_corn_beans_a', "The companion planting of corn, beans, and squash — known as milpa in Mesoamerica — is one of humanity's oldest agricultural innovations. Archaeological evidence traces this system to over 7,000 years ago in present-day Mexico. Squash was domesticated ~10,000 years ago, maize ~9,000 years ago from the wild grass teosinte, and common beans ~7,000 years ago.")),
 
-                  React.createElement("p", null, "The milpa system diffused northward over millennia, appearing in North America around 1070 CE. By the time European colonizers arrived around 1500, it was a foundational food system across Central and North America.")
+                  React.createElement("p", null, __alloT('stem.companionplanting.the_milpa_system_diffused_northward_ov', "The milpa system diffused northward over millennia, appearing in North America around 1070 CE. By the time European colonizers arrived around 1500, it was a foundational food system across Central and North America."))
 
                 ),
 
                 React.createElement("div", { className: "space-y-2" },
 
-                  React.createElement("p", { className: "font-bold text-amber-900" }, "Haudenosaunee Tradition: De-oh-há-ko"),
+                  React.createElement("p", { className: "font-bold text-amber-900" }, __alloT('stem.companionplanting.haudenosaunee_tradition_de_oh_h_ko', "Haudenosaunee Tradition: De-oh-há-ko")),
 
-                  React.createElement("p", null, "The Haudenosaunee (Iroquois Confederacy) call these plants De-oh-há-ko — \"they sustain us.\" The Three Sisters are spiritual beings and precious gifts, central to Haudenosaunee language, ceremony, songs, and cosmology. This is not merely a farming technique — it is a living relationship between people and plants."),
+                  React.createElement("p", null, __alloT('stem.companionplanting.the_haudenosaunee_iroquois_confederacy', "The Haudenosaunee (Iroquois Confederacy) call these plants De-oh-há-ko — \"they sustain us.\" The Three Sisters are spiritual beings and precious gifts, central to Haudenosaunee language, ceremony, songs, and cosmology. This is not merely a farming technique — it is a living relationship between people and plants.")),
 
-                  React.createElement("p", null, "This knowledge is not historical artifact. Milpa and Three Sisters gardens are actively cultivated today across the Americas, representing a continuous tradition of ecological wisdom.")
+                  React.createElement("p", null, __alloT('stem.companionplanting.this_knowledge_is_not_historical_artif', "This knowledge is not historical artifact. Milpa and Three Sisters gardens are actively cultivated today across the Americas, representing a continuous tradition of ecological wisdom."))
 
                 )
 
@@ -2356,17 +6678,17 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "flex items-center gap-2 pt-1 flex-wrap" },
 
-                React.createElement("span", { className: "text-[10px] font-bold text-amber-600" }, "Learn more:"),
+                React.createElement("span", { className: "text-[11px] font-bold text-amber-600" }, __alloT('stem.companionplanting.learn_more', "Learn more:")),
 
-                React.createElement("a", { href: "https://www.haudenosauneeconfederacy.com/", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "Haudenosaunee Confederacy"),
+                React.createElement("a", { href: "https://www.haudenosauneeconfederacy.com/", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, __alloT('stem.companionplanting.haudenosaunee_confederacy', "Haudenosaunee Confederacy")),
 
-                React.createElement("span", { className: "text-[10px] text-amber-400" }, "•"),
+                React.createElement("span", { className: "text-[11px] text-amber-400" }, "•"),
 
-                React.createElement("a", { href: "https://americanindian.si.edu/", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "Smithsonian NMAI"),
+                React.createElement("a", { href: "https://americanindian.si.edu/", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, __alloT('stem.companionplanting.smithsonian_nmai', "Smithsonian NMAI")),
 
-                React.createElement("span", { className: "text-[10px] text-amber-400" }, "•"),
+                React.createElement("span", { className: "text-[11px] text-amber-400" }, "•"),
 
-                React.createElement("a", { href: "https://www.usda.gov/media/blog/2021/11/02/three-sisters-and-more-indigenous-food-systems", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "USDA: Three Sisters")
+                React.createElement("a", { href: "https://www.usda.gov/media/blog/2021/11/02/three-sisters-and-more-indigenous-food-systems", target: "_blank", rel: "noopener noreferrer", className: "transition-colors text-[11px] text-amber-700 underline hover:text-amber-900" }, __alloT('stem.companionplanting.usda_three_sisters', "USDA: Three Sisters"))
 
               )
 
@@ -2376,7 +6698,7 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Main Layout: Canvas + Dashboard ──
 
-            React.createElement("div", { className: "grid md:grid-cols-3 gap-4" },
+            gardenWorkspace === 'operate' && React.createElement("div", { className: "grid md:grid-cols-3 gap-4", "data-companion-garden-ops": true },
 
 
 
@@ -2384,19 +6706,36 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "md:col-span-2" },
 
-                React.createElement("canvas", {
+                React.createElement("div", { "data-companion-sim-frame": true, className: "overflow-hidden rounded-xl border border-emerald-200 bg-slate-950 shadow-xl" },
+                  React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-slate-900 px-3 py-2" },
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "text-[11px] font-black uppercase text-emerald-300" }, "Live Garden Bed"),
+                      React.createElement("div", { className: "text-sm font-black text-white" }, phase === 'plant' ? "Planning mound layout" : phase === 'grow' ? "Season simulation running" : "Harvest report ready")
+                    ),
+                    React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                      [
+                        { label: 'Health', value: Math.round(plantHealth) + '%' },
+                        { label: 'Soil', value: soilHealth + '%' },
+                        { label: 'Growth', value: Math.round(growthTime) + '%' }
+                      ].map(function(chip) {
+                        return React.createElement("span", { key: chip.label, className: "rounded-full border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-bold text-slate-100" }, chip.label + ' ' + chip.value);
+                      })
+                    )
+                  ),
+                  React.createElement("canvas", { tabIndex: 0,
 
                   ref: canvasRef,
 
                   "data-companion-canvas": "true",
 
-                  className: "w-full rounded-xl border-2 border-emerald-200 shadow-lg",
+                  className: "w-full",
 
-                  style: { height: 320, cursor: phase === 'plant' ? 'pointer' : 'default', background: 'linear-gradient(180deg, #87CEEB 0%, #E8F5E9 45%, #558B2F 45%, #33691E 100%)' },
+                  style: { height: 360, cursor: phase === 'plant' ? 'pointer' : 'default', background: 'linear-gradient(180deg, #87CEEB 0%, #E8F5E9 45%, #558B2F 45%, #33691E 100%)' },
 
-                  role: "img", "aria-label": "Companion planting garden visualization showing corn, beans, and squash growing together"
+                  role: "img", "aria-label": __alloT('stem.companionplanting.companion_planting_garden_visualizatio', "Companion planting garden visualization showing corn, beans, and squash growing together")
 
                 })
+                )
 
               ),
 
@@ -2410,9 +6749,9 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                    React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, "🧪 Needs & Meters"),
+                    React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, __alloT('stem.companionplanting.needs_meters', "🧪 Needs & Meters")),
 
-                    phase === 'grow' && React.createElement("span", { className: "text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full" },
+                    phase === 'grow' && React.createElement("span", { className: "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full" },
 
                       seasonName + ' • Day ' + dayInSeason + '/30'
 
@@ -2436,7 +6775,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("div", { className: "flex justify-between items-center" },
 
-                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "Overall Soil Health"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-700" }, __alloT('stem.companionplanting.overall_soil_health', "Overall Soil Health")),
 
                       React.createElement("span", { className: "text-sm font-bold " + (soilHealth > 70 ? 'text-emerald-700' : soilHealth > 40 ? 'text-amber-600' : 'text-red-600') }, soilHealth + '%')
 
@@ -2452,7 +6791,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 compareMode && React.createElement("div", { className: "bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border border-red-200 p-3 space-y-2" },
 
-                  React.createElement("h4", { className: "text-xs font-bold text-red-800" }, "🌽 Monoculture Comparison"),
+                  React.createElement("h4", { className: "text-xs font-bold text-red-800" }, __alloT('stem.companionplanting.monoculture_comparison', "🌽 Monoculture Comparison")),
 
                   gauge('Nitrogen', monoN, 'red', '📉', '%'),
 
@@ -2462,13 +6801,13 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "border-t border-red-200 pt-2" },
 
-                    React.createElement("span", { className: "text-[10px] font-bold text-red-700" }, "Soil Health: " + monoHealth + "%")
+                    React.createElement("span", { className: "text-[11px] font-bold text-red-700" }, "Soil Health: " + monoHealth + "%")
 
                   ),
 
-                  growthTime > 30 && React.createElement("div", { className: "text-[10px] text-red-800 bg-red-100 rounded-lg p-2 mt-1" },
+                  growthTime > 30 && React.createElement("div", { className: "text-[11px] text-red-800 bg-red-100 rounded-lg p-2 mt-1" },
 
-                    "⚠️ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over."
+                    __alloT('stem.companionplanting.without_beans_nitrogen_depletes_withou', "⚠️ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over.")
 
                   )
 
@@ -2478,17 +6817,17 @@ var d = (labToolData.companionPlanting) || {};
 
                 // Soil detail panel
 
-                showSoilDetail && React.createElement("div", { className: "bg-gradient-to-br from-stone-50 to-amber-50 rounded-xl border border-stone-200 p-3 text-[10px] text-stone-700 space-y-2 leading-relaxed" },
+                showSoilDetail && React.createElement("div", { className: "bg-gradient-to-br from-stone-50 to-amber-50 rounded-xl border border-stone-200 p-3 text-[11px] text-stone-700 space-y-2 leading-relaxed" },
 
-                  React.createElement("h4", { className: "font-bold text-stone-800 text-xs" }, "🔬 The Science"),
+                  React.createElement("h4", { className: "font-bold text-stone-800 text-xs" }, __alloT('stem.companionplanting.the_science', "🔬 The Science")),
 
-                  React.createElement("p", null, React.createElement("b", null, "Nitrogen Fixation:"), " Rhizobium bacteria in bean root nodules convert atmospheric N₂ → NH₃ (ammonia) via nitrogenase enzyme. This biological process enriches soil without synthetic fertilizers."),
+                  React.createElement("p", null, React.createElement("b", null, __alloT('stem.companionplanting.nitrogen_fixation_2', "Nitrogen Fixation:")), __alloT('stem.companionplanting.rhizobium_bacteria_in_bean_root_nodule_2', " Rhizobium bacteria in bean root nodules convert atmospheric N₂ → NH₃ (ammonia) via nitrogenase enzyme. This biological process enriches soil without synthetic fertilizers.")),
 
-                  React.createElement("p", null, React.createElement("b", null, "Living Mulch:"), " Squash's broad leaves create ground cover that shades soil, reducing evapotranspiration by up to 50% and suppressing weed germination by blocking sunlight."),
+                  React.createElement("p", null, React.createElement("b", null, __alloT('stem.companionplanting.living_mulch', "Living Mulch:")), __alloT('stem.companionplanting.squash_s_broad_leaves_create_ground_co', " Squash's broad leaves create ground cover that shades soil, reducing evapotranspiration by up to 50% and suppressing weed germination by blocking sunlight.")),
 
-                  React.createElement("p", null, React.createElement("b", null, "Structural Symbiosis:"), " Corn stalks serve as natural trellises for bean vines. Bean vines, in turn, stabilize corn against wind shear."),
+                  React.createElement("p", null, React.createElement("b", null, __alloT('stem.companionplanting.structural_symbiosis', "Structural Symbiosis:")), __alloT('stem.companionplanting.corn_stalks_serve_as_natural_trellises', " Corn stalks serve as natural trellises for bean vines. Bean vines, in turn, stabilize corn against wind shear.")),
 
-                  React.createElement("p", null, React.createElement("b", null, "Nutritional Complementarity:"), " Corn provides methionine-rich carbohydrates; beans provide lysine-rich protein. Together they form a complete amino acid profile — a balanced diet from one garden.")
+                  React.createElement("p", null, React.createElement("b", null, __alloT('stem.companionplanting.nutritional_complementarity', "Nutritional Complementarity:")), __alloT('stem.companionplanting.corn_provides_methionine_rich_carbohyd', " Corn provides methionine-rich carbohydrates; beans provide lysine-rich protein. Together they form a complete amino acid profile — a balanced diet from one garden."))
 
                 )
 
@@ -2500,17 +6839,15 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Event Popup ──
 
-            eventPopup && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4 space-y-2 animate-in slide-in-from-top duration-300 shadow-xl" },
+            gardenWorkspace === 'operate' && eventPopup && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4 space-y-2 animate-in slide-in-from-top duration-300 shadow-xl" },
 
               React.createElement("div", { className: "flex items-center justify-between" },
 
                 React.createElement("h4", { className: "text-sm font-bold text-indigo-900 flex items-center gap-2" }, eventPopup.emoji + ' ' + eventPopup.title),
 
-                React.createElement("button", { "aria-label": "Change event popup",
+                React.createElement("button", { onClick: function () { upd('eventPopup', null); },
 
-                  onClick: function () { upd('eventPopup', null); },
-
-                  className: "text-indigo-400 hover:text-indigo-700 text-lg font-bold"
+                  className: "transition-colors text-indigo-400 hover:text-indigo-700 text-lg font-bold"
 
                 }, "✕")
 
@@ -2528,7 +6865,7 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Controls Bar ──
 
-            React.createElement("div", { className: "space-y-3" },
+            gardenWorkspace === 'operate' && React.createElement("div", { className: "space-y-3" },
 
 
 
@@ -2538,9 +6875,9 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-400 p-2" },
 
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase px-1" }, "Plant:"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase px-1" }, "Plant:"),
 
-                  React.createElement("button", { "aria-label": "Corn",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.corn_3', "Corn"),
 
                     onClick: function () {
 
@@ -2556,11 +6893,11 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-400')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-600' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-400')
 
                   }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
 
-                  React.createElement("button", { "aria-label": "Beans",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.beans_3', "Beans"),
 
                     onClick: function () {
 
@@ -2576,11 +6913,11 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-400')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-600' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-400')
 
                   }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
 
-                  React.createElement("button", { "aria-label": "Squash",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.squash_3', "Squash"),
 
                     onClick: function () {
 
@@ -2596,7 +6933,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-400')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-600' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-400')
 
                   }, "🎃 Squash" + (squashPlanted ? ' ✓' : ''))
 
@@ -2608,9 +6945,9 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-700 transition-all flex items-center gap-1.5"
 
-                }, "▶ Grow!"),
+                }, __alloT('stem.companionplanting.grow', "▶ Grow!")),
 
-                !allPlanted && React.createElement("span", { className: "text-[10px] text-slate-500 italic" }, "Plant all three seeds to begin")
+                !allPlanted && React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, __alloT('stem.companionplanting.plant_all_three_seeds_to_begin', "Plant all three seeds to begin"))
 
               ),
 
@@ -2622,7 +6959,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                  React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, "🎮 Actions"),
+                  React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, __alloT('stem.companionplanting.actions', "🎮 Actions")),
 
                   React.createElement("div", { className: "flex-1" }),
 
@@ -2630,17 +6967,15 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "flex items-center gap-1" },
 
-                    React.createElement("span", { className: "text-[10px] text-emerald-600 font-bold mr-1" }, "Speed:"),
+                    React.createElement("span", { className: "text-[11px] text-emerald-600 font-bold mr-1" }, "Speed:"),
 
                     [1, 2, 5].map(function (s) {
 
-                      return React.createElement("button", { "aria-label": "Change grow speed",
-
-                        key: s,
+                      return React.createElement("button", { key: s,
 
                         onClick: function () { upd('growSpeed', s); },
 
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
+                        className: "px-2 py-0.5 rounded text-[11px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-800 border border-emerald-200 hover:bg-emerald-50')
 
                       }, s + '×');
 
@@ -2648,7 +6983,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   ),
 
-                  React.createElement("span", { className: "text-[10px] font-bold text-emerald-700 ml-2" }, Math.round(growthTime) + "% grown")
+                  React.createElement("span", { className: "text-[11px] font-bold text-emerald-700 ml-2" }, Math.round(growthTime) + "% grown")
 
                 ),
 
@@ -2658,15 +6993,15 @@ var d = (labToolData.companionPlanting) || {};
 
                   [
 
-                    { id: 'water', emoji: '💧', label: 'Water', tip: 'Irrigation replenishes soil moisture. Over-watering leaches nutrients.' },
+                    { id: 'water', emoji: '💧', label: __alloT('stem.companionplanting.water_3', 'Water'), tip: __alloT('stem.companionplanting.irrigation_replenishes_soil_moisture_o', 'Irrigation replenishes soil moisture. Over-watering leaches nutrients.') },
 
-                    { id: 'compost', emoji: '🧪', label: 'Compost', tip: 'Composting adds organic nitrogen and beneficial microbes.' },
+                    { id: 'compost', emoji: '🧪', label: __alloT('stem.companionplanting.compost_3', 'Compost'), tip: __alloT('stem.companionplanting.composting_adds_organic_nitrogen_and_b', 'Composting adds organic nitrogen and beneficial microbes.') },
 
-                    { id: 'weed', emoji: '🌿', label: 'Weed', tip: 'Weeding removes competition for light, water, and nutrients.' },
+                    { id: 'weed', emoji: '🌿', label: __alloT('stem.companionplanting.weed_3', 'Weed'), tip: __alloT('stem.companionplanting.weeding_removes_competition_for_light_', 'Weeding removes competition for light, water, and nutrients.') },
 
-                    { id: 'inspect', emoji: '🔍', label: 'Inspect', tip: 'Inspecting reveals plant condition and early pest signs.' },
+                    { id: 'inspect', emoji: '🔍', label: __alloT('stem.companionplanting.inspect_2', 'Inspect'), tip: __alloT('stem.companionplanting.inspecting_reveals_plant_condition_and', 'Inspecting reveals plant condition and early pest signs.') },
 
-                    { id: 'mulch', emoji: '🍂', label: 'Mulch', tip: 'Mulching regulates soil temperature and retains moisture.' }
+                    { id: 'mulch', emoji: '🍂', label: __alloT('stem.companionplanting.mulch_2', 'Mulch'), tip: __alloT('stem.companionplanting.mulching_regulates_soil_temperature_an', 'Mulching regulates soil temperature and retains moisture.') }
 
                   ].map(function (action) {
 
@@ -2732,7 +7067,7 @@ var d = (labToolData.companionPlanting) || {};
 
                         onCooldown
 
-                          ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed'
+                          ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
 
                           : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-400 shadow-sm hover:shadow-md'
 
@@ -2754,17 +7089,17 @@ var d = (labToolData.companionPlanting) || {};
 
               phase === 'grow' && React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl border border-purple-200 p-3 space-y-2" },
 
-                React.createElement("h4", { className: "text-xs font-bold text-purple-800 flex items-center gap-1.5" }, "🤝 Companion Synergies"),
+                React.createElement("h4", { className: "text-xs font-bold text-purple-800 flex items-center gap-1.5" }, __alloT('stem.companionplanting.companion_synergies', "🤝 Companion Synergies")),
 
                 React.createElement("div", { className: "grid grid-cols-3 gap-3" },
 
                   [
 
-                    { label: 'Corn ↔ Beans', val: synCornBeans, desc: 'Structural support & N-fixation', color: 'emerald' },
+                    { label: __alloT('stem.companionplanting.corn_beans', 'Corn ↔ Beans'), val: synCornBeans, desc: __alloT('stem.companionplanting.structural_support_n_fixation', 'Structural support & N-fixation'), color: 'emerald' },
 
-                    { label: 'Beans → Soil', val: synBeansSoil, desc: 'Rhizobium nitrogen enrichment', color: 'blue' },
+                    { label: __alloT('stem.companionplanting.beans_soil', 'Beans → Soil'), val: synBeansSoil, desc: __alloT('stem.companionplanting.rhizobium_nitrogen_enrichment', 'Rhizobium nitrogen enrichment'), color: 'blue' },
 
-                    { label: 'Squash → All', val: synSquashAll, desc: 'Living mulch & pest deterrent', color: 'orange' }
+                    { label: __alloT('stem.companionplanting.squash_all', 'Squash → All'), val: synSquashAll, desc: __alloT('stem.companionplanting.living_mulch_pest_deterrent', 'Living mulch & pest deterrent'), color: 'orange' }
 
                   ].map(function (syn) {
 
@@ -2774,7 +7109,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     return React.createElement("div", { key: syn.label, className: "text-center space-y-1" },
 
-                      React.createElement("div", { className: "text-[10px] font-bold " + (unlocked ? 'text-purple-700' : 'text-slate-500') }, (unlocked ? '✨ ' : '🔒 ') + syn.label),
+                      React.createElement("div", { className: "text-[11px] font-bold " + (unlocked ? 'text-purple-700' : 'text-slate-200') }, (unlocked ? '✨ ' : '🔒 ') + syn.label),
 
                       React.createElement("div", { className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden" },
 
@@ -2782,9 +7117,9 @@ var d = (labToolData.companionPlanting) || {};
 
                       ),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-500" }, syn.desc),
+                      React.createElement("div", { className: "text-[11px] text-slate-200" }, syn.desc),
 
-                      React.createElement("div", { className: "text-[10px] font-bold", style: { color: c.text } }, Math.round(syn.val) + '%')
+                      React.createElement("div", { className: "text-[11px] font-bold", style: { color: c.text } }, Math.round(syn.val) + '%')
 
                     );
 
@@ -2822,15 +7157,15 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("div", { className: "bg-white rounded-xl p-3 space-y-2 border border-amber-200" },
 
-                  React.createElement("div", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, "🌾 Crop Yields"),
+                  React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1" }, __alloT('stem.companionplanting.crop_yields', "🌾 Crop Yields")),
 
                   [
 
-                    { emoji: '🌽', name: 'Corn', value: _cornYield, planted: cornPlanted, color: '#ca8a04', bgColor: '#fef9c3', unit: 'ears' },
+                    { emoji: '🌽', name: __alloT('stem.companionplanting.corn_4', 'Corn'), value: _cornYield, planted: cornPlanted, color: '#ca8a04', bgColor: '#fef9c3', unit: 'ears' },
 
-                    { emoji: '🫘', name: 'Beans', value: _beanYield, planted: beansPlanted, color: '#16a34a', bgColor: '#dcfce7', unit: 'lbs' },
+                    { emoji: '🫘', name: __alloT('stem.companionplanting.beans_4', 'Beans'), value: _beanYield, planted: beansPlanted, color: '#16a34a', bgColor: '#dcfce7', unit: 'lbs' },
 
-                    { emoji: '🎃', name: 'Squash', value: _squashYield, planted: squashPlanted, color: '#ea580c', bgColor: '#fff7ed', unit: 'lbs' }
+                    { emoji: '🎃', name: __alloT('stem.companionplanting.squash_4', 'Squash'), value: _squashYield, planted: squashPlanted, color: '#ea580c', bgColor: '#fff7ed', unit: 'lbs' }
 
                   ].map(function (crop) {
 
@@ -2844,9 +7179,9 @@ var d = (labToolData.companionPlanting) || {};
 
                         React.createElement("div", { className: "flex justify-between mb-0.5" },
 
-                          React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, crop.name),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, crop.name),
 
-                          React.createElement("span", { className: "text-[10px] font-bold", style: { color: crop.color } }, crop.planted ? crop.value + ' ' + crop.unit : '—')
+                          React.createElement("span", { className: "text-[11px] font-bold", style: { color: crop.color } }, crop.planted ? crop.value + ' ' + crop.unit : '—')
 
                         ),
 
@@ -2864,7 +7199,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "flex items-center justify-between pt-1.5 border-t border-amber-100 mt-1" },
 
-                    React.createElement("span", { className: "text-[10px] font-bold text-amber-800" }, "Total Harvest"),
+                    React.createElement("span", { className: "text-[11px] font-bold text-amber-800" }, __alloT('stem.companionplanting.total_harvest', "Total Harvest")),
 
                     React.createElement("span", { className: "text-sm font-bold text-amber-700" }, _totalYield + ' units'),
 
@@ -2880,7 +7215,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("div", { className: "text-lg font-bold text-emerald-700" }, Math.round(plantHealth)),
 
-                    React.createElement("div", { className: "text-[10px] text-slate-500" }, "Health Score")
+                    React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.companionplanting.health_score', "Health Score"))
 
                   ),
 
@@ -2888,7 +7223,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("div", { className: "text-lg font-bold text-blue-700" }, Math.round((synCornBeans + synBeansSoil + synSquashAll) / 3)),
 
-                    React.createElement("div", { className: "text-[10px] text-slate-500" }, "Avg Synergy")
+                    React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.companionplanting.avg_synergy', "Avg Synergy"))
 
                   ),
 
@@ -2896,7 +7231,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     React.createElement("div", { className: "text-lg font-bold text-amber-700" }, seasonScore),
 
-                    React.createElement("div", { className: "text-[10px] text-slate-500" }, "Season Score")
+                    React.createElement("div", { className: "text-[11px] text-slate-600" }, __alloT('stem.companionplanting.season_score', "Season Score"))
 
                   )
 
@@ -2910,7 +7245,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 ),
 
-                React.createElement("button", { "aria-label": "Harvest and start next season",
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.harvest_and_start_next_season', "Harvest and start next season"),
 
                   onClick: function () {
 
@@ -2956,7 +7291,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "w-full px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-yellow-600 text-white shadow-lg shadow-amber-200 hover:from-amber-600 hover:to-yellow-700 transition-all"
 
-                }, "🌾 Harvest & Start Next Season →")
+                }, __alloT('stem.companionplanting.harvest_start_next_season', "🌾 Harvest & Start Next Season →"))
 
               ); })()
 
@@ -2966,25 +7301,25 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Quiz Button ──
 
-            React.createElement("div", { className: "flex items-center gap-3" },
+            gardenWorkspace === 'science' && React.createElement("div", { className: "flex items-center gap-3", "data-companion-science-lab": true },
 
               React.createElement("div", { className: "flex-1" }),
 
-              React.createElement("button", { "aria-label": "Quiz",
+              React.createElement("button", { "aria-label": __alloT('stem.companionplanting.quiz', "Quiz"),
 
                 onClick: function () { upd('quizActive', !quizActive); upd('quizAnswer', ''); upd('quizFeedback', ''); },
 
                 className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (quizActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100')
 
-              }, "🧠 Quiz"),
+              }, __alloT('stem.companionplanting.quiz_2', "🧠 Quiz")),
 
-              React.createElement("button", { "aria-label": "Science",
+              React.createElement("button", { "aria-label": __alloT('stem.companionplanting.science_2', "Science"),
 
                 onClick: function () { upd('showSciencePanel', !showSciencePanel); },
 
                 className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-700 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
 
-              }, "\uD83D\uDCDA Science")
+              }, __alloT('stem.companionplanting.science_3', "\uD83D\uDCDA Science"))
 
             ),
 
@@ -2992,9 +7327,9 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Quiz Panel ──
 
-            showSciencePanel && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 space-y-4", style: { maxHeight: '60vh', overflowY: 'auto' } },
+            gardenWorkspace === 'science' && showSciencePanel && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 space-y-4", style: { maxHeight: '60vh', overflowY: 'auto' } },
 
-              React.createElement("h3", { className: "text-lg font-bold text-emerald-900 flex items-center gap-2" }, "\uD83C\uDF3E The Three Sisters: Science of Companion Planting"),
+              React.createElement("h3", { className: "text-lg font-bold text-emerald-900 flex items-center gap-2" }, __alloT('stem.companionplanting.the_three_sisters_science_of_companion', "\uD83C\uDF3E The Three Sisters: Science of Companion Planting")),
 
               React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-3" },
 
@@ -3002,9 +7337,9 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3D"),
 
-                  React.createElement("h4", { className: "font-bold text-yellow-800" }, "Corn (Structural Support)"),
+                  React.createElement("h4", { className: "font-bold text-yellow-800" }, __alloT('stem.companionplanting.corn_structural_support', "Corn (Structural Support)")),
 
-                  React.createElement("p", { className: "text-xs text-yellow-700 mt-1" }, "Grows tall stalks (6\u201310 ft) that serve as natural trellises for bean vines, providing vertical structure and replacing the need for artificial poles.")
+                  React.createElement("p", { className: "text-xs text-yellow-700 mt-1" }, __alloT('stem.companionplanting.grows_tall_stalks_6_10_ft_that_serve_a', "Grows tall stalks (6\u201310 ft) that serve as natural trellises for bean vines, providing vertical structure and replacing the need for artificial poles."))
 
                 ),
 
@@ -3012,9 +7347,9 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3E"),
 
-                  React.createElement("h4", { className: "font-bold text-green-800" }, "Beans (Nitrogen Fixation)"),
+                  React.createElement("h4", { className: "font-bold text-green-800" }, __alloT('stem.companionplanting.beans_nitrogen_fixation', "Beans (Nitrogen Fixation)")),
 
-                  React.createElement("p", { className: "text-xs text-green-700 mt-1" }, "Rhizobium bacteria in root nodules convert atmospheric N\u2082 into plant-usable ammonia. This biological nitrogen fixation enriches the soil without synthetic fertilizer.")
+                  React.createElement("p", { className: "text-xs text-green-700 mt-1" }, __alloT('stem.companionplanting.rhizobium_bacteria_in_root_nodules_con', "Rhizobium bacteria in root nodules convert atmospheric N\u2082 into plant-usable ammonia. This biological nitrogen fixation enriches the soil without synthetic fertilizer."))
 
                 ),
 
@@ -3022,9 +7357,9 @@ var d = (labToolData.companionPlanting) || {};
 
                   React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF83"),
 
-                  React.createElement("h4", { className: "font-bold text-orange-800" }, "Squash (Living Mulch)"),
+                  React.createElement("h4", { className: "font-bold text-orange-800" }, __alloT('stem.companionplanting.squash_living_mulch', "Squash (Living Mulch)")),
 
-                  React.createElement("p", { className: "text-xs text-orange-700 mt-1" }, "Broad leaves shade the soil, reducing water evaporation by up to 50%. Prickly stems deter animal pests. Acts as natural weed suppression through ground cover.")
+                  React.createElement("p", { className: "text-xs text-orange-700 mt-1" }, __alloT('stem.companionplanting.broad_leaves_shade_the_soil_reducing_w', "Broad leaves shade the soil, reducing water evaporation by up to 50%. Prickly stems deter animal pests. Acts as natural weed suppression through ground cover."))
 
                 )
 
@@ -3032,7 +7367,7 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "bg-amber-50 rounded-lg p-4 border border-amber-200" },
 
-                React.createElement("h4", { className: "font-bold text-amber-900 mb-2" }, "\uD83E\uDDEA Underground Chemistry"),
+                React.createElement("h4", { className: "font-bold text-amber-900 mb-2" }, __alloT('stem.companionplanting.underground_chemistry', "\uD83E\uDDEA Underground Chemistry")),
 
                 React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" },
 
@@ -3044,9 +7379,9 @@ var d = (labToolData.companionPlanting) || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Mycorrhizal Network"),
+                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.companionplanting.mycorrhizal_network', "Mycorrhizal Network")),
 
-                        React.createElement("p", { className: "text-xs text-amber-700" }, "Fungal threads extend root systems 100\u20131000x, creating an underground wood wide web that trades soil minerals for plant sugars.")
+                        React.createElement("p", { className: "text-xs text-amber-700" }, __alloT('stem.companionplanting.fungal_threads_extend_root_systems_100', "Fungal threads extend root systems 100\u20131000x, creating an underground wood wide web that trades soil minerals for plant sugars."))
 
                       )
 
@@ -3058,9 +7393,9 @@ var d = (labToolData.companionPlanting) || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Rhizobium Nodules"),
+                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.companionplanting.rhizobium_nodules', "Rhizobium Nodules")),
 
-                        React.createElement("p", { className: "text-xs text-amber-700" }, "Specialized bacteria colonize bean roots, forming visible pink nodules. Nitrogenase enzyme breaks the triple bond in N\u2082 gas, producing ammonia for all plants.")
+                        React.createElement("p", { className: "text-xs text-amber-700" }, __alloT('stem.companionplanting.specialized_bacteria_colonize_bean_roo', "Specialized bacteria colonize bean roots, forming visible pink nodules. Nitrogenase enzyme breaks the triple bond in N\u2082 gas, producing ammonia for all plants."))
 
                       )
 
@@ -3076,9 +7411,9 @@ var d = (labToolData.companionPlanting) || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Water Cycling"),
+                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.companionplanting.water_cycling', "Water Cycling")),
 
-                        React.createElement("p", { className: "text-xs text-amber-700" }, "Squash leaf shade reduces soil temperature by up to 10\u00B0F, cutting evaporation in half. Fallen leaves build organic matter, improving water retention.")
+                        React.createElement("p", { className: "text-xs text-amber-700" }, __alloT('stem.companionplanting.squash_leaf_shade_reduces_soil_tempera', "Squash leaf shade reduces soil temperature by up to 10\u00B0F, cutting evaporation in half. Fallen leaves build organic matter, improving water retention."))
 
                       )
 
@@ -3090,9 +7425,9 @@ var d = (labToolData.companionPlanting) || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Nutrient Cycling"),
+                        React.createElement("p", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.companionplanting.nutrient_cycling', "Nutrient Cycling")),
 
-                        React.createElement("p", { className: "text-xs text-amber-700" }, "Corn is a heavy nitrogen feeder. Beans replace what corn takes. Squash returns organic matter. Together they maintain soil fertility without synthetic inputs.")
+                        React.createElement("p", { className: "text-xs text-amber-700" }, __alloT('stem.companionplanting.corn_is_a_heavy_nitrogen_feeder_beans_', "Corn is a heavy nitrogen feeder. Beans replace what corn takes. Squash returns organic matter. Together they maintain soil fertility without synthetic inputs."))
 
                       )
 
@@ -3106,11 +7441,11 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "bg-violet-50 rounded-lg p-4 border border-violet-200" },
 
-                React.createElement("h4", { className: "font-bold text-violet-900 mb-2" }, "\uD83C\uDFDB\uFE0F Cultural Heritage"),
+                React.createElement("h4", { className: "font-bold text-violet-900 mb-2" }, __alloT('stem.companionplanting.cultural_heritage', "\uD83C\uDFDB\uFE0F Cultural Heritage")),
 
-                React.createElement("p", { className: "text-xs text-violet-800" }, "The Three Sisters (De-oh-h\u00E1-ko, meaning \u201Cthey sustain us\u201D in Haudenosaunee) is a 7,000-year-old agricultural system originating in Mesoamerica. Indigenous agricultural science developed sophisticated polyculture techniques millennia before modern ecology."),
+                React.createElement("p", { className: "text-xs text-violet-800" }, __alloT('stem.companionplanting.the_three_sisters_de_oh_h_ko_meaning_t', "The Three Sisters (De-oh-h\u00E1-ko, meaning \u201Cthey sustain us\u201D in Haudenosaunee) is a 7,000-year-old agricultural system originating in Mesoamerica. Indigenous agricultural science developed sophisticated polyculture techniques millennia before modern ecology.")),
 
-                React.createElement("p", { className: "text-xs text-violet-700 mt-2 italic" }, "Together, corn and beans provide a complete protein \u2014 corn supplies methionine while beans supply lysine \u2014 forming the nutritional foundation of many Indigenous diets.")
+                React.createElement("p", { className: "text-xs text-violet-700 mt-2 italic" }, __alloT('stem.companionplanting.together_corn_and_beans_provide_a_comp', "Together, corn and beans provide a complete protein \u2014 corn supplies methionine while beans supply lysine \u2014 forming the nutritional foundation of many Indigenous diets."))
 
               )
 
@@ -3118,7 +7453,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            quizActive && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4 space-y-3" },
+            gardenWorkspace === 'science' && quizActive && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4 space-y-3" },
 
               React.createElement("h4", { className: "text-sm font-bold text-indigo-900" }, "🧠 Question " + ((quizQ % quizzes.length) + 1) + " of " + quizzes.length),
 
@@ -3176,9 +7511,7 @@ var d = (labToolData.companionPlanting) || {};
 
               quizFeedback && React.createElement("div", { className: "text-xs leading-relaxed p-3 rounded-lg " + (quizAnswer === currentQuiz.correct ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700') }, quizFeedback),
 
-              quizFeedback && React.createElement("button", { "aria-label": "Change quiz q",
-
-                onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
+              quizFeedback && React.createElement("button", { onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
 
                 className: "px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all"
 
@@ -3197,23 +7530,22 @@ var d = (labToolData.companionPlanting) || {};
             
             
             // === FARMING SYSTEMS COMPARISON ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border-2 border-green-300 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative"),
-                React.createElement("button", { "aria-label": "Change show farm compare",
-                  onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
-                  className: "text-[10px] text-green-600 hover:text-green-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-green-800" }, __alloT('stem.companionplanting.sustainable_farming_industrial_vs_rege', "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative")),
+                React.createElement("button", { onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
+                  className: "transition-colors text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showFarmCompare ? 'Hide' : 'Compare \u2192')
               ),
               d.showFarmCompare && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-3" }, "How does companion planting compare to industrial farming? The energy, water, and carbon differences are staggering."),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-3" }, __alloT('stem.companionplanting.how_does_companion_planting_compare_to', "How does companion planting compare to industrial farming? The energy, water, and carbon differences are staggering.")),
                 // System selector
                 React.createElement("div", { className: "flex gap-1 mb-3" },
                   FARMING_SYSTEMS.map(function(sys) {
                     var isActive = (d.farmSystemIdx || 'industrial') === sys.id;
-                    return React.createElement("button", { "aria-label": "Change farm system idx", key: sys.id,
+                    return React.createElement("button", { key: sys.id,
                       onClick: function() { upd('farmSystemIdx', sys.id); },
                       className: "flex-1 py-2 px-2 rounded-xl border-2 text-center transition-all " + (isActive ? 'scale-105 shadow-md' : 'hover:scale-[1.02]'),
                       style: { borderColor: isActive ? sys.color : sys.color + '30', background: isActive ? sys.color + '10' : '#fff' }
@@ -3226,8 +7558,8 @@ var d = (labToolData.companionPlanting) || {};
                 // Comparison bars
                 (function() {
                   var metrics = [
-                    { label: 'Energy Efficiency (EROI)', key: 'eroi', max: 5, unit: 'x return', getVal: function(s) { return s.energy.eroi; } },
-                    { label: 'Biodiversity Score', key: 'bio', max: 100, unit: '/100', getVal: function(s) { return s.biodiversity.score; } }
+                    { label: __alloT('stem.companionplanting.energy_efficiency_eroi', 'Energy Efficiency (EROI)'), key: 'eroi', max: 5, unit: 'x return', getVal: function(s) { return s.energy.eroi; } },
+                    { label: __alloT('stem.companionplanting.biodiversity_score', 'Biodiversity Score'), key: 'bio', max: 100, unit: '/100', getVal: function(s) { return s.biodiversity.score; } }
                   ];
                   return React.createElement("div", { className: "space-y-2 mb-3" },
                     metrics.map(function(metric) {
@@ -3241,7 +7573,7 @@ var d = (labToolData.companionPlanting) || {};
                               React.createElement("div", { className: "h-4 rounded-full bg-slate-100 overflow-hidden" },
                                 React.createElement("div", { className: "h-full rounded-full transition-all", style: { width: pct + '%', background: sys.color } })
                               ),
-                              React.createElement("div", { className: "text-[7px] text-center font-bold mt-0.5", style: { color: sys.color } }, val + metric.unit)
+                              React.createElement("div", { className: "text-[11px] text-center font-bold mt-0.5", style: { color: sys.color } }, val + metric.unit)
                             );
                           })
                         )
@@ -3259,34 +7591,34 @@ var d = (labToolData.companionPlanting) || {};
                   },
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[11px]" },
                       React.createElement("div", { className: "rounded-lg p-2 bg-red-50 border border-red-100" },
-                        React.createElement("div", { className: "font-bold text-red-700 mb-0.5" }, "\u26A1 Energy"),
+                        React.createElement("div", { className: "font-bold text-red-700 mb-0.5" }, __alloT('stem.companionplanting.energy', "\u26A1 Energy")),
                         React.createElement("div", { className: "text-slate-600" }, sys.energy.input + ' cal input \u2192 ' + sys.energy.output + ' cal food'),
                         React.createElement("div", { className: "font-bold", style: { color: sys.color } }, 'EROI: ' + sys.energy.eroi + 'x')
                       ),
                       React.createElement("div", { className: "rounded-lg p-2 bg-blue-50 border border-blue-100" },
-                        React.createElement("div", { className: "font-bold text-blue-700 mb-0.5" }, "\uD83D\uDCA7 Water"),
+                        React.createElement("div", { className: "font-bold text-blue-700 mb-0.5" }, __alloT('stem.companionplanting.water_4', "\uD83D\uDCA7 Water")),
                         React.createElement("div", { className: "text-slate-600" }, sys.water.usage),
                         React.createElement("div", { className: "text-blue-600" }, 'Efficiency: ' + sys.water.efficiency)
                       ),
                       React.createElement("div", { className: "rounded-lg p-2 bg-amber-50 border border-amber-100" },
-                        React.createElement("div", { className: "font-bold text-amber-700 mb-0.5" }, "\uD83E\uDDEA Chemicals"),
+                        React.createElement("div", { className: "font-bold text-amber-700 mb-0.5" }, __alloT('stem.companionplanting.chemicals', "\uD83E\uDDEA Chemicals")),
                         React.createElement("div", { className: "text-slate-600" }, 'Fertilizer: ' + sys.chemicals.fertilizer),
                         React.createElement("div", { className: "text-slate-600" }, 'Pesticides: ' + sys.chemicals.pesticides)
                       ),
                       React.createElement("div", { className: "rounded-lg p-2 border " + (sys.carbon.net.indexOf('sink') >= 0 ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100') },
-                        React.createElement("div", { className: "font-bold " + (sys.carbon.net.indexOf('sink') >= 0 ? 'text-green-700' : 'text-red-700') + " mb-0.5" }, "\uD83C\uDF0D Carbon"),
+                        React.createElement("div", { className: "font-bold " + (sys.carbon.net.indexOf('sink') >= 0 ? 'text-green-700' : 'text-red-700') + " mb-0.5" }, __alloT('stem.companionplanting.carbon', "\uD83C\uDF0D Carbon")),
                         React.createElement("div", { className: "text-slate-600" }, sys.carbon.emission),
                         React.createElement("div", { className: "font-bold " + (sys.carbon.net.indexOf('sink') >= 0 ? 'text-green-600' : 'text-red-600') }, sys.carbon.net)
                       )
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-2" },
                       React.createElement("div", null,
-                        React.createElement("div", { className: "text-[8px] font-bold text-green-600 mb-0.5" }, '\u2705 Pros'),
-                        sys.pros.map(function(p, pi) { return React.createElement("div", { key: pi, className: "text-[8px] text-slate-500" }, '\u2022 ' + p); })
+                        React.createElement("div", { className: "text-[11px] font-bold text-green-600 mb-0.5" }, __alloT('stem.companionplanting.pros', '\u2705 Pros')),
+                        sys.pros.map(function(p, pi) { return React.createElement("div", { key: pi, className: "text-[11px] text-slate-600" }, '\u2022 ' + p); })
                       ),
                       React.createElement("div", null,
-                        React.createElement("div", { className: "text-[8px] font-bold text-red-500 mb-0.5" }, '\u26A0 Cons'),
-                        sys.cons.map(function(c, ci) { return React.createElement("div", { key: ci, className: "text-[8px] text-slate-500" }, '\u2022 ' + c); })
+                        React.createElement("div", { className: "text-[11px] font-bold text-red-500 mb-0.5" }, __alloT('stem.companionplanting.cons', '\u26A0 Cons')),
+                        sys.cons.map(function(c, ci) { return React.createElement("div", { key: ci, className: "text-[11px] text-slate-600" }, '\u2022 ' + c); })
                       )
                     )
                   );
@@ -3295,26 +7627,25 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === FOOD MILES & CARBON CALCULATOR ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-blue-50 to-sky-50 rounded-2xl p-4 border border-blue-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\uD83D\uDE9A Food Miles & Carbon Calculator"),
-                React.createElement("button", { "aria-label": "Change show food miles",
-                  onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
-                  className: "text-[10px] text-blue-600 hover:text-blue-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, __alloT('stem.companionplanting.food_miles_carbon_calculator', "\uD83D\uDE9A Food Miles & Carbon Calculator")),
+                React.createElement("button", { onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
+                  className: "transition-colors text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showFoodMiles ? 'Hide' : 'Calculate \u2192')
               ),
               d.showFoodMiles && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "How much energy does your food travel? Homegrown food = zero food miles, zero transport emissions."),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.how_much_energy_does_your_food_travel_', "How much energy does your food travel? Homegrown food = zero food miles, zero transport emissions.")),
                 React.createElement("div", { className: "space-y-1" },
                   FOOD_MILES.map(function(food, fi) {
                     var maxEnergy = 20;
                     return React.createElement("div", { key: fi, className: "rounded-lg p-1.5 bg-white border border-blue-100" },
                       React.createElement("div", { className: "flex items-center gap-1.5 mb-0.5" },
                         React.createElement("span", { className: "text-lg" }, food.icon),
-                        React.createElement("span", { className: "text-[10px] font-bold text-slate-700 w-16" }, food.food),
-                        React.createElement("span", { className: "text-[7px] text-slate-500" }, food.season)
+                        React.createElement("span", { className: "text-[11px] font-bold text-slate-700 w-16" }, food.food),
+                        React.createElement("span", { className: "text-[11px] text-slate-200" }, food.season)
                       ),
                       React.createElement("div", { className: "flex gap-0.5" },
                         // Homegrown bar
@@ -3322,49 +7653,48 @@ var d = (labToolData.companionPlanting) || {};
                           React.createElement("div", { className: "h-2.5 rounded-full bg-slate-100 overflow-hidden" },
                             React.createElement("div", { className: "h-full rounded-full bg-green-500", style: { width: Math.max(2, food.homegrown.energy / maxEnergy * 100) + '%' } })
                           ),
-                          React.createElement("div", { className: "text-[6px] text-green-600 font-bold" }, '\uD83C\uDFE1 ' + food.homegrown.energy + ' MJ')
+                          React.createElement("div", { className: "text-[11px] text-green-600 font-bold" }, '\uD83C\uDFE1 ' + food.homegrown.energy + ' MJ')
                         ),
                         // Store bar
                         React.createElement("div", { className: "flex-1" },
                           React.createElement("div", { className: "h-2.5 rounded-full bg-slate-100 overflow-hidden" },
                             React.createElement("div", { className: "h-full rounded-full bg-amber-500", style: { width: Math.max(2, food.store.energy / maxEnergy * 100) + '%' } })
                           ),
-                          React.createElement("div", { className: "text-[6px] text-amber-600 font-bold" }, '\uD83D\uDED2 ' + food.store.miles + 'mi / ' + food.store.co2 + 'kg CO\u2082')
+                          React.createElement("div", { className: "text-[11px] text-amber-600 font-bold" }, '\uD83D\uDED2 ' + food.store.miles + 'mi / ' + food.store.co2 + 'kg CO\u2082')
                         ),
                         // Imported bar
                         React.createElement("div", { className: "flex-1" },
                           React.createElement("div", { className: "h-2.5 rounded-full bg-slate-100 overflow-hidden" },
                             React.createElement("div", { className: "h-full rounded-full bg-red-500", style: { width: Math.max(2, food.imported.energy / maxEnergy * 100) + '%' } })
                           ),
-                          React.createElement("div", { className: "text-[6px] text-red-600 font-bold" }, '\u2708 ' + food.imported.miles + 'mi / ' + food.imported.co2 + 'kg CO\u2082')
+                          React.createElement("div", { className: "text-[11px] text-red-600 font-bold" }, '\u2708 ' + food.imported.miles + 'mi / ' + food.imported.co2 + 'kg CO\u2082')
                         )
                       )
                     );
                   })
                 ),
-                React.createElement("div", { className: "flex gap-3 justify-center mt-2 text-[8px]" },
-                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-green-500" }), ' Homegrown'),
-                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-amber-500" }), ' Grocery Store'),
-                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-red-500" }), ' Imported')
+                React.createElement("div", { className: "flex gap-3 justify-center mt-2 text-[11px]" },
+                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-green-500" }), __alloT('stem.companionplanting.homegrown', ' Homegrown')),
+                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-amber-500" }), __alloT('stem.companionplanting.grocery_store', ' Grocery Store')),
+                  React.createElement("span", { className: "flex items-center gap-1" }, React.createElement("span", { className: "w-2 h-2 rounded-full bg-red-500" }), __alloT('stem.companionplanting.imported', ' Imported'))
                 ),
                 React.createElement("div", { className: "mt-2 text-center rounded-lg p-2 bg-green-50 border border-green-200 text-[11px] text-green-700 font-bold" },
-                  '\uD83C\uDF0D A 4\u00D78 garden bed can save ~500 lbs CO\u2082/year compared to buying the same food imported!')
+                  __alloT('stem.companionplanting.a_4_8_garden_bed_can_save_500_lbs_co_y', '\uD83C\uDF0D A 4\u00D78 garden bed can save ~500 lbs CO\u2082/year compared to buying the same food imported!'))
               )
             ),
 
             // === WATER FOOTPRINT ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl p-4 border border-cyan-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCA7 Water Footprint of Food"),
-                React.createElement("button", { "aria-label": "Change show water foot",
-                  onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
-                  className: "text-[10px] text-cyan-600 hover:text-cyan-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, __alloT('stem.companionplanting.water_footprint_of_food', "\uD83D\uDCA7 Water Footprint of Food")),
+                React.createElement("button", { onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
+                  className: "transition-colors text-[11px] text-cyan-600 hover:text-cyan-800 font-bold"
                 }, d.showWaterFoot ? 'Hide' : 'View \u2192')
               ),
               d.showWaterFoot && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "Virtual water: the total water needed to produce food, from field to fork. Companion planting\'s living mulch cuts water use 40-60%!"),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.virtual_water_the_total_water_needed_t', "Virtual water: the total water needed to produce food, from field to fork. Companion planting\'s living mulch cuts water use 40-60%!")),
                 React.createElement("div", { className: "space-y-0.5" },
                   WATER_FOOTPRINT.sort(function(a, b) { return a.gallons - b.gallons; }).map(function(crop, ci) {
                     var maxGal = 1900;
@@ -3375,24 +7705,23 @@ var d = (labToolData.companionPlanting) || {};
                       React.createElement("div", { className: "flex-1 h-3 rounded-full bg-slate-100 overflow-hidden" },
                         React.createElement("div", { className: "h-full rounded-full transition-all", style: { width: pct + '%', background: crop.color } })
                       ),
-                      React.createElement("span", { className: "text-[8px] font-bold w-20 text-right", style: { color: crop.color } }, crop.gallons.toLocaleString() + ' gal/' + crop.unit.split(' ')[1])
+                      React.createElement("span", { className: "text-[11px] font-bold w-20 text-right", style: { color: crop.color } }, crop.gallons.toLocaleString() + ' gal/' + crop.unit.split(' ')[1])
                     );
                   })
                 ),
                 React.createElement("div", { className: "mt-2 text-[11px] text-cyan-700 bg-cyan-50 rounded-lg p-2 border border-cyan-100" },
-                  '\uD83D\uDCA1 Notice: plant-based proteins (beans: 43 gal/lb) use 43x LESS water than beef (1,847 gal/lb). The Three Sisters provide complete protein at a fraction of the water cost!')
+                  __alloT('stem.companionplanting.notice_plant_based_proteins_beans_43_g', '\uD83D\uDCA1 Notice: plant-based proteins (beans: 43 gal/lb) use 43x LESS water than beef (1,847 gal/lb). The Three Sisters provide complete protein at a fraction of the water cost!'))
               )
             ),
 
             // === PERMACULTURE PRINCIPLES ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-4 border border-violet-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF00 12 Permaculture Principles"),
-                React.createElement("button", { "aria-label": "Change show permaculture",
-                  onClick: function() { upd('showPermaculture', !d.showPermaculture); },
-                  className: "text-[10px] text-violet-600 hover:text-violet-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, __alloT('stem.companionplanting.12_permaculture_principles', "\uD83C\uDF00 12 Permaculture Principles")),
+                React.createElement("button", { onClick: function() { upd('showPermaculture', !d.showPermaculture); },
+                  className: "transition-colors text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showPermaculture ? 'Hide' : 'Explore \u2192')
               ),
               d.showPermaculture && React.createElement("div", { className: "grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto" },
@@ -3403,10 +7732,10 @@ var d = (labToolData.companionPlanting) || {};
                     className: "cursor-pointer rounded-xl p-2 border transition-all text-center " + (isActive ? 'bg-violet-100 border-violet-400 col-span-3' : 'bg-white border-violet-100 hover:border-violet-300')
                   },
                     React.createElement("div", { className: "text-lg" }, p.icon),
-                    React.createElement("div", { className: "text-[8px] font-black text-violet-700" }, '#' + p.num + ' ' + p.name),
+                    React.createElement("div", { className: "text-[11px] font-black text-violet-700" }, '#' + p.num + ' ' + p.name),
                     isActive && React.createElement("div", { className: "text-left mt-1.5" },
                       React.createElement("div", { className: "text-[11px] text-slate-600" }, p.desc),
-                      React.createElement("div", { className: "text-[11px] text-emerald-600 mt-1 bg-emerald-50 rounded p-1 border border-emerald-100" }, '\uD83C\uDF31 Example: ' + p.example)
+                      React.createElement("div", { className: "text-[11px] text-emerald-800 mt-1 bg-emerald-50 rounded p-1 border border-emerald-100" }, '\uD83C\uDF31 Example: ' + p.example)
                     )
                   );
                 })
@@ -3414,14 +7743,13 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === REGENERATIVE PRACTICES ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-emerald-50 to-green-50 rounded-2xl p-4 border border-emerald-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDF31 Regenerative Practices"),
-                React.createElement("button", { "aria-label": "Change show regen",
-                  onClick: function() { upd('showRegen', !d.showRegen); },
-                  className: "text-[10px] text-emerald-600 hover:text-emerald-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, __alloT('stem.companionplanting.regenerative_practices', "\uD83C\uDF31 Regenerative Practices")),
+                React.createElement("button", { onClick: function() { upd('showRegen', !d.showRegen); },
+                  className: "transition-colors text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showRegen ? 'Hide' : 'Learn \u2192')
               ),
               d.showRegen && React.createElement("div", { className: "space-y-1.5 max-h-56 overflow-y-auto" },
@@ -3434,8 +7762,8 @@ var d = (labToolData.companionPlanting) || {};
                   },
                     React.createElement("div", { className: "flex items-center gap-1.5" },
                       React.createElement("span", { className: "text-lg" }, practice.icon),
-                      React.createElement("span", { className: "text-[10px] font-bold text-emerald-800" }, practice.name),
-                      React.createElement("span", { className: "text-[7px] px-1.5 py-0.5 rounded-full font-bold ml-auto " + diffColor }, practice.difficulty)
+                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-800" }, practice.name),
+                      React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full font-bold ml-auto " + diffColor }, practice.difficulty)
                     ),
                     isActive && React.createElement("div", { className: "mt-1.5 pl-7 space-y-1" },
                       React.createElement("div", { className: "text-[11px] text-slate-600" }, practice.benefit),
@@ -3448,14 +7776,14 @@ var d = (labToolData.companionPlanting) || {};
 
 
             // === GARDEN SCENARIO CHALLENGES ===
-            React.createElement("div", {
+            gardenWorkspace === 'science' && React.createElement("div", {
               className: "bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-4 border border-rose-200 mb-3"
             },
               React.createElement("h4", { className: "text-sm font-bold text-rose-800 mb-2" }, "\uD83C\uDFAF Garden Scenarios (" + (gardenScenarioIdx + 1) + "/" + GARDEN_SCENARIOS.length + ")"),
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
                 gardenStreak > 0 ? React.createElement("span", { className: "px-3 py-0.5 rounded-full text-[11px] font-bold " + (gardenStreak >= 5 ? 'bg-amber-700 text-white animate-pulse' : gardenStreak >= 3 ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600') },
                   '\uD83D\uDD25 ' + gardenStreak + ' streak!') : null,
-                React.createElement("span", { className: "text-[11px] text-slate-500" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
+                React.createElement("span", { className: "text-[11px] text-slate-200" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
               ),
               (function() {
                 var sc = GARDEN_SCENARIOS[gardenScenarioIdx];
@@ -3464,17 +7792,17 @@ var d = (labToolData.companionPlanting) || {};
                 var isCorrect = gardenScenarioAnswer === sc.correct;
                 return React.createElement("div", null,
                   React.createElement("div", { className: "bg-white rounded-xl p-3 mb-2 border border-rose-100" },
-                    React.createElement("div", { className: "text-[10px] text-slate-700 leading-relaxed" }, sc.scenario)
+                    React.createElement("div", { className: "text-[11px] text-slate-700 leading-relaxed" }, sc.scenario)
                   ),
-                  React.createElement("div", { className: "text-[10px] font-bold text-slate-800 mb-2" }, sc.question),
+                  React.createElement("div", { className: "text-[11px] font-bold text-slate-800 mb-2" }, sc.question),
                   React.createElement("div", { className: "space-y-1.5 mb-2" },
                     sc.options.map(function(opt, oi) {
                       var isSelected = gardenScenarioAnswer === oi;
                       var isRight = oi === sc.correct;
-                      var cls = !answered ? 'border-rose-100 bg-white hover:border-rose-400 cursor-pointer' :
+                      var cls = !answered ? 'transition-colors border-rose-100 bg-white hover:border-rose-400 cursor-pointer' :
                         isRight ? 'border-green-400 bg-green-50' :
                         isSelected && !isRight ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white opacity-40';
-                      return React.createElement("button", { "aria-label": "Companionplanting action", key: oi,
+                      return React.createElement("button", { key: oi,
                         onClick: function() {
                           if (answered) return;
                           upd('gardenScenarioAnswer', oi);
@@ -3493,56 +7821,55 @@ var d = (labToolData.companionPlanting) || {};
                         className: "w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all " + cls,
                         disabled: answered
                       },
-                        React.createElement("span", { className: "font-bold mr-1 " + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-500') }, String.fromCharCode(65 + oi) + '.'),
+                        React.createElement("span", { className: "font-bold mr-1 " + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-200') }, String.fromCharCode(65 + oi) + '.'),
                         React.createElement("span", { className: answered && isRight ? 'text-green-700' : answered && isSelected && !isRight ? 'text-red-600' : 'text-slate-700' }, ' ' + opt)
                       );
                     })
                   ),
                   answered && React.createElement("div", { className: "space-y-2" },
-                    React.createElement("div", { className: "rounded-xl p-2.5 text-[10px] " + (isCorrect ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') },
+                    React.createElement("div", { className: "rounded-xl p-2.5 text-[11px] " + (isCorrect ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') },
                       (isCorrect ? '\u2705 ' : '\u274C ') + sc.explain
                     ),
                     React.createElement("div", { className: "rounded-xl p-2 text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700" },
                       '\uD83D\uDCDA Concept: ' + sc.concept
                     ),
-                    React.createElement("button", { "aria-label": "Next Scenario",
+                    React.createElement("button", { "aria-label": __alloT('stem.companionplanting.next_scenario', "Next Scenario"),
                       onClick: function() {
                         upd('gardenScenarioIdx', (gardenScenarioIdx + 1) % GARDEN_SCENARIOS.length);
                         upd('gardenScenarioAnswer', -1);
                       },
                       className: "w-full py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-rose-500 to-pink-500 text-white"
-                    }, 'Next Scenario \u2192')
+                    }, __alloT('stem.companionplanting.next_scenario_2', 'Next Scenario \u2192'))
                   )
                 );
               })()
             ),
 
             // === DID YOU KNOW? ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl p-3 border border-indigo-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", { className: "text-xl" }, '\uD83E\uDD14'),
                 React.createElement("div", { className: "flex-1" },
-                  React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-wider" }, 'Did You Know?'),
-                  React.createElement("div", { className: "text-[10px] text-indigo-800 leading-relaxed" }, GARDEN_FACTS[factIdx % GARDEN_FACTS.length])
+                  React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-wider" }, __alloT('stem.companionplanting.did_you_know', 'Did You Know?')),
+                  React.createElement("div", { className: "text-[11px] text-indigo-800 leading-relaxed" }, GARDEN_FACTS[factIdx % GARDEN_FACTS.length])
                 ),
-                React.createElement("button", { "aria-label": "Next",
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.next', "Next"),
                   onClick: function() { upd('factIdx', (factIdx + 1) % GARDEN_FACTS.length); },
-                  className: "text-[10px] text-indigo-500 hover:text-indigo-700 font-bold"
-                }, 'Next \u2192')
+                  className: "transition-colors text-[11px] text-indigo-500 hover:text-indigo-700 font-bold"
+                }, __alloT('stem.companionplanting.next_2', 'Next \u2192'))
               )
             ),
 
             // === QUICK REFERENCE CARDS ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl p-4 border border-teal-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDCCB Quick Reference Cards"),
-                React.createElement("button", { "aria-label": "Change show garden ref",
-                  onClick: function() { upd('showGardenRef', !d.showGardenRef); },
-                  className: "text-[10px] text-teal-600 hover:text-teal-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, __alloT('stem.companionplanting.quick_reference_cards', "\uD83D\uDCCB Quick Reference Cards")),
+                React.createElement("button", { onClick: function() { upd('showGardenRef', !d.showGardenRef); },
+                  className: "transition-colors text-[11px] text-teal-600 hover:text-teal-800 font-bold"
                 }, d.showGardenRef ? 'Hide' : 'View \u2192')
               ),
               d.showGardenRef && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
@@ -3553,7 +7880,7 @@ var d = (labToolData.companionPlanting) || {};
                   },
                     React.createElement("div", { className: "flex items-center gap-1 mb-1" },
                       React.createElement("span", { className: "text-lg" }, card.icon),
-                      React.createElement("span", { className: "text-[10px] font-black", style: { color: card.color } }, card.title)
+                      React.createElement("span", { className: "text-[11px] font-black", style: { color: card.color } }, card.title)
                     ),
                     React.createElement("div", { className: "text-[11px] text-slate-600 leading-relaxed" }, card.content)
                   );
@@ -3563,61 +7890,59 @@ var d = (labToolData.companionPlanting) || {};
 
 
             // === NITROGEN CYCLE ===
-            React.createElement("div", {
+            gardenWorkspace === 'science' && React.createElement("div", {
               className: "bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-4 border border-blue-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\u267B\uFE0F The Nitrogen Cycle"),
-                React.createElement("button", { "aria-label": "Change show nitrogen",
-                  onClick: function() { upd('showNitrogen', !d.showNitrogen); },
-                  className: "text-[10px] text-blue-600 hover:text-blue-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, __alloT('stem.companionplanting.the_nitrogen_cycle', "\u267B\uFE0F The Nitrogen Cycle")),
+                React.createElement("button", { onClick: function() { upd('showNitrogen', !d.showNitrogen); },
+                  className: "transition-colors text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showNitrogen ? 'Hide' : 'Explore \u2192')
               ),
               d.showNitrogen && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "This is why beans are so important! They hack the nitrogen cycle through bacterial symbiosis."),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.this_is_why_beans_are_so_important_the', "This is why beans are so important! They hack the nitrogen cycle through bacterial symbiosis.")),
                 React.createElement("div", { className: "flex flex-wrap gap-1 justify-center mb-2" },
                   NITROGEN_CYCLE.map(function(step, si) {
                     var isActive = (d.nitroCycleIdx || 0) === si;
                     return React.createElement("div", { key: si, className: "flex items-center" },
-                      React.createElement("button", { "aria-label": "Change nitro cycle idx",
-                        onClick: function() { upd('nitroCycleIdx', si); },
+                      React.createElement("button", { onClick: function() { upd('nitroCycleIdx', si); },
                         className: "flex flex-col items-center px-2 py-1.5 rounded-xl border-2 transition-all " + (isActive ? 'scale-110 shadow-md' : 'hover:scale-105'),
                         style: { borderColor: isActive ? step.color : step.color + '30', background: isActive ? step.color + '10' : '#fff' }
                       },
                         React.createElement("span", { className: "text-lg" }, step.icon),
-                        React.createElement("span", { className: "text-[7px] font-bold", style: { color: step.color } }, step.name)
+                        React.createElement("span", { className: "text-[11px] font-bold", style: { color: step.color } }, step.name)
                       ),
-                      si < 5 && React.createElement("span", { className: "text-slate-500 mx-0.5" }, '\u2192')
+                      si < 5 && React.createElement("span", { className: "text-slate-200 mx-0.5" }, '\u2192')
                     );
                   })
                 ),
                 (function() {
                   var step = NITROGEN_CYCLE[d.nitroCycleIdx || 0];
                   return React.createElement("div", { className: "rounded-xl p-2.5 border bg-white text-center", style: { borderColor: step.color + '40' } },
-                    React.createElement("div", { className: "text-[10px] font-bold", style: { color: step.color } }, 'Step ' + step.step + ': ' + step.name),
+                    React.createElement("div", { className: "text-[11px] font-bold", style: { color: step.color } }, 'Step ' + step.step + ': ' + step.name),
                     React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, step.desc),
-                    step.step === 2 && React.createElement("div", { className: "text-[8px] text-emerald-800 bg-emerald-50 rounded p-1 mt-1 border border-emerald-100 font-bold" }, '\uD83C\uDF31 THIS is what bean roots do! Free fertilizer from thin air!')
+                    step.step === 2 && React.createElement("div", { className: "text-[11px] text-emerald-800 bg-emerald-50 rounded p-1 mt-1 border border-emerald-100 font-bold" }, __alloT('stem.companionplanting.this_is_what_bean_roots_do_free_fertil', '\uD83C\uDF31 THIS is what bean roots do! Free fertilizer from thin air!'))
                   );
                 })()
               )
             ),
 
             // === COMPOSTING GUIDE ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 border border-amber-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\u267B\uFE0F Composting Guide"),
-                React.createElement("button", { "aria-label": "GREENS (Nitrogen)",
+                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.companionplanting.composting_guide', "\u267B\uFE0F Composting Guide")),
+                React.createElement("button", { "aria-label": __alloT('stem.companionplanting.greens_nitrogen', "GREENS (Nitrogen)"),
                   onClick: function() { upd('showCompost', !d.showCompost); },
-                  className: "text-[10px] text-amber-600 hover:text-amber-800 font-bold"
+                  className: "transition-colors text-[11px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showCompost ? 'Hide' : 'Learn \u2192')
               ),
               d.showCompost && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "The golden ratio: 3 parts Brown (carbon) to 1 part Green (nitrogen). Keep moist like a wrung-out sponge!"),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.the_golden_ratio_3_parts_brown_carbon_', "The golden ratio: 3 parts Brown (carbon) to 1 part Green (nitrogen). Keep moist like a wrung-out sponge!")),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                   React.createElement("div", { className: "rounded-xl p-2 border border-green-300 bg-green-50" },
-                    React.createElement("div", { className: "text-[10px] font-bold text-green-700 mb-1" }, "\uD83C\uDF3F GREENS (Nitrogen)"),
+                    React.createElement("div", { className: "text-[11px] font-bold text-green-700 mb-1" }, __alloT('stem.companionplanting.greens_nitrogen_2', "\uD83C\uDF3F GREENS (Nitrogen)")),
                     COMPOST_GREENS.map(function(g, gi) {
                       return React.createElement("div", { key: gi, className: "flex items-center gap-1 text-[11px] text-green-800" },
                         React.createElement("span", null, g.icon), React.createElement("span", null, g.name)
@@ -3625,7 +7950,7 @@ var d = (labToolData.companionPlanting) || {};
                     })
                   ),
                   React.createElement("div", { className: "rounded-xl p-2 border border-amber-300 bg-amber-50" },
-                    React.createElement("div", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83C\uDF42 BROWNS (Carbon)"),
+                    React.createElement("div", { className: "text-[11px] font-bold text-amber-700 mb-1" }, __alloT('stem.companionplanting.browns_carbon', "\uD83C\uDF42 BROWNS (Carbon)")),
                     COMPOST_BROWNS.map(function(b, bi) {
                       return React.createElement("div", { key: bi, className: "flex items-center gap-1 text-[11px] text-amber-800" },
                         React.createElement("span", null, b.icon), React.createElement("span", null, b.name)
@@ -3640,14 +7965,13 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === SEASONAL PLANTING CALENDAR ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83D\uDCC5 Seasonal Planting Calendar"),
-                React.createElement("button", { "aria-label": "Change show calendar",
-                  onClick: function() { upd('showCalendar', !d.showCalendar); },
-                  className: "text-[10px] text-emerald-600 hover:text-emerald-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, __alloT('stem.companionplanting.seasonal_planting_calendar', "\uD83D\uDCC5 Seasonal Planting Calendar")),
+                React.createElement("button", { onClick: function() { upd('showCalendar', !d.showCalendar); },
+                  className: "transition-colors text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showCalendar ? 'Hide' : 'Plan \u2192')
               ),
               d.showCalendar && React.createElement("div", { className: "space-y-1.5" },
@@ -3659,13 +7983,13 @@ var d = (labToolData.companionPlanting) || {};
                   },
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("span", { className: "text-lg" }, season.icon),
-                      React.createElement("span", { className: "text-[10px] font-black text-emerald-800" }, season.season),
-                      React.createElement("span", { className: "text-[8px] text-slate-500 font-mono ml-auto" }, season.months)
+                      React.createElement("span", { className: "text-[11px] font-black text-emerald-800" }, season.season),
+                      React.createElement("span", { className: "text-[11px] text-slate-600 font-mono ml-auto" }, season.months)
                     ),
                     isActive && React.createElement("div", { className: "mt-1.5 pl-7 space-y-1" },
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
                         season.plants.map(function(p, pi) {
-                          return React.createElement("span", { key: pi, className: "px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-emerald-100 text-emerald-700" }, p);
+                          return React.createElement("span", { key: pi, className: "px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700" }, p);
                         })
                       ),
                       React.createElement("div", { className: "text-[11px] text-blue-600" }, "\uD83D\uDEE0\uFE0F Tasks: " + season.tasks),
@@ -3677,30 +8001,29 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === SOIL pH SCALE ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 border border-purple-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-purple-800" }, "\u2696\uFE0F Soil pH & Plant Preferences"),
-                React.createElement("button", { "aria-label": "Change show p h",
-                  onClick: function() { upd('showPH', !d.showPH); },
-                  className: "text-[10px] text-purple-600 hover:text-purple-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-purple-800" }, __alloT('stem.companionplanting.soil_ph_plant_preferences', "\u2696\uFE0F Soil pH & Plant Preferences")),
+                React.createElement("button", { onClick: function() { upd('showPH', !d.showPH); },
+                  className: "transition-colors text-[11px] text-purple-600 hover:text-purple-800 font-bold"
                 }, d.showPH ? 'Hide' : 'View \u2192')
               ),
               d.showPH && React.createElement("div", null,
-                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-2" }, "pH measures soil acidity (1-14). Most veggies prefer 6.0-7.0. Test your soil!"),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-2" }, __alloT('stem.companionplanting.ph_measures_soil_acidity_1_14_most_veg', "pH measures soil acidity (1-14). Most veggies prefer 6.0-7.0. Test your soil!")),
                 // pH scale bar
                 React.createElement("div", { className: "relative h-6 rounded-full overflow-hidden mb-1", style: { background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e, #3b82f6, #8b5cf6)' } },
                   React.createElement("div", { className: "absolute inset-0 flex items-center justify-between px-2" },
                     [4, 5, 6, 7, 8].map(function(ph) {
-                      return React.createElement("span", { key: ph, className: "text-[8px] font-bold text-white drop-shadow" }, ph);
+                      return React.createElement("span", { key: ph, className: "text-[11px] font-bold text-white drop-shadow" }, ph);
                     })
                   )
                 ),
-                React.createElement("div", { className: "flex justify-between text-[7px] text-slate-500 mb-2 px-1" },
-                  React.createElement("span", null, "\u2190 Acidic"),
-                  React.createElement("span", null, "Neutral"),
-                  React.createElement("span", null, "Alkaline \u2192")
+                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mb-2 px-1" },
+                  React.createElement("span", null, __alloT('stem.companionplanting.acidic', "\u2190 Acidic")),
+                  React.createElement("span", null, __alloT('stem.companionplanting.neutral', "Neutral")),
+                  React.createElement("span", null, __alloT('stem.companionplanting.alkaline', "Alkaline \u2192"))
                 ),
                 // Plant pH ranges
                 React.createElement("div", { className: "space-y-0.5" },
@@ -3710,13 +8033,13 @@ var d = (labToolData.companionPlanting) || {};
                     var width = ((plant.ph[1] - plant.ph[0]) / range) * 100;
                     return React.createElement("div", { key: pi, className: "flex items-center gap-1" },
                       React.createElement("span", { className: "w-5 text-center text-sm" }, plant.icon),
-                      React.createElement("span", { className: "w-16 text-[8px] font-bold text-slate-600 truncate" }, plant.name),
+                      React.createElement("span", { className: "w-16 text-[11px] font-bold text-slate-600 truncate" }, plant.name),
                       React.createElement("div", { className: "flex-1 relative h-3 bg-slate-100 rounded-full" },
                         React.createElement("div", {
                           className: "absolute h-full rounded-full",
                           style: { left: left + '%', width: Math.max(width, 2) + '%', background: 'linear-gradient(to right, #22c55e, #10b981)', opacity: 0.7 }
                         }),
-                        React.createElement("span", { className: "absolute text-[6px] font-mono text-slate-500", style: { left: (left + width / 2) + '%', top: '-1px', transform: 'translateX(-50%)' } }, plant.ph[0] + '-' + plant.ph[1])
+                        React.createElement("span", { className: "absolute text-[11px] font-mono text-slate-200", style: { left: (left + width / 2) + '%', top: '-1px', transform: 'translateX(-50%)' } }, plant.ph[0] + '-' + plant.ph[1])
                       )
                     );
                   })
@@ -3726,21 +8049,20 @@ var d = (labToolData.companionPlanting) || {};
 
 
             // === COMPANION PLANTING PAIRS ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border border-green-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\uD83C\uDF31 Companion Planting Guide (" + COMPANION_PAIRS.length + " pairs)"),
-                React.createElement("button", { "aria-label": "Change show pairs",
-                  onClick: function() { upd('showPairs', !d.showPairs); },
-                  className: "text-[10px] text-green-600 hover:text-green-800 font-bold"
+                React.createElement("button", { onClick: function() { upd('showPairs', !d.showPairs); },
+                  className: "transition-colors text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showPairs ? 'Hide' : 'Explore \u2192')
               ),
               d.showPairs && React.createElement("div", null,
                 // Filter
                 React.createElement("div", { className: "flex gap-1 mb-2" },
                   ['all', 'friend', 'enemy'].map(function(f) {
-                    return React.createElement("button", { "aria-label": "Change pair filter", key: f,
+                    return React.createElement("button", { key: f,
                       onClick: function() { upd('pairFilter', f); },
                       className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pairFilter || 'all') === f ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-200')
                     }, f === 'all' ? 'All' : f === 'friend' ? '\u2705 Friends' : '\u274C Enemies');
@@ -3755,12 +8077,12 @@ var d = (labToolData.companionPlanting) || {};
                     },
                       React.createElement("div", { className: "flex items-center gap-1" },
                         React.createElement("span", { className: "text-lg" }, pair.icon1),
-                        React.createElement("span", { className: "text-[10px] " + (pair.type === 'enemy' ? 'text-red-500' : 'text-green-500') + " font-bold" }, pair.type === 'enemy' ? '\u2718' : '\u2764'),
+                        React.createElement("span", { className: "text-[11px] " + (pair.type === 'enemy' ? 'text-red-500' : 'text-green-500') + " font-bold" }, pair.type === 'enemy' ? '\u2718' : '\u2764'),
                         React.createElement("span", { className: "text-lg" }, pair.icon2),
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, pair.plant1 + ' + ' + pair.plant2)
                       ),
-                      React.createElement("div", { className: "text-[8px] text-slate-500 mt-0.5" }, pair.benefit),
-                      isActive && React.createElement("div", { className: "mt-1 text-[8px] text-indigo-600 bg-indigo-50 rounded p-1 border border-indigo-100" },
+                      React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, pair.benefit),
+                      isActive && React.createElement("div", { className: "mt-1 text-[11px] text-indigo-600 bg-indigo-50 rounded p-1 border border-indigo-100" },
                         "\uD83D\uDD2C " + pair.science
                       )
                     );
@@ -3770,18 +8092,17 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === PLANT FAMILIES & ROTATION ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-4 border border-violet-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF3E Plant Families & Crop Rotation"),
-                React.createElement("button", { "aria-label": "Change show families",
-                  onClick: function() { upd('showFamilies', !d.showFamilies); },
-                  className: "text-[10px] text-violet-600 hover:text-violet-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, __alloT('stem.companionplanting.plant_families_crop_rotation', "\uD83C\uDF3E Plant Families & Crop Rotation")),
+                React.createElement("button", { onClick: function() { upd('showFamilies', !d.showFamilies); },
+                  className: "transition-colors text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showFamilies ? 'Hide' : 'Learn \u2192')
               ),
               d.showFamilies && React.createElement("div", { className: "space-y-1.5 max-h-56 overflow-y-auto" },
-                React.createElement("div", { className: "text-[10px] text-slate-500 italic mb-1" }, "Never plant the same family in the same spot two years in a row! Rotate to prevent disease buildup and nutrient depletion."),
+                React.createElement("div", { className: "text-[11px] text-slate-600 italic mb-1" }, __alloT('stem.companionplanting.never_plant_the_same_family_in_the_sam', "Never plant the same family in the same spot two years in a row! Rotate to prevent disease buildup and nutrient depletion.")),
                 PLANT_FAMILIES.map(function(fam, fi) {
                   var isActive = d.familyIdx === fi;
                   return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: fi,
@@ -3791,8 +8112,8 @@ var d = (labToolData.companionPlanting) || {};
                   },
                     React.createElement("div", { className: "flex items-center gap-1.5" },
                       React.createElement("span", { className: "text-lg" }, fam.icon),
-                      React.createElement("span", { className: "text-[10px] font-black", style: { color: fam.color } }, fam.name),
-                      React.createElement("span", { className: "text-[8px] text-slate-500 ml-auto" }, fam.members)
+                      React.createElement("span", { className: "text-[11px] font-black", style: { color: fam.color } }, fam.name),
+                      React.createElement("span", { className: "text-[11px] text-slate-600 ml-auto" }, fam.members)
                     ),
                     isActive && React.createElement("div", { className: "mt-1.5 space-y-1 pl-7" },
                       React.createElement("div", { className: "text-[11px] text-blue-600" }, "\uD83D\uDD04 Rotation: " + fam.rotation),
@@ -3804,14 +8125,13 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === SOIL SCIENCE ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 border border-amber-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDEA8 Soil Types Guide"),
-                React.createElement("button", { "aria-label": "Change show soil types",
-                  onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
-                  className: "text-[10px] text-amber-600 hover:text-amber-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.companionplanting.soil_types_guide', "\uD83E\uDEA8 Soil Types Guide")),
+                React.createElement("button", { onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
+                  className: "transition-colors text-[11px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showSoilTypes ? 'Hide' : 'Explore \u2192')
               ),
               d.showSoilTypes && React.createElement("div", { className: "grid grid-cols-3 gap-1.5" },
@@ -3823,13 +8143,13 @@ var d = (labToolData.companionPlanting) || {};
                     style: { borderColor: isActive ? soil.color : soil.color + '30', background: isActive ? soil.color + '10' : '#fff' }
                   },
                     React.createElement("div", { className: "text-xl mb-0.5" }, soil.icon),
-                    React.createElement("div", { className: "text-[10px] font-black", style: { color: soil.color } }, soil.name),
-                    React.createElement("div", { className: "text-[8px] text-slate-500" }, soil.texture),
+                    React.createElement("div", { className: "text-[11px] font-black", style: { color: soil.color } }, soil.name),
+                    React.createElement("div", { className: "text-[11px] text-slate-600" }, soil.texture),
                     isActive && React.createElement("div", { className: "text-left mt-1.5 space-y-0.5" },
-                      React.createElement("div", { className: "text-[8px] text-blue-600" }, "\uD83D\uDCA7 Drainage: " + soil.drainage),
-                      React.createElement("div", { className: "text-[8px] text-emerald-600" }, "\uD83C\uDF31 Nutrients: " + soil.nutrients),
-                      React.createElement("div", { className: "text-[8px] text-amber-600" }, "\u2B50 Best for: " + soil.bestFor),
-                      React.createElement("div", { className: "text-[8px] text-violet-600" }, "\uD83D\uDD27 Improve: " + soil.improve)
+                      React.createElement("div", { className: "text-[11px] text-blue-600" }, "\uD83D\uDCA7 Drainage: " + soil.drainage),
+                      React.createElement("div", { className: "text-[11px] text-emerald-600" }, "\uD83C\uDF31 Nutrients: " + soil.nutrients),
+                      React.createElement("div", { className: "text-[11px] text-amber-600" }, "\u2B50 Best for: " + soil.bestFor),
+                      React.createElement("div", { className: "text-[11px] text-violet-600" }, "\uD83D\uDD27 Improve: " + soil.improve)
                     )
                   );
                 })
@@ -3837,23 +8157,22 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === PEST & BENEFICIAL INSECTS ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-4 border border-red-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-sm font-bold text-red-800" }, "\uD83D\uDC1E Garden Pests & Allies"),
-                React.createElement("button", { "aria-label": "Change show pests",
-                  onClick: function() { upd('showPests', !d.showPests); },
-                  className: "text-[10px] text-red-600 hover:text-red-800 font-bold"
+                React.createElement("h4", { className: "text-sm font-bold text-red-800" }, __alloT('stem.companionplanting.garden_pests_allies', "\uD83D\uDC1E Garden Pests & Allies")),
+                React.createElement("button", { onClick: function() { upd('showPests', !d.showPests); },
+                  className: "transition-colors text-[11px] text-red-600 hover:text-red-800 font-bold"
                 }, d.showPests ? 'Hide' : 'Identify \u2192')
               ),
               d.showPests && React.createElement("div", null,
                 React.createElement("div", { className: "flex gap-1 mb-2" },
-                  React.createElement("button", { "aria-label": "Pests (",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.pests_2', "Pests ("),
                     onClick: function() { upd('pestTab', 'pests'); },
                     className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'pests' ? 'bg-red-700 text-white' : 'bg-white text-red-600 border border-red-200')
                   }, "\uD83D\uDC1B Pests (" + GARDEN_PESTS.length + ")"),
-                  React.createElement("button", { "aria-label": "Allies (",
+                  React.createElement("button", { "aria-label": __alloT('stem.companionplanting.allies', "Allies ("),
                     onClick: function() { upd('pestTab', 'beneficial'); },
                     className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pestTab || 'pests') === 'beneficial' ? 'bg-green-700 text-white' : 'bg-white text-green-600 border border-green-200')
                   }, "\uD83D\uDC1E Allies (" + BENEFICIAL_INSECTS.length + ")")
@@ -3868,8 +8187,8 @@ var d = (labToolData.companionPlanting) || {};
                       },
                         React.createElement("div", { className: "flex items-center gap-1.5" },
                           React.createElement("span", { className: "text-lg" }, pest.icon),
-                          React.createElement("span", { className: "text-[10px] font-bold text-red-800" }, pest.name),
-                          React.createElement("span", { className: "text-[8px] text-slate-500 ml-auto" }, pest.damage.substring(0, 30) + '...')
+                          React.createElement("span", { className: "text-[11px] font-bold text-red-800" }, pest.name),
+                          React.createElement("span", { className: "text-[11px] text-slate-600 ml-auto" }, pest.damage.substring(0, 30) + '...')
                         ),
                         isActive && React.createElement("div", { className: "mt-1.5 space-y-0.5 pl-7" },
                           React.createElement("div", { className: "text-[11px] text-red-600" }, "\uD83D\uDCA5 Damage: " + pest.damage),
@@ -3887,10 +8206,10 @@ var d = (labToolData.companionPlanting) || {};
                       },
                         React.createElement("div", { className: "flex items-center gap-1 mb-0.5" },
                           React.createElement("span", { className: "text-lg" }, bug.icon),
-                          React.createElement("span", { className: "text-[10px] font-bold", style: { color: bug.color } }, bug.name)
+                          React.createElement("span", { className: "text-[11px] font-bold", style: { color: bug.color } }, bug.name)
                         ),
-                        React.createElement("div", { className: "text-[8px] text-slate-600" }, bug.role),
-                        React.createElement("div", { className: "text-[8px] text-emerald-600 mt-0.5" }, "\uD83C\uDF3C Attract with: " + bug.attract)
+                        React.createElement("div", { className: "text-[11px] text-slate-600" }, bug.role),
+                        React.createElement("div", { className: "text-[11px] text-emerald-600 mt-0.5" }, "\uD83C\uDF3C Attract with: " + bug.attract)
                       );
                     })
                   )
@@ -3900,11 +8219,11 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Snapshot button ──
 
-            React.createElement("button", { "aria-label": "Snapshot",
+            React.createElement("button", { "aria-label": __alloT('stem.companionplanting.snapshot', "Snapshot"),
 
               onClick: function () {
 
-                setToolSnapshots(function (prev) { return prev.concat([{ id: 'garden-' + Date.now(), tool: 'companionPlanting', label: 'Companion Planting Lab', data: Object.assign({}, d), timestamp: Date.now() }]); });
+                setToolSnapshots(function (prev) { return prev.concat([{ id: 'garden-' + Date.now(), tool: 'companionPlanting', label: __alloT('stem.companionplanting.companion_planting_lab_2', 'Companion Planting Lab'), data: Object.assign({}, d), timestamp: Date.now() }]); });
 
                 if (addToast) addToast('📸 Garden snapshot saved!', 'success');
 
@@ -3912,7 +8231,64 @@ var d = (labToolData.companionPlanting) || {};
 
               className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all"
 
-            }, "📸 Snapshot")
+            }, __alloT('stem.companionplanting.snapshot_2', "📸 Snapshot")),
+
+            // === H7b'' inquiry widget: Three Sisters synergy ===
+            gardenWorkspace === 'inquiry' && (function() {
+              var h = React.createElement;
+              var iq = d.synergyHunt || { cornDensity: 50, beanDensity: 30, squashDensity: 20, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('synergyHunt', Object.assign({}, iq, patch)); }
+              var totalPlants = iq.cornDensity + iq.beanDensity + iq.squashDensity;
+              var balanceScore = Math.min(iq.cornDensity, iq.beanDensity, iq.squashDensity) / 30;
+              var crowding = totalPlants > 130 ? 1 : 0;
+              var state;
+              if (balanceScore > 0.8 && !crowding) state = 'sisters';
+              else if (crowding) state = 'overcrowded';
+              else if (iq.beanDensity < 10) state = 'noFixation';
+              else state = 'unbalanced';
+              var sm = {
+                sisters:     { label: __alloT('stem.companionplanting.three_sisters_thrive', '🌽🫘🎃 Three Sisters thrive'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.companionplanting.balanced_trio_beans_fix_nitrogen_corn_', 'Balanced trio. Beans fix nitrogen, corn provides poles, squash shades soil.') },
+                overcrowded: { label: __alloT('stem.companionplanting.overcrowded', '⚠️ Overcrowded'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.companionplanting.competition_for_light_water_nutrients', 'Competition for light, water, nutrients.') },
+                noFixation:  { label: __alloT('stem.companionplanting.no_nitrogen_fixation', '🟠 No nitrogen fixation'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.companionplanting.too_few_beans_soil_nitrogen_depletes', 'Too few beans — soil nitrogen depletes.') },
+                unbalanced:  { label: __alloT('stem.companionplanting.unbalanced_monoculture_risk', '🟡 Unbalanced — monoculture risk'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.companionplanting.one_species_dominates_synergy_reduced', 'One species dominates. Synergy reduced.') }
+              }[state];
+              return h('div', { className: 'mt-3 p-4 rounded-xl bg-white border border-emerald-300 shadow-sm space-y-3' },
+                h('h3', { className: 'text-sm font-black text-emerald-700' }, __alloT('stem.companionplanting.three_sisters_synergy_discovery', '🌽 Three-sisters synergy discovery')),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.companionplanting.sliders_for_corn_bean_squash_density_d', 'Sliders for corn, bean, squash density. Discrete 4-state synergy. No score, no reveal.')),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                  [{ k: 'cornDensity', l: 'Corn' },
+                   { k: 'beanDensity', l: 'Beans' },
+                   { k: 'squashDensity', l: 'Squash' }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'sh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-emerald-700' }, iq[s.k])),
+                      h('input', { id: 'sh-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.cornDensity, b: iq.beanDensity, sq: iq.squashDensity, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.companionplanting.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ cornDensity: 50, beanDensity: 30, squashDensity: 20, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.companionplanting.reset', '↺ Reset'))
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.companionplanting.hypothesis_what_ratio_makes_the_three_', 'Hypothesis: What ratio makes the Three Sisters mutually beneficial?'),
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.companionplanting.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, __alloT('stem.companionplanting.haudenosaunee_traditional_ratios_rough', 'Haudenosaunee traditional ratios: roughly equal. Investigate why.')),
+                    h('li', null, __alloT('stem.companionplanting.beans_fix_nitrogen_via_rhizobium_what_', 'Beans fix nitrogen via Rhizobium. What happens at near-zero beans?')))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  __alloT('stem.companionplanting.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.companionplanting.explain_how_each_species_supports_the_', 'Explain how each species supports the others.'),
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.companionplanting.design_note_discrete_4_state_synergy_m', 'Design note: discrete 4-state synergy marker; no yield score; no reveal — by design.'))
+              );
+            })()
 
           );
       })();

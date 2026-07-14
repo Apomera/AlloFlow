@@ -50,6 +50,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     document.body.appendChild(lr);
   })();
 
+  (function() {
+    if (document.getElementById('allo-stem-bikelab-refine-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-bikelab-refine-css';
+    st.textContent = [
+      '.bikelab-sandbox-grid{display:grid;grid-template-columns:minmax(250px,300px) minmax(0,1fr);gap:12px}',
+      '.bikelab-ride-focus-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(240px,.8fr);gap:12px}',
+      '.bikelab-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+      '.bikelab-canvas-shell{position:relative;border-radius:18px;padding:10px;background:linear-gradient(180deg,rgba(15,23,42,.98),#07111f);border:1px solid rgba(34,211,238,.34);box-shadow:0 18px 40px rgba(15,23,42,.32),inset 0 1px 0 rgba(255,255,255,.08)}',
+      '.bikelab-canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}',
+      '.bikelab-control-card{border-radius:14px!important;border-color:rgba(100,116,139,.45)!important;box-shadow:0 10px 24px rgba(15,23,42,.10)!important}',
+      '@media(max-width:920px){.bikelab-sandbox-grid,.bikelab-ride-focus-grid{grid-template-columns:1fr!important}.bikelab-metric-grid{grid-template-columns:1fr!important}.bikelab-canvas-shell{padding:6px!important}.bikelab-canvas-toolbar{justify-content:flex-start!important}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   // ─────────────────────────────────────────────────────────
   // SECTION 1: BIKES — spec sheet drives the physics sim
@@ -312,6 +328,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     tags: ['physics', 'mechanics', 'life-skills', 'repair', 'energy', 'gearing'],
 
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -361,33 +380,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       function MainMenu() {
         var bigCards = [
           {
-            id: 'sandbox', title: 'Physics Sandbox', icon: '🧪',
-            subtitle: 'Side-view ride with visible force vectors',
-            desc: 'Pedal through flat, hilly, and off-road terrain. Toggle force arrows for pedal force, gravity, drag, rolling resistance, and normal force. Watch kinetic and potential energy swap as you climb and descend.',
+            id: 'sandbox', title: t('stem.bikelab.physics_sandbox', 'Physics Sandbox'), icon: '🧪',
+            subtitle: t('stem.bikelab.side_view_ride_with_visible_force_vect', 'Side-view ride with visible force vectors'),
+            desc: t('stem.bikelab.pedal_through_flat_hilly_and_off_road_', 'Pedal through flat, hilly, and off-road terrain. Toggle force arrows for pedal force, gravity, drag, rolling resistance, and normal force. Watch kinetic and potential energy swap as you climb and descend.'),
             bullets: ['Newton\'s 2nd law in real time', 'Vector decomposition on slopes', 'Energy conservation (KE ↔ PE)', 'Drag scales with v²'],
             color: 'from-cyan-500 to-blue-600',
             ring: 'ring-cyan-500/40'
           },
           {
-            id: 'gearing', title: 'Gearing Lab', icon: '⚙️',
-            subtitle: 'Chainring × cassette → mechanical advantage',
-            desc: 'Pick any chainring and cog combo. See the gear ratio, mechanical advantage, and cadence-to-speed curve. Run the climb simulator to prove why low gears win on hills — same rider power, different torque at the wheel.',
+            id: 'gearing', title: t('stem.bikelab.gearing_lab', 'Gearing Lab'), icon: '⚙️',
+            subtitle: t('stem.bikelab.chainring_cassette_mechanical_advantag', 'Chainring × cassette → mechanical advantage'),
+            desc: t('stem.bikelab.pick_any_chainring_and_cog_combo_see_t', 'Pick any chainring and cog combo. See the gear ratio, mechanical advantage, and cadence-to-speed curve. Run the climb simulator to prove why low gears win on hills — same rider power, different torque at the wheel.'),
             bullets: ['Gear ratio = chainring ÷ cog', 'Development = ratio × wheel circumference', 'Torque vs. speed tradeoff', 'Find cross-chain & dead gears'],
             color: 'from-violet-500 to-purple-600',
             ring: 'ring-violet-500/40'
           },
           {
-            id: 'repair', title: 'Repair Simulator', icon: '🔧',
-            subtitle: 'Hands-on procedural practice',
-            desc: 'Seven step-by-step procedures with drag-and-drop tool placement, step verification, and read-aloud instructions: patch a tube, brakes, chain, derailleur, pedal swap, wheel true, headset adjust. Builds real mechanical literacy.',
+            id: 'repair', title: t('stem.bikelab.repair_simulator', 'Repair Simulator'), icon: '🔧',
+            subtitle: t('stem.bikelab.hands_on_procedural_practice', 'Hands-on procedural practice'),
+            desc: t('stem.bikelab.seven_step_by_step_procedures_with_dra', 'Seven step-by-step procedures with drag-and-drop tool placement, step verification, and read-aloud instructions: patch a tube, brakes, chain, derailleur, pedal swap, wheel true, headset adjust. Builds real mechanical literacy.'),
             bullets: ['Patch a flat tube · Adjust rim brakes', 'Clean & lube chain · Index derailleur', 'Swap pedals · True a wobbly wheel', 'Headset adjust · TTS narration'],
             color: 'from-amber-500 to-orange-600',
             ring: 'ring-amber-500/40'
           },
           {
-            id: 'ride', title: 'Neighborhood Ride', icon: '🏘️',
-            subtitle: 'Applied-physics commute demo',
-            desc: 'A scripted 600 m commute to school: flat block → stop sign → Oak Hill (7% grade) → descent → wet patch → school. Apply Sandbox + Gearing + Braking concepts in one scored run.',
+            id: 'ride', title: t('stem.bikelab.neighborhood_ride', 'Neighborhood Ride'), icon: '🏘️',
+            subtitle: t('stem.bikelab.applied_physics_commute_demo', 'Applied-physics commute demo'),
+            desc: t('stem.bikelab.a_scripted_600_m_commute_to_school_fla', 'A scripted 600 m commute to school: flat block → stop sign → Oak Hill (7% grade) → descent → wet patch → school. Apply Sandbox + Gearing + Braking concepts in one scored run.'),
             bullets: ['Keyboard controls: ↑/↓ gears, Space brakes', 'Three scored events + coach feedback', 'Tracks personal best time', 'Reuses live bike physics engine'],
             color: 'from-green-500 to-emerald-600',
             ring: 'ring-green-500/40'
@@ -395,51 +414,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         ];
         var miniCards = [
           {
-            id: 'fit', title: 'Bike Fit Calculator', icon: '📏',
-            subtitle: 'Saddle height, reach, bar drop',
-            desc: 'Enter rider height & inseam; pick bike type. Get evidence-based fit numbers (LeMond formula, KOPS setback).',
+            id: 'fit', title: t('stem.bikelab.bike_fit_calculator', 'Bike Fit Calculator'), icon: '📏',
+            subtitle: t('stem.bikelab.saddle_height_reach_bar_drop', 'Saddle height, reach, bar drop'),
+            desc: t('stem.bikelab.enter_rider_height_inseam_pick_bike_ty', 'Enter rider height & inseam; pick bike type. Get evidence-based fit numbers (LeMond formula, KOPS setback).'),
             color: 'from-emerald-500 to-teal-600',
             ring: 'ring-emerald-500/40'
           },
           {
-            id: 'braking', title: 'Braking Physics', icon: '🛑',
-            subtitle: 'Stopping distance & weight transfer',
-            desc: 'Dry/wet/gravel/ice surfaces × front/both/rear brake choice. Solves d = v²/(2a) with endo-limit gating.',
+            id: 'braking', title: t('stem.bikelab.braking_physics', 'Braking Physics'), icon: '🛑',
+            subtitle: t('stem.bikelab.stopping_distance_weight_transfer', 'Stopping distance & weight transfer'),
+            desc: t('stem.bikelab.dry_wet_gravel_ice_surfaces_front_both', 'Dry/wet/gravel/ice surfaces × front/both/rear brake choice. Solves d = v²/(2a) with endo-limit gating.'),
             color: 'from-rose-500 to-red-600',
             ring: 'ring-rose-500/40'
           },
           {
-            id: 'safety', title: 'Hand Signals & Safety', icon: '🛡️',
-            subtitle: '6-question road safety quiz',
-            desc: 'SVG-illustrated quiz: turn signals, lane position, stop signs, helmet fit. Instant feedback with explanations.',
+            id: 'safety', title: t('stem.bikelab.hand_signals_safety', 'Hand Signals & Safety'), icon: '🛡️',
+            subtitle: t('stem.bikelab.6_question_road_safety_quiz', '6-question road safety quiz'),
+            desc: t('stem.bikelab.svg_illustrated_quiz_turn_signals_lane', 'SVG-illustrated quiz: turn signals, lane position, stop signs, helmet fit. Instant feedback with explanations.'),
             color: 'from-sky-500 to-indigo-600',
             ring: 'ring-sky-500/40'
           },
           {
-            id: 'parts', title: 'Bike Parts Inspector', icon: '🔍',
-            subtitle: '19 parts on a clickable bike',
-            desc: 'SVG bike diagram with clickable hotspots. Each part shows its function, common failure modes, and a deep-link to the related repair job.',
+            id: 'parts', title: t('stem.bikelab.bike_parts_inspector', 'Bike Parts Inspector'), icon: '🔍',
+            subtitle: t('stem.bikelab.19_parts_on_a_clickable_bike', '19 parts on a clickable bike'),
+            desc: t('stem.bikelab.svg_bike_diagram_with_clickable_hotspo', 'SVG bike diagram with clickable hotspots. Each part shows its function, common failure modes, and a deep-link to the related repair job.'),
             color: 'from-slate-500 to-slate-700',
             ring: 'ring-slate-500/40'
           },
           {
-            id: 'helmetFit', title: 'Helmet Fit Checker', icon: '⛑️',
-            subtitle: 'Position, angle, chin strap',
-            desc: 'Adjust helmet height, side-strap angle, and chin-strap snugness on a live diagram. Get instant fit feedback against the 2V1 rule (2 fingers above eyebrows, V under ears, 1 finger chin slack).',
+            id: 'helmetFit', title: t('stem.bikelab.helmet_fit_checker', 'Helmet Fit Checker'), icon: '⛑️',
+            subtitle: t('stem.bikelab.position_angle_chin_strap', 'Position, angle, chin strap'),
+            desc: t('stem.bikelab.adjust_helmet_height_side_strap_angle_', 'Adjust helmet height, side-strap angle, and chin-strap snugness on a live diagram. Get instant fit feedback against the 2V1 rule (2 fingers above eyebrows, V under ears, 1 finger chin slack).'),
             color: 'from-pink-500 to-rose-600',
             ring: 'ring-pink-500/40'
           },
           {
-            id: 'winterBike', title: 'Maine Winter Biking', icon: '❄️',
-            subtitle: 'Fat bikes, ice, salt, layering',
-            desc: 'Maine-specific guide: fat bike physics, studded tires, freeze-thaw road conditions, salt corrosion care, and layering for sub-freezing rides. Includes a winterization checklist.',
+            id: 'winterBike', title: t('stem.bikelab.maine_winter_biking', 'Maine Winter Biking'), icon: '❄️',
+            subtitle: t('stem.bikelab.fat_bikes_ice_salt_layering', 'Fat bikes, ice, salt, layering'),
+            desc: t('stem.bikelab.maine_specific_guide_fat_bike_physics_', 'Maine-specific guide: fat bike physics, studded tires, freeze-thaw road conditions, salt corrosion care, and layering for sub-freezing rides. Includes a winterization checklist.'),
             color: 'from-sky-500 to-blue-700',
             ring: 'ring-sky-500/40'
           },
           {
-            id: 'signalDrill', title: 'Signal Reaction Drill', icon: '✋',
-            subtitle: 'Match the signal under time pressure',
-            desc: 'A traffic-situation flashes; you press the matching hand signal as fast as possible. Tracks reaction time across 10 rounds, with a personal-best leaderboard.',
+            id: 'signalDrill', title: t('stem.bikelab.signal_reaction_drill', 'Signal Reaction Drill'), icon: '✋',
+            subtitle: t('stem.bikelab.match_the_signal_under_time_pressure', 'Match the signal under time pressure'),
+            desc: t('stem.bikelab.a_traffic_situation_flashes_you_press_', 'A traffic-situation flashes; you press the matching hand signal as fast as possible. Tracks reaction time across 10 rounds, with a personal-best leaderboard.'),
             color: 'from-yellow-500 to-amber-600',
             ring: 'ring-yellow-500/40'
           }
@@ -489,7 +508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             h('div', { className: 'text-6xl mb-3' }, '🚲'),
             h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' }, 'BikeLab'),
             h('p', { className: 'text-lg text-slate-600 max-w-2xl mx-auto' },
-              'Physics, mechanics, and maintenance — learn the science of cycling and the real-world skills to keep a bike rolling.')
+              t('stem.bikelab.physics_mechanics_and_maintenance_lear', 'Physics, mechanics, and maintenance — learn the science of cycling and the real-world skills to keep a bike rolling.'))
           ),
           // Progress banner — encourages exploration of all 8 modules.
           h('div', {
@@ -514,16 +533,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               })
             )
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, 'Core Modules'),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, t('stem.bikelab.core_modules', 'Core Modules')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8' },
             bigCards.map(function(c) { return renderCard(c, true); })
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, 'Quick Labs'),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, t('stem.bikelab.quick_labs', 'Quick Labs')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
           h('div', { className: 'mt-8 text-center text-xs text-slate-600' },
-            'STEM Lab tool · Side-view 2D canvas · No plugins required'
+            t('stem.bikelab.stem_lab_tool_side_view_2d_canvas_no_p', 'STEM Lab tool · Side-view 2D canvas · No plugins required')
           )
         );
       }
@@ -536,7 +555,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           h('button', {
             onClick: function() { goto('menu'); },
             className: 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors'
-          }, h('span', null, '←'), ' BikeLab Menu'),
+          }, h('span', null, '←'), t('stem.bikelab.bikelab_menu', ' BikeLab Menu')),
           h('div', { className: 'flex items-center gap-2' },
             h('span', { className: 'text-2xl' }, props.icon),
             h('span', { className: 'font-black text-slate-800 text-lg' }, props.title)
@@ -690,6 +709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             return;
           }
           var loop = function(ts) {
+            if (!canvasRef.current || !canvasRef.current.isConnected) { rafRef.current = null; return; } // stop if the canvas detached
             if (!lastTsRef.current) lastTsRef.current = ts;
             var dt = Math.min(0.05, (ts - lastTsRef.current) / 1000);
             lastTsRef.current = ts;
@@ -722,6 +742,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           sky.addColorStop(0, '#0ea5e9'); sky.addColorStop(1, '#bae6fd');
           ctx2d.fillStyle = sky;
           ctx2d.fillRect(0, 0, W, H * 0.75);
+          // Warm sun with a soft glow, high on the right (atmosphere; clouds drift over it)
+          var sunX = W * 0.84, sunY = H * 0.16;
+          var sunGlow = ctx2d.createRadialGradient(sunX, sunY, 2, sunX, sunY, 70);
+          sunGlow.addColorStop(0, 'rgba(254,240,138,0.95)');
+          sunGlow.addColorStop(0.25, 'rgba(253,224,71,0.45)');
+          sunGlow.addColorStop(1, 'rgba(253,224,71,0)');
+          ctx2d.fillStyle = sunGlow;
+          ctx2d.fillRect(sunX - 70, sunY - 70, 140, 140);
+          ctx2d.fillStyle = 'rgba(255,251,235,0.95)';
+          ctx2d.beginPath(); ctx2d.arc(sunX, sunY, 14, 0, 2 * Math.PI); ctx2d.fill();
 
           // World → screen mapping. Camera follows bike, vertical origin at mid-height.
           var camX = posRef.current;
@@ -1339,13 +1369,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var ke = 0.5 * systemMass * v * v;
         var pe = systemMass * G * elev;
 
+        function renderRideFocus() {
+          var currentProfile = terrain.profile(posRef.current);
+          var aheadProfile = terrain.profile(posRef.current + 1);
+          var slopePct = Math.round((aheadProfile.y - currentProfile.y) * 100);
+          var cadenceRpm = Math.round((v / Math.max(0.5, bike.wheelR)) * Math.max(0.3, gear * 0.7) * 60 / (2 * Math.PI));
+          var status = running ? (coasting ? 'Coasting' : 'Pedaling') : 'Ready to ride';
+          var cue = !running
+            ? 'Start the ride and watch the force arrows respond to each change.'
+            : coasting
+            ? 'Coast-down mode: drag, rolling resistance, and gravity are in charge.'
+            : slopePct > 4
+            ? 'Climb ahead: lower the gear or add power to keep cadence up.'
+            : wind > 2
+            ? 'Headwind: drag rises fast as relative air speed increases.'
+            : 'Tune power, gear, wind, or terrain and compare the ride.';
+          var progressWidth = Math.min(100, Math.max(4, (posRef.current / 400) * 100));
+          var surfaceLabel = currentProfile.kind.charAt(0).toUpperCase() + currentProfile.kind.slice(1);
+          var metricItems = [
+            ['Speed', mph.toFixed(1) + ' mph', kph.toFixed(1) + ' km/h'],
+            ['Cadence', Math.max(0, cadenceRpm) + ' rpm', 'gear ' + (gear * 100).toFixed(0) + '%'],
+            ['Energy', (ke / 1000).toFixed(2) + ' kJ KE', (pe / 1000).toFixed(2) + ' kJ PE']
+          ];
+          return h('div', { className: 'p-3 pb-0', 'data-bikelab-ride-focus': 'true' },
+            h('div', { className: 'bikelab-ride-focus-grid bg-white border border-cyan-200 rounded-2xl p-3 shadow-sm' },
+              h('div', { className: 'space-y-3' },
+                h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+                  h('div', null,
+                    h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-700' }, 'Ride lab'),
+                    h('div', { className: 'text-2xl font-black text-slate-900 leading-tight' }, status)
+                  ),
+                  h('div', { className: 'flex gap-2 flex-wrap text-[11px] font-bold' },
+                    h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700' }, bike.name),
+                    h('span', { className: 'px-2 py-1 rounded-full bg-sky-100 text-sky-800' }, terrain.name),
+                    h('span', { className: 'px-2 py-1 rounded-full bg-amber-100 text-amber-800' }, surfaceLabel + ' surface')
+                  )
+                ),
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed max-w-3xl' }, cue),
+                h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden', 'aria-hidden': true },
+                  h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-emerald-500', style: { width: progressWidth + '%' } })
+                )
+              ),
+              h('div', { className: 'space-y-3' },
+                h('div', { className: 'bikelab-metric-grid' },
+                  metricItems.map(function(item) {
+                    return h('div', { key: item[0], className: 'rounded-xl border border-slate-200 bg-slate-50 p-3' },
+                      h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-slate-500' }, item[0]),
+                      h('div', { className: 'text-lg font-black text-slate-900 mt-1' }, item[1]),
+                      h('div', { className: 'text-[10px] font-mono text-slate-500' }, item[2])
+                    );
+                  })
+                ),
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                  h('button', {
+                    onClick: function() { setRunning(!running); },
+                    className: 'flex-1 min-w-[120px] py-2.5 px-4 rounded-xl font-bold transition-colors shadow ' + (running ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
+                  }, running ? 'Pause ride' : 'Start ride'),
+                  h('button', {
+                    onClick: function() { setRunning(false); reset(); },
+                    className: 'py-2.5 px-4 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors'
+                  }, t('stem.bikelab.reset', 'Reset'))
+                )
+              )
+            )
+          );
+        }
+
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '🧪', title: 'Physics Sandbox' }),
-          h('div', { className: 'grid grid-cols-12 gap-3 p-3 flex-1 overflow-auto' },
+          BackBar({ icon: '🧪', title: t('stem.bikelab.physics_sandbox_2', 'Physics Sandbox') }),
+          renderRideFocus(),
+          h('div', { className: 'bikelab-sandbox-grid p-3 flex-1 overflow-auto', 'data-bikelab-sandbox-grid': 'true' },
             // Controls column
-            h('div', { className: 'col-span-3 space-y-3' },
-              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-400' },
-                h('div', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, 'Bike'),
+            h('div', { className: 'space-y-3', 'data-bikelab-controls': 'true' },
+              h('div', { className: 'bikelab-control-card bg-white rounded-xl p-4 shadow border border-slate-400' },
+                h('div', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.bikelab.bike', 'Bike')),
                 BIKES.map(function(b) {
                   return h('button', {
                     key: b.id,
@@ -1360,8 +1457,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   );
                 })
               ),
-              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-400' },
-                h('div', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, 'Terrain'),
+              h('div', { className: 'bikelab-control-card bg-white rounded-xl p-4 shadow border border-slate-400' },
+                h('div', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.bikelab.terrain', 'Terrain')),
                 TERRAINS.map(function(tr) {
                   return h('button', {
                     key: tr.id,
@@ -1373,51 +1470,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   );
                 })
               ),
-              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-400' },
+              h('div', { className: 'bikelab-control-card bg-white rounded-xl p-4 shadow border border-slate-400' },
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between' },
-                  h('span', null, 'Rider Power'), h('span', { className: 'text-cyan-600' }, power + ' W')),
+                  h('span', null, t('stem.bikelab.rider_power', 'Rider Power')), h('span', { className: 'text-cyan-600' }, power + ' W')),
                 h('input', { type: 'range', min: 0, max: 400, value: power,
                   onChange: function(e) { setPower(parseInt(e.target.value)); },
-                  className: 'w-full mt-1 accent-cyan-500' }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, 'Pro: ~300 W · Amateur: ~150 W · Casual: ~80 W'),
+                  className: 'w-full mt-1 accent-cyan-500',
+                  'aria-label': t('stem.bikelab.rider_power_watts', 'Rider power in watts') }),
+                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.bikelab.pro_300_w_amateur_150_w_casual_80_w', 'Pro: ~300 W · Amateur: ~150 W · Casual: ~80 W')),
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
-                  h('span', null, 'Gear Ratio'), h('span', { className: 'text-violet-600' }, (gear * 100).toFixed(0) + '%')),
+                  h('span', null, t('stem.bikelab.gear_ratio', 'Gear Ratio')), h('span', { className: 'text-violet-600' }, (gear * 100).toFixed(0) + '%')),
                 h('input', { type: 'range', min: 0.2, max: 1.0, step: 0.05, value: gear,
                   onChange: function(e) { setGear(parseFloat(e.target.value)); },
-                  className: 'w-full mt-1 accent-violet-500' }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, 'Low gear = more torque, less top speed. See Gearing Lab for math.'),
+                  className: 'w-full mt-1 accent-violet-500',
+                  'aria-label': t('stem.bikelab.gear_ratio_slider', 'Gear ratio') }),
+                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.bikelab.low_gear_more_torque_less_top_speed_se', 'Low gear = more torque, less top speed. See Gearing Lab for math.')),
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
-                  h('span', null, 'Wind'),
+                  h('span', null, t('stem.bikelab.wind', 'Wind')),
                   h('span', { className: wind > 0 ? 'text-rose-600' : wind < 0 ? 'text-emerald-600' : 'text-slate-600' },
                     wind === 0 ? 'calm' : (Math.abs(wind * 2.23694).toFixed(0) + ' mph ' + (wind > 0 ? 'headwind' : 'tailwind')))),
                 h('input', { type: 'range', min: -11, max: 11, step: 0.5, value: wind,
                   onChange: function(e) { setWind(parseFloat(e.target.value)); },
-                  className: 'w-full mt-1 accent-rose-500' }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, 'Drag scales with (v + wind)² \u2014 a 10 mph headwind at 15 mph feels like 25 mph worth of drag.'),
+                  className: 'w-full mt-1 accent-rose-500',
+                  'aria-label': t('stem.bikelab.wind_speed_slider', 'Wind speed and direction') }),
+                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.bikelab.drag_scales_with_v_wind_a_10_mph_headw', 'Drag scales with (v + wind)² \u2014 a 10 mph headwind at 15 mph feels like 25 mph worth of drag.')),
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
-                  h('span', null, 'Rider Mass'),
+                  h('span', null, t('stem.bikelab.rider_mass', 'Rider Mass')),
                   h('span', { className: 'text-amber-600' }, riderMass + ' kg · ' + Math.round(riderMass * 2.20462) + ' lb')),
                 h('input', { type: 'range', min: 30, max: 120, step: 1, value: riderMass,
                   onChange: function(e) { setRiderMass(parseInt(e.target.value, 10)); },
                   className: 'w-full mt-1 accent-amber-500',
-                  'aria-label': 'Rider mass in kilograms' }),
+                  'aria-label': t('stem.bikelab.rider_mass_in_kilograms', 'Rider mass in kilograms') }),
                 h('div', { className: 'text-[10px] text-slate-600 mt-1' }, 'System mass = ' + ((bike.mass - 70) + riderMass) + ' kg (frame ' + (bike.mass - 70) + ' + rider ' + riderMass + '). Heavier riders climb slower (F=m·g·sinθ) and accelerate slower (a=F/m).')
               )
             ),
             // Canvas column
-            h('div', { className: 'col-span-9 space-y-3' },
-              h('div', { id: 'bikelab-sandbox-fs', className: 'bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800', style: { position: 'relative' } },
-                h('canvas', { ref: canvasRef, width: 900, height: 440, className: 'w-full block', role: 'img', 'aria-label': 'Physics sandbox simulation: bicycle on terrain with live force vectors (gravity, drag, rolling resistance, propulsion) and energy graphs.' }),
+            h('div', { className: 'space-y-3', 'data-bikelab-ride-column': 'true' },
+              h('div', { className: 'bikelab-canvas-toolbar', 'data-bikelab-canvas-toolbar': 'true' },
+                h('div', { className: 'text-xs font-black uppercase tracking-wider text-slate-700' }, 'Live ride surface'),
+                h('div', { className: 'flex gap-2 flex-wrap text-[11px] font-bold' },
+                  h('span', { className: 'px-2 py-1 rounded-full bg-slate-200 text-slate-700' }, bike.name),
+                  h('span', { className: 'px-2 py-1 rounded-full bg-cyan-100 text-cyan-800' }, terrain.name),
+                  h('span', { className: 'px-2 py-1 rounded-full ' + (running ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700') }, running ? (coasting ? 'Coasting' : 'Pedaling') : 'Ready')
+                )
+              ),
+              h('div', { id: 'bikelab-sandbox-fs', className: 'bikelab-canvas-shell bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800', 'data-bikelab-sim-surface': 'true', style: { position: 'relative' } },
+                h('canvas', { ref: canvasRef, width: 900, height: 440, className: 'w-full block', role: 'img', 'data-bikelab-canvas': 'true', style: { borderRadius: 12, border: '1px solid rgba(148,163,184,0.26)', boxShadow: 'inset 0 0 44px rgba(14,165,233,0.08)' }, 'aria-label': t('stem.bikelab.physics_sandbox_simulation_bicycle_on_', 'Physics sandbox simulation: bicycle on terrain with live force vectors (gravity, drag, rolling resistance, propulsion) and energy graphs.') }),
                 // Fullscreen toggle (top-right)
                 h('button', {
-                  'aria-label': 'Toggle fullscreen for the physics sandbox',
-                  title: 'Fullscreen',
+                  'aria-label': t('stem.bikelab.toggle_fullscreen_for_the_physics_sand', 'Toggle fullscreen for the physics sandbox'),
+                  title: t('stem.bikelab.fullscreen', 'Fullscreen'),
                   onClick: function() {
                     var el = document.getElementById('bikelab-sandbox-fs');
                     if (!el) return;
                     var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
                     if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
-                    else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                    else { if (window.__alloStemFS) window.__alloStemFS(el); }
                   },
                   style: {
                     position: 'absolute', top: 8, right: 8, zIndex: 10,
@@ -1429,7 +1537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   }
                 }, '⛶')
               ),
-              h('div', { className: 'flex gap-2' },
+              h('div', { className: 'flex flex-wrap gap-2' },
                 h('button', {
                   onClick: function() { setRunning(!running); },
                   className: 'flex-1 py-2.5 px-4 rounded-xl font-bold transition-colors shadow ' + (running ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
@@ -1437,25 +1545,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('button', {
                   onClick: function() { setRunning(false); reset(); },
                   className: 'py-2.5 px-4 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors'
-                }, '↺ Reset'),
+                }, t('stem.bikelab.reset', '↺ Reset')),
                 h('button', {
                   onClick: function() { setShowVectors(!showVectors); upd('sandboxShowVectors', !showVectors); },
                   'aria-pressed': showVectors,
                   className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (showVectors ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600')
-                }, '→ Force Vectors'),
+                }, t('stem.bikelab.force_vectors', '→ Force Vectors')),
                 h('button', {
                   onClick: function() { setShowGraph(!showGraph); upd('sandboxShowEnergyGraph', !showGraph); },
                   'aria-pressed': showGraph,
                   className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (showGraph ? 'bg-pink-500 text-white' : 'bg-slate-200 text-slate-600')
-                }, '📈 Energy Graph'),
+                }, t('stem.bikelab.energy_graph', '📈 Energy Graph')),
                 h('button', {
                   onClick: function() { setCoasting(!coasting); },
                   'aria-pressed': coasting,
-                  title: 'Stop pedaling \u2014 watch drag, rolling, and gravity decelerate the bike on their own.',
+                  title: t('stem.bikelab.stop_pedaling_watch_drag_rolling_and_g', 'Stop pedaling \u2014 watch drag, rolling, and gravity decelerate the bike on their own.'),
                   className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (coasting ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-600')
                 }, coasting ? '\uD83D\uDED1 Coasting' : '\uD83D\uDECC\uFE0F Coast Down')
               ),
-              h('div', { className: 'grid grid-cols-5 gap-2' },
+              h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-2' },
                 [['Speed', mph.toFixed(1) + ' mph', kph.toFixed(1) + ' km/h'],
                  ['Distance', (posRef.current).toFixed(0) + ' m', ((posRef.current) * 3.281).toFixed(0) + ' ft'],
                  ['Elevation', elev.toFixed(1) + ' m', (elev * 3.281).toFixed(1) + ' ft'],
@@ -1470,7 +1578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 })
               ),
               h('div', { className: 'bg-slate-100 rounded-xl p-3 text-xs text-slate-600 leading-relaxed border border-slate-400' },
-                h('span', { className: 'font-bold text-slate-700' }, '💡 Physics notes: '),
+                h('span', { className: 'font-bold text-slate-700' }, t('stem.bikelab.physics_notes', '💡 Physics notes: ')),
                 'Newton\'s 2nd law: F_net = m·a. Forces shown: pedal thrust (green), gravity component parallel to slope (red), rolling resistance (amber), air drag (purple, scales with v²). Normal force (blue) keeps the bike on the ground — it doesn\'t do work. ' + bike.tip
               )
             )
@@ -1552,13 +1660,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         }
 
         var crossHint = crossChainScore === 2
-          ? h('span', { className: 'bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md text-xs font-bold' }, '⚠ Extreme cross-chain — avoid')
+          ? h('span', { className: 'bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md text-xs font-bold' }, t('stem.bikelab.extreme_cross_chain_avoid', '⚠ Extreme cross-chain — avoid'))
           : crossChainScore === 1
-          ? h('span', { className: 'bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md text-xs font-bold' }, '⚠ Mild cross-chain')
-          : h('span', { className: 'bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-xs font-bold' }, '✓ Chainline OK');
+          ? h('span', { className: 'bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md text-xs font-bold' }, t('stem.bikelab.mild_cross_chain', '⚠ Mild cross-chain'))
+          : h('span', { className: 'bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-xs font-bold' }, t('stem.bikelab.chainline_ok', '✓ Chainline OK'));
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '⚙️', title: 'Gearing Lab' }),
+          BackBar({ icon: '⚙️', title: t('stem.bikelab.gearing_lab_2', 'Gearing Lab') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-4' },
             // Bike picker
             h('div', { className: 'flex flex-wrap gap-2' },
@@ -1578,7 +1686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
               // Gear picker card
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, 'Gear Selection'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, t('stem.bikelab.gear_selection', 'Gear Selection')),
                 h('div', { className: 'space-y-4' },
                   h('div', null,
                     h('div', { className: 'text-sm font-bold text-slate-700 mb-2' }, 'Chainring (front): ' + chainringT + 'T'),
@@ -1603,34 +1711,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         }, t);
                       })
                     ),
-                    h('div', { className: 'text-[11px] text-slate-600 mt-2' }, 'Leftmost = largest = easiest to climb. Rightmost = smallest = fastest top speed.')
+                    h('div', { className: 'text-[11px] text-slate-600 mt-2' }, t('stem.bikelab.leftmost_largest_easiest_to_climb_righ', 'Leftmost = largest = easiest to climb. Rightmost = smallest = fastest top speed.'))
                   ),
                   h('div', { className: 'pt-2' }, crossHint),
                   h('label', { className: 'text-sm font-bold text-slate-700 flex justify-between pt-2' },
-                    h('span', null, 'Pedal Cadence (RPM)'),
+                    h('span', null, t('stem.bikelab.pedal_cadence_rpm', 'Pedal Cadence (RPM)')),
                     h('span', { className: 'text-violet-600' }, cadence)),
                   h('input', { type: 'range', min: 40, max: 120, value: cadence,
                     onChange: function(e) { setCadence(parseInt(e.target.value)); },
-                    className: 'w-full accent-violet-500' }),
-                  h('div', { className: 'text-[11px] text-slate-600' }, 'Casual riders: 60–80. Trained: 80–100. Spin classes: 100+.')
+                    className: 'w-full accent-violet-500',
+                    'aria-label': t('stem.bikelab.pedal_cadence_rpm_slider', 'Pedal cadence in RPM') }),
+                  h('div', { className: 'text-[11px] text-slate-600' }, t('stem.bikelab.casual_riders_60_80_trained_80_100_spi', 'Casual riders: 60–80. Trained: 80–100. Spin classes: 100+.'))
                 )
               ),
               // Stats card
               h('div', { className: 'bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg text-white p-5' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80 mb-3' }, 'This Gear'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80 mb-3' }, t('stem.bikelab.this_gear', 'This Gear')),
                 h('div', { className: 'grid grid-cols-2 gap-4' },
                   h('div', null,
-                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, 'Gear Ratio'),
+                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, t('stem.bikelab.gear_ratio_2', 'Gear Ratio')),
                     h('div', { className: 'text-3xl font-black font-mono' }, ratio.toFixed(2)),
                     h('div', { className: 'text-[10px] opacity-70 font-mono' }, chainringT + ' ÷ ' + cogT)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, 'Mech. Advantage'),
+                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, t('stem.bikelab.mech_advantage', 'Mech. Advantage')),
                     h('div', { className: 'text-3xl font-black font-mono' }, ma.toFixed(2) + '×'),
-                    h('div', { className: 'text-[10px] opacity-70' }, 'at the wheel')
+                    h('div', { className: 'text-[10px] opacity-70' }, t('stem.bikelab.at_the_wheel', 'at the wheel'))
                   ),
                   h('div', null,
-                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, 'Distance per Rev'),
+                    h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider' }, t('stem.bikelab.distance_per_rev', 'Distance per Rev')),
                     h('div', { className: 'text-2xl font-black font-mono' }, dev.toFixed(2) + ' m'),
                     h('div', { className: 'text-[10px] opacity-70 font-mono' }, 'ratio × 2πr = ' + ratio.toFixed(2) + ' × ' + wheelCirc.toFixed(2))
                   ),
@@ -1642,9 +1751,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 )
               )
             ),
+            // Full gearing MATRIX — every chainring × cog at once, as gear inches (the classic
+            // single-number gear size = ratio × wheel diameter). Reveals the bike's total range,
+            // gaps and overlaps; the cadence curve below is just ONE cell of this. Click to select.
+            (function() {
+              var wheelIn = 2 * bike.wheelR * 39.3701;
+              var giOf = function(ct, cg) { return (ct / cg) * wheelIn; };
+              var allGi = [];
+              bike.chainringT.forEach(function(ct) { bike.cassetteT.forEach(function(cg) { allGi.push(giOf(ct, cg)); }); });
+              var giMin = Math.min.apply(null, allGi), giMax = Math.max.apply(null, allGi);
+              var heat = function(gi) { var t = giMax > giMin ? (gi - giMin) / (giMax - giMin) : 0.5; return 'hsl(' + Math.round(140 - t * 140) + ', 72%, 87%)'; };
+              return h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-1' }, t('stem.bikelab.gearing_matrix_gear_inches_every_ring_', 'Gearing Matrix — gear inches (every ring × cog)')),
+                h('div', { className: 'text-[11px] text-slate-600 mb-3' }, t('stem.bikelab.lower_easier_climbing_higher_faster_to', 'Lower = easier (climbing); higher = faster (top speed). Green→red = easy→hard. Click any cell to select that gear.')),
+                h('div', { className: 'overflow-x-auto' },
+                  h('table', { className: 'border-collapse text-[11px]' },
+                    h('thead', null,
+                      h('tr', null,
+                        h('th', { className: 'p-1 text-slate-500 font-mono text-right' }, t('stem.bikelab.ring_cog', 'ring \ cog')),
+                        bike.cassetteT.map(function(cg, j) { return h('th', { key: j, className: 'p-1 text-center font-mono font-bold ' + (j === cogIdx ? 'text-fuchsia-600' : 'text-slate-500') }, cg); })
+                      )
+                    ),
+                    h('tbody', null,
+                      bike.chainringT.map(function(ct, i) {
+                        return h('tr', { key: i },
+                          h('td', { className: 'p-1 text-right font-mono font-bold ' + (i === ringIdx ? 'text-violet-600' : 'text-slate-500') }, ct + 'T'),
+                          bike.cassetteT.map(function(cg, j) {
+                            var gi = giOf(ct, cg), isCur = i === ringIdx && j === cogIdx;
+                            return h('td', { key: j, onClick: function() { setRingIdx(i); setCogIdx(j); },
+                              className: 'p-1 text-center font-mono cursor-pointer ' + (isCur ? 'ring-2 ring-violet-600 font-black text-slate-900' : 'text-slate-700 hover:opacity-80'),
+                              style: { background: heat(gi) } }, Math.round(gi));
+                          })
+                        );
+                      })
+                    )
+                  )
+                )
+              );
+            })(),
             // Cadence→speed curve
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, 'Speed vs. Cadence (this gear)'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, t('stem.bikelab.speed_vs_cadence_this_gear', 'Speed vs. Cadence (this gear)')),
               h('div', { className: 'flex items-end gap-2 h-32' },
                 cadenceCurve.map(function(pt, i) {
                   var pct = pt.v / (cadenceCurve[cadenceCurve.length - 1].v + 1);
@@ -1659,30 +1806,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   );
                 })
               ),
-              h('div', { className: 'text-xs text-slate-600 mt-2' }, 'X axis: pedal cadence (RPM). Y axis: bike speed (mph). Linear in this gear — double the cadence, double the speed.')
+              h('div', { className: 'text-xs text-slate-600 mt-2' }, t('stem.bikelab.x_axis_pedal_cadence_rpm_y_axis_bike_s', 'X axis: pedal cadence (RPM). Y axis: bike speed (mph). Linear in this gear — double the cadence, double the speed.'))
             ),
             // Climb simulator
             h('div', { className: 'bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-5' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-700 mb-2' }, '⛰️ Climb Simulator (6% grade, 200 W rider)'),
-              h('div', { className: 'text-sm text-slate-700 mb-3' }, 'Estimated sustained climb speed at this gear vs. a low gear vs. a high gear:'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-700 mb-2' }, t('stem.bikelab.climb_simulator_6_grade_200_w_rider', '⛰️ Climb Simulator (6% grade, 200 W rider)')),
+              h('div', { className: 'text-sm text-slate-700 mb-3' }, t('stem.bikelab.estimated_sustained_climb_speed_at_thi', 'Estimated sustained climb speed at this gear vs. a low gear vs. a high gear:')),
               h('div', { className: 'grid grid-cols-3 gap-3' },
                 [
-                  { label: 'Low gear (easy)', gear: 0.35, color: 'from-emerald-400 to-emerald-600' },
-                  { label: 'This gear', gear: ratio / (bike.chainringT[0] / bike.cassetteT[bike.cassetteT.length - 1]), color: 'from-violet-400 to-violet-600' },
-                  { label: 'High gear (hard)', gear: 1.0, color: 'from-rose-400 to-rose-600' }
+                  { label: t('stem.bikelab.low_gear_easy', 'Low gear (easy)'), gear: 0.35, color: 'from-emerald-400 to-emerald-600' },
+                  { label: t('stem.bikelab.this_gear_2', 'This gear'), gear: ratio / (bike.chainringT[0] / bike.cassetteT[bike.cassetteT.length - 1]), color: 'from-violet-400 to-violet-600' },
+                  { label: t('stem.bikelab.high_gear_hard', 'High gear (hard)'), gear: 1.0, color: 'from-rose-400 to-rose-600' }
                 ].map(function(g, i) {
                   var climbV = climbSim(g.gear);
                   var climbMph = climbV * 2.237;
                   return h('div', { key: i, className: 'bg-gradient-to-br ' + g.color + ' text-white rounded-lg p-4 shadow' },
                     h('div', { className: 'text-[11px] uppercase tracking-wider font-bold opacity-80' }, g.label),
                     h('div', { className: 'text-3xl font-black font-mono mt-1' }, climbMph.toFixed(1)),
-                    h('div', { className: 'text-xs opacity-80 font-mono' }, 'mph up the hill')
+                    h('div', { className: 'text-xs opacity-80 font-mono' }, t('stem.bikelab.mph_up_the_hill', 'mph up the hill'))
                   );
                 })
               ),
               h('div', { className: 'text-xs text-slate-600 mt-3 leading-relaxed' },
                 h('span', { className: 'font-bold' }, 'Why: '),
-                'Power = torque × angular velocity. A low gear trades less angular velocity (slower wheel) for more torque (more force pushing you forward), so your 200 W moves a heavier load (gravity + you + bike) even though your top speed drops. On a climb, you don\'t need speed — you need enough force to overcome gravity. That\'s what low gear gives you.'
+                t('stem.bikelab.power_torque_angular_velocity_a_low_ge', 'Power = torque × angular velocity. A low gear trades less angular velocity (slower wheel) for more torque (more force pushing you forward), so your 200 W moves a heavier load (gravity + you + bike) even though your top speed drops. On a climb, you don\'t need speed — you need enough force to overcome gravity. That\'s what low gear gives you.')
               )
             )
           )
@@ -1744,9 +1891,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         if (!job) {
           // Job selection grid
           return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-            BackBar({ icon: '🔧', title: 'Repair Simulator' }),
+            BackBar({ icon: '🔧', title: t('stem.bikelab.repair_simulator_2', 'Repair Simulator') }),
             h('div', { className: 'p-6 max-w-5xl mx-auto w-full' },
-              h('p', { className: 'text-slate-600 mb-6 text-center' }, 'Pick a procedure. Each has step-by-step instructions and tool verification — drag the right tool to the job to advance.'),
+              h('p', { className: 'text-slate-600 mb-6 text-center' }, t('stem.bikelab.pick_a_procedure_each_has_step_by_step', 'Pick a procedure. Each has step-by-step instructions and tool verification — drag the right tool to the job to advance.')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
                 REPAIR_JOBS.map(function(j) {
                   var isDone = completed[j.id];
@@ -1770,9 +1917,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                             )
                           )
                         ),
-                        isDone && h('span', { className: 'bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-[11px] font-bold' }, '✓ Done')
+                        isDone && h('span', { className: 'bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-[11px] font-bold' }, t('stem.bikelab.done', '✓ Done'))
                       ),
-                      h('p', { className: 'text-sm text-slate-600 mt-2' }, j.description)
+                      h('p', { className: 'text-sm text-slate-600 mt-2' }, __alloT('stem.bikelab.' + (j.id) + '_description', j.description))
                     )
                   );
                 })
@@ -1801,7 +1948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         }
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '🔧', title: 'Repair Simulator' }),
+          BackBar({ icon: '🔧', title: t('stem.bikelab.repair_simulator_3', 'Repair Simulator') }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-4' },
             // Job header + progress
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
@@ -1816,7 +1963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('button', {
                   onClick: exitJob,
                   className: 'text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-bold'
-                }, 'Exit Job')
+                }, t('stem.bikelab.exit_job', 'Exit Job'))
               ),
               h('div', { className: 'w-full h-2 bg-slate-100 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500',
@@ -1826,12 +1973,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             // Current step instruction
             h('div', { className: 'bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl shadow-lg text-white p-6' },
               h('div', { className: 'flex items-start justify-between gap-3 mb-1' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80' }, 'Current Step'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80' }, t('stem.bikelab.current_step', 'Current Step')),
                 callTTS && h('button', {
                   onClick: function() { speak(currStep.label + '. ' + currStep.instruction); },
                   className: 'bg-white/15 hover:bg-white/25 backdrop-blur px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors shrink-0',
-                  title: 'Read this step aloud'
-                }, h('span', null, '🔊'), h('span', null, 'Read Aloud'))
+                  title: t('stem.bikelab.read_this_step_aloud', 'Read this step aloud')
+                }, h('span', null, '🔊'), h('span', null, t('stem.bikelab.read_aloud', 'Read Aloud')))
               ),
               h('h3', { className: 'text-2xl font-black mb-3' }, currStep.label),
               h('p', { className: 'text-sm leading-relaxed opacity-95' }, currStep.instruction),
@@ -1845,7 +1992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             ),
             // Toolbox — drag source
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, 'Toolbox (drag the right tool to the job)'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, t('stem.bikelab.toolbox_drag_the_right_tool_to_the_job', 'Toolbox (drag the right tool to the job)')),
               h('div', { className: 'flex flex-wrap gap-3' },
                 toolbox.map(function(t, i) {
                   return h('div', {
@@ -1865,7 +2012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   );
                 })
               ),
-              h('div', { className: 'text-[11px] text-slate-600 mt-3' }, 'Tip: click or drag. If your choice matches the step, the job advances. Wrong choice = no penalty, try again.')
+              h('div', { className: 'text-[11px] text-slate-600 mt-3' }, t('stem.bikelab.tip_click_or_drag_if_your_choice_match', 'Tip: click or drag. If your choice matches the step, the job advances. Wrong choice = no penalty, try again.'))
             ),
             // Drop zone / job area
             h('div', {
@@ -1877,10 +2024,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 ? h('div', null,
                     h('div', { className: 'text-5xl mb-2' }, '✨'),
                     h('div', { className: 'text-lg font-black text-emerald-700' }, 'Correct!'),
-                    h('div', { className: 'text-sm text-emerald-600 mt-1' }, 'Advancing to next step…'))
+                    h('div', { className: 'text-sm text-emerald-600 mt-1' }, t('stem.bikelab.advancing_to_next_step', 'Advancing to next step…')))
                 : h('div', null,
                     h('div', { className: 'text-5xl mb-2 opacity-40' }, TOOL_ICONS[currStep.tool] || '🔧'),
-                    h('div', { className: 'text-sm text-slate-600' }, 'Drop the correct tool here'))
+                    h('div', { className: 'text-sm text-slate-600' }, t('stem.bikelab.drop_the_correct_tool_here', 'Drop the correct tool here')))
             ),
             // Step controls
             h('div', { className: 'flex items-center gap-3' },
@@ -1888,7 +2035,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 onClick: prevStep,
                 disabled: step === 0,
                 className: 'px-4 py-2 rounded-lg font-bold text-sm ' + (step === 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-200 hover:bg-slate-300 text-slate-700')
-              }, '← Previous Step'),
+              }, t('stem.bikelab.previous_step', '← Previous Step')),
               h('div', { className: 'flex-1 text-center text-sm text-slate-600' },
                 'Step ' + (step + 1) + ' / ' + job.steps.length),
               h('button', {
@@ -1924,27 +2071,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           : bikeType === 'mtb' ? 2 : 0;
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '📏', title: 'Bike Fit Calculator' }),
+          BackBar({ icon: '📏', title: t('stem.bikelab.bike_fit_calculator_2', 'Bike Fit Calculator') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full' },
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-5 gap-4' },
               h('div', { className: 'lg:col-span-2 space-y-3' },
                 h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, 'Rider Measurements'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, t('stem.bikelab.rider_measurements', 'Rider Measurements')),
                   h('label', { className: 'text-sm font-bold text-slate-700 flex justify-between' },
-                    h('span', null, 'Height'), h('span', { className: 'text-sky-600' }, heightCm + ' cm · ' + (heightCm / 2.54).toFixed(1) + '″')),
+                    h('span', null, t('stem.bikelab.height', 'Height')), h('span', { className: 'text-sky-600' }, heightCm + ' cm · ' + (heightCm / 2.54).toFixed(1) + '″')),
                   h('input', { type: 'range', min: 140, max: 210, value: heightCm,
                     onChange: function(e) { var v = parseInt(e.target.value); setHeightCm(v); upd('fitHeightCm', v); },
-                    className: 'w-full mt-1 accent-sky-500' }),
+                    className: 'w-full mt-1 accent-sky-500',
+                    'aria-label': t('stem.bikelab.rider_height_centimeters', 'Rider height in centimeters') }),
                   h('label', { className: 'text-sm font-bold text-slate-700 flex justify-between mt-3' },
-                    h('span', null, 'Inseam (cm)'), h('span', { className: 'text-emerald-600' }, inseamCm + ' cm · ' + (inseamCm / 2.54).toFixed(1) + '″')),
+                    h('span', null, t('stem.bikelab.inseam_cm', 'Inseam (cm)')), h('span', { className: 'text-emerald-600' }, inseamCm + ' cm · ' + (inseamCm / 2.54).toFixed(1) + '″')),
                   h('input', { type: 'range', min: 60, max: 100, value: inseamCm,
                     onChange: function(e) { var v = parseInt(e.target.value); setInseamCm(v); upd('fitInseamCm', v); },
-                    className: 'w-full mt-1 accent-emerald-500' }),
+                    className: 'w-full mt-1 accent-emerald-500',
+                    'aria-label': t('stem.bikelab.rider_inseam_centimeters', 'Rider inseam in centimeters') }),
                   h('div', { className: 'text-[11px] text-slate-600 mt-2 leading-relaxed bg-slate-50 p-2 rounded' },
-                    h('strong', null, 'How to measure inseam: '),
-                    'Stand barefoot against a wall. Place a hardcover book snug between your legs. Measure from floor to the top spine of the book.'),
+                    h('strong', null, t('stem.bikelab.how_to_measure_inseam', 'How to measure inseam: ')),
+                    t('stem.bikelab.stand_barefoot_against_a_wall_place_a_', 'Stand barefoot against a wall. Place a hardcover book snug between your legs. Measure from floor to the top spine of the book.')),
                   h('div', { className: 'mt-4 pt-3 border-t border-slate-200' },
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, 'Bike Type'),
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.bike_type', 'Bike Type')),
                     h('div', { className: 'grid grid-cols-3 gap-2' },
                       [['road', '🏁 Road'], ['hybrid', '🚴 Hybrid'], ['mtb', '⛰️ MTB']].map(function(opt) {
                         return h('button', {
@@ -1956,7 +2105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     )
                   ),
                   h('div', { className: 'mt-3' },
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, 'Flexibility / Experience'),
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.flexibility_experience', 'Flexibility / Experience')),
                     h('div', { className: 'grid grid-cols-3 gap-2' },
                       [['low', 'Casual'], ['medium', 'Regular'], ['high', 'Racer']].map(function(opt) {
                         return h('button', {
@@ -1966,13 +2115,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         }, opt[1]);
                       })
                     ),
-                    h('div', { className: 'text-[11px] text-slate-600 mt-2' }, 'Less flexible = higher bars.')
+                    h('div', { className: 'text-[11px] text-slate-600 mt-2' }, t('stem.bikelab.less_flexible_higher_bars', 'Less flexible = higher bars.'))
                   )
                 )
               ),
               h('div', { className: 'lg:col-span-3 space-y-3' },
                 h('div', { className: 'bg-gradient-to-br from-sky-500 to-blue-600 rounded-xl shadow-lg text-white p-5' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80 mb-3' }, 'Your Fit'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80 mb-3' }, t('stem.bikelab.your_fit', 'Your Fit')),
                   h('svg', { viewBox: '0 0 420 240', className: 'w-full h-48' },
                     h('circle', { cx: 80, cy: 190, r: 36, fill: 'none', stroke: '#fff', strokeWidth: 3 }),
                     h('circle', { cx: 340, cy: 190, r: 36, fill: 'none', stroke: '#fff', strokeWidth: 3 }),
@@ -1987,16 +2136,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     h('circle', { cx: 210, cy: 190, r: 5, fill: '#fff' }),
                     h('text', { x: 215, y: 140, fill: '#fde047', fontSize: 11, fontWeight: 'bold' }, saddleHeight.toFixed(1) + ' cm'),
                     h('text', { x: 240, y: 210, fill: '#f472b6', fontSize: 11, fontWeight: 'bold' }, reachCm.toFixed(1) + ' cm reach'),
-                    h('text', { x: 10, y: 20, fill: '#fde047', fontSize: 10, fontWeight: 'bold' }, '● Saddle'),
-                    h('text', { x: 10, y: 36, fill: '#f472b6', fontSize: 10, fontWeight: 'bold' }, '● Handlebar')
+                    h('text', { x: 10, y: 20, fill: '#fde047', fontSize: 10, fontWeight: 'bold' }, t('stem.bikelab.saddle', '● Saddle')),
+                    h('text', { x: 10, y: 36, fill: '#f472b6', fontSize: 10, fontWeight: 'bold' }, t('stem.bikelab.handlebar', '● Handlebar'))
                   )
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   [
-                    { label: 'Saddle Height', main: saddleHeight.toFixed(1) + ' cm', sub: '(BB center → saddle top)', formula: 'LeMond: inseam × 0.883', color: 'from-emerald-500 to-teal-600' },
-                    { label: 'Saddle Setback', main: setback + ' cm', sub: '(BB → saddle nose)', formula: bikeType === 'road' ? 'Road: 4 cm' : bikeType === 'mtb' ? 'MTB: 1 cm' : 'Hybrid: 2 cm', color: 'from-violet-500 to-purple-600' },
-                    { label: 'Reach (horizontal)', main: reachCm.toFixed(1) + ' cm', sub: '(BB → bar center)', formula: 'height × ' + (bikeType === 'road' ? '0.234' : bikeType === 'mtb' ? '0.221' : '0.215'), color: 'from-sky-500 to-blue-600' },
-                    { label: 'Bar Drop', main: drop + ' cm', sub: '(saddle → bar, below)', formula: bikeType === 'road' ? 'Scales with flexibility' : bikeType === 'mtb' ? 'MTB: slightly below' : 'Hybrid: level', color: 'from-amber-500 to-orange-600' }
+                    { label: t('stem.bikelab.saddle_height', 'Saddle Height'), main: saddleHeight.toFixed(1) + ' cm', sub: '(BB center → saddle top)', formula: 'LeMond: inseam × 0.883', color: 'from-emerald-500 to-teal-600' },
+                    { label: t('stem.bikelab.saddle_setback', 'Saddle Setback'), main: setback + ' cm', sub: '(BB → saddle nose)', formula: bikeType === 'road' ? 'Road: 4 cm' : bikeType === 'mtb' ? 'MTB: 1 cm' : 'Hybrid: 2 cm', color: 'from-violet-500 to-purple-600' },
+                    { label: t('stem.bikelab.reach_horizontal', 'Reach (horizontal)'), main: reachCm.toFixed(1) + ' cm', sub: '(BB → bar center)', formula: 'height × ' + (bikeType === 'road' ? '0.234' : bikeType === 'mtb' ? '0.221' : '0.215'), color: 'from-sky-500 to-blue-600' },
+                    { label: t('stem.bikelab.bar_drop', 'Bar Drop'), main: drop + ' cm', sub: '(saddle → bar, below)', formula: bikeType === 'road' ? 'Scales with flexibility' : bikeType === 'mtb' ? 'MTB: slightly below' : 'Hybrid: level', color: 'from-amber-500 to-orange-600' }
                   ].map(function(r, i) {
                     return h('div', { key: i, className: 'bg-gradient-to-br ' + r.color + ' text-white rounded-xl p-4 shadow' },
                       h('div', { className: 'text-[11px] opacity-80 uppercase tracking-wider font-bold' }, r.label),
@@ -2007,8 +2156,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   })
                 ),
                 h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-slate-700 leading-relaxed' },
-                  h('strong', { className: 'text-amber-800' }, '📚 The science: '),
-                  'Saddle height affects knee extension at the bottom of the pedal stroke. Too low = quad-dominant + knee pain. Too high = hip rock + hamstring strain + saddle sores. LeMond\'s 0.883 × inseam targets ~27° of knee flexion at pedal 6 o\'clock — optimal sustained power with least joint stress. Saddle setback aligns knee over pedal spindle (KOPS), preventing forward-knee strain.'
+                  h('strong', { className: 'text-amber-800' }, t('stem.bikelab.the_science', '📚 The science: ')),
+                  t('stem.bikelab.saddle_height_affects_knee_extension_a', 'Saddle height affects knee extension at the bottom of the pedal stroke. Too low = quad-dominant + knee pain. Too high = hip rock + hamstring strain + saddle sores. LeMond\'s 0.883 × inseam targets ~27° of knee flexion at pedal 6 o\'clock — optimal sustained power with least joint stress. Saddle setback aligns knee over pedal spindle (KOPS), preventing forward-knee strain.')
                 )
               )
             )
@@ -2030,9 +2179,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var reaction = reactionState[0], setReaction = reactionState[1];
 
         var SURFACES = {
-          dry:    { label: 'Dry Pavement', mu: 0.80 },
-          wet:    { label: 'Wet Pavement', mu: 0.45 },
-          gravel: { label: 'Loose Gravel', mu: 0.35 },
+          dry:    { label: t('stem.bikelab.dry_pavement', 'Dry Pavement'), mu: 0.80 },
+          wet:    { label: t('stem.bikelab.wet_pavement', 'Wet Pavement'), mu: 0.45 },
+          gravel: { label: t('stem.bikelab.loose_gravel', 'Loose Gravel'), mu: 0.35 },
           ice:    { label: 'Ice',          mu: 0.10 }
         };
         var mu = SURFACES[surf].mu;
@@ -2097,22 +2246,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var endoWarn = (brakeSplit === 'front' && frictionA > endoA) || (brakeSplit === 'both' && frictionA > endoA / 0.95);
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '🛑', title: 'Braking Physics' }),
+          BackBar({ icon: '🛑', title: t('stem.bikelab.braking_physics_2', 'Braking Physics') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-4' },
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 overflow-hidden' },
-              h('canvas', { ref: cvsRef, width: 1000, height: 200, className: 'w-full block', role: 'img', 'aria-label': 'Braking distance visualization: bicycle stops over the calculated reaction-plus-braking distance for the selected speed and surface.' })
+              h('canvas', { ref: cvsRef, width: 1000, height: 200, className: 'w-full block', role: 'img', 'aria-label': t('stem.bikelab.braking_distance_visualization_bicycle', 'Braking distance visualization: bicycle stops over the calculated reaction-plus-braking distance for the selected speed and surface.') })
             ),
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-4 gap-3' },
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 flex justify-between' },
-                  h('span', null, 'Initial Speed'), h('span', { className: 'text-rose-600' }, speedMph + ' mph')),
+                  h('span', null, t('stem.bikelab.initial_speed', 'Initial Speed')), h('span', { className: 'text-rose-600' }, speedMph + ' mph')),
                 h('input', { type: 'range', min: 5, max: 40, value: speedMph,
                   onChange: function(e) { var v = parseInt(e.target.value); setSpeedMph(v); upd('brakingMph', v); },
-                  className: 'w-full mt-2 accent-rose-500' }),
+                  className: 'w-full mt-2 accent-rose-500',
+                  'aria-label': t('stem.bikelab.initial_speed_mph_slider', 'Initial speed in miles per hour') }),
                 h('div', { className: 'text-[10px] text-slate-600' }, (speedMph / 2.237).toFixed(1) + ' m/s · ' + (speedMph * 1.609).toFixed(1) + ' km/h')
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, 'Surface'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.surface', 'Surface')),
                 h('div', { className: 'grid grid-cols-2 gap-1' },
                   Object.keys(SURFACES).map(function(k) {
                     return h('button', {
@@ -2125,7 +2275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('div', { className: 'text-[10px] text-slate-600 font-mono mt-2' }, 'μ = ' + mu.toFixed(2))
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, 'Brake Used'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.brake_used', 'Brake Used')),
                 h('div', { className: 'grid grid-cols-3 gap-1' },
                   [['front', 'Front'], ['both', 'Both'], ['rear', 'Rear']].map(function(opt) {
                     return h('button', {
@@ -2135,23 +2285,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     }, opt[1]);
                   })
                 ),
-                h('div', { className: 'text-[10px] text-slate-600 mt-2' }, 'Rear-only stops ~3× slower than front.')
+                h('div', { className: 'text-[10px] text-slate-600 mt-2' }, t('stem.bikelab.rear_only_stops_3_slower_than_front', 'Rear-only stops ~3× slower than front.'))
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 flex justify-between' },
-                  h('span', null, 'Reaction Time'), h('span', { className: 'text-amber-600' }, reaction.toFixed(1) + ' s')),
+                  h('span', null, t('stem.bikelab.reaction_time', 'Reaction Time')), h('span', { className: 'text-amber-600' }, reaction.toFixed(1) + ' s')),
                 h('input', { type: 'range', min: 0.3, max: 2.5, step: 0.1, value: reaction,
                   onChange: function(e) { var v = parseFloat(e.target.value); setReaction(v); upd('brakingReactionSec', v); },
-                  className: 'w-full mt-2 accent-amber-500' }),
-                h('div', { className: 'text-[10px] text-slate-600' }, 'Alert adult: 1.0 s · Pro racer: 0.3 s')
+                  className: 'w-full mt-2 accent-amber-500',
+                  'aria-label': t('stem.bikelab.reaction_time_seconds_slider', 'Reaction time in seconds') }),
+                h('div', { className: 'text-[10px] text-slate-600' }, t('stem.bikelab.alert_adult_1_0_s_pro_racer_0_3_s', 'Alert adult: 1.0 s · Pro racer: 0.3 s'))
               )
             ),
             h('div', { className: 'grid grid-cols-2 lg:grid-cols-4 gap-3' },
               [
-                { label: 'Total Stopping Distance', val: totalDist.toFixed(1) + ' m', sub: (totalDist * 3.281).toFixed(1) + ' ft', color: 'from-rose-500 to-red-600' },
-                { label: 'Braking Distance', val: brakingDist.toFixed(1) + ' m', sub: 'd = v²/(2a)', color: 'from-orange-500 to-amber-600' },
-                { label: 'Reaction Distance', val: reactionDist.toFixed(1) + ' m', sub: 'd = v · t_react', color: 'from-yellow-500 to-amber-500' },
-                { label: 'Time to Stop', val: timeToStop.toFixed(2) + ' s', sub: 't = v / a', color: 'from-purple-500 to-fuchsia-600' }
+                { label: t('stem.bikelab.total_stopping_distance', 'Total Stopping Distance'), val: totalDist.toFixed(1) + ' m', sub: (totalDist * 3.281).toFixed(1) + ' ft', color: 'from-rose-500 to-red-600' },
+                { label: t('stem.bikelab.braking_distance', 'Braking Distance'), val: brakingDist.toFixed(1) + ' m', sub: 'd = v²/(2a)', color: 'from-orange-500 to-amber-600' },
+                { label: t('stem.bikelab.reaction_distance', 'Reaction Distance'), val: reactionDist.toFixed(1) + ' m', sub: 'd = v · t_react', color: 'from-yellow-500 to-amber-500' },
+                { label: t('stem.bikelab.time_to_stop', 'Time to Stop'), val: timeToStop.toFixed(2) + ' s', sub: 't = v / a', color: 'from-purple-500 to-fuchsia-600' }
               ].map(function(s, i) {
                 return h('div', { key: i, className: 'bg-gradient-to-br ' + s.color + ' text-white rounded-xl p-4 shadow' },
                   h('div', { className: 'text-[10px] opacity-80 uppercase tracking-wider font-bold' }, s.label),
@@ -2162,21 +2313,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             ),
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
               h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4' },
-                h('div', { className: 'text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2' }, '📐 Weight Transfer & Endo Limit'),
+                h('div', { className: 'text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2' }, t('stem.bikelab.weight_transfer_endo_limit', '📐 Weight Transfer & Endo Limit')),
                 h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' },
-                  'Hard front braking transfers weight forward. If deceleration exceeds a = g·(L − a_cm)/h_cm, the rear wheel lifts (endo).'),
+                  t('stem.bikelab.hard_front_braking_transfers_weight_fo', 'Hard front braking transfers weight forward. If deceleration exceeds a = g·(L − a_cm)/h_cm, the rear wheel lifts (endo).')),
                 h('div', { className: 'font-mono text-[11px] text-slate-800 bg-white p-2 rounded border border-indigo-100' },
                   'endo limit = ' + endoA.toFixed(2) + ' m/s²'),
                 endoWarn && h('div', { className: 'mt-2 text-[11px] font-bold text-rose-700 bg-rose-50 p-2 rounded border border-rose-200' },
-                  '⚠ At this friction, pure front braking will flip you. Shift weight back or use both brakes.')
+                  t('stem.bikelab.at_this_friction_pure_front_braking_wi', '⚠ At this friction, pure front braking will flip you. Shift weight back or use both brakes.'))
               ),
               h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4' },
-                h('div', { className: 'text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2' }, '🎯 Real-World Lesson'),
+                h('div', { className: 'text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2' }, t('stem.bikelab.real_world_lesson', '🎯 Real-World Lesson')),
                 h('ul', { className: 'text-xs text-slate-700 leading-relaxed space-y-1' },
-                  h('li', null, '• ', h('strong', null, 'Doubling speed quadruples stopping distance'), ' (d ∝ v²).'),
-                  h('li', null, '• ', h('strong', null, 'Front brake does ~70% of the work'), ' on pavement.'),
-                  h('li', null, '• ', h('strong', null, 'Wet cuts grip nearly in half.')),
-                  h('li', null, '• ', h('strong', null, 'On gravel/ice, rear brake is safer'), ' — locked rear skids; locked front = over the bars.')
+                  h('li', null, '• ', h('strong', null, t('stem.bikelab.doubling_speed_quadruples_stopping_dis', 'Doubling speed quadruples stopping distance')), t('stem.bikelab.d_v', ' (d ∝ v²).')),
+                  h('li', null, '• ', h('strong', null, t('stem.bikelab.front_brake_does_70_of_the_work', 'Front brake does ~70% of the work')), t('stem.bikelab.on_pavement', ' on pavement.')),
+                  h('li', null, '• ', h('strong', null, t('stem.bikelab.wet_cuts_grip_nearly_in_half', 'Wet cuts grip nearly in half.'))),
+                  h('li', null, '• ', h('strong', null, t('stem.bikelab.on_gravel_ice_rear_brake_is_safer', 'On gravel/ice, rear brake is safer')), t('stem.bikelab.locked_rear_skids_locked_front_over_th', ' — locked rear skids; locked front = over the bars.'))
                 )
               )
             )
@@ -2192,87 +2343,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           {
             q: 'You want to turn LEFT at an upcoming intersection. What hand signal do you use?',
             choices: [
-              { id: 'a', label: 'Left arm straight out to the side', svg: 'left_straight', correct: true },
-              { id: 'b', label: 'Left arm bent up at 90°', svg: 'left_up' },
-              { id: 'c', label: 'Left arm bent down at 90°', svg: 'left_down' }
+              { id: 'a', label: t('stem.bikelab.left_arm_straight_out_to_the_side', 'Left arm straight out to the side'), svg: 'left_straight', correct: true },
+              { id: 'b', label: t('stem.bikelab.left_arm_bent_up_at_90', 'Left arm bent up at 90°'), svg: 'left_up' },
+              { id: 'c', label: t('stem.bikelab.left_arm_bent_down_at_90', 'Left arm bent down at 90°'), svg: 'left_down' }
             ],
             explain: 'Left arm straight out = left turn. Universal in the US.'
           },
           {
             q: 'You want to turn RIGHT. What\'s the primary hand signal?',
             choices: [
-              { id: 'a', label: 'Left arm bent up at 90° (forearm vertical)', svg: 'left_up', correct: true },
-              { id: 'b', label: 'Right arm straight out', svg: 'right_straight' },
-              { id: 'c', label: 'Left arm bent down', svg: 'left_down' }
+              { id: 'a', label: t('stem.bikelab.left_arm_bent_up_at_90_forearm_vertica', 'Left arm bent up at 90° (forearm vertical)'), svg: 'left_up', correct: true },
+              { id: 'b', label: t('stem.bikelab.right_arm_straight_out', 'Right arm straight out'), svg: 'right_straight' },
+              { id: 'c', label: t('stem.bikelab.left_arm_bent_down', 'Left arm bent down'), svg: 'left_down' }
             ],
             explain: 'Left arm bent up = right turn. Right-arm-out is also accepted in most states and is more intuitive for drivers.'
           },
           {
             q: 'You\'re slowing or stopping. What hand signal do you use?',
             choices: [
-              { id: 'a', label: 'Left arm straight down, palm facing back', svg: 'left_down', correct: true },
-              { id: 'b', label: 'Both arms out to the sides', svg: 'both_out' },
-              { id: 'c', label: 'Left arm straight out', svg: 'left_straight' }
+              { id: 'a', label: t('stem.bikelab.left_arm_straight_down_palm_facing_bac', 'Left arm straight down, palm facing back'), svg: 'left_down', correct: true },
+              { id: 'b', label: t('stem.bikelab.both_arms_out_to_the_sides', 'Both arms out to the sides'), svg: 'both_out' },
+              { id: 'c', label: t('stem.bikelab.left_arm_straight_out', 'Left arm straight out'), svg: 'left_straight' }
             ],
             explain: 'Left arm straight down, palm back = slowing/stopping. Palm-back keeps it visible to drivers behind.'
           },
           {
             q: 'Where should you ride on a 2-lane road with no bike lane?',
             choices: [
-              { id: 'a', label: 'On the sidewalk — safer from cars' },
-              { id: 'b', label: 'Far right of the road, with traffic', correct: true },
-              { id: 'c', label: 'In the middle of the right lane' },
-              { id: 'd', label: 'Against traffic so you can see cars coming' }
+              { id: 'a', label: t('stem.bikelab.on_the_sidewalk_safer_from_cars', 'On the sidewalk — safer from cars') },
+              { id: 'b', label: t('stem.bikelab.far_right_of_the_road_with_traffic', 'Far right of the road, with traffic'), correct: true },
+              { id: 'c', label: t('stem.bikelab.in_the_middle_of_the_right_lane', 'In the middle of the right lane') },
+              { id: 'd', label: t('stem.bikelab.against_traffic_so_you_can_see_cars_co', 'Against traffic so you can see cars coming') }
             ],
             explain: 'Ride WITH traffic, as far right as is practical (not so close you hit the curb or open doors). Against-traffic is illegal in most states AND more dangerous.'
           },
           {
             q: 'You\'re approaching a 4-way stop sign on a bike. What should you do?',
             choices: [
-              { id: 'a', label: 'Speed through — momentum helps balance' },
-              { id: 'b', label: 'Come to a FULL stop, then proceed in order', correct: true },
-              { id: 'c', label: 'Slow to 5 mph but don\'t fully stop' },
-              { id: 'd', label: 'Wait for cars to go first, always' }
+              { id: 'a', label: t('stem.bikelab.speed_through_momentum_helps_balance', 'Speed through — momentum helps balance') },
+              { id: 'b', label: t('stem.bikelab.come_to_a_full_stop_then_proceed_in_or', 'Come to a FULL stop, then proceed in order'), correct: true },
+              { id: 'c', label: t('stem.bikelab.slow_to_5_mph_but_don_t_fully_stop', 'Slow to 5 mph but don\'t fully stop') },
+              { id: 'd', label: t('stem.bikelab.wait_for_cars_to_go_first_always', 'Wait for cars to go first, always') }
             ],
             explain: 'Cyclists must obey the same traffic laws as cars. Full stop at stop signs. "Idaho stop" is legal in some states but not most.'
           },
           {
             q: 'When should you wear a helmet?',
             choices: [
-              { id: 'a', label: 'Only on long rides' },
-              { id: 'b', label: 'Only at night' },
-              { id: 'c', label: 'EVERY ride, every time', correct: true },
-              { id: 'd', label: 'Only when you ride fast' }
+              { id: 'a', label: t('stem.bikelab.only_on_long_rides', 'Only on long rides') },
+              { id: 'b', label: t('stem.bikelab.only_at_night', 'Only at night') },
+              { id: 'c', label: t('stem.bikelab.every_ride_every_time', 'EVERY ride, every time'), correct: true },
+              { id: 'd', label: t('stem.bikelab.only_when_you_ride_fast', 'Only when you ride fast') }
             ],
             explain: 'Every ride. In Maine, helmets are LEGALLY REQUIRED for riders under 16 (Title 29-A §2323). Even where not required by law, most bike crashes happen close to home on low-speed rides. Fit check: 2 fingers above eyebrows, straps form a Y under each ear, chin strap allows only 1 finger of slack.'
           },
           {
             q: 'In Maine, the minimum legal passing distance when a car overtakes a cyclist is:',
             choices: [
-              { id: 'a', label: '1 foot' },
-              { id: 'b', label: '2 feet' },
-              { id: 'c', label: '3 feet', correct: true },
-              { id: 'd', label: 'No specific distance — just safe'}
+              { id: 'a', label: t('stem.bikelab.1_foot', '1 foot') },
+              { id: 'b', label: t('stem.bikelab.2_feet', '2 feet') },
+              { id: 'c', label: t('stem.bikelab.3_feet', '3 feet'), correct: true },
+              { id: 'd', label: t('stem.bikelab.no_specific_distance_just_safe', 'No specific distance — just safe')}
             ],
             explain: 'Maine\'s 3-foot passing law (Title 29-A §2070) requires drivers to give cyclists at least 3 feet of clearance when overtaking. Crossing a double-yellow centerline to provide that 3 feet is legal in Maine if it\'s safe to do so. As a cyclist, ride predictably and signal — drivers need to see your intentions to safely pass.'
           },
           {
             q: 'Maine law requires bicycles ridden after dark (or in low visibility) to have:',
             choices: [
-              { id: 'a', label: 'Reflectors only — no lights needed' },
-              { id: 'b', label: 'A white front headlight visible 500 ft AND a red rear reflector or light', correct: true },
-              { id: 'c', label: 'Just a rear reflector' },
-              { id: 'd', label: 'No lights — the rider just has to wear bright clothing' }
+              { id: 'a', label: t('stem.bikelab.reflectors_only_no_lights_needed', 'Reflectors only — no lights needed') },
+              { id: 'b', label: t('stem.bikelab.a_white_front_headlight_visible_500_ft', 'A white front headlight visible 500 ft AND a red rear reflector or light'), correct: true },
+              { id: 'c', label: t('stem.bikelab.just_a_rear_reflector', 'Just a rear reflector') },
+              { id: 'd', label: t('stem.bikelab.no_lights_the_rider_just_has_to_wear_b', 'No lights — the rider just has to wear bright clothing') }
             ],
             explain: 'Maine law (Title 29-A §2065) requires a white front headlight visible from 500 feet and a red rear reflector (a red rear light is even better — many cyclists run both). Add ankle reflectors and side reflectors if you can. Driver crashes with cyclists at night happen mostly because the cyclist was simply invisible.'
           },
           {
             q: 'You\'re approaching a turn from a bike lane. What\'s the safest way to signal a left turn?',
             choices: [
-              { id: 'a', label: 'Yell at drivers' },
-              { id: 'b', label: 'Stick your left arm straight out, check over your shoulder, signal early', correct: true },
-              { id: 'c', label: 'Just turn — drivers will see you' },
-              { id: 'd', label: 'Brake first, then turn the wheel' }
+              { id: 'a', label: t('stem.bikelab.yell_at_drivers', 'Yell at drivers') },
+              { id: 'b', label: t('stem.bikelab.stick_your_left_arm_straight_out_check', 'Stick your left arm straight out, check over your shoulder, signal early'), correct: true },
+              { id: 'c', label: t('stem.bikelab.just_turn_drivers_will_see_you', 'Just turn — drivers will see you') },
+              { id: 'd', label: t('stem.bikelab.brake_first_then_turn_the_wheel', 'Brake first, then turn the wheel') }
             ],
             explain: 'Left arm extended straight out is the universal "left turn" signal. Hold for at least 3-4 seconds before turning. Always check over your shoulder for traffic before crossing lanes (the bike equivalent of a head check). Brief, predictable signals + eye contact with drivers is the single best crash-prevention behavior on the road.'
           }
@@ -2290,7 +2441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         if (idx < 0 || idx >= QUESTIONS.length) {
           var safeIdx = Math.max(0, Math.min(QUESTIONS.length - 1, idx));
           if (safeIdx !== idx) { setIdx(safeIdx); }
-          return h('div', { className: 'p-6 text-center text-slate-600' }, 'Loading quiz…');
+          return h('div', { className: 'p-6 text-center text-slate-600' }, t('stem.bikelab.loading_quiz', 'Loading quiz…'));
         }
         var q = QUESTIONS[idx];
         var hasAnswered = answers[idx] !== undefined;
@@ -2357,7 +2508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         }
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '🛡️', title: 'Hand Signals & Safety' }),
+          BackBar({ icon: '🛡️', title: t('stem.bikelab.hand_signals_safety_2', 'Hand Signals & Safety') }),
           h('div', { className: 'p-4 max-w-4xl mx-auto w-full space-y-4' },
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
               h('div', { className: 'flex items-center justify-between mb-2' },
@@ -2389,8 +2540,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   },
                     c.svg && signalSvg(c.svg),
                     h('div', { className: 'text-sm font-medium text-slate-700 mt-2' }, c.label),
-                    hasAnswered && c.correct && h('div', { className: 'text-xs text-emerald-700 font-bold mt-2' }, '✓ Correct'),
-                    hasAnswered && isPicked && !c.correct && h('div', { className: 'text-xs text-rose-700 font-bold mt-2' }, '✗ Your answer')
+                    hasAnswered && c.correct && h('div', { className: 'text-xs text-emerald-700 font-bold mt-2' }, t('stem.bikelab.correct', '✓ Correct')),
+                    hasAnswered && isPicked && !c.correct && h('div', { className: 'text-xs text-rose-700 font-bold mt-2' }, t('stem.bikelab.your_answer', '✗ Your answer'))
                   );
                 })
               ),
@@ -2404,7 +2555,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 onClick: goPrev,
                 disabled: idx === 0,
                 className: 'px-4 py-2 rounded-lg font-bold text-sm ' + (idx === 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-200 hover:bg-slate-300 text-slate-700')
-              }, '← Previous'),
+              }, t('stem.bikelab.previous', '← Previous')),
               h('div', { className: 'flex-1' }),
               idx === QUESTIONS.length - 1
                 ? h('div', { className: 'text-sm text-slate-600 font-bold' }, correctCount + ' / ' + QUESTIONS.length + ' correct')
@@ -2412,7 +2563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     onClick: goNext,
                     disabled: !hasAnswered,
                     className: 'px-4 py-2 rounded-lg font-bold text-sm ' + (!hasAnswered ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
-                  }, 'Next →')
+                  }, t('stem.bikelab.next', 'Next →'))
             )
           )
         );
@@ -2442,13 +2593,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
 
         var COURSE_LENGTH = 600;
         var COURSE_SEGMENTS = [
-          { from: 0,   to: 180, kind: 'pavement', label: 'Your block', elevFn: function(_x) { return 0; } },
-          { from: 180, to: 220, kind: 'pavement', label: 'STOP SIGN',  elevFn: function(_x) { return 0; }, stopSign: { at: 205, windowStart: 195, windowEnd: 215 } },
-          { from: 220, to: 280, kind: 'pavement', label: 'Flat run',   elevFn: function(_x) { return 0; } },
-          { from: 280, to: 380, kind: 'pavement', label: 'Oak Hill',   elevFn: function(x) { return (x - 280) * 0.07; }, hill: { start: 280, end: 380 } },
-          { from: 380, to: 450, kind: 'pavement', label: 'Descent',    elevFn: function(x) { return 7 - (x - 380) * 0.03; } },
-          { from: 450, to: 520, kind: 'wet',      label: 'Wet patch',  elevFn: function(x) { return 4.9 - (x - 450) * 0.04; }, wet: { start: 450, end: 520 } },
-          { from: 520, to: 600, kind: 'pavement', label: 'School St.', elevFn: function(x) { return 2.1 - (x - 520) * 0.026; } }
+          { from: 0,   to: 180, kind: 'pavement', label: t('stem.bikelab.your_block', 'Your block'), elevFn: function(_x) { return 0; } },
+          { from: 180, to: 220, kind: 'pavement', label: t('stem.bikelab.stop_sign', 'STOP SIGN'),  elevFn: function(_x) { return 0; }, stopSign: { at: 205, windowStart: 195, windowEnd: 215 } },
+          { from: 220, to: 280, kind: 'pavement', label: t('stem.bikelab.flat_run', 'Flat run'),   elevFn: function(_x) { return 0; } },
+          { from: 280, to: 380, kind: 'pavement', label: t('stem.bikelab.oak_hill', 'Oak Hill'),   elevFn: function(x) { return (x - 280) * 0.07; }, hill: { start: 280, end: 380 } },
+          { from: 380, to: 450, kind: 'pavement', label: t('stem.bikelab.descent', 'Descent'),    elevFn: function(x) { return 7 - (x - 380) * 0.03; } },
+          { from: 450, to: 520, kind: 'wet',      label: t('stem.bikelab.wet_patch', 'Wet patch'),  elevFn: function(x) { return 4.9 - (x - 450) * 0.04; }, wet: { start: 450, end: 520 } },
+          { from: 520, to: 600, kind: 'pavement', label: t('stem.bikelab.school_st', 'School St.'), elevFn: function(x) { return 2.1 - (x - 520) * 0.026; } }
         ];
         var DECOR = [
           { x: 20,  emoji: '🏠', h: 3.5 }, { x: 60,  emoji: '🏡', h: 3.5 },
@@ -2559,6 +2710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         useEffect(function() {
           if (!running) { if (rafRef.current) cancelAnimationFrame(rafRef.current); return; }
           var loop = function(ts) {
+            if (!canvasRef.current || !canvasRef.current.isConnected) { rafRef.current = null; return; } // stop if the canvas detached
             if (!lastTsRef.current) lastTsRef.current = ts;
             var dt = Math.min(0.05, (ts - lastTsRef.current) / 1000);
             lastTsRef.current = ts;
@@ -2708,20 +2860,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var bestTime = d.rideBestTime;
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '🏘️', title: 'Neighborhood Ride' }),
+          BackBar({ icon: '🏘️', title: t('stem.bikelab.neighborhood_ride_2', 'Neighborhood Ride') }),
           h('div', { className: 'p-3 max-w-7xl mx-auto w-full space-y-3' },
             h('div', { id: 'bikelab-neighborhood-fs', className: 'bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800', style: { position: 'relative' } },
-              h('canvas', { ref: canvasRef, width: 1000, height: 380, className: 'w-full block', role: 'img', 'aria-label': 'Neighborhood ride: bicycle traverses streets with hills, stop signs, traffic, and weather. Use the brake button or arrow keys to control.' }),
+              h('canvas', { ref: canvasRef, width: 1000, height: 380, className: 'w-full block', role: 'img', 'aria-label': t('stem.bikelab.neighborhood_ride_bicycle_traverses_st', 'Neighborhood ride: bicycle traverses streets with hills, stop signs, traffic, and weather. Use the brake button or arrow keys to control.') }),
               // Fullscreen toggle for the neighborhood ride
               h('button', {
-                'aria-label': 'Toggle fullscreen for the neighborhood ride',
-                title: 'Fullscreen',
+                'aria-label': t('stem.bikelab.toggle_fullscreen_for_the_neighborhood', 'Toggle fullscreen for the neighborhood ride'),
+                title: t('stem.bikelab.fullscreen_2', 'Fullscreen'),
                 onClick: function() {
                   var el = document.getElementById('bikelab-neighborhood-fs');
                   if (!el) return;
                   var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
                   if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
-                  else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                  else { if (window.__alloStemFS) window.__alloStemFS(el); }
                 },
                 style: {
                   position: 'absolute', top: 8, right: 8, zIndex: 10,
@@ -2735,7 +2887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             ),
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-4 gap-3' },
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3 flex flex-col gap-2' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600' }, 'Session'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600' }, t('stem.bikelab.session', 'Session')),
                 !finished && h('button', {
                   onClick: function() { setRunning(!running); },
                   className: 'py-2.5 px-4 rounded-lg font-bold transition-colors shadow ' + (running ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
@@ -2743,16 +2895,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 finished && h('button', {
                   onClick: function() { reset(); setRunning(true); },
                   className: 'py-2.5 px-4 rounded-lg font-bold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors shadow'
-                }, '↻ Ride Again'),
+                }, t('stem.bikelab.ride_again', '↻ Ride Again')),
                 h('button', {
                   onClick: function() { setRunning(false); reset(); },
                   className: 'py-2 px-4 rounded-lg font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm transition-colors'
-                }, '↺ Reset'),
+                }, t('stem.bikelab.reset_2', '↺ Reset')),
                 bestTime && h('div', { className: 'text-[11px] text-slate-600 text-center border-t border-slate-200 pt-2' },
                   '🏆 Best: ' + bestTime.toFixed(1) + 's')
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, 'Bike'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.bike_2', 'Bike')),
                 h('div', { className: 'grid grid-cols-2 gap-1' },
                   BIKES.map(function(b) {
                     return h('button', {
@@ -2765,34 +2917,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3' },
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 flex justify-between' },
-                  h('span', null, 'Gear (↑/↓)'), h('span', { className: 'text-violet-600' }, (gear * 100).toFixed(0) + '%')),
+                  h('span', null, t('stem.bikelab.gear', 'Gear (↑/↓)')), h('span', { className: 'text-violet-600' }, (gear * 100).toFixed(0) + '%')),
                 h('input', { type: 'range', min: 0.2, max: 1.0, step: 0.05, value: gear,
                   onChange: function(e) { setGear(parseFloat(e.target.value)); },
-                  className: 'w-full accent-violet-500' }),
+                  className: 'w-full accent-violet-500',
+                  'aria-label': t('stem.bikelab.neighborhood_ride_gear_ratio', 'Neighborhood ride gear ratio') }),
                 // Discrete gear-step buttons — easier on touch devices (no precise
                 // drag needed) and don't require looking at the slider mid-ride.
                 h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
                   h('button', {
-                    'aria-label': 'Shift to a lower gear (easier pedaling, less top speed)',
+                    'aria-label': t('stem.bikelab.shift_to_a_lower_gear_easier_pedaling_', 'Shift to a lower gear (easier pedaling, less top speed)'),
                     onClick: function() { setGear(function(g) { return Math.max(0.2, +(g - 0.1).toFixed(2)); }); },
                     className: 'py-2 rounded-lg font-bold bg-violet-100 hover:bg-violet-200 text-violet-800 text-sm shadow-sm transition-colors'
-                  }, '↓ Lower'),
+                  }, t('stem.bikelab.lower', '↓ Lower')),
                   h('button', {
-                    'aria-label': 'Shift to a higher gear (more top speed, harder pedaling)',
+                    'aria-label': t('stem.bikelab.shift_to_a_higher_gear_more_top_speed_', 'Shift to a higher gear (more top speed, harder pedaling)'),
                     onClick: function() { setGear(function(g) { return Math.min(1.0, +(g + 0.1).toFixed(2)); }); },
                     className: 'py-2 rounded-lg font-bold bg-violet-100 hover:bg-violet-200 text-violet-800 text-sm shadow-sm transition-colors'
-                  }, '↑ Higher')
+                  }, t('stem.bikelab.higher', '↑ Higher'))
                 ),
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 flex justify-between mt-2' },
-                  h('span', null, 'Pedal Power'), h('span', { className: 'text-cyan-600' }, power + ' W')),
+                  h('span', null, t('stem.bikelab.pedal_power', 'Pedal Power')), h('span', { className: 'text-cyan-600' }, power + ' W')),
                 h('input', { type: 'range', min: 0, max: 400, value: power,
                   // NaN-guard: parseInt('') returns NaN; clamp to 0 so an empty
                   // keyboard-edited slider value can't poison physics.
                   onChange: function(e) { var v = parseInt(e.target.value, 10); setPower(isFinite(v) ? v : 0); },
-                  className: 'w-full accent-cyan-500' })
+                  className: 'w-full accent-cyan-500',
+                  'aria-label': t('stem.bikelab.neighborhood_ride_pedal_power_watts', 'Neighborhood ride pedal power in watts') })
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3 flex flex-col' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, 'Brake (Space)'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.brake_space', 'Brake (Space)')),
                 h('button', {
                   'aria-label': braking ? 'Brake engaged. Release Space to stop braking.' : 'Brake. Hold Space or click to brake.',
                   'aria-pressed': braking,
@@ -2806,40 +2960,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   onBlur: function() { setBraking(false); },
                   className: 'flex-1 rounded-lg font-black text-white transition-colors shadow ' + (braking ? 'bg-rose-700' : 'bg-rose-500 hover:bg-rose-600')
                 }, braking ? '🛑 BRAKING' : '🛑 Hold to Brake'),
-                h('div', { className: 'text-[10px] text-slate-600 mt-2 text-center' }, 'Hold to slow or stop')
+                h('div', { className: 'text-[10px] text-slate-600 mt-2 text-center' }, t('stem.bikelab.hold_to_slow_or_stop', 'Hold to slow or stop'))
               )
             ),
             finished && h('div', { className: 'bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg text-white p-5' },
               h('div', { className: 'flex items-center gap-3 mb-3' },
                 h('span', { className: 'text-5xl' }, '🏫'),
                 h('div', null,
-                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wider opacity-80' }, 'You made it to school'),
+                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wider opacity-80' }, t('stem.bikelab.you_made_it_to_school', 'You made it to school')),
                   h('div', { className: 'text-3xl font-black font-mono' }, timeRef.current.toFixed(1) + 's'),
-                  bestTime === timeRef.current && h('div', { className: 'text-xs font-bold' }, '🏆 New personal best!')
+                  bestTime === timeRef.current && h('div', { className: 'text-xs font-bold' }, t('stem.bikelab.new_personal_best', '🏆 New personal best!'))
                 )
               ),
               h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                 h('div', { className: 'bg-white/15 rounded-lg p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase opacity-80' }, 'Stop Sign'),
+                  h('div', { className: 'text-[10px] uppercase opacity-80' }, t('stem.bikelab.stop_sign_2', 'Stop Sign')),
                   h('div', { className: 'text-xl' }, scoreRef.current.stopSignObeyed ? '✓' : '✗')
                 ),
                 h('div', { className: 'bg-white/15 rounded-lg p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase opacity-80' }, 'Hill Crawl'),
+                  h('div', { className: 'text-[10px] uppercase opacity-80' }, t('stem.bikelab.hill_crawl', 'Hill Crawl')),
                   h('div', { className: 'text-xl' }, scoreRef.current.hillCrawlTime <= 5 ? '✓' : '✗')
                 ),
                 h('div', { className: 'bg-white/15 rounded-lg p-2 text-center' },
-                  h('div', { className: 'text-[10px] uppercase opacity-80' }, 'Wet Section'),
+                  h('div', { className: 'text-[10px] uppercase opacity-80' }, t('stem.bikelab.wet_section', 'Wet Section')),
                   h('div', { className: 'text-xl' }, !scoreRef.current.wetBrakingHard ? '✓' : '✗')
                 )
               ),
               advice.length > 0 && h('div', { className: 'bg-white/20 rounded-lg p-3 text-sm' },
-                h('div', { className: 'text-[11px] font-bold uppercase tracking-wider opacity-80 mb-1' }, 'Coach'),
+                h('div', { className: 'text-[11px] font-bold uppercase tracking-wider opacity-80 mb-1' }, t('stem.bikelab.coach', 'Coach')),
                 advice.map(function(a, i) { return h('div', { key: i, className: 'leading-relaxed' }, '• ' + a); })
               )
             ),
             h('div', { className: 'bg-slate-100 rounded-xl p-3 text-xs text-slate-600 leading-relaxed border border-slate-400' },
-              h('span', { className: 'font-bold text-slate-700' }, '🧭 Course: '),
-              '180 m flat → 🛑 stop sign → flat run → ⛰️ Oak Hill (7% grade) → descent → 🌧️ wet patch → 🏫 school (600 m total). Use ↑/↓ to shift gears, Space to brake. Apply the physics you learned in Sandbox, Gearing, and Braking labs.'
+              h('span', { className: 'font-bold text-slate-700' }, t('stem.bikelab.course', '🧭 Course: ')),
+              t('stem.bikelab.180_m_flat_stop_sign_flat_run_oak_hill', '180 m flat → 🛑 stop sign → flat run → ⛰️ Oak Hill (7% grade) → descent → 🌧️ wet patch → 🏫 school (600 m total). Use ↑/↓ to shift gears, Space to brake. Apply the physics you learned in Sandbox, Gearing, and Braking labs.')
             )
           )
         );
@@ -2850,22 +3004,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       // ─────────────────────────────────────────────────────
       function PartsInspector() {
         var BIKE_PARTS = [
-          { id: 'top_tube',   name: 'Top Tube',        cat: 'Frame', hx: 195, hy: 80, hw: 120, hh: 20,
+          { id: 'top_tube',   name: t('stem.bikelab.top_tube', 'Top Tube'),        cat: 'Frame', hx: 195, hy: 80, hw: 120, hh: 20,
             fn: 'Horizontal frame tube connecting head tube to seat tube. Defines the "standover height" — you should have 2-5 cm clearance when straddling the bike flat-footed.',
             issues: 'Structural cracks after a crash. Dents from rack-hauling. Carbon tubes show stress as hairline fractures; aluminum shows dents.' },
-          { id: 'down_tube',  name: 'Down Tube',       cat: 'Frame', hx: 170, hy: 140, hw: 160, hh: 24,
+          { id: 'down_tube',  name: t('stem.bikelab.down_tube', 'Down Tube'),       cat: 'Frame', hx: 170, hy: 140, hw: 160, hh: 24,
             fn: 'Diagonal tube from head tube to bottom bracket — the main load-bearing member. Takes pedaling forces and braking loads.',
             issues: 'Rock strikes leave dents that can fail under stress. Inspect after any crash. Check for paint cracks around tube junctions.' },
-          { id: 'seat_tube',  name: 'Seat Tube',       cat: 'Frame', hx: 290, hy: 80, hw: 24, hh: 110,
+          { id: 'seat_tube',  name: t('stem.bikelab.seat_tube', 'Seat Tube'),       cat: 'Frame', hx: 290, hy: 80, hw: 24, hh: 110,
             fn: 'Vertical tube that holds the seatpost. Its angle determines your riding posture (steeper = more forward).',
             issues: 'Seatpost seized from corrosion — grease the post every year. Clamp area cracks from over-tightening.' },
-          { id: 'chainstay',  name: 'Chainstay',       cat: 'Frame', hx: 300, hy: 210, hw: 120, hh: 16,
+          { id: 'chainstay',  name: t('stem.bikelab.chainstay', 'Chainstay'),       cat: 'Frame', hx: 300, hy: 210, hw: 120, hh: 16,
             fn: 'Rear frame tubes running from bottom bracket to rear axle. Shorter chainstays = quicker acceleration and snappier handling.',
             issues: 'Chain slap wears the paint. Dropout threads can strip — use a threadless hanger on aluminum frames.' },
-          { id: 'seatstay',   name: 'Seatstay',        cat: 'Frame', hx: 300, hy: 130, hw: 110, hh: 16,
+          { id: 'seatstay',   name: t('stem.bikelab.seatstay', 'Seatstay'),        cat: 'Frame', hx: 300, hy: 130, hw: 110, hh: 16,
             fn: 'Tubes from seat tube top to rear axle. Form the rear triangle with chainstay and seat tube.',
             issues: 'Carbon seatstays can crack at the dropout on impact. Rim brakes wear a groove in the mounting bosses over time.' },
-          { id: 'head_tube',  name: 'Head Tube',       cat: 'Frame', hx: 160, hy: 95, hw: 26, hh: 70,
+          { id: 'head_tube',  name: t('stem.bikelab.head_tube', 'Head Tube'),       cat: 'Frame', hx: 160, hy: 95, hw: 26, hh: 70,
             fn: 'Short vertical tube at the front — houses the headset bearings that let the fork swivel. Its angle determines steering quickness.',
             issues: 'Creaking headset = loose preload. Cracks at tube junctions after a hard front impact.',
             repairJob: 'headset_adjust' },
@@ -2873,49 +3027,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             fn: 'Aluminum or carbon hoop holding the tire and transferring braking force (rim brakes) or offering a true surface (disc brakes).',
             issues: 'Bends from pothole hits. Rim-brake wear grooves — replace when the indicator disappears.',
             repairJob: 'wheel_true' },
-          { id: 'spokes',     name: 'Spokes',          cat: 'Wheels', hx: 420, hy: 220, hw: 70, hh: 80,
+          { id: 'spokes',     name: t('stem.bikelab.spokes', 'Spokes'),          cat: 'Wheels', hx: 420, hy: 220, hw: 70, hh: 80,
             fn: 'Wire members connecting rim to hub in tension. Transfer weight from the hub to the ground through the rim.',
             issues: 'A broken spoke throws the wheel out of true immediately — zip-tie it to a neighbor and ride gently home.' },
           { id: 'hub',        name: 'Hub',             cat: 'Wheels', hx: 108, hy: 248, hw: 24, hh: 24,
             fn: 'Wheel center containing the axle and bearings. Rear hub also holds the cassette body and ratchet mechanism.',
             issues: 'Grinding = worn bearings. Free-hub pawls can fail — you pedal but the wheel doesn\'t move.' },
-          { id: 'tire',       name: 'Tire',            cat: 'Wheels', hx: 60, hy: 250, hw: 100, hh: 36,
+          { id: 'tire',       name: t('stem.bikelab.tire', 'Tire'),            cat: 'Wheels', hx: 60, hy: 250, hw: 100, hh: 36,
             fn: 'Rubber-and-casing air-chamber sleeve that provides grip and cushioning. Width, tread, and pressure all shape the ride.',
             issues: 'Sidewall cuts from glass. Thread showing = replace. Low pressure invites pinch flats on potholes.',
             repairJob: 'patch_tube' },
-          { id: 'chainring',  name: 'Chainring',       cat: 'Drivetrain', hx: 285, hy: 220, hw: 40, hh: 40,
+          { id: 'chainring',  name: t('stem.bikelab.chainring', 'Chainring'),       cat: 'Drivetrain', hx: 285, hy: 220, hw: 40, hh: 40,
             fn: 'Front gear attached to the crank. Its tooth count combined with the cassette cog sets your gear ratio (see Gearing Lab).',
             issues: 'Teeth turn into shark-fins at wear. A chain that jumps teeth under load = replace chainring AND chain together.' },
-          { id: 'cassette',   name: 'Cassette',        cat: 'Drivetrain', hx: 415, hy: 232, hw: 28, hh: 36,
+          { id: 'cassette',   name: t('stem.bikelab.cassette', 'Cassette'),        cat: 'Drivetrain', hx: 415, hy: 232, hw: 28, hh: 36,
             fn: 'Cluster of rear gears. Each cog changes the gear ratio. Shifting up = smaller cog = harder, more speed per pedal stroke.',
             issues: 'Worn cassettes cause skipping under load. Replace with chain every ~2 chain changes.',
             repairJob: 'chain_clean' },
-          { id: 'chain',      name: 'Chain',           cat: 'Drivetrain', hx: 315, hy: 230, hw: 100, hh: 20,
+          { id: 'chain',      name: t('stem.bikelab.chain', 'Chain'),           cat: 'Drivetrain', hx: 315, hy: 230, hw: 100, hh: 20,
             fn: 'Roller chain that transfers power from chainring to cassette. Wears 0.5% — 1% over ~1500 miles, needs replacement when it stretches.',
             issues: 'Use a chain-wear gauge. Clean and lube every 150 miles.',
             repairJob: 'chain_clean' },
-          { id: 'rd',         name: 'Rear Derailleur', cat: 'Drivetrain', hx: 408, hy: 265, hw: 28, hh: 28,
+          { id: 'rd',         name: t('stem.bikelab.rear_derailleur', 'Rear Derailleur'), cat: 'Drivetrain', hx: 408, hy: 265, hw: 28, hh: 28,
             fn: 'Spring-loaded parallelogram that guides the chain between cassette cogs and maintains chain tension.',
             issues: 'Sluggish shifting = cable tension off. Bent hanger = shift is impossible to tune — replace the hanger.',
             repairJob: 'derailleur_index' },
-          { id: 'shifter',    name: 'Shifter',         cat: 'Drivetrain', hx: 128, hy: 78, hw: 26, hh: 20,
+          { id: 'shifter',    name: t('stem.bikelab.shifter', 'Shifter'),         cat: 'Drivetrain', hx: 128, hy: 78, hw: 26, hh: 20,
             fn: 'Handlebar-mounted lever that pulls (or releases) cable to move the derailleur. Each click = one cog.',
             issues: 'Grit in the ratchet causes missed shifts. Replace cable every 2 years.' },
-          { id: 'handlebar',  name: 'Handlebar',       cat: 'Cockpit', hx: 80, hy: 82, hw: 80, hh: 16,
+          { id: 'handlebar',  name: t('stem.bikelab.handlebar_2', 'Handlebar'),       cat: 'Cockpit', hx: 80, hy: 82, hw: 80, hh: 16,
             fn: 'Provides steering input and mounting for shifters, brake levers, and lights. Shapes: flat (MTB/hybrid), drop (road), riser.',
             issues: 'Aluminum bars have fatigue life — replace after 5-10 years or a crash. Carbon cracks invisibly.' },
-          { id: 'stem',       name: 'Stem',            cat: 'Cockpit', hx: 136, hy: 78, hw: 30, hh: 16,
+          { id: 'stem',       name: t('stem.bikelab.stem', 'Stem'),            cat: 'Cockpit', hx: 136, hy: 78, hw: 30, hh: 16,
             fn: 'Clamps handlebar to fork steerer. Length and angle change your reach and bar height — swap it for a better fit.',
             issues: 'Over-torqued bolts crack carbon bars. Re-grease steerer clamp on every service.',
             repairJob: 'headset_adjust' },
-          { id: 'saddle',     name: 'Saddle',          cat: 'Cockpit', hx: 282, hy: 58, hw: 46, hh: 14,
+          { id: 'saddle',     name: t('stem.bikelab.saddle_2', 'Saddle'),          cat: 'Cockpit', hx: 282, hy: 58, hw: 46, hh: 14,
             fn: 'Seat. Supports your weight via your "sit bones" (ischial tuberosities). Width should match your sit-bone spacing.',
             issues: 'Wear-through at corners. Creaking rails need grease. Numbness = adjust angle slightly nose-down.' },
-          { id: 'brake_lever',name: 'Brake Lever',     cat: 'Brakes', hx: 115, hy: 82, hw: 16, hh: 22,
+          { id: 'brake_lever',name: t('stem.bikelab.brake_lever', 'Brake Lever'),     cat: 'Brakes', hx: 115, hy: 82, hw: 16, hh: 22,
             fn: 'Pulls the brake cable or hydraulic pistons. Position matters — adjust reach so you can brake without straining your fingers.',
             issues: 'Mushy lever = air in hydraulic line (bleed) or stretched cable (tighten).',
             repairJob: 'brake_adjust' },
-          { id: 'caliper',    name: 'Brake Caliper',   cat: 'Brakes', hx: 100, hy: 180, hw: 38, hh: 22,
+          { id: 'caliper',    name: t('stem.bikelab.brake_caliper', 'Brake Caliper'),   cat: 'Brakes', hx: 100, hy: 180, hw: 38, hh: 22,
             fn: 'Clamps the pads onto the rim (rim brakes) or rotor (disc brakes) when cable is pulled. The actual braking force originates here.',
             issues: 'Squealing = pad toe-in wrong or contamination. Grinding = worn pads or misaligned caliper.',
             repairJob: 'brake_adjust' }
@@ -2934,11 +3088,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         ];
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '🔍', title: 'Bike Parts Inspector' }),
+          BackBar({ icon: '🔍', title: t('stem.bikelab.bike_parts_inspector_2', 'Bike Parts Inspector') }),
           h('div', { className: 'p-4 max-w-7xl mx-auto w-full' },
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-5 gap-4' },
               h('div', { className: 'lg:col-span-3 bg-white rounded-xl shadow border border-slate-400 p-4' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, 'Click any part of the bike'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.click_any_part_of_the_bike', 'Click any part of the bike')),
                 h('svg', { viewBox: '0 0 500 300', className: 'w-full h-auto', style: { maxHeight: '420px' } },
                   h('line', { x1: 170, y1: 95, x2: 175, y2: 165, stroke: '#334155', strokeWidth: 3 }),
                   h('line', { x1: 175, y1: 95, x2: 300, y2: 95, stroke: '#334155', strokeWidth: 3 }),
@@ -2989,17 +3143,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   h('div', { className: 'p-4 bg-gradient-to-br from-slate-700 to-slate-900 text-white' },
                     h('div', { className: 'flex items-center justify-between mb-1' },
                       h('span', { className: 'text-xs font-bold uppercase tracking-wider opacity-70' }, selected.cat),
-                      selected.repairJob && h('span', { className: 'bg-amber-500/30 text-amber-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider' }, 'Has repair job')
+                      selected.repairJob && h('span', { className: 'bg-amber-500/30 text-amber-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider' }, t('stem.bikelab.has_repair_job', 'Has repair job'))
                     ),
                     h('h3', { className: 'text-2xl font-black' }, selected.name)
                   ),
                   h('div', { className: 'p-4 space-y-3' },
                     h('div', null,
-                      h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1' }, 'Function'),
+                      h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1' }, t('stem.bikelab.function', 'Function')),
                       h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, selected.fn)
                     ),
                     h('div', null,
-                      h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1' }, 'Common Issues'),
+                      h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1' }, t('stem.bikelab.common_issues', 'Common Issues')),
                       h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, selected.issues)
                     ),
                     selected.repairJob && h('button', {
@@ -3008,11 +3162,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         goto('repair');
                       },
                       className: 'w-full py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-colors shadow'
-                    }, '🔧 Open related repair job →')
+                    }, t('stem.bikelab.open_related_repair_job', '🔧 Open related repair job →'))
                   )
                 ),
                 h('div', { className: 'bg-slate-100 rounded-xl p-3' },
-                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, 'Parts by category'),
+                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.parts_by_category', 'Parts by category')),
                   CATEGORIES.map(function(c) {
                     var parts = BIKE_PARTS.filter(function(p) { return p.cat === c.id; });
                     return h('div', { key: c.id, className: 'mb-2' },
@@ -3084,6 +3238,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 var v = parseFloat(e.target.value);
                 setter(isFinite(v) ? v : 0);
               },
+              'aria-label': label,
               'aria-valuetext': statusText,
               className: 'w-full accent-pink-500'
             })
@@ -3091,12 +3246,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '⛑️', title: 'Helmet Fit Checker' }),
+          BackBar({ icon: '⛑️', title: t('stem.bikelab.helmet_fit_checker_2', 'Helmet Fit Checker') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full' },
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
               // Left: SVG visualization
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-4' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Live Fit Diagram'),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, t('stem.bikelab.live_fit_diagram', 'Live Fit Diagram')),
                 h('svg', {
                   viewBox: '0 0 240 260',
                   className: 'w-full h-64 mx-auto',
@@ -3113,7 +3268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   h('ellipse', { cx: 120, cy: 145, rx: 48, ry: 58, fill: '#fed7aa', stroke: '#9a6c4a', strokeWidth: 1 }),
                   // Eyebrows reference line (where helmet should sit ~2 fingers above)
                   h('line', { x1: 88, y1: 132, x2: 152, y2: 132, stroke: '#94a3b8', strokeWidth: 0.5, strokeDasharray: '2,2' }),
-                  h('text', { x: 156, y: 135, fill: '#64748b', fontSize: '8' }, 'eyebrow line'),
+                  h('text', { x: 156, y: 135, fill: '#64748b', fontSize: '8' }, t('stem.bikelab.eyebrow_line', 'eyebrow line')),
                   // Eyes
                   h('circle', { cx: 105, cy: 138, r: 2, fill: '#1e293b' }),
                   h('circle', { cx: 135, cy: 138, r: 2, fill: '#1e293b' }),
@@ -3171,15 +3326,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 sliderRow('2. Side-Strap Angle', strapAngle, setStrapAngle, -1, 1, 0.02, angleLabel, angleOk ? 'text-emerald-700' : 'text-rose-700'),
                 sliderRow('3. Chin-Strap Slack', slack, setSlack, 0, 1, 0.01, slackLabel, slackOk ? 'text-emerald-700' : 'text-rose-700'),
                 h('div', { className: 'bg-pink-50 border border-pink-300 rounded-xl p-4' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-pink-800 mb-2' }, '📏 The 2V1 Rule'),
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-pink-800 mb-2' }, t('stem.bikelab.the_2v1_rule', '📏 The 2V1 Rule')),
                   h('ul', { className: 'space-y-2 text-sm text-slate-700' },
-                    h('li', null, h('strong', null, '2 fingers'), ' above the eyebrows: the helmet should sit LOW on the forehead, not pushed back to expose your forehead.'),
-                    h('li', null, h('strong', null, 'V'), ' under each ear: the front and rear straps should meet just below your ear, forming a clean V (or Y).'),
-                    h('li', null, h('strong', null, '1 finger'), ' chin slack: only one finger should fit between the chin strap and your jaw — looser and the helmet pops off in a crash; tighter and you can\'t breathe comfortably.')
+                    h('li', null, h('strong', null, t('stem.bikelab.2_fingers', '2 fingers')), t('stem.bikelab.above_the_eyebrows_the_helmet_should_s', ' above the eyebrows: the helmet should sit LOW on the forehead, not pushed back to expose your forehead.')),
+                    h('li', null, h('strong', null, 'V'), t('stem.bikelab.under_each_ear_the_front_and_rear_stra', ' under each ear: the front and rear straps should meet just below your ear, forming a clean V (or Y).')),
+                    h('li', null, h('strong', null, t('stem.bikelab.1_finger', '1 finger')), t('stem.bikelab.chin_slack_only_one_finger_should_fit_', ' chin slack: only one finger should fit between the chin strap and your jaw — looser and the helmet pops off in a crash; tighter and you can\'t breathe comfortably.'))
                   ),
                   h('div', { className: 'text-xs text-slate-600 mt-3' },
-                    h('strong', null, 'Why it matters: '),
-                    'A loose or tilted helmet protects almost as poorly as no helmet at all. Concussion-research data shows 60-80% of cyclist head injuries happen with a helmet that was incorrectly fitted or unstrapped at the moment of impact.'
+                    h('strong', null, t('stem.bikelab.why_it_matters', 'Why it matters: ')),
+                    t('stem.bikelab.a_loose_or_tilted_helmet_protects_almo', 'A loose or tilted helmet protects almost as poorly as no helmet at all. Concussion-research data shows 60-80% of cyclist head injuries happen with a helmet that was incorrectly fitted or unstrapped at the moment of impact.')
                   )
                 )
               )
@@ -3203,18 +3358,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           setChecks(next);
         };
         var checklistItems = [
-          { id: 'tires', label: 'Tire pressure dropped 5-10 PSI for snow/slush traction' },
-          { id: 'studded', label: 'Studded tires installed if riding on ice (or fat-bike with low PSI)' },
-          { id: 'lights', label: 'Front white + rear red lights installed (Maine §2065 — required at night)' },
-          { id: 'lube', label: 'Wet/winter chain lube applied (washes off less in slush)' },
-          { id: 'fenders', label: 'Fenders installed (slush spray = wet & cold = stops you within 1 ride)' },
-          { id: 'brakes', label: 'Brake pads inspected — wet/grit conditions wear them 3-5x faster' },
-          { id: 'layering', label: 'Layered clothing: wicking base + insulating mid + windproof shell' },
-          { id: 'extremities', label: 'Hands (lobster mitts/bar mitts), feet (wool socks + waterproof shoes), face (balaclava)' },
-          { id: 'visibility', label: 'High-vis or reflective outer layer (drivers see you 3x sooner)' },
-          { id: 'route', label: 'Route checked for plow status — recently-plowed > untouched powder > glare ice' },
-          { id: 'phone', label: 'Phone in inner pocket (cold drains battery; keep it warm)' },
-          { id: 'wash', label: 'Post-ride: rinse the bike to remove road salt (corrodes drivetrain in days)' }
+          { id: 'tires', label: t('stem.bikelab.tire_pressure_dropped_5_10_psi_for_sno', 'Tire pressure dropped 5-10 PSI for snow/slush traction') },
+          { id: 'studded', label: t('stem.bikelab.studded_tires_installed_if_riding_on_i', 'Studded tires installed if riding on ice (or fat-bike with low PSI)') },
+          { id: 'lights', label: t('stem.bikelab.front_white_rear_red_lights_installed_', 'Front white + rear red lights installed (Maine §2065 — required at night)') },
+          { id: 'lube', label: t('stem.bikelab.wet_winter_chain_lube_applied_washes_o', 'Wet/winter chain lube applied (washes off less in slush)') },
+          { id: 'fenders', label: t('stem.bikelab.fenders_installed_slush_spray_wet_cold', 'Fenders installed (slush spray = wet & cold = stops you within 1 ride)') },
+          { id: 'brakes', label: t('stem.bikelab.brake_pads_inspected_wet_grit_conditio', 'Brake pads inspected — wet/grit conditions wear them 3-5x faster') },
+          { id: 'layering', label: t('stem.bikelab.layered_clothing_wicking_base_insulati', 'Layered clothing: wicking base + insulating mid + windproof shell') },
+          { id: 'extremities', label: t('stem.bikelab.hands_lobster_mitts_bar_mitts_feet_woo', 'Hands (lobster mitts/bar mitts), feet (wool socks + waterproof shoes), face (balaclava)') },
+          { id: 'visibility', label: t('stem.bikelab.high_vis_or_reflective_outer_layer_dri', 'High-vis or reflective outer layer (drivers see you 3x sooner)') },
+          { id: 'route', label: t('stem.bikelab.route_checked_for_plow_status_recently', 'Route checked for plow status — recently-plowed > untouched powder > glare ice') },
+          { id: 'phone', label: t('stem.bikelab.phone_in_inner_pocket_cold_drains_batt', 'Phone in inner pocket (cold drains battery; keep it warm)') },
+          { id: 'wash', label: t('stem.bikelab.post_ride_rinse_the_bike_to_remove_roa', 'Post-ride: rinse the bike to remove road salt (corrodes drivetrain in days)') }
         ];
         var doneCount = checklistItems.filter(function(it) { return checks[it.id]; }).length;
         var allChecked = doneCount === checklistItems.length;
@@ -3230,42 +3385,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '❄️', title: 'Maine Winter Biking' }),
+          BackBar({ icon: '❄️', title: t('stem.bikelab.maine_winter_biking_2', 'Maine Winter Biking') }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
             // Hero / context
             h('div', { className: 'bg-gradient-to-br from-sky-600 to-blue-800 rounded-2xl p-5 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🇺🇸'),
                 h('div', null,
-                  h('h2', { className: 'text-2xl font-black' }, 'Riding through a Maine winter'),
-                  h('p', { className: 'text-sm text-sky-100 mt-1' }, 'Maine\'s winter is roughly 5 months long. Done right, biking in -10°F can be safer than biking in summer rain — there\'s less traffic, the road is harder, and you\'re more visible. Done wrong, you crash on black ice or freeze your fingers. This guide covers the gear, technique, and Maine-specific knowledge you need.')
+                  h('h2', { className: 'text-2xl font-black' }, t('stem.bikelab.riding_through_a_maine_winter', 'Riding through a Maine winter')),
+                  h('p', { className: 'text-sm text-sky-100 mt-1' }, t('stem.bikelab.maine_s_winter_is_roughly_5_months_lon', 'Maine\'s winter is roughly 5 months long. Done right, biking in -10°F can be safer than biking in summer rain — there\'s less traffic, the road is harder, and you\'re more visible. Done wrong, you crash on black ice or freeze your fingers. This guide covers the gear, technique, and Maine-specific knowledge you need.'))
                 )
               )
             ),
             // Three core lessons in a grid
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               section('🛞', 'Tires & Traction', h('div', { className: 'space-y-2 text-sm text-slate-700' },
-                h('p', null, h('strong', null, 'Fat bikes (3.5-5\" tires) '), 'float on packed snow and run at 5-12 PSI — way below road bike pressures. The wider contact patch behaves like a snowshoe. Norway and Minnesota commute on these year-round.'),
-                h('p', null, h('strong', null, 'Studded tires '), 'have 100-300 metal carbide studs that bite into ice. Maine has no winter-tire law for bicycles (cars are restricted to Oct 1 – May 1, but bikes can run them anytime). They\'re loud and slow on bare pavement, so most riders swap them on/off seasonally.'),
-                h('p', null, h('strong', null, 'Pressure rule: '), 'drop 5-10 PSI for snow/slush. Lower pressure = larger contact patch = more grip. But not so low you pinch-flat over a curb.')
+                h('p', null, h('strong', null, t('stem.bikelab.fat_bikes_3_5_5_tires', 'Fat bikes (3.5-5\" tires) ')), t('stem.bikelab.float_on_packed_snow_and_run_at_5_12_p', 'float on packed snow and run at 5-12 PSI — way below road bike pressures. The wider contact patch behaves like a snowshoe. Norway and Minnesota commute on these year-round.')),
+                h('p', null, h('strong', null, t('stem.bikelab.studded_tires', 'Studded tires ')), t('stem.bikelab.have_100_300_metal_carbide_studs_that_', 'have 100-300 metal carbide studs that bite into ice. Maine has no winter-tire law for bicycles (cars are restricted to Oct 1 – May 1, but bikes can run them anytime). They\'re loud and slow on bare pavement, so most riders swap them on/off seasonally.')),
+                h('p', null, h('strong', null, t('stem.bikelab.pressure_rule', 'Pressure rule: ')), t('stem.bikelab.drop_5_10_psi_for_snow_slush_lower_pre', 'drop 5-10 PSI for snow/slush. Lower pressure = larger contact patch = more grip. But not so low you pinch-flat over a curb.'))
               )),
               section('❄️', 'Surface Awareness', h('div', { className: 'space-y-2 text-sm text-slate-700' },
-                h('p', null, h('strong', null, 'Black ice '), 'forms first on bridges (no ground heat below) and shaded curves. Just-below-freezing (28-32°F) is more dangerous than -10°F because surface meltwater pools and refreezes.'),
-                h('p', null, h('strong', null, 'Glare ice '), 'is fully transparent — looks like wet asphalt. If you suspect it: don\'t brake, don\'t turn. Coast straight through.'),
-                h('p', null, h('strong', null, 'Salt + sand '), 'on roads gives traction but eats your drivetrain. A salty chain lasts a week instead of a season.'),
-                h('p', null, h('strong', null, 'Plow priority: '), 'recently plowed > untouched 2\" powder > deep slush > glare ice. Plan your route around the plow schedule.')
+                h('p', null, h('strong', null, t('stem.bikelab.black_ice', 'Black ice ')), t('stem.bikelab.forms_first_on_bridges_no_ground_heat_', 'forms first on bridges (no ground heat below) and shaded curves. Just-below-freezing (28-32°F) is more dangerous than -10°F because surface meltwater pools and refreezes.')),
+                h('p', null, h('strong', null, t('stem.bikelab.glare_ice', 'Glare ice ')), t('stem.bikelab.is_fully_transparent_looks_like_wet_as', 'is fully transparent — looks like wet asphalt. If you suspect it: don\'t brake, don\'t turn. Coast straight through.')),
+                h('p', null, h('strong', null, t('stem.bikelab.salt_sand', 'Salt + sand ')), t('stem.bikelab.on_roads_gives_traction_but_eats_your_', 'on roads gives traction but eats your drivetrain. A salty chain lasts a week instead of a season.')),
+                h('p', null, h('strong', null, t('stem.bikelab.plow_priority', 'Plow priority: ')), t('stem.bikelab.recently_plowed_untouched_2_powder_dee', 'recently plowed > untouched 2\" powder > deep slush > glare ice. Plan your route around the plow schedule.'))
               )),
               section('🧥', 'Layering for Sub-Freezing', h('div', { className: 'space-y-2 text-sm text-slate-700' },
-                h('p', null, h('strong', null, 'Base: '), 'wicking synthetic or merino wool. NEVER cotton — once wet from sweat, it freezes against your skin.'),
-                h('p', null, h('strong', null, 'Mid: '), 'insulating fleece or light down. Trap warm air without bulk that restricts pedaling.'),
-                h('p', null, h('strong', null, 'Shell: '), 'windproof and ideally water-resistant. Wind chill at 15 mph adds 10-15°F of cooling.'),
-                h('p', null, h('strong', null, 'Rule of thumb: '), 'dress so you\'re slightly cold for the first 5 minutes. If you\'re warm at the start, you\'ll be soaked in sweat 20 minutes in.')
+                h('p', null, h('strong', null, 'Base: '), t('stem.bikelab.wicking_synthetic_or_merino_wool_never', 'wicking synthetic or merino wool. NEVER cotton — once wet from sweat, it freezes against your skin.')),
+                h('p', null, h('strong', null, 'Mid: '), t('stem.bikelab.insulating_fleece_or_light_down_trap_w', 'insulating fleece or light down. Trap warm air without bulk that restricts pedaling.')),
+                h('p', null, h('strong', null, 'Shell: '), t('stem.bikelab.windproof_and_ideally_water_resistant_', 'windproof and ideally water-resistant. Wind chill at 15 mph adds 10-15°F of cooling.')),
+                h('p', null, h('strong', null, t('stem.bikelab.rule_of_thumb', 'Rule of thumb: ')), t('stem.bikelab.dress_so_you_re_slightly_cold_for_the_', 'dress so you\'re slightly cold for the first 5 minutes. If you\'re warm at the start, you\'ll be soaked in sweat 20 minutes in.'))
               )),
               section('🤚', 'Hands, Feet, Face', h('div', { className: 'space-y-2 text-sm text-slate-700' },
-                h('p', null, h('strong', null, 'Hands '), 'fail first. Lobster-claw mitts (3-finger) are warmer than gloves and still let you brake. Bar mitts (handlebar pogies) are the warmest — they wrap the entire hand-and-grip area.'),
-                h('p', null, h('strong', null, 'Feet '), 'fail second. Wool socks + waterproof shoes + neoprene shoe covers. Toe warmers (chemical packets) work for sub-zero rides.'),
-                h('p', null, h('strong', null, 'Face: '), 'a balaclava + ski goggles below 20°F. Cold air hurts to breathe — a thin scarf over the mouth warms inhalations.'),
-                h('p', null, h('strong', null, 'Below 0°F: '), 'cover EVERY square inch of skin. Frostbite begins in 10-30 minutes of exposed skin in those temps.')
+                h('p', null, h('strong', null, t('stem.bikelab.hands', 'Hands ')), t('stem.bikelab.fail_first_lobster_claw_mitts_3_finger', 'fail first. Lobster-claw mitts (3-finger) are warmer than gloves and still let you brake. Bar mitts (handlebar pogies) are the warmest — they wrap the entire hand-and-grip area.')),
+                h('p', null, h('strong', null, t('stem.bikelab.feet', 'Feet ')), t('stem.bikelab.fail_second_wool_socks_waterproof_shoe', 'fail second. Wool socks + waterproof shoes + neoprene shoe covers. Toe warmers (chemical packets) work for sub-zero rides.')),
+                h('p', null, h('strong', null, 'Face: '), t('stem.bikelab.a_balaclava_ski_goggles_below_20_f_col', 'a balaclava + ski goggles below 20°F. Cold air hurts to breathe — a thin scarf over the mouth warms inhalations.')),
+                h('p', null, h('strong', null, t('stem.bikelab.below_0_f', 'Below 0°F: ')), t('stem.bikelab.cover_every_square_inch_of_skin_frostb', 'cover EVERY square inch of skin. Frostbite begins in 10-30 minutes of exposed skin in those temps.'))
               ))
             ),
             // Maine-specific salt warning callout
@@ -3273,15 +3428,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-3xl' }, '⚠️'),
                 h('div', null,
-                  h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-amber-900 mb-1' }, 'The Maine salt problem'),
-                  h('p', { className: 'text-sm text-slate-700' }, 'Maine roads use brine + rock salt all winter. Salt + steel = rust within DAYS, not weeks. After every wet/slushy ride: rinse the bike with a hose, dry the chain, re-lube. Skip this and you\'ll go through chains and cassettes 3-4x faster than summer riders. Aluminum frames are mostly fine; steel frames need extra care, especially at welds.')
+                  h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-amber-900 mb-1' }, t('stem.bikelab.the_maine_salt_problem', 'The Maine salt problem')),
+                  h('p', { className: 'text-sm text-slate-700' }, t('stem.bikelab.maine_roads_use_brine_rock_salt_all_wi', 'Maine roads use brine + rock salt all winter. Salt + steel = rust within DAYS, not weeks. After every wet/slushy ride: rinse the bike with a hose, dry the chain, re-lube. Skip this and you\'ll go through chains and cassettes 3-4x faster than summer riders. Aluminum frames are mostly fine; steel frames need extra care, especially at welds.'))
                 )
               )
             ),
             // Winterization checklist
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-4' },
               h('div', { className: 'flex items-center justify-between mb-3' },
-                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' }, '✅ Winter-Ride Checklist'),
+                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' }, t('stem.bikelab.winter_ride_checklist', '✅ Winter-Ride Checklist')),
                 h('div', { 'aria-live': 'polite', className: 'text-xs font-bold ' + (allChecked ? 'text-emerald-700' : 'text-slate-600') },
                   doneCount + ' of ' + checklistItems.length + (allChecked ? ' — ready to ride!' : ' completed')
                 )
@@ -3319,16 +3474,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       // time across 10 rounds, awards a "best avg" personal best.
       function SignalDrill() {
         var SCENARIOS = [
-          { id: 'turn-left',  prompt: 'Turning left at the upcoming intersection', answer: 'left' },
-          { id: 'turn-right', prompt: 'Turning right onto the side street', answer: 'right' },
-          { id: 'stop-light', prompt: 'Stopping for a red light ahead', answer: 'stop' },
-          { id: 'stop-sign',  prompt: 'Approaching a stop sign', answer: 'stop' },
-          { id: 'lane-left',  prompt: 'Changing to the left lane to pass a parked car', answer: 'left' },
-          { id: 'lane-right', prompt: 'Merging right into the bike lane', answer: 'right' },
-          { id: 'stop-ped',   prompt: 'Slowing for a pedestrian in the crosswalk', answer: 'stop' },
-          { id: 'turn-l2',    prompt: 'Turning left at a roundabout exit', answer: 'left' },
-          { id: 'turn-r2',    prompt: 'Turning right after the next utility pole', answer: 'right' },
-          { id: 'stop-haz',   prompt: 'Stopping for an obstacle ahead (downed branch)', answer: 'stop' }
+          { id: 'turn-left',  prompt: t('stem.bikelab.turning_left_at_the_upcoming_intersect', 'Turning left at the upcoming intersection'), answer: 'left' },
+          { id: 'turn-right', prompt: t('stem.bikelab.turning_right_onto_the_side_street', 'Turning right onto the side street'), answer: 'right' },
+          { id: 'stop-light', prompt: t('stem.bikelab.stopping_for_a_red_light_ahead', 'Stopping for a red light ahead'), answer: 'stop' },
+          { id: 'stop-sign',  prompt: t('stem.bikelab.approaching_a_stop_sign', 'Approaching a stop sign'), answer: 'stop' },
+          { id: 'lane-left',  prompt: t('stem.bikelab.changing_to_the_left_lane_to_pass_a_pa', 'Changing to the left lane to pass a parked car'), answer: 'left' },
+          { id: 'lane-right', prompt: t('stem.bikelab.merging_right_into_the_bike_lane', 'Merging right into the bike lane'), answer: 'right' },
+          { id: 'stop-ped',   prompt: t('stem.bikelab.slowing_for_a_pedestrian_in_the_crossw', 'Slowing for a pedestrian in the crosswalk'), answer: 'stop' },
+          { id: 'turn-l2',    prompt: t('stem.bikelab.turning_left_at_a_roundabout_exit', 'Turning left at a roundabout exit'), answer: 'left' },
+          { id: 'turn-r2',    prompt: t('stem.bikelab.turning_right_after_the_next_utility_p', 'Turning right after the next utility pole'), answer: 'right' },
+          { id: 'stop-haz',   prompt: t('stem.bikelab.stopping_for_an_obstacle_ahead_downed_', 'Stopping for an obstacle ahead (downed branch)'), answer: 'stop' }
         ];
         var ROUND_COUNT = 10;
         var roundIdxState = useState(0), roundIdx = roundIdxState[0], setRoundIdx = roundIdxState[1];
@@ -3393,20 +3548,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          BackBar({ icon: '✋', title: 'Signal Reaction Drill' }),
+          BackBar({ icon: '✋', title: t('stem.bikelab.signal_reaction_drill_2', 'Signal Reaction Drill') }),
           h('div', { className: 'p-4 max-w-4xl mx-auto w-full space-y-4' },
             // Scoreboard
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
-                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, 'Round'),
+                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.round', 'Round')),
                 h('div', { className: 'text-2xl font-black text-amber-700' }, gameMode === 'idle' ? '—' : (Math.min(roundIdx + (gameMode === 'done' ? 0 : 1), ROUND_COUNT) + ' / ' + ROUND_COUNT))
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
-                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, 'Avg (Correct)'),
+                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.avg_correct', 'Avg (Correct)')),
                 h('div', { className: 'text-2xl font-black text-cyan-700' }, avgCorrect ? (avgCorrect / 1000).toFixed(2) + 's' : '—')
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
-                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, '🏆 Personal Best'),
+                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.personal_best', '🏆 Personal Best')),
                 h('div', { className: 'text-2xl font-black text-emerald-700' }, bestMs ? (bestMs / 1000).toFixed(2) + 's' : '—')
               )
             ),
@@ -3414,25 +3569,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             h('div', { className: 'bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-6 min-h-[140px] flex items-center justify-center' },
               gameMode === 'idle' ? h('div', { className: 'text-center' },
                 h('div', { className: 'text-3xl mb-2' }, '✋'),
-                h('p', { className: 'text-slate-700 mb-4 max-w-md' }, 'A traffic situation will appear. Press the matching hand signal as fast as you can. 10 rounds. Best correct-only average is your personal best.'),
+                h('p', { className: 'text-slate-700 mb-4 max-w-md' }, t('stem.bikelab.a_traffic_situation_will_appear_press_', 'A traffic situation will appear. Press the matching hand signal as fast as you can. 10 rounds. Best correct-only average is your personal best.')),
                 h('button', {
                   onClick: startGame,
                   className: 'px-6 py-3 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg'
-                }, '▶ Start Drill')
+                }, t('stem.bikelab.start_drill', '▶ Start Drill'))
               ) : gameMode === 'playing' ? h('div', { className: 'text-center', 'aria-live': 'polite' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-700 mb-2' }, 'Round ' + (roundIdx + 1)),
                 h('p', { className: 'text-xl font-bold text-slate-800' }, current ? current.prompt : ''),
                 feedback && h('div', { className: 'text-sm text-slate-600 mt-2' }, feedback)
               ) : h('div', { className: 'text-center' },
                 h('div', { className: 'text-3xl mb-2' }, avgCorrect && avgCorrect < 1500 ? '⚡' : avgCorrect && avgCorrect < 2500 ? '🎯' : '👍'),
-                h('p', { className: 'text-lg font-bold text-slate-800 mb-1' }, 'Drill complete!'),
+                h('p', { className: 'text-lg font-bold text-slate-800 mb-1' }, t('stem.bikelab.drill_complete', 'Drill complete!')),
                 h('p', { className: 'text-sm text-slate-700' },
                   results.filter(function(r) { return r.correct; }).length + ' of ' + ROUND_COUNT + ' correct · avg ' + (avgCorrect ? (avgCorrect / 1000).toFixed(2) + 's' : '—')
                 ),
                 h('button', {
                   onClick: startGame,
                   className: 'mt-3 px-5 py-2 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow'
-                }, '↻ Run Again')
+                }, t('stem.bikelab.run_again', '↻ Run Again'))
               )
             ),
             // Three signal buttons
@@ -3443,11 +3598,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             ),
             // Reference
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-4' },
-              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, '📖 Hand Signal Reference'),
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, t('stem.bikelab.hand_signal_reference', '📖 Hand Signal Reference')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-slate-700' },
-                h('div', null, h('strong', null, 'Left turn: '), 'left arm extended straight out to the side.'),
-                h('div', null, h('strong', null, 'Right turn: '), 'left arm bent up at 90° (or right arm out — both legal in Maine).'),
-                h('div', null, h('strong', null, 'Stop / slow: '), 'left arm bent down at 90° with palm facing back.')
+                h('div', null, h('strong', null, t('stem.bikelab.left_turn', 'Left turn: ')), t('stem.bikelab.left_arm_extended_straight_out_to_the_', 'left arm extended straight out to the side.')),
+                h('div', null, h('strong', null, t('stem.bikelab.right_turn', 'Right turn: ')), t('stem.bikelab.left_arm_bent_up_at_90_or_right_arm_ou', 'left arm bent up at 90° (or right arm out — both legal in Maine).')),
+                h('div', null, h('strong', null, t('stem.bikelab.stop_slow', 'Stop / slow: ')), t('stem.bikelab.left_arm_bent_down_at_90_with_palm_fac', 'left arm bent down at 90° with palm facing back.'))
               )
             )
           )
@@ -3469,23 +3624,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       if (view === 'winterBike') return h(WinterBike);
       if (view === 'signalDrill') return h(SignalDrill);
       if (view === 'cadenceHunt') return h(function() {
-        var d = (toolData && toolData.bikeLab) || {};
+        // Use the tool's own ctx-bound d/upd. This view previously declared a local `d` from bare
+        // `toolData` and wrote via bare `setToolData` — both undefined here — so it threw on render.
         var iq = d.cadenceHunt || { rpm: 80, grade: 5, gear: 2.5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) {
-          setToolData(function(prev) {
-            var prior = (prev && prev.bikeLab) || {};
-            var st = Object.assign({}, prior.cadenceHunt || iq, patch);
-            return Object.assign({}, prev, { bikeLab: Object.assign({}, prior, { cadenceHunt: st }) });
-          });
-        }
+        function setIQ(patch) { upd('cadenceHunt', Object.assign({}, d.cadenceHunt || iq, patch)); }
         var speed = iq.rpm * 0.105 * iq.gear * 0.7;
         var powerNeeded = (iq.grade / 100) * 90 + speed * 0.4;
         var efficiency = iq.rpm >= 80 && iq.rpm <= 95 ? 'spinning' : (iq.rpm < 60 ? 'mashing' : (iq.rpm > 110 ? 'over' : 'mid'));
         var efMeta = {
-          spinning: { label: '🟢 Spinning zone (80-95 RPM)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Optimal efficiency band. Sustainable, joint-friendly.' },
-          mashing:  { label: '🔴 Mashing (<60 RPM)',         color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Low cadence, high force per stroke. Hard on knees.' },
-          mid:      { label: '🟡 Mid cadence (60-80 RPM)',   color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Functional but not optimal.' },
-          over:     { label: '🟠 Over-spinning (>110 RPM)',  color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Wasted effort — cardio cost exceeds output.' }
+          spinning: { label: t('stem.bikelab.spinning_zone_80_95_rpm', '🟢 Spinning zone (80-95 RPM)'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.bikelab.optimal_efficiency_band_sustainable_jo', 'Optimal efficiency band. Sustainable, joint-friendly.') },
+          mashing:  { label: t('stem.bikelab.mashing_60_rpm', '🔴 Mashing (<60 RPM)'),         color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.bikelab.low_cadence_high_force_per_stroke_hard', 'Low cadence, high force per stroke. Hard on knees.') },
+          mid:      { label: t('stem.bikelab.mid_cadence_60_80_rpm', '🟡 Mid cadence (60-80 RPM)'),   color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.bikelab.functional_but_not_optimal', 'Functional but not optimal.') },
+          over:     { label: t('stem.bikelab.over_spinning_110_rpm', '🟠 Over-spinning (>110 RPM)'),  color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: t('stem.bikelab.wasted_effort_cardio_cost_exceeds_outp', 'Wasted effort — cardio cost exceeds output.') }
         }[efficiency];
         var H = React.createElement;
         return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
@@ -3499,9 +3649,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               H('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontFamily: 'monospace' } }, 'Speed ≈ ' + speed.toFixed(1) + ' kph, Power need ≈ ' + powerNeeded.toFixed(0) + ' W')
             ),
             H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
-              [{ key: 'rpm', label: 'Pedal RPM', val: iq.rpm, min: 40, max: 140, step: 1 },
-               { key: 'grade', label: 'Grade (%)', val: iq.grade, min: -10, max: 20, step: 1 },
-               { key: 'gear', label: 'Gear ratio', val: iq.gear, min: 1, max: 5, step: 0.1 }].map(function(s) {
+              [{ key: 'rpm', label: t('stem.bikelab.pedal_rpm', 'Pedal RPM'), val: iq.rpm, min: 40, max: 140, step: 1 },
+               { key: 'grade', label: t('stem.bikelab.grade', 'Grade (%)'), val: iq.grade, min: -10, max: 20, step: 1 },
+               { key: 'gear', label: t('stem.bikelab.gear_ratio_3', 'Gear ratio'), val: iq.gear, min: 1, max: 5, step: 0.1 }].map(function(s) {
                 return H('div', { key: s.key },
                   H('label', { htmlFor: 'ch-' + s.key, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } },
                     s.label + ': ', H('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, s.val)),
@@ -3515,7 +3665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               H('button', { onClick: function() { setIQ({ rpm: 80, grade: 5, gear: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset'),
               (iq.log || []).length > 0 && H('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
             ),
-            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): How do gear and grade interact to keep cadence in the spinning zone?', style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 2 }),
+            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.bikelab.hypothesis_free_text_how_do_gear_and_g', 'Hypothesis (free text): How do gear and grade interact to keep cadence in the spinning zone?'), style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 2 }),
             !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '🤔 Stuck — show open prompts'),
             iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
               H('ul', { style: { margin: 0, paddingLeft: 18 } },
@@ -3524,7 +3674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             H('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
               H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
                 H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Why does cadence matter? How do gear and grade interact?', style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 })),
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.bikelab.why_does_cadence_matter_how_do_gear_an', 'Why does cadence matter? How do gear and grade interact?'), style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 })),
             H('div', { style: { marginTop: 10, padding: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-zone cadence marker; no power score; no reveal — by design.')
           )
         );

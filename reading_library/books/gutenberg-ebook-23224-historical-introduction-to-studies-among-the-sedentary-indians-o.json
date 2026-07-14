@@ -1,0 +1,54 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-23224-historical-introduction-to-studies-among-the-sedentary-indians-o",
+  "title": "Historical Introduction to Studies Among the Sedentary Indians of New Mexico; Report on the Ruins of the Pueblo of Pecos: Papers Of The Archæological Institute Of America, American Series, Vol. I",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "New Mexico -- Antiquities",
+    "Pecos National Monument (N.M.)",
+    "Pueblo Indians"
+  ],
+  "authors": [
+    "Bandelier, Adolph Francis Alphonse"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/23224"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/23224/pg23224.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Historical Introduction to Studies Among the Sedentary Indians of New Mexico; Report on the Ruins of the Pueblo of Pecos: Papers Of The Archæological Institute Of America, American Series, Vol. I\" by Bandelier, Adolph Francis Alphonse. Metadata tags include: New Mexico -- Antiquities; Pecos National Monument (N.M.); Pueblo Indians."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 99
+  }
+}

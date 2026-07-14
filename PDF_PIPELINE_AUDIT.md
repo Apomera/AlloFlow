@@ -1,5 +1,7 @@
 # PDF Accessibility Pipeline — Deep-Dive Audit
 
+> **Historical architecture snapshot, not current product claims (2026-07-09):** This May 2026 audit is useful for understanding the pipeline design, but it predates later Desktop, veraPDF, VPAT, and public-doc cleanup work. For current user-facing claims, use `PIPELINE_ARCHITECTURE.md`, `VPAT-2.5-WCAG-AlloFlow.md`, `docs/wcag_sc_coverage.md`, and `docs/verapdf_install.md`.
+
 **Generated**: 2026-05-19 (Claude Opus 4.7)
 **Scope**: `doc_pipeline_module.js` (17,283 lines), `view_pdf_audit_module.js` (6,210 lines), `audit_remediator_module.js` (628 lines, separate concern — curriculum audit remediation, not PDF).
 **Companion docs**: [STEM_LAB_THEME_AUDIT.md](STEM_LAB_THEME_AUDIT.md), [MAIN_APP_THEME_AUDIT.md](MAIN_APP_THEME_AUDIT.md)
@@ -36,7 +38,7 @@ The audit isn't just "ask Gemini 5 times." Each variant frames the audit through
 - Original "Analyze this PDF"
 - Independent accessibility analyst
 - Fresh-eyes auditor with no prior context
-- Strict WCAG compliance reviewer
+- Strict WCAG-focused reviewer
 - **Screen reader user perspective**
 - Document remediation specialist
 - **Disability rights advocate**

@@ -2,8 +2,9 @@
  * stem_tool_dinolab.js — Dino Lab (Paleontology Studio)
  *
  * An interactive paleontology lab for exploring dinosaurs and the science
- * behind them. Tabs: Explore, Timeline, Sites, Compare, Dig Site, Classify,
- * Extinction, Anatomy, Records, Quiz, Field Notes, Glossary.
+ * behind them. Tabs: Explore, Timeline, Sites, Compare, 3D Field Station,
+ * Dig Site, Classify, Extinction, Anatomy, Records, Quiz, Field Notes,
+ * Glossary.
  *
  * Scientific-integrity stance: every species carries an "uncertain" note
  * (color, feathering, behavior, and speed are usually inferred, not observed)
@@ -13,9 +14,31 @@
  * Registered tool ID: "dinoLab"
  * Registry: window.StemLab.registerTool()
  */
+// ═══ Defensive StemLab guard ═══
+window.StemLab = window.StemLab || {
+  _registry: {},
+  _order: [],
+  registerTool: function(id, config) {
+    config.id = id;
+    config.ready = config.ready !== false;
+    this._registry[id] = config;
+    if (this._order.indexOf(id) === -1) this._order.push(id);
+    console.log('[StemLab] Registered tool: ' + id);
+  },
+  getRegisteredTools: function() {
+    var self = this;
+    return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+  },
+  isRegistered: function(id) { return !!this._registry[id]; },
+  renderTool: function(id, ctx) {
+    var tool = this._registry[id];
+    if (!tool || !tool.render) return null;
+    try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+  }
+};
+
 (function () {
   'use strict';
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   // ── Theme tokens (STEM Lab CSS custom properties, dark fallbacks) ──
   var T = {
@@ -5110,17 +5133,31 @@
       { id: 'compare_two', label: 'Compare two dinosaurs side by side', icon: '⚖️', check: function (d) { return (d.compareA && d.compareB) ? true : false; }, progress: function (d) { return (d.compareA && d.compareB) ? 'done' : 'pick 2'; } }
     ],
     render: function (ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var el = React.createElement;
       var d = (ctx.toolData && ctx.toolData.dinoLab) || {};
       var upd = function (key, val) {
-        if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('dinoLab', key); }
+        if (typeof key === 'object' && key) {
+          if (ctx.updateMulti) ctx.updateMulti('dinoLab', key);
+          else if (ctx.update) Object.keys(key).forEach(function (k) { ctx.update('dinoLab', k, key[k]); });
+        }
         else { if (ctx.update) ctx.update('dinoLab', key, val); }
       };
       var announceToSR = ctx.announceToSR || function () {};
 
+      function strVal(value) { return value == null ? '' : String(value); }
+      function arrVal(value) { return Array.isArray(value) ? value : []; }
+      function numVal(value, fallback) { var n = Number(value); return isFinite(n) ? n : fallback; }
+      function modIndex(value, length) {
+        if (!length) return 0;
+        var n = Math.floor(numVal(value, 0));
+        return ((n % length) + length) % length;
+      }
+
       var tab = d.tab || 'explore';
-      var query = d.query || '';
+      var query = strVal(d.query);
       var filterPeriod = d.filterPeriod || 'all';
       var filterDiet = d.filterDiet || 'all';
       var sortBy = d.sortBy || 'name';
@@ -5128,17 +5165,17 @@
       var seen = d.seen || {};
 
       function badge(label, color) {
-        return el('span', { style: { display: 'inline-block', fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: color + '22', color: T.text, border: '1px solid ' + color + '55', marginRight: 6, marginBottom: 4, whiteSpace: 'nowrap' } }, label);
+        return el('span', { style: { display: 'inline-block', fontSize: 11, letterSpacing: '0.01em', fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: color + '22', color: T.text, border: '1px solid ' + color + '55', marginRight: 6, marginBottom: 4, whiteSpace: 'nowrap' } }, label);
       }
       function panel(children, extra) {
-        var style = { background: T.panel, border: '1px solid ' + T.border, borderRadius: 14, padding: 14, color: T.text };
+        var style = { background: T.panel, border: '1px solid ' + T.border, borderRadius: 14, boxShadow: '0 1px 3px rgba(0,0,0,0.28)', padding: 14, color: T.text };
         var props = {};
         if (extra) { for (var k in extra) { if (k === 'key' || k === 'ref') { props[k] = extra[k]; } else { style[k] = extra[k]; } } }
         props.style = style;
         return el('div', props, children);
       }
       function pill(active, label, onClick, key) {
-        return el('button', { key: key, onClick: onClick, 'aria-pressed': active ? 'true' : 'false', 'aria-label': label, style: { padding: '6px 12px', borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 600, border: '1px solid ' + (active ? '#15803d' : T.border), background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap', marginRight: 6, marginBottom: 6 } }, label);
+        return el('button', { key: key, onClick: onClick, 'aria-pressed': active ? 'true' : 'false', 'aria-label': label, style: { padding: '6px 12px', borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', border: '1px solid ' + (active ? '#15803d' : T.border), background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap', marginRight: 6, marginBottom: 6 } }, label);
       }
       function statRow(label, value) {
         return el('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, padding: '4px 0', borderBottom: '1px solid ' + T.border, fontSize: 13 } }, el('span', { style: { color: T.soft } }, label), el('span', { style: { fontWeight: 600, textAlign: 'right' } }, value));
@@ -5252,27 +5289,28 @@
       }
 
       var TABS = [
-        { id: 'explore', label: 'Explore', icon: '🔍' },
-        { id: 'timeline', label: 'Timeline', icon: '⏳' },
-        { id: 'deeptime', label: 'Deep Time', icon: '🕰️' },
-        { id: 'sites', label: 'Sites', icon: '🗺️' },
+        { id: 'explore', label: t('stem.dinolab.explore', 'Explore'), icon: '🔍' },
+        { id: 'timeline', label: t('stem.dinolab.timeline', 'Timeline'), icon: '⏳' },
+        { id: 'deeptime', label: t('stem.dinolab.deep_time', 'Deep Time'), icon: '🕰️' },
+        { id: 'sites', label: t('stem.dinolab.sites', 'Sites'), icon: '🗺️' },
         { id: 'map', label: 'Map', icon: '🌎' },
-        { id: 'ecosystem', label: 'Ecosystems', icon: '🌍' },
-        { id: 'compare', label: 'Compare', icon: '⚖️' },
-        { id: 'dig', label: 'Dig Site', icon: '⛏️' },
-        { id: 'classify', label: 'Classify', icon: '🌳' },
-        { id: 'birds', label: 'Bird Link', icon: '🐦' },
-        { id: 'extinction', label: 'Extinction', icon: '☄️' },
-        { id: 'anatomy', label: 'Anatomy', icon: '🦴' },
-        { id: 'records', label: 'Records', icon: '🏆' },
-        { id: 'quiz', label: 'Quiz', icon: '🧠' },
-        { id: 'notes', label: 'Field Notes', icon: '📓' },
-        { id: 'glossary', label: 'Glossary', icon: '📖' },
-        { id: 'classroom', label: 'Classroom', icon: '🍎' }
+        { id: 'ecosystem', label: t('stem.dinolab.ecosystems', 'Ecosystems'), icon: '🌍' },
+        { id: 'compare', label: t('stem.dinolab.compare', 'Compare'), icon: '⚖️' },
+        { id: 'field3d', label: t('stem.dinolab.field_station_3d', 'Field Station'), icon: '3D' },
+        { id: 'dig', label: t('stem.dinolab.dig_site', 'Dig Site'), icon: '⛏️' },
+        { id: 'classify', label: t('stem.dinolab.classify', 'Classify'), icon: '🌳' },
+        { id: 'birds', label: t('stem.dinolab.bird_link', 'Bird Link'), icon: '🐦' },
+        { id: 'extinction', label: t('stem.dinolab.extinction', 'Extinction'), icon: '☄️' },
+        { id: 'anatomy', label: t('stem.dinolab.anatomy', 'Anatomy'), icon: '🦴' },
+        { id: 'records', label: t('stem.dinolab.records', 'Records'), icon: '🏆' },
+        { id: 'quiz', label: t('stem.dinolab.quiz', 'Quiz'), icon: '🧠' },
+        { id: 'notes', label: t('stem.dinolab.field_notes', 'Field Notes'), icon: '📓' },
+        { id: 'glossary', label: t('stem.dinolab.glossary', 'Glossary'), icon: '📖' },
+        { id: 'classroom', label: t('stem.dinolab.classroom', 'Classroom'), icon: '🍎' }
       ];
-      var tabBar = el('div', { role: 'tablist', 'aria-label': 'Dino Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb) {
+      var tabBar = el('div', { role: 'tablist', 'aria-label': t('stem.dinolab.dino_lab_sections', 'Dino Lab sections'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb) {
         var active = tab === tb.id;
-        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
+        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
 
       function renderDetail(dn) {
@@ -5326,19 +5364,19 @@
         var continentPills = [pill(filterContinent === 'all', 'All places', function () { upd('filterContinent', 'all'); }, 'c_all')];
         continents.forEach(function (c) { continentPills.push(pill(filterContinent === c, c, function () { upd('filterContinent', c); }, 'c_' + c.replace(/\W/g, ''))); });
         var controls = el('div', { style: { marginBottom: 12 } },
-          el('input', { type: 'text', value: query, placeholder: 'Search by name, meaning, clade, or place...', 'aria-label': 'Search dinosaurs', onChange: function (e) { upd('query', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }),
+          el('input', { type: 'text', value: query, placeholder: t('stem.dinolab.search_by_name_meaning_clade_or_place', 'Search by name, meaning, clade, or place...'), 'aria-label': t('stem.dinolab.search_dinosaurs', 'Search dinosaurs'), onChange: function (e) { upd('query', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }),
           el('div', { style: { marginBottom: 6 } }, periodPills),
           el('div', { style: { marginBottom: 6 } }, dietPills),
           el('div', { style: { marginBottom: 6 } }, continentPills),
           el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } }, el('span', { style: { fontSize: 12, color: T.soft } }, 'Sort:'), pill(sortBy === 'name', 'A to Z', function () { upd('sortBy', 'name'); }, 's_name'), pill(sortBy === 'time', 'Oldest first', function () { upd('sortBy', 'time'); }, 's_time'), pill(sortBy === 'length', 'Longest', function () { upd('sortBy', 'length'); }, 's_len'), pill(sortBy === 'weight', 'Heaviest', function () { upd('sortBy', 'weight'); }, 's_wt'), el('button', { key: 'surprise', onClick: function () { var n = (d.surpriseN || 0) + 1; var pick = DINOS[(n * 48271) % DINOS.length]; var ns = {}; for (var sk in seen) { ns[sk] = seen[sk]; } ns[pick.id] = true; upd({ selected: pick.id, seen: ns, surpriseN: n }); announceToSR('Surprise: ' + pick.common); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: 'transparent', color: T.text } }, '🎲 Surprise me'), el('span', { style: { marginLeft: 'auto', fontSize: 12, color: T.soft } }, list.length + ' of ' + DINOS.length))
         );
         var grid = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 } }, list.map(function (dn) {
-          return el('button', { key: dn.id, onClick: function () { markSeen(dn.id); }, 'aria-label': 'Open ' + dn.common, style: { textAlign: 'left', cursor: 'pointer', background: T.panel, border: '1px solid ' + (selected === dn.id ? '#22c55e' : T.border), borderRadius: 12, padding: 12, color: T.text, position: 'relative' } },
+          return el('button', { key: dn.id, onClick: function () { markSeen(dn.id); }, 'aria-label': 'Open ' + dn.common, style: { textAlign: 'left', cursor: 'pointer', background: T.panel, border: '1px solid ' + (selected === dn.id ? '#22c55e' : T.border), borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.30)', padding: 12, color: T.text, position: 'relative' } },
             el('div', { style: { fontSize: 26, marginBottom: 4 } }, dn.diet === 'carnivore' ? '🦖' : (dn.group === 'sauropod' ? '🦕' : '🦴')),
             el('div', { style: { fontWeight: 700, fontSize: 14 } }, dn.common),
             el('div', { style: { fontSize: 11, color: T.soft, fontStyle: 'italic', marginBottom: 6 } }, dn.meaning),
             el('div', null, badge(periodName(dn.period), pColor(dn.period)), badge(cap(dn.diet), dColor(dn.diet))),
-            seen[dn.id] ? el('span', { 'aria-hidden': 'true', title: 'Seen', style: { position: 'absolute', top: 8, right: 10, fontSize: 11, fontWeight: 800, color: T.text } }, '✓') : null
+            seen[dn.id] ? el('span', { 'aria-hidden': 'true', title: t('stem.dinolab.seen', 'Seen'), style: { position: 'absolute', top: 8, right: 10, fontSize: 11, fontWeight: 800, color: T.text } }, '✓') : null
           );
         }));
         var detail = selected ? renderDetail(byId(selected)) : el('div', { style: { color: T.soft, fontSize: 13, padding: '20px 4px' } }, 'Pick a dinosaur to see its full file, including what we are still unsure about.');
@@ -5348,7 +5386,7 @@
       function renderTimeline() {
         var spanTotal = 252 - 23;
         var rows = PERIODS.map(function (p) {
-          var members = DINOS.filter(function (dn) { return dn.period === p.id; });
+          var members = DINOS.filter(function (dn) { return dn.period === p.id && dn.group !== 'other'; }); // exclude the non-dinosaur foils (Pteranodon, Mosasaurus) — they were appearing as dinosaurs in the timeline
           var widthPct = Math.round(((p.myaHi - p.myaLo) / spanTotal) * 100);
           return el('div', { key: p.id, style: { marginBottom: 14 } },
             el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } }, el('span', { style: { width: 12, height: 12, borderRadius: 3, background: pColor(p.id), display: 'inline-block' } }), el('span', { style: { fontWeight: 800, fontSize: 15 } }, p.name), el('span', { style: { fontSize: 12, color: T.soft } }, p.myaHi + ' to ' + p.myaLo + ' million years ago')),
@@ -5387,23 +5425,23 @@
           return lbl;
         }
         var EVENTS = [
-          { mya: 4600, icon: '🌍', label: 'Earth forms' },
-          { mya: 3800, icon: '🦠', label: 'First life — simple microbes' },
-          { mya: 2400, icon: '🫧', label: 'Microbes fill the air with oxygen' },
-          { mya: 1800, icon: '🔬', label: 'First complex (eukaryotic) cells' },
-          { mya: 600, icon: '🪼', label: 'First animals' },
-          { mya: 538, icon: '🦐', label: 'Cambrian explosion — animals diversify' },
-          { mya: 470, icon: '🌿', label: 'Plants spread onto land' },
-          { mya: 375, icon: '🐟', label: 'First four-legged animals walk on land' },
-          { mya: 320, icon: '🦎', label: 'First reptiles' },
-          { mya: 252, icon: '💀', label: 'The Great Dying (end-Permian extinction)', dino: true },
-          { mya: 233, icon: '🦕', label: 'First dinosaurs appear', dino: true },
-          { mya: 225, icon: '🐭', label: 'First mammals', dino: true },
-          { mya: 150, icon: '🪶', label: 'First birds (Archaeopteryx)', dino: true },
-          { mya: 66, icon: '☄️', label: 'Asteroid — non-bird dinosaurs end', dino: true },
-          { mya: 7, icon: '🐒', label: 'First human ancestors (hominins)' },
-          { mya: 0.3, icon: '🧑', label: 'First Homo sapiens (us)' },
-          { mya: 0, icon: '📍', label: 'Right now' }
+          { mya: 4600, icon: '🌍', label: t('stem.dinolab.earth_forms', 'Earth forms') },
+          { mya: 3800, icon: '🦠', label: t('stem.dinolab.first_life_simple_microbes', 'First life — simple microbes') },
+          { mya: 2400, icon: '🫧', label: t('stem.dinolab.microbes_fill_the_air_with_oxygen', 'Microbes fill the air with oxygen') },
+          { mya: 1800, icon: '🔬', label: t('stem.dinolab.first_complex_eukaryotic_cells', 'First complex (eukaryotic) cells') },
+          { mya: 600, icon: '🪼', label: t('stem.dinolab.first_animals', 'First animals') },
+          { mya: 538, icon: '🦐', label: t('stem.dinolab.cambrian_explosion_animals_diversify', 'Cambrian explosion — animals diversify') },
+          { mya: 470, icon: '🌿', label: t('stem.dinolab.plants_spread_onto_land', 'Plants spread onto land') },
+          { mya: 375, icon: '🐟', label: t('stem.dinolab.first_four_legged_animals_walk_on_land', 'First four-legged animals walk on land') },
+          { mya: 320, icon: '🦎', label: t('stem.dinolab.first_reptiles', 'First reptiles') },
+          { mya: 252, icon: '💀', label: t('stem.dinolab.the_great_dying_end_permian_extinction', 'The Great Dying (end-Permian extinction)'), dino: true },
+          { mya: 233, icon: '🦕', label: t('stem.dinolab.first_dinosaurs_appear', 'First dinosaurs appear'), dino: true },
+          { mya: 225, icon: '🐭', label: t('stem.dinolab.first_mammals', 'First mammals'), dino: true },
+          { mya: 150, icon: '🪶', label: t('stem.dinolab.first_birds_archaeopteryx', 'First birds (Archaeopteryx)'), dino: true },
+          { mya: 66, icon: '☄️', label: t('stem.dinolab.asteroid_non_bird_dinosaurs_end', 'Asteroid — non-bird dinosaurs end'), dino: true },
+          { mya: 7, icon: '🐒', label: t('stem.dinolab.first_human_ancestors_hominins', 'First human ancestors (hominins)') },
+          { mya: 0.3, icon: '🧑', label: t('stem.dinolab.first_homo_sapiens_us', 'First Homo sapiens (us)') },
+          { mya: 0, icon: '📍', label: t('stem.dinolab.right_now', 'Right now') }
         ];
         var DINO_LO = 66, DINO_HI = 233;
         var unit = scale === 'day' ? 'a single 24-hour day' : 'a single calendar year';
@@ -5482,7 +5520,7 @@
             el('span', { key: 'n', style: { fontSize: 10.5 } }, t.c),
             el('span', { key: 'c', style: { fontSize: 14, fontWeight: 800 } }, String(list.length)));
         });
-        var mapBox = el('div', { role: 'group', 'aria-label': 'Map of where dinosaur fossils are found today, by continent', style: { position: 'relative', width: '100%', height: 0, paddingBottom: '52%', borderRadius: 12, background: 'linear-gradient(180deg, rgba(56,189,248,0.16), rgba(56,189,248,0.05))', border: '1px solid ' + T.border, marginBottom: 8 } }, el('div', { style: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 } }, tileEls));
+        var mapBox = el('div', { role: 'group', 'aria-label': t('stem.dinolab.map_of_where_dinosaur_fossils_are_foun', 'Map of where dinosaur fossils are found today, by continent'), style: { position: 'relative', width: '100%', height: 0, paddingBottom: '52%', borderRadius: 12, background: 'linear-gradient(180deg, rgba(56,189,248,0.16), rgba(56,189,248,0.05))', border: '1px solid ' + T.border, marginBottom: 8 } }, el('div', { style: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 } }, tileEls));
         var detail;
         if (sel && byCont[sel]) {
           var slist = byCont[sel].slice().sort(function (a, b) { return a.common < b.common ? -1 : 1; });
@@ -5532,6 +5570,338 @@
         );
       }
 
+      function DinoFieldStation3D(props) {
+        var canvasRef = React.useRef(null);
+        var statusRef = React.useRef(null);
+
+        React.useEffect(function () {
+          var canvas = canvasRef.current;
+          if (!canvas || typeof window === 'undefined' || typeof document === 'undefined') return;
+          var alive = true;
+          var frame = 0;
+          var renderer = null;
+          var scene = null;
+          var camera = null;
+          var model = null;
+          var resizeObserver = null;
+          var cleanupFns = [];
+
+          function setStatus(msg) {
+            if (statusRef.current) statusRef.current.textContent = msg;
+          }
+
+          function ensureThree(done) {
+            if (window.THREE) { done(window.THREE); return; }
+            var existing = document.getElementById('dinolab-three-loader');
+            if (existing) {
+              existing.addEventListener('load', function () { if (window.THREE) done(window.THREE); }, { once: true });
+              existing.addEventListener('error', function () { setStatus('3D engine failed to load. The evidence panels still work.'); }, { once: true });
+              return;
+            }
+            var script = document.createElement('script');
+            script.id = 'dinolab-three-loader';
+            script.async = true;
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+            script.onload = function () { if (window.THREE) done(window.THREE); };
+            script.onerror = function () { setStatus('3D engine failed to load. The evidence panels still work.'); };
+            document.head.appendChild(script);
+          }
+
+          function disposeObject(obj) {
+            if (!obj) return;
+            obj.traverse(function (child) {
+              if (child.geometry && child.geometry.dispose) child.geometry.dispose();
+              if (child.material) {
+                if (Array.isArray(child.material)) child.material.forEach(function (m) { if (m && m.dispose) m.dispose(); });
+                else if (child.material.dispose) child.material.dispose();
+              }
+            });
+          }
+
+          ensureThree(function (THREE) {
+            if (!alive) return;
+            var dn = props.species;
+            var len = Math.max(0.5, Number(dn.lengthM) || 1);
+            var ht = Math.max(0.25, Number(dn.heightM) || 0.5);
+            var group = dn.group || 'theropod';
+            var isSauropod = group === 'sauropod';
+            var isTheropod = group === 'theropod';
+            var bodyColor = props.dietColor || '#38bdf8';
+            var reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            var yaw = -0.35;
+            var dragging = false;
+            var lastX = 0;
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f172a);
+            scene.fog = new THREE.Fog(0x0f172a, Math.max(18, len * 0.7), Math.max(45, len * 2.4));
+
+            camera = new THREE.PerspectiveCamera(52, 1, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.52));
+            var sun = new THREE.DirectionalLight(0xfff4df, 0.95);
+            sun.position.set(-8, 14, 10);
+            sun.castShadow = true;
+            scene.add(sun);
+            var fill = new THREE.DirectionalLight(0x9ddcff, 0.35);
+            fill.position.set(10, 6, -8);
+            scene.add(fill);
+
+            var ground = new THREE.Mesh(
+              new THREE.PlaneGeometry(Math.max(26, len * 1.7), Math.max(16, len * 0.95)),
+              new THREE.MeshPhongMaterial({ color: 0x172033, shininess: 12 })
+            );
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            var grid = new THREE.GridHelper(Math.max(26, len * 1.7), 18, 0x475569, 0x243044);
+            grid.position.y = 0.01;
+            scene.add(grid);
+
+            model = new THREE.Group();
+            scene.add(model);
+
+            var boneMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, shininess: 42 });
+            var jointMat = new THREE.MeshPhongMaterial({ color: 0xfacc15, shininess: 32 });
+            var bodyMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.32, shininess: 25, side: THREE.DoubleSide });
+            var headMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.44, shininess: 30 });
+            var markerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+
+            function vec(x, y, z) { return new THREE.Vector3(x, y, z); }
+            function addBone(a, b, radius) {
+              if (!props.showSkeleton) return null;
+              var dir = new THREE.Vector3().subVectors(b, a);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, dist, 10), boneMat);
+              mesh.position.copy(a).add(b).multiplyScalar(0.5);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              mesh.castShadow = true;
+              model.add(mesh);
+              return mesh;
+            }
+            function addJoint(p, radius) {
+              if (!props.showSkeleton) return null;
+              var mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 14, 10), jointMat);
+              mesh.position.copy(p);
+              mesh.castShadow = true;
+              model.add(mesh);
+              return mesh;
+            }
+            function addEllipsoid(pos, scale, mat) {
+              if (!props.showBody) return null;
+              var mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 18), mat);
+              mesh.position.copy(pos);
+              mesh.scale.copy(scale);
+              mesh.castShadow = true;
+              model.add(mesh);
+              return mesh;
+            }
+
+            var hip = vec(len * 0.12, Math.max(0.35, ht * 0.45), 0);
+            var shoulder = vec(-len * 0.18, Math.max(0.35, isSauropod ? ht * 0.55 : ht * 0.48), 0);
+            var tail = vec(len * 0.52, Math.max(0.22, ht * 0.34), 0);
+            var head = vec(-len * 0.42, Math.max(0.5, isSauropod ? ht * 0.90 : ht * 0.68), 0);
+            var snout = vec(-len * 0.49, Math.max(0.42, isSauropod ? ht * 0.86 : ht * 0.64), 0);
+            var bodyCenter = new THREE.Vector3().copy(hip).add(shoulder).multiplyScalar(0.5);
+            var bodyLen = Math.max(0.45, Math.abs(hip.x - shoulder.x) * 0.72);
+            var bodyHeight = Math.max(0.22, ht * (isSauropod ? 0.22 : 0.27));
+            var bodyDepth = Math.max(0.16, bodyHeight * (isTheropod ? 0.92 : 1.08));
+
+            addEllipsoid(bodyCenter, vec(bodyLen, bodyHeight, bodyDepth), bodyMat);
+            addEllipsoid(head, vec(Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)), Math.max(0.12, ht * 0.055), Math.max(0.10, ht * 0.050)), headMat);
+            if (props.showBody) {
+              var tailMesh = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.04, ht * 0.025), Math.max(0.16, ht * 0.060), hip.distanceTo(tail), 14), bodyMat);
+              tailMesh.position.copy(hip).add(tail).multiplyScalar(0.5);
+              tailMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3().subVectors(tail, hip).normalize());
+              tailMesh.castShadow = true;
+              model.add(tailMesh);
+            }
+
+            addBone(tail, hip, Math.max(0.035, ht * 0.012));
+            addBone(hip, shoulder, Math.max(0.040, ht * 0.014));
+            addBone(shoulder, head, Math.max(0.035, ht * (isSauropod ? 0.014 : 0.011)));
+            addBone(head, snout, Math.max(0.030, ht * 0.010));
+            [tail, hip, shoulder, head, snout].forEach(function (p) { addJoint(p, Math.max(0.055, ht * 0.020)); });
+
+            function addLeg(x, z, front) {
+              var top = front ? shoulder : hip;
+              var knee = vec(x + (front ? -len * 0.015 : len * 0.025), Math.max(0.18, top.y * 0.48), z);
+              var foot = vec(x + (front ? -len * 0.035 : len * 0.070), 0.06, z + (z >= 0 ? 0.10 : -0.10));
+              addBone(vec(x, top.y, z), knee, Math.max(0.035, ht * 0.012));
+              addBone(knee, foot, Math.max(0.030, ht * 0.010));
+              addJoint(knee, Math.max(0.050, ht * 0.016));
+              if (props.showBody) addEllipsoid(foot, vec(Math.max(0.12, len * 0.018), Math.max(0.035, ht * 0.016), Math.max(0.04, ht * 0.018)), headMat);
+            }
+            var stance = Math.max(0.18, bodyDepth * 0.55);
+            addLeg(hip.x, stance, false);
+            addLeg(hip.x, -stance, false);
+            if (!isTheropod || isSauropod) {
+              addLeg(shoulder.x, stance, true);
+              addLeg(shoulder.x, -stance, true);
+            } else {
+              var armEndL = vec(shoulder.x - len * 0.050, shoulder.y * 0.55, stance * 0.55);
+              var armEndR = vec(shoulder.x - len * 0.050, shoulder.y * 0.55, -stance * 0.55);
+              addBone(vec(shoulder.x, shoulder.y * 0.93, stance * 0.42), armEndL, Math.max(0.018, ht * 0.006));
+              addBone(vec(shoulder.x, shoulder.y * 0.93, -stance * 0.42), armEndR, Math.max(0.018, ht * 0.006));
+            }
+
+            if (props.showEvidence) {
+              [head, hip, shoulder].forEach(function (p) {
+                var mark = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.09, ht * 0.026), 16, 10), markerMat);
+                mark.position.copy(p);
+                mark.position.y += Math.max(0.12, ht * 0.050);
+                model.add(mark);
+              });
+            }
+
+            if (props.showHuman) {
+              var hx = len * 0.56;
+              var human = new THREE.Group();
+              var humanMat = new THREE.MeshPhongMaterial({ color: 0x94a3b8, shininess: 18 });
+              var body = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.15, 1.25, 14), humanMat);
+              body.position.set(hx, 0.72, -Math.max(1.0, bodyDepth * 1.9));
+              body.castShadow = true;
+              var skull = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), humanMat);
+              skull.position.set(hx, 1.46, -Math.max(1.0, bodyDepth * 1.9));
+              skull.castShadow = true;
+              human.add(body); human.add(skull);
+              model.add(human);
+            }
+
+            var modelCenter = vec(len * 0.02, Math.max(0.5, ht * 0.42), 0);
+            var radius = Math.max(len * 0.84, ht * 1.9, 5.5);
+            camera.position.set(len * 0.12, Math.max(2.4, ht * 0.95), radius * 1.55);
+            camera.lookAt(modelCenter);
+
+            function resize() {
+              if (!alive || !renderer || !camera) return;
+              var w = Math.max(320, canvas.clientWidth || 720);
+              var h = Math.max(260, canvas.clientHeight || 420);
+              camera.aspect = w / h;
+              camera.updateProjectionMatrix();
+              renderer.setSize(w, h, false);
+            }
+            resize();
+            if (window.ResizeObserver) {
+              resizeObserver = new ResizeObserver(resize);
+              resizeObserver.observe(canvas);
+            } else {
+              window.addEventListener('resize', resize);
+              cleanupFns.push(function () { window.removeEventListener('resize', resize); });
+            }
+
+            function pointerDown(ev) { dragging = true; lastX = ev.clientX || 0; canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); }
+            function pointerMove(ev) { if (!dragging) return; var x = ev.clientX || 0; yaw += (x - lastX) * 0.009; lastX = x; }
+            function pointerUp(ev) { dragging = false; if (canvas.releasePointerCapture) { try { canvas.releasePointerCapture(ev.pointerId); } catch (e) {} } }
+            canvas.addEventListener('pointerdown', pointerDown);
+            canvas.addEventListener('pointermove', pointerMove);
+            canvas.addEventListener('pointerup', pointerUp);
+            canvas.addEventListener('pointerleave', pointerUp);
+            cleanupFns.push(function () {
+              canvas.removeEventListener('pointerdown', pointerDown);
+              canvas.removeEventListener('pointermove', pointerMove);
+              canvas.removeEventListener('pointerup', pointerUp);
+              canvas.removeEventListener('pointerleave', pointerUp);
+            });
+
+            setStatus('3D reconstruction loaded. Drag the model to rotate it.');
+            function animate() {
+              if (!alive) return;
+              frame = window.requestAnimationFrame(animate);
+              if (model) {
+                if (!dragging && !reducedMotion) yaw += 0.0035;
+                model.rotation.y = yaw;
+              }
+              renderer.render(scene, camera);
+            }
+            animate();
+          });
+
+          return function () {
+            alive = false;
+            if (frame) window.cancelAnimationFrame(frame);
+            cleanupFns.forEach(function (fn) { try { fn(); } catch (e) {} });
+            if (resizeObserver) { try { resizeObserver.disconnect(); } catch (e) {} }
+            disposeObject(scene);
+            if (renderer && renderer.dispose) renderer.dispose();
+          };
+        }, [props.species.id, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor]);
+
+        return el('div', { style: { position: 'relative', minHeight: 420, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.26)', background: '#0f172a' } },
+          el('canvas', { ref: canvasRef, role: 'img', 'aria-label': props.species.common + ' procedural 3D reconstruction viewer', style: { width: '100%', height: 420, display: 'block' } }),
+          el('div', { ref: statusRef, 'aria-live': 'polite', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
+        );
+      }
+
+      function renderField3D() {
+        var fieldId = d.field3dSelected || selected || 'tyrannosaurus';
+        var dn = byId(fieldId) || byId('tyrannosaurus') || DINOS[0];
+        var showSkeleton = d.field3dShowSkeleton !== false;
+        var showBody = d.field3dShowBody !== false;
+        var showHuman = d.field3dShowHuman !== false;
+        var showEvidence = d.field3dShowEvidence !== false;
+        var options = DINOS.slice().sort(function (a, b) { return a.common < b.common ? -1 : 1; }).map(function (sp) {
+          return el('option', { key: sp.id, value: sp.id }, sp.common);
+        });
+        function setBool(key, val) { upd(key, !!val); }
+        function checkRow(key, checked, label, detail) {
+          return el('label', { key: key, style: { display: 'flex', gap: 8, alignItems: 'flex-start', padding: '8px 0', borderBottom: '1px solid ' + T.border, cursor: 'pointer' } },
+            el('input', { type: 'checkbox', checked: checked, onChange: function (e) { setBool(key, e.target.checked); }, style: { marginTop: 2 } }),
+            el('span', null, el('span', { style: { display: 'block', fontSize: 12.5, fontWeight: 800, color: T.text } }, label), el('span', { style: { display: 'block', fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, detail))
+          );
+        }
+        var evidenceRows = [
+          ['Measurements', fmtLength(dn.lengthM) + ' long, ' + fmtLength(dn.heightM) + ' tall, ' + fmtWeight(dn.weightKg) + ' estimated mass.'],
+          ['Fossil evidence', dn.howKnow],
+          ['Inference boundary', dn.uncertain]
+        ].map(function (row) {
+          return el('div', { key: row[0], style: { padding: '8px 0', borderBottom: '1px solid ' + T.border } },
+            el('div', { style: { fontSize: 11, color: T.soft, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0 } }, row[0]),
+            el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.5 } }, row[1])
+          );
+        });
+        var taskCards = [
+          { title: 'Observe', body: 'Turn skeleton, body outline, and scale figure on and off. Identify which parts are direct fossil evidence and which are reconstruction.' },
+          { title: 'Claim', body: 'Use the model to make one claim about posture, size, or anatomy.' },
+          { title: 'Evidence', body: 'Support the claim with the measurement panel or the "how we know" note, then name one uncertainty.' }
+        ].map(function (card) {
+          return panel([el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 4 } }, card.title), el('div', { key: 'b', style: { fontSize: 12, color: T.soft, lineHeight: 1.48 } }, card.body)], { key: card.title });
+        });
+        return el('div', null,
+          sectionTitle('3D', 'Field Station', 'A lightweight reconstruction lab. The model is procedural and scale-aware: it visualizes evidence and uncertainty instead of pretending we know every detail.'),
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14, alignItems: 'start' } },
+            el('div', { key: 'viewer' },
+              el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' } },
+                el('select', { value: dn.id, 'aria-label': 'Choose species for 3D field station', onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
+                el('button', { onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + T.border, background: 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, 'Open species file')
+              ),
+              el(DinoFieldStation3D, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, dietColor: dColor(dn.diet) }),
+              el('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } }, taskCards)
+            ),
+            el('div', { key: 'side' },
+              panel([
+                el('div', { key: 'h', style: { fontSize: 16, fontWeight: 900, marginBottom: 2 } }, dn.common),
+                el('div', { key: 's', style: { fontSize: 12, color: T.soft, fontStyle: 'italic', marginBottom: 8 } }, dn.name),
+                el('div', { key: 'b', style: { marginBottom: 8 } }, badge(periodName(dn.period) + ' · ' + fmtMya(dn), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet)), badge(GROUP_LABEL[dn.group] || cap(dn.group), '#38bdf8')),
+                el('div', { key: 'rows' }, evidenceRows)
+              ], { marginBottom: 12 }),
+              panel([
+                el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 4 } }, 'Reconstruction layers'),
+                checkRow('field3dShowSkeleton', showSkeleton, 'Skeleton proxy', 'Shows the inferred bone layout from skull, spine, limbs, tail, and posture.'),
+                checkRow('field3dShowBody', showBody, 'Body outline', 'Adds soft-tissue volume. This is the most interpretive layer.'),
+                checkRow('field3dShowHuman', showHuman, 'Human scale', 'Keeps size estimates concrete by comparing to a 1.7 m person.'),
+                checkRow('field3dShowEvidence', showEvidence, 'Evidence markers', 'Marks skull, shoulder, and hip as anchor points for reconstruction.')
+              ])
+            )
+          )
+        );
+      }
+
       function renderCompare() {
         var aId = d.compareA || null, bId = d.compareB || null;
         var picks = [aId, bId].filter(Boolean).map(byId).filter(Boolean);
@@ -5562,8 +5932,8 @@
       }
 
       function renderDig() {
-        var seed = d.digSeed || 1;
-        var revealed = d.digRevealed || [];
+        var seed = Math.max(1, Math.floor(numVal(d.digSeed, 1)));
+        var revealed = arrVal(d.digRevealed);
         var guess = d.digGuess || null;
         var solved = d.digSolvedFor === seed;
         var rng = mulberry32(seed * 2654435761 % 4294967296);
@@ -5614,10 +5984,10 @@
           );
         });
         var sortPool = DINOS.filter(function (dn) { return dn.group !== 'other'; });
-        var sIdx = (d.sortIdx || 0) % sortPool.length;
+        var sIdx = modIndex(d.sortIdx, sortPool.length);
         var target = sortPool[sIdx];
         var sAnswered = d.sortAnswered || false, sPicked = d.sortPicked || null;
-        var groups = [{ id: 'theropod', label: 'Theropod (mostly meat-eaters, two legs)' }, { id: 'sauropod', label: 'Sauropodomorph (long-necked plant-eaters)' }, { id: 'ornithischian', label: 'Ornithischian (bird-hipped plant-eaters)' }];
+        var groups = [{ id: 'theropod', label: t('stem.dinolab.theropod_mostly_meat_eaters_two_legs', 'Theropod (mostly meat-eaters, two legs)') }, { id: 'sauropod', label: t('stem.dinolab.sauropodomorph_long_necked_plant_eater', 'Sauropodomorph (long-necked plant-eaters)') }, { id: 'ornithischian', label: t('stem.dinolab.ornithischian_bird_hipped_plant_eaters', 'Ornithischian (bird-hipped plant-eaters)') }];
         function pickGroup(g) { if (sAnswered) return; var correct = g === target.group; upd({ sortPicked: g, sortAnswered: true, sortScore: (d.sortScore || 0) + (correct ? 1 : 0), sortDone: (d.sortDone || 0) + 1 }); }
         function nextSort() { upd({ sortIdx: (sIdx + 1) % sortPool.length, sortAnswered: false, sortPicked: null }); }
         var activity = panel([
@@ -5641,7 +6011,7 @@
               el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } }, el('span', { style: { fontWeight: 800, fontSize: 14 } }, (ev.id === 'ext_kpg' ? '☄️ ' : '') + ev.name), el('span', { style: { fontSize: 12, color: T.soft } }, ev.mya + ' million years ago')),
               el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 } }, el('div', { style: { flex: 1, height: 10, borderRadius: 6, background: T.deeper, overflow: 'hidden' } }, el('div', { style: { height: '100%', width: ev.pctLost + '%', background: '#ef4444' } })), el('span', { style: { fontSize: 11.5, color: T.text, fontWeight: 700, minWidth: 92, textAlign: 'right' } }, '~' + ev.pctLost + '% species lost'))
             ),
-            open ? panel([el('div', { key: 'c', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Cause: '), ev.cause), el('div', { key: 'e', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Effect: '), ev.effect), el('div', { key: 'n', style: { fontSize: 12, color: T.soft, fontStyle: 'italic' } }, ev.note)], { marginTop: 6 }) : null
+            open ? panel([el('div', { key: 'c', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Cause: '), ev.cause), el('div', { key: 'e', style: { fontSize: 12.5, lineHeight: 1.55, marginBottom: 6 } }, el('strong', { style: { color: T.text } }, 'Effect: '), ev.effect), el('div', { key: 'n', style: { fontSize: 12, color: T.soft, fontStyle: 'italic' } }, __alloT('stem.dinolab.' + (ev.id) + '_note', ev.note))], { marginTop: 6 }) : null
           );
         });
         var kpgEvidence = panel([el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 6 } }, '☄️ The K-Pg case, up close'), el('div', { key: 's', style: { fontSize: 12.5, color: T.soft, marginBottom: 8, lineHeight: 1.5 } }, 'Several independent lines of evidence point to the same moment.'), el('div', { key: 'e' }, KPG_EVIDENCE.map(function (ke) { return el('div', { key: ke.id, style: { padding: 10, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border, marginBottom: 6 } }, el('div', { style: { fontWeight: 700, fontSize: 12.5, marginBottom: 2 } }, ke.label), el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.5 } }, ke.text)); }))], { marginTop: 14, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)' });
@@ -5659,18 +6029,18 @@
       }
 
       function renderSites() {
-        var cards = SITES.map(function (s) { return panel([el('div', { key: 'n', style: { fontWeight: 800, fontSize: 14 } }, '📍 ' + s.name), el('div', { key: 'w', style: { fontSize: 12, color: T.soft, marginBottom: 6 } }, s.where + '  ·  ' + s.when), el('div', { key: 'f', style: { fontSize: 12.5, marginBottom: 4 } }, el('strong', { style: { color: T.text } }, 'Famous for: '), s.famous), el('div', { key: 'no', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, s.note)], { key: s.id }); });
+        var cards = SITES.map(function (s) { return panel([el('div', { key: 'n', style: { fontWeight: 800, fontSize: 14 } }, '📍 ' + s.name), el('div', { key: 'w', style: { fontSize: 12, color: T.soft, marginBottom: 6 } }, s.where + '  ·  ' + s.when), el('div', { key: 'f', style: { fontSize: 12.5, marginBottom: 4 } }, el('strong', { style: { color: T.text } }, 'Famous for: '), s.famous), el('div', { key: 'no', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, __alloT('stem.dinolab.' + (s.id) + '_note', s.note))], { key: s.id }); });
         return el('div', null, sectionTitle('🗺️', 'Famous fossil sites', 'Certain rock formations, laid down in the right place at the right time, hold most of what we know.'), el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 } }, cards));
       }
 
       function renderRecords() {
-        var recCards = RECORDS.map(function (r) { return panel([el('div', { key: 't', style: { fontSize: 12, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 } }, r.title), el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 4 } }, r.holder), el('div', { key: 'd', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, r.detail)], { key: r.id }); });
+        var recCards = RECORDS.map(function (r) { return panel([el('div', { key: 't', style: { fontSize: 12, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 } }, r.title), el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 4 } }, r.holder), el('div', { key: 'd', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, __alloT('stem.dinolab.' + (r.id) + '_detail', r.detail))], { key: r.id }); });
         var people = PEOPLE.map(function (p) { return el('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border, marginBottom: 8 } }, el('div', { style: { fontWeight: 700, fontSize: 13 } }, p.name, el('span', { style: { fontSize: 11, color: T.soft, fontWeight: 400, marginLeft: 6 } }, p.years)), el('div', { style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5, marginTop: 2 } }, p.did)); });
         return el('div', null, sectionTitle('🏆', 'Record holders', 'Biggest, smallest, strongest. Many of these are best estimates, since the very largest animals are known from incomplete skeletons.'), el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 } }, recCards), panel([el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 8 } }, '👥 People who built the science'), el('div', { key: 'p' }, people)]));
       }
 
       function renderQuiz() {
-        var qIdx = (d.quizIdx || 0) % QUIZ.length;
+        var qIdx = modIndex(d.quizIdx, QUIZ.length);
         var q = QUIZ[qIdx];
         var picked = d.quizPicked, answered = d.quizAnswered || false, correctCount = d.quizCorrect || 0, doneCount = d.quizDone || 0;
         function pick(i) { if (answered) return; var isCorrect = i === q.answer; upd({ quizPicked: i, quizAnswered: true, quizCorrect: correctCount + (isCorrect ? 1 : 0), quizDone: doneCount + 1 }); announceToSR(isCorrect ? 'Correct' : 'Incorrect'); }
@@ -5692,31 +6062,33 @@
       }
 
       function renderGlossary() {
-        var gq = (d.glossaryQuery || '').trim().toLowerCase();
+        var glossaryQuery = strVal(d.glossaryQuery);
+        var gq = glossaryQuery.trim().toLowerCase();
         var list = GLOSSARY.slice().sort(function (a, b) { return a.term < b.term ? -1 : 1; });
         if (gq) list = list.filter(function (g) { return (g.term + ' ' + g.def).toLowerCase().indexOf(gq) !== -1; });
         var rows = list.map(function (g) { return el('div', { key: g.term, style: { padding: '8px 0', borderBottom: '1px solid ' + T.border } }, el('div', { style: { fontWeight: 700, fontSize: 13.5, color: T.text } }, g.term), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.5, marginTop: 2 } }, g.def)); });
-        return el('div', null, sectionTitle('📖', 'Glossary', 'The words paleontologists use, in plain language.'), el('input', { type: 'text', value: d.glossaryQuery || '', placeholder: 'Search terms...', 'aria-label': 'Search glossary', onChange: function (e) { upd('glossaryQuery', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }), panel(rows.length ? rows : el('div', { style: { color: T.soft, fontSize: 13 } }, 'No terms match that search.')));
+        return el('div', null, sectionTitle('📖', 'Glossary', 'The words paleontologists use, in plain language.'), el('input', { type: 'text', value: glossaryQuery, placeholder: t('stem.dinolab.search_terms', 'Search terms...'), 'aria-label': t('stem.dinolab.search_glossary', 'Search glossary'), onChange: function (e) { upd('glossaryQuery', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }), panel(rows.length ? rows : el('div', { style: { color: T.soft, fontSize: 13 } }, 'No terms match that search.')));
       }
 
       function renderBirds() {
         var evidence = [
-          { icon: '🪶', title: 'Feathers', text: 'Dozens of dinosaurs are preserved with feathers, from simple fuzz to true flight feathers. Many were feathered long before any of them could fly.' },
-          { icon: '🦴', title: 'The wishbone', text: 'Birds have a furcula, or wishbone. So did theropod dinosaurs like T. rex and Velociraptor. It is the very same bone.' },
-          { icon: '🎈', title: 'Hollow, air-filled bones', text: 'Bird bones are light and filled with air sacs. The same air-filled bones appear in many dinosaurs, part of a bird-like breathing system.' },
-          { icon: '👣', title: 'Three-toed feet', text: 'The classic bird footprint, three toes forward, matches theropod feet. Fossil dinosaur tracks look like giant bird tracks.' },
-          { icon: '🥚', title: 'Eggs and brooding', text: 'Dinosaurs laid eggs in nests, and some, like Citipati and Oviraptor, sat on them to brood their young, exactly as birds do.' },
-          { icon: '🤚', title: 'A wrist that folds', text: 'Birds fold their wings using a special half-moon wrist bone. The same bone let some dinosaurs tuck their arms against the body.' },
-          { icon: '📈', title: 'Fast growth, warm bodies', text: 'Growth rings in dinosaur bones show many grew quickly and ran warm, more like birds and mammals than like modern reptiles.' }
+          { icon: '🪶', title: t('stem.dinolab.feathers', 'Feathers'), text: t('stem.dinolab.dozens_of_dinosaurs_are_preserved_with', 'Dozens of dinosaurs are preserved with feathers, from simple fuzz to true flight feathers. Many were feathered long before any of them could fly.') },
+          { icon: '🦴', title: t('stem.dinolab.the_wishbone', 'The wishbone'), text: t('stem.dinolab.birds_have_a_furcula_or_wishbone_so_di', 'Birds have a furcula, or wishbone. So did theropod dinosaurs like T. rex and Velociraptor. It is the very same bone.') },
+          { icon: '🎈', title: t('stem.dinolab.hollow_air_filled_bones', 'Hollow, air-filled bones'), text: t('stem.dinolab.bird_bones_are_light_and_filled_with_a', 'Bird bones are light and filled with air sacs. The same air-filled bones appear in many dinosaurs, part of a bird-like breathing system.') },
+          { icon: '👣', title: t('stem.dinolab.three_toed_feet', 'Three-toed feet'), text: t('stem.dinolab.the_classic_bird_footprint_three_toes_', 'The classic bird footprint, three toes forward, matches theropod feet. Fossil dinosaur tracks look like giant bird tracks.') },
+          { icon: '🥚', title: t('stem.dinolab.eggs_and_brooding', 'Eggs and brooding'), text: t('stem.dinolab.dinosaurs_laid_eggs_in_nests_and_some_', 'Dinosaurs laid eggs in nests, and some, like Citipati and Oviraptor, sat on them to brood their young, exactly as birds do.') },
+          { icon: '🤚', title: t('stem.dinolab.a_wrist_that_folds', 'A wrist that folds'), text: t('stem.dinolab.birds_fold_their_wings_using_a_special', 'Birds fold their wings using a special half-moon wrist bone. The same bone let some dinosaurs tuck their arms against the body.') },
+          { icon: '📈', title: t('stem.dinolab.fast_growth_warm_bodies', 'Fast growth, warm bodies'), text: t('stem.dinolab.growth_rings_in_dinosaur_bones_show_ma', 'Growth rings in dinosaur bones show many grew quickly and ran warm, more like birds and mammals than like modern reptiles.') }
         ];
         var feathered = DINOS.filter(function (dn) {
+          if (dn.group === 'other') return false; // never list the non-dino foils (Pteranodon's "wing" matched) on the "feathered dinosaurs" panel
           var s = (dn.blurb + ' ' + dn.traits.join(' ')).toLowerCase();
           return dn.clade === 'Avialae' || s.indexOf('feather') !== -1 || s.indexOf('plumage') !== -1 || s.indexOf('quill') !== -1 || s.indexOf('filament') !== -1 || s.indexOf('fuzz') !== -1 || s.indexOf('wing') !== -1;
         }).sort(function (a, b) { return a.common < b.common ? -1 : 1; });
         var evCards = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } }, evidence.map(function (ev) {
           return panel([el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 4 } }, ev.icon + ' ' + ev.title), el('div', { key: 't', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, ev.text)], { key: ev.title });
         }));
-        var fchips = el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, feathered.map(function (dn) {
+        var fchips = el('div', { key: 'chips', style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, feathered.map(function (dn) {
           return el('button', { key: dn.id, onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, 'aria-label': 'Open ' + dn.common, style: { fontSize: 11, padding: '3px 9px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: T.deeper, color: T.text } }, dn.common);
         }));
         return el('div', null,
@@ -5772,7 +6144,7 @@
           el('div', { key: 's', style: { fontSize: 12, color: T.soft, marginBottom: 10, lineHeight: 1.5 } }, 'Energy flows up from the sun. Some is lost at every step, so each level can feed fewer animals than the one below it. Bar width shows energy, not exact numbers.'),
           el('div', { key: 'p' },
             plevel(34, '#b91c1c', '🥩 Hunters · ' + hunters.length, apex ? 'apex predator here: ' + apex.common : 'no hunters found here'),
-            plevel(64, '#b45309', '🦕 Plant-eaters + omnivores · ' + primaryN, 'the primary consumers'),
+            plevel(64, '#c2410c', '🦕 Plant-eaters + omnivores · ' + primaryN, 'the primary consumers'),
             plevel(100, '#15803d', '🌿 Plants (producers)', 'ferns, cycads, and conifers — the green base that fed it all')
           ),
           el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, marginTop: 8, fontStyle: 'italic' } }, primaryN + ' kinds of plant-eater and omnivore shared this rock unit with ' + hunters.length + ' kind' + (hunters.length === 1 ? '' : 's') + ' of hunter. That few-predators-on-top shape is what an energy pyramid predicts.')
@@ -5781,26 +6153,97 @@
       }
 
       var content;
-      if (tab === 'explore') content = renderExplore();
-      else if (tab === 'timeline') content = renderTimeline();
-      else if (tab === 'deeptime') content = renderDeepTime();
-      else if (tab === 'sites') content = renderSites();
-      else if (tab === 'map') content = renderMap();
-      else if (tab === 'ecosystem') content = renderEcosystem();
-      else if (tab === 'compare') content = renderCompare();
-      else if (tab === 'dig') content = renderDig();
-      else if (tab === 'classify') content = renderClassify();
-      else if (tab === 'birds') content = renderBirds();
-      else if (tab === 'extinction') content = renderExtinction();
-      else if (tab === 'anatomy') content = renderAnatomy();
-      else if (tab === 'records') content = renderRecords();
-      else if (tab === 'quiz') content = renderQuiz();
-      else if (tab === 'notes') content = renderNotes();
-      else if (tab === 'glossary') content = renderGlossary();
-      else if (tab === 'classroom') content = renderClassroom();
-      else content = renderExplore();
+      // A single tab's render must NEVER blank the whole tool. The host's
+      // renderTool() wraps render() in try/catch and returns null on a throw —
+      // which paints an empty panel (the "white screen when selected" report).
+      // Most often the trigger is stale persisted state (a `selected`/index/
+      // filter saved by an older build) landing on a code path that didn't
+      // exist then. Guard the dispatch so a bad tab degrades to an in-panel
+      // notice — the tab bar and every other section stay usable, and the user
+      // gets a one-click way to reset the saved view back to safe defaults.
+      try {
+        if (tab === 'explore') content = renderExplore();
+        else if (tab === 'timeline') content = renderTimeline();
+        else if (tab === 'deeptime') content = renderDeepTime();
+        else if (tab === 'sites') content = renderSites();
+        else if (tab === 'map') content = renderMap();
+        else if (tab === 'ecosystem') content = renderEcosystem();
+        else if (tab === 'compare') content = renderCompare();
+        else if (tab === 'field3d') content = renderField3D();
+        else if (tab === 'dig') content = renderDig();
+        else if (tab === 'classify') content = renderClassify();
+        else if (tab === 'birds') content = renderBirds();
+        else if (tab === 'extinction') content = renderExtinction();
+        else if (tab === 'anatomy') content = renderAnatomy();
+        else if (tab === 'records') content = renderRecords();
+        else if (tab === 'quiz') content = renderQuiz();
+        else if (tab === 'notes') content = renderNotes();
+        else if (tab === 'glossary') content = renderGlossary();
+        else if (tab === 'classroom') content = renderClassroom();
+        else content = renderExplore();
+      } catch (err) {
+        if (typeof console !== 'undefined' && console.error) { console.error('[DinoLab] section "' + tab + '" failed to render', err); }
+        content = el('div', { style: { padding: 20, color: T.text } },
+          el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 6 } }, '⚠️ This section could not open'),
+          el('div', { key: 'b', style: { fontSize: 13, color: T.soft, lineHeight: 1.55, marginBottom: 14, maxWidth: 520 } }, 'The "' + tab + '" view ran into an error, but the rest of Dino Lab still works — pick another section from the tabs above. If Dino Lab keeps opening to this message, reset the saved view to clear it.'),
+          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
+        );
+      }
 
-      return el('div', { style: { minHeight: '100%', background: T.canvas, color: T.text } }, tabBar, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, content));
+      function renderMissionDeck() {
+        var seenCount = Object.keys(seen || {}).length;
+        var quizCount = d.quizCorrect || 0;
+        var activeTab = (TABS.filter(function (tb) { return tb.id === tab; })[0] || TABS[0]).label;
+        var routeCards = [
+          { id: 'field', title: 'Start with the field guide', body: 'Search, filter, and open species cards before moving into deeper evidence work.', tab: 'explore', accent: '#22c55e' },
+          { id: 'time', title: 'Build the time story', body: 'Use the timeline and deep-time scale to connect periods, climate, and extinction.', tab: 'timeline', accent: '#38bdf8' },
+          { id: 'model', title: 'Inspect a 3D reconstruction', body: 'Use the field station to compare skeleton, body outline, scale, and uncertainty layers.', tab: 'field3d', accent: '#14b8a6' },
+          { id: 'evidence', title: 'Think like a paleontologist', body: 'Compare traits, excavate a fossil, classify a specimen, then check uncertainty notes.', tab: 'dig', accent: '#f59e0b' },
+          { id: 'practice', title: 'Lock in understanding', body: 'Use quiz, records, glossary, and classroom printables when students are ready to review.', tab: 'quiz', accent: '#a78bfa' }
+        ];
+        return el('section', {
+          'data-dinolab-command': 'true',
+          'aria-label': 'Dino Lab mission control',
+          style: { margin: '0 0 16px', padding: 16, borderRadius: 16, border: '1px solid rgba(34,197,94,0.34)', background: 'linear-gradient(135deg, #0b3b2e, #0f172a)', boxShadow: '0 18px 38px rgba(0,0,0,0.24)' }
+        },
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'stretch' } },
+            el('div', { style: { borderRadius: 14, padding: 14, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.20)' } },
+              el('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Dino field station'),
+              el('h2', { style: { fontSize: 22, lineHeight: 1.15, margin: '0 0 8px', color: '#f1f5f9' } }, 'Choose a fossil investigation path.'),
+              el('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } }, 'Dino Lab has a large catalog. This panel turns it into a guided starting point while keeping every section available above.'),
+              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
+                [
+                  ['Species opened', seenCount + '/' + DINOS.length, '#86efac'],
+                  ['Quiz correct', quizCount + '/5', '#facc15'],
+                  ['Active section', activeTab, '#67e8f9']
+                ].map(function (item) {
+                  return el('div', { key: item[0], style: { padding: 9, borderRadius: 10, background: 'rgba(15,23,42,0.58)', border: '1px solid rgba(148,163,184,0.18)' } },
+                    el('div', { style: { fontSize: 10, fontWeight: 800, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: 0 } }, item[0]),
+                    el('div', { style: { marginTop: 3, fontSize: 15, fontWeight: 900, color: item[2], wordBreak: 'break-word' } }, item[1])
+                  );
+                })
+              )
+            ),
+            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 } },
+              routeCards.map(function (card) {
+                var active = tab === card.tab;
+                return el('button', {
+                  key: card.id,
+                  onClick: function () { upd('tab', card.tab); announceToSR(card.title); },
+                  style: { textAlign: 'left', cursor: 'pointer', minHeight: 128, padding: 13, borderRadius: 13, border: '1px solid ' + (active ? card.accent : 'rgba(148,163,184,0.20)'), background: active ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.50)', color: '#f1f5f9', boxShadow: active ? '0 10px 22px rgba(0,0,0,0.22)' : 'none' }
+                },
+                  el('div', { style: { width: 34, height: 5, borderRadius: 99, background: card.accent, marginBottom: 10 } }),
+                  el('div', { style: { fontSize: 14, fontWeight: 900, marginBottom: 5 } }, card.title),
+                  el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.45 } }, card.body),
+                  el('div', { style: { marginTop: 10, fontSize: 11, fontWeight: 800, color: card.accent } }, active ? 'Open now' : 'Open path')
+                );
+              })
+            )
+          )
+        );
+      }
+
+      return el('div', { style: { minHeight: '100%', background: T.canvas, color: T.text } }, tabBar, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
     }
   });
 })();

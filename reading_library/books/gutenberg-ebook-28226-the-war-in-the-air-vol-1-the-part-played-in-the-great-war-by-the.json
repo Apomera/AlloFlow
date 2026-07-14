@@ -1,0 +1,53 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-28226-the-war-in-the-air-vol-1-the-part-played-in-the-great-war-by-the",
+  "title": "The War in the Air; Vol. 1: The Part played in the Great War by the Royal Air Force",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Great Britain. Royal Air Force",
+    "World War, 1914-1918 -- Aerial operations, British"
+  ],
+  "authors": [
+    "Raleigh, Walter Alexander, Sir"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/28226"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/28226/pg28226.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The War in the Air; Vol. 1: The Part played in the Great War by the Royal Air Force\" by Raleigh, Walter Alexander, Sir. Metadata tags include: Great Britain. Royal Air Force; World War, 1914-1918 -- Aerial operations, British."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 89
+  }
+}

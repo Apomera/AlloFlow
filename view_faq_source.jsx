@@ -7,6 +7,8 @@ var _lazyIcon = function (name) {
   var CheckCircle2 = _lazyIcon('CheckCircle2');
   var Pencil = _lazyIcon('Pencil');
   var ChevronDown = _lazyIcon('ChevronDown');
+  var RefreshCw = _lazyIcon('RefreshCw');
+  var Volume2 = _lazyIcon('Volume2');
   function FaqView(props) {
     // Accordion state — which FAQ items are currently expanded.
     // Editing mode + TTS playback force expansion separately (see isExpanded).
@@ -57,6 +59,84 @@ var _lazyIcon = function (name) {
     var getRows = props.getRows;
     var splitTextToSentences = props.splitTextToSentences;
     var formatInteractiveText = props.formatInteractiveText;
+    var prepState_state = React.useState({ busy: false, done: 0, total: 0 });
+    var prepState = prepState_state[0];
+    var setPrepState = prepState_state[1];
+    var regenAudioKey_state = React.useState(null);
+    var regenAudioKey = regenAudioKey_state[0];
+    var setRegenAudioKey = regenAudioKey_state[1];
+    var setAudioStatusTick = React.useState(0)[1];
+    React.useEffect(function () {
+      if (typeof window === 'undefined') return;
+      var onAudioUpdate = function () { setAudioStatusTick(function (n) { return n + 1; }); };
+      window.addEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
+      return function () { window.removeEventListener('alloflow:karaoke-audio-updated', onAudioUpdate); };
+    }, []);
+    var cleanSentenceForAudio = function (sentence) {
+      // Must mirror playSequence's textToSpeak cleaning (phase_k) — the store
+      // key is derived from the cleaned sentence on BOTH sides, so a rule
+      // present in one place but not the other orphans that sentence's audio.
+      return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
+    };
+    var getReadAloudStore = function () {
+      try {
+        return window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+      } catch (_) {
+        return null;
+      }
+    };
+    var hasStoredReadAloudAudio = function (sentence) {
+      var st = getReadAloudStore();
+      try { return !!(st && st.has(sentence)); } catch (_) { return false; }
+    };
+    var getReadAloudAudioSummary = function (sentences) {
+      var list = Array.isArray(sentences) ? sentences : [];
+      var saved = list.reduce(function (n, sentence) { return n + (hasStoredReadAloudAudio(sentence) ? 1 : 0); }, 0);
+      return { saved: saved, total: list.length };
+    };
+    var getFaqAudioSentences = function () {
+      var data = generatedContent && Array.isArray(generatedContent.data) ? generatedContent.data : [];
+      var list = [];
+      data.forEach(function (faq) {
+        if (faq && faq.question) list.push.apply(list, splitTextToSentences(faq.question));
+        if (faq && faq.answer) list.push.apply(list, splitTextToSentences(faq.answer));
+      });
+      return list.map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
+    };
+    var handlePrepareFaqAudio = async function () {
+      if (prepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
+      var sentences = getFaqAudioSentences();
+      if (!sentences.length) return;
+      setPrepState({ busy: true, done: 0, total: sentences.length });
+      try {
+        await window.__alloPrepareReadAloud(sentences, function (done, total) {
+          setPrepState({ busy: true, done: done, total: total || sentences.length });
+        });
+      } finally {
+        setPrepState({ busy: false, done: 0, total: 0 });
+      }
+    };
+    var handleRegenerateFaqAudioSentence = async function (sentence, key) {
+      if (!sentence || regenAudioKey || typeof window.__alloRegenerateSentenceAudio !== 'function') return;
+      setRegenAudioKey(key);
+      try {
+        await window.__alloRegenerateSentenceAudio(cleanSentenceForAudio(sentence));
+      } finally {
+        setRegenAudioKey(null);
+      }
+    };
+    var renderFaqEditAudioTools = function (text, keyPrefix) {
+      if (!isTeacherMode || !isEditingFaq) return null;
+      var sentences = splitTextToSentences(text).map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
+      if (!sentences.length) return null;
+      var summary = getReadAloudAudioSummary(sentences);
+      return <div className="flex flex-wrap gap-1.5 pt-1"><div className="w-full flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-wide text-cyan-700"><span>TTS {summary.saved}/{summary.total} saved</span><span className="text-slate-500 normal-case font-semibold">Click to regenerate</span></div>{sentences.map(function (sentence, sIdx) {
+        var key = keyPrefix + '-' + sIdx;
+        var busy = regenAudioKey === key;
+        var isSaved = hasStoredReadAloudAudio(sentence);
+        return <button key={key} type="button" onClick={() => handleRegenerateFaqAudioSentence(sentence, key)} disabled={!!regenAudioKey} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'}`} title={`${isSaved ? 'TTS saved' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`} aria-label={`${isSaved ? 'Saved TTS' : 'Missing TTS'} for FAQ sentence ${sIdx + 1}. Regenerate audio.`}>{busy ? <RefreshCw size={12} className="animate-spin" /> : isSaved ? <CheckCircle2 size={12} /> : <Volume2 size={12} />}<span>{sIdx + 1}</span></button>;
+      })}</div>;
+    };
     return <div className="space-y-6">{isPlaying && playingContentId === 'faq-active' && <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in fade-in slide-in-from-top-2"><div className="flex items-center gap-3"><div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse" /><span className="text-sm font-medium text-cyan-800">Reading FAQ...</span></div><div className="flex items-center gap-4"><div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"><span className="text-[11px] uppercase font-bold text-slate-600">Speed</span><input aria-label={t('common.speed')} type="range" min="0.5" max="2" step="0.1" defaultValue={voiceSpeed} onChange={e => setVoiceSpeed(parseFloat(e.target.value))} className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500" /></div><button aria-label={t('common.stop')} onClick={e => {
             e.stopPropagation();
             audioRef.current?.pause();
@@ -64,7 +144,7 @@ var _lazyIcon = function (name) {
             window.speechSynthesis.cancel();
             setIsPlaying(false);
             setPlayingContentId(null);
-          }} className="p-1.5 hover:bg-rose-100 text-rose-600 rounded-md transition-colors" title={t('common.stop')}><span className="font-bold text-xs uppercase px-1">Stop</span></button></div></div>}<div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4" data-help-key="faq_goal_panel"><p className="text-sm text-cyan-800 max-w-xl"><strong>UDL Goal:</strong> Clarifying language and symbols. FAQs help anticipate misconceptions and provide quick reference.</p>{isTeacherMode && <button aria-label={t('common.toggle_edit_faq')} onClick={handleToggleIsEditingFaq} data-help-key="faq_edit_toggle" className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`}>{isEditingFaq ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingFaq ? t('common.done_editing') : t('faq.edit')}</button>}</div>{
+          }} className="p-1.5 hover:bg-rose-100 text-rose-600 rounded-md transition-colors" title={t('common.stop')}><span className="font-bold text-xs uppercase px-1">Stop</span></button></div></div>}<div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4" data-help-key="faq_goal_panel"><p className="text-sm text-cyan-800 max-w-xl"><strong>UDL Goal:</strong> Clarifying language and symbols. FAQs help anticipate misconceptions and provide quick reference.</p>{isTeacherMode && <div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={function () { if (prepState.busy) { window.__alloPrepareReadAloudCancel = true; return; } handlePrepareFaqAudio(); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50 transition-all shadow-sm" title={prepState.busy ? (t('common.stop') || 'Stop') : (t('immersive.prepare_all') || 'Save TTS')} aria-label={prepState.busy ? (t('common.stop') || 'Stop saving TTS') : (t('immersive.prepare_all') || 'Save TTS')}>{prepState.busy ? <RefreshCw size={14} className="animate-spin" /> : <Volume2 size={14} />}{prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : 'Save TTS'}</button><button aria-label={t('common.toggle_edit_faq')} onClick={handleToggleIsEditingFaq} data-help-key="faq_edit_toggle" className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`}>{isEditingFaq ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingFaq ? t('common.done_editing') : t('faq.edit')}</button></div>}</div>{
       // Show all / Hide all controls (only when not editing — teacher needs everything visible to edit)
       !isEditingFaq && generatedContent?.data?.length > 0 && <div className="flex items-center gap-2 mb-2"><button onClick={expandAll} className="px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors" aria-label={t("a11y.show_all_faq")}>▾ Show all</button><button onClick={collapseAll} className="px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors" aria-label={t("a11y.hide_all_faq")}>▸ Hide all</button><span className="text-[11px] text-slate-500 italic ml-1">Tip: tap a question to reveal its answer</span></div>}<div className="space-y-4">{(() => {
           // PASS 1: precompute sentence index ranges per FAQ so we can derive
@@ -117,42 +197,27 @@ var _lazyIcon = function (name) {
             });
             var qBase = rangeStart[idx] || 0;
             var aBase = qBase + qSentencesForCount.length;
-            return <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item"><div className={"flex items-start gap-3" + (isEditingFaq ? "" : " cursor-pointer select-none")} onClick={!isEditingFaq ? function (e) {
-                // Clicks on sentence spans stop propagation for TTS — so reaching
-                // the row handler means the user clicked the Q badge, the chevron,
-                // or whitespace, all of which should toggle.
-                toggleFaq(idx);
-              } : undefined} role={!isEditingFaq ? "button" : undefined} tabIndex={!isEditingFaq ? 0 : undefined} aria-expanded={!isEditingFaq ? isExpanded : undefined} aria-controls={!isEditingFaq ? "faq-answer-" + idx : undefined} onKeyDown={!isEditingFaq ? function (e) {
-                if (e.key === ' ' || e.key === 'Enter') {
-                  // Only fire if the target is the row itself (not a sentence span)
-                  if (e.target === e.currentTarget) {
-                    e.preventDefault();
-                    toggleFaq(idx);
-                  }
-                }
-              } : undefined}><div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">Q</div><div className="flex-grow space-y-2">{isEditingFaq ? <><textarea aria-label={t('faq.edit_question') || 'Edit FAQ question'} value={faq.question} onChange={e => handleFaqChange(idx, 'question', e.target.value)} className="w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question)} placeholder={t('faq.question_placeholder')} />{(faq.question_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'} value={faq.question_en || ''} onChange={e => handleFaqChange(idx, 'question_en', e.target.value)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question_en || '')} placeholder={t('common.placeholder_question_trans')} />}<div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"><textarea aria-label={t('faq.edit_answer') || 'Edit FAQ answer'} value={faq.answer} onChange={e => handleFaqChange(idx, 'answer', e.target.value)} className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.answer)} placeholder={t('faq.answer_placeholder')} />{(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'} value={faq.answer_en || ''} onChange={e => handleFaqChange(idx, 'answer_en', e.target.value)} className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200" rows={getRows(faq.answer_en || '')} placeholder={t('common.placeholder_answer_trans')} />}</div></> : <><h4 className="font-bold text-slate-800 text-lg mb-1 leading-relaxed">{(() => {
+            return <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item"><div className="flex items-start gap-3"><div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">Q</div><div className="flex-grow space-y-2">{isEditingFaq ? <><textarea aria-label={t('faq.edit_question') || 'Edit FAQ question'} value={faq.question} onChange={e => handleFaqChange(idx, 'question', e.target.value)} className="w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question)} placeholder={t('faq.question_placeholder')} />{renderFaqEditAudioTools(faq.question, 'faq-' + idx + '-question')}{(faq.question_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'} value={faq.question_en || ''} onChange={e => handleFaqChange(idx, 'question_en', e.target.value)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question_en || '')} placeholder={t('common.placeholder_question_trans')} />}<div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"><textarea aria-label={t('faq.edit_answer') || 'Edit FAQ answer'} value={faq.answer} onChange={e => handleFaqChange(idx, 'answer', e.target.value)} className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.answer)} placeholder={t('faq.answer_placeholder')} />{renderFaqEditAudioTools(faq.answer, 'faq-' + idx + '-answer')}{(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'} value={faq.answer_en || ''} onChange={e => handleFaqChange(idx, 'answer_en', e.target.value)} className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200" rows={getRows(faq.answer_en || '')} placeholder={t('common.placeholder_answer_trans')} />}</div></> : <><h4 className="font-bold text-slate-800 text-lg mb-1 leading-relaxed">{(() => {
                         const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
                         return qSentences.map((s, sIdx) => {
                           const currentGlobalIdx = qBase + sIdx;
                           const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-                          return <span key={sIdx} id={`sentence-${currentGlobalIdx}`} className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`} onClick={e => {
+                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={`Read sentence: ${s}`} className={`bg-transparent border-0 font-inherit text-inherit text-left transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`} onClick={e => {
                             e.stopPropagation();
                             handleSpeak(s, 'faq-active', currentGlobalIdx);
-                          }}>{formatInteractiveText(s, false)} </span>;
+                          }}>{formatInteractiveText(s, false)} </button>;
                         });
                       })()}</h4>{isExpanded && faq.question_en && <p className="text-sm text-slate-600 italic mb-2">({faq.question_en})</p>}{isExpanded && <div id={`faq-answer-${idx}`} className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">{(() => {
                         const aSentences = splitTextToSentences(faq.answer).filter(s => s && s.trim().length > 0);
                         return aSentences.map((s, sIdx) => {
                           const currentGlobalIdx = aBase + sIdx;
                           const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-                          return <span key={sIdx} id={`sentence-${currentGlobalIdx}`} className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`} onClick={e => {
+                          return <button type="button" key={sIdx} id={`sentence-${currentGlobalIdx}`} aria-label={`Read sentence: ${s}`} className={`bg-transparent border-0 font-inherit text-inherit text-left transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`} onClick={e => {
                             e.stopPropagation();
                             handleSpeak(s, 'faq-active', currentGlobalIdx);
-                          }}>{formatInteractiveText(s, false)} </span>;
+                          }}>{formatInteractiveText(s, false)} </button>;
                         });
-                      })()}{faq.answer_en && <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}</div>}</>}</div>{!isEditingFaq && <div className="shrink-0 mt-2 text-slate-600 transition-transform duration-200" style={{
-                  transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
-                }} aria-hidden="true"><ChevronDown size={20} /></div>}</div></div>;
+                      })()}{faq.answer_en && <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}</div>}</>}</div>{!isEditingFaq && <button type="button" onClick={() => toggleFaq(idx)} aria-expanded={isExpanded} aria-controls={`faq-answer-${idx}`} aria-label={isExpanded ? 'Collapse FAQ answer' : 'Expand FAQ answer'} className="shrink-0 mt-2 w-8 h-8 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"><ChevronDown size={20} aria-hidden="true" className="transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} /></button>}</div></div>;
           });
         })()}</div></div>;
   }

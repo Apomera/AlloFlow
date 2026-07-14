@@ -1,5 +1,7 @@
 # "Make This Worksheet Fillable" — Design Document
 
+> **Design snapshot note (2026-07-09):** This June 2026 design describes a proposed fillable-worksheet path. Verify the current PDF/Form tagging code, Document Builder behavior, and PDF/UA validation guidance before treating "built," "available," or staged estimates below as current implementation status.
+
 **Status:** Design (no code). **Drafted:** 2026-06-12, with Claude.
 **Goal:** a teacher uploads a worksheet (or IEP form, or permission slip) and downloads a version a student or parent can **type into** — real, tagged, keyboard-navigable form fields — without leaving the browser or paying a forms vendor.
 

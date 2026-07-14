@@ -1,6 +1,7 @@
 # AlloFlow Competitive Rubric — Functional Capability Analysis
 
 **Generated:** 2026-05-17 · Methodology: per-dimension graded rubric across 9 major ed-tech AI competitors
+**July 2026 status note:** This remains the original May scoring frame, not a fresh competitor re-benchmark. Stale AlloFlow-internal language-pack and local-first notes have been updated where they would otherwise mislead.
 **Scope filter:** Functionality only — **price, distribution model, brand recognition, support quality, and polish are explicitly excluded** per request. This is a pure feature/capability scoring exercise.
 **Companion docs:** [COMPETITOR_COMPARISON.md](COMPETITOR_COMPARISON.md) (narrative, includes cost/distribution), [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) §13 (most recent additions), [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md) (closing remaining gaps).
 
@@ -259,7 +260,7 @@ Weights reflect typical teacher-workflow importance. Total: 100.
 
 | Product | Score | Rationale |
 |---|---|---|
-| **AlloFlow** | **5** | Session Tier-1 vs Tier-2 architecture (live aggregates pseudonymized, full data local-only), localStorage-based teacher comments (never synced), local-only AI option (Ollama/LocalAI/NPU + Kokoro local TTS), Symbol Studio + BehaviorLens both have local-only modes, Docker air-gap distribution in progress, no telemetry by default |
+| **AlloFlow** | **5** | Session Tier-1 vs Tier-2 architecture, Desktop LAN / Local Network path, localStorage/downloaded-project workflows, local provider options through AlloFlow Desktop/LM Studio/Ollama/LocalAI, Symbol Studio + BehaviorLens local-first modes, optional Docker School Box Server path, no telemetry by default, and modest FERPA-aligned deployment language |
 | MagicSchool | 3 | SaaS w/ standard FERPA |
 | Brisk | 3 | SaaS |
 | Diffit | 3 | SaaS |
@@ -315,7 +316,7 @@ Weights reflect typical teacher-workflow importance. Total: 100.
 
 | Product | Score | Rationale |
 |---|---|---|
-| **AlloFlow** | **4** | **i18n with 9,539 keys** localized across 17 source files, bilingual output for any resource type, Gemini Bridge for cross-language scaffolding (12 preset langs + Custom), bilingual flashcards (term ↔ translation), Symbol Studio multi-language symbols, glossary with bilingual definitions. **Gap:** UI is English-first but translation infra exists; needs more shipped language packs. |
+| **AlloFlow** | **4** | Broad i18n infrastructure plus 63 mirrored pack files as of July 2026, bilingual output for any resource type, Gemini Bridge for cross-language scaffolding (12 preset langs + Custom), bilingual flashcards (term ↔ translation), Symbol Studio multi-language symbols, glossary with bilingual definitions. **Remaining gap:** native-review depth, readiness labels, and public QA evidence vary by pack; use `lang/README.md` and the i18n verification tools for current coverage. |
 | MagicSchool | 4 | Bilingual lesson features |
 | Brisk | 3 | Translation features |
 | Diffit | 4 | Strong bilingual differentiation |
@@ -357,7 +358,7 @@ Weights reflect typical teacher-workflow importance. Total: 100.
 
 | Product | Score | Rationale |
 |---|---|---|
-| **AlloFlow** | **5** | Open-source MIT-licensed + Tool Catalog single source of truth + TEACHER_METRIC_REGISTRY pluggable via `window.AlloModules.TeacherMetricRegistry.push()` + STEM Lab + SEL Hub tool registration via host modules + 6 audit scripts + factory pattern for doc pipeline + 28 view modules + 20 infrastructure modules |
+| **AlloFlow** | **5** | Open-source AGPL v3-licensed + Tool Catalog single source of truth + TEACHER_METRIC_REGISTRY pluggable via `window.AlloModules.TeacherMetricRegistry.push()` + STEM Lab + SEL Hub tool registration via host modules + 6 audit scripts + factory pattern for doc pipeline + 28 view modules + 20 infrastructure modules |
 | MagicSchool | 1 | Closed SaaS |
 | Brisk | 1 | Closed SaaS |
 | Diffit | 1 | Closed SaaS |
@@ -489,9 +490,9 @@ Two dimensions where AlloFlow scored 4/5 vs perfect:
 
 ### B. Bilingual / multilingual support (currently 4, target 5)
 
-**Gap:** i18n infrastructure ready (9,539 keys + working `t()` function + fallback handling) but **only English is fully shipped** as a language pack. Translated keys exist in localStorage cache but no committed Spanish/Mandarin/Arabic/French language packs.
+**July 2026 update:** The original May pack-absence gap is no longer accurate. The repo now carries 63 mirrored pack files with runtime fallback/gap tooling. The remaining path to a durable 5 is quality signaling: native review for priority packs, clear readiness tiers in the UI/docs, and repeatable verification for newer packs and PPS-cluster passthrough languages.
 
-**To reach 5:** Run the existing `regenerateLanguage` mechanism for Spanish + Mandarin + Arabic + French + 3-4 others, commit the resulting JSON to repo as default-load-able language packs. Estimated effort: 1 day per language (mostly AI translation + spot-review).
+**To reach 5:** Treat the shipped-pack breadth as present, then add native-speaker review and readiness labels for priority school languages; keep `npm run verify:lang-json`, `npm run verify:spanglish`, and gap reports clean before promoting a pack from "available" to "reviewed."
 
 ---
 
@@ -513,4 +514,4 @@ Two dimensions where AlloFlow scored 4/5 vs perfect:
 
 ---
 
-**End of rubric.** AlloFlow scores 490/500 (98%) on pure functional capability, with a 200-point lead over the best non-AlloFlow competitor (Khanmigo at 290/500). The two dimensions where AlloFlow can still gain points (LMS Clever integration + shipped bilingual language packs) are both small, well-scoped fixes.
+**End of rubric.** In the original May scoring frame, AlloFlow scores 490/500 (98%) on pure functional capability, with a 200-point lead over the best non-AlloFlow competitor (Khanmigo at 290/500). As of July 2026, the language-pack breadth gap has moved from "not shipped" to "shipped with uneven review depth"; the clearer remaining score opportunity is LMS/Clever/ClassLink integration plus stronger language-pack readiness evidence.

@@ -1,0 +1,53 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-37499-napoleon-s-letters-to-josephine-1796-1812-for-the-first-time-col",
+  "title": "Napoleon's Letters to Josephine, 1796-1812: For the First Time Collected and Translated, with Notes Social, Historical, and Chronological, from Contemporary Sources",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Josephine, Empress, consort of Napoleon I, Emperor of the French, 1763-1814 -- Correspondence",
+    "Napoleon I, Emperor of the French, 1769-1821 -- Correspondence"
+  ],
+  "authors": [
+    "Napoleon I, Emperor of the French"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/37499"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/37499/pg37499.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Napoleon's Letters to Josephine, 1796-1812: For the First Time Collected and Translated, with Notes Social, Historical, and Chronological, from Contemporary Sources\" by Napoleon I, Emperor of the French. Metadata tags include: Josephine, Empress, consort of Napoleon I, Emperor of the French, 1763-1814 -- Correspondence; Napoleon I, Emperor of the French, 1769-1821 -- Correspondence."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 103
+  }
+}

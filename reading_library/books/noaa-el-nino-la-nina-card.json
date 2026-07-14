@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-el-nino-la-nina-card",
+  "title": "NOAA El Nino and La Nina",
+  "description": "A NOAA source card about El Nino, La Nina, Pacific Ocean patterns, and global weather effects.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": [
+    "Climate",
+    "Ocean science",
+    "Weather patterns",
+    "Earth systems"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education/resource-collections/weather-atmosphere/el-nino",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Education",
+    "url": "https://www.noaa.gov/education/resource-collections/weather-atmosphere/el-nino"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA El Nino and La Nina resources connect Pacific Ocean temperatures, winds, rainfall patterns, forecasts, ecosystems, and regional impacts."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source when students need to trace how a change in one part of Earth systems can influence weather far away."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NOAA materials are generally U.S. government work, but resource collections may link to partners or offsite materials. Check item-level rights before mirroring linked resources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 65
+  }
+}

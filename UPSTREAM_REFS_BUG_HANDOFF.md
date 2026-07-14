@@ -1,5 +1,7 @@
 # Upstream bug handoff: Generate Source short-text references truncation
 
+> **Bug-handoff snapshot (2026-07-09):** This documents a read-only analysis from an earlier session. Verify the current `content_engine_source.jsx` / generated module behavior before applying the proposed fix, because the line numbers and branch structure may have moved.
+
 **Status:** Read-only analysis. No code changes made this pass. Documenting for next session.
 
 ## Symptom (user-visible)

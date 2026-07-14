@@ -254,13 +254,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       { id: 'view_all_tabs', label: 'Explore all Climate Explorer sections', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 sections'; } }
     ],
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var el = React.createElement;
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardXP = function(n) { if (ctx.awardXP) ctx.awardXP('climateExplorer', n); };
       var getStemXP = ctx.getXP;
@@ -335,24 +337,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
       // ── Badge definitions ──
       var BADGES = [
-        { id: 'firstCalc', icon: '\uD83E\uDDEE', label: 'First Calculation', desc: 'Calculate your carbon footprint' },
-        { id: 'lowFootprint', icon: '\uD83C\uDF33', label: 'Low Footprint', desc: 'Get below 2,000 kg CO\u2082/year' },
-        { id: 'dataDiver', icon: '\uD83D\uDCCA', label: 'Data Diver', desc: 'Try all 3 scale views' },
-        { id: 'netZero', icon: '\u2600\uFE0F', label: 'Net Zero Designer', desc: 'Design <5% fossil energy mix' },
-        { id: 'scenarioTester', icon: '\u26A1', label: 'Scenario Tester', desc: 'Try all 4 energy scenarios' },
-        { id: 'justiceExplorer', icon: '\u2696\uFE0F', label: 'Justice Explorer', desc: 'Explore 5+ vulnerable regions' },
-        { id: 'solutionScholar', icon: '\uD83D\uDCA1', label: 'Solution Scholar', desc: 'Read all 8 solution cards' },
-        { id: 'actionPlanner', icon: '\u270A', label: 'Action Planner', desc: 'Open the action plan' },
-        { id: 'quizChampion', icon: '\uD83E\uDDE0', label: 'Quiz Champion', desc: 'Answer 8+ questions correctly' },
-        { id: 'aiConsultant', icon: '\uD83E\uDD16', label: 'AI Consultant', desc: 'Get AI analysis of your mix' },
-        { id: 'allTabs', icon: '\uD83C\uDF0D', label: 'Full Explorer', desc: 'Visit all six tabs' },
-        { id: 'climateChampion', icon: '\uD83C\uDFC6', label: 'Climate Champion', desc: 'Earn 10+ badges' },
-        { id: 'habitMaster', icon: '\uD83D\uDCCA', label: 'Habit Master', desc: 'Set 5+ detailed habit sliders' },
-        { id: 'pledger', icon: '\u270A', label: 'Climate Pledger', desc: 'Commit to 3+ personal pledges' },
-        { id: 'consistent', icon: '\uD83D\uDD25', label: 'On the Streak', desc: 'Check in on a pledge 7+ times' },
-        { id: 'reporter', icon: '\uD83D\uDCC4', label: 'Climate Reporter', desc: 'Export your climate report' },
-        { id: 'planner', icon: '\uD83C\uDFAF', label: 'Drawdown Planner', desc: 'Stack 5+ Drawdown solutions' },
-        { id: 'gigaton', icon: '\uD83D\uDCAB', label: 'Gigaton Thinker', desc: 'Build a solution mix totaling 200+ Gt' }
+        { id: 'firstCalc', icon: '\uD83E\uDDEE', label: t('stem.climateExplorer.first_calculation', 'First Calculation'), desc: t('stem.climateExplorer.calculate_your_carbon_footprint', 'Calculate your carbon footprint') },
+        { id: 'lowFootprint', icon: '\uD83C\uDF33', label: t('stem.climateExplorer.low_footprint', 'Low Footprint'), desc: t('stem.climateExplorer.get_below_2_000_kg_co_year', 'Get below 2,000 kg CO\u2082/year') },
+        { id: 'dataDiver', icon: '\uD83D\uDCCA', label: t('stem.climateExplorer.data_diver', 'Data Diver'), desc: t('stem.climateExplorer.try_all_3_scale_views', 'Try all 3 scale views') },
+        { id: 'netZero', icon: '\u2600\uFE0F', label: t('stem.climateExplorer.net_zero_designer', 'Net Zero Designer'), desc: t('stem.climateExplorer.design_5_fossil_energy_mix', 'Design <5% fossil energy mix') },
+        { id: 'scenarioTester', icon: '\u26A1', label: t('stem.climateExplorer.scenario_tester', 'Scenario Tester'), desc: t('stem.climateExplorer.try_all_4_energy_scenarios', 'Try all 4 energy scenarios') },
+        { id: 'justiceExplorer', icon: '\u2696\uFE0F', label: t('stem.climateExplorer.justice_explorer', 'Justice Explorer'), desc: t('stem.climateExplorer.explore_5_vulnerable_regions', 'Explore 5+ vulnerable regions') },
+        { id: 'solutionScholar', icon: '\uD83D\uDCA1', label: t('stem.climateExplorer.solution_scholar', 'Solution Scholar'), desc: t('stem.climateExplorer.read_all_8_solution_cards', 'Read all 8 solution cards') },
+        { id: 'actionPlanner', icon: '\u270A', label: t('stem.climateExplorer.action_planner', 'Action Planner'), desc: t('stem.climateExplorer.open_the_action_plan', 'Open the action plan') },
+        { id: 'quizChampion', icon: '\uD83E\uDDE0', label: t('stem.climateExplorer.quiz_champion', 'Quiz Champion'), desc: t('stem.climateExplorer.answer_8_questions_correctly', 'Answer 8+ questions correctly') },
+        { id: 'aiConsultant', icon: '\uD83E\uDD16', label: t('stem.climateExplorer.ai_consultant', 'AI Consultant'), desc: t('stem.climateExplorer.get_ai_analysis_of_your_mix', 'Get AI analysis of your mix') },
+        { id: 'allTabs', icon: '\uD83C\uDF0D', label: t('stem.climateExplorer.full_explorer', 'Full Explorer'), desc: t('stem.climateExplorer.visit_all_six_tabs', 'Visit all six tabs') },
+        { id: 'climateChampion', icon: '\uD83C\uDFC6', label: t('stem.climateExplorer.climate_champion', 'Climate Champion'), desc: t('stem.climateExplorer.earn_10_badges', 'Earn 10+ badges') },
+        { id: 'habitMaster', icon: '\uD83D\uDCCA', label: t('stem.climateExplorer.habit_master', 'Habit Master'), desc: t('stem.climateExplorer.set_5_detailed_habit_sliders', 'Set 5+ detailed habit sliders') },
+        { id: 'pledger', icon: '\u270A', label: t('stem.climateExplorer.climate_pledger', 'Climate Pledger'), desc: t('stem.climateExplorer.commit_to_3_personal_pledges', 'Commit to 3+ personal pledges') },
+        { id: 'consistent', icon: '\uD83D\uDD25', label: t('stem.climateExplorer.on_the_streak', 'On the Streak'), desc: t('stem.climateExplorer.check_in_on_a_pledge_7_times', 'Check in on a pledge 7+ times') },
+        { id: 'reporter', icon: '\uD83D\uDCC4', label: t('stem.climateExplorer.climate_reporter', 'Climate Reporter'), desc: t('stem.climateExplorer.export_your_climate_report', 'Export your climate report') },
+        { id: 'planner', icon: '\uD83C\uDFAF', label: t('stem.climateExplorer.drawdown_planner', 'Drawdown Planner'), desc: t('stem.climateExplorer.stack_5_drawdown_solutions', 'Stack 5+ Drawdown solutions') },
+        { id: 'gigaton', icon: '\uD83D\uDCAB', label: t('stem.climateExplorer.gigaton_thinker', 'Gigaton Thinker'), desc: t('stem.climateExplorer.build_a_solution_mix_totaling_200_gt', 'Reach the classroom 200-point threshold using displayed scenario estimates') }
       ];
 
       // ── Hope Meter milestones (moved after carbonTotal() definition) ──
@@ -389,12 +391,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           lines.push('| Category | kg CO\u2082e/yr |');
           lines.push('|---|---|');
           [
-            { cat: 'transport', label: '🚗 Transportation' },
-            { cat: 'food',      label: '🍽️ Food & Diet' },
-            { cat: 'energy',    label: '⚡ Home Energy' },
-            { cat: 'digital',   label: '📱 Digital & Streaming' },
-            { cat: 'shopping',  label: '🛍️ Shopping' },
-            { cat: 'waste',     label: '♻️ Waste (negative = avoided)' }
+            { cat: 'transport', label: t('stem.climateExplorer.transportation', '🚗 Transportation') },
+            { cat: 'food',      label: t('stem.climateExplorer.food_diet', '🍽️ Food & Diet') },
+            { cat: 'energy',    label: t('stem.climateExplorer.home_energy', '⚡ Home Energy') },
+            { cat: 'digital',   label: t('stem.climateExplorer.digital_streaming', '📱 Digital & Streaming') },
+            { cat: 'shopping',  label: t('stem.climateExplorer.shopping', '🛍️ Shopping') },
+            { cat: 'waste',     label: t('stem.climateExplorer.waste_negative_avoided', '♻️ Waste (negative = avoided)') }
           ].forEach(function(row) {
             lines.push('| ' + row.label + ' | ' + Math.round(granular.byCat[row.cat] || 0).toLocaleString() + ' |');
           });
@@ -559,36 +561,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // ══════════════════════════════════════
       var CARBON = {
         transport: {
-          label: 'How do you get to school?', emoji: '\uD83D\uDE8C',
+          label: t('stem.climateExplorer.how_do_you_get_to_school', 'How do you get to school?'), emoji: '\uD83D\uDE8C',
           opts: [
-            { label: 'Walk / Bike', emoji: '\uD83D\uDEB6', kg: 0, desc: 'Zero emissions! Your legs are the greenest engine.' },
-            { label: 'School Bus', emoji: '\uD83D\uDE8C', kg: 300, desc: 'Shared ride \u2014 about 0.3 kg CO\u2082 per student per trip.' },
-            { label: 'Car (alone)', emoji: '\uD83D\uDE97', kg: 1200, desc: 'A car emits ~0.21 kg CO\u2082/km. Solo trips add up fast.' },
-            { label: 'Carpool', emoji: '\uD83D\uDE99', kg: 400, desc: 'Splitting rides cuts per-person emissions by 50-75%.' }
+            { label: t('stem.climateExplorer.walk_bike', 'Walk / Bike'), emoji: '\uD83D\uDEB6', kg: 0, desc: t('stem.climateExplorer.zero_emissions_your_legs_are_the_green', 'Zero emissions! Your legs are the greenest engine.') },
+            { label: t('stem.climateExplorer.school_bus', 'School Bus'), emoji: '\uD83D\uDE8C', kg: 300, desc: t('stem.climateExplorer.shared_ride_about_0_3_kg_co_per_studen', 'Shared ride \u2014 about 0.3 kg CO\u2082 per student per trip.') },
+            { label: t('stem.climateExplorer.car_alone', 'Car (alone)'), emoji: '\uD83D\uDE97', kg: 1200, desc: t('stem.climateExplorer.a_car_emits_0_21_kg_co_km_solo_trips_a', 'A car emits ~0.21 kg CO\u2082/km. Solo trips add up fast.') },
+            { label: t('stem.climateExplorer.carpool', 'Carpool'), emoji: '\uD83D\uDE99', kg: 400, desc: t('stem.climateExplorer.splitting_rides_cuts_per_person_emissi', 'Splitting rides cuts per-person emissions by 50-75%.') }
           ]
         },
         food: {
-          label: 'What do you usually eat?', emoji: '\uD83C\uDF5E',
+          label: t('stem.climateExplorer.what_do_you_usually_eat', 'What do you usually eat?'), emoji: '\uD83C\uDF5E',
           opts: [
-            { label: 'Mostly plant-based', emoji: '\uD83E\uDD57', kg: 600, desc: 'Fruits, veggies, grains, beans \u2014 lowest food footprint.' },
-            { label: 'A mix of everything', emoji: '\uD83C\uDF71', kg: 1200, desc: 'Some meat, some veggies. Average diet.' },
-            { label: 'Lots of meat & dairy', emoji: '\uD83E\uDD69', kg: 2500, desc: 'Beef produces 60 kg CO\u2082 per kg of meat.' }
+            { label: t('stem.climateExplorer.mostly_plant_based', 'Mostly plant-based'), emoji: '\uD83E\uDD57', kg: 600, desc: t('stem.climateExplorer.fruits_veggies_grains_beans_lowest_foo', 'Fruits, veggies, grains, beans \u2014 lowest food footprint.') },
+            { label: t('stem.climateExplorer.a_mix_of_everything', 'A mix of everything'), emoji: '\uD83C\uDF71', kg: 1200, desc: t('stem.climateExplorer.some_meat_some_veggies_average_diet', 'Some meat, some veggies. Average diet.') },
+            { label: t('stem.climateExplorer.lots_of_meat_dairy', 'Lots of meat & dairy'), emoji: '\uD83E\uDD69', kg: 2500, desc: t('stem.climateExplorer.beef_produces_60_kg_co_per_kg_of_meat', 'Beef produces 60 kg CO\u2082 per kg of meat.') }
           ]
         },
         energy: {
-          label: 'What powers your home?', emoji: '\u26A1',
+          label: t('stem.climateExplorer.what_powers_your_home', 'What powers your home?'), emoji: '\u26A1',
           opts: [
-            { label: 'Solar / Wind', emoji: '\u2600\uFE0F', kg: 200, desc: 'Near-zero operational emissions.' },
-            { label: 'Grid average', emoji: '\uD83D\uDD0C', kg: 2000, desc: 'US grid: ~0.4 kg CO\u2082 per kWh.' },
-            { label: 'Mostly fossil fuels', emoji: '\uD83C\uDFED', kg: 4000, desc: 'Coal-heavy grids: up to 1 kg CO\u2082/kWh.' }
+            { label: t('stem.climateExplorer.solar_wind', 'Solar / Wind'), emoji: '\u2600\uFE0F', kg: 200, desc: t('stem.climateExplorer.near_zero_operational_emissions', 'Near-zero operational emissions.') },
+            { label: t('stem.climateExplorer.grid_average', 'Grid average'), emoji: '\uD83D\uDD0C', kg: 2000, desc: t('stem.climateExplorer.us_grid_0_4_kg_co_per_kwh', 'US grid: ~0.4 kg CO\u2082 per kWh.') },
+            { label: t('stem.climateExplorer.mostly_fossil_fuels', 'Mostly fossil fuels'), emoji: '\uD83C\uDFED', kg: 4000, desc: t('stem.climateExplorer.coal_heavy_grids_up_to_1_kg_co_kwh', 'Coal-heavy grids: up to 1 kg CO\u2082/kWh.') }
           ]
         },
         waste: {
-          label: 'What happens to your trash?', emoji: '\u267B\uFE0F',
+          label: t('stem.climateExplorer.what_happens_to_your_trash', 'What happens to your trash?'), emoji: '\u267B\uFE0F',
           opts: [
-            { label: 'Compost & recycle', emoji: '\uD83C\uDF31', kg: 100, desc: 'Composting diverts methane-producing waste.' },
-            { label: 'Recycle some', emoji: '\u267B\uFE0F', kg: 500, desc: 'Recycling saves ~1 ton CO\u2082 per ton of material.' },
-            { label: 'Mostly landfill', emoji: '\uD83D\uDDD1\uFE0F', kg: 1000, desc: 'Landfills produce methane (28\u00D7 more potent than CO\u2082).' }
+            { label: t('stem.climateExplorer.compost_recycle', 'Compost & recycle'), emoji: '\uD83C\uDF31', kg: 100, desc: t('stem.climateExplorer.composting_diverts_methane_producing_w', 'Composting diverts methane-producing waste.') },
+            { label: t('stem.climateExplorer.recycle_some', 'Recycle some'), emoji: '\u267B\uFE0F', kg: 500, desc: t('stem.climateExplorer.recycling_saves_1_ton_co_per_ton_of_ma', 'Recycling saves ~1 ton CO\u2082 per ton of material.') },
+            { label: t('stem.climateExplorer.mostly_landfill', 'Mostly landfill'), emoji: '\uD83D\uDDD1\uFE0F', kg: 1000, desc: t('stem.climateExplorer.landfills_produce_methane_28_more_pote', 'Landfills produce methane (28\u00D7 more potent than CO\u2082).') }
           ]
         }
       };
@@ -604,61 +606,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // max (max frequency for slider), default freq, category, freqLabel
       var GRANULAR_ITEMS = {
         transport: [
-          { id: 'car_solo',    emoji: '🚗', label: 'Drive solo (avg 25 km trip)',   kg: 5.3,  max: 14, unit: 'trips/week', note: 'Typical US gas car: 0.21 kg CO₂e/km.' },
-          { id: 'car_pool',    emoji: '🚙', label: 'Carpool (25 km, split ×3)',     kg: 1.8,  max: 14, unit: 'trips/week', note: 'Carpool of 3 cuts per-person emissions 65%.' },
-          { id: 'bus',         emoji: '🚌', label: 'Bus ride (25 km)',              kg: 1.2,  max: 14, unit: 'trips/week', note: 'City bus avg: 0.05 kg/passenger-km.' },
-          { id: 'train',       emoji: '🚆', label: 'Train / subway (25 km)',       kg: 0.9,  max: 14, unit: 'trips/week', note: 'Electric rail is 4× cleaner than a car.' },
-          { id: 'ev',          emoji: '🔌', label: 'EV on mixed grid (25 km)',     kg: 1.3,  max: 14, unit: 'trips/week', note: 'Improves as the grid decarbonizes.' },
-          { id: 'walk_bike',   emoji: '🚴', label: 'Walk / bike (any distance)',   kg: 0,    max: 14, unit: 'trips/week', note: 'Zero emissions. Also health benefits.' },
-          { id: 'flight_short',emoji: '✈️', label: 'Short flight (1,500 km)',     kg: 250,  max: 12, unit: 'flights/year', note: 'Aviation has 2-3× warming impact beyond CO₂ alone.' },
-          { id: 'flight_long', emoji: '🛫', label: 'Long flight (8,000 km)',      kg: 1600, max: 12, unit: 'flights/year', note: 'One long-haul round-trip = ~3 tons — a year of driving for many.' }
+          { id: 'car_solo',    emoji: '🚗', label: t('stem.climateExplorer.drive_solo_avg_25_km_trip', 'Drive solo (avg 25 km trip)'),   kg: 5.3,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.typical_us_gas_car_0_21_kg_co_e_km', 'Typical US gas car: 0.21 kg CO₂e/km.') },
+          { id: 'car_pool',    emoji: '🚙', label: t('stem.climateExplorer.carpool_25_km_split_3', 'Carpool (25 km, split ×3)'),     kg: 1.8,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.carpool_of_3_cuts_per_person_emissions', 'Carpool of 3 cuts per-person emissions 65%.') },
+          { id: 'bus',         emoji: '🚌', label: t('stem.climateExplorer.bus_ride_25_km', 'Bus ride (25 km)'),              kg: 1.2,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.city_bus_avg_0_05_kg_passenger_km', 'City bus avg: 0.05 kg/passenger-km.') },
+          { id: 'train',       emoji: '🚆', label: t('stem.climateExplorer.train_subway_25_km', 'Train / subway (25 km)'),       kg: 0.9,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.electric_rail_is_4_cleaner_than_a_car', 'Electric rail is 4× cleaner than a car.') },
+          { id: 'ev',          emoji: '🔌', label: t('stem.climateExplorer.ev_on_mixed_grid_25_km', 'EV on mixed grid (25 km)'),     kg: 1.3,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.improves_as_the_grid_decarbonizes', 'Improves as the grid decarbonizes.') },
+          { id: 'walk_bike',   emoji: '🚴', label: t('stem.climateExplorer.walk_bike_any_distance', 'Walk / bike (any distance)'),   kg: 0,    max: 14, unit: 'trips/week', note: t('stem.climateExplorer.zero_emissions_also_health_benefits', 'Zero emissions. Also health benefits.') },
+          { id: 'flight_short',emoji: '✈️', label: t('stem.climateExplorer.short_flight_1_500_km', 'Short flight (1,500 km)'),     kg: 250,  max: 12, unit: 'flights/year', note: t('stem.climateExplorer.aviation_has_2_3_warming_impact_beyond', 'Aviation has 2-3× warming impact beyond CO₂ alone.') },
+          { id: 'flight_long', emoji: '🛫', label: t('stem.climateExplorer.long_flight_8_000_km', 'Long flight (8,000 km)'),      kg: 1600, max: 12, unit: 'flights/year', note: t('stem.climateExplorer.one_long_haul_round_trip_3_tons_a_year', 'One long-haul round-trip = ~3 tons — a year of driving for many.') }
         ],
         food: [
-          { id: 'beef',        emoji: '🥩', label: 'Beef meal',                   kg: 7.5,  max: 21, unit: 'meals/week', note: '60 kg CO₂e per kg of beef — highest of any food.' },
-          { id: 'lamb',        emoji: '🐑', label: 'Lamb meal',                   kg: 5.9,  max: 21, unit: 'meals/week', note: 'Second-highest emitter, after beef.' },
-          { id: 'pork',        emoji: '🥓', label: 'Pork meal',                   kg: 2.3,  max: 21, unit: 'meals/week', note: 'Moderate — 7 kg CO₂e/kg.' },
-          { id: 'chicken',     emoji: '🍗', label: 'Chicken / poultry meal',     kg: 1.6,  max: 21, unit: 'meals/week', note: 'Lowest-emission meat.' },
-          { id: 'fish',        emoji: '🐟', label: 'Fish meal',                   kg: 1.4,  max: 21, unit: 'meals/week', note: 'Varies: farmed salmon higher, wild cod lower.' },
-          { id: 'cheese',      emoji: '🧀', label: 'Cheese / dairy serving',     kg: 0.7,  max: 21, unit: 'servings/week', note: 'Dairy cattle also produce methane.' },
-          { id: 'vegetarian',  emoji: '🥗', label: 'Vegetarian meal',             kg: 0.6,  max: 21, unit: 'meals/week', note: 'About 1/10 the impact of a beef meal.' },
-          { id: 'vegan',       emoji: '🥬', label: 'Vegan meal',                  kg: 0.4,  max: 21, unit: 'meals/week', note: 'Beans + rice + veggies = lowest possible footprint.' },
-          { id: 'coffee',      emoji: '☕', label: 'Coffee (take-out cup)',       kg: 0.21, max: 21, unit: 'cups/week', note: 'Disposable cups add ~50% vs. home-brewed.' },
-          { id: 'foodwaste',   emoji: '🗑️', label: 'Food thrown away (1 meal)',   kg: 1.3,  max: 21, unit: 'meals/week', note: 'Food waste = 8% of global emissions.' }
+          { id: 'beef',        emoji: '🥩', label: t('stem.climateExplorer.beef_meal', 'Beef meal'),                   kg: 7.5,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.60_kg_co_e_per_kg_of_beef_highest_of_a', '60 kg CO₂e per kg of beef — highest of any food.') },
+          { id: 'lamb',        emoji: '🐑', label: t('stem.climateExplorer.lamb_meal', 'Lamb meal'),                   kg: 5.9,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.second_highest_emitter_after_beef', 'Second-highest emitter, after beef.') },
+          { id: 'pork',        emoji: '🥓', label: t('stem.climateExplorer.pork_meal', 'Pork meal'),                   kg: 2.3,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.moderate_7_kg_co_e_kg', 'Moderate — 7 kg CO₂e/kg.') },
+          { id: 'chicken',     emoji: '🍗', label: t('stem.climateExplorer.chicken_poultry_meal', 'Chicken / poultry meal'),     kg: 1.6,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.lowest_emission_meat', 'Lowest-emission meat.') },
+          { id: 'fish',        emoji: '🐟', label: t('stem.climateExplorer.fish_meal', 'Fish meal'),                   kg: 1.4,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.varies_farmed_salmon_higher_wild_cod_l', 'Varies: farmed salmon higher, wild cod lower.') },
+          { id: 'cheese',      emoji: '🧀', label: t('stem.climateExplorer.cheese_dairy_serving', 'Cheese / dairy serving'),     kg: 0.7,  max: 21, unit: 'servings/week', note: t('stem.climateExplorer.dairy_cattle_also_produce_methane', 'Dairy cattle also produce methane.') },
+          { id: 'vegetarian',  emoji: '🥗', label: t('stem.climateExplorer.vegetarian_meal', 'Vegetarian meal'),             kg: 0.6,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.about_1_10_the_impact_of_a_beef_meal', 'About 1/10 the impact of a beef meal.') },
+          { id: 'vegan',       emoji: '🥬', label: t('stem.climateExplorer.vegan_meal', 'Vegan meal'),                  kg: 0.4,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.beans_rice_veggies_lowest_possible_foo', 'Beans + rice + veggies = lowest possible footprint.') },
+          { id: 'coffee',      emoji: '☕', label: t('stem.climateExplorer.coffee_take_out_cup', 'Coffee (take-out cup)'),       kg: 0.21, max: 21, unit: 'cups/week', note: t('stem.climateExplorer.disposable_cups_add_50_vs_home_brewed', 'Disposable cups add ~50% vs. home-brewed.') },
+          { id: 'foodwaste',   emoji: '🗑️', label: t('stem.climateExplorer.food_thrown_away_1_meal', 'Food thrown away (1 meal)'),   kg: 1.3,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.food_waste_8_of_global_emissions', 'Food waste = 8% of global emissions.') }
         ],
         energy: [
-          { id: 'heat_gas',    emoji: '🔥', label: 'Gas heating running (1 hr)',  kg: 1.5,  max: 168, unit: 'hours/week', note: 'Natural gas: ~2 kg/therm. Winter-only.' },
-          { id: 'ac',          emoji: '❄️', label: 'AC running (1 hr)',           kg: 0.9,  max: 168, unit: 'hours/week', note: 'US grid average; lower in CA, higher in WV.' },
-          { id: 'heat_pump',   emoji: '🌡️', label: 'Heat pump (1 hr heating)',   kg: 0.3,  max: 168, unit: 'hours/week', note: '4× more efficient than gas furnace.' },
-          { id: 'shower',      emoji: '🚿', label: '10-minute hot shower',        kg: 0.7,  max: 14,  unit: 'showers/week', note: 'Shorter shower = linear savings.' },
-          { id: 'laundry_warm',emoji: '👕', label: 'Laundry load (warm wash)',    kg: 0.8,  max: 14,  unit: 'loads/week', note: 'Cold wash saves 75% of this.' },
-          { id: 'dryer',       emoji: '🌀', label: 'Electric clothes dryer',      kg: 2.4,  max: 14,  unit: 'loads/week', note: 'Line drying = zero emissions.' },
-          { id: 'dishwasher',  emoji: '🍽️', label: 'Dishwasher cycle',            kg: 0.5,  max: 14,  unit: 'cycles/week', note: 'Full loads 2× more efficient.' }
+          { id: 'heat_gas',    emoji: '🔥', label: t('stem.climateExplorer.gas_heating_running_1_hr', 'Gas heating running (1 hr)'),  kg: 1.5,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.natural_gas_2_kg_therm_winter_only', 'Natural gas: ~2 kg/therm. Winter-only.') },
+          { id: 'ac',          emoji: '❄️', label: t('stem.climateExplorer.ac_running_1_hr', 'AC running (1 hr)'),           kg: 0.9,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.us_grid_average_lower_in_ca_higher_in_', 'US grid average; lower in CA, higher in WV.') },
+          { id: 'heat_pump',   emoji: '🌡️', label: t('stem.climateExplorer.heat_pump_1_hr_heating', 'Heat pump (1 hr heating)'),   kg: 0.3,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.4_more_efficient_than_gas_furnace', '4× more efficient than gas furnace.') },
+          { id: 'shower',      emoji: '🚿', label: t('stem.climateExplorer.10_minute_hot_shower', '10-minute hot shower'),        kg: 0.7,  max: 14,  unit: 'showers/week', note: t('stem.climateExplorer.shorter_shower_linear_savings', 'Shorter shower = linear savings.') },
+          { id: 'laundry_warm',emoji: '👕', label: t('stem.climateExplorer.laundry_load_warm_wash', 'Laundry load (warm wash)'),    kg: 0.8,  max: 14,  unit: 'loads/week', note: t('stem.climateExplorer.cold_wash_saves_75_of_this', 'Cold wash saves 75% of this.') },
+          { id: 'dryer',       emoji: '🌀', label: t('stem.climateExplorer.electric_clothes_dryer', 'Electric clothes dryer'),      kg: 2.4,  max: 14,  unit: 'loads/week', note: t('stem.climateExplorer.line_drying_zero_emissions', 'Line drying = zero emissions.') },
+          { id: 'dishwasher',  emoji: '🍽️', label: t('stem.climateExplorer.dishwasher_cycle', 'Dishwasher cycle'),            kg: 0.5,  max: 14,  unit: 'cycles/week', note: t('stem.climateExplorer.full_loads_2_more_efficient', 'Full loads 2× more efficient.') }
         ],
         digital: [
-          { id: 'netflix_hd',  emoji: '📺', label: 'Streaming HD video (1 hr)',   kg: 0.036, max: 50, unit: 'hours/week', note: 'Netflix 2023 report — lower than older estimates.' },
-          { id: 'stream_4k',   emoji: '🎬', label: 'Streaming 4K video (1 hr)',   kg: 0.12,  max: 50, unit: 'hours/week', note: '4K uses ~4× the bandwidth of HD.' },
-          { id: 'gaming',      emoji: '🎮', label: 'Console gaming (1 hr)',       kg: 0.1,   max: 50, unit: 'hours/week', note: 'PS5/Xbox draw 150-200W.' },
-          { id: 'videocall',   emoji: '📹', label: 'Video call (1 hr)',           kg: 0.06,  max: 40, unit: 'hours/week', note: 'Camera-off reduces by ~95%.' },
-          { id: 'pc_work',     emoji: '💻', label: 'PC work / school (1 hr)',     kg: 0.05,  max: 50, unit: 'hours/week', note: 'Laptop ~1/3 of desktop.' },
-          { id: 'ai_text',     emoji: '💬', label: 'AI text chat (ChatGPT/Claude/Gemini)', kg: 0.003, max: 500, unit: 'queries/week', note: '~3g CO\u2082e per text prompt. Long-context (1M token) queries cost ~3× more.' },
-          { id: 'ai_image',    emoji: '🎨', label: 'AI image generation',                   kg: 0.015, max: 100, unit: 'images/week', note: 'DALL-E / Midjourney / Stable Diffusion: ~10–30g per image. 5–10× heavier than text.' },
-          { id: 'ai_video',    emoji: '🎥', label: 'AI video generation (short clip)',      kg: 0.15,  max: 50,  unit: 'clips/week', note: 'Sora / Runway / Kling: ~100–500g per clip. Scales linearly with clip length + resolution. 50×+ heavier than text.' },
-          { id: 'ai_voice',    emoji: '🎙️', label: 'AI voice / TTS generation',            kg: 0.002, max: 100, unit: 'clips/week', note: 'ElevenLabs / Murf / OpenAI TTS: ~1–3g per short clip.' },
-          { id: 'ai_code',     emoji: '👨‍💻', label: 'AI code assistant completion',         kg: 0.005, max: 500, unit: 'completions/week', note: 'Copilot / Cursor / Claude Code: long-context code prompts ~5g each.' }
+          { id: 'netflix_hd',  emoji: '📺', label: t('stem.climateExplorer.streaming_hd_video_1_hr', 'Streaming HD video (1 hr)'),   kg: 0.036, max: 50, unit: 'hours/week', note: t('stem.climateExplorer.netflix_2023_report_lower_than_older_e', 'Netflix 2023 report — lower than older estimates.') },
+          { id: 'stream_4k',   emoji: '🎬', label: t('stem.climateExplorer.streaming_4k_video_1_hr', 'Streaming 4K video (1 hr)'),   kg: 0.12,  max: 50, unit: 'hours/week', note: t('stem.climateExplorer.4k_uses_4_the_bandwidth_of_hd', '4K uses ~4× the bandwidth of HD.') },
+          { id: 'gaming',      emoji: '🎮', label: t('stem.climateExplorer.console_gaming_1_hr', 'Console gaming (1 hr)'),       kg: 0.1,   max: 50, unit: 'hours/week', note: t('stem.climateExplorer.ps5_xbox_draw_150_200w', 'PS5/Xbox draw 150-200W.') },
+          { id: 'videocall',   emoji: '📹', label: t('stem.climateExplorer.video_call_1_hr', 'Video call (1 hr)'),           kg: 0.06,  max: 40, unit: 'hours/week', note: t('stem.climateExplorer.camera_off_reduces_by_95', 'Camera-off reduces by ~95%.') },
+          { id: 'pc_work',     emoji: '💻', label: t('stem.climateExplorer.pc_work_school_1_hr', 'PC work / school (1 hr)'),     kg: 0.05,  max: 50, unit: 'hours/week', note: t('stem.climateExplorer.laptop_1_3_of_desktop', 'Laptop ~1/3 of desktop.') },
+          { id: 'ai_text',     emoji: '💬', label: t('stem.climateExplorer.ai_text_chat_chatgpt_claude_gemini', 'AI text chat (ChatGPT/Claude/Gemini)'), kg: 0.003, max: 500, unit: 'queries/week', note: t('stem.climateExplorer.3g_co_e_per_text_prompt_long_context_1', '~3g CO\u2082e per text prompt. Long-context (1M token) queries cost ~3× more.') },
+          { id: 'ai_image',    emoji: '🎨', label: t('stem.climateExplorer.ai_image_generation', 'AI image generation'),                   kg: 0.015, max: 100, unit: 'images/week', note: t('stem.climateExplorer.dall_e_midjourney_stable_diffusion_10_', 'DALL-E / Midjourney / Stable Diffusion: ~10–30g per image. 5–10× heavier than text.') },
+          { id: 'ai_video',    emoji: '🎥', label: t('stem.climateExplorer.ai_video_generation_short_clip', 'AI video generation (short clip)'),      kg: 0.15,  max: 50,  unit: 'clips/week', note: t('stem.climateExplorer.sora_runway_kling_100_500g_per_clip_sc', 'Sora / Runway / Kling: ~100–500g per clip. Scales linearly with clip length + resolution. 50×+ heavier than text.') },
+          { id: 'ai_voice',    emoji: '🎙️', label: t('stem.climateExplorer.ai_voice_tts_generation', 'AI voice / TTS generation'),            kg: 0.002, max: 100, unit: 'clips/week', note: t('stem.climateExplorer.elevenlabs_murf_openai_tts_1_3g_per_sh', 'ElevenLabs / Murf / OpenAI TTS: ~1–3g per short clip.') },
+          { id: 'ai_code',     emoji: '👨‍💻', label: t('stem.climateExplorer.ai_code_assistant_completion', 'AI code assistant completion'),         kg: 0.005, max: 500, unit: 'completions/week', note: t('stem.climateExplorer.copilot_cursor_claude_code_long_contex', 'Copilot / Cursor / Claude Code: long-context code prompts ~5g each.') }
         ],
         shopping: [
-          { id: 'tshirt',      emoji: '👕', label: 'New T-shirt',                 kg: 7,   max: 52, unit: 'purchases/year', note: 'Polyester = lifetime of oil extraction.' },
-          { id: 'jeans',       emoji: '👖', label: 'New jeans',                   kg: 33,  max: 20, unit: 'purchases/year', note: 'Secondhand = ~zero emissions.' },
-          { id: 'smartphone',  emoji: '📱', label: 'New smartphone',              kg: 70,  max: 4,  unit: 'purchases/year', note: 'Keep phones 3+ years to halve annual impact.' },
-          { id: 'laptop',      emoji: '💻', label: 'New laptop',                  kg: 300, max: 4,  unit: 'purchases/year', note: 'Manufacturing dominates laptop emissions.' },
-          { id: 'online_order',emoji: '📦', label: 'Online shipment (single box)',kg: 0.5, max: 52, unit: 'orders/week', note: '2-day shipping = 3× slower shipping.' },
-          { id: 'fastfashion', emoji: '🛍️', label: 'Fast fashion bundle',         kg: 25,  max: 24, unit: 'purchases/year', note: 'Shein/Temu avg: 25 kg per order.' }
+          { id: 'tshirt',      emoji: '👕', label: t('stem.climateExplorer.new_t_shirt', 'New T-shirt'),                 kg: 7,   max: 52, unit: 'purchases/year', note: t('stem.climateExplorer.polyester_lifetime_of_oil_extraction', 'Polyester = lifetime of oil extraction.') },
+          { id: 'jeans',       emoji: '👖', label: t('stem.climateExplorer.new_jeans', 'New jeans'),                   kg: 33,  max: 20, unit: 'purchases/year', note: t('stem.climateExplorer.secondhand_zero_emissions', 'Secondhand = ~zero emissions.') },
+          { id: 'smartphone',  emoji: '📱', label: t('stem.climateExplorer.new_smartphone', 'New smartphone'),              kg: 70,  max: 4,  unit: 'purchases/year', note: t('stem.climateExplorer.keep_phones_3_years_to_halve_annual_im', 'Keep phones 3+ years to halve annual impact.') },
+          { id: 'laptop',      emoji: '💻', label: t('stem.climateExplorer.new_laptop', 'New laptop'),                  kg: 300, max: 4,  unit: 'purchases/year', note: t('stem.climateExplorer.manufacturing_dominates_laptop_emissio', 'Manufacturing dominates laptop emissions.') },
+          { id: 'online_order',emoji: '📦', label: t('stem.climateExplorer.online_shipment_single_box', 'Online shipment (single box)'),kg: 0.5, max: 52, unit: 'orders/week', note: t('stem.climateExplorer.2_day_shipping_3_slower_shipping', '2-day shipping = 3× slower shipping.') },
+          { id: 'fastfashion', emoji: '🛍️', label: t('stem.climateExplorer.fast_fashion_bundle', 'Fast fashion bundle'),         kg: 25,  max: 24, unit: 'purchases/year', note: t('stem.climateExplorer.shein_temu_avg_25_kg_per_order', 'Shein/Temu avg: 25 kg per order.') }
         ],
         waste: [
-          { id: 'landfill',    emoji: '🗑️', label: 'Landfill trash (1 bag)',      kg: 4.5, max: 7,  unit: 'bags/week', note: 'Landfills produce methane (28× more potent than CO₂).' },
-          { id: 'recycle',     emoji: '♻️', label: 'Recycling diverted (1 bag)',  kg: -1.5, max: 7, unit: 'bags/week', note: 'Negative! Recycling avoids emissions.' },
-          { id: 'compost',     emoji: '🌱', label: 'Composting (1 bag)',          kg: -2,  max: 7,  unit: 'bags/week', note: 'Avoids methane AND builds soil carbon.' },
-          { id: 'bottled_water',emoji: '💧', label: 'Bottled water',              kg: 0.08, max: 50, unit: 'bottles/week', note: 'Tap water = ~500× cleaner emissions-wise.' }
+          { id: 'landfill',    emoji: '🗑️', label: t('stem.climateExplorer.landfill_trash_1_bag', 'Landfill trash (1 bag)'),      kg: 4.5, max: 7,  unit: 'bags/week', note: t('stem.climateExplorer.landfills_produce_methane_28_more_pote_2', 'Landfills produce methane (28× more potent than CO₂).') },
+          { id: 'recycle',     emoji: '♻️', label: t('stem.climateExplorer.recycling_diverted_1_bag', 'Recycling diverted (1 bag)'),  kg: -1.5, max: 7, unit: 'bags/week', note: t('stem.climateExplorer.negative_recycling_avoids_emissions', 'Negative! Recycling avoids emissions.') },
+          { id: 'compost',     emoji: '🌱', label: t('stem.climateExplorer.composting_1_bag', 'Composting (1 bag)'),          kg: -2,  max: 7,  unit: 'bags/week', note: t('stem.climateExplorer.avoids_methane_and_builds_soil_carbon', 'Avoids methane AND builds soil carbon.') },
+          { id: 'bottled_water',emoji: '💧', label: t('stem.climateExplorer.bottled_water', 'Bottled water'),              kg: 0.08, max: 50, unit: 'bottles/week', note: t('stem.climateExplorer.tap_water_500_cleaner_emissions_wise', 'Tap water = ~500× cleaner emissions-wise.') }
         ]
       };
 
@@ -676,7 +678,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { country: 'Global avg',    emoji: '🌍', kg: 4500,  rank: 'global', highlight: true },
         { country: 'Mexico',        emoji: '🇲🇽', kg: 2900,  rank: 'low' },
         { country: 'India',         emoji: '🇮🇳', kg: 1900,  rank: 'low' },
-        { country: 'Paris-aligned', emoji: '🎯', kg: 2300,  rank: 'target', highlight: true, note: 'What every person needs to reach by 2030 to stay below 1.5°C.' },
+        { country: 'Paris-aligned', emoji: '🎯', kg: 2300,  rank: 'target', highlight: true, note: t('stem.climateExplorer.what_every_person_needs_to_reach_by_20', 'What every person needs to reach by 2030 to stay below 1.5°C.') },
         { country: 'Bangladesh',    emoji: '🇧🇩', kg: 600,   rank: 'low' },
         { country: 'Kenya',         emoji: '🇰🇪', kg: 400,   rank: 'low' }
       ];
@@ -730,16 +732,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
       // ── Hope Meter milestones ──
       var HOPE_MILESTONES = [
-        { id: 'started', label: 'Started Exploring', check: function() { return Object.keys(tabsVisited).length > 0; } },
-        { id: 'calculated', label: 'Calculated Footprint', check: function() { return !!badges.firstCalc; } },
-        { id: 'lowCarbon', label: 'Low-Carbon Lifestyle', check: function() { return ct.total < 2000; } },
-        { id: 'designedMix', label: 'Designed Energy Mix', check: function() { return rsSolar + rsWind + rsHydro + rsNuclear > 60; } },
-        { id: 'netZero', label: 'Near Net-Zero Mix', check: function() { return !!badges.netZero; } },
-        { id: 'justiceAware', label: 'Explored Justice', check: function() { return Object.keys(d.regionsViewed || {}).length >= 3; } },
-        { id: 'solutions', label: 'Learned Solutions', check: function() { return Object.keys(solutionsViewed).length >= 4; } },
-        { id: 'action', label: 'Took Action', check: function() { return !!badges.actionPlanner; } },
-        { id: 'quizAce', label: 'Aced the Quiz', check: function() { return quizCorrect >= 5; } },
-        { id: 'allTabs', label: 'Explored Everything', check: function() { return !!badges.allTabs; } }
+        { id: 'started', label: t('stem.climateExplorer.started_exploring', 'Started Exploring'), check: function() { return Object.keys(tabsVisited).length > 0; } },
+        { id: 'calculated', label: t('stem.climateExplorer.calculated_footprint', 'Calculated Footprint'), check: function() { return !!badges.firstCalc; } },
+        { id: 'lowCarbon', label: t('stem.climateExplorer.low_carbon_lifestyle', 'Low-Carbon Lifestyle'), check: function() { return ct.total < 2000; } },
+        { id: 'designedMix', label: t('stem.climateExplorer.designed_energy_mix', 'Designed Energy Mix'), check: function() { return rsSolar + rsWind + rsHydro + rsNuclear > 60; } },
+        { id: 'netZero', label: t('stem.climateExplorer.near_net_zero_mix', 'Near Net-Zero Mix'), check: function() { return !!badges.netZero; } },
+        { id: 'justiceAware', label: t('stem.climateExplorer.explored_justice', 'Explored Justice'), check: function() { return Object.keys(d.regionsViewed || {}).length >= 3; } },
+        { id: 'solutions', label: t('stem.climateExplorer.learned_solutions', 'Learned Solutions'), check: function() { return Object.keys(solutionsViewed).length >= 4; } },
+        { id: 'action', label: t('stem.climateExplorer.took_action', 'Took Action'), check: function() { return !!badges.actionPlanner; } },
+        { id: 'quizAce', label: t('stem.climateExplorer.aced_the_quiz', 'Aced the Quiz'), check: function() { return quizCorrect >= 5; } },
+        { id: 'allTabs', label: t('stem.climateExplorer.explored_everything', 'Explored Everything'), check: function() { return !!badges.allTabs; } }
       ];
       var hopePts = HOPE_MILESTONES.filter(function(m) { return m.check(); }).length;
       var hopePct = Math.round(hopePts / HOPE_MILESTONES.length * 100);
@@ -775,52 +777,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       for (var ti = 1; ti < timeline.length; ti++) cumulativeAvoided += BASELINE_GT - timeline[ti].gt;
 
       var SCENARIOS = [
-        { label: '100% Solar City', mix: [100, 0, 0, 0], desc: 'Cities like Burlington, VT already run on 100% renewable electricity!', hope: 'Solar is now the cheapest electricity source in history.' },
-        { label: 'Balanced Green Mix', mix: [30, 30, 20, 15], desc: 'A diverse portfolio is the most resilient approach.', hope: 'Sweden and France already achieve over 90% clean electricity.' },
-        { label: 'Wind-Powered Future', mix: [10, 60, 10, 10], desc: 'Denmark gets 55% of electricity from wind already.', hope: 'Wind turbines can be built on farms \u2014 land beneath still grows crops.' },
-        { label: 'Current Pace', mix: [15, 12, 15, 10], desc: 'The world adds renewables faster than ever.', hope: 'Solar capacity doubles every 2-3 years worldwide.' }
+        { label: t('stem.climateExplorer.100_solar_city', '100% Solar City'), mix: [100, 0, 0, 0], desc: t('stem.climateExplorer.cities_like_burlington_vt_already_run_', 'Cities like Burlington, VT already run on 100% renewable electricity!'), hope: 'Solar is now the cheapest electricity source in history.' },
+        { label: t('stem.climateExplorer.balanced_green_mix', 'Balanced Green Mix'), mix: [30, 30, 20, 15], desc: t('stem.climateExplorer.a_diverse_portfolio_is_the_most_resili', 'A diverse portfolio is the most resilient approach.'), hope: 'Sweden and France already achieve over 90% clean electricity.' },
+        { label: t('stem.climateExplorer.wind_powered_future', 'Wind-Powered Future'), mix: [10, 60, 10, 10], desc: t('stem.climateExplorer.denmark_gets_55_of_electricity_from_wi', 'Denmark gets 55% of electricity from wind already.'), hope: 'Wind turbines can be built on farms \u2014 land beneath still grows crops.' },
+        { label: t('stem.climateExplorer.current_pace', 'Current Pace'), mix: [15, 12, 15, 10], desc: t('stem.climateExplorer.the_world_adds_renewables_faster_than_', 'The world adds renewables faster than ever.'), hope: 'Solar capacity doubles every 2-3 years worldwide.' }
       ];
 
       // ══════════════════════════════════════
       //  CLIMATE JUSTICE DATA
       // ══════════════════════════════════════
       var REGIONS = [
-        { id: 'pacific', name: 'Pacific Island Nations', emoji: '\uD83C\uDDEB\uD83C\uDDEF', risk: 'extreme', type: 'Sea level rise, coral bleaching', emPct: 0.03, pop: '12M',
+        { id: 'pacific', name: t('stem.climateExplorer.pacific_island_nations', 'Pacific Island Nations'), emoji: '\uD83C\uDDEB\uD83C\uDDEF', risk: 'extreme', type: 'Sea level rise, coral bleaching', emPct: 0.03, pop: '12M',
           story: 'Tuvalu, Kiribati, and the Marshall Islands may face severe flooding by 2100, yet produce less than 0.03% of global emissions. Young activists like Litokne Kabua lead advocacy campaigns.',
           resilience: 'Coral reef restoration, floating architecture, legal sovereignty campaigns',
-          voice: { name: 'Anote Tong', role: 'Former President of Kiribati', quote: 'We are not just talking about losing land. We are talking about losing our identity, our culture, our home.', source: 'UN General Assembly addresses, 2013\u20132016' } },
-        { id: 'arctic', name: 'Arctic Communities', emoji: '\u2744\uFE0F', risk: 'extreme', type: 'Permafrost thaw, habitat loss', emPct: 0.1, pop: '4M',
+          voice: { name: t('stem.climateExplorer.anote_tong', 'Anote Tong'), role: 'Former President of Kiribati', quote: 'We are not just talking about losing land. We are talking about losing our identity, our culture, our home.', source: 'UN General Assembly addresses, 2013\u20132016' } },
+        { id: 'arctic', name: t('stem.climateExplorer.arctic_communities', 'Arctic Communities'), emoji: '\u2744\uFE0F', risk: 'extreme', type: 'Permafrost thaw, habitat loss', emPct: 0.1, pop: '4M',
           story: 'Indigenous Arctic peoples have sustained cultures for millennia. Warming is 3-4\u00D7 faster here. Traditional food systems are changing, but communities lead climate monitoring.',
           resilience: 'Traditional ecological knowledge, community monitoring networks, ice cellars',
-          voice: { name: 'Sheila Watt-Cloutier', role: 'Inuk activist; Nobel Peace Prize nominee', quote: 'Our right to be cold is a human right.', source: 'The Right to Be Cold (2015) and earlier IPCC briefings' } },
-        { id: 'sahel', name: 'Sahel Region (Africa)', emoji: '\uD83C\uDDFF\uD83C\uDDE6', risk: 'extreme', type: 'Drought, desertification, food insecurity', emPct: 0.5, pop: '400M',
+          voice: { name: t('stem.climateExplorer.sheila_watt_cloutier', 'Sheila Watt-Cloutier'), role: 'Inuk activist; Nobel Peace Prize nominee', quote: 'Our right to be cold is a human right.', source: 'The Right to Be Cold (2015) and earlier IPCC briefings' } },
+        { id: 'sahel', name: t('stem.climateExplorer.sahel_region_africa', 'Sahel Region (Africa)'), emoji: '\uD83C\uDDFF\uD83C\uDDE6', risk: 'extreme', type: 'Drought, desertification, food insecurity', emPct: 0.5, pop: '400M',
           story: 'The Sahel spans 5,400 km across Africa. Despite minimal emissions, it faces severe drought cycles. The Great Green Wall project aims to restore 100 million hectares.',
           resilience: 'Great Green Wall reforestation, solar-powered irrigation, drought-resistant crops',
-          voice: { name: 'Hindou Oumarou Ibrahim', role: 'Mbororo, Chad; UN Permanent Forum on Indigenous Issues', quote: 'Indigenous peoples are not victims. We are part of the solution.', source: 'UN Climate Action Summit 2019; TED 2019' } },
-        { id: 'bangladesh', name: 'Bangladesh & South Asia', emoji: '\uD83C\uDDE7\uD83C\uDDE9', risk: 'extreme', type: 'Flooding, cyclones, displacement', emPct: 0.4, pop: '170M',
+          voice: { name: t('stem.climateExplorer.hindou_oumarou_ibrahim', 'Hindou Oumarou Ibrahim'), role: 'Mbororo, Chad; UN Permanent Forum on Indigenous Issues', quote: 'Indigenous peoples are not victims. We are part of the solution.', source: 'UN Climate Action Summit 2019; TED 2019' } },
+        { id: 'bangladesh', name: t('stem.climateExplorer.bangladesh_south_asia', 'Bangladesh & South Asia'), emoji: '\uD83C\uDDE7\uD83C\uDDE9', risk: 'extreme', type: 'Flooding, cyclones, displacement', emPct: 0.4, pop: '170M',
           story: 'Bangladesh contributes 0.4% of emissions but faces some of the worst flooding. Millions may be displaced by 2050. Yet Bangladeshi engineers pioneer floating schools and farms.',
           resilience: 'Floating schools, cyclone shelters, mangrove restoration, early warning systems',
-          voice: { name: 'Saleemul Huq (1952\u20132023)', role: 'Bangladeshi climate scientist; founder of ICCCAD; lead architect of the COP27 Loss & Damage Fund', quote: 'Loss and damage is happening now. Adaptation has its limits.', source: 'COP21\u2013COP27 statements; Climate Home News interviews' } },
-        { id: 'caribbean', name: 'Caribbean Islands', emoji: '\uD83C\uDDF1\uD83C\uDDE8', risk: 'high', type: 'Hurricanes, coral loss, tourism collapse', emPct: 0.2, pop: '44M',
+          voice: { name: t('stem.climateExplorer.saleemul_huq_1952_2023', 'Saleemul Huq (1952\u20132023)'), role: 'Bangladeshi climate scientist; founder of ICCCAD; lead architect of the COP27 Loss & Damage Fund', quote: 'Loss and damage is happening now. Adaptation has its limits.', source: 'COP21\u2013COP27 statements; Climate Home News interviews' } },
+        { id: 'caribbean', name: t('stem.climateExplorer.caribbean_islands', 'Caribbean Islands'), emoji: '\uD83C\uDDF1\uD83C\uDDE8', risk: 'high', type: 'Hurricanes, coral loss, tourism collapse', emPct: 0.2, pop: '44M',
           story: 'Caribbean nations face intensifying hurricanes. Hurricane Maria (2017) devastated Dominica and Puerto Rico. Islands now lead in renewable energy transitions.',
           resilience: 'Hurricane-resilient building codes, community solar, coral nurseries',
-          voice: { name: 'Mia Mottley', role: 'Prime Minister of Barbados', quote: 'We were the people whose ancestors escaped slavery only to find ourselves on the front lines of climate change.', source: 'COP26 plenary, Glasgow, 2021' } },
-        { id: 'ej_usa', name: 'US Environmental Justice', emoji: '\uD83C\uDDFA\uD83C\uDDF8', risk: 'high', type: 'Air pollution, heat islands, toxic waste', emPct: 15.0, pop: '~40M affected',
+          voice: { name: t('stem.climateExplorer.mia_mottley', 'Mia Mottley'), role: 'Prime Minister of Barbados', quote: 'We were the people whose ancestors escaped slavery only to find ourselves on the front lines of climate change.', source: 'COP26 plenary, Glasgow, 2021' } },
+        { id: 'ej_usa', name: t('stem.climateExplorer.us_environmental_justice', 'US Environmental Justice'), emoji: '\uD83C\uDDFA\uD83C\uDDF8', risk: 'high', type: 'Air pollution, heat islands, toxic waste', emPct: 15.0, pop: '~40M affected',
           story: 'In the US, communities of color are 75% more likely to live near polluting facilities. Heat islands in cities can be 10\u00B0F hotter. Environmental justice movements fight for equitable protection.',
           resilience: 'Community air monitoring, urban tree canopy programs, clean energy access initiatives',
-          voice: { name: 'Catherine Coleman Flowers', role: 'Founder, Center for Rural Enterprise & Environmental Justice (Lowndes County, Alabama); MacArthur Fellow', quote: 'We are not a sacrifice zone.', source: 'Waste: One Woman\u2019s Fight Against America\u2019s Dirty Secret (2020); Senate testimony 2021' } },
-        { id: 'seasia', name: 'Southeast Asia Coastal', emoji: '\uD83C\uDDFB\uD83C\uDDF3', risk: 'high', type: 'Typhoons, sea level, saltwater intrusion', emPct: 4.0, pop: '680M',
+          voice: { name: t('stem.climateExplorer.catherine_coleman_flowers', 'Catherine Coleman Flowers'), role: 'Founder, Center for Rural Enterprise & Environmental Justice (Lowndes County, Alabama); MacArthur Fellow', quote: 'We are not a sacrifice zone.', source: 'Waste: One Woman\u2019s Fight Against America\u2019s Dirty Secret (2020); Senate testimony 2021' } },
+        { id: 'seasia', name: t('stem.climateExplorer.southeast_asia_coastal', 'Southeast Asia Coastal'), emoji: '\uD83C\uDDFB\uD83C\uDDF3', risk: 'high', type: 'Typhoons, sea level, saltwater intrusion', emPct: 4.0, pop: '680M',
           story: 'Vietnam, Philippines, and Indonesia face rising seas and intensifying storms. Jakarta is sinking so fast Indonesia is building a new capital. Communities lead mangrove restoration.',
           resilience: 'Mangrove planting, floating communities, aquaculture adaptation',
-          voice: { name: 'Yeb Sa\u00F1o', role: 'Filipino climate negotiator; walked out of COP19 after Typhoon Haiyan killed 6,300 people in his country', quote: 'We can stop this madness right here in Warsaw.', source: 'COP19 opening plenary, Warsaw, 11 November 2013' } },
-        { id: 'andes', name: 'Andean Communities', emoji: '\uD83C\uDDF5\uD83C\uDDEA', risk: 'high', type: 'Glacier retreat, water scarcity', emPct: 1.0, pop: '50M',
+          voice: { name: t('stem.climateExplorer.yeb_sa_o', 'Yeb Sa\u00F1o'), role: 'Filipino climate negotiator; walked out of COP19 after Typhoon Haiyan killed 6,300 people in his country', quote: 'We can stop this madness right here in Warsaw.', source: 'COP19 opening plenary, Warsaw, 11 November 2013' } },
+        { id: 'andes', name: t('stem.climateExplorer.andean_communities', 'Andean Communities'), emoji: '\uD83C\uDDF5\uD83C\uDDEA', risk: 'high', type: 'Glacier retreat, water scarcity', emPct: 1.0, pop: '50M',
           story: 'Andean glaciers provide drinking water for millions. They have lost 30-50% of volume since the 1970s. Indigenous communities combine traditional and modern water management.',
           resilience: 'Ancient qocha (reservoir) systems, glacier monitoring, watershed reforestation',
-          voice: { name: 'Tarcila Rivera Zea', role: 'Quechua activist; founder of CHIRAPAQ (Center for Indigenous Cultures of Peru); FAO Special Ambassador for Indigenous Peoples', quote: 'We do not inherit the land from our ancestors. We borrow it from our grandchildren \u2014 and the climate crisis is the bill coming due.', source: 'UN Permanent Forum on Indigenous Issues sessions; CHIRAPAQ public statements' } },
-        { id: 'wabanaki', name: 'Wabanaki Nations (Maine)', emoji: '\uD83C\uDF05', risk: 'high', type: 'Sea level on the coast, warming rivers, ash dieback, shellfish loss', emPct: 0.01, pop: '~8,000 enrolled across 4 nations',
+          voice: { name: t('stem.climateExplorer.tarcila_rivera_zea', 'Tarcila Rivera Zea'), role: 'Quechua activist; founder of CHIRAPAQ (Center for Indigenous Cultures of Peru); FAO Special Ambassador for Indigenous Peoples', quote: 'We do not inherit the land from our ancestors. We borrow it from our grandchildren \u2014 and the climate crisis is the bill coming due.', source: 'UN Permanent Forum on Indigenous Issues sessions; CHIRAPAQ public statements' } },
+        { id: 'wabanaki', name: t('stem.climateExplorer.wabanaki_nations_maine', 'Wabanaki Nations (Maine)'), emoji: '\uD83C\uDF05', risk: 'high', type: 'Sea level on the coast, warming rivers, ash dieback, shellfish loss', emPct: 0.01, pop: '~8,000 enrolled across 4 nations',
           story: 'The Wabanaki Confederacy \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least 12,000 years. "Wabanaki" means "people of the dawn." They contribute almost nothing to global emissions yet face concentrated coastal-climate impacts at home: saltwater intruding on freshwater wells at Sipayik (Pleasant Point), warming Penobscot River water stressing fisheries, brown ash trees (the wood used for traditional Wabanaki baskets) dying from the emerald ash borer expanding north on warmer winters. Wabanaki representatives sit on the Maine Climate Council and have led both adaptation planning and the legal recognition of natural rivers as rights-bearing entities.',
           resilience: 'Tribal climate adaptation plans (Penobscot Nation 2014, Passamaquoddy 2020), seed-saving of cold-climate brown ash, restoration of the Penobscot River (largest river restoration east of the Mississippi, removed two dams 2012\u20132013), federal recognition as climate-action partners',
-          voice: { name: 'Sherri Mitchell (Weh\u2019na Ha\u2019mu Kwasset)', role: 'Penobscot lawyer, organizer, and author', quote: 'We are taught to consider how our actions today will impact the next seven generations.', source: 'Sacred Instructions: Indigenous Wisdom for Living Spirit-Based Change (2018); TEDx talks' } }
+          voice: { name: t('stem.climateExplorer.sherri_mitchell_weh_na_ha_mu_kwasset', 'Sherri Mitchell (Weh\u2019na Ha\u2019mu Kwasset)'), role: 'Penobscot lawyer, organizer, and author', quote: 'We are taught to consider how our actions today will impact the next seven generations.', source: 'Sacred Instructions: Indigenous Wisdom for Living Spirit-Based Change (2018); TEDx talks' } }
       ];
 
       var riskColors = { extreme: '#ef4444', high: '#f59e0b', moderate: '#3b82f6' };
@@ -842,7 +844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { country: 'India',          emoji: '🇮🇳', gt: 54,  pctGlobal: 2.7 },
         { country: 'Canada',         emoji: '🇨🇦', gt: 34,  pctGlobal: 1.7 },
         { country: 'France',         emoji: '🇫🇷', gt: 34,  pctGlobal: 1.7 },
-        { country: 'All of Africa',  emoji: '🌍', gt: 65,  pctGlobal: 3.2, note: '1.4 billion people.' }
+        { country: 'All of Africa',  emoji: '🌍', gt: 65,  pctGlobal: 3.2, note: t('stem.climateExplorer.1_4_billion_people', '1.4 billion people.') }
       ];
 
       // ══════════════════════════════════════
@@ -850,22 +852,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       //  A small global spotlight — real activists making measurable impact
       // ══════════════════════════════════════
       var YOUTH_LEADERS = [
-        { name: 'Greta Thunberg', country: '🇸🇪 Sweden', age: 'since age 15', emoji: '📢',
+        { name: t('stem.climateExplorer.greta_thunberg', 'Greta Thunberg'), country: '🇸🇪 Sweden', age: 'since age 15', emoji: '📢',
           what: 'Started Fridays for Future — a weekly school-strike movement that spread to 170+ countries. Her "How Dare You" speech at the UN in 2019 galvanized millions.',
           quote: '"We cannot solve a crisis without treating it as a crisis."' },
-        { name: 'Vanessa Nakate', country: '🇺🇬 Uganda', age: 'since age 22', emoji: '🌍',
+        { name: t('stem.climateExplorer.vanessa_nakate', 'Vanessa Nakate'), country: '🇺🇬 Uganda', age: 'since age 22', emoji: '🌍',
           what: 'Founded Rise Up Movement. Pushed climate coverage to include African voices after being cropped from a famous youth activist photo. Leads the Green Schools project in East Africa.',
           quote: '"You cannot have climate justice without racial justice."' },
-        { name: 'Autumn Peltier', country: '🇨🇦 Canada', age: 'since age 8', emoji: '💧',
+        { name: t('stem.climateExplorer.autumn_peltier', 'Autumn Peltier'), country: '🇨🇦 Canada', age: 'since age 8', emoji: '💧',
           what: 'Anishinaabe water protector. Named Chief Water Commissioner of the Anishinabek Nation at 14. Addresses UN on First Nations water rights and climate.',
           quote: '"We can\'t eat money or drink oil."' },
-        { name: 'Mari Copeny ("Little Miss Flint")', country: '🇺🇸 USA', age: 'since age 8', emoji: '🚰',
+        { name: t('stem.climateExplorer.mari_copeny_little_miss_flint', 'Mari Copeny ("Little Miss Flint")'), country: '🇺🇸 USA', age: 'since age 8', emoji: '🚰',
           what: 'Raised millions for Flint, Michigan water crisis. Distributed 1M+ bottles of water + 25,000+ backpacks of supplies. Connects water quality to environmental justice.',
           quote: '"I\'m just a kid trying to save the world."' },
-        { name: 'Xiye Bastida', country: '🇲🇽 Mexico/🇺🇸 USA', age: 'since age 13', emoji: '🌾',
+        { name: t('stem.climateExplorer.xiye_bastida', 'Xiye Bastida'), country: '🇲🇽 Mexico/🇺🇸 USA', age: 'since age 13', emoji: '🌾',
           what: 'Otomi-Toltec climate organizer. Co-founded Re-Earth Initiative. Featured speaker at UN, COP26, and TIME Earth Awards. Bridges Indigenous knowledge with climate action.',
           quote: '"Indigenous people carry the solutions we need."' },
-        { name: 'Disha Ravi', country: '🇮🇳 India', age: 'since age 21', emoji: '🌱',
+        { name: t('stem.climateExplorer.disha_ravi', 'Disha Ravi'), country: '🇮🇳 India', age: 'since age 21', emoji: '🌱',
           what: 'Co-founded Fridays for Future India. Jailed briefly in 2021 for sharing a climate protest toolkit with farmers — then released on bail after global outcry defending digital activism.',
           quote: '"You can\'t arrest the movement."' }
       ];
@@ -874,14 +876,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       //  SOLUTIONS SPOTLIGHT
       // ══════════════════════════════════════
       var SOLUTIONS = [
-        { id: 'solar', cat: 'energy', emoji: '\u2600\uFE0F', title: 'Solar Power Revolution', what: 'Panels that turn sunlight into electricity \u2014 on roofs, in fields, even floating on lakes.', where: 'Worldwide. India, China, and the US lead in new solar capacity.', impact: 'Solar is now the cheapest electricity in history. Could power 40% of US electricity from rooftops alone.' },
-        { id: 'wind', cat: 'energy', emoji: '\uD83C\uDF2C\uFE0F', title: 'Wind Energy', what: 'Turbines that capture wind energy. Offshore wind farms can power entire cities.', where: 'Denmark (55% wind-powered), UK, US, China.', impact: 'One offshore turbine can power 16,000 homes. Wind jobs are among the fastest-growing.' },
-        { id: 'evs', cat: 'transport', emoji: '\uD83D\uDE97', title: 'Electric Vehicles', what: 'Cars, buses, and trucks powered by batteries instead of gasoline.', where: 'Norway (80% of new cars are electric), China, Europe, US.', impact: 'EVs produce 50-70% less lifetime emissions than gas cars, improving as grids get cleaner.' },
-        { id: 'forests', cat: 'nature', emoji: '\uD83C\uDF33', title: 'Forest Restoration', what: 'Planting billions of trees and protecting existing forests \u2014 nature\'s carbon capture.', where: 'Ethiopia planted 350M trees in one day. Great Green Wall spans Africa.', impact: 'Forests absorb 2.6 billion tons of CO\u2082/year \u2014 about 30% of human emissions.' },
-        { id: 'capture', cat: 'capture', emoji: '\uD83C\uDFED', title: 'Carbon Capture', what: 'Machines that pull CO\u2082 from the air and store it underground or turn it into stone.', where: 'Iceland (Climeworks Orca plant), US, Norway.', impact: 'Still early \u2014 current plants capture 36,000 tons/year. Goal: billions by 2050.' },
-        { id: 'kelp', cat: 'nature', emoji: '\uD83C\uDF3F', title: 'Ocean Kelp Farms', what: 'Kelp grows 60\u00D7 faster than land trees, absorbing massive CO\u2082 while creating habitat.', where: 'Australia, US Pacific coast, Norway, South Korea.', impact: 'Could sequester 1-10 Gt CO\u2082/year while providing food, fertilizer, and biofuel.' },
-        { id: 'cities', cat: 'transport', emoji: '\uD83C\uDFD9\uFE0F', title: 'Green Cities', what: 'Bike lanes, electric buses, urban gardens, green roofs, and walkable neighborhoods.', where: 'Copenhagen, Amsterdam, Singapore, Bogot\u00E1, Portland.', impact: 'Cities produce 70% of emissions. Redesigning them is the highest-impact change.' },
-        { id: 'youth', cat: 'all', emoji: '\u270A', title: 'Youth Climate Movement', what: 'Students leading climate action through innovation, activism, and policy advocacy.', where: 'Every continent. Fridays for Future (170+ countries), Sunrise Movement.', impact: 'Youth pressure helped pass the EU Green Deal and influenced the Paris Agreement.', highlight: true }
+        { id: 'solar', cat: 'energy', emoji: '\u2600\uFE0F', title: t('stem.climateExplorer.solar_power_revolution', 'Solar Power Revolution'), what: 'Panels that turn sunlight into electricity \u2014 on roofs, in fields, even floating on lakes.', where: 'Worldwide. India, China, and the US lead in new solar capacity.', impact: 'Solar is now the cheapest electricity in history. Could power 40% of US electricity from rooftops alone.' },
+        { id: 'wind', cat: 'energy', emoji: '\uD83C\uDF2C\uFE0F', title: t('stem.climateExplorer.wind_energy', 'Wind Energy'), what: 'Turbines that capture wind energy. Offshore wind farms can power entire cities.', where: 'Denmark (55% wind-powered), UK, US, China.', impact: 'One offshore turbine can power 16,000 homes. Wind jobs are among the fastest-growing.' },
+        { id: 'evs', cat: 'transport', emoji: '\uD83D\uDE97', title: t('stem.climateExplorer.electric_vehicles', 'Electric Vehicles'), what: 'Cars, buses, and trucks powered by batteries instead of gasoline.', where: 'Norway (80% of new cars are electric), China, Europe, US.', impact: 'EVs produce 50-70% less lifetime emissions than gas cars, improving as grids get cleaner.' },
+        { id: 'forests', cat: 'nature', emoji: '\uD83C\uDF33', title: t('stem.climateExplorer.forest_restoration', 'Forest Restoration'), what: 'Planting billions of trees and protecting existing forests \u2014 nature\'s carbon capture.', where: 'Ethiopia planted 350M trees in one day. Great Green Wall spans Africa.', impact: 'Forests absorb 2.6 billion tons of CO\u2082/year \u2014 about 30% of human emissions.' },
+        { id: 'capture', cat: 'capture', emoji: '\uD83C\uDFED', title: t('stem.climateExplorer.carbon_capture', 'Carbon Capture'), what: 'Machines that pull CO\u2082 from the air and store it underground or turn it into stone.', where: 'Iceland (Climeworks Orca plant), US, Norway.', impact: 'Still early \u2014 current plants capture 36,000 tons/year. Goal: billions by 2050.' },
+        { id: 'kelp', cat: 'nature', emoji: '\uD83C\uDF3F', title: t('stem.climateExplorer.ocean_kelp_farms', 'Ocean Kelp Farms'), what: 'Kelp grows 60\u00D7 faster than land trees, absorbing massive CO\u2082 while creating habitat.', where: 'Australia, US Pacific coast, Norway, South Korea.', impact: 'Could sequester 1-10 Gt CO\u2082/year while providing food, fertilizer, and biofuel.' },
+        { id: 'cities', cat: 'transport', emoji: '\uD83C\uDFD9\uFE0F', title: t('stem.climateExplorer.green_cities', 'Green Cities'), what: 'Bike lanes, electric buses, urban gardens, green roofs, and walkable neighborhoods.', where: 'Copenhagen, Amsterdam, Singapore, Bogot\u00E1, Portland.', impact: 'Cities produce 70% of emissions. Redesigning them is the highest-impact change.' },
+        { id: 'youth', cat: 'all', emoji: '\u270A', title: t('stem.climateExplorer.youth_climate_movement', 'Youth Climate Movement'), what: 'Students leading climate action through innovation, activism, and policy advocacy.', where: 'Every continent. Fridays for Future (170+ countries), Sunrise Movement.', impact: 'Youth pressure helped pass the EU Green Deal and influenced the Paris Agreement.', highlight: true }
       ];
 
       // ══════════════════════════════════════
@@ -907,12 +909,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { y: 2023, t: 1.17 }, { y: 2024, t: 1.28 }
       ];
       var KEELING_MILESTONES = [
-        { ppm: 280, label: 'Pre-industrial (1750)', note: 'Stable for 10,000 years. Holocene climate that all human civilization grew up in.' },
-        { ppm: 315, label: 'Keeling starts measuring (1958)', note: 'Charles David Keeling begins continuous CO\u2082 monitoring at Mauna Loa. His curve proved human-caused warming was real.' },
-        { ppm: 350, label: '350 ppm (1988)', note: 'Climate scientist James Hansen tells US Congress warming has begun. 350 ppm is considered the "safe" ceiling by 350.org.' },
-        { ppm: 400, label: '400 ppm (2013)', note: 'First time atmospheric CO\u2082 crossed 400 ppm in 3+ million years. Earth\'s last 400 ppm era: tropical forests at the poles.' },
-        { ppm: 420, label: '420 ppm (2023)', note: 'Current level. Highest in at least 800,000 years (from ice cores). Equivalent to ~1.2\u00B0C warming.' },
-        { ppm: 450, label: '450 ppm (projected ~2035)', note: 'Threshold associated with 2\u00B0C warming if sustained. Paris Agreement target: keep below 1.5\u00B0C.' }
+        { ppm: 280, label: t('stem.climateExplorer.pre_industrial_1750', 'Pre-industrial (1750)'), note: t('stem.climateExplorer.stable_for_10_000_years_holocene_clima', 'Stable for 10,000 years. Holocene climate that all human civilization grew up in.') },
+        { ppm: 315, label: t('stem.climateExplorer.keeling_starts_measuring_1958', 'Keeling starts measuring (1958)'), note: t('stem.climateExplorer.charles_david_keeling_begins_continuou', 'Charles David Keeling begins continuous CO\u2082 monitoring at Mauna Loa. His curve proved human-caused warming was real.') },
+        { ppm: 350, label: t('stem.climateExplorer.350_ppm_1988', '350 ppm (1988)'), note: t('stem.climateExplorer.climate_scientist_james_hansen_tells_u', 'Climate scientist James Hansen tells US Congress warming has begun. 350 ppm is considered the "safe" ceiling by 350.org.') },
+        { ppm: 400, label: t('stem.climateExplorer.400_ppm_2013', '400 ppm (2013)'), note: t('stem.climateExplorer.first_time_atmospheric_co_crossed_400_', 'First time atmospheric CO\u2082 crossed 400 ppm in 3+ million years. Earth\'s last 400 ppm era: tropical forests at the poles.') },
+        { ppm: 420, label: t('stem.climateExplorer.420_ppm_2023', '420 ppm (2023)'), note: t('stem.climateExplorer.current_level_highest_in_at_least_800_', 'Around the 2023 annual level. Concentrations are the highest in at least 800,000 years in ice-core records; temperature is not determined by one concentration value alone.') },
+        { ppm: 450, label: t('stem.climateExplorer.450_ppm_projected_2035', '450 ppm (projected ~2035)'), note: t('stem.climateExplorer.threshold_associated_with_2_c_warming_', 'Threshold associated with 2\u00B0C warming if sustained. Paris Agreement target: keep below 1.5\u00B0C.') }
       ];
 
       // ══════════════════════════════════════
@@ -920,29 +922,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       //  Sources: IPCC AR6, Armstrong McKay et al. 2022 (Science)
       // ══════════════════════════════════════
       var TIPPING_POINTS = [
-        { id: 'coral', emoji: '\uD83E\uDEB8', name: 'Tropical Coral Reef Die-off', threshold: 1.5, status: 'happening',
-          desc: 'Mass coral bleaching events hit the Great Barrier Reef in 2016, 2017, 2020, 2022, and 2024. At 1.5\u00B0C warming, 70\u201390% of tropical coral reefs die. At 2\u00B0C, 99% die.',
+        { id: 'coral', emoji: '\uD83E\uDEB8', name: t('stem.climateExplorer.tropical_coral_reef_die_off', 'Tropical Coral Reef Die-off'), threshold: 1.5, status: 'happening',
+          desc: t('stem.climateExplorer.mass_coral_bleaching_events_hit_the_gr', 'Mass coral bleaching events hit the Great Barrier Reef in 2016, 2017, 2020, 2022, and 2024. At 1.5\u00B0C warming, 70\u201390% of tropical coral reefs die. At 2\u00B0C, 99% die.'),
           cascade: 'Loss of 25% of marine biodiversity; collapse of fisheries feeding 500M people; loss of coastal storm protection.' },
-        { id: 'greenland', emoji: '\u2744\uFE0F', name: 'Greenland Ice Sheet Collapse', threshold: 1.5, status: 'at-risk',
-          desc: 'The Greenland ice sheet holds enough water to raise sea levels 7 meters (23 ft). At ~1.5\u00B0C sustained, melt becomes irreversible over centuries to millennia.',
+        { id: 'greenland', emoji: '\u2744\uFE0F', name: t('stem.climateExplorer.greenland_ice_sheet_collapse', 'Greenland Ice Sheet Collapse'), threshold: 1.5, status: 'at-risk',
+          desc: t('stem.climateExplorer.the_greenland_ice_sheet_holds_enough_w', 'The Greenland ice sheet holds enough water to raise sea levels 7 meters (23 ft). At ~1.5\u00B0C sustained, melt becomes irreversible over centuries to millennia.'),
           cascade: 'Multi-meter sea level rise over centuries. Coastal cities flooded. Freshwater pulse disrupts Atlantic circulation (see AMOC).' },
-        { id: 'amoc', emoji: '\uD83C\uDF0A', name: 'AMOC Collapse (Gulf Stream)', threshold: 2.0, status: 'weakening',
-          desc: 'The Atlantic Meridional Overturning Circulation moves heat from the tropics to Europe. It has weakened 15% since 1950. A full shutdown would cool northern Europe dramatically while disrupting monsoons in Africa and Asia.',
+        { id: 'amoc', emoji: '\uD83C\uDF0A', name: t('stem.climateExplorer.amoc_collapse_gulf_stream', 'AMOC Collapse (Gulf Stream)'), threshold: 2.0, status: 'weakening',
+          desc: t('stem.climateExplorer.the_atlantic_meridional_overturning_ci', 'The Atlantic Meridional Overturning Circulation moves heat from the tropics to Europe. It has weakened 15% since 1950. A full shutdown would cool northern Europe dramatically while disrupting monsoons in Africa and Asia.'),
           cascade: 'Europe cools 5\u201310\u00B0C. African/Asian monsoons fail. Sea levels rise on US East Coast. Food systems disrupted for billions.' },
-        { id: 'amazon', emoji: '\uD83C\uDF34', name: 'Amazon Rainforest Dieback', threshold: 3.5, status: 'at-risk',
-          desc: 'The Amazon generates half its own rainfall. With 20\u201325% deforestation + rising temperatures, it risks flipping from rainforest to savanna. Some studies suggest the threshold is closer to 2\u00B0C with current deforestation rates.',
+        { id: 'amazon', emoji: '\uD83C\uDF34', name: t('stem.climateExplorer.amazon_rainforest_dieback', 'Amazon Rainforest Dieback'), threshold: 3.5, status: 'at-risk',
+          desc: t('stem.climateExplorer.the_amazon_generates_half_its_own_rain', 'The Amazon generates half its own rainfall. With 20\u201325% deforestation + rising temperatures, it risks flipping from rainforest to savanna. Some studies suggest the threshold is closer to 2\u00B0C with current deforestation rates.'),
           cascade: 'Releases 200+ billion tons of stored carbon. Disrupts South American agriculture. Loss of 10%+ of Earth\'s species.' },
-        { id: 'permafrost', emoji: '\uD83E\uDDCA', name: 'Permafrost Methane Release', threshold: 1.5, status: 'happening',
-          desc: 'Arctic permafrost holds twice the carbon currently in the atmosphere. Warming 3\u20134\u00D7 faster than global average, it is already thawing and releasing CO\u2082 and methane (28\u00D7 more potent than CO\u2082 over 100 years).',
+        { id: 'permafrost', emoji: '\uD83E\uDDCA', name: t('stem.climateExplorer.permafrost_methane_release', 'Permafrost Methane Release'), threshold: 1.5, status: 'happening',
+          desc: t('stem.climateExplorer.arctic_permafrost_holds_twice_the_carb', 'Arctic permafrost holds twice the carbon currently in the atmosphere. Warming 3\u20134\u00D7 faster than global average, it is already thawing and releasing CO\u2082 and methane (28\u00D7 more potent than CO\u2082 over 100 years).'),
           cascade: 'Self-reinforcing feedback loop: more warming \u2192 more permafrost thaw \u2192 more emissions \u2192 more warming.' },
-        { id: 'westantarctic', emoji: '\uD83D\uDDFB', name: 'West Antarctic Ice Sheet', threshold: 1.5, status: 'at-risk',
-          desc: 'Marine-based ice sheets anchored below sea level. Warm ocean water is eroding them from beneath. Thwaites Glacier ("Doomsday Glacier") is the main risk. Collapse would raise sea levels 3.3 meters (11 ft).',
+        { id: 'westantarctic', emoji: '\uD83D\uDDFB', name: t('stem.climateExplorer.west_antarctic_ice_sheet', 'West Antarctic Ice Sheet'), threshold: 1.5, status: 'at-risk',
+          desc: t('stem.climateExplorer.marine_based_ice_sheets_anchored_below', 'Marine-based ice sheets anchored below sea level. Warm ocean water is eroding them from beneath. Thwaites Glacier ("Doomsday Glacier") is the main risk. Collapse would raise sea levels 3.3 meters (11 ft).'),
           cascade: 'Multi-meter sea level rise. Bangladesh, Florida, Pacific island nations face existential threat.' },
-        { id: 'boreal', emoji: '\uD83C\uDF32', name: 'Boreal Forest Die-off', threshold: 4.0, status: 'future-risk',
-          desc: 'Northern coniferous forests (Russia, Canada, Scandinavia) are stressed by warming, bark beetles, and wildfires. A full transition to grassland could release vast amounts of stored carbon.',
+        { id: 'boreal', emoji: '\uD83C\uDF32', name: t('stem.climateExplorer.boreal_forest_die_off', 'Boreal Forest Die-off'), threshold: 4.0, status: 'future-risk',
+          desc: t('stem.climateExplorer.northern_coniferous_forests_russia_can', 'Northern coniferous forests (Russia, Canada, Scandinavia) are stressed by warming, bark beetles, and wildfires. A full transition to grassland could release vast amounts of stored carbon.'),
           cascade: 'Release of stored carbon. Habitat loss for Arctic species. Changes to global weather patterns.' },
-        { id: 'gulfofmaine', emoji: '\uD83E\uDD9E', name: 'Gulf of Maine Rapid Warming', threshold: 1.0, status: 'happening',
-          desc: 'The Gulf of Maine has warmed faster than 99% of the world\u2019s oceans since 1980 \u2014 about 0.5\u00B0F per decade, roughly 3\u00D7 the global ocean average. The cold-water Labrador current has weakened while warm Gulf Stream water reaches further north, fundamentally restructuring the food web in real time. Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq coastal communities have documented these shifts in oral record decades before the satellites confirmed them.',
+        { id: 'gulfofmaine', emoji: '\uD83E\uDD9E', name: t('stem.climateExplorer.gulf_of_maine_rapid_warming', 'Gulf of Maine Rapid Warming'), threshold: 1.0, status: 'happening',
+          desc: t('stem.climateExplorer.the_gulf_of_maine_has_warmed_faster_th', 'The Gulf of Maine has warmed faster than 99% of the world\u2019s oceans since 1980 \u2014 about 0.5\u00B0F per decade, roughly 3\u00D7 the global ocean average. The cold-water Labrador current has weakened while warm Gulf Stream water reaches further north, fundamentally restructuring the food web in real time. Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq coastal communities have documented these shifts in oral record decades before the satellites confirmed them.'),
           cascade: 'Maine lobster nursery grounds shifting north into Canadian waters. Atlantic cod nearly extinct south of Cape Cod. Right whales chasing copepods into shipping lanes. Portland-area tide gauges show ~7 inches of sea level rise since 1950 with 1.5\u20134 ft projected by 2100, threatening coastal Wabanaki villages and the working waterfronts of every Maine port town.' }
       ];
 
@@ -952,25 +954,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       //  Gt values = cumulative avoidance 2020–2050 in most-ambitious scenario
       // ══════════════════════════════════════
       var DRAWDOWN_SOLUTIONS = [
-        { id: 'wind_onshore',  emoji: '🌬️', label: 'Onshore Wind Turbines',     gt: 147, cat: 'energy',    note: 'Cheapest electricity worldwide in 2024. Doubling capacity annually in several regions.' },
-        { id: 'solar_farms',   emoji: '☀️', label: 'Utility-Scale Solar Farms',  gt: 42,  cat: 'energy',    note: 'Cheapest electricity in history. Grid integration is the main challenge now.' },
-        { id: 'solar_roof',    emoji: '🏠', label: 'Rooftop Solar',              gt: 25,  cat: 'energy',    note: 'Distributed + resilient. Typical 5kW system payback: 6–10 years.' },
-        { id: 'reduced_waste', emoji: '🍽️', label: 'Reduced Food Waste',         gt: 88,  cat: 'food',      note: '1/3 of food is wasted. Preventing waste avoids methane from landfills AND the emissions to grow the food.' },
-        { id: 'plant_rich',    emoji: '🥗', label: 'Plant-Rich Diets',           gt: 65,  cat: 'food',      note: 'Not 100% vegan — even cutting beef 3× a week has huge impact. Frees land for reforestation.' },
-        { id: 'tropical_forest',emoji: '🌳', label: 'Tropical Forest Restoration', gt: 85, cat: 'nature',  note: 'Restore 125M hectares. Protects biodiversity + draws down CO\u2082 via photosynthesis.' },
-        { id: 'temperate_forest',emoji: '🌲', label: 'Temperate Forest Restoration', gt: 19, cat: 'nature', note: 'Plant where natural conditions support growth. Co-benefits: cooling, watershed protection.' },
-        { id: 'silvopasture',  emoji: '🐄', label: 'Silvopasture',               gt: 42,  cat: 'food',      note: 'Integrating trees into grazing land. Livestock get shade; soil stores 4× more carbon than bare pasture.' },
-        { id: 'regen_ag',      emoji: '🌾', label: 'Regenerative Agriculture',   gt: 14,  cat: 'food',      note: 'No-till + cover crops + diverse rotations. Builds soil carbon while maintaining yields.' },
-        { id: 'peatlands',     emoji: '🏞️', label: 'Peatlands Protection',       gt: 26,  cat: 'nature',    note: 'Peatlands store 3× more carbon than forests globally. Drained peat = major emitter.' },
-        { id: 'refrigerants',  emoji: '❄️', label: 'Refrigerant Management',     gt: 57,  cat: 'industry', note: 'HFCs are 1,000–9,000× more potent than CO\u2082. Kigali Amendment (2016) is phasing them out.' },
-        { id: 'evs_personal',  emoji: '🚗', label: 'Electric Vehicles (personal)',gt: 11,  cat: 'transport', note: 'EVs produce 50–70% less lifetime emissions than gas — improves as grid cleans up.' },
-        { id: 'efficient_transit', emoji: '🚆', label: 'Public Transit + Rail',   gt: 23,  cat: 'transport', note: 'Electric trains move a passenger-km at 1/10 the emissions of a car.' },
-        { id: 'cycling_walking', emoji: '🚴', label: 'Bike Infrastructure',      gt: 5,   cat: 'transport', note: 'Dutch cycling cities have 1/3 the transport emissions. Infrastructure creates the behavior.' },
-        { id: 'buildings_retrofit', emoji: '🏢', label: 'Building Retrofits',    gt: 33,  cat: 'energy',   note: 'Insulation + heat pumps + LED lighting. US buildings use 40% of primary energy.' },
-        { id: 'heat_pumps',    emoji: '🌡️', label: 'Heat Pumps',                 gt: 9,   cat: 'energy',    note: '3–4× more efficient than gas furnaces. Work to −15°C in modern cold-climate models.' },
-        { id: 'girls_education',emoji: '👩‍🎓', label: 'Girls\' Education & Family Planning', gt: 85, cat: 'social', note: 'Consistently top-ranked. Educated women have fewer children AND higher-impact lives. Compounds across generations.' },
-        { id: 'clean_cooking', emoji: '🍳', label: 'Clean Cookstoves',           gt: 16,  cat: 'social',    note: 'Replaces wood/charcoal fires. Benefits: climate + indoor air pollution (kills 4M/yr) + deforestation.' },
-        { id: 'kelp_forests',  emoji: '🌿', label: 'Kelp Reforestation (ocean)', gt: 10,  cat: 'nature',    note: 'Grows 60× faster than land trees. Sequesters CO\u2082 + restores fisheries + fertilizer.' }
+        { id: 'wind_onshore',  emoji: '🌬️', label: t('stem.climateExplorer.onshore_wind_turbines', 'Onshore Wind Turbines'),     gt: 147, cat: 'energy',    note: t('stem.climateExplorer.cheapest_electricity_worldwide_in_2024', 'Cheapest electricity worldwide in 2024. Doubling capacity annually in several regions.') },
+        { id: 'solar_farms',   emoji: '☀️', label: t('stem.climateExplorer.utility_scale_solar_farms', 'Utility-Scale Solar Farms'),  gt: 42,  cat: 'energy',    note: t('stem.climateExplorer.cheapest_electricity_in_history_grid_i', 'Cheapest electricity in history. Grid integration is the main challenge now.') },
+        { id: 'solar_roof',    emoji: '🏠', label: t('stem.climateExplorer.rooftop_solar', 'Rooftop Solar'),              gt: 25,  cat: 'energy',    note: t('stem.climateExplorer.distributed_resilient_typical_5kw_syst', 'Distributed + resilient. Typical 5kW system payback: 6–10 years.') },
+        { id: 'reduced_waste', emoji: '🍽️', label: t('stem.climateExplorer.reduced_food_waste', 'Reduced Food Waste'),         gt: 88,  cat: 'food',      note: t('stem.climateExplorer.1_3_of_food_is_wasted_preventing_waste', '1/3 of food is wasted. Preventing waste avoids methane from landfills AND the emissions to grow the food.') },
+        { id: 'plant_rich',    emoji: '🥗', label: t('stem.climateExplorer.plant_rich_diets', 'Plant-Rich Diets'),           gt: 65,  cat: 'food',      note: t('stem.climateExplorer.not_100_vegan_even_cutting_beef_3_a_we', 'Not 100% vegan — even cutting beef 3× a week has huge impact. Frees land for reforestation.') },
+        { id: 'tropical_forest',emoji: '🌳', label: t('stem.climateExplorer.tropical_forest_restoration', 'Tropical Forest Restoration'), gt: 85, cat: 'nature',  note: t('stem.climateExplorer.restore_125m_hectares_protects_biodive', 'Restore 125M hectares. Protects biodiversity + draws down CO\u2082 via photosynthesis.') },
+        { id: 'temperate_forest',emoji: '🌲', label: t('stem.climateExplorer.temperate_forest_restoration', 'Temperate Forest Restoration'), gt: 19, cat: 'nature', note: t('stem.climateExplorer.plant_where_natural_conditions_support', 'Plant where natural conditions support growth. Co-benefits: cooling, watershed protection.') },
+        { id: 'silvopasture',  emoji: '🐄', label: t('stem.climateExplorer.silvopasture', 'Silvopasture'),               gt: 42,  cat: 'food',      note: t('stem.climateExplorer.integrating_trees_into_grazing_land_li', 'Integrating trees into grazing land. Livestock get shade; soil stores 4× more carbon than bare pasture.') },
+        { id: 'regen_ag',      emoji: '🌾', label: t('stem.climateExplorer.regenerative_agriculture', 'Regenerative Agriculture'),   gt: 14,  cat: 'food',      note: t('stem.climateExplorer.no_till_cover_crops_diverse_rotations_', 'No-till + cover crops + diverse rotations. Builds soil carbon while maintaining yields.') },
+        { id: 'peatlands',     emoji: '🏞️', label: t('stem.climateExplorer.peatlands_protection', 'Peatlands Protection'),       gt: 26,  cat: 'nature',    note: t('stem.climateExplorer.peatlands_store_3_more_carbon_than_for', 'Peatlands store 3× more carbon than forests globally. Drained peat = major emitter.') },
+        { id: 'refrigerants',  emoji: '❄️', label: t('stem.climateExplorer.refrigerant_management', 'Refrigerant Management'),     gt: 57,  cat: 'industry', note: t('stem.climateExplorer.hfcs_are_1_000_9_000_more_potent_than_', 'HFCs are 1,000–9,000× more potent than CO\u2082. Kigali Amendment (2016) is phasing them out.') },
+        { id: 'evs_personal',  emoji: '🚗', label: t('stem.climateExplorer.electric_vehicles_personal', 'Electric Vehicles (personal)'),gt: 11,  cat: 'transport', note: t('stem.climateExplorer.evs_produce_50_70_less_lifetime_emissi', 'EVs produce 50–70% less lifetime emissions than gas — improves as grid cleans up.') },
+        { id: 'efficient_transit', emoji: '🚆', label: t('stem.climateExplorer.public_transit_rail', 'Public Transit + Rail'),   gt: 23,  cat: 'transport', note: t('stem.climateExplorer.electric_trains_move_a_passenger_km_at', 'Electric trains move a passenger-km at 1/10 the emissions of a car.') },
+        { id: 'cycling_walking', emoji: '🚴', label: t('stem.climateExplorer.bike_infrastructure', 'Bike Infrastructure'),      gt: 5,   cat: 'transport', note: t('stem.climateExplorer.dutch_cycling_cities_have_1_3_the_tran', 'Dutch cycling cities have 1/3 the transport emissions. Infrastructure creates the behavior.') },
+        { id: 'buildings_retrofit', emoji: '🏢', label: t('stem.climateExplorer.building_retrofits', 'Building Retrofits'),    gt: 33,  cat: 'energy',   note: t('stem.climateExplorer.insulation_heat_pumps_led_lighting_us_', 'Insulation + heat pumps + LED lighting. US buildings use 40% of primary energy.') },
+        { id: 'heat_pumps',    emoji: '🌡️', label: t('stem.climateExplorer.heat_pumps', 'Heat Pumps'),                 gt: 9,   cat: 'energy',    note: t('stem.climateExplorer.3_4_more_efficient_than_gas_furnaces_w', '3–4× more efficient than gas furnaces. Work to −15°C in modern cold-climate models.') },
+        { id: 'girls_education',emoji: '👩‍🎓', label: t('stem.climateExplorer.girls_education_family_planning', 'Girls\' Education & Family Planning'), gt: 85, cat: 'social', note: t('stem.climateExplorer.consistently_top_ranked_educated_women', 'Consistently top-ranked. Educated women have fewer children AND higher-impact lives. Compounds across generations.') },
+        { id: 'clean_cooking', emoji: '🍳', label: t('stem.climateExplorer.clean_cookstoves', 'Clean Cookstoves'),           gt: 16,  cat: 'social',    note: t('stem.climateExplorer.replaces_wood_charcoal_fires_benefits_', 'Replaces wood/charcoal fires. Benefits: climate + indoor air pollution (kills 4M/yr) + deforestation.') },
+        { id: 'kelp_forests',  emoji: '🌿', label: t('stem.climateExplorer.kelp_reforestation_ocean', 'Kelp Reforestation (ocean)'), gt: 10,  cat: 'nature',    note: t('stem.climateExplorer.grows_60_faster_than_land_trees_seques', 'Grows 60× faster than land trees. Sequesters CO\u2082 + restores fisheries + fertilizer.') }
       ];
 
       // ══════════════════════════════════════
@@ -978,12 +980,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       //  Source: WRI Climate Watch / Our World in Data
       // ══════════════════════════════════════
       var EMISSIONS_BY_SECTOR = [
-        { id: 'electricity', emoji: '⚡', name: 'Electricity & Heat',    pct: 25, color: '#ef4444', lever: 'Fastest lever: renewable grids, heat pumps, energy efficiency.' },
-        { id: 'agriculture', emoji: '🌾', name: 'Agriculture + Land Use',pct: 24, color: '#fbbf24', lever: 'Reduce beef/dairy, restore forests and peatlands, prevent food waste.' },
-        { id: 'industry',    emoji: '🏭', name: 'Industry',              pct: 21, color: '#a855f7', lever: 'Green steel (hydrogen), cement chemistry reform, circular manufacturing.' },
-        { id: 'transport',   emoji: '🚗', name: 'Transport',             pct: 16, color: '#3b82f6', lever: 'EVs + rail + transit-friendly cities. Aviation is the hardest.' },
-        { id: 'buildings',   emoji: '🏢', name: 'Buildings',             pct: 6,  color: '#22c55e', lever: 'Insulation + heat pumps + fossil-fuel-free construction.' },
-        { id: 'other',       emoji: '🌐', name: 'Other (waste, fugitive, aviation bunkers)', pct: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', lever: 'Methane leaks from oil & gas, landfill capture, shipping fuels.' }
+        { id: 'electricity', emoji: '⚡', name: t('stem.climateExplorer.electricity_heat', 'Electricity & Heat'),    pct: 25, color: '#ef4444', lever: 'Fastest lever: renewable grids, heat pumps, energy efficiency.' },
+        { id: 'agriculture', emoji: '🌾', name: t('stem.climateExplorer.agriculture_land_use', 'Agriculture + Land Use'),pct: 24, color: '#fbbf24', lever: 'Reduce beef/dairy, restore forests and peatlands, prevent food waste.' },
+        { id: 'industry',    emoji: '🏭', name: t('stem.climateExplorer.industry', 'Industry'),              pct: 21, color: '#a855f7', lever: 'Green steel (hydrogen), cement chemistry reform, circular manufacturing.' },
+        { id: 'transport',   emoji: '🚗', name: t('stem.climateExplorer.transport', 'Transport'),             pct: 16, color: '#3b82f6', lever: 'EVs + rail + transit-friendly cities. Aviation is the hardest.' },
+        { id: 'buildings',   emoji: '🏢', name: t('stem.climateExplorer.buildings', 'Buildings'),             pct: 6,  color: '#22c55e', lever: 'Insulation + heat pumps + fossil-fuel-free construction.' },
+        { id: 'other',       emoji: '🌐', name: t('stem.climateExplorer.other_waste_fugitive_aviation_bunkers', 'Other (waste, fugitive, aviation bunkers)'), pct: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', lever: 'Methane leaks from oil & gas, landfill capture, shipping fuels.' }
       ];
 
       // ══════════════════════════════════════
@@ -1002,27 +1004,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       //  Source: IPCC AR6 WG1 SPM.8 (temperature by 2100, relative to 1850-1900)
       // ══════════════════════════════════════
       var IPCC_SCENARIOS = [
-        { id: 'ssp119', label: 'SSP1-1.9', name: 'Very Low Emissions — Paris-Aligned',
+        { id: 'ssp119', label: 'SSP1-1.9', name: t('stem.climateExplorer.very_low_emissions_paris_aligned', 'Very Low Emissions — Paris-Aligned'),
           temp2100: 1.4, tempRange: [1.0, 1.8], emissions2050: 0, color: '#22c55e',
           likelihood: 'requires unprecedented global cooperation',
           requires: 'Net-zero CO\u2082 by ~2050. Rapid deployment of all Drawdown solutions. Fossil fuels phased out by 2040 in developed economies.',
           impacts: 'Limits warming near 1.5°C. Most coral reefs still lost but ecosystems hold. Sea level rise: 0.3–0.5m by 2100.' },
-        { id: 'ssp126', label: 'SSP1-2.6', name: 'Low Emissions — Strong Action',
+        { id: 'ssp126', label: 'SSP1-2.6', name: t('stem.climateExplorer.low_emissions_strong_action', 'Low Emissions — Strong Action'),
           temp2100: 1.8, tempRange: [1.3, 2.4], emissions2050: 7, color: '#84cc16',
           likelihood: 'achievable with current commitments if fully implemented',
           requires: 'Net-zero CO\u2082 by ~2075. Rapid renewable expansion + moderate carbon capture. Strong but slower than SSP1-1.9.',
           impacts: 'Warming around 2°C. Some tipping points triggered (coral bleaching, Greenland slow loss). Sea level rise: 0.4–0.7m.' },
-        { id: 'ssp245', label: 'SSP2-4.5', name: 'Middle of the Road — Current Pledges',
+        { id: 'ssp245', label: 'SSP2-4.5', name: t('stem.climateExplorer.middle_of_the_road_current_pledges', 'Middle of the Road — Current Pledges'),
           temp2100: 2.7, tempRange: [2.1, 3.5], emissions2050: 25, color: '#fbbf24',
           likelihood: 'roughly where current policies are heading',
           requires: 'Gradual shift from fossil fuels. Renewable growth continues but not fast enough.',
           impacts: 'Warming ~2.7°C. Major tipping points likely (AMOC weakening, Amazon stress, coral reefs mostly gone). Sea level rise: 0.5–0.9m.' },
-        { id: 'ssp370', label: 'SSP3-7.0', name: 'High Emissions — Regional Rivalry',
+        { id: 'ssp370', label: 'SSP3-7.0', name: t('stem.climateExplorer.high_emissions_regional_rivalry', 'High Emissions — Regional Rivalry'),
           temp2100: 3.6, tempRange: [2.8, 4.6], emissions2050: 55, color: '#f97316',
           likelihood: 'emissions still rising; weak policy',
           requires: 'Continued fossil fuel expansion. Limited climate cooperation between countries.',
           impacts: 'Warming ~3.6°C. Multiple cascading tipping points. Amazon dieback likely. Sea level rise: 0.6–1.1m by 2100, multi-meter locked in long-term.' },
-        { id: 'ssp585', label: 'SSP5-8.5', name: 'Very High — Fossil-Fueled Growth',
+        { id: 'ssp585', label: 'SSP5-8.5', name: t('stem.climateExplorer.very_high_fossil_fueled_growth', 'Very High — Fossil-Fueled Growth'),
           temp2100: 4.4, tempRange: [3.3, 5.7], emissions2050: 85, color: '#ef4444',
           likelihood: 'requires active acceleration of coal/oil/gas use',
           requires: 'Quadrupling coal use, massive fossil fuel expansion. Considered unlikely but reveals worst-case physics.',
@@ -1030,14 +1032,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       ];
 
       var ACTIONS = [
-        { emoji: '\uD83D\uDEB6', text: 'Walk, bike, or bus to school', impact: 'Saves up to 1,200 kg CO\u2082/year', diff: 'easy' },
-        { emoji: '\uD83E\uDD57', text: 'Try one meatless meal per week', impact: 'Saves ~200 kg CO\u2082/year', diff: 'easy' },
-        { emoji: '\uD83D\uDCA1', text: 'Turn off lights & unplug chargers', impact: 'Saves 100-400 kWh/year', diff: 'easy' },
-        { emoji: '\uD83D\uDDE3\uFE0F', text: 'Talk to your family about energy choices', impact: 'One conversation can change household habits', diff: 'medium' },
-        { emoji: '\uD83C\uDF31', text: 'Plant a tree or start a school garden', impact: '1 tree absorbs ~22 kg CO\u2082/year', diff: 'medium' },
-        { emoji: '\uD83D\uDCDD', text: 'Write a letter to your representative', impact: 'Policy changes affect millions', diff: 'medium' },
-        { emoji: '\u267B\uFE0F', text: 'Start a recycling program at school', impact: 'Diverts 30-50% of waste from landfills', diff: 'hard' },
-        { emoji: '\uD83D\uDCE2', text: 'Organize a climate awareness event', impact: 'Reaching 100 people multiplies impact 100\u00D7', diff: 'hard' }
+        { emoji: '\uD83D\uDEB6', text: t('stem.climateExplorer.walk_bike_or_bus_to_school', 'Walk, bike, or bus to school'), impact: 'Saves up to 1,200 kg CO\u2082/year', diff: 'easy' },
+        { emoji: '\uD83E\uDD57', text: t('stem.climateExplorer.try_one_meatless_meal_per_week', 'Try one meatless meal per week'), impact: 'Saves ~200 kg CO\u2082/year', diff: 'easy' },
+        { emoji: '\uD83D\uDCA1', text: t('stem.climateExplorer.turn_off_lights_unplug_chargers', 'Turn off lights & unplug chargers'), impact: 'Saves 100-400 kWh/year', diff: 'easy' },
+        { emoji: '\uD83D\uDDE3\uFE0F', text: t('stem.climateExplorer.talk_to_your_family_about_energy_choic', 'Talk to your family about energy choices'), impact: 'One conversation can change household habits', diff: 'medium' },
+        { emoji: '\uD83C\uDF31', text: t('stem.climateExplorer.plant_a_tree_or_start_a_school_garden', 'Plant a tree or start a school garden'), impact: '1 tree absorbs ~22 kg CO\u2082/year', diff: 'medium' },
+        { emoji: '\uD83D\uDCDD', text: t('stem.climateExplorer.write_a_letter_to_your_representative', 'Write a letter to your representative'), impact: 'Policy changes affect millions', diff: 'medium' },
+        { emoji: '\u267B\uFE0F', text: t('stem.climateExplorer.start_a_recycling_program_at_school', 'Start a recycling program at school'), impact: 'Diverts 30-50% of waste from landfills', diff: 'hard' },
+        { emoji: '\uD83D\uDCE2', text: t('stem.climateExplorer.organize_a_climate_awareness_event', 'Organize a climate awareness event'), impact: 'Reaching 100 people multiplies impact 100\u00D7', diff: 'hard' }
       ];
 
       // ══════════════════════════════════════
@@ -1109,17 +1111,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         c.scale(dpr, dpr);
         var cx = w / 2, cy = h / 2, r = 65, inner = 40;
         var segs = [
-          { val: ct.transport, color: '#3b82f6', label: 'Transport' },
-          { val: ct.food, color: '#f59e0b', label: 'Food' },
-          { val: ct.energy, color: '#ef4444', label: 'Energy' },
-          { val: ct.waste, color: '#22c55e', label: 'Waste' }
+          { val: ct.transport, color: '#3b82f6', label: t('stem.climateExplorer.transport_2', 'Transport') },
+          { val: ct.food, color: '#f59e0b', label: t('stem.climateExplorer.food', 'Food') },
+          { val: ct.energy, color: '#ef4444', label: t('stem.climateExplorer.energy', 'Energy') },
+          { val: ct.waste, color: '#22c55e', label: t('stem.climateExplorer.waste', 'Waste') }
         ];
         var total = ct.total || 1;
         var angle = -Math.PI / 2;
         segs.forEach(function(s) {
           var sweep = (s.val / total) * Math.PI * 2;
           c.beginPath(); c.arc(cx, cy, r, angle, angle + sweep); c.arc(cx, cy, inner, angle + sweep, angle, true); c.closePath();
-          c.fillStyle = s.color; c.fill();
+          c.save(); c.shadowColor = s.color; c.shadowBlur = 8; c.fillStyle = s.color; c.fill(); c.restore();
           // Label
           var mid = angle + sweep / 2;
           var lx = cx + Math.cos(mid) * (r + 16), ly = cy + Math.sin(mid) * (r + 16);
@@ -1128,9 +1130,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           angle += sweep;
         });
         // Center text
-        c.fillStyle = ct.total < 2000 ? '#4ade80' : ct.total < 5000 ? '#fbbf24' : '#f87171';
+        var ctCol = ct.total < 2000 ? '#4ade80' : ct.total < 5000 ? '#fbbf24' : '#f87171';
+        c.save(); c.shadowColor = ctCol; c.shadowBlur = 10;
+        c.fillStyle = ctCol;
         c.font = 'bold 22px system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle';
         c.fillText(ct.total.toLocaleString(), cx, cy - 6);
+        c.restore();
         c.fillStyle = '#94a3b8'; c.font = '600 9px system-ui';
         c.fillText('kg CO\u2082/yr', cx, cy + 12);
       }
@@ -1272,7 +1277,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         'radial-gradient(ellipse 75% 50% at 50% 0%, rgba(96, 165, 250, 0.18), transparent 70%), ' +
         'radial-gradient(ellipse 90% 55% at 50% 100%, rgba(251, 146, 60, 0.16), transparent 75%), ' +
         'url("' + ceGrainSvg + '"), ' +
-        'linear-gradient(135deg, #0d2922 0%, #0f172a 50%, #0d2922 100%)';
+        'linear-gradient(135deg, var(--allo-stem-deeper, #0d2922) 0%, var(--allo-stem-canvas, #0f172a) 50%, var(--allo-stem-deeper, #0d2922) 100%)';
+      var CE_CORE_TABS_UI = ['carbon', 'renewables', 'keeling', 'tipping', 'justice', 'solutions'];
+      var showClimateAdvanced = !!d.showClimateAdvanced || CE_CORE_TABS_UI.indexOf(tab) === -1;
+      var ceTabTitles = {
+        carbon: t('stem.climateExplorer.carbon_calculator', 'Carbon Calculator'),
+        renewables: t('stem.climateExplorer.renewables', 'Renewables'),
+        keeling: t('stem.climateExplorer.keeling_curve', 'Keeling Curve'),
+        tipping: t('stem.climateExplorer.tipping_points', 'Tipping Points'),
+        justice: t('stem.climateExplorer.climate_justice', 'Climate Justice'),
+        solutions: t('stem.climateExplorer.solutions', 'Solutions'),
+        pathways: t('stem.climateExplorer.policy_pathways', 'Policy Pathways'),
+        forceHunt: t('stem.climateExplorer.radiative_forcing', 'Radiative Forcing')
+      };
+      var ceRoutes = [
+        { id: 'carbon', label: ceTabTitles.carbon, hint: t('stem.climateExplorer.route_carbon_hint', 'Estimate footprint drivers.') },
+        { id: 'keeling', label: ceTabTitles.keeling, hint: t('stem.climateExplorer.route_keeling_hint', 'Read the CO2 record.') },
+        { id: 'justice', label: ceTabTitles.justice, hint: t('stem.climateExplorer.route_justice_hint', 'Compare risk and responsibility.') },
+        { id: 'solutions', label: ceTabTitles.solutions, hint: t('stem.climateExplorer.route_solutions_hint', 'Choose practical levers.') }
+      ];
       return el('div', {
         style: {
           background: ceBgLayers,
@@ -1285,27 +1308,163 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           outline: 'none'
         },
         role: 'region',
-        'aria-label': 'Climate Explorer. Keyboard shortcuts: 1 through 6 switch tabs, Q toggles quiz.',
+        'aria-label': t('stem.climateExplorer.climate_explorer_keyboard_shortcuts_1_', 'Climate Explorer. Keyboard shortcuts: 1 through 6 switch tabs, Q toggles quiz.'),
         tabIndex: 0,
         onKeyDown: onCeKey
       },
 
         // ── Header ──
         el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
-          el('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
+          el('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': t('stem.climateExplorer.back_to_stem_lab', 'Back to STEM Lab'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
           el('div', { style: { fontSize: 28 } }, '\uD83C\uDF0D'),
           el('div', null,
             el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Climate Explorer'),
             el('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Understand \u2022 Calculate \u2022 Act')
           ),
           el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' } },
-            el('button', { onClick: exportClimateReport, title: 'Export your climate report to clipboard',
+            el('button', { onClick: exportClimateReport, title: t('stem.climateExplorer.export_your_climate_report_to_clipboar', 'Export your climate report to clipboard'),
               style: { padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(96,165,250,0.3)', background: 'rgba(96,165,250,0.08)', color: '#60a5fa', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDCC4 Export'),
             el('button', { onClick: function() { upd('quizOpen', !quizOpen); }, style: { padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(168,85,247,0.3)', background: quizOpen ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.08)', color: '#c084fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83E\uDDE0 Quiz'),
             el('div', { style: { padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #22c55e, #16a34a)', fontSize: 11, fontWeight: 900, color: '#fff' } }, '\u2B50 ' + (getStemXP ? getStemXP('climateExplorer') : 0) + ' XP'),
             el('button', { onClick: function() { upd('badgesOpen', !badgesOpen); }, style: { padding: '4px 10px', borderRadius: 20, background: badgesOpen ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, fontWeight: 700, color: '#fbbf24', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGES.length)
           )
         ),
+
+        // ── Living Planet hero — an animated Earth that answers YOUR sliders ──
+        // The engagement engine of the tool: a warming signal (0..1) is derived from
+        // whatever the student is currently manipulating (footprint on the carbon tab,
+        // fossil share on renewables) and drives the atmosphere colour, CO₂ particle
+        // density, and heat shimmer live. Move a slider → watch the planet respond.
+        (function() {
+          var heroSignal, heroTicker;
+          if (tab === 'renewables') {
+            var heroFossil = Math.max(0, 100 - (rsSolar + rsWind + rsHydro + rsNuclear));
+            heroSignal = Math.min(1, heroFossil / 100);
+            heroTicker = t('stem.climateExplorer.hero_mix', 'Your energy mix:') + ' ' + heroFossil + '% ' + t('stem.climateExplorer.hero_fossil', 'fossil — watch the sky');
+          } else if (tab === 'carbon') {
+            var heroKg = Math.max(ct.total, granular.total);
+            heroSignal = Math.min(1, heroKg / 15000);
+            heroTicker = t('stem.climateExplorer.hero_footprint', 'Your footprint:') + ' ' + Math.round(heroKg).toLocaleString() + ' kg CO₂e/yr · ' + t('stem.climateExplorer.hero_paris', 'Paris target: 2,300');
+          } else {
+            heroSignal = 0.42;
+            heroTicker = t('stem.climateExplorer.hero_ppm', 'NOAA Mauna Loa monthly mean, June 2026: 431.44 ppm CO\u2082');
+          }
+          return el('div', { style: { margin: '10px 24px 0', position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.25)' } },
+            el('canvas', {
+              role: 'img', tabIndex: 0,
+              'aria-label': heroTicker + '. Atmospheric visualization responding to the current activity values.',
+              ref: function(cv) {
+                if (!cv) return;
+                cv._ceSignal = heroSignal; // refreshed every render — the rAF loop reads live
+                if (cv._ceInit) return;
+                cv._ceInit = true;
+                var g = cv.getContext('2d');
+                if (!g) return;
+                var heroRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                var heroTick = 0;
+                var mols = [];
+                for (var mi = 0; mi < 46; mi++) mols.push({ x: Math.random(), ph: Math.random() * 6.28, sp: 0.4 + Math.random() * 0.8, r: 0.8 + Math.random() * 1.2 });
+                var heroStars = [];
+                for (var hs = 0; hs < 60; hs++) heroStars.push({ x: Math.random(), y: Math.random() * 0.62, r: 0.3 + Math.random() * 1.1, tw: Math.random() * 6.28 });
+                function lerpCh(a, b, f) { return Math.round(a + (b - a) * f); }
+                function heroDraw() {
+                  if (!cv.isConnected) return;
+                  var W = cv.clientWidth || 600, H = cv.clientHeight || 130;
+                  if (cv.width !== W * 2) { cv.width = W * 2; cv.height = H * 2; }
+                  if (!heroRM) heroTick++;
+                  var sig = cv._ceSignal != null ? cv._ceSignal : 0.4;
+                  var dpr = 2;
+                  // Space
+                  g.fillStyle = '#020617';
+                  g.fillRect(0, 0, W * dpr, H * dpr);
+                  for (var si = 0; si < heroStars.length; si++) {
+                    var st = heroStars[si];
+                    g.globalAlpha = 0.25 + 0.5 * (0.5 + 0.5 * Math.sin(heroTick * 0.02 + st.tw));
+                    g.fillStyle = '#e2e8f0';
+                    g.fillRect(st.x * W * dpr, st.y * H * dpr, st.r * dpr, st.r * dpr);
+                  }
+                  g.globalAlpha = 1;
+                  // Earth limb — a big circle whose centre sits below the strip
+                  var R = W * 0.62, cx = W / 2, cy = H + R * 0.72;
+                  // Atmosphere glow: blue (healthy) → amber → red (hot), by signal
+                  var ar = lerpCh(56, 239, sig), ag = lerpCh(189, 68, sig), ab = lerpCh(248, 68, sig);
+                  var atmoGrad = g.createRadialGradient(cx * dpr, cy * dpr, (R - 6) * dpr, cx * dpr, cy * dpr, (R + 30 + sig * 26) * dpr);
+                  atmoGrad.addColorStop(0, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.5)');
+                  atmoGrad.addColorStop(0.5, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.16)');
+                  atmoGrad.addColorStop(1, 'rgba(' + ar + ',' + ag + ',' + ab + ',0)');
+                  g.fillStyle = atmoGrad;
+                  g.fillRect(0, 0, W * dpr, H * dpr);
+                  // Planet body
+                  var bodyGrad = g.createRadialGradient(cx * dpr, (cy - R * 0.2) * dpr, R * 0.4 * dpr, cx * dpr, cy * dpr, R * dpr);
+                  bodyGrad.addColorStop(0, '#0b3d6b');
+                  bodyGrad.addColorStop(0.75, '#0a2c50');
+                  bodyGrad.addColorStop(1, '#061a33');
+                  g.fillStyle = bodyGrad;
+                  g.beginPath();
+                  g.arc(cx * dpr, cy * dpr, R * dpr, 0, Math.PI * 2);
+                  g.fill();
+                  // Drifting land blotches, clipped to the limb
+                  g.save();
+                  g.beginPath(); g.arc(cx * dpr, cy * dpr, R * dpr, 0, Math.PI * 2); g.clip();
+                  g.fillStyle = 'rgba(34,120,72,0.5)';
+                  for (var lb = 0; lb < 7; lb++) {
+                    var lbSeed = Math.sin(lb * 73.7) * 4375.4; lbSeed -= Math.floor(lbSeed);
+                    var lbx = ((lbSeed + heroTick * 0.0002) % 1) * W;
+                    var lby = H - (0.12 + (lb % 3) * 0.1) * H;
+                    g.beginPath();
+                    g.ellipse(lbx * dpr, lby * dpr, (14 + lb * 5) * dpr, (6 + (lb % 3) * 3) * dpr, lb * 0.6, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                  g.restore();
+                  // CO₂ particles rising off the limb — density follows the signal
+                  var molCount = Math.round(6 + sig * 40);
+                  g.fillStyle = 'rgba(203,213,225,0.5)';
+                  for (var mj = 0; mj < molCount && mj < mols.length; mj++) {
+                    var mo = mols[mj];
+                    var mProg = ((heroTick * 0.003 * mo.sp + mo.ph) % 1);
+                    var mx = mo.x * W + Math.sin(heroTick * 0.02 + mo.ph) * 6;
+                    var my = H - mProg * H * 0.85;
+                    g.globalAlpha = 0.55 * Math.sin(mProg * Math.PI);
+                    g.beginPath();
+                    g.arc(mx * dpr, my * dpr, mo.r * dpr, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                  g.globalAlpha = 1;
+                  // Heat shimmer arcs when the signal runs hot
+                  if (sig > 0.55) {
+                    var heatA = (sig - 0.55) * 0.5;
+                    for (var hw = 0; hw < 3; hw++) {
+                      var hwProg = ((heroTick * 0.006 + hw * 0.33) % 1);
+                      g.strokeStyle = 'rgba(239,68,68,' + (heatA * (1 - hwProg)).toFixed(3) + ')';
+                      g.lineWidth = 1.5 * dpr;
+                      g.beginPath();
+                      g.arc(cx * dpr, cy * dpr, (R + 8 + hwProg * 34) * dpr, Math.PI * 1.15, Math.PI * 1.85);
+                      g.stroke();
+                    }
+                  }
+                  // Hopeful emerald sparkles when the signal runs cool
+                  if (sig < 0.3) {
+                    g.fillStyle = 'rgba(52,211,153,0.8)';
+                    for (var gs = 0; gs < 6; gs++) {
+                      var gsTw = 0.5 + 0.5 * Math.sin(heroTick * 0.05 + gs * 2.2);
+                      if (gsTw < 0.55) continue;
+                      var gsSeed = Math.sin(gs * 41.3) * 7919.7; gsSeed -= Math.floor(gsSeed);
+                      g.globalAlpha = gsTw * 0.8;
+                      g.beginPath();
+                      g.arc(gsSeed * W * dpr, (H - 14 - gsSeed * 20) * dpr, 1.6 * dpr, 0, Math.PI * 2);
+                      g.fill();
+                    }
+                    g.globalAlpha = 1;
+                  }
+                  requestAnimationFrame(heroDraw);
+                }
+                requestAnimationFrame(heroDraw);
+              },
+              style: { width: '100%', height: 130, display: 'block', background: '#020617' }
+            }),
+            el('div', { style: { position: 'absolute', left: 12, bottom: 8, fontSize: 11, fontWeight: 700, color: 'rgba(226,232,240,0.92)', textShadow: '0 1px 3px rgba(0,0,0,0.85)', pointerEvents: 'none' } }, heroTicker)
+          );
+        })(),
 
         // ── Hope Meter ──
         el('div', { style: { padding: '0 24px 0', margin: '8px 0 0' } },
@@ -1320,6 +1479,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         ),
 
         // ── Badge Panel (collapsible) ──
+        el('section', { 'data-climate-mission-panel': 'true',
+          style: { margin: '12px 24px 0', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,78,59,0.78), rgba(15,23,42,0.92))', border: '1px solid rgba(74,222,128,0.28)', color: '#ecfdf5', boxShadow: '0 16px 36px rgba(2,8,23,0.22)' } },
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(230px,0.8fr)', gap: 12 } },
+            el('div', null,
+              el('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, t('stem.climateExplorer.climate_mission', 'Climate mission')),
+              el('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, ceTabTitles[tab] || t('stem.climateExplorer.climate_explorer', 'Climate Explorer')),
+              el('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#cbd5e1' } },
+                t('stem.climateExplorer.mission_panel_copy', 'Move from personal data to global evidence, justice, and solutions. Advanced policy and forcing labs stay available when you expand them.')),
+              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(128px,1fr))', gap: 8 } },
+                ceRoutes.map(function(route) {
+                  var active = tab === route.id;
+                  return el('button', { key: route.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() { visitTab(route.id); },
+                    style: { minHeight: 74, padding: 9, borderRadius: 8, border: '1px solid ' + (active ? 'rgba(134,239,172,0.72)' : 'rgba(134,239,172,0.24)'), background: active ? 'rgba(34,197,94,0.18)' : 'rgba(15,23,42,0.55)', color: '#ecfdf5', textAlign: 'left', cursor: 'pointer' } },
+                    el('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, route.label),
+                    el('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#bbf7d0' } }, route.hint)
+                  );
+                })
+              )
+            ),
+            el('div', null,
+              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
+                [
+                  { label: t('stem.climateExplorer.status_hope', 'Hope'), value: hopePts + '/' + HOPE_MILESTONES.length },
+                  { label: t('stem.climateExplorer.status_badges', 'Badges'), value: Object.keys(badges).length + '/' + BADGES.length },
+                  { label: t('stem.climateExplorer.status_xp', 'XP'), value: String(getStemXP ? getStemXP('climateExplorer') : 0) },
+                  { label: t('stem.climateExplorer.status_advanced', 'Advanced'), value: showClimateAdvanced ? t('stem.climateExplorer.visible', 'Visible') : t('stem.climateExplorer.hidden', 'Hidden') }
+                ].map(function(card) {
+                  return el('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
+                    el('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
+                    el('div', { style: { fontSize: 15, fontWeight: 900, color: '#f8fafc' } }, card.value)
+                  );
+                })
+              ),
+              el('button', { type: 'button', 'aria-expanded': showClimateAdvanced ? 'true' : 'false',
+                onClick: function() { upd('showClimateAdvanced', !d.showClimateAdvanced); },
+                style: { width: '100%', marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(134,239,172,0.32)', background: 'rgba(34,197,94,0.12)', color: '#bbf7d0', fontSize: 11, fontWeight: 900, cursor: 'pointer' } },
+                showClimateAdvanced ? t('stem.climateExplorer.hide_advanced_labs', 'Hide advanced labs') : t('stem.climateExplorer.show_advanced_labs', 'Show advanced labs'))
+            )
+          )
+        ),
+
         badgesOpen && el('div', { style: { padding: '12px 24px', borderBottom: '1px solid rgba(245,158,11,0.1)' } },
           el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 } },
             BADGES.map(function(b) {
@@ -1336,17 +1537,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         ),
 
         // ── Tab Bar ──
-        el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(34,197,94,0.1)', padding: '0 16px', overflowX: 'auto' }, role: 'tablist', 'aria-label': 'Climate Explorer sections' },
-          [
-            { id: 'carbon', icon: '\uD83E\uDDEE', label: 'Carbon Calculator' },
-            { id: 'renewables', icon: '\u26A1', label: 'Renewables' },
-            { id: 'keeling', icon: '\uD83D\uDCC8', label: 'Keeling Curve' },
-            { id: 'tipping', icon: '\u26A0\uFE0F', label: 'Tipping Points' },
-            { id: 'justice', icon: '\u2696\uFE0F', label: 'Climate Justice' },
-            { id: 'solutions', icon: '\uD83D\uDCA1', label: 'Solutions' },
-            { id: 'pathways', icon: '\uD83D\uDDFA\uFE0F', label: 'Policy Pathways' },
-            { id: 'forceHunt', icon: '\u2600\uFE0F', label: 'Radiative Forcing' }
-          ].map(function(t) {
+        el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(34,197,94,0.1)', padding: '0 16px', overflowX: 'auto' }, role: 'tablist', 'aria-label': t('stem.climateExplorer.climate_explorer_sections', 'Climate Explorer sections') },
+          (showClimateAdvanced ? [
+            { id: 'carbon', icon: '\uD83E\uDDEE', label: t('stem.climateExplorer.carbon_calculator', 'Carbon Calculator') },
+            { id: 'renewables', icon: '\u26A1', label: t('stem.climateExplorer.renewables', 'Renewables') },
+            { id: 'keeling', icon: '\uD83D\uDCC8', label: t('stem.climateExplorer.keeling_curve', 'Keeling Curve') },
+            { id: 'tipping', icon: '\u26A0\uFE0F', label: t('stem.climateExplorer.tipping_points', 'Tipping Points') },
+            { id: 'justice', icon: '\u2696\uFE0F', label: t('stem.climateExplorer.climate_justice', 'Climate Justice') },
+            { id: 'solutions', icon: '\uD83D\uDCA1', label: t('stem.climateExplorer.solutions', 'Solutions') },
+            { id: 'pathways', icon: '\uD83D\uDDFA\uFE0F', label: t('stem.climateExplorer.policy_pathways', 'Policy Pathways') },
+            { id: 'forceHunt', icon: '\u2600\uFE0F', label: t('stem.climateExplorer.radiative_forcing', 'Radiative Forcing') }
+          ] : [
+            { id: 'carbon', icon: '\uD83E\uDDEE', label: t('stem.climateExplorer.carbon_calculator', 'Carbon Calculator') },
+            { id: 'renewables', icon: '\u26A1', label: t('stem.climateExplorer.renewables', 'Renewables') },
+            { id: 'keeling', icon: '\uD83D\uDCC8', label: t('stem.climateExplorer.keeling_curve', 'Keeling Curve') },
+            { id: 'tipping', icon: '\u26A0\uFE0F', label: t('stem.climateExplorer.tipping_points', 'Tipping Points') },
+            { id: 'justice', icon: '\u2696\uFE0F', label: t('stem.climateExplorer.climate_justice', 'Climate Justice') },
+            { id: 'solutions', icon: '\uD83D\uDCA1', label: t('stem.climateExplorer.solutions', 'Solutions') }
+          ]).map(function(t) {
             var active = tab === t.id;
             return el('button', { key: t.id, onClick: function() { visitTab(t.id); },
               role: 'tab', 'aria-selected': active,
@@ -1358,13 +1566,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         // ── Topic-accent hero band (swaps with the active tab) ──
         (function() {
           var TAB_META = {
-            carbon:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.12)',  icon: '\uD83E\uDDEE', title: 'Carbon Calculator',     hint: 'Average US household emits ~16 tons CO\u2082/yr. The biggest levers are home heating, transport, and diet \u2014 not plastic straws.' },
-            renewables: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.12)', icon: '\u26A1',         title: 'Renewable energy',      hint: 'Solar + wind are now cheaper than new fossil plants in most markets. The hard part is grid integration, not generation cost.' },
-            keeling:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.12)',  icon: '\uD83D\uDCC8', title: 'The Keeling Curve',     hint: 'Continuous CO\u2082 measurement at Mauna Loa since 1958 \u2014 the longest-running atmospheric record. Sawtooth pattern from N. Hemisphere photosynthesis.' },
-            tipping:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.12)',  icon: '\u26A0\uFE0F', title: 'Climate tipping points', hint: 'Thresholds where the system shifts state and stays there \u2014 Greenland melt, Amazon dieback, AMOC slowdown. Recent work suggests several may be closer than thought.' },
-            justice:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.12)', icon: '\u2696\uFE0F',  title: 'Climate justice',       hint: 'The countries that emitted the least face the worst impacts. Climate is an equity issue first \u2014 vulnerability tracks income, geography, and historical responsibility.' },
-            solutions:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.12)', icon: '\uD83D\uDCA1', title: 'Solutions toolkit',     hint: 'Drawdown ranks 100 solutions by gigatons of CO\u2082 avoided. Refrigerants, food waste, and educating girls top the list \u2014 not what most people guess.' },
-            pathways:   { accent: '#15803d', soft: 'rgba(21,128,61,0.12)', icon: '\uD83D\uDDFA\uFE0F', title: 'Climate Policy Pathways: 40-year Maine campaign', hint: 'You are the state\'s lead climate strategist. Six sectors (grid, transport, buildings, working lands, adaptation, justice). 2025 to 2065 in 5-year periods. Inter-sector feedback rules tie the whole system together.' }
+            carbon:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.12)',  icon: '\uD83E\uDDEE', title: t('stem.climateExplorer.carbon_calculator_2', 'Carbon Calculator'),     hint: t('stem.climateExplorer.average_us_household_emits_16_tons_co_', 'Average US household emits ~16 tons CO\u2082/yr. The biggest levers are home heating, transport, and diet \u2014 not plastic straws.') },
+            renewables: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.12)', icon: '\u26A1',         title: t('stem.climateExplorer.renewable_energy', 'Renewable energy'),      hint: t('stem.climateExplorer.solar_wind_are_now_cheaper_than_new_fo', 'Solar + wind are now cheaper than new fossil plants in most markets. The hard part is grid integration, not generation cost.') },
+            keeling:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.12)',  icon: '\uD83D\uDCC8', title: t('stem.climateExplorer.the_keeling_curve', 'The Keeling Curve'),     hint: t('stem.climateExplorer.continuous_co_measurement_at_mauna_loa', 'Continuous CO\u2082 measurement at Mauna Loa since 1958 \u2014 the longest-running atmospheric record. Sawtooth pattern from N. Hemisphere photosynthesis.') },
+            tipping:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.12)',  icon: '\u26A0\uFE0F', title: t('stem.climateExplorer.climate_tipping_points', 'Climate tipping points'), hint: t('stem.climateExplorer.thresholds_where_the_system_shifts_sta', 'Thresholds where the system shifts state and stays there \u2014 Greenland melt, Amazon dieback, AMOC slowdown. Recent work suggests several may be closer than thought.') },
+            justice:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.12)', icon: '\u2696\uFE0F',  title: t('stem.climateExplorer.climate_justice_2', 'Climate justice'),       hint: t('stem.climateExplorer.the_countries_that_emitted_the_least_f', 'The countries that emitted the least face the worst impacts. Climate is an equity issue first \u2014 vulnerability tracks income, geography, and historical responsibility.') },
+            solutions:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.12)', icon: '\uD83D\uDCA1', title: t('stem.climateExplorer.solutions_toolkit', 'Solutions toolkit'),     hint: t('stem.climateExplorer.drawdown_ranks_100_solutions_by_gigato', 'Drawdown ranks 100 solutions by gigatons of CO\u2082 avoided. Refrigerants, food waste, and educating girls top the list \u2014 not what most people guess.') },
+            pathways:   { accent: '#15803d', soft: 'rgba(21,128,61,0.12)', icon: '\uD83D\uDDFA\uFE0F', title: t('stem.climateExplorer.climate_policy_pathways_40_year_maine_', 'Climate Policy Pathways: 40-year Maine campaign'), hint: 'You are the state\'s lead climate strategist in an illustrative scenario. Six sectors use hand-authored 0-100 indices and feedback rules; results are not forecasts, official targets, or policy recommendations.' },
+            forceHunt: { accent: '#0891b2', soft: 'rgba(8,145,178,0.12)', icon: '\u2600\uFE0F', title: t('stem.climateExplorer.radiative_forcing', 'Radiative Forcing'), hint: 'Compare an arbitrary teaching index. The controls are not measured forcing values and the output is not a climate projection.' }
           };
           var meta = TAB_META[tab] || TAB_META.carbon;
           return el('div', {
@@ -1372,7 +1581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               margin: '12px 24px 0',
               padding: '12px 16px',
               borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, var(--allo-stem-deeper, rgba(15,23,42,0)) 100%)',
               border: '1px solid ' + meta.accent + '55',
               borderLeft: '4px solid ' + meta.accent,
               display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
@@ -1495,16 +1704,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // Results
             el('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(59,130,246,0.08))', border: '1px solid rgba(34,197,94,0.2)', marginTop: 8 } },
               // Canvas donut chart
-              el('canvas', { ref: function(c) { if (c) setTimeout(function() { drawDonut(c, ct); }, 0); },
-                'aria-label': 'Interactive climate explorer carbon footprint donut chart visualization', role: 'img',
+              el('canvas', { tabIndex: 0, ref: function(c) { if (c) setTimeout(function() { drawDonut(c, ct); }, 0); },
+                'aria-label': t('stem.climateExplorer.interactive_climate_explorer_carbon_fo', 'Interactive climate explorer carbon footprint donut chart visualization'), role: 'img',
                 style: { width: '100%', height: 180, display: 'block', marginBottom: 8 } }),
               // Legend
               el('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 8 } },
                 [
-                  { label: 'Transport', kg: ct.transport, color: '#3b82f6' },
-                  { label: 'Food', kg: ct.food, color: '#f59e0b' },
-                  { label: 'Energy', kg: ct.energy, color: '#ef4444' },
-                  { label: 'Waste', kg: ct.waste, color: '#22c55e' }
+                  { label: t('stem.climateExplorer.transport_3', 'Transport'), kg: ct.transport, color: '#3b82f6' },
+                  { label: t('stem.climateExplorer.food_2', 'Food'), kg: ct.food, color: '#f59e0b' },
+                  { label: t('stem.climateExplorer.energy_2', 'Energy'), kg: ct.energy, color: '#ef4444' },
+                  { label: t('stem.climateExplorer.waste_2', 'Waste'), kg: ct.waste, color: '#22c55e' }
                 ].map(function(b) {
                   return el('div', { key: b.label, style: { display: 'flex', alignItems: 'center', gap: 4 } },
                     el('div', { style: { width: 10, height: 10, borderRadius: 3, background: b.color } }),
@@ -1532,7 +1741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 if (ct.total <= parisKg) { status = '\u2713 At or under Paris-aligned target'; statusColor = '#4ade80'; }
                 else if (ct.total <= globalAvgKg) { status = '\u2193 Below global average, still ' + Math.round(ct.total - parisKg) + ' kg over Paris'; statusColor = '#fbbf24'; }
                 else { status = '\u2191 Above global average \u2014 ' + Math.round(ct.total - parisKg).toLocaleString() + ' kg over Paris target'; statusColor = '#fca5a5'; }
-                return el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(255,255,255,0.08)' } },
+                return el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.45))', border: '1px solid rgba(255,255,255,0.08)' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 } },
                     el('span', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '\uD83C\uDF0D Your footprint vs benchmarks'),
                     el('span', { style: { color: statusColor, fontSize: 11, fontWeight: 800 } }, status)
@@ -1772,7 +1981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('button', { onClick: function() { upd('exportedReport', null); }, style: { padding: '2px 8px', borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.05)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '✕ Close')
                 ),
                 el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginBottom: 6 } }, 'Select all (Ctrl/Cmd+A), then copy:'),
-                el('textarea', { readOnly: true, value: d.exportedReport, style: { width: '100%', height: 220, fontFamily: 'monospace', fontSize: 10, padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(96,165,250,0.15)', color: 'var(--allo-stem-text, #cbd5e1)' } })
+                el('textarea', { readOnly: true, value: d.exportedReport, style: { width: '100%', height: 220, fontFamily: 'monospace', fontSize: 10, padding: 8, borderRadius: 6, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.8))', border: '1px solid rgba(96,165,250,0.15)', color: 'var(--allo-stem-text, #cbd5e1)' } })
               )
             )
           ),
@@ -1856,8 +2065,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 )
               ),
               // Canvas emissions timeline
-              el('canvas', { ref: function(c) { if (c) setTimeout(function() { drawTimeline(c, timeline, BASELINE_GT); }, 0); },
-                'aria-label': 'Interactive climate explorer emissions timeline visualization', role: 'img',
+              el('canvas', { tabIndex: 0, ref: function(c) { if (c) setTimeout(function() { drawTimeline(c, timeline, BASELINE_GT); }, 0); },
+                'aria-label': t('stem.climateExplorer.interactive_climate_explorer_emissions', 'Interactive climate explorer emissions timeline visualization'), role: 'img',
                 style: { width: '100%', height: 160, display: 'block', borderRadius: 8, marginBottom: 12, background: 'rgba(0,0,0,0.15)' } }),
 
               // Hopeful message
@@ -1895,7 +2104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             ),
             // Chart
             el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(96,165,250,0.2)', marginBottom: 16 } },
-              el('canvas', { ref: function(cv) {
+              el('canvas', { tabIndex: 0, role: 'img', 'aria-label': 'Climate data chart showing the selected indicator over time.', ref: function(cv) {
                 if (!cv) return;
                 var dpr = window.devicePixelRatio || 1;
                 var w = cv.offsetWidth || 600, h = 260;
@@ -1989,7 +2198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 var last = KEELING_DATA[KEELING_DATA.length - 1];
                 var lastT = GLOBAL_TEMP[GLOBAL_TEMP.length - 1];
                 c.fillStyle = '#fbbf24'; c.font = 'bold 11px system-ui'; c.textAlign = 'right';
-                c.fillText('Today: ' + last.ppm + ' ppm', w - padR - 4, y2py(last.ppm) - 8);
+                c.fillText('2024 annual mean: ' + last.ppm + ' ppm', w - padR - 4, y2py(last.ppm) - 8);
                 c.fillStyle = '#fca5a5'; c.font = 'bold 11px system-ui'; c.textAlign = 'right';
                 c.fillText('+' + lastT.t.toFixed(2) + '°C', w - padR - 4, t2py(lastT.t) + 14);
                 // Legend
@@ -2011,7 +2220,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 12 } },
               el('div', { style: { color: '#fca5a5', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '🔥 CO₂ drives warming — the two lines track together'),
               el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
-                'Atmospheric CO\u2082 has risen from 315 ppm (1958) to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm today. Global temperature has risen from near 0°C to +' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + '°C above pre-industrial. This correlation isn\'t coincidence — it\'s causation, proven by physics (the greenhouse effect) and observation (matching patterns over 800,000 years of ice-core records).')
+                'Atmospheric CO\u2082 has risen from 315 ppm (1958) to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm in the 2024 annual mean. Global temperature has risen from near 0°C to +' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + '°C above pre-industrial. This correlation isn\'t coincidence — it\'s causation, proven by physics (the greenhouse effect) and observation (matching patterns over 800,000 years of ice-core records).')
+            ),
+            // CL3: weather vs. climate — the sawtooth IS the teachable contrast
+            el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(6,182,212,0.07)', border: '1px solid rgba(6,182,212,0.22)', marginBottom: 12 } },
+              el('div', { style: { color: '#67e8f9', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '📏 Weather is not climate — you can see both in this curve'),
+              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
+                'The small up-and-down sawtooth is the seasons — Northern-Hemisphere plants pull CO₂ down each summer and release it each winter. That wiggle is like weather: short-term and noisy. The relentless climb underneath is climate: the decades-long trend. A cold winter, or even one cold year, is just a wiggle — it never reverses the trend. Climate is the long-term average of weather, usually measured over about 30 years.')
             ),
             // Milestones list
             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 10, marginBottom: 16 } },
@@ -2077,7 +2292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   ),
                   el('input', { type: 'range', min: 0, max: 50, step: 1, value: userBurnRate,
                     onChange: function(e) { upd('budgetBurnRate', parseInt(e.target.value, 10)); playSound('slider'); },
-                    'aria-label': 'Annual global CO2 emission rate',
+                    'aria-label': t('stem.climateExplorer.annual_global_co2_emission_rate', 'Annual global CO2 emission rate'),
                     style: { width: '100%', accentColor: '#ef4444' } }),
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2 } },
                     el('span', null, '0 (net-zero)'),
@@ -2156,7 +2371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
             // Warming-level scale visual
             el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(248,113,113,0.2)', marginBottom: 16 } },
-              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 10, textAlign: 'center', fontWeight: 700 } }, 'Global warming above pre-industrial (°C) \u2014 we are here: ~1.2°C (2024)'),
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 10, textAlign: 'center', fontWeight: 700 } }, 'Global warming above pre-industrial (degrees C) - scenario values and ranges shown for comparison'),
               el('div', { style: { position: 'relative', height: 40, borderRadius: 6, background: 'linear-gradient(to right, #22c55e 0%, #fbbf24 30%, #f97316 55%, #ef4444 80%, #991b1b 100%)', marginBottom: 8 } },
                 // Tick markers at 1, 1.5, 2, 3, 4°C
                 [1.0, 1.5, 2.0, 3.0, 4.0].map(function(temp) {
@@ -2199,17 +2414,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             (function() {
               var slr = d.slrMeters != null ? d.slrMeters : 1;
               var SLR_IMPACTS = {
-                0:  { displaced: 0,    cities: [], desc: 'Baseline — today\'s coastlines.' },
+                0:  { displaced: 0,    cities: [], desc: t('stem.climateExplorer.baseline_today_s_coastlines', 'Baseline — today\'s coastlines.') },
                 1:  { displaced: 150,  cities: ['Miami Beach', 'parts of New Orleans', 'Maldives'],
-                      desc: 'Locked in at ~1.5°C sustained warming. Most coastal adaptation still possible with seawalls, managed retreat.' },
+                      desc: t('stem.climateExplorer.locked_in_at_1_5_c_sustained_warming_m', 'Locked in at ~1.5°C sustained warming. Most coastal adaptation still possible with seawalls, managed retreat.') },
                 2:  { displaced: 280,  cities: ['Most of Bangladesh coast', 'Alexandria (Egypt)', 'Shanghai waterfront', 'Jakarta (already sinking)'],
-                      desc: 'Associated with ~2.5°C warming. Displaces more people than any war in history. Hurricane surge becomes catastrophic for inland areas.' },
+                      desc: t('stem.climateExplorer.associated_with_2_5_c_warming_displace', 'Associated with ~2.5°C warming. Displaces more people than any war in history. Hurricane surge becomes catastrophic for inland areas.') },
                 3:  { displaced: 410,  cities: ['Florida peninsula mostly submerged', 'Netherlands without dikes', 'Bangkok'],
-                      desc: 'Likely by 2300 at 3°C. Entire nations lose viable territory. New Orleans, Venice, much of Vietnam.' },
+                      desc: t('stem.climateExplorer.likely_by_2300_at_3_c_entire_nations_l', 'Likely by 2300 at 3°C. Entire nations lose viable territory. New Orleans, Venice, much of Vietnam.') },
                 5:  { displaced: 700,  cities: ['Boston Harbor', 'London (without Thames barrier)', 'Tokyo Bay', 'San Francisco Bay'],
-                      desc: 'Multi-century commitment at 4°C warming. Requires Greenland + West Antarctic collapse. Human civilization\'s coastal geography permanently rewritten.' },
+                      desc: t('stem.climateExplorer.multi_century_commitment_at_4_c_warmin', 'Multi-century commitment at 4°C warming. Requires Greenland + West Antarctic collapse. Human civilization\'s coastal geography permanently rewritten.') },
                 10: { displaced: 1100, cities: ['All major port cities worldwide'],
-                      desc: 'Locked-in with Greenland + most of West Antarctic gone. A hotter Pliocene-era coastline. Several centuries to millennia to fully realize.' }
+                      desc: t('stem.climateExplorer.locked_in_with_greenland_most_of_west_', 'Locked-in with Greenland + most of West Antarctic gone. A hotter Pliocene-era coastline. Several centuries to millennia to fully realize.') }
               };
               var impact = SLR_IMPACTS[slr] || SLR_IMPACTS[1];
               return el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(14,165,233,0.08))', border: '1px solid rgba(59,130,246,0.25)', marginBottom: 12 } },
@@ -2231,7 +2446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       upd('slrMeters', nearest);
                       playSound('slider');
                     },
-                    'aria-label': 'Sea level rise in meters',
+                    'aria-label': t('stem.climateExplorer.sea_level_rise_in_meters', 'Sea level rise in meters'),
                     style: { width: '100%', accentColor: '#3b82f6' } }),
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700 } },
                     [0, 1, 2, 3, 5, 10].map(function(m) {
@@ -2240,7 +2455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   )
                 ),
                 // Impact display
-                el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(59,130,246,0.15)' } },
+                el('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.5))', border: '1px solid rgba(59,130,246,0.15)' } },
                   el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 6 } },
                     el('div', { style: { color: '#93c5fd', fontSize: 20, fontWeight: 900, fontFamily: 'monospace' } }, '+' + slr + ' m'),
                     el('div', { style: { color: '#60a5fa', fontSize: 14, fontWeight: 800 } }, impact.displaced > 0 ? impact.displaced + 'M people displaced' : 'No displacement')
@@ -2417,7 +2632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
             // View toggle
             el('div', { style: { display: 'flex', gap: 6, marginBottom: 16 } },
-              [{ id: 'risk', label: '\u26A0\uFE0F Risks' }, { id: 'emissions', label: '\uD83C\uDFED Emissions' }, { id: 'resilience', label: '\uD83D\uDCAA Resilience' }].map(function(v) {
+              [{ id: 'risk', label: t('stem.climateExplorer.risks', '\u26A0\uFE0F Risks') }, { id: 'emissions', label: t('stem.climateExplorer.emissions', '\uD83C\uDFED Emissions') }, { id: 'resilience', label: t('stem.climateExplorer.resilience', '\uD83D\uDCAA Resilience') }].map(function(v) {
                 return el('button', { key: v.id, onClick: function() { upd('cjView', v.id); },
                   style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: cjView === v.id ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)', background: cjView === v.id ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.03)', color: cjView === v.id ? '#fbbf24' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                   v.label);
@@ -2545,16 +2760,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // the next chapter of the climate justice story.
             (function() {
               var LD_CONTRIB = [
-                { country: 'UAE',         emoji: '🇦🇪', amountUSD: 100,  note: 'COP28 host pledge, Dec 2023' },
-                { country: 'Germany',     emoji: '🇩🇪', amountUSD: 108,  note: '€100M, COP28' },
-                { country: 'Italy',       emoji: '🇮🇹', amountUSD: 108,  note: '€100M, COP28' },
-                { country: 'France',      emoji: '🇫🇷', amountUSD: 108,  note: '€100M, COP28' },
-                { country: 'UK',          emoji: '🇬🇧', amountUSD: 50,   note: '£40M, COP28' },
+                { country: 'UAE',         emoji: '🇦🇪', amountUSD: 100,  note: t('stem.climateExplorer.cop28_host_pledge_dec_2023', 'COP28 host pledge, Dec 2023') },
+                { country: 'Germany',     emoji: '🇩🇪', amountUSD: 108,  note: t('stem.climateExplorer.100m_cop28', '€100M, COP28') },
+                { country: 'Italy',       emoji: '🇮🇹', amountUSD: 108,  note: t('stem.climateExplorer.100m_cop28_2', '€100M, COP28') },
+                { country: 'France',      emoji: '🇫🇷', amountUSD: 108,  note: t('stem.climateExplorer.100m_cop28_3', '€100M, COP28') },
+                { country: 'UK',          emoji: '🇬🇧', amountUSD: 50,   note: t('stem.climateExplorer.40m_cop28', '£40M, COP28') },
                 { country: 'Denmark',     emoji: '🇩🇰', amountUSD: 50,   note: 'COP28' },
                 { country: 'Ireland',     emoji: '🇮🇪', amountUSD: 27,   note: 'COP28' },
-                { country: 'EU',          emoji: '🇪🇺', amountUSD: 27,   note: '€25M, COP28' },
+                { country: 'EU',          emoji: '🇪🇺', amountUSD: 27,   note: t('stem.climateExplorer.25m_cop28', '€25M, COP28') },
                 { country: 'Norway',      emoji: '🇳🇴', amountUSD: 25,   note: 'COP28' },
-                { country: 'USA',         emoji: '🇺🇸', amountUSD: 17.5, note: 'COP28 — note: ~25% of all historical CO₂' },
+                { country: 'USA',         emoji: '🇺🇸', amountUSD: 17.5, note: t('stem.climateExplorer.cop28_note_25_of_all_historical_co', 'COP28 — note: ~25% of all historical CO₂') },
                 { country: 'Japan',       emoji: '🇯🇵', amountUSD: 10,   note: 'COP28' },
                 { country: 'Canada',      emoji: '🇨🇦', amountUSD: 11,   note: 'COP28' }
               ];
@@ -2649,7 +2864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 { year: 2019, millions: 23.9 },
                 { year: 2020, millions: 30.7 },
                 { year: 2021, millions: 23.7 },
-                { year: 2022, millions: 32.6, note: 'Record year — Pakistan floods alone displaced ~8.2M' },
+                { year: 2022, millions: 32.6, note: t('stem.climateExplorer.record_year_pakistan_floods_alone_disp', 'Record year — Pakistan floods alone displaced ~8.2M') },
                 { year: 2023, millions: 26.4 }
               ];
               var DISP_BY_COUNTRY_2022_23 = [
@@ -2805,7 +3020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var ACTIONS = [
                 {
                   rung: 1,
-                  title: 'Know your household number',
+                  title: t('stem.climateExplorer.know_your_household_number', 'Know your household number'),
                   difficulty: 'Anyone, today',
                   difficultyColor: '#86efac',
                   connects: 'Per-capita inversion chart',
@@ -2814,7 +3029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 },
                 {
                   rung: 2,
-                  title: 'Welcome the people the climate is already moving',
+                  title: t('stem.climateExplorer.welcome_the_people_the_climate_is_alre', 'Welcome the people the climate is already moving'),
                   difficulty: 'Anyone, ongoing',
                   difficultyColor: '#86efac',
                   connects: 'Climate Displacement panel',
@@ -2823,7 +3038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 },
                 {
                   rung: 3,
-                  title: 'Pressure the Loss & Damage Fund pledge upward',
+                  title: t('stem.climateExplorer.pressure_the_loss_damage_fund_pledge_u', 'Pressure the Loss & Damage Fund pledge upward'),
                   difficulty: 'Anyone, ~5 minutes',
                   difficultyColor: '#fbbf24',
                   connects: 'Loss & Damage Fund tracker',
@@ -2832,7 +3047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 },
                 {
                   rung: 4,
-                  title: 'Read the people you just heard from',
+                  title: t('stem.climateExplorer.read_the_people_you_just_heard_from', 'Read the people you just heard from'),
                   difficulty: 'Anyone, this month',
                   difficultyColor: '#fbbf24',
                   connects: 'Front-line voices in the region cards',
@@ -2841,7 +3056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 },
                 {
                   rung: 5,
-                  title: 'Show up where the decisions actually get made',
+                  title: t('stem.climateExplorer.show_up_where_the_decisions_actually_g', 'Show up where the decisions actually get made'),
                   difficulty: 'High schooler+, periodic',
                   difficultyColor: '#fda4af',
                   connects: 'Youth Climate Leaders + Maine Policy Pathways tab',
@@ -2927,18 +3142,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // UN documents.
             (function() {
               var TIMELINE = [
-                { year: 1990, label: 'IPCC First Assessment Report', what: 'The IPCC tells the world, with scientific consensus for the first time, that human emissions are warming the planet.', tag: 'science', color: '#60a5fa' },
-                { year: 1992, label: 'UN Framework Convention on Climate Change', what: 'The UNFCCC is opened for signature at the Rio Earth Summit. The treaty creates the COP process. 198 countries are now parties.', tag: 'policy', color: '#22c55e' },
-                { year: 1995, label: 'AOSIS proposes Loss & Damage at COP1 Berlin', what: 'The Alliance of Small Island States, led by Vanuatu, formally proposes an international financial mechanism for unavoidable climate damage. Wealthy nations decline.', tag: 'demand', color: '#fbbf24' },
-                { year: 2008, label: 'IDMC begins tracking weather displacement', what: 'The Internal Displacement Monitoring Centre starts the global database that now documents 376M+ cumulative weather displacements.', tag: 'data', color: '#60a5fa' },
-                { year: 2009, label: 'COP15 Copenhagen — $100B/yr finance pledge', what: 'Wealthy nations pledge $100B/yr in climate finance to developing countries by 2020. The pledge is met for the first time, late, in 2022.', tag: 'pledge', color: '#fbbf24' },
-                { year: 2015, label: 'Paris Agreement — Article 8 mentions L&D', what: 'The Paris text formally names "loss and damage associated with climate change impacts" — but explicitly excludes any basis for liability or compensation.', tag: 'policy', color: '#22c55e' },
-                { year: 2020, label: 'UN HRC Teitiota v. New Zealand ruling', what: 'The UN Human Rights Committee rules countries cannot deport people back to climate-existential danger. Non-binding but landmark — the first time a UN body recognized climate displacement in a human-rights frame.', tag: 'law', color: '#a855f7' },
-                { year: 2021, label: 'World Bank Groundswell Part II report', what: 'Projects up to 216M people internally climate-displaced by 2050 across 6 world regions on current trajectory.', tag: 'data', color: '#60a5fa' },
-                { year: 2022, label: 'COP27 Sharm el-Sheikh — L&D Fund created', what: 'After 27 years, the Loss & Damage Fund is formally established. No money attached yet. Saleemul Huq calls it "the most important COP outcome since Paris."', tag: 'win', color: '#86efac' },
-                { year: 2023, label: 'COP28 Dubai — L&D Fund capitalized', what: 'Initial pledges total ~$700M, hosted by World Bank for 4 years. Roughly 0.16% of one year of estimated need. Saleemul Huq dies one month before the COP opens; the fund is sometimes informally called by his name.', tag: 'win', color: '#86efac' },
-                { year: 2024, label: 'First L&D Fund disbursements', what: 'The fund makes its first small payments to vulnerable countries. The slow work of building disbursement criteria, eligibility, and accountability begins.', tag: 'win', color: '#86efac' },
-                { year: 2030, label: 'IPCC 1.5°C deadline (target year)', what: 'The Paris Agreement target year for emissions to peak and begin declining. Current trajectory points well past this.', tag: 'target', color: '#fda4af', future: true }
+                { year: 1990, label: t('stem.climateExplorer.ipcc_first_assessment_report', 'IPCC First Assessment Report'), what: 'The IPCC tells the world, with scientific consensus for the first time, that human emissions are warming the planet.', tag: 'science', color: '#60a5fa' },
+                { year: 1992, label: t('stem.climateExplorer.un_framework_convention_on_climate_cha', 'UN Framework Convention on Climate Change'), what: 'The UNFCCC is opened for signature at the Rio Earth Summit. The treaty creates the COP process. 198 countries are now parties.', tag: 'policy', color: '#22c55e' },
+                { year: 1995, label: t('stem.climateExplorer.aosis_proposes_loss_damage_at_cop1_ber', 'AOSIS proposes Loss & Damage at COP1 Berlin'), what: 'The Alliance of Small Island States, led by Vanuatu, formally proposes an international financial mechanism for unavoidable climate damage. Wealthy nations decline.', tag: 'demand', color: '#fbbf24' },
+                { year: 2008, label: t('stem.climateExplorer.idmc_begins_tracking_weather_displacem', 'IDMC begins tracking weather displacement'), what: 'The Internal Displacement Monitoring Centre starts the global database that now documents 376M+ cumulative weather displacements.', tag: 'data', color: '#60a5fa' },
+                { year: 2009, label: t('stem.climateExplorer.cop15_copenhagen_100b_yr_finance_pledg', 'COP15 Copenhagen — $100B/yr finance pledge'), what: 'Wealthy nations pledge $100B/yr in climate finance to developing countries by 2020. The pledge is met for the first time, late, in 2022.', tag: 'pledge', color: '#fbbf24' },
+                { year: 2015, label: t('stem.climateExplorer.paris_agreement_article_8_mentions_l_d', 'Paris Agreement — Article 8 mentions L&D'), what: 'The Paris text formally names "loss and damage associated with climate change impacts" — but explicitly excludes any basis for liability or compensation.', tag: 'policy', color: '#22c55e' },
+                { year: 2020, label: t('stem.climateExplorer.un_hrc_teitiota_v_new_zealand_ruling', 'UN HRC Teitiota v. New Zealand ruling'), what: 'The UN Human Rights Committee rules countries cannot deport people back to climate-existential danger. Non-binding but landmark — the first time a UN body recognized climate displacement in a human-rights frame.', tag: 'law', color: '#a855f7' },
+                { year: 2021, label: t('stem.climateExplorer.world_bank_groundswell_part_ii_report', 'World Bank Groundswell Part II report'), what: 'Projects up to 216M people internally climate-displaced by 2050 across 6 world regions on current trajectory.', tag: 'data', color: '#60a5fa' },
+                { year: 2022, label: t('stem.climateExplorer.cop27_sharm_el_sheikh_l_d_fund_created', 'COP27 Sharm el-Sheikh — L&D Fund created'), what: 'After 27 years, the Loss & Damage Fund is formally established. No money attached yet. Saleemul Huq calls it "the most important COP outcome since Paris."', tag: 'win', color: '#86efac' },
+                { year: 2023, label: t('stem.climateExplorer.cop28_dubai_l_d_fund_capitalized', 'COP28 Dubai — L&D Fund capitalized'), what: 'Initial pledges total ~$700M, hosted by World Bank for 4 years. Roughly 0.16% of one year of estimated need. Saleemul Huq dies one month before the COP opens; the fund is sometimes informally called by his name.', tag: 'win', color: '#86efac' },
+                { year: 2024, label: t('stem.climateExplorer.first_l_d_fund_disbursements', 'First L&D Fund disbursements'), what: 'The fund makes its first small payments to vulnerable countries. The slow work of building disbursement criteria, eligibility, and accountability begins.', tag: 'win', color: '#86efac' },
+                { year: 2030, label: t('stem.climateExplorer.ipcc_1_5_c_deadline_target_year', 'IPCC 1.5°C deadline (target year)'), what: 'The Paris Agreement target year for emissions to peak and begin declining. Current trajectory points well past this.', tag: 'target', color: '#fda4af', future: true }
               ];
               return el('div', {
                 style: {
@@ -3116,7 +3331,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 upd('dsStreak', newStreak);
                 upd('dsBest', newBest);
               }
-              return el('div', { style: { padding: 16, marginBottom: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(15,23,42,0.4))', border: '2px solid rgba(34,197,94,0.30)' } },
+              return el('div', { style: { padding: 16, marginBottom: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), var(--allo-stem-deeper, rgba(15,23,42,0.4)))', border: '2px solid rgba(34,197,94,0.30)' } },
                 el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 } },
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                     el('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '\uD83D\uDD75\uFE0F'),
@@ -3136,7 +3351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         '8 rounds. Each shows 4 climate solutions; pick the one with the biggest CO\u2082 reduction (per Project Drawdown\'s Plausible Scenario, gigatons over 2020\u20132050). After picking, a coaching block names what makes the answer surprising.'),
                       el('button', {
                         onClick: startDs,
-                        'aria-label': 'Start Drawdown Sleuth',
+                        'aria-label': t('stem.climateExplorer.start_drawdown_sleuth', 'Start Drawdown Sleuth'),
                         style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#22c55e', color: '#0f172a', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
                       }, '\uD83D\uDD75\uFE0F Start \u2014 round 1 of 8')
                     )
@@ -3154,7 +3369,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           el('span', null, 'Best ', el('strong', { style: { color: '#f59e0b' } }, dsBest))
                         ),
                         el('div', { style: { color: '#fff', fontSize: 13, fontWeight: 800, marginBottom: 8 } }, 'Which solution avoids the most CO\u2082 globally (2020\u20132050)?'),
-                        el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the biggest-impact solution' },
+                        el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': t('stem.climateExplorer.pick_the_biggest_impact_solution', 'Pick the biggest-impact solution') },
                           r.ids.map(function(solId) {
                             var sol = getSol(solId);
                             if (!sol) return null;
@@ -3228,10 +3443,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 var sol = DRAWDOWN_SOLUTIONS.find(function(s) { return s.id === id; });
                 return sum + (sol ? sol.gt : 0);
               }, 0);
-              // Global emissions per year ≈ 40 Gt. 1.5°C carbon budget ≈ 250 Gt remaining. 2°C budget ≈ 900 Gt.
-              var budget15 = 250;
-              var budget20 = 900;
-              var pctOf15 = Math.min(100, (totalGt / budget15) * 100);
+              // Display-only arithmetic; integrated Drawdown models handle interactions and resource constraints.
+              var catalogTotal = DRAWDOWN_SOLUTIONS.reduce(function(sum, sol) { return sum + sol.gt; }, 0);
+              var pctOfCatalog = catalogTotal > 0 ? Math.min(100, (totalGt / catalogTotal) * 100) : 0;
               function togglePick(id) {
                 var next = Object.assign({}, picked);
                 next[id] = !next[id];
@@ -3249,7 +3463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
                   el('div', null,
                     el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, '🎯 Solution Stack Builder'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, '🏅 Goal: stack to 200 Gt to earn the Gigaton badge. Select solutions — see combined impact in gigatons of CO\u2082 avoided by 2050 (Project Drawdown data)')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, '🏅 Goal: reach the classroom 200-point threshold. Select solutions to compare displayed 2020 Project Drawdown scenario estimates; the simple sum is not a modeled portfolio.')
                   ),
                   el('div', { style: { textAlign: 'right' } },
                     el('div', { style: { color: totalGt >= 200 ? '#fbbf24' : '#4ade80', fontSize: 24, fontWeight: 900, fontFamily: 'monospace' } }, Math.round(totalGt) + ' Gt'),
@@ -3259,23 +3473,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 // Budget progress bar
                 el('div', { style: { marginBottom: 6 } },
                   el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginBottom: 2 } },
-                    'Your stack = ' + pctOf15.toFixed(0) + '% of the remaining 1.5°C budget (' + budget15 + ' Gt)'),
+                    'Selected rows = ' + pctOfCatalog.toFixed(0) + '% of the sum of estimates displayed in this activity'),
                   el('div', { style: { height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.04)', overflow: 'hidden', position: 'relative' } },
-                    el('div', { style: { width: pctOf15 + '%', height: '100%', background: pctOf15 >= 100 ? 'linear-gradient(90deg, #4ade80, #22c55e)' : pctOf15 >= 50 ? 'linear-gradient(90deg, #60a5fa, #4ade80)' : '#60a5fa', transition: 'width 0.4s' } })
+                    el('div', { style: { width: pctOfCatalog + '%', height: '100%', background: pctOfCatalog >= 100 ? 'linear-gradient(90deg, #4ade80, #22c55e)' : pctOfCatalog >= 50 ? 'linear-gradient(90deg, #60a5fa, #4ade80)' : '#60a5fa', transition: 'width 0.4s' } })
                   )
                 ),
                 // Status message
                 totalGt > 0 && el('div', { style: { marginBottom: 8, padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5 } },
-                  totalGt >= budget15 ? '🎉 Your stack alone would close the 1.5°C gap. In reality, we need all of these PLUS rapid fossil-fuel phase-out.' :
-                  totalGt >= 100 ? '✨ Strong stack. With all solutions combined we can still keep warming below 2°C.' :
-                  '🌱 Good start. Stack more solutions to cross 100 Gt.'),
+                  totalGt >= 200 ? '🎉 Classroom threshold reached. This arithmetic does not establish a temperature outcome or replace an integrated mitigation pathway.' :
+                  totalGt >= 100 ? '✨ Broad classroom portfolio selected. Compare sectors and look for interactions, constraints, and shared baselines.' :
+                  '🌱 Add solutions to compare sectors; treat the displayed total as a classroom index, not a forecast.'),
                 // Solutions grid (checkbox cards)
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 } },
                   DRAWDOWN_SOLUTIONS.slice().sort(function(a, b) { return b.gt - a.gt; }).map(function(sol) {
                     var isPicked = !!picked[sol.id];
                     return el('button', { key: sol.id, onClick: function() { togglePick(sol.id); },
                       'aria-pressed': isPicked,
-                      'aria-label': (isPicked ? 'Deselect ' : 'Select ') + sol.label + ' — ' + sol.gt + ' gigatons CO2 avoidance potential',
+                      'aria-label': (isPicked ? 'Deselect ' : 'Select ') + sol.label + ' — ' + sol.gt + ' gigatons CO2 scenario estimate',
                       title: sol.note,
                       style: { textAlign: 'left', padding: 10, borderRadius: 10, border: '1px solid ' + (isPicked ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.08)'), background: isPicked ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', color: isPicked ? '#e2e8f0' : '#cbd5e1', fontSize: 11, cursor: 'pointer', transition: 'all 0.15s' } },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
@@ -3289,13 +3503,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ),
                 // Educational footnote
                 el('div', { style: { marginTop: 10, padding: 8, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
-                  '📚 Project Drawdown (drawdown.org) is a nonprofit research group that ranks climate solutions by their gigaton-scale CO\u2082 avoidance potential from 2020-2050. Gt = gigatons (1 billion tons). Current global emissions: ~40 Gt/year. Remaining budget for 1.5°C: ~250 Gt.')
+                  '📚 These values reproduce selected Project Drawdown 2020 scenario estimates for 2020-2050. Gt = gigatons (1 billion metric tons). Do not compare their simple sum with a remaining carbon budget or infer a temperature outcome: solutions interact, share baselines, and face resource constraints.')
               );
             })(),
 
             // Category filter
             el('div', { style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap', justifyContent: 'center' } },
-              [{ id: 'all', label: 'All' }, { id: 'energy', label: '\u26A1 Energy' }, { id: 'transport', label: '\uD83D\uDE8C Transport' }, { id: 'nature', label: '\uD83C\uDF33 Nature' }, { id: 'capture', label: '\uD83C\uDFED Capture' }].map(function(c) {
+              [{ id: 'all', label: 'All' }, { id: 'energy', label: t('stem.climateExplorer.energy_3', '\u26A1 Energy') }, { id: 'transport', label: t('stem.climateExplorer.transport_4', '\uD83D\uDE8C Transport') }, { id: 'nature', label: t('stem.climateExplorer.nature', '\uD83C\uDF33 Nature') }, { id: 'capture', label: t('stem.climateExplorer.capture', '\uD83C\uDFED Capture') }].map(function(c) {
                 return el('button', { key: c.id, onClick: function() { upd('ssCategory', c.id); },
                   style: { padding: '6px 14px', borderRadius: 20, border: ssCategory === c.id ? '2px solid #22c55e' : '1px solid rgba(255,255,255,0.1)', background: ssCategory === c.id ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', color: ssCategory === c.id ? '#4ade80' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                   c.label);
@@ -3432,7 +3646,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var pickRng = pathwayRng(path.seed, path.year, 'pick');
               var ev;
               if (skipRng() < (diff.eventSkip || 0)) {
-                ev = { id: 'quietYear', name: 'A Quiet Period', icon: '\ud83c\udf24\ufe0f', desc: 'No major political or climate event. Routine policy work continued.', apply: function() {} };
+                ev = { id: 'quietYear', name: t('stem.climateExplorer.a_quiet_period', 'A Quiet Period'), icon: '\ud83c\udf24\ufe0f', desc: t('stem.climateExplorer.no_major_political_or_climate_event_ro', 'No major political or climate event. Routine policy work continued.'), apply: function() {} };
               } else {
                 ev = PATHWAY_EVENTS[Math.floor(pickRng() * PATHWAY_EVENTS.length)];
               }
@@ -3480,10 +3694,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 var avgSup = Math.round(path.sectors.reduce(function(a, s) { return a + s.support; }, 0) / path.sectors.length);
                 var justice = path.sectors.find(function(s) { return s.id === 'climateJustice'; });
                 var outcome;
-                if (avgDecarb >= 75 && avgRes >= 65 && justice && justice.support >= 65) outcome = { tier: 'netzero', label: 'Net-zero Plus Equity', color: '#16a34a', icon: '\ud83c\udfc6', desc: 'You hit deep decarbonization across sectors, built resilience, and held equity at the center. This is what a successful climate transition looks like when the social contract holds.' };
-                else if (avgDecarb >= 60 && avgRes >= 55) outcome = { tier: 'uneven', label: 'Decarbonized but Uneven', color: '#22c55e', icon: '\ud83c\udf3f', desc: 'Significant decarbonization across the energy and transport sectors, but adaptation and justice lagged. The carbon curves are right; the political coalition is fragile.' };
-                else if (avgDecarb >= 40 || avgRes >= 50) outcome = { tier: 'partial', label: 'Partial Progress', color: '#f59e0b', icon: '\ud83c\udf43', desc: 'Some sectors moved. Others stalled. Public support eroded over time. This is the trajectory most real-world climate policies have run.' };
-                else outcome = { tier: 'failure', label: 'Climate Policy Failure', color: '#ef4444', icon: '\u26a0\ufe0f', desc: 'Decarbonization stalled. Adaptation gaps widened. Public support collapsed. This is the trajectory we work to avoid: climate impacts compounding without the social or technical infrastructure to respond.' };
+                if (avgDecarb >= 75 && avgRes >= 65 && justice && justice.support >= 65) outcome = { tier: 'netzero', label: t('stem.climateExplorer.net_zero_plus_equity', 'Net-zero Plus Equity'), color: '#16a34a', icon: '\ud83c\udfc6', desc: t('stem.climateExplorer.you_hit_deep_decarbonization_across_se', 'You hit deep decarbonization across sectors, built resilience, and held equity at the center. This is what a successful climate transition looks like when the social contract holds.') };
+                else if (avgDecarb >= 60 && avgRes >= 55) outcome = { tier: 'uneven', label: t('stem.climateExplorer.decarbonized_but_uneven', 'Decarbonized but Uneven'), color: '#22c55e', icon: '\ud83c\udf3f', desc: t('stem.climateExplorer.significant_decarbonization_across_the', 'Significant decarbonization across the energy and transport sectors, but adaptation and justice lagged. The carbon curves are right; the political coalition is fragile.') };
+                else if (avgDecarb >= 40 || avgRes >= 50) outcome = { tier: 'partial', label: t('stem.climateExplorer.partial_progress', 'Partial Progress'), color: '#f59e0b', icon: '\ud83c\udf43', desc: t('stem.climateExplorer.some_sectors_moved_others_stalled_publ', 'Some sectors moved. Others stalled. Public support eroded over time. This is the trajectory most real-world climate policies have run.') };
+                else outcome = { tier: 'failure', label: t('stem.climateExplorer.climate_policy_failure', 'Climate Policy Failure'), color: '#ef4444', icon: '\u26a0\ufe0f', desc: t('stem.climateExplorer.decarbonization_stalled_adaptation_gap', 'Decarbonization stalled. Adaptation gaps widened. Public support collapsed. This is the trajectory we work to avoid: climate impacts compounding without the social or technical infrastructure to respond.') };
                 setPath({ phase: 'debrief', finalOutcome: outcome, avgDecarb: avgDecarb, avgRes: avgRes, avgSup: avgSup });
               } else {
                 setPath({
@@ -3540,7 +3754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               }
               return {
                 priority: 'Spread your bets, watch for feedback rules',
-                text: 'Initial conditions are workable. Spread investment across 2-3 sectors in the first period to find which feedback rules fire first. Public education + citizen assemblies pays off slowly but durably.'
+                text: t('stem.climateExplorer.initial_conditions_are_workable_spread', 'Initial conditions are workable. Spread investment across 2-3 sectors in the first period to find which feedback rules fire first. Public education + citizen assemblies pays off slowly but durably.')
               };
             }
 
@@ -3554,7 +3768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var applicable = PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(id) >= 0; });
               return el('div', {
                 role: 'dialog', 'aria-modal': 'true',
-                style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
+                style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
               },
                 el('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                   el('span', { style: { fontSize: 36 } }, def.icon),
@@ -3564,18 +3778,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                   ),
                   el('button', { onClick: closePathDeepDive,
-                    style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '\u2715 Close')
+                    style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.6))', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '\u2715 Close')
                 ),
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
-                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  el('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 10, padding: 12 } },
                     el('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udd2c Policy mechanics'),
                     el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                   ),
-                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  el('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 10, padding: 12 } },
                     el('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udcf0 Case work'),
                     el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                   ),
-                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  el('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 10, padding: 12 } },
                     el('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83c\udf0d Maine context'),
                     el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                   )
@@ -3697,8 +3911,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   '\u23f3 AI climate-policy educator is reading your campaign state...');
               }
               if (!path.aiReadResponse) return null;
-              return el('div', { role: 'region', 'aria-label': 'AI Climate Policy Reading',
-                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              return el('div', { role: 'region', 'aria-label': t('stem.climateExplorer.ai_climate_policy_reading', 'AI Climate Policy Reading'),
+                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, var(--allo-stem-deeper, rgba(15,23,42,0.4)) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
                 el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                   el('span', { style: { fontSize: 20 } }, '\ud83d\udd0d'),
                   el('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Climate Policy Reading'),
@@ -3735,7 +3949,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
                     'Eight 5-year periods. Six policy sectors. ',
                     el('strong', null, 'Inter-sector feedback rules'),
-                    ' tie the whole system together: clean grid unlocks decarbonization in transport and buildings; low climate justice drags support down everywhere; healthy working forests boost adaptation; adaptation deficit erodes public trust during disaster years.'
+                    ' tie this teaching system together: clean-grid progress boosts transport and buildings; low justice support reduces other support indices; working-lands progress boosts adaptation; and adaptation gaps reduce support during modeled disasters. Values are hand-authored 0-100 indices, not measured emissions, probabilities, forecasts, or policy recommendations.'
                   )
                 ),
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10, marginBottom: 14 } },
@@ -3746,7 +3960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         el('strong', { style: { color: s.color } }, s.name)
                       ),
                       el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.role),
-                      el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, s.desc),
+                      el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.climateExplorer.' + (s.id) + '_desc', s.desc)),
                       s.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); }, 'aria-label': 'Deep-dive for ' + s.name,
                         style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', color: s.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
                       }, '\ud83d\udcda Sector deep-dive \u2192') : null
@@ -3762,7 +3976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       return el('button', { key: dkey, onClick: function() { setPath({ difficulty: dkey }); }, 'aria-pressed': picked,
                         style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#15803d' : '#334155'), color: picked ? '#86efac' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' } },
                         el('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
-                        el('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                        el('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.climateExplorer.' + (dkey) + '_desc', df.desc))
                       );
                     })
                   )
@@ -3780,7 +3994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var baselineAvgDecarb = Math.round(baseline.reduce(function(a, s) { return a + s.decarb; }, 0) / baseline.length);
               return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
                 pathDeepDive,
-                el('div', { style: { padding: 18, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
+                el('div', { style: { padding: 18, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, ' + o.color + '24 0%, var(--allo-stem-deeper, rgba(15,23,42,0)) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
                   el('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
                   el('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
                   el('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
@@ -3803,13 +4017,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         el('br'),
                         'Support: ' + Math.round(s.support) + '/' + def.targets.support
                       ),
-                      art.text ? el('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                      art.text ? el('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)' } },
                         el('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
                       ) : null
                     );
                   })
                 ),
-                el('div', { style: { padding: 12, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
+                el('div', { style: { padding: 12, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,1)) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
                   el('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '\u2194 What if you had done nothing for 40 years?'),
                   el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                     el('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
@@ -3821,7 +4035,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg decarb ' + baselineAvgDecarb)
                     )
                   ),
-                  el('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                  el('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5, fontStyle: 'italic' } },
                     actualAvgDecarb > baselineAvgDecarb + 15
                       ? 'Your campaign moved Maine substantially ahead of where neglect would have left it. That gap is the cumulative effect of every period\'s policy choice compounded by feedback rules.'
                       : (actualAvgDecarb > baselineAvgDecarb
@@ -3892,12 +4106,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { color: '#fde68a' } }, coachingTip.priority),
                   el('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
                 ),
-                el('button', { onClick: function() { setPath({ firstTipDismissed: true }); }, 'aria-label': 'Dismiss tip',
+                el('button', { onClick: function() { setPath({ firstTipDismissed: true }); }, 'aria-label': t('stem.climateExplorer.dismiss_tip', 'Dismiss tip'),
                   style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '\u2715')
               ) : null,
               renderPathAIPanel(),
               // HUD
-              el('div', { style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+              el('div', { style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, var(--allo-stem-deeper, rgba(15,23,42,0)) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
                 el('div', null,
                   el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Period'),
                   el('div', { style: { fontSize: 18, fontWeight: 800, color: T_GREEN_HI } }, pathwayYearLabel(path.year))
@@ -3975,54 +4189,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'forceHunt' && (function() {
             var iq = d.forceHunt || { albedo: 30, cloudFB: 0, ghg: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
             function setIQ(patch) { upd({ forceHunt: Object.assign({}, iq, patch) }); }
-            // Simplified forcing: ghg adds W/m², albedo subtracts, cloudFB amplifies/dampens
-            var forcingWm2 = (iq.ghg - 50) * 0.05 - (iq.albedo - 30) * 0.05 + iq.cloudFB * 0.02;
+            // Arbitrary classroom index; coefficients are teaching weights, not physical forcing values.
+            var forcingIndex = (iq.ghg - 50) * 0.05 - (iq.albedo - 30) * 0.05 + iq.cloudFB * 0.02;
             var state;
-            if (forcingWm2 > 1.5) state = 'runaway';
-            else if (forcingWm2 < -1.5) state = 'cooling';
-            else if (Math.abs(forcingWm2) < 0.5) state = 'stable';
+            if (forcingIndex > 1.5) state = 'runaway';
+            else if (forcingIndex < -1.5) state = 'cooling';
+            else if (Math.abs(forcingIndex) < 0.5) state = 'stable';
             else state = 'paradox';
             var sm = {
-              runaway: { label: '🔥 Strong warming', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Positive feedback dominates; Earth warms toward a hotter equilibrium. (A true "runaway" greenhouse — oceans boiling away — is a Venus scenario, not Earth at these forcings.)' },
-              cooling: { label: '🧊 Rapid cooling',   color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'High albedo + negative feedback. Ice-age trajectory.' },
-              stable:  { label: '🟢 Stable climate',  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Net forcing ≈ 0 W/m². Earth equilibrium.' },
-              paradox: { label: '⚖️ Albedo paradox',  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Forcings partially offset. Climate slowly drifts.' }
+              runaway: { label: t('stem.climateExplorer.strong_warming', '🔥 Strong warming'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.climateExplorer.positive_feedback_dominates_earth_warm', 'High positive value in this classroom index; it is not a temperature or equilibrium calculation.') },
+              cooling: { label: t('stem.climateExplorer.rapid_cooling', '🧊 Rapid cooling'),   color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.climateExplorer.high_albedo_negative_feedback_ice_age_', 'Negative value in this classroom index; it is not an ice-age projection.') },
+              stable:  { label: t('stem.climateExplorer.stable_climate', '🟢 Stable climate'),  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.climateExplorer.net_forcing_0_w_m_earth_equilibrium', 'Index near zero relative to the activity baseline; this does not establish climate equilibrium.') },
+              paradox: { label: t('stem.climateExplorer.albedo_paradox', '⚖️ Albedo paradox'),  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.climateExplorer.forcings_partially_offset_climate_slow', 'Inputs partly offset in this classroom index; no rate of climate change is calculated.') }
             }[state];
-            return el('div', { style: { padding: 16, background: '#f8fafc', borderRadius: 12, border: '1px solid #cbd5e1' } },
-              el('h3', { style: { fontSize: 14, fontWeight: 800, color: '#0891b2', margin: '0 0 6px 0' } }, '☀️ Radiative forcing discovery'),
-              el('p', { style: { fontSize: 12, color: '#475569', marginBottom: 10 } }, 'Sliders for albedo, cloud feedback, GHG forcing. Discrete 4-state climate regime. No score, no reveal.'),
+            return el('div', { style: { padding: 16, background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: '1px solid rgba(148,163,184,0.2)' } },
+              el('h3', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9', margin: '0 0 6px 0' } }, '☀️ Radiative forcing discovery'),
+
+              // ── CL1: How the greenhouse effect actually works (mechanism + misconceptions) ──
+              el('div', { style: { background: 'rgba(8,15,30,0.35)', border: '1px solid rgba(34,211,238,0.2)', borderRadius: 10, padding: 12, marginBottom: 12 } },
+                el('p', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', margin: '0 0 8px 0' } }, '🌍 How the greenhouse effect actually works'),
+                el('svg', { viewBox: '0 0 320 160', width: '100%', style: { maxWidth: 380, display: 'block', margin: '0 auto 8px' }, role: 'img', 'aria-label': t('stem.climateExplorer.energy_balance_diagram_shortwave_sunli', 'Energy-balance diagram: shortwave sunlight passes through the greenhouse-gas layer and warms the surface; the surface radiates infrared, some of which the gas layer absorbs and re-emits back downward, trapping heat.') },
+                  el('defs', null,
+                    el('marker', { id: 'fhSun', markerWidth: 7, markerHeight: 7, refX: 3, refY: 6, orient: 'auto' }, el('polygon', { points: '0,0 6,0 3,6', fill: '#facc15' })),
+                    el('marker', { id: 'fhIR', markerWidth: 7, markerHeight: 7, refX: 3, refY: 6, orient: 'auto' }, el('polygon', { points: '0,0 6,0 3,6', fill: '#fb923c' }))),
+                  el('rect', { x: 0, y: 0, width: 320, height: 160, fill: 'rgba(8,15,30,0.6)', rx: 8 }),
+                  el('rect', { x: 0, y: 44, width: 320, height: 28, fill: 'rgba(34,211,238,0.10)', stroke: 'rgba(34,211,238,0.4)' }),
+                  el('text', { x: 160, y: 62, fill: '#67e8f9', fontSize: 9, fontWeight: 700, textAnchor: 'middle' }, 'CO₂ · CH₄ · H₂O — greenhouse-gas layer'),
+                  el('rect', { x: 0, y: 140, width: 320, height: 20, fill: 'rgba(16,185,129,0.32)' }),
+                  el('text', { x: 160, y: 154, fill: '#d1fae5', fontSize: 9, fontWeight: 700, textAnchor: 'middle' }, 'Earth surface'),
+                  el('text', { x: 26, y: 18, fontSize: 15, textAnchor: 'middle' }, '☀️'),
+                  el('line', { x1: 38, y1: 22, x2: 92, y2: 137, stroke: '#facc15', strokeWidth: 2, markerEnd: 'url(#fhSun)' }),
+                  el('text', { x: 96, y: 36, fill: '#fde68a', fontSize: 8 }, 'sunlight passes through →'),
+                  el('line', { x1: 168, y1: 138, x2: 198, y2: 8, stroke: '#fb923c', strokeWidth: 2, markerEnd: 'url(#fhIR)' }),
+                  el('text', { x: 150, y: 100, fill: '#fdba74', fontSize: 8 }, 'some heat escapes'),
+                  el('line', { x1: 244, y1: 138, x2: 258, y2: 60, stroke: '#fb923c', strokeWidth: 2 }),
+                  el('line', { x1: 258, y1: 60, x2: 238, y2: 136, stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '4 3', markerEnd: 'url(#fhIR)' }),
+                  el('text', { x: 262, y: 98, fill: '#fdba74', fontSize: 8 }, 'absorbed &'),
+                  el('text', { x: 262, y: 108, fill: '#fdba74', fontSize: 8 }, 're-emitted down')),
+                el('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, margin: '0 0 8px 0', fontStyle: 'italic' } }, 'Short-wave sunlight passes through the gases almost freely and warms the ground. The warm surface radiates long-wave infrared; greenhouse gases absorb it and re-radiate part back down. More gas → more re-radiation → a warmer surface. That is the GHG-forcing slider below.'),
+                el('div', { style: { display: 'grid', gap: 6 } },
+                  [{ m: 'It is NOT the ozone hole.', f: 'Ozone depletion (from CFCs) and the greenhouse effect are different problems. Healing the ozone layer does not stop CO₂ from trapping heat.' },
+                   { m: 'CO₂ does not block incoming sunlight.', f: 'Sunlight passes through it. CO₂ absorbs the OUTGOING infrared the warm surface emits — that is what traps heat.' },
+                   { m: 'The greenhouse effect itself is good.', f: 'Without it Earth would be about −18 °C. The problem is the ENHANCED effect: extra CO₂ from burning fossil fuels makes it too strong.' }].map(function (mc, i) {
+                    return el('div', { key: i, style: { background: 'rgba(248,113,113,0.07)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 6, padding: '6px 8px' } },
+                      el('span', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5' } }, '✗ Myth: ' + mc.m + ' '),
+                      el('span', { style: { fontSize: 10.5, color: 'var(--allo-stem-text, #cbd5e1)' } }, mc.f));
+                  }))),
+
+              el('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, 'Now experiment with an arbitrary linear index using albedo, cloud-feedback, and greenhouse-gas controls. It is a qualitative comparison, not a radiative-transfer model or temperature projection.'),
               el('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
                 el('div', { style: { fontSize: 15, fontWeight: 900, color: sm.color } }, sm.label),
                 el('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
-                el('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Net forcing ≈ ' + forcingWm2.toFixed(2) + ' W/m²')
+                el('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Relative forcing index = ' + forcingIndex.toFixed(2) + ' teaching units')
               ),
               el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
                 [{ k: 'albedo', l: 'Albedo (%)', mn: 0, mx: 100, st: 1 },
                  { k: 'cloudFB', l: 'Cloud feedback (%)', mn: -50, mx: 50, st: 1 },
                  { k: 'ghg', l: 'GHG forcing (%)', mn: 0, mx: 100, st: 1 }].map(function(s) {
                   return el('div', { key: s.k },
-                    el('label', { htmlFor: 'fh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 } }, s.l + ': ', el('span', { style: { color: '#0891b2', fontFamily: 'monospace' } }, iq[s.k])),
+                    el('label', { htmlFor: 'fh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.l + ': ', el('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, iq[s.k])),
                     el('input', { id: 'fh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                       style: { width: '100%' }, 'aria-label': s.l }));
                 })
               ),
               el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-                el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.albedo, c: iq.cloudFB, g: iq.ghg, f: forcingWm2.toFixed(2), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+                el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.albedo, c: iq.cloudFB, g: iq.ghg, f: forcingIndex.toFixed(2), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
                 el('button', { onClick: function() { setIQ({ albedo: 30, cloudFB: 0, ghg: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
               ),
-              el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does albedo overcome GHG forcing?',
+              el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.climateExplorer.hypothesis_when_does_albedo_overcome_g', 'Hypothesis: When does albedo overcome GHG forcing?'),
                 style: { width: '100%', minHeight: 50, padding: 6, background: '#fff', color: '#1e293b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
               !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
               iq.stuckRevealed && el('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 8 } },
                 el('ul', { style: { margin: 0, paddingLeft: 18 } },
                   el('li', null, 'Real Earth albedo ≈ 30%. What if it drops to 15%?'),
-                  el('li', null, 'Cloud feedback uncertainty is the biggest climate-projection uncertainty. Investigate why.'))),
+                  el('li', null, 'Cloud feedback is one important source of climate-projection uncertainty. Investigate why.'))),
               el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
                 el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-              iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how albedo, cloud feedback, and GHGs jointly drive climate state.',
+              iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.climateExplorer.explain_how_albedo_cloud_feedback_and_', 'Explain how albedo, cloud feedback, and GHGs jointly drive climate state.'),
                 style: { width: '100%', minHeight: 60, padding: 6, background: '#fff', color: '#1e293b', border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-              el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state climate marker; no temperature score; no reveal — by design.')
+              el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Model limit: arbitrary classroom index = GHG control - albedo control + cloud-feedback control. It omits spectral absorption, latitude, seasons, oceans, ice dynamics, carbon-cycle feedbacks, response times, and uncertainty; labels are prompts, not predictions.')
             );
           })()
         )

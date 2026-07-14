@@ -77,6 +77,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
     color: 'indigo',
     category: 'self-direction',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _mpT = (ctx && ctx.theme) || {};
+      var _mpHC = !!_mpT.isContrast, _mpL = !_mpHC && !_mpT.isDark;
+      var _mp_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _mp_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#fff':'#000000'};
+      var _mp_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#e0e7ff':'#3730a3','#e2e8f0':'#1e293b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _mp_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _mp_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _mp_BDH = {'#334155':'#ffff00','#818cf8':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00','#f59e0b':'#ffff00'};
+      var _mpBg = function(h){ return _mpHC ? (_mp_BGH[h]||h) : (_mpL ? (_mp_BGL[h]||h) : h); };
+      var _mpFg = function(h){ return _mpHC ? (_mp_FGH[h]||h) : (_mpL ? (_mp_FGL[h]||h) : h); };
+      var _mpBd = function(h){ return _mpHC ? (_mp_BDH[h]||h) : (_mpL ? (_mp_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -102,10 +111,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _mpFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#a5b4fc', fontSize: 22, fontWeight: 900 } }, '🗺️ MAPS'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'Making Action Plans: a person-centered planning visual.')
+            h('h2', { style: { margin: 0, color: _mpFg('#a5b4fc'), fontSize: 22, fontWeight: 900 } }, '🗺️ MAPS'),
+            h('div', { style: { fontSize: 12, color: _mpFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Making Action Plans: a person-centered planning visual.')
           )
         );
       }
@@ -124,8 +133,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#818cf8' : '#334155'),
-                background: active ? 'rgba(129,140,248,0.18)' : '#1e293b',
-                color: active ? '#e0e7ff' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                background: active ? 'rgba(129,140,248,0.18)' : _mpBg('#1e293b'),
+                color: active ? _mpFg('#e0e7ff') : _mpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -133,7 +142,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _mpFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Your MAP is yours. You decide who sees it. If a prompt brings up something heavy, that is information; bring it to a counselor or trusted adult. Crisis Text Line: text HOME to 741741.'
         );
@@ -157,17 +166,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
           h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(129,140,248,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(129,140,248,0.4)', marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
               h('div', { style: { flex: 1, minWidth: 200 } },
-                h('div', { style: { fontSize: 22, fontWeight: 900, color: '#e0e7ff' } }, d.name ? (d.name + '’s MAP') : 'My MAP'),
-                h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } },
+                h('div', { style: { fontSize: 22, fontWeight: 900, color: _mpFg('#e0e7ff') } }, d.name ? (d.name + '’s MAP') : 'My MAP'),
+                h('div', { style: { fontSize: 12, color: _mpFg('#94a3b8'), marginTop: 4 } },
                   completedCount() + ' of ' + PROMPTS.length + ' sections filled',
                   d.lastUpdated ? ' · updated ' + d.lastUpdated : ''
                 )
               ),
               h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Work on my MAP',
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: '#e0e7ff', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Work on it')
+                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _mpFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Work on it')
             ),
             // Progress bar
-            h('div', { style: { marginTop: 12, height: 8, borderRadius: 4, background: '#1e293b', overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': 'MAP completion' },
+            h('div', { style: { marginTop: 12, height: 8, borderRadius: 4, background: _mpBg('#1e293b'), overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': 'MAP completion' },
               h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #4f46e5, #818cf8)', transition: 'width 240ms ease' } })
             )
           ),
@@ -180,13 +189,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
               return h('button', { key: p.key,
                 onClick: function() { setMAPS({ activeKey: p.key, view: 'edit' }); },
                 'aria-label': p.label + (done ? ' (filled in)' : ' (empty)'),
-                style: { textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid ' + (done ? p.color + 'aa' : '#334155'), borderLeft: '4px solid ' + p.color, background: done ? p.color + '14' : '#0f172a', cursor: 'pointer', color: '#e2e8f0' } },
+                style: { textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid ' + (done ? p.color + 'aa' : '#334155'), borderLeft: '4px solid ' + p.color, background: done ? p.color + '14' : '#0f172a', cursor: 'pointer', color: _mpFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                   h('span', { style: { fontSize: 22 } }, p.icon),
-                  h('span', { style: { fontSize: 14, fontWeight: 800, color: done ? p.color : '#e0e7ff' } }, p.label),
+                  h('span', { style: { fontSize: 14, fontWeight: 800, color: done ? p.color : _mpFg('#e0e7ff') } }, p.label),
                   done ? h('span', { style: { marginLeft: 'auto', fontSize: 10, color: p.color, fontWeight: 700 } }, '✓ filled') : null
                 ),
-                h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } },
+                h('div', { style: { fontSize: 12, color: _mpFg('#94a3b8'), lineHeight: 1.55 } },
                   done ? (v.length > 120 ? v.slice(0, 120) + '...' : v) : p.blurb
                 )
               );
@@ -195,7 +204,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print my MAP',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _mpFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '🖨 Print my MAP')
           ),
           softPointer()
@@ -225,12 +234,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
 
         return h('div', null,
           // Name field once at top
-          h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('label', { htmlFor: 'maps-name', style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'Whose MAP is this?'),
+          h('div', { style: { padding: 10, borderRadius: 8, background: _mpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('label', { htmlFor: 'maps-name', style: { display: 'block', fontSize: 11, color: _mpFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Whose MAP is this?'),
             h('input', { id: 'maps-name', type: 'text', value: d.name || '',
               placeholder: 'Your name',
               onChange: function(e) { setMAPS({ name: e.target.value }); },
-              style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13 } })
+              style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _mpBg('#1e293b'), color: _mpFg('#e2e8f0'), fontSize: 13 } })
           ),
 
           // Step navigator
@@ -240,7 +249,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
               var done = ((d.responses || {})[p.key] || '').trim().length > 0;
               return h('button', { key: p.key, role: 'tab', 'aria-selected': act,
                 onClick: function() { setMAPS({ activeKey: p.key }); },
-                style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (act ? p.color : '#334155'), background: act ? p.color + '22' : '#1e293b', color: act ? p.color : (done ? '#cbd5e1' : '#64748b'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } },
+                style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (act ? p.color : '#334155'), background: act ? p.color + '22' : _mpBg('#1e293b'), color: act ? p.color : (done ? _mpFg('#cbd5e1') : _mpFg('#64748b')), cursor: 'pointer', fontSize: 11, fontWeight: 700 } },
                 (done ? '✓' : (i + 1)) + ' · ' + p.label
               );
             })
@@ -252,24 +261,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
               h('span', { style: { fontSize: 32 } }, active.icon),
               h('h3', { style: { margin: 0, color: active.color, fontSize: 20, fontWeight: 900 } }, active.label)
             ),
-            h('p', { style: { margin: '0 0 12px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } }, active.blurb),
+            h('p', { style: { margin: '0 0 12px', color: _mpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } }, active.blurb),
 
-            h('label', { htmlFor: 'maps-resp', style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, active.label),
+            h('label', { htmlFor: 'maps-resp', style: { display: 'block', fontSize: 11, color: _mpFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, active.label),
             h('textarea', { id: 'maps-resp', value: resp,
               onChange: function(e) { setActiveResponse(e.target.value); },
               placeholder: 'Write here. Take as much room as you need.',
-              style: { width: '100%', minHeight: 180, padding: 12, borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
+              style: { width: '100%', minHeight: 180, padding: 12, borderRadius: 8, border: '1px solid #334155', background: _mpBg('#1e293b'), color: _mpFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
           // Step prev / next
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
             h('button', { onClick: goPrev, disabled: activeIdx === 0, 'aria-label': 'Previous prompt',
-              style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: activeIdx === 0 ? '#475569' : '#cbd5e1', cursor: activeIdx === 0 ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13 } }, '← Previous'),
+              style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: _mpBg('#1e293b'), color: activeIdx === 0 ? _mpFg('#475569') : _mpFg('#cbd5e1'), cursor: activeIdx === 0 ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13 } }, '← Previous'),
             h('div', { style: { flex: 1 } }),
             h('button', { onClick: function() { goto('overview'); }, 'aria-label': 'Done editing',
-              style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✓ Done for now'),
+              style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: _mpBg('#1e293b'), color: _mpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✓ Done for now'),
             h('button', { onClick: goNext, disabled: activeIdx === PROMPTS.length - 1, 'aria-label': 'Next prompt',
-              style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: activeIdx === PROMPTS.length - 1 ? '#1e293b' : active.color, color: activeIdx === PROMPTS.length - 1 ? '#475569' : '#fff', cursor: activeIdx === PROMPTS.length - 1 ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: 13 } }, 'Next →')
+              style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: activeIdx === PROMPTS.length - 1 ? _mpBg('#1e293b') : active.color, color: activeIdx === PROMPTS.length - 1 ? _mpFg('#475569') : '#fff', cursor: activeIdx === PROMPTS.length - 1 ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: 13 } }, 'Next →')
           ),
 
           softPointer()
@@ -282,19 +291,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
       function renderPrintView() {
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(129,140,248,0.10)', borderRadius: 8, border: '1px solid rgba(129,140,248,0.3)' } },
-            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.55 } },
+            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _mpFg('#e0e7ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'
             ),
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _mpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('overview'); }, 'aria-label': 'Back to overview',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _mpBg('#1e293b'), color: _mpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'maps-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: '#fff', color: '#0f172a', borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _mpBg('#fff'), color: _mpFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
@@ -306,26 +315,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
 
             // Header
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #4f46e5' } },
-              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'MAPS · Making Action Plans'),
+              h('div', { style: { fontSize: 10, color: _mpFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'MAPS · Making Action Plans'),
               h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, d.name ? (d.name + '’s MAP') : 'My MAP'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: '#475569', marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _mpFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             // Each prompt section
             PROMPTS.map(function(p) {
               var v = (d.responses || {})[p.key] || '';
               return h('div', { key: p.key, style: { marginBottom: 18, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 4, marginBottom: 8, background: p.color, color: '#fff' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 4, marginBottom: 8, background: p.color, color: _mpFg('#fff') } },
                   h('span', { style: { fontSize: 18 } }, p.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, p.label)
                 ),
-                v ? h('p', { style: { margin: '0 8px', color: '#0f172a', fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, v)
-                  : h('div', { style: { margin: '0 8px', padding: 8, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '(not filled in)')
+                v ? h('p', { style: { margin: '0 8px', color: _mpFg('#0f172a'), fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, v)
+                  : h('div', { style: { margin: '0 8px', padding: 8, fontSize: 11, color: _mpFg('#94a3b8'), fontStyle: 'italic' } }, '(not filled in)')
               );
             }),
 
             // Footer
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _mpFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
               'MAPS format developed by Pearpoint, O\'Brien, and Forest, Inclusion Press (inclusion.com). ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -341,27 +350,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
       function renderAbout() {
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('maps', h, ctx) : null),
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#a5b4fc', fontSize: 16 } }, 'What MAPS is'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _mpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _mpFg('#a5b4fc'), fontSize: 16 } }, 'What MAPS is'),
+            h('p', { style: { margin: '0 0 10px', color: _mpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'MAPS (Making Action Plans, originally "McGill Action Planning System") is a person-centered planning visual that walks a person and their allies through eight prompts in sequence. The point is not to fill out a form. The point is to gather a circle of people who know and care about you, and to think together about where you are coming from, where you want to go, and what it would take to get there.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _mpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'You can do a MAP alone, but the tradition is to do it with a few trusted people present: a facilitator, a graphic recorder (someone who draws/writes responses on a large piece of paper), and the allies you choose. This digital version supports both solo work and prep for an in-person MAP meeting.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#a5b4fc', fontSize: 16 } }, 'Where MAPS comes from'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _mpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _mpFg('#a5b4fc'), fontSize: 16 } }, 'Where MAPS comes from'),
+            h('p', { style: { margin: 0, color: _mpFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'MAPS was developed in the 1980s and 1990s by Jack Pearpoint, John O\'Brien, and Marsha Forest at Inclusion Press in Toronto. It grew out of the inclusion movement (closing institutions, integrating schools, building community for people with disabilities) and was designed as a visual, relational alternative to deficit-focused clinical assessment. It is now used worldwide in schools, transition planning, supported-living services, and family planning. Marsha Forest passed away in 2000; the Marsha Forest Centre continues the work.'
             )
           ),
 
           // Sources
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#a5b4fc', fontSize: 16 } }, '📚 Sources and learn more'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources you can use to verify the evidence base for MAPS or to learn more.'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _mpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _mpFg('#a5b4fc'), fontSize: 16 } }, '📚 Sources and learn more'),
+            h('div', { style: { fontSize: 12, color: _mpFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources you can use to verify the evidence base for MAPS or to learn more.'),
             sourceCard('Inclusion Press (Marsha Forest Centre)', 'inclusion.com', 'The original source. Workbooks, training, MAPS facilitator network. Materials are translated into many languages.', 'https://inclusion.com/'),
             sourceCard('Pearpoint, J., O\'Brien, J., and Forest, M. (1993)', 'PATH: A Workbook for Planning Possible Positive Futures', 'Companion volume that includes MAPS practice; the foundational text for both tools.', null),
             sourceCard('Falvey, M. A., Forest, M., Pearpoint, J., and Rosenberg, R. L. (1997)', 'All My Life\'s a Circle: Using the Tools - Circles, MAPS & PATHS', 'Accessible practitioner guide showing MAPS and PATHS in school and family contexts.', null),
@@ -370,8 +379,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
 
           // Honest limits
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _mpFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _mpFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'A MAP is only useful if the people in the room actually follow through. John O\'Brien himself has written about how person-centered plans can become "planning theater" if not paired with real resource shifts.'),
               h('li', null, 'The Dream / Nightmare frame can land hard for students with significant trauma or for students who have been told their whole lives that their dreams are unrealistic. Pace it.'),
               h('li', null, 'MAPS works best with a circle of allies, not as an individual worksheet. The solo version (this tool) is preparation for, not a substitute for, a relational MAP.'),
@@ -379,7 +388,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: '#e0e7ff', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: _mpFg('#e0e7ff'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'MAPS works well as transition planning (8th to 9th, HS to post-secondary), at the start of an IEP cycle, or for any student who needs a circle of allies to plan with. A facilitator who is NOT the student\'s primary teacher generally works best, to avoid the "the teacher wants me to say X" dynamic. Inclusion Press offers facilitator training.'
           ),
@@ -389,13 +398,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _mpBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _mpFg('#a5b4fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#e0e7ff', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#e0e7ff', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _mpFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _mpFg('#e0e7ff'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _mpFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 

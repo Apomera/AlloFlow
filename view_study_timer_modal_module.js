@@ -36,12 +36,48 @@ function StudyTimerModal(props) {
     studyTimerRef,
     t
   } = props;
+  const dialogRef = React.useRef(null);
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    const previousFocus = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+    (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        handleSetShowStudyTimerModalToFalse();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dialog.addEventListener("keydown", onKeyDown);
+    return () => {
+      dialog.removeEventListener("keydown", onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+    };
+  }, [handleSetShowStudyTimerModalToFalse]);
+  const completionPercent = studyDuration > 0 ? Math.max(0, Math.min(100, Math.round((studyDuration - studyTimeLeft) / studyDuration * 100))) : 0;
   return /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: studyTimerRef,
-      role: "dialog",
-      "aria-modal": "true",
+      role: "presentation",
       className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300",
       onClick: handleSetShowStudyTimerModalToFalse
     },
@@ -49,9 +85,12 @@ function StudyTimerModal(props) {
     /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: "bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200",
+        ref: dialogRef,
+        tabIndex: -1,
+        className: "bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 focus:outline-none",
         role: "dialog",
         "aria-modal": "true",
+        "aria-labelledby": "study-timer-title",
         onClick: (e) => e.stopPropagation()
       },
       /* @__PURE__ */ React.createElement(
@@ -64,7 +103,7 @@ function StudyTimerModal(props) {
         },
         /* @__PURE__ */ React.createElement(X, { size: 20 })
       ),
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-indigo-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Clock, { size: 20, className: "text-indigo-600" })), /* @__PURE__ */ React.createElement("h3", { className: "font-black text-lg" }, t("timer.title"))),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-indigo-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Clock, { size: 20, className: "text-indigo-600" })), /* @__PURE__ */ React.createElement("h3", { id: "study-timer-title", className: "font-black text-lg" }, t("timer.title"))),
       /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("timer.label_task")), /* @__PURE__ */ React.createElement(
         "input",
         {
@@ -123,13 +162,13 @@ function StudyTimerModal(props) {
         },
         t("timer.set_btn") || "Set"
       )),
-      /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-slate-700 font-mono tracking-wider" }, formatTime(studyTimeLeft)), studyDuration > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 mx-auto max-w-[200px]" }, /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-200 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-slate-700 font-mono tracking-wider", role: "timer", "aria-label": `${t("timer.title")}: ${formatTime(studyTimeLeft)} remaining` }, formatTime(studyTimeLeft)), studyDuration > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 mx-auto max-w-[200px]" }, /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-200 rounded-full overflow-hidden", role: "progressbar", "aria-label": t("common.progress"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": completionPercent, "aria-valuetext": `${completionPercent}% complete` }, /* @__PURE__ */ React.createElement(
         "div",
         {
           className: "h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-linear",
-          style: { width: `${Math.max(0, Math.min(100, (studyDuration - studyTimeLeft) / studyDuration * 100))}%` }
+          style: { width: `${completionPercent}%` }
         }
-      )), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 font-medium" }, Math.round((studyDuration - studyTimeLeft) / studyDuration * 100), "% complete"))),
+      )), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 font-medium" }, completionPercent, "% complete"))),
       /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement(
         "button",
         {

@@ -9346,7 +9346,7 @@ window.SelHub = window.SelHub || {
         headTilt: 'Nod/shake gestures vary (some cultures shake for yes)'
       },
       facsCodes: ['Universal core emotions per Ekman; display rules per Matsumoto'],
-      whatItSignals: 'Ekman\'s research found the SIX (later seven with contempt) basic emotions have universally-recognizable facial expressions across cultures. BUT display rules — when and how strongly to show emotion publicly — vary enormously. A neutral-looking face in a culture with strong suppression norms may hide deep feeling.',
+      whatItSignals: 'Ekman\'s research argued the SIX (later seven with contempt) basic emotions have widely-recognizable facial expressions across cultures — an influential but debated claim (cf. Barrett\'s constructed-emotion view). BUT display rules — when and how strongly to show emotion publicly — vary enormously. A neutral-looking face in a culture with strong suppression norms may hide deep feeling.',
       commonContexts: [
         'Cross-cultural classrooms',
         'International business contexts',
@@ -18034,6 +18034,7 @@ window.SelHub = window.SelHub || {
           upd('showBadgePopup', badgeId);
           if (soundEnabled) sfxBadge();
           addToast(badge.icon + ' Badge earned: ' + badge.name + '!', 'success');
+          if (announceToSR) announceToSR('Badge earned: ' + badge.name);
           awardXP(25);
           setTimeout(function() { upd('showBadgePopup', null); }, 3000);
         }
@@ -18084,7 +18085,7 @@ window.SelHub = window.SelHub || {
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: isActive ? '#3b82f6' : 'transparent',
+              background: isActive ? '#1d4ed8' : 'transparent',
               color: isActive ? '#fff' : P.textMuted,
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
@@ -18146,7 +18147,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
             h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-            h('p', { style: { margin: '3px 0 0', color: P.text2, fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
       })();
@@ -18154,6 +18155,86 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Badge Popup ──
       // ══════════════════════════════════════════════════════════
+      function emotionRouteCard(label, detail, target, color) {
+        var isHere = activeTab === target;
+        return h('button', {
+          key: target,
+          onClick: function() { upd('activeTab', target); if (soundEnabled) sfxClick(); },
+          'aria-label': label + ': ' + detail,
+          style: {
+            minHeight: 88,
+            padding: '12px 14px',
+            borderRadius: 12,
+            border: '1px solid ' + (isHere ? color : P.border),
+            borderLeft: '4px solid ' + color,
+            background: isHere ? color + '18' : P.card,
+            color: P.text,
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 8
+          }
+        },
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 11, color: P.textMuted, lineHeight: 1.45 } }, detail)
+        );
+      }
+
+      function emotionStat(label, value, color) {
+        return h('div', {
+          key: label,
+          style: {
+            padding: '10px 12px',
+            borderRadius: 12,
+            background: P.bg,
+            border: '1px solid ' + color + '44',
+            minHeight: 62
+          }
+        },
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { marginTop: 5, fontSize: 10.5, color: P.textMuted, lineHeight: 1.35 } }, label)
+        );
+      }
+
+      var selectedFamilyLabel = selectedFamily ? ((EMOTION_FAMILIES.find(function(f) { return f.id === selectedFamily; }) || {}).label || 'selected') : 'none yet';
+      var emotionsLaunchPanel = h('section', {
+        role: 'region',
+        'aria-label': 'Emotions explorer launch panel',
+        style: {
+          margin: '0 auto 18px',
+          maxWidth: 760,
+          padding: 16,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, rgba(59,130,246,0.12), rgba(20,184,166,0.07)), ' + P.card,
+          border: '1px solid ' + P.border
+        }
+      },
+        h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
+          h('div', { style: { flex: '1 1 260px' } },
+            h('div', { style: { fontSize: 11, color: ST('#5eead4'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Emotion map'),
+            h('h3', { style: { margin: 0, color: P.text, fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Find the right entry point for the feeling.'),
+            h('p', { style: { margin: '6px 0 0', color: P.text2, fontSize: 12, lineHeight: 1.55 } },
+              'Explore words, do a quick check-in, read expression cues, journal, or jump to a coping strategy.'
+            )
+          ),
+          h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 8 } },
+            emotionStat('current family', selectedFamilyLabel, '#3b82f6'),
+            emotionStat('families explored', Object.keys(exploredFamilies).length + '/' + EMOTION_FAMILIES.length, '#14b8a6'),
+            emotionStat('words learned', Object.keys(learnedWords).length, '#8b5cf6'),
+            emotionStat('check-ins saved', checkinHistory.length, '#10b981')
+          )
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+          emotionRouteCard('Name the feeling', 'Use the wheel or quiz for precise words.', 'wheel', '#3b82f6'),
+          emotionRouteCard('Do a check-in', 'Save family, feeling, intensity, and context.', 'checkin', '#10b981'),
+          emotionRouteCard('Read expression cues', 'Practice face and body-language signals.', 'faces', '#f59e0b'),
+          emotionRouteCard('Write it out', 'Turn a feeling into a short private narrative.', 'journal', '#0891b2'),
+          emotionRouteCard('Find a strategy', 'Match emotion and intensity to a next step.', 'strategies', '#f97316')
+        )
+      );
+
       var badgePopup = null;
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
@@ -18166,8 +18247,8 @@ window.SelHub = window.SelHub || {
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
               h('p', { style: { fontSize: 11, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
-              h('h3', { style: { margin: '0 0 8px 0', color: P.text, fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: P.textMuted, fontSize: 13 } }, popBadge.desc),
+              h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
+              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13 } }, popBadge.desc),
               h('p', { style: { margin: '12px 0 0 0', color: '#3b82f6', fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
@@ -18189,8 +18270,8 @@ window.SelHub = window.SelHub || {
                   style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : P.card, border: '1px solid ' + (earned ? '#3b82f6' : P.border), opacity: earned ? 1 : 0.4 }
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
-                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? P.text3 : P.textMuted } }, badge.name),
-                  h('div', { style: { fontSize: 11, color: P.textMuted, marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : P.textMuted } }, badge.name),
+                  h('div', { style: { fontSize: 11, color: earned ? '#cbd5e1' : P.textMuted, marginTop: 2 } }, badge.desc)
                 );
               })
             ),
@@ -18211,7 +18292,7 @@ window.SelHub = window.SelHub || {
         var wheelToggle = h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 16 } },
           h('button', { 'aria-label': 'Explore',
             onClick: function() { upd('wheelMode', 'explore'); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: ('1px solid ' + P.border), background: wheelMode === 'explore' ? '#3b82f6' : P.card, color: wheelMode === 'explore' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+            style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: ('1px solid ' + P.border), background: wheelMode === 'explore' ? '#1d4ed8' : P.card, color: wheelMode === 'explore' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83C\uDF08 Explore'),
           h('button', { 'aria-label': 'Vocab Quiz',
             onClick: function() { upd('wheelMode', 'quiz'); if (!quizDef) generateQuiz(); if (soundEnabled) sfxClick(); },
@@ -18242,7 +18323,7 @@ window.SelHub = window.SelHub || {
             // Answer options
             quizDef && !quizRevealed && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               quizOptions.map(function(opt) {
-                return h('button', { 'aria-label': 'Toggle sound',
+                return h('button', {
                   key: opt,
                   onClick: function() {
                     var correct = opt === quizWord;
@@ -18301,6 +18382,7 @@ window.SelHub = window.SelHub || {
         }
 
         wheelContent = h('div', { style: { padding: 20 } },
+          emotionsLaunchPanel,
           wheelToggle,
           quizContent,
 
@@ -18317,7 +18399,7 @@ window.SelHub = window.SelHub || {
           wheelMode === 'explore' && !selectedFamily && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, maxWidth: 400, margin: '0 auto 20px' } },
             EMOTION_FAMILIES.map(function(fam) {
               var explored = exploredFamilies[fam.id];
-              return h('button', { 'aria-label': 'Toggle sound',
+              return h('button', {
                 key: fam.id,
                 onClick: function() {
                   upd('selectedFamily', fam.id);
@@ -18373,7 +18455,7 @@ window.SelHub = window.SelHub || {
                       gridColumn: isExpanded ? '1 / -1' : 'auto'
                     }
                   },
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', {
                       onClick: function() {
                         var newExpanded = isExpanded ? null : feeling.word;
                         upd('expandedFeeling', newExpanded);
@@ -18450,7 +18532,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = checkinFamily === fam.id;
-                return h('button', { 'aria-label': fam.emoji,
+                return h('button', { 
                   key: fam.id,
                   onClick: function() { upd({ checkinFamily: fam.id, checkinFeeling: null }); if (soundEnabled) sfxClick(); },
                   style: {
@@ -18478,7 +18560,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 feelings.map(function(f) {
                   var isSel = checkinFeeling === f.word;
-                  return h('button', { 'aria-label': 'Toggle sound',
+                  return h('button', {
                     key: f.word,
                     onClick: function() { upd('checkinFeeling', f.word); if (soundEnabled) sfxClick(); },
                     style: {
@@ -18599,7 +18681,7 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            h('button', { 'aria-label': 'Toggle sound',
+            h('button', {
               onClick: function() {
                 var newViewed = Object.assign({}, bodyMapViewed);
                 newViewed[checkinFamily] = true;
@@ -18674,7 +18756,7 @@ window.SelHub = window.SelHub || {
             !faceRevealed
               ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, maxWidth: 300, margin: '0 auto' } },
                   challenge.options.map(function(opt) {
-                    return h('button', { 'aria-label': 'Toggle sound',
+                    return h('button', {
                       key: opt,
                       onClick: function() {
                         var correct = opt === challenge.emotion;
@@ -18755,7 +18837,7 @@ window.SelHub = window.SelHub || {
             !bodyLangRevealed
               ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, maxWidth: 300, margin: '0 auto' } },
                   blChallenge.options.map(function(opt) {
-                    return h('button', { 'aria-label': 'Toggle sound',
+                    return h('button', {
                       key: opt,
                       onClick: function() {
                         var correct = opt === blChallenge.emotion;
@@ -18797,7 +18879,7 @@ window.SelHub = window.SelHub || {
                   ),
                   h('button', { 'aria-label': 'Next Clue',
                     onClick: function() { upd({ bodyLangIdx: bodyLangIdx + 1, bodyLangRevealed: null }); },
-                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#b45309', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                   }, 'Next Clue \u2192')
                 )
           );
@@ -18864,7 +18946,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 16 } },
                 EMOTION_FAMILIES.map(function(fam) {
                   var isSel = empathyAnswer === fam.id;
-                  return h('button', { 'aria-label': fam.emoji,
+                  return h('button', { 
                     key: fam.id,
                     onClick: function() { upd('empathyAnswer', fam.id); if (soundEnabled) sfxClick(); },
                     style: {
@@ -18960,7 +19042,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 16 } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = scenarioAnswer === fam.id;
-                return h('button', { 'aria-label': fam.emoji,
+                return h('button', { 
                   key: fam.id,
                   onClick: function() { upd('scenarioAnswer', fam.id); if (soundEnabled) sfxClick(); },
                   style: {
@@ -19092,7 +19174,7 @@ window.SelHub = window.SelHub || {
                 style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
-              callGemini && journalDraft.trim().length > 10 && h('button', { 'aria-label': 'Toggle sound',
+              callGemini && journalDraft.trim().length > 10 && h('button', {
                 onClick: function() {
                   upd('journalAiLoading', true);
                   // Pre-flight regex gate: if journal draft contains a critical
@@ -19404,7 +19486,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = mixEmotion1 === fam.id;
-                return h('button', { 'aria-label': fam.emoji,
+                return h('button', { 
                   key: fam.id,
                   onClick: function() {
                     upd({ mixEmotion1: fam.id, mixResult: null, mixAiCustom: null });
@@ -19434,7 +19516,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.filter(function(f) { return f.id !== mixEmotion1; }).map(function(fam) {
                 var isSel = mixEmotion2 === fam.id;
-                return h('button', { 'aria-label': fam.emoji,
+                return h('button', { 
                   key: fam.id,
                   onClick: function() {
                     upd({ mixEmotion2: fam.id, mixResult: null, mixAiCustom: null });
@@ -19480,18 +19562,18 @@ window.SelHub = window.SelHub || {
           mixResult && mixResult !== 'custom' && h('div', { style: { padding: 24, borderRadius: 16, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '2px solid #8b5cf666', textAlign: 'center', marginBottom: 20 } },
             h('div', { style: { fontSize: 48, marginBottom: 8 } }, mixResult.emoji),
             h('p', { style: { fontSize: 10, color: ST('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, fontWeight: 700 } }, 'Emotion Mix Result'),
-            h('h4', { style: { margin: '0 0 8px 0', color: P.text, fontSize: 22 } }, mixResult.result),
+            h('h4', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 22 } }, mixResult.result),
             (function() {
               var fam1 = EMOTION_FAMILIES.find(function(f) { return f.id === mixEmotion1; });
               var fam2 = EMOTION_FAMILIES.find(function(f) { return f.id === mixEmotion2; });
-              return h('p', { style: { fontSize: 12, color: P.textMuted, marginBottom: 12 } },
+              return h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
                 (fam1 ? fam1.emoji + ' ' + fam1.label : mixEmotion1) + ' + ' + (fam2 ? fam2.emoji + ' ' + fam2.label : mixEmotion2)
               );
             })(),
-            h('p', { style: { fontSize: 14, color: P.text3, lineHeight: 1.6 } }, mixResult.desc[band]),
+            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6 } }, mixResult.desc[band]),
             h('button', { 'aria-label': 'Try Another Mix',
               onClick: function() { upd({ mixEmotion1: null, mixEmotion2: null, mixResult: null, mixAiCustom: null }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 16, padding: '10px 24px', borderRadius: 8, border: 'none', background: P.border, color: P.text, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              style: { marginTop: 16, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.15)', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, 'Try Another Mix')
           ),
 
@@ -19505,7 +19587,7 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: 14, fontWeight: 700, color: P.text, marginBottom: 8 } },
                   (fam1 ? fam1.label : mixEmotion1) + ' + ' + (fam2 ? fam2.label : mixEmotion2)
                 ),
-                !mixAiCustom && !mixAiLoading && callGemini && h('button', { 'aria-label': 'Toggle sound',
+                !mixAiCustom && !mixAiLoading && callGemini && h('button', {
                   onClick: function() {
                     upd('mixAiLoading', true);
                     var prompt = 'You are an emotion scientist explaining to a ' + band + ' school student. When the emotions ' + (fam1 ? fam1.label : mixEmotion1) + ' and ' + (fam2 ? fam2.label : mixEmotion2) + ' combine, what complex feeling results? Give a creative name (2-3 words), then explain in 2 sentences what it feels like. ' +
@@ -19648,6 +19730,13 @@ if (activeTab === 'plutchik') {
           stroke: stroke,
           strokeWidth: isSel ? 3 : (isHov ? 2 : 1),
           style: { cursor: 'pointer', transition: 'all 0.2s' },
+          tabIndex: 0,
+          role: 'button',
+          'aria-label': (p[tierName] && p[tierName].name ? p[tierName].name + ', ' : '') + p.moderate.name + ' family, ' + tierName + ' intensity',
+          'aria-pressed': isSel ? 'true' : 'false',
+          onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } },
+          onFocus: function() { upd({ pwHover: { primary: p.id, intensity: tierName } }); },
+          onBlur: function() { upd({ pwHover: null }); },
           onClick: function() {
             upd({ pwSel: { primary: p.id, intensity: tierName } });
             if (soundEnabled) sfxClick();
@@ -19675,7 +19764,7 @@ if (activeTab === 'plutchik') {
   );
   // Detail panel for selected petal
   var detailPanel = null;
-  if (pwSel) {
+  if (pwSel && PLUTCHIK_PRIMARIES.some(function (x) { return x.id === pwSel.primary; })) {
     var primary = PLUTCHIK_PRIMARIES.find(function(x) { return x.id === pwSel.primary; });
     var info = primary[pwSel.intensity];
     // Find adjacent dyads
@@ -19861,7 +19950,36 @@ if (activeTab === 'weather') {
     { id: 'mixed',   label: 'Mixed = Rainbow after rain', bg: P.card, accent: '#22d3ee', kind: 'rainbow', desc: 'Two true things at once. Beauty AND sadness can share the sky.' }
   ];
   var scene = WEATHER_SCENES.find(function(s) { return s.id === wxEmotion; }) || WEATHER_SCENES[0];
-  // SVG-based weather animation
+  // SVG-based weather animation. The sel-emo-* classes below had NO keyframes
+  // anywhere, so the scenes never animated. Inject them once, at render time (not
+  // at module load), with a mandatory prefers-reduced-motion override — the hub's
+  // global reduced-motion rule only covers modal overlays, not in-page tool
+  // content. Timings are deliberately calm and the "flash" is a slow opacity
+  // pulse (~0.4 Hz, far under the 3/s photosensitivity threshold) since this is a
+  // children's tool.
+  (function injectWeatherKeyframes() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('sel-emo-weather-css')) return;
+    var st = document.createElement('style');
+    st.id = 'sel-emo-weather-css';
+    st.textContent = [
+      '@keyframes selEmoSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}',
+      '@keyframes selEmoDrift{0%,100%{transform:translateX(-10px)}50%{transform:translateX(10px)}}',
+      '@keyframes selEmoRain{0%{transform:translateY(-10px);opacity:0}10%{opacity:.7}100%{transform:translateY(330px);opacity:0}}',
+      '@keyframes selEmoFlash{0%,100%{opacity:.25}50%{opacity:.9}}',
+      '@keyframes selEmoFog{0%,100%{transform:translateX(-12px);opacity:.3}50%{transform:translateX(12px);opacity:.5}}',
+      '@keyframes selEmoWind{0%{transform:translateX(-20px);opacity:.3}50%{opacity:.8}100%{transform:translateX(20px);opacity:.3}}',
+      '@keyframes selEmoSnow{0%{transform:translateY(-10px);opacity:0}10%{opacity:.8}100%{transform:translateY(330px) translateX(12px);opacity:.2}}',
+      '.sel-emo-spin{animation:selEmoSpin 40s linear infinite}',
+      '.sel-emo-drift{animation:selEmoDrift 9s ease-in-out infinite}',
+      '.sel-emo-rain{animation:selEmoRain 1.1s linear infinite}',
+      '.sel-emo-flash{animation:selEmoFlash 2.4s ease-in-out infinite}',
+      '.sel-emo-fog{animation:selEmoFog 12s ease-in-out infinite}',
+      '.sel-emo-wind{animation:selEmoWind 3s ease-in-out infinite}',
+      '.sel-emo-snow{animation:selEmoSnow 3.2s linear infinite}',
+      '@media (prefers-reduced-motion: reduce){.sel-emo-spin,.sel-emo-drift,.sel-emo-rain,.sel-emo-flash,.sel-emo-fog,.sel-emo-wind,.sel-emo-snow{animation:none !important}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
   var weatherSvg = h('svg', {
     width: '100%', height: 320, viewBox: '0 0 400 320',
     style: { background: scene.bg, borderRadius: 12, display: 'block' }

@@ -80,7 +80,7 @@ The tests import from `extracted_logic/clinical_logic.js` and verify known-answe
 ### Tier 1: Clinical Decisions (affects student services)
 - **Score Classification** — Standard score and T-score to label mapping (Average, Borderline, Clinically Significant, etc.)
 - **Percentile Calculation** — Abramowitz-Stegun error function for standard score to percentile conversion
-- **PII Scrubbing** — Student name and date redaction for FERPA compliance
+- **PII Scrubbing** — Student name and date redaction for FERPA-aligned data minimization
 - **RTI Tier Classification** — Quiz, fluency, word study, and math metrics to Tier 1/2/3
 - **Developmental Norms** — Age-referenced attention span, tantrum frequency, social play, vocabulary lookups
 

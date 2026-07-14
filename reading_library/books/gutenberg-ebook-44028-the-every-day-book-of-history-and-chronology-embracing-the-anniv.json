@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-44028-the-every-day-book-of-history-and-chronology-embracing-the-anniv",
+  "title": "The Every Day Book of History and Chronology: Embracing the Anniversaries of Memorable Persons and Events in Every Period and State of the World, from the Creation to the Present Time",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Chronology, Historical"
+  ],
+  "authors": [
+    "Munsell, Joel"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/44028"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/44028/pg44028.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Every Day Book of History and Chronology: Embracing the Anniversaries of Memorable Persons and Events in Every Period and State of the World, from the Creation to the Present Time\" by Munsell, Joel. Metadata tags include: Chronology, Historical."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 89
+  }
+}

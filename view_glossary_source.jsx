@@ -7,6 +7,117 @@
       return I ? <I {...props} /> : null;
     };
   };
+
+  // Authoritative pronunciation row for the phonics popup: real Wiktionary recording
+  // + authoritative IPA, shown quietly beside the AI phonics. Pure fn; null when absent.
+  function renderPhonicsDictRow(phonicsData, t) {
+    var d = phonicsData && phonicsData.dictionary;
+    if (!d || (!d.phonetic && !d.audio)) return null;
+    var row = [React.createElement('span', { key: 'lbl', className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wide' }, (t('glossary.popups.dictionary') || 'Dictionary'))];
+    if (d.phonetic) row.push(React.createElement('span', { key: 'ipa', className: 'font-mono text-xs text-slate-600' }, d.phonetic));
+    if (d.audio) row.push(React.createElement('button', {
+      key: 'aud', type: 'button',
+      onClick: function () { try { new Audio(d.audio).play().catch(function () {}); } catch (_e) {} },
+      className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-white hover:bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 transition-colors',
+      'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
+      title: t('glossary.popups.hear_real') || 'Hear a real recording'
+    }, React.createElement(Volume2, { size: 11 }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')));
+    return React.createElement('div', { className: 'flex items-center gap-2 flex-wrap px-1' }, row);
+  }
+
+  // Flashcard-back dictionary enrichment (example + part-of-speech + synonyms + real
+  // recording), sense-aligned to the card's lesson definition and read straight from the
+  // pre-warmed offline cache — collapsible so it never overloads the card. Returns null
+  // when unavailable (non-English / not cached / no aligned sense) so cards render as
+  // before. Only added to the English standard deck, not the language deck.
+  function renderFlashcardDictBack(item, t, flashcardDictAudioKey, setFlashcardDictAudioKey) {
+    if (!item || !item.term) return null;
+    var AD = window.AlloDictionary;
+    if (!AD || typeof AD.getCached !== 'function') return null;
+    var entry = AD.getCached(item.term);
+    if (!entry) return null;
+    var sense = typeof AD.pickSense === 'function' ? AD.pickSense(entry, item.def || '') : null;
+    var verifiedDef = sense ? sense.definition : '';
+    if (!verifiedDef && Array.isArray(entry.meanings)) {
+      entry.meanings.some(function (m) {
+        if (m && Array.isArray(m.definitions) && m.definitions[0] && m.definitions[0].definition) {
+          verifiedDef = m.definitions[0].definition;
+          return true;
+        }
+        return false;
+      });
+    }
+    var pos = sense ? sense.partOfSpeech : '';
+    var example = sense ? sense.example : '';
+    var syns = Array.isArray(entry.synonyms) ? entry.synonyms.slice(0, 4) : [];
+    var audio = entry.audio;
+    var sourceWord = entry.word || item.term;
+    var sourceUrl = entry.sourceUrl || (sourceWord ? 'https://en.wiktionary.org/wiki/' + encodeURIComponent(sourceWord) : '');
+    var sourceLabel = entry.source || 'Wiktionary';
+    if (!verifiedDef && !pos && !example && !syns.length && !audio && !sourceUrl) return null;
+    var stopCardControlEvent = function (e) { e.stopPropagation(); };
+    var audioKey = 'dict-' + String(sourceWord || item.term || '').toLowerCase();
+    var isAudioPlaying = flashcardDictAudioKey === audioKey;
+    var body = [];
+    if (verifiedDef) body.push(React.createElement('p', { key: 'def', className: 'text-sm text-white leading-relaxed' },
+      pos ? React.createElement('span', { className: 'font-semibold text-white mr-1' }, pos) : null,
+      verifiedDef));
+    if (example) body.push(React.createElement('p', { key: 'ex', className: 'text-xs text-blue-50 leading-relaxed italic' }, '"' + example + '"'));
+    if (syns.length) body.push(React.createElement('p', { key: 'sy', className: 'text-xs text-blue-50 mt-1' },
+      (t('glossary.popups.similar') || 'Similar') + ': ' + syns.join(', ')));
+    if (audio) body.push(React.createElement('button', { key: 'au', type: 'button',
+      onClick: function (e) {
+        e.stopPropagation();
+        try {
+          if (typeof setFlashcardDictAudioKey === 'function') setFlashcardDictAudioKey(audioKey);
+          var player = new Audio(audio);
+          var clearPlaying = function () {
+            if (typeof setFlashcardDictAudioKey === 'function') setFlashcardDictAudioKey(function (current) {
+              return current === audioKey ? null : current;
+            });
+          };
+          player.addEventListener('ended', clearPlaying, { once: true });
+          player.addEventListener('error', clearPlaying, { once: true });
+          player.play().catch(clearPlaying);
+        } catch (_e) {
+          if (typeof setFlashcardDictAudioKey === 'function') setFlashcardDictAudioKey(null);
+        }
+      },
+      onMouseDown: stopCardControlEvent,
+      onKeyDown: stopCardControlEvent,
+      className: 'mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-900 bg-blue-50 hover:bg-white border border-blue-200 rounded-full px-2.5 py-1 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600' + (isAudioPlaying ? ' ring-2 ring-white bg-white shadow-lg shadow-blue-950/20' : ''),
+      'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording' },
+      React.createElement(Volume2, { size: 12, className: isAudioPlaying ? 'animate-pulse motion-reduce:animate-none' : '', 'aria-hidden': 'true' }),
+      React.createElement('span', null, isAudioPlaying ? 'Playing...' : (t('glossary.popups.real_audio') || 'Recording'))));
+    body.push(React.createElement('details', {
+      key: 'src',
+      className: 'pt-2 mt-2 border-t border-blue-300/40 text-[11px] leading-snug text-blue-50',
+      onClick: stopCardControlEvent,
+      onMouseDown: stopCardControlEvent,
+      onKeyDown: stopCardControlEvent
+    },
+      React.createElement('summary', { className: 'cursor-pointer font-bold text-blue-50 select-none' }, 'Source and provenance'),
+      React.createElement('p', { className: 'mt-1' }, 'Verified dictionary data from ' + sourceLabel + ', sense-matched against the lesson definition when possible and cached for offline reuse.'),
+      sourceUrl ? React.createElement('a', {
+        href: sourceUrl,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        onClick: function (e) { e.stopPropagation(); },
+        onMouseDown: stopCardControlEvent,
+        onKeyDown: stopCardControlEvent,
+        className: 'inline-flex mt-1 font-bold text-white underline decoration-blue-200 underline-offset-2 hover:text-blue-50',
+        'aria-label': 'Open dictionary source for ' + sourceWord
+      }, 'Open source') : null));
+    return React.createElement('details', {
+        open: true,
+        className: 'mt-3 rounded-xl bg-white/10 border border-blue-300/40 px-4 py-3 w-full text-left shadow-inner ring-1 ring-white/10',
+        onClick: stopCardControlEvent,
+        onMouseDown: stopCardControlEvent,
+        onKeyDown: stopCardControlEvent
+      },
+       React.createElement('summary', { className: 'text-xs font-bold text-white uppercase cursor-pointer select-none tracking-wide' }, 'Verified dictionary'),
+      React.createElement('div', { className: 'mt-2 space-y-1.5' }, body));
+  }
   var ArrowDown = _lazyIcon('ArrowDown');
   var Award = _lazyIcon('Award');
   var Ban = _lazyIcon('Ban');
@@ -198,7 +309,7 @@
     var nextFlashcard = props.nextFlashcard;
     var stopPlayback = props.stopPlayback;
     var launchInteractiveFlashcards = props.launchInteractiveFlashcards;
-    var closeInteractiveFlashcards = props.closeInteractiveFlashcards;
+    var closeInteractiveFlashcardsProp = props.closeInteractiveFlashcards;
     var closeMemory = props.closeMemory;
     var closeCrossword = props.closeCrossword;
     var closeMatching = props.closeMatching;
@@ -232,6 +343,244 @@
     var BingoGame = props.BingoGame;
     var StudentBingoGame = props.StudentBingoGame;
     var WordScrambleGame = props.WordScrambleGame;
+    var flashcardDictAudioKeyState = React.useState(null);
+    var flashcardDictAudioKey = flashcardDictAudioKeyState[0];
+    var setFlashcardDictAudioKey = flashcardDictAudioKeyState[1];
+    var flashcardReviewStateState = React.useState({});
+    var flashcardReviewState = flashcardReviewStateState[0];
+    var setFlashcardReviewState = flashcardReviewStateState[1];
+    var flashcardRetryQueueState = React.useState([]);
+    var flashcardRetryQueue = flashcardRetryQueueState[0];
+    var setFlashcardRetryQueue = flashcardRetryQueueState[1];
+    var flashcardEditDrawerState = React.useState(false);
+    var isFlashcardEditDrawerOpen = flashcardEditDrawerState[0];
+    var setIsFlashcardEditDrawerOpen = flashcardEditDrawerState[1];
+    var flashcardEditButtonRef = React.useRef(null);
+    var flashcardEditDrawerRef = React.useRef(null);
+    var flashcardEditFirstFieldRef = React.useRef(null);
+    var flashcardDialogRef = React.useRef(null);
+    var flashcardCloseRef = React.useRef(null);
+    var phonicsDialogRef = React.useRef(null);
+    var phonicsCloseRef = React.useRef(null);
+    var screenerDialogRef = React.useRef(null);
+    function containModalFocus(e, container, onEscape) {
+      if (!e) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (typeof onEscape === 'function') onEscape(e);
+        return;
+      }
+      if (e.key !== 'Tab' || !container || typeof container.querySelectorAll !== 'function') return;
+      var focusable = Array.prototype.slice.call(container.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+        return el && !el.hidden && el.getAttribute('aria-hidden') !== 'true';
+      });
+      if (!focusable.length) { e.preventDefault(); container.focus(); return; }
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+    React.useEffect(function () {
+      if (!isInteractiveFlashcards) return undefined;
+      var previouslyFocused = document.activeElement;
+      var timer = setTimeout(function () { if (flashcardCloseRef.current) flashcardCloseRef.current.focus(); }, 0);
+      return function () {
+        clearTimeout(timer);
+        if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      };
+    }, [isInteractiveFlashcards]);
+    React.useEffect(function () {
+      if (!phonicsData || activeView !== 'glossary') return undefined;
+      var previouslyFocused = document.activeElement;
+      var timer = setTimeout(function () { if (phonicsCloseRef.current) phonicsCloseRef.current.focus(); }, 0);
+      return function () {
+        clearTimeout(timer);
+        if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      };
+    }, [!!phonicsData, activeView]);
+    function closeScreenerResults(e) {
+      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      setScreenerSession(null);
+      setRosterQueue([]);
+    }
+    React.useEffect(function () {
+      if (!screenerSession || screenerSession.status !== 'complete') return undefined;
+      var previouslyFocused = document.activeElement;
+      var timer = setTimeout(function () {
+        var firstAction = screenerDialogRef.current && screenerDialogRef.current.querySelector('button:not([disabled])');
+        if (firstAction) firstAction.focus();
+      }, 0);
+      return function () {
+        clearTimeout(timer);
+        if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      };
+    }, [screenerSession && screenerSession.status]);
+    var flashcardDeck = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+    function getFlashcardReviewKey(item, idx) {
+      return String(item && item.term ? item.term : idx);
+    }
+    var currentFlashcardItem = flashcardDeck[flashcardIndex] || null;
+    var currentFlashcardKey = currentFlashcardItem ? getFlashcardReviewKey(currentFlashcardItem, flashcardIndex) : '';
+    var flashcardTransitionKey = String(flashcardMode || 'deck') + '-' + String(flashcardIndex);
+    var currentFlashcardConfidence = currentFlashcardKey ? flashcardReviewState[currentFlashcardKey] : '';
+    var reviewKeys = flashcardDeck.map(function (item, idx) { return getFlashcardReviewKey(item, idx); });
+    var knownCount = reviewKeys.filter(function (key) { return flashcardReviewState[key] === 'known'; }).length;
+    var learningCount = reviewKeys.filter(function (key) { return flashcardReviewState[key] === 'learning'; }).length;
+    var flashcardStatusText = currentFlashcardItem ? 'Card ' + (flashcardIndex + 1) + ' of ' + flashcardDeck.length + ': ' + (currentFlashcardItem.term || 'flashcard') + '. ' + (isFlashcardFlipped ? 'Definition side.' : 'Term side.') + ' ' + (currentFlashcardConfidence === 'known' ? 'Marked known.' : currentFlashcardConfidence === 'learning' ? 'Marked still learning.' : 'Not reviewed yet.') : '';
+    React.useEffect(function () {
+      if (!isFlashcardEditDrawerOpen) return;
+      var timer = setTimeout(function () {
+        try {
+          if (flashcardEditFirstFieldRef.current && typeof flashcardEditFirstFieldRef.current.focus === 'function') {
+            flashcardEditFirstFieldRef.current.focus();
+          }
+        } catch (_e) {}
+      }, 0);
+      return function () { clearTimeout(timer); };
+    }, [isFlashcardEditDrawerOpen, currentFlashcardKey]);
+    function stopFlashcardControl(e) {
+      if (!e) return;
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+    function moveToFlashcardIndex(idx) {
+      setIsFlashcardEditDrawerOpen(false);
+      setIsFlashcardFlipped(false);
+      setFlashcardFeedback(null);
+      setTimeout(function () { setFlashcardIndex(idx); }, 150);
+    }
+    function cleanFlashcardRetryQueue(queue, total) {
+      return (Array.isArray(queue) ? queue : []).filter(function (item) {
+        return item && Number.isFinite(item.index) && item.index >= 0 && item.index < total;
+      }).map(function (item) {
+        return { index: item.index, dueAfter: Math.max(0, Number(item.dueAfter) || 0) };
+      });
+    }
+    function chooseNextFlashcard(queue, total) {
+      var stepped = cleanFlashcardRetryQueue(queue, total).map(function (item) {
+        return { index: item.index, dueAfter: Math.max(0, item.dueAfter - 1) };
+      });
+      var dueIdx = stepped.findIndex(function (item) { return item.dueAfter <= 0 && item.index !== flashcardIndex; });
+      if (dueIdx >= 0) {
+        var due = stepped[dueIdx];
+        return { nextIndex: due.index, queue: stepped.filter(function (_, i) { return i !== dueIdx; }) };
+      }
+      if (flashcardIndex < total - 1) return { nextIndex: flashcardIndex + 1, queue: stepped };
+      var currentDueIdx = stepped.findIndex(function (item) { return item.dueAfter <= 0 && item.index === flashcardIndex; });
+      if (currentDueIdx >= 0) return { nextIndex: flashcardIndex, queue: stepped.filter(function (_, i) { return i !== currentDueIdx; }), reset: true };
+      if (stepped.length) return { nextIndex: flashcardIndex, queue: stepped };
+      return { nextIndex: flashcardIndex, queue: stepped };
+    }
+    function goToNextReviewCard(e, queueOverride) {
+      stopFlashcardControl(e);
+      var total = flashcardDeck.length;
+      if (!total) return;
+      var picked = chooseNextFlashcard(queueOverride || flashcardRetryQueue, total);
+      setFlashcardRetryQueue(picked.queue);
+      if (picked.nextIndex !== flashcardIndex || picked.reset) moveToFlashcardIndex(picked.nextIndex);
+    }
+    function markFlashcardConfidence(status, e) {
+      stopFlashcardControl(e);
+      if (!currentFlashcardKey) return;
+      var total = flashcardDeck.length;
+      setFlashcardReviewState(function (prev) {
+        var next = Object.assign({}, prev);
+        next[currentFlashcardKey] = status;
+        return next;
+      });
+      var queue = cleanFlashcardRetryQueue(flashcardRetryQueue, total).filter(function (item) { return item.index !== flashcardIndex; });
+      if (status === 'learning' && total > 1) queue.push({ index: flashcardIndex, dueAfter: flashcardIndex < total - 1 ? Math.min(2, total - 1) : 0 });
+      var picked = chooseNextFlashcard(queue, total);
+      setFlashcardRetryQueue(picked.queue);
+      if (picked.nextIndex !== flashcardIndex || picked.reset) moveToFlashcardIndex(picked.nextIndex);
+    }
+    function handleFlashcardFlipButton(e) {
+      stopFlashcardControl(e);
+      setIsFlashcardFlipped(!isFlashcardFlipped);
+    }
+    function handleEditCurrentFlashcard(e) {
+      stopFlashcardControl(e);
+      if (!currentFlashcardItem) return;
+      setIsFlashcardEditDrawerOpen(true);
+    }
+    function handleCloseFlashcardEditDrawer(e) {
+      stopFlashcardControl(e);
+      setIsFlashcardEditDrawerOpen(false);
+      setTimeout(function () {
+        try {
+          if (flashcardEditButtonRef.current && typeof flashcardEditButtonRef.current.focus === 'function') {
+            flashcardEditButtonRef.current.focus();
+          }
+        } catch (_e) {}
+      }, 0);
+    }
+    function handleFlashcardEditDrawerKeyDown(e) {
+      if (!e) return;
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (e.key === 'Escape') {
+        handleCloseFlashcardEditDrawer(e);
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      var drawer = flashcardEditDrawerRef.current;
+      if (!drawer || typeof drawer.querySelectorAll !== 'function') return;
+      var focusable = Array.prototype.slice.call(drawer.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+        return el && el.offsetParent !== null;
+      });
+      if (!focusable.length) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    function handleOpenCurrentFlashcardInGlossary(e) {
+      stopFlashcardControl(e);
+      setIsFlashcardEditDrawerOpen(false);
+      setIsInteractiveFlashcards(false);
+      if (!isEditingGlossary) setIsEditingGlossary(true);
+      if (currentFlashcardItem.term && typeof setGlossarySearchTerm === 'function') setGlossarySearchTerm(currentFlashcardItem.term);
+    }
+    function closeInteractiveFlashcards(e) {
+      handleCloseInteractiveFlashcards(e);
+    }
+    function handleCloseInteractiveFlashcards(e) {
+      stopFlashcardControl(e);
+      setIsFlashcardEditDrawerOpen(false);
+      if (typeof closeInteractiveFlashcardsProp === 'function') closeInteractiveFlashcardsProp();
+    }
+    function handleProgressDotClick(idx, e) {
+      stopFlashcardControl(e);
+      if (idx === flashcardIndex) return;
+      moveToFlashcardIndex(idx);
+    }
+    function renderFlashcardProgressDots() {
+      if (!flashcardDeck.length) return null;
+      return <div className="mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 pr-1" aria-label="Flashcard progress">{flashcardDeck.map(function (item, idx) {
+        var key = getFlashcardReviewKey(item, idx);
+        var status = flashcardReviewState[key];
+        var isCurrent = idx === flashcardIndex;
+        var statusLabel = status === 'known' ? 'known' : status === 'learning' ? 'still learning' : 'not reviewed';
+        var fillClass = status === 'known' ? 'bg-emerald-400 text-emerald-950' : status === 'learning' ? 'bg-amber-400 text-amber-950' : 'bg-white/35 text-white';
+        return <button key={key + '-' + idx} type="button" onClick={function (e) { handleProgressDotClick(idx, e); }} className={`h-9 w-9 rounded-full shrink-0 flex items-center justify-center transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isCurrent ? 'bg-white/15 ring-2 ring-white shadow-lg' : 'hover:bg-white/15'}`} aria-current={isCurrent ? 'step' : undefined} aria-label={`Go to flashcard ${idx + 1}: ${item?.term || 'card'}, ${statusLabel}`} title={`${item?.term || `Card ${idx + 1}`} - ${statusLabel}`}><span className={`h-4 w-4 rounded-full flex items-center justify-center ${fillClass}`}>{status === 'known' ? <CheckCircle2 size={11} aria-hidden="true" /> : status === 'learning' ? <RefreshCw size={10} aria-hidden="true" /> : null}</span></button>;
+      })}</div>;
+    }
+    function renderFlashcardActionBar() {
+      var audioActive = isPlaying && playingContentId === 'flashcard-sequence';
+      var nextDisabled = flashcardIndex === flashcardDeck.length - 1 && flashcardRetryQueue.length === 0;
+      var focusClass = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950';
+      return <div className="sticky bottom-0 z-40 -mx-4 mt-5 border-t border-white/10 bg-slate-950/90 backdrop-blur-xl px-3 py-3 shadow-2xl pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"><div className="mx-auto max-w-4xl space-y-3"><div className="flex flex-wrap items-center justify-center gap-2"><button type="button" aria-pressed={currentFlashcardConfidence === 'known'} onClick={e => markFlashcardConfidence('known', e)} className={`min-h-[44px] inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border transition-all motion-reduce:transition-none ${focusClass} ${currentFlashcardConfidence === 'known' ? 'bg-emerald-300 text-emerald-950 border-emerald-100 shadow-lg' : 'bg-white/10 text-emerald-100 border-emerald-400/40 hover:bg-emerald-500/20'}`}><CheckCircle2 size={16} aria-hidden="true" /> I know it</button><button type="button" aria-pressed={currentFlashcardConfidence === 'learning'} onClick={e => markFlashcardConfidence('learning', e)} className={`min-h-[44px] inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border transition-all motion-reduce:transition-none ${focusClass} ${currentFlashcardConfidence === 'learning' ? 'bg-amber-400 text-slate-900 border-amber-200 shadow-lg' : 'bg-white/10 text-amber-100 border-amber-400/40 hover:bg-amber-500/20'}`}><RefreshCw size={16} aria-hidden="true" /> Still learning</button><button type="button" aria-pressed={isFlashcardFlipped} onClick={handleFlashcardFlipButton} className={`min-h-[44px] inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all motion-reduce:transition-none ${focusClass}`}><RefreshCw size={16} aria-hidden="true" /> {isFlashcardFlipped ? 'Show term' : 'Show definition'}</button>{isTeacherMode && flashcardMode === 'standard' && <button type="button" ref={flashcardEditButtonRef} aria-expanded={isFlashcardEditDrawerOpen} aria-controls="flashcard-edit-drawer" onClick={handleEditCurrentFlashcard} className={`min-h-[44px] inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold bg-blue-50 text-blue-900 border border-blue-200 hover:bg-white transition-all motion-reduce:transition-none ${focusClass}`}><Pencil size={16} aria-hidden="true" /> Edit term</button>}</div><div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2"><button type="button" onClick={prevFlashcard} disabled={flashcardIndex === 0} className={`min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed ${focusClass}`} aria-label={t('common.prev_flashcard')} data-help-key="flashcard_prev"><ArrowDown className="rotate-90" size={20} aria-hidden="true" /> <span className="hidden sm:inline">{t('flashcards.previous')}</span></button><button type="button" onClick={handleCardAudioSequence} className={`min-h-[52px] px-6 sm:px-8 py-3 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.35)] hover:scale-105 motion-reduce:hover:scale-100 transition-all motion-reduce:transition-none flex items-center gap-3 font-bold text-base sm:text-lg ${focusClass} ${audioActive ? 'bg-red-600 hover:bg-red-500 text-white ring-4 ring-red-300/30' : 'bg-yellow-500 hover:bg-yellow-400 text-slate-900'}`} title={t('common.play_audio_sequence')} aria-label={audioActive ? t('flashcards.stop') : t('flashcards.play_card')} data-help-key="flashcard_play_sequence">{audioActive ? <StopCircle size={24} className="fill-current animate-pulse motion-reduce:animate-none" aria-hidden="true" /> : <Volume2 size={24} className="fill-current" aria-hidden="true" />}{audioActive ? t('flashcards.stop') : t('flashcards.play_card')}</button><button type="button" onClick={e => goToNextReviewCard(e)} disabled={nextDisabled} className={`min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed ${focusClass}`} aria-label={t('common.next_flashcard')} data-help-key="flashcard_next"><span className="hidden sm:inline">{t('flashcards.next')}</span> <ArrowDown className="-rotate-90" size={20} aria-hidden="true" /></button></div></div></div>;
+    }
+    function renderFlashcardEditDrawer() {
+      if (!isTeacherMode || !isFlashcardEditDrawerOpen || !currentFlashcardItem) return null;
+      var fieldClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 resize-y';
+      var drawerButtonFocus = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2';
+      return <div className="fixed inset-0 z-[130] pointer-events-none"><button type="button" tabIndex={-1} className="absolute inset-0 bg-slate-950/40 pointer-events-auto" onClick={handleCloseFlashcardEditDrawer} aria-label="Close flashcard editor" /><aside id="flashcard-edit-drawer" ref={flashcardEditDrawerRef} role="dialog" aria-modal="true" aria-labelledby="flashcard-edit-title" onKeyDown={handleFlashcardEditDrawerKeyDown} className="absolute right-0 top-0 h-full w-full max-w-md bg-white text-slate-800 shadow-2xl pointer-events-auto p-5 overflow-y-auto animate-in slide-in-from-right-8 duration-200 motion-reduce:animate-none motion-reduce:transition-none" onClick={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}><div className="flex items-start justify-between gap-3 mb-5"><div><p className="text-xs font-black uppercase tracking-widest text-blue-700">Teacher edit</p><h3 id="flashcard-edit-title" className="text-xl font-black text-slate-900">Edit flashcard</h3></div><button type="button" onClick={handleCloseFlashcardEditDrawer} className={`p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 ${drawerButtonFocus}`} aria-label={t('common.close')}><X size={20} aria-hidden="true" /></button></div><div className="space-y-4"><label className="block"><span className="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Term</span><textarea ref={flashcardEditFirstFieldRef} value={currentFlashcardItem.term || ''} onChange={e => handleGlossaryChange(flashcardIndex, 'term', e.target.value)} rows={getRows(currentFlashcardItem.term, 24)} className={`${fieldClass} text-base font-bold`} /></label><label className="block"><span className="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Definition</span><textarea value={currentFlashcardItem.def || ''} onChange={e => handleGlossaryChange(flashcardIndex, 'def', e.target.value)} rows={getRows(currentFlashcardItem.def, 42)} className={`${fieldClass} text-sm leading-relaxed`} /></label><label className="block"><span className="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Tier</span><select value={currentFlashcardItem.tier || ''} onChange={e => handleGlossaryChange(flashcardIndex, 'tier', e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-white"><option value="">No tier</option><option value="Academic">{t('glossary.edit_tier_academic')}</option><option value="Domain-Specific">{t('glossary.edit_tier_domain')}</option></select></label><label className="block"><span className="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Word roots</span><textarea value={currentFlashcardItem.etymology || ''} onChange={e => handleGlossaryChange(flashcardIndex, 'etymology', e.target.value)} rows={getRows(currentFlashcardItem.etymology, 42)} className={`${fieldClass} text-sm leading-relaxed`} /></label></div><div className="mt-6 flex flex-col sm:flex-row gap-2"><button type="button" onClick={handleCloseFlashcardEditDrawer} className={`min-h-[44px] flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-blue-700 text-white px-4 py-2.5 text-sm font-bold hover:bg-blue-800 ${drawerButtonFocus}`}><CheckCircle2 size={16} aria-hidden="true" /> Done</button><button type="button" onClick={handleOpenCurrentFlashcardInGlossary} className={`min-h-[44px] flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 text-slate-800 px-4 py-2.5 text-sm font-bold hover:bg-slate-200 ${drawerButtonFocus}`}><Search size={16} aria-hidden="true" /> Full table</button></div></aside></div>;
+    }
     // Wrapped in a Fragment so the phonics popup can render as a sibling of
     // the main content. The popup state (phonicsData) lives at the host level
     // and is set by handlePhonicsClick — same one the simplified view uses.
@@ -249,25 +598,20 @@
                   console.warn('[HealthCheck] Manual trigger failed: generatedContent type=' + generatedContent?.type + ', data is array=' + Array.isArray(generatedContent?.data));
                   addToast(t('common.generate_glossary_first') || 'Generate a glossary first', 'info');
                 }
-              }} disabled={isRunningHealthCheck || generatedContent?.type !== 'glossary'} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-all shadow-sm whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" title="Analyze glossary quality, grade level, and accuracy">{isRunningHealthCheck ? <RefreshCw size={14} className="animate-spin" /> : <span>📊</span>}{isRunningHealthCheck ? 'Analyzing...' : glossaryHealthCheck ? 'Re-run Health Check' : 'Health Check'}</button></div></div></div>{isInteractiveFlashcards && generatedContent?.data && <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start pt-20 sm:pt-24 p-4 animate-in fade-in duration-300 overflow-auto"><button onClick={closeInteractiveFlashcards} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50" aria-label={t('common.close')}><X size={32} /></button><div className="absolute top-6 left-6 z-50 hidden sm:flex flex-col gap-2"><button onClick={handleToggleShowFlashcardImages} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border ${showFlashcardImages ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`} title={t('flashcards.tooltip_toggle_images')} aria-label={showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images')}><ImageIcon size={16} /> {showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images')}</button><button onClick={() => {
+              }} disabled={isRunningHealthCheck || generatedContent?.type !== 'glossary'} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-all shadow-sm whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" title="Analyze glossary quality, grade level, and accuracy">{isRunningHealthCheck ? <RefreshCw size={14} className="animate-spin" /> : <span>📊</span>}{isRunningHealthCheck ? 'Analyzing...' : glossaryHealthCheck ? 'Re-run Health Check' : 'Health Check'}</button></div></div></div>{isInteractiveFlashcards && Array.isArray(generatedContent?.data) && generatedContent.data.length > 0 && <div ref={flashcardDialogRef} role="dialog" aria-modal="true" aria-label={t('flashcards.deck_standard') || 'Interactive flashcards'} tabIndex={-1} onKeyDown={e => containModalFocus(e, flashcardDialogRef.current, closeInteractiveFlashcards)} className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start pt-20 sm:pt-24 p-4 animate-in fade-in duration-300 motion-reduce:animate-none motion-reduce:transition-none overflow-auto"><button ref={flashcardCloseRef} type="button" onClick={closeInteractiveFlashcards} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950" aria-label={t('common.close')}><X size={32} aria-hidden="true" /></button><div id="flashcard-live-status" className="sr-only" aria-live="polite" aria-atomic="true">{flashcardStatusText}</div><div className="absolute top-6 left-6 z-50 hidden sm:flex flex-col gap-2"><button type="button" aria-pressed={showFlashcardImages} onClick={handleToggleShowFlashcardImages} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${showFlashcardImages ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`} title={t('flashcards.tooltip_toggle_images')} aria-label={showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images')}><ImageIcon size={16} aria-hidden="true" /> {showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images')}</button><button type="button" aria-pressed={isFlashcardQuizMode} onClick={() => {
               setIsFlashcardQuizMode(!isFlashcardQuizMode);
               setFlashcardScore(0);
               setFlashcardIndex(0);
               setIsFlashcardFlipped(false);
               setFlashcardOptions([]);
               setFlashcardFeedback(null);
-            }} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border ${isFlashcardQuizMode ? 'bg-yellow-500 text-indigo-900 border-yellow-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`} title={t('flashcards.tooltip_toggle_quiz')} aria-label={isFlashcardQuizMode ? "Disable Quiz Mode" : "Enable Quiz Mode"}>{isFlashcardQuizMode ? <CheckCircle2 size={16} /> : <Brain size={16} />}{isFlashcardQuizMode ? t('flashcards.quiz_active') : t('flashcards.practice_mode')}</button></div>{flashcardMode === 'standard' && selectedLanguages.length > 0 && <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50"><select aria-label={t('common.selection')} value={standardDeckLang} onChange={e => setStandardDeckLang(e.target.value)} className="bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none shadow-lg"><option value="English Only">{t('languages.english_only')}</option>{selectedLanguages.map(l => <option key={l} value={l}>+ {l}</option>)}</select></div>}{flashcardMode === 'language' && selectedLanguages.length > 1 && <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50"><select aria-label={t('common.selection')} value={flashcardLang} onChange={e => setFlashcardLang(e.target.value)} className="bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">{selectedLanguages.map(l => <option key={l} value={l}>{l}</option>)}</select></div>}<div className="w-full max-w-4xl perspective-1000"><div className="mb-6 px-2"><div className="flex items-center justify-between text-white/80 mb-2"><span className="font-bold text-lg flex items-center gap-2">{flashcardMode === 'standard' ? t('flashcards.deck_standard') : t('flashcards.deck_language', {
+            }} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 text-indigo-900 border-yellow-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`} title={t('flashcards.tooltip_toggle_quiz')} aria-label={isFlashcardQuizMode ? "Disable Quiz Mode" : "Enable Quiz Mode"}>{isFlashcardQuizMode ? <CheckCircle2 size={16} aria-hidden="true" /> : <Brain size={16} aria-hidden="true" />}{isFlashcardQuizMode ? t('flashcards.quiz_active') : t('flashcards.practice_mode')}</button></div>{flashcardMode === 'standard' && selectedLanguages.length > 0 && <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50"><select aria-label={t('common.selection')} value={standardDeckLang} onChange={e => setStandardDeckLang(e.target.value)} className="bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none shadow-lg"><option value="English Only">{t('languages.english_only')}</option>{selectedLanguages.map(l => <option key={l} value={l}>+ {l}</option>)}</select></div>}{flashcardMode === 'language' && selectedLanguages.length > 1 && <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50"><select aria-label={t('common.selection')} value={flashcardLang} onChange={e => setFlashcardLang(e.target.value)} className="bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">{selectedLanguages.map(l => <option key={l} value={l}>{l}</option>)}</select></div>}<div className="w-full max-w-4xl perspective-1000"><div className="mb-6 px-2"><div className="flex items-center justify-between text-white/80 mb-2"><span className="font-bold text-lg flex items-center gap-2">{flashcardMode === 'standard' ? t('flashcards.deck_standard') : t('flashcards.deck_language', {
                     lang: flashcardLang || 'Language'
-                  })}<span className="text-sm font-normal opacity-70">({flashcardIndex + 1}/{generatedContent?.data.length})</span></span>{isFlashcardQuizMode && <div className="bg-yellow-500 text-indigo-900 px-3 py-0.5 rounded-full text-sm font-black shadow-sm animate-in zoom-in">{t('flashcards.score_label')} {flashcardScore}</div>}<div className="sm:hidden flex gap-1"><button aria-label={t('common.toggle_images')} onClick={handleToggleShowFlashcardImages} className={`p-1.5 rounded border ${showFlashcardImages ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}><ImageIcon size={14} /></button><button onClick={() => {
+                  })}<span className="text-sm font-normal opacity-70">({flashcardIndex + 1}/{generatedContent?.data.length})</span></span><div className="hidden md:flex items-center gap-2 text-xs font-bold"><span className="rounded-full bg-emerald-500/15 text-emerald-100 border border-emerald-400/40 px-2 py-0.5">Known {knownCount}</span><span className="rounded-full bg-amber-500/15 text-amber-100 border border-amber-400/40 px-2 py-0.5">Learning {learningCount}</span>{(isPlaying || flashcardDictAudioKey) && <span className="rounded-full bg-yellow-400 text-slate-900 px-2 py-0.5 animate-pulse motion-reduce:animate-none">Audio playing</span>}</div>{isFlashcardQuizMode && <div className="bg-yellow-500 text-indigo-900 px-3 py-0.5 rounded-full text-sm font-black shadow-sm animate-in zoom-in motion-reduce:animate-none">{t('flashcards.score_label')} {flashcardScore}</div>}<div className="sm:hidden flex gap-2"><button type="button" aria-pressed={showFlashcardImages} aria-label={showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images')} onClick={handleToggleShowFlashcardImages} className={`min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${showFlashcardImages ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}><ImageIcon size={16} aria-hidden="true" /></button><button type="button" aria-pressed={isFlashcardQuizMode} aria-label={isFlashcardQuizMode ? "Disable Quiz Mode" : "Enable Quiz Mode"} onClick={() => {
                     setIsFlashcardQuizMode(!isFlashcardQuizMode);
                     setFlashcardOptions([]);
                     setFlashcardFeedback(null);
-                  }} className={`p-1.5 rounded border ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-300'}`}><Brain size={14} /></button></div></div></div><div className="relative w-full aspect-[3/2] cursor-pointer group" onClick={handleToggleIsFlashcardFlipped} onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setIsFlashcardFlipped(!isFlashcardFlipped);
-              }
-            }} tabIndex={0} role="button" aria-label={isFlashcardFlipped ? "Flashcard Back (Click to flip)" : "Flashcard Front (Click to flip)"}><div className={`w-full h-full transition-all duration-500 transform-style-3d shadow-2xl rounded-3xl ${isFlashcardFlipped ? 'rotate-y-180' : 'rotate-y-0'}`}><div className="absolute inset-0 backface-hidden bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-center border-4 border-blue-100 shadow-inner">{flashcardMode === 'standard' ? <><div className="absolute top-6 left-6 text-xs font-bold text-blue-700 uppercase tracking-widest">{t('flashcards.front_label_term')}</div>{showFlashcardImages && generatedContent?.data[flashcardIndex].image && <div className="mb-4 max-h-[55%] w-auto flex justify-center"><img loading="lazy" src={generatedContent?.data[flashcardIndex].image} alt={t('flashcards.alt_visual')} className="max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100" decoding="async" /></div>}<h2 className={`${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-5xl' : 'text-5xl md:text-8xl'} font-black text-slate-800 hover:text-blue-600 transition-colors`} onClick={e => {
+                  }} className={`min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-300'}`}><Brain size={16} aria-hidden="true" /></button></div></div>{renderFlashcardProgressDots()}</div><div className="relative w-full aspect-[3/2] cursor-pointer group" onClick={handleToggleIsFlashcardFlipped}><div key={flashcardTransitionKey} className={`w-full h-full animate-in fade-in zoom-in-95 motion-reduce:animate-none transition-all motion-reduce:transition-none duration-500 transform-style-3d shadow-2xl rounded-3xl ${isFlashcardFlipped ? 'rotate-y-180' : 'rotate-y-0'}`}><div className="absolute inset-0 backface-hidden bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-center border-4 border-blue-100 shadow-inner">{flashcardMode === 'standard' ? <><div className="absolute top-6 left-6 text-xs font-bold text-blue-700 uppercase tracking-widest">{t('flashcards.front_label_term')}</div>{showFlashcardImages && generatedContent?.data[flashcardIndex].image && <div className="mb-4 max-h-[55%] w-auto flex justify-center"><img loading="lazy" src={generatedContent?.data[flashcardIndex].image} alt={t('flashcards.alt_visual')} className="max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100" decoding="async" /></div>}<h2 className={`${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-3xl md:text-5xl' : 'text-5xl md:text-8xl'} font-black text-slate-800 hover:text-blue-600 transition-colors`} onClick={e => {
                       e.stopPropagation();
                       handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front');
                     }} onKeyDown={e => {
@@ -276,7 +620,7 @@
                         e.stopPropagation();
                         handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front');
                       }
-                    }} tabIndex={0} role="button" aria-label={`Read term: ${generatedContent?.data[flashcardIndex].term}`} title={t('flashcards.tooltip_audio')}>{generatedContent?.data[flashcardIndex].term}</h2>{standardDeckLang !== 'English Only' && <div className="mt-4 pt-4 border-t border-slate-100 w-2/3 animate-in fade-in slide-in-from-bottom-2"><p className="text-xs font-bold text-indigo-600 uppercase mb-1">{standardDeckLang}</p><h3 className="text-3xl md:text-4xl font-bold text-indigo-600" onClick={e => {
+                    }} tabIndex={0} role="button" aria-label={`Read term: ${generatedContent?.data[flashcardIndex].term}`} title={t('flashcards.tooltip_audio')}>{generatedContent?.data[flashcardIndex].term}</h2>{standardDeckLang !== 'English Only' && <div className="mt-4 pt-4 border-t border-slate-100 w-2/3 animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"><p className="text-xs font-bold text-indigo-600 uppercase mb-1">{standardDeckLang}</p><h3 className="text-3xl md:text-4xl font-bold text-indigo-600" onClick={e => {
                         e.stopPropagation();
                         const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
                         const term = fullTrans.includes(':') ? fullTrans.split(':')[0].trim() : "";
@@ -313,7 +657,7 @@
                         e.stopPropagation();
                         handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-front-def');
                       }
-                    }} tabIndex={0} role="button" aria-label={t('common.click_read_aloud')}>{generatedContent?.data[flashcardIndex].def}</p></>}<div className="absolute bottom-6 text-slate-600 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse">{t('flashcards.flip_hint')} <RefreshCw size={10} /></div></div><div className={`absolute inset-0 backface-hidden rounded-3xl p-8 flex flex-col items-center justify-center text-center rotate-y-180 border-4 shadow-inner text-white ${flashcardMode === 'standard' ? 'bg-blue-600 border-blue-400' : 'bg-indigo-600 border-indigo-400'}`}>{isFlashcardQuizMode ? <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in duration-300"><h2 className="text-2xl md:text-4xl font-black text-white mb-2 drop-shadow-md">{(() => {
+                    }} tabIndex={0} role="button" aria-label={t('common.click_read_aloud')}>{generatedContent?.data[flashcardIndex].def}</p></>}<div className="absolute bottom-6 text-slate-600 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse motion-reduce:animate-none">{t('flashcards.flip_hint')} <RefreshCw size={10} /></div></div><div className={`absolute inset-0 backface-hidden rounded-3xl p-8 flex flex-col items-center justify-center text-center rotate-y-180 border-4 shadow-inner text-white ${flashcardMode === 'standard' ? 'bg-blue-600 border-blue-400' : 'bg-indigo-600 border-indigo-400'}`}>{isFlashcardQuizMode ? <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in duration-300 motion-reduce:animate-none"><h2 className="text-2xl md:text-4xl font-black text-white mb-2 drop-shadow-md">{(() => {
                         const item = generatedContent?.data[flashcardIndex];
                         if (flashcardMode === 'language' && flashcardLang) {
                           const trans = item.translations?.[flashcardLang];
@@ -341,7 +685,7 @@
                           }
                         }
                         return <button key={idx} onClick={e => handleQuizOptionClick(e, opt)} disabled={!!quizSelectedOption} className={`p-3 rounded-xl text-xs sm:text-sm font-medium transition-all text-left shadow-sm flex items-center gap-3 ${btnClass}`}>{icon && <span>{icon}</span>}<span className="line-clamp-2">{opt}</span></button>;
-                      })}</div></div> : flashcardMode === 'standard' ? <><div className="absolute top-6 left-6 text-xs font-bold text-blue-200 uppercase tracking-widest">{t('flashcards.back_label_def')}</div><p className="text-2xl md:text-4xl font-medium leading-relaxed hover:text-blue-200 transition-colors cursor-pointer" onClick={e => {
+                      })}</div></div> : flashcardMode === 'standard' ? <><div className="absolute top-6 left-6 text-xs font-bold text-white uppercase tracking-widest">{t('flashcards.back_label_def')}</div><div className="w-full max-w-3xl max-h-[82%] overflow-y-auto custom-scrollbar px-1 space-y-3 text-left"><div className="rounded-xl bg-white/10 border border-blue-300/40 px-4 py-3 shadow-inner"><p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Lesson definition</p><p className="text-xl md:text-3xl font-medium leading-relaxed hover:text-blue-50 transition-colors cursor-pointer" onClick={e => {
                       e.stopPropagation();
                       handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-back-def');
                     }} onKeyDown={e => {
@@ -350,7 +694,7 @@
                         e.stopPropagation();
                         handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-back-def');
                       }
-                    }} tabIndex={0} role="button" aria-label={t('common.read_translated_definition')} title={t('flashcards.tooltip_audio')}>{generatedContent?.data[flashcardIndex].def}</p>{standardDeckLang !== 'English Only' && <div className="mt-6 pt-4 border-t border-blue-400 w-full animate-in fade-in slide-in-from-bottom-2"><p className="text-xs font-bold text-blue-200 uppercase mb-2">{standardDeckLang}</p><p className="text-xl md:text-2xl font-medium leading-relaxed italic text-blue-50 hover:text-white cursor-pointer" onClick={e => {
+                    }} tabIndex={0} role="button" aria-label={t('common.read_translated_definition')} title={t('flashcards.tooltip_audio')}>{generatedContent?.data[flashcardIndex].def}</p><p className="mt-2 text-[11px] leading-snug text-blue-50">Provenance: generated from this lesson's source text and selected grade level.</p></div>{standardDeckLang !== 'English Only' && <div className="rounded-xl bg-white/10 border border-blue-300/30 px-4 py-3 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"><p className="text-xs font-bold text-white uppercase mb-2">{standardDeckLang}</p><p className="text-lg md:text-xl font-medium leading-relaxed italic text-blue-50 hover:text-white cursor-pointer" onClick={e => {
                         e.stopPropagation();
                         const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
                         const def = fullTrans.includes(':') ? fullTrans.split(':')[1].trim() : fullTrans;
@@ -369,7 +713,7 @@
                             return fullTrans.split(":")[1].trim();
                           }
                           return fullTrans;
-                        })()}</p></div>}{generatedContent?.data[flashcardIndex]?.etymology && <div className="mt-4 pt-3 border-t border-blue-400/50 w-full animate-in fade-in slide-in-from-bottom-2"><p className="text-xs font-bold text-blue-200 uppercase mb-1">📜 {t('glossary.etymology_label') || 'Word roots'}</p><p className="text-sm md:text-base text-blue-50 italic leading-relaxed hover:text-white cursor-pointer" onClick={e => {
+                        })()}</p></div>}{generatedContent?.data[flashcardIndex]?.etymology && <div className="mt-4 pt-3 border-t border-blue-400/50 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"><p className="text-xs font-bold text-white uppercase mb-1">📜 {t('glossary.etymology_label') || 'Word roots'}</p><p className="text-sm md:text-base text-blue-50 italic leading-relaxed hover:text-white cursor-pointer" onClick={e => {
                         e.stopPropagation();
                         handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym');
                       }} onKeyDown={e => {
@@ -378,7 +722,7 @@
                           e.stopPropagation();
                           handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym');
                         }
-                      }} tabIndex={0} role="button" aria-label={t('glossary.etymology_label') || 'Word roots'}>{generatedContent.data[flashcardIndex].etymology}</p></div>}</> : (() => {
+                      }} tabIndex={0} role="button" aria-label={t('glossary.etymology_label') || 'Word roots'}>{generatedContent.data[flashcardIndex].etymology}</p></div>}{renderFlashcardDictBack(generatedContent.data[flashcardIndex], t, flashcardDictAudioKey, setFlashcardDictAudioKey)}</div></> : (() => {
                     const fullTrans = generatedContent?.data[flashcardIndex].translations?.[flashcardLang] || "Translation not available";
                     let transTerm = "";
                     let transDef = fullTrans;
@@ -406,9 +750,9 @@
                           handleSpeak(transDef, 'fc-back-def');
                         }
                       }} tabIndex={0} role="button" aria-label={`Read ${flashcardLang} definition`}>{transDef}</p></>;
-                  })()}</div></div></div><div className="mt-10 pb-8 flex justify-between items-center px-4"><button onClick={prevFlashcard} disabled={flashcardIndex === 0} className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed" aria-label={t('common.prev_flashcard')} data-help-key="flashcard_prev"><ArrowDown className="rotate-90" size={20} /> {t('flashcards.previous')}</button><button onClick={handleCardAudioSequence} className="px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 shadow-[0_0_20px_rgba(234,179,8,0.4)] hover:scale-105 transition-all flex items-center gap-3 font-bold text-lg" title={t('common.play_audio_sequence')} aria-label={isPlaying && playingContentId === 'flashcard-sequence' ? t('flashcards.stop') : t('flashcards.play_card')} data-help-key="flashcard_play_sequence">{isPlaying && playingContentId === 'flashcard-sequence' ? <StopCircle size={24} className="fill-current" /> : <Volume2 size={24} className="fill-current" />}{isPlaying && playingContentId === 'flashcard-sequence' ? t('flashcards.stop') : t('flashcards.play_card')}</button><button onClick={e => nextFlashcard(e)} disabled={flashcardIndex === generatedContent?.data.length - 1} className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed" aria-label={t('common.next_flashcard')} data-help-key="flashcard_next">{t('flashcards.next')} <ArrowDown className="-rotate-90" size={20} /></button></div><p className="text-center text-white/40 text-xs mt-6 font-medium">{t('flashcards.pro_tip_audio')}</p></div></div>}{isMemoryGame && <ErrorBoundary fallbackMessage="Memory Game encountered an error."><MemoryGame data={generatedContent?.data} onClose={closeMemory} onScoreUpdate={handleGameScoreUpdate} onGameComplete={handleGameCompletion} /></ErrorBoundary>}{isCrosswordGame && <ErrorBoundary fallbackMessage="Crossword Puzzle encountered an error."><CrosswordGame data={generatedContent?.data} onClose={closeCrossword} playSound={playSound} onScoreUpdate={handleGameScoreUpdate} onGameComplete={handleGameCompletion} /></ErrorBoundary>}{isMatchingGame && <ErrorBoundary fallbackMessage="Matching Game encountered an error."><MatchingGame data={generatedContent?.data} onClose={closeMatching} playSound={playSound} onScoreUpdate={handleGameScoreUpdate} onGameComplete={handleGameCompletion} /></ErrorBoundary>}{isBingoGame && <ErrorBoundary fallbackMessage="Bingo Generator encountered an error."><BingoGame data={generatedContent?.data} onClose={closeBingo} settings={bingoSettings} setSettings={setBingoSettings} onGenerate={handleGenerateBingo} bingoState={bingoState} setBingoState={setBingoState} onGenerateAudio={callTTS} selectedVoice={selectedVoice} alloBotRef={alloBotRef} /></ErrorBoundary>}{isStudentBingoGame && <ErrorBoundary fallbackMessage="Bingo Game encountered an error."><StudentBingoGame data={generatedContent?.data} onClose={closeStudentBingo} playSound={playSound} onGameComplete={handleGameCompletion} /></ErrorBoundary>}{isWordScrambleGame && <ErrorBoundary fallbackMessage="Word Scramble Game encountered an error."><WordScrambleGame data={generatedContent?.data} onClose={handleCloseWordScramble} playSound={playSound} onScoreUpdate={handleGameScoreUpdate} /></ErrorBoundary>}{screenerSession && screenerSession.status === 'interstitial' && <div className="fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"><div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-emerald-100"><div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-200"><CheckCircle size={32} /></div><h3 className="text-xl font-black text-slate-800 mb-2">{screenerSession.subtests[screenerSession.currentIndex - 1]?.replace(/^./, c => c.toUpperCase())} Complete!</h3><p className="text-slate-600 mb-4">Next up:</p><p className="text-2xl font-black text-emerald-600 mb-6">{screenerSession.subtests[screenerSession.currentIndex]?.replace(/^./, c => c.toUpperCase())}</p><div className="w-full bg-slate-100 rounded-full h-2 mb-4"><div className="bg-emerald-500 h-2 rounded-full transition-all duration-500" style={{
+                  })()}</div></div></div>{renderFlashcardActionBar()}{renderFlashcardEditDrawer()}</div></div>}{isMemoryGame && <ErrorBoundary fallbackMessage="Memory Game encountered an error."><MemoryGame data={generatedContent?.data} onClose={closeMemory} onScoreUpdate={handleGameScoreUpdate} onGameComplete={handleGameCompletion} /></ErrorBoundary>}{isCrosswordGame && <ErrorBoundary fallbackMessage="Crossword Puzzle encountered an error."><CrosswordGame data={generatedContent?.data} onClose={closeCrossword} playSound={playSound} onScoreUpdate={handleGameScoreUpdate} onGameComplete={handleGameCompletion} /></ErrorBoundary>}{isMatchingGame && <ErrorBoundary fallbackMessage="Matching Game encountered an error."><MatchingGame data={generatedContent?.data} onClose={closeMatching} playSound={playSound} onScoreUpdate={handleGameScoreUpdate} onGameComplete={handleGameCompletion} /></ErrorBoundary>}{isBingoGame && <ErrorBoundary fallbackMessage="Bingo Generator encountered an error."><BingoGame data={generatedContent?.data} onClose={closeBingo} settings={bingoSettings} setSettings={setBingoSettings} onGenerate={handleGenerateBingo} bingoState={bingoState} setBingoState={setBingoState} onGenerateAudio={callTTS} selectedVoice={selectedVoice} alloBotRef={alloBotRef} /></ErrorBoundary>}{isStudentBingoGame && <ErrorBoundary fallbackMessage="Bingo Game encountered an error."><StudentBingoGame data={generatedContent?.data} onClose={closeStudentBingo} playSound={playSound} onGameComplete={handleGameCompletion} /></ErrorBoundary>}{isWordScrambleGame && <ErrorBoundary fallbackMessage="Word Scramble Game encountered an error."><WordScrambleGame data={generatedContent?.data} onClose={handleCloseWordScramble} playSound={playSound} onScoreUpdate={handleGameScoreUpdate} /></ErrorBoundary>}{screenerSession && screenerSession.status === 'interstitial' && <div role="presentation" className="fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none"><div role="status" aria-live="polite" aria-atomic="true" aria-label="Screening subtest progress" className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-emerald-100"><div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-200"><CheckCircle size={32} /></div><h3 className="text-xl font-black text-slate-800 mb-2">{screenerSession.subtests[screenerSession.currentIndex - 1]?.replace(/^./, c => c.toUpperCase())} Complete!</h3><p className="text-slate-600 mb-4">Next up:</p><p className="text-2xl font-black text-emerald-600 mb-6">{screenerSession.subtests[screenerSession.currentIndex]?.replace(/^./, c => c.toUpperCase())}</p><div className="w-full bg-slate-100 rounded-full h-2 mb-4" role="progressbar" aria-label="Completed screening subtests" aria-valuemin={0} aria-valuemax={screenerSession.subtests.length} aria-valuenow={screenerSession.currentIndex}><div className="bg-emerald-500 h-2 rounded-full transition-all duration-500 motion-reduce:transition-none" style={{
                 width: `${Math.round(screenerSession.currentIndex / screenerSession.subtests.length * 100)}%`
-              }} /></div><p className="text-xs text-slate-600">{screenerSession.currentIndex} of {screenerSession.subtests.length} subtests complete</p></div></div>}{screenerSession && screenerSession.status === 'complete' && <div className="fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"><div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full border-4 border-violet-100"><div className="text-center mb-6"><div className="w-16 h-16 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-violet-200"><Award size={32} /></div><h3 className="text-2xl font-black text-slate-800">{t('common.screening_complete')}</h3><p className="text-slate-600 text-sm mt-1">{screenerSession.student} — Grade {screenerSession.grade} — Form {screenerSession.form}</p></div><div className="space-y-3 mb-6">{screenerSession.results.map((r, idx) => <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-400"><span className="font-bold text-slate-700 capitalize">{r.activity}</span><div className="flex items-center gap-3"><span className="text-sm text-slate-600">{r.correct}/{r.total}</span><span className={`text-sm font-bold px-2 py-0.5 rounded-full ${r.accuracy >= 80 ? 'bg-emerald-100 text-emerald-700' : r.accuracy >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{r.accuracy}%</span>{r.itemsPerMin > 0 && <span className="text-xs text-slate-600">{r.itemsPerMin} items/min</span>}</div></div>)}</div>{(() => {
+              }} /></div><p className="text-xs text-slate-600">{screenerSession.currentIndex} of {screenerSession.subtests.length} subtests complete</p></div></div>}{screenerSession && screenerSession.status === 'complete' && <div role="presentation" className="fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none"><div ref={screenerDialogRef} role="dialog" aria-modal="true" aria-labelledby="glossary-screener-results-title" tabIndex={-1} onKeyDown={e => containModalFocus(e, screenerDialogRef.current, closeScreenerResults)} className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full border-4 border-violet-100"><div className="text-center mb-6"><div className="w-16 h-16 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-violet-200"><Award size={32} /></div><h3 id="glossary-screener-results-title" className="text-2xl font-black text-slate-800">{t('common.screening_complete')}</h3><p className="text-slate-600 text-sm mt-1">{screenerSession.student} — Grade {screenerSession.grade} — Form {screenerSession.form}</p></div><div className="space-y-3 mb-6">{screenerSession.results.map((r, idx) => <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-400"><span className="font-bold text-slate-700 capitalize">{r.activity}</span><div className="flex items-center gap-3"><span className="text-sm text-slate-600">{r.correct}/{r.total}</span><span className={`text-sm font-bold px-2 py-0.5 rounded-full ${r.accuracy >= 80 ? 'bg-emerald-100 text-emerald-700' : r.accuracy >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{r.accuracy}%</span>{r.itemsPerMin > 0 && <span className="text-xs text-slate-600">{r.itemsPerMin} items/min</span>}</div></div>)}</div>{(() => {
               const risk = classifyScreeningRisk(screenerSession.results);
               return <div className="text-center p-4 rounded-xl border-2 mb-6" style={{
                 background: risk.bg,
@@ -418,10 +762,7 @@
                 }}>{risk.label}</p><p className={`text-4xl font-black ${risk.tier === 1 ? 'text-emerald-600' : risk.tier === 2 ? 'text-amber-600' : 'text-red-600'}`}>{risk.avgAccuracy}%</p><p className="text-xs text-slate-600 mt-1">{t('glossary_health.composite_accuracy')}</p>{risk.reasons.length > 0 && <div className="mt-3 space-y-1">{risk.reasons.map((r, ri) => <p key={ri} className="text-xs" style={{
                     color: risk.color
                   }}>{r}</p>)}</div>}</div>;
-            })()}<div className="flex gap-3">{rosterQueue.length > 0 && <button onClick={advanceRoster} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-colors">▶ Next Student ({rosterQueue[0]})</button>}<button onClick={() => {
-                setScreenerSession(null);
-                setRosterQueue([]);
-              }} className={`${rosterQueue.length > 0 ? 'flex-1' : 'w-full'} py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors`}>{rosterQueue.length > 0 ? 'Skip / Done' : 'Done'}</button></div><button onClick={exportScreeningCSV} className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-2">📊 Export Screening CSV</button></div></div>}{gameMode === 'wordsearch' && gameData && <div className="mb-6 bg-white p-6 rounded-xl border-2 border-teal-200 shadow-md animate-in fade-in slide-in-from-top-4"><div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-2"><h3 className="font-bold text-teal-800 text-lg flex items-center gap-2"><Gamepad2 size={20} /> {t('glossary.word_search_title')}</h3><div className="flex gap-2">{isTeacherMode && <button aria-label={t('common.toggle_word_search_answers')} onClick={handleToggleShowWordSearchAnswers} className={`text-xs flex items-center gap-1 px-3 py-1 rounded-full font-bold transition-colors ${showWordSearchAnswers ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{showWordSearchAnswers ? <Eye size={14} /> : <MousePointerClick size={14} />}{showWordSearchAnswers ? t('glossary.hide_answers') : t('glossary.show_answers')}</button>}{isTeacherMode && <button onClick={handlePrintGame} className="text-xs flex items-center gap-1 bg-teal-100 text-teal-700 px-3 py-1 rounded-full font-bold hover:bg-teal-200 transition-colors"><Printer size={14} /> {t('glossary.print_puzzle')}</button>}<button onClick={handleSetGameModeToNull} className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded p-1 transition-colors" aria-label={t('common.close')}><X size={18} /></button></div></div><div id="printable-game-area" className="flex flex-col items-center"><div className="no-print text-xs text-slate-600 mb-2 italic">{t('glossary.word_search_instructions')}</div><h2 className="hidden print-only font-bold text-xl mb-4">{t('glossary.word_search_title')}</h2><div className="inline-block border-2 border-slate-800 p-1 bg-white">{gameData.grid.map((row, r) => <div key={r} className="flex grid-row">{row.map((char, c) => {
+            })()}<div className="flex gap-3">{rosterQueue.length > 0 && <button onClick={advanceRoster} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-colors">▶ Next Student ({rosterQueue[0]})</button>}<button onClick={closeScreenerResults} className={`${rosterQueue.length > 0 ? 'flex-1' : 'w-full'} py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors`}>{rosterQueue.length > 0 ? 'Skip / Done' : 'Done'}</button></div><button onClick={exportScreeningCSV} className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-2">📊 Export Screening CSV</button></div></div>}{gameMode === 'wordsearch' && gameData && <div className="mb-6 bg-white p-6 rounded-xl border-2 border-teal-200 shadow-md animate-in fade-in slide-in-from-top-4"><div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-2"><h3 className="font-bold text-teal-800 text-lg flex items-center gap-2"><Gamepad2 size={20} /> {t('glossary.word_search_title')}</h3><div className="flex gap-2">{isTeacherMode && <button aria-label={t('common.toggle_word_search_answers')} onClick={handleToggleShowWordSearchAnswers} className={`text-xs flex items-center gap-1 px-3 py-1 rounded-full font-bold transition-colors ${showWordSearchAnswers ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{showWordSearchAnswers ? <Eye size={14} /> : <MousePointerClick size={14} />}{showWordSearchAnswers ? t('glossary.hide_answers') : t('glossary.show_answers')}</button>}{isTeacherMode && <button onClick={handlePrintGame} className="text-xs flex items-center gap-1 bg-teal-100 text-teal-700 px-3 py-1 rounded-full font-bold hover:bg-teal-200 transition-colors"><Printer size={14} /> {t('glossary.print_puzzle')}</button>}<button onClick={handleSetGameModeToNull} className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded p-1 transition-colors" aria-label={t('common.close')}><X size={18} /></button></div></div><div id="printable-game-area" className="flex flex-col items-center"><div className="no-print text-xs text-slate-600 mb-2 italic">{t('glossary.word_search_instructions')}</div><h2 className="hidden print-only font-bold text-xl mb-4">{t('glossary.word_search_title')}</h2><div className="inline-block border-2 border-slate-800 p-1 bg-white">{gameData.grid.map((row, r) => <div key={r} className="flex grid-row">{row.map((char, c) => {
                   const isAnswer = gameData.solutions && gameData.solutions.includes(`${r}-${c}`);
                   const highlightClass = showWordSearchAnswers && isAnswer ? 'bg-green-200 text-green-900 font-extrabold' : selectedLetters.has(`${r}-${c}`) ? 'bg-yellow-200 text-black' : 'bg-white text-slate-700 hover:bg-slate-50';
                   return <button key={c} type="button" onClick={() => toggleLetterSelection(r, c)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleLetterSelection(r, c); } }} aria-pressed={selectedLetters.has(`${r}-${c}`)} aria-label={`${t('glossary.word_search_cell_aria') || 'Cell'} ${r + 1}-${c + 1}: ${char}`} className={`w-8 h-8 sm:w-9 sm:h-9 border border-slate-400 flex items-center justify-center font-mono text-sm sm:text-base font-bold cursor-pointer select-none transition-colors grid-cell focus:outline-none focus:ring-2 focus:ring-teal-500 focus:z-10 ${highlightClass}`}>{char}</button>;
@@ -939,20 +1280,16 @@
         // Renders only when the host has set phonicsData (via handlePhonicsClick),
         // and only when the active view is glossary so it doesn't double-render
         // alongside the simplified-view copy if both views were ever to coexist.
-        phonicsData && activeView === 'glossary' && <><div role="button" tabIndex={0} onKeyDown={function (e) {
-            if (e.key === 'Escape') {
-              e.currentTarget.click();
-            }
-          }} className="fixed inset-0 z-[90]" onClick={closePhonics} /><div role="dialog" aria-modal="true" aria-labelledby="glossary-phonics-popup-title" className="fixed z-[100] bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200" style={{
+        phonicsData && activeView === 'glossary' && <><div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={closePhonics} /><div ref={phonicsDialogRef} role="dialog" aria-modal="true" aria-labelledby="glossary-phonics-popup-title" tabIndex={-1} onKeyDown={e => containModalFocus(e, phonicsDialogRef.current, closePhonics)} className="fixed z-[100] bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none" style={{
             top: Math.min(window.innerHeight - 300, (phonicsData.y || 100) + 10) + 'px',
             left: Math.min(window.innerWidth - 300, (phonicsData.x || 100) - 20) + 'px'
-          }}><div className="flex justify-between items-start mb-3"><h5 id="glossary-phonics-popup-title" className="font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button onClick={closePhonics} className="text-slate-600 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full p-1" aria-label={t('common.close')}><X size={14} /></button></div>{phonicsData.isLoading ? <div className="flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"><RefreshCw size={24} className="animate-spin" /><span className="text-xs font-bold uppercase tracking-wider">{t('glossary.popups.analyzing')}</span></div> : phonicsData.data ? <div className="space-y-4"><div className="flex items-center justify-between bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div><button aria-label={t('common.volume')} onClick={function () {
+          }}><div className="flex justify-between items-start mb-3"><h5 id="glossary-phonics-popup-title" className="font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button ref={phonicsCloseRef} type="button" onClick={closePhonics} className="text-slate-600 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full p-1" aria-label={t('common.close')}><X size={14} /></button></div>{phonicsData.isLoading ? <div className="flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"><RefreshCw size={24} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span className="text-xs font-bold uppercase tracking-wider">{t('glossary.popups.analyzing')}</span></div> : phonicsData.data ? <div className="space-y-4"><div className="flex items-center justify-between bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div><button aria-label={t('common.volume')} onClick={function () {
                   if (phonicsData.audioUrl) {
                     var audio = new Audio(phonicsData.audioUrl);
                     audio.playbackRate = voiceSpeed || 1;
                     audio.play().catch(function () {});
                   }
-                }} className="bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95" title={t('glossary.popups.replay')}><Volume2 size={20} className="fill-current" /></button></div><div className="grid grid-cols-2 gap-2"><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.ipa')}</div><div className="font-mono text-sm text-slate-600">{phonicsData.data.ipa}</div></div><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-0.5">{(phonicsData.data.syllables || []).map(function (syl, i) {
+                }} className="bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95" title={t('glossary.popups.replay')}><Volume2 size={20} className="fill-current" /></button></div>{renderPhonicsDictRow(phonicsData, t)}<div className="grid grid-cols-2 gap-2"><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.ipa')}</div><div className="font-mono text-sm text-slate-600">{phonicsData.data.ipa}</div></div><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-0.5">{(phonicsData.data.syllables || []).map(function (syl, i) {
                       return <>{i > 0 && <span className="text-emerald-500 font-bold px-0.5" aria-hidden="true">•</span>}<span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span></>;
                     })}</div></div></div></div> : <div className="text-center text-red-600 text-xs font-bold py-4">{t('glossary.popups.failed')}</div>}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div></>}</div></>;
   }

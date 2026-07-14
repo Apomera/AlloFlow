@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-47703-wilford-woodruff-fourth-president-of-the-church-of-jesus-christ-",
+  "title": "Wilford Woodruff, Fourth President of the Church of Jesus Christ of Latter-Day Saints: History of His Life and Labors, as Recorded in His Daily Journals",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Woodruff, Wilford, 1807-1898"
+  ],
+  "authors": [
+    "Woodruff, Wilford"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/47703"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/47703/pg47703.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Wilford Woodruff, Fourth President of the Church of Jesus Christ of Latter-Day Saints: History of His Life and Labors, as Recorded in His Daily Journals\" by Woodruff, Wilford. Metadata tags include: Woodruff, Wilford, 1807-1898."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 84
+  }
+}

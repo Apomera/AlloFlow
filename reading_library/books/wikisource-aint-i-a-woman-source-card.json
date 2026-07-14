@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-aint-i-a-woman-source-card",
+  "title": "Ain't I a Woman?",
+  "description": "A Wikisource source card for Sojourner Truth's speech tradition and rights-focused reading.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Women's rights",
+    "Abolition",
+    "Primary sources",
+    "Rhetoric"
+  ],
+  "authors": [
+    "Sojourner Truth"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Ain%27t_I_a_Woman%3F",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Ain%27t_I_a_Woman%3F"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Ain't I a Woman? is useful for studying abolition, women's rights, speech transmission, audience, and rhetorical power."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source with context about versions, transcription, dialect representation, and how historical speeches reach modern readers."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Wikisource hosts public-domain and freely licensed texts. Check the linked work page for its specific license and source notes before assigning or mirroring."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

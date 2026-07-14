@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow Access Lens Camera</title>
+<!--
+  Access Lens companion window.
+
+  WHY THIS EXISTS: AlloFlow usually runs inside Gemini Canvas's sandboxed
+  iframe, whose Permissions-Policy can deny camera access. This page is a
+  real top-level browsing context, so the normal camera permission prompt
+  works. Same escape-hatch pattern as video_studio/video_studio.html.
+
+  PRIVACY CONTRACT:
+  - No network requests are made by this page. Nothing is uploaded anywhere.
+  - The only data that leaves is the single JPEG the student explicitly
+    chooses, sent to the opening AlloFlow window via postMessage
+    ({ type: 'allolens-photo' }), acknowledged with 'allolens-photo-ack'.
+  - No storage APIs are used; closing the window discards everything.
+-->
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: #0b1220; color: #e2e8f0; display: flex; flex-direction: column; min-height: 100vh; }
+  header { padding: 14px 18px 10px; }
+  h1 { margin: 0; font-size: 18px; }
+  .sub { margin: 4px 0 0; font-size: 12px; color: #94a3b8; line-height: 1.5; }
+  main { flex: 1; padding: 0 18px 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  video, img.preview { width: 100%; max-width: 720px; border-radius: 12px; border: 1px solid #1e293b; background: #000; display: block; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  button { padding: 10px 18px; border-radius: 10px; border: 1px solid #1e293b; background: #0f172a; color: #e2e8f0; font-size: 14px; font-weight: 700; cursor: pointer; }
+  button.primary { background: #0284c7; border-color: #0284c7; color: #fff; }
+  button:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }
+  .note { font-size: 12px; color: #94a3b8; line-height: 1.55; max-width: 720px; }
+  .privacy { font-size: 12px; color: #e0f2fe; background: #082f49; border: 1px solid #0284c7; border-radius: 10px; padding: 8px 12px; line-height: 1.55; max-width: 720px; }
+  .error { font-size: 13px; color: #fde68a; background: #422006; border: 1px solid #a16207; border-radius: 10px; padding: 10px 12px; line-height: 1.55; max-width: 720px; }
+  .ok { font-size: 13px; color: #bbf7d0; background: #052e16; border: 1px solid #16a34a; border-radius: 10px; padding: 10px 12px; max-width: 720px; }
+  .hidden { display: none !important; }
+  [aria-live] { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<header>
+  <h1>📷 AlloFlow Access Lens Camera</h1>
+  <p class="sub">Take a photo here and it appears back in AlloFlow automatically. This window makes nothing but the one photo you choose leave your device screen.</p>
+</header>
+<main>
+  <div class="privacy">🔒 <strong>Privacy:</strong> this page saves nothing and uploads nothing. Only the photo you press <em>Use this photo</em> on is handed back to AlloFlow. Please point the camera at things, not at people.</div>
+
+  <div id="err" class="error hidden" role="alert"></div>
+  <div id="done" class="ok hidden" role="status"></div>
+
+  <video id="cam" autoplay playsinline muted aria-label="Live camera preview"></video>
+  <img id="shot" class="preview hidden" alt="The photo you just took">
+
+  <div class="row" id="liveRow">
+    <button id="snapBtn" class="primary" type="button">📸 Snap photo</button>
+    <button id="flipBtn" type="button">🔄 Switch camera</button>
+  </div>
+  <div class="row hidden" id="reviewRow">
+    <button id="useBtn" class="primary" type="button">✅ Use this photo</button>
+    <button id="retakeBtn" type="button">↩️ Retake</button>
+  </div>
+
+  <p class="note">If the camera does not start, use your browser's address-bar permission prompt to allow it, then press Retry. You can also close this window and use the photo button inside AlloFlow instead.</p>
+  <div class="row"><button id="retryBtn" type="button" class="hidden">🔁 Retry camera</button></div>
+  <div aria-live="polite" id="live"></div>
+</main>
+<script>
+(function () {
+  'use strict';
+  var opener = window.opener || null;
+  function postToOpener(msg) { try { if (opener) opener.postMessage(msg, '*'); } catch (_) {} }
+
+  var stream = null;
+  var facing = 'environment';
+  var lastDataUrl = null;
+  var ackTimer = null;
+
+  var cam = document.getElementById('cam');
+  var shot = document.getElementById('shot');
+  var err = document.getElementById('err');
+  var done = document.getElementById('done');
+  var liveRow = document.getElementById('liveRow');
+  var reviewRow = document.getElementById('reviewRow');
+  var retryBtn = document.getElementById('retryBtn');
+  var live = document.getElementById('live');
+
+  function say(m) { live.textContent = m; }
+  function show(el) { el.classList.remove('hidden'); }
+  function hide(el) { el.classList.add('hidden'); }
+  function showError(m) { err.textContent = m; show(err); show(retryBtn); }
+  function clearError() { hide(err); hide(retryBtn); }
+
+  function stopStream() {
+    if (stream && stream.getTracks) { try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} }
+    stream = null;
+  }
+
+  function startCamera() {
+    clearError(); hide(done);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showError('This browser does not support camera access. Close this window and use the photo button inside AlloFlow.');
+      return;
+    }
+    stopStream();
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 } }, audio: false })
+      .then(function (s) {
+        stream = s;
+        cam.srcObject = s;
+        show(cam); hide(shot); show(liveRow); hide(reviewRow);
+        say('Camera started.');
+      })
+      .catch(function (e) {
+        var denied = e && (e.name === 'NotAllowedError' || e.name === 'AbortError');
+        showError(denied
+          ? 'Camera permission was not given. Allow the camera for this page in your browser, then press Retry.'
+          : 'The camera could not start (' + (e && e.name ? e.name : 'unknown error') + '). Press Retry, or close this window and use the photo button inside AlloFlow.');
+      });
+  }
+
+  function snap() {
+    if (!cam.videoWidth) return;
+    var maxDim = 1024;
+    var scale = Math.min(1, maxDim / Math.max(cam.videoWidth, cam.videoHeight));
+    var c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(cam.videoWidth * scale));
+    c.height = Math.max(1, Math.round(cam.videoHeight * scale));
+    c.getContext('2d').drawImage(cam, 0, 0, c.width, c.height);
+    lastDataUrl = c.toDataURL('image/jpeg', 0.85);
+    shot.src = lastDataUrl;
+    stopStream();
+    hide(cam); show(shot); hide(liveRow); show(reviewRow);
+    say('Photo taken. Review it, then choose Use this photo or Retake.');
+  }
+
+  function usePhoto() {
+    if (!lastDataUrl) return;
+    if (!opener || opener.closed) {
+      showError('The AlloFlow window is no longer open. Close this window, reopen AlloFlow, and try again.');
+      return;
+    }
+    postToOpener({ type: 'allolens-photo', payload: { dataUrl: lastDataUrl } });
+    hide(done);
+    if (ackTimer) clearTimeout(ackTimer);
+    ackTimer = setTimeout(function () {
+      showError('AlloFlow did not confirm it received the photo. Switch to the AlloFlow tab to check, or try again.');
+    }, 4000);
+  }
+
+  window.addEventListener('message', function (ev) {
+    if (!opener || ev.source !== opener) return;
+    var d = ev.data || {};
+    if (d.type === 'allolens-photo-ack') {
+      if (ackTimer) { clearTimeout(ackTimer); ackTimer = null; }
+      clearError();
+      done.textContent = '✅ Photo delivered to AlloFlow. You can take another, or close this window.';
+      show(done);
+      say('Photo delivered to AlloFlow.');
+    }
+  });
+
+  document.getElementById('snapBtn').addEventListener('click', snap);
+  document.getElementById('useBtn').addEventListener('click', usePhoto);
+  document.getElementById('retakeBtn').addEventListener('click', function () { lastDataUrl = null; startCamera(); });
+  document.getElementById('flipBtn').addEventListener('click', function () {
+    facing = facing === 'environment' ? 'user' : 'environment';
+    startCamera();
+  });
+  retryBtn.addEventListener('click', startCamera);
+
+  window.addEventListener('beforeunload', function () {
+    stopStream();
+    postToOpener({ type: 'allolens-closed' });
+  });
+
+  postToOpener({ type: 'allolens-ready' });
+  startCamera();
+})();
+</script>
+</body>
+</html>

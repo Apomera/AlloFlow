@@ -1,0 +1,54 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-35792-renaissance-in-italy-volume-4-of-7-italian-literature-part-1",
+  "title": "Renaissance in Italy, Volume 4 (of 7): Italian Literature, Part 1",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Italian literature -- 15th century -- History and criticism",
+    "Italian literature -- 16th century -- History and criticism",
+    "Italian literature -- To 1400 -- History and criticism"
+  ],
+  "authors": [
+    "Symonds, John Addington"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/35792"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/35792/pg35792.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Renaissance in Italy, Volume 4 (of 7): Italian Literature, Part 1\" by Symonds, John Addington. Metadata tags include: Italian literature -- 15th century -- History and criticism; Italian literature -- 16th century -- History and criticism; Italian literature -- To 1400 -- History and criticism."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 95
+  }
+}

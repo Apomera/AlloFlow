@@ -55,6 +55,57 @@ function PdfDiffViewer(props) {
     setDiffViewOpen, setPdfFixResult, setRangeRejected, toggleDiffChunk,
     warnLog
   } = props;
+  const theme = ['light', 'dark', 'contrast'].includes(props.theme) ? props.theme : 'light';
+  const diffDialogRef = React.useRef(null);
+  const diffCloseRef = React.useRef(null);
+  const diffConfirmRef = React.useRef(null);
+  const diffConfirmCancelRef = React.useRef(null);
+  const diffConfirmResolveRef = React.useRef(null);
+  const [diffConfirmation, setDiffConfirmation] = React.useState(null);
+  const requestDiffConfirmation = (options) => new Promise(resolve => {
+    diffConfirmResolveRef.current = resolve;
+    setDiffConfirmation(options);
+  });
+  const finishDiffConfirmation = (accepted) => {
+    const resolve = diffConfirmResolveRef.current;
+    diffConfirmResolveRef.current = null;
+    setDiffConfirmation(null);
+    if (resolve) resolve(accepted);
+  };
+  const containDiffFocus = (event, container, onEscape) => {
+    if (!event || !container) return;
+    const nestedDialog = event.target?.closest?.('[role="alertdialog"]');
+    if (nestedDialog && nestedDialog !== container) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      if (typeof onEscape === 'function') onEscape();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+    if (!focusable.length) { event.preventDefault(); container.focus(); return; }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
+  React.useEffect(() => {
+    if (!(diffViewOpen && pdfFixResult)) return undefined;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => diffCloseRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [diffViewOpen, !!pdfFixResult]);
+  React.useEffect(() => {
+    if (!diffConfirmation) return undefined;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => diffConfirmCancelRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [!!diffConfirmation]);
   if (!(diffViewOpen && pdfFixResult)) return null;
   return ReactDOM.createPortal((() => {
         // When opened via "See what changed" after an Expert Workbench command, diff that COMMAND's
@@ -144,18 +195,29 @@ function PdfDiffViewer(props) {
             }
           });
         }
-        const _onTryGranularityChange = (g) => {
+        const _onTryGranularityChange = async (g) => {
           if (g === 'chars') {
             const combined = (_src.length || 0) + (_fin.length || 0);
             const CHARS_GUARD_THRESHOLD = 20000; // ~8-10 PDF pages
             if (combined > CHARS_GUARD_THRESHOLD) {
               const approxSec = Math.round((combined * combined) / 1e9);
-              const warn = `Character-level diff on this document (${combined.toLocaleString()} chars total) is very slow and may freeze the browser for ~${Math.max(5, approxSec)}s or more.\n\nConsider Words or Sentences granularity instead.\n\nContinue with Chars anyway?`;
-              if (!window.confirm(warn)) return;
+              const accepted = await requestDiffConfirmation({
+                title: 'Use character-level comparison?',
+                message: `This document contains ${combined.toLocaleString()} characters. Character comparison may freeze the browser for about ${Math.max(5, approxSec)} seconds or longer. Words or Sentences will be faster.`,
+                confirmLabel: 'Use characters',
+                cancelLabel: 'Keep current view'
+              });
+              if (!accepted) return;
             }
           }
           if (_chunks && _chunks.some(c => c.rejected)) {
-            if (!window.confirm('Changing granularity will reset your rejections. Continue?')) return;
+            const accepted = await requestDiffConfirmation({
+              title: 'Reset rejected changes?',
+              message: 'Changing comparison granularity will reset every rejected change in this diff.',
+              confirmLabel: 'Change and reset',
+              cancelLabel: 'Keep rejections'
+            });
+            if (!accepted) return;
           }
           setDiffGranularity(g);
           setDiffSelection(null);
@@ -364,10 +426,13 @@ function PdfDiffViewer(props) {
         };
         return (
           <div
+            ref={diffDialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="allo-diff-title"
-            className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+            tabIndex={-1}
+            onKeyDown={(event) => containDiffFocus(event, diffDialogRef.current, _closeDiff)}
+            className={`fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 theme-${theme}`}
             onClick={(e) => { if (e.target === e.currentTarget) _closeDiff(); }}
           >
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
@@ -378,6 +443,8 @@ function PdfDiffViewer(props) {
                   <p className="text-[11px] text-slate-600">{_ov ? (t('diff_view.cmd_subtitle') || 'Before → after for your last Expert Workbench command. Reject a span to undo just that part, then Apply.') : (t('diff_view.subtitle') || 'Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.')}</p>
                 </div>
                 <button
+                  ref={diffCloseRef}
+                  type="button"
                   onClick={_closeDiff}
                   className="shrink-0 w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center"
                   aria-label={t('diff_view.close_aria') || 'Close diff view'}
@@ -599,6 +666,24 @@ function PdfDiffViewer(props) {
                 )}
               </div>
             </div>
+            {diffConfirmation && (
+              <div role="presentation" className="fixed inset-0 z-[320] bg-slate-950/70 flex items-center justify-center p-4">
+                <div ref={diffConfirmRef} role="alertdialog" aria-modal="true" aria-labelledby="allo-diff-confirm-title" aria-describedby="allo-diff-confirm-message" tabIndex={-1}
+                  onKeyDown={(event) => {
+                    event.stopPropagation();
+                    if (event.key === 'Escape') { event.preventDefault(); finishDiffConfirmation(false); return; }
+                    containDiffFocus(event, diffConfirmRef.current, () => finishDiffConfirmation(false));
+                  }}
+                  className="w-full max-w-md rounded-2xl border-2 border-amber-300 bg-white p-5 shadow-2xl">
+                  <h3 id="allo-diff-confirm-title" className="text-lg font-black text-slate-900">{diffConfirmation.title}</h3>
+                  <p id="allo-diff-confirm-message" className="mt-2 text-sm leading-relaxed text-slate-700">{diffConfirmation.message}</p>
+                  <div className="mt-5 flex flex-wrap justify-end gap-2">
+                    <button ref={diffConfirmCancelRef} type="button" onClick={() => finishDiffConfirmation(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">{diffConfirmation.cancelLabel || 'Cancel'}</button>
+                    <button type="button" onClick={() => finishDiffConfirmation(true)} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">{diffConfirmation.confirmLabel || 'Continue'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
   })(), document.body);
@@ -614,7 +699,44 @@ function GroupSessionModal(props) {
     setDragOverResourceId, setDraggedResourceId, setNewGroupName, showGroupModal,
     t, updateDoc, warnLog
   } = props;
+  const groupDialogRef = React.useRef(null);
+  const groupCloseRef = React.useRef(null);
+  const containGroupFocus = (event) => {
+    if (!event || !groupDialogRef.current) return;
+    if (event.key === 'Escape') { event.preventDefault(); handleSetShowGroupModalToFalse(); return; }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(groupDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+    if (!focusable.length) { event.preventDefault(); groupDialogRef.current.focus(); return; }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
+  React.useEffect(() => {
+    if (!(showGroupModal && activeSessionCode && sessionData)) return undefined;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => groupCloseRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [showGroupModal, activeSessionCode, !!sessionData]);
   if (!(showGroupModal && activeSessionCode && sessionData)) return null;
+        const moveResourceBy = async (resId, delta) => {
+            const resources = [...(sessionData.resources || [])];
+            const currentIndex = resources.findIndex(r => r.id === resId);
+            const targetIndex = currentIndex + delta;
+            if (currentIndex < 0 || targetIndex < 0 || targetIndex >= resources.length) return;
+            const [item] = resources.splice(currentIndex, 1);
+            resources.splice(targetIndex, 0, item);
+            try {
+                const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                await updateDoc(sessionRef, { resources });
+                addToast((item.title || 'Resource') + (delta < 0 ? ' moved earlier' : ' moved later'), 'success');
+            } catch (err) {
+                warnLog('Failed to reorder resource:', err);
+                addToast(t('common.error') || 'Could not reorder resource', 'error');
+            }
+        };
         const handleDragStart = (e, resId) => {
             setDraggedResourceId(resId);
             e.dataTransfer.effectAllowed = 'move';
@@ -703,16 +825,16 @@ function GroupSessionModal(props) {
             'lesson-plan': '📚', adventure: '🎮', simplified: '✨', default: '📄',
         };
         return (
-        <div className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowGroupModalToFalse} data-help-key="group_modal_container">
-            <div className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('groups.modal_title')}>
+        <div role="presentation" className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetShowGroupModalToFalse} data-help-key="group_modal_container">
+            <div ref={groupDialogRef} tabIndex={-1} onKeyDown={containGroupFocus} className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="group-session-title" aria-describedby="group-session-description">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0">
                     <div className="flex items-center gap-4">
                         <div className="bg-purple-600 p-3 rounded-xl shadow-md">
                             <Users size={28} className="text-white" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-slate-800">{t('groups.modal_title')}</h2>
-                            <p className="text-sm text-slate-600">{t('groups.modal_subtitle')}</p>
+                            <h2 id="group-session-title" className="text-2xl font-black text-slate-800">{t('groups.modal_title')}</h2>
+                            <p id="group-session-description" className="text-sm text-slate-600">{t('groups.modal_subtitle')}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -734,7 +856,7 @@ function GroupSessionModal(props) {
                             <Plus size={18} /> {t('groups.add_button')}
                         </button>
                     </div>
-                    <button onClick={handleSetShowGroupModalToFalse} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors" aria-label={t('common.close')}>
+                    <button ref={groupCloseRef} type="button" onClick={handleSetShowGroupModalToFalse} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors" aria-label={t('common.close')}>
                         <X size={24}/>
                     </button>
                 </div>
@@ -745,7 +867,7 @@ function GroupSessionModal(props) {
                             <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">{t('groups.resource_library')}</h3>
                             <span className="text-xs text-slate-600 ml-2">({sessionData.resources?.length || 0} items)</span>
                             <span className="text-[11px] text-purple-700 ml-auto italic flex items-center gap-1">
-                                <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag to reorder'}
+                                <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag or use Move earlier/later'}
                             </span>
                         </div>
                         <div className="flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar">
@@ -823,6 +945,10 @@ function GroupSessionModal(props) {
                                                         <Users size={10} /> {assignedGroup[1].name}
                                                     </div>
                                                 )}
+                                                <div role="group" aria-label={`Reorder ${res.title || 'Untitled'}`} className="mt-2 grid grid-cols-2 gap-1">
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} earlier`}>â† Earlier</button>
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} later`}>Later â†’</button>
+                                                </div>
                                             </div>
                                         );
                                     })}
@@ -1598,9 +1724,44 @@ function TourOverlay(props) {
     tourStep, tourSteps,
     compactTour = false
   } = props;
+  const tourDialogRef = React.useRef(null);
+  const closeTourOverlay = () => {
+    if (spotlightMessage) {
+      setRunTour(false);
+      setIsSpotlightMode(false);
+      setSpotlightMessage('');
+    } else {
+      handleSetRunTourToFalse();
+    }
+  };
+  const containTourFocus = (event) => {
+    if (!event || !tourDialogRef.current) return;
+    if (event.key === 'Escape') { event.preventDefault(); closeTourOverlay(); return; }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(tourDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+    if (!focusable.length) { event.preventDefault(); tourDialogRef.current.focus(); return; }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
+  React.useEffect(() => {
+    if (!(runTour && tourRect)) return undefined;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => {
+      const firstAction = tourDialogRef.current?.querySelector('button:not([disabled])');
+      if (firstAction) firstAction.focus();
+      else tourDialogRef.current?.focus();
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [runTour, !!tourRect]);
   if (!(runTour && tourRect)) return null;
+  const tourAccessibleTitle = spotlightMessage ? (spotlightMessage.title || t('tour.spotlight_title')) : tourSteps[tourStep].title;
+  const tourAccessibleText = spotlightMessage ? (spotlightMessage.text || spotlightMessage || '') : (tourSteps[tourStep].text || '');
   return (
-        <div className="fixed inset-0 z-[9999] pointer-events-auto font-sans">
+        <div role="presentation" className="fixed inset-0 z-[9999] pointer-events-auto font-sans">
             <div className="absolute inset-0 transition-all duration-500">
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: tourRect.top, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}></div>
                 <div style={{ position: 'absolute', top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}></div>
@@ -1641,7 +1802,7 @@ function TourOverlay(props) {
                         `}
                         fill="url(#beamGradient)"
                         style={{ mixBlendMode: 'screen', filter: 'url(#glow)' }}
-                        className="animate-in fade-in duration-500"
+                        className="animate-in fade-in duration-500 motion-reduce:animate-none motion-reduce:transition-none"
                     />
                     <rect
                         x={tourRect.left - 10}
@@ -1652,12 +1813,12 @@ function TourOverlay(props) {
                         fill="none"
                         stroke="rgba(250, 204, 21, 0.4)"
                         strokeWidth="3"
-                        className="animate-pulse"
+                        className="animate-pulse motion-reduce:animate-none"
                     />
                 </svg>
             )}
             {!isSpotlightMode && (
-                <div className="animate-pulse" style={{
+                <div className="animate-pulse motion-reduce:animate-none" style={{
                     position: 'absolute',
                     top: tourRect.top - 4,
                     left: tourRect.left - 4,
@@ -1670,25 +1831,32 @@ function TourOverlay(props) {
                 }}></div>
             )}
             <div
+                ref={tourDialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label={tourAccessibleTitle}
+                tabIndex={-1}
+                onKeyDown={containTourFocus}
                 className={compactTour ? (
                     // Compact placement for modal-context tours (2026-06-10,
                     // maintainer feedback): the full-height 500px drawer covered
                     // the pipeline modal it was narrating. A centered horizontal
                     // strip docks on whichever edge the TARGET is NOT — target in
                     // the lower half → card on top, and vice versa.
-                    `fixed left-1/2 -translate-x-1/2 w-[min(680px,94vw)] bg-white p-5 pt-4 shadow-2xl max-h-[40vh] overflow-y-auto flex flex-col gap-3 animate-in duration-500 z-[11000] border-4 border-amber-300 rounded-3xl ${
+                    `fixed left-1/2 -translate-x-1/2 w-[min(680px,94vw)] bg-white p-5 pt-4 shadow-2xl max-h-[40vh] overflow-y-auto flex flex-col gap-3 animate-in duration-500 motion-reduce:animate-none motion-reduce:transition-none z-[11000] border-4 border-amber-300 rounded-3xl ${
                         (tourRect && (tourRect.top + tourRect.height / 2) > window.innerHeight / 2)
                             ? 'top-3 slide-in-from-top'
                             : 'bottom-3 slide-in-from-bottom'
                     }`
                 ) : (
-                    `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 z-[11000] border-amber-300 ${
+                    `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 motion-reduce:animate-none motion-reduce:transition-none z-[11000] border-amber-300 ${
                         (tourRect && tourRect.left > window.innerWidth / 2)
                             ? 'left-0 border-r-4 rounded-r-3xl slide-in-from-left'
                             : 'right-0 border-l-4 rounded-l-3xl slide-in-from-right'
                     }`
                 )}
             >
+                <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{tourAccessibleTitle}. {tourAccessibleText}</div>
                 {spotlightMessage ? (
                     <div>
                         <h4 className="font-bold text-indigo-900 text-lg flex items-center gap-2">
@@ -1813,9 +1981,7 @@ function TourOverlay(props) {
                             style={{ pointerEvents: "all", zIndex: 9999 }}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                setRunTour(false);
-                                setIsSpotlightMode(false);
-                                setSpotlightMessage('');
+                                closeTourOverlay();
                             }}
                             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm w-full"
                         >
@@ -1960,7 +2126,15 @@ function VolumeBuilderView(props) {
                                         <button onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}>↺</button>
                                     </div>
                                 </div>
-                                <p className="text-xs text-emerald-700/70">{t('volume_builder.help_caption') || 'Drag to rotate • Scroll to zoom • Build rectangular prisms or L-blocks with unit cubes (5.MD.3-5)'}</p>
+                                <div role="group" aria-label="Rotate 3D volume" className="flex flex-wrap items-center gap-1.5">
+                                    <span className="text-[11px] font-bold text-emerald-800 mr-1">Rotate:</span>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y - 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Rotate volume left">Left</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y + 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Rotate volume right">Right</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.max(-80, prev.x - 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Tilt volume up">Up</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.min(10, prev.x + 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Tilt volume down">Down</button>
+                                    <output className="ml-auto text-[11px] font-mono text-emerald-700" aria-live="polite">Tilt {Math.round(cubeRotation.x)} degrees, turn {Math.round(cubeRotation.y)} degrees, zoom {Math.round(cubeScale * 100)} percent</output>
+                                </div>
+                                <p className="text-xs text-emerald-700/70">{t('volume_builder.help_caption') || 'Use the rotate and zoom buttons, or drag and scroll, to inspect rectangular prisms and L-blocks (5.MD.3-5).'}</p>
                                 {/* Shape selector — toggle between a solid rectangular prism
                                     and an L-block (rectangular base with a corner notch carved
                                     out so volume becomes additive: V = L*W*H − notch_l*notch_w*notch_h). */}
@@ -2013,6 +2187,8 @@ function VolumeBuilderView(props) {
                                     </div>
                                 )}
                                 <div
+                                    role="img"
+                                    aria-label={`3D ${isLBlock ? 'L-block' : 'rectangular prism'}, ${cubeDims.l} by ${cubeDims.w} by ${cubeDims.h}, volume ${volume} cubic units`}
                                     className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none"
                                     style={{ minHeight: '400px', perspective: '900px' }}
                                     onMouseDown={(e) => { cubeDragRef.current = { x: e.clientX, y: e.clientY }; window.addEventListener('mousemove', handleCubeDrag); window.addEventListener('mouseup', handleCubeDragEnd); }}
@@ -2044,7 +2220,7 @@ function VolumeBuilderView(props) {
                                 <div className="bg-white/80 rounded-lg p-3 border border-emerald-100" data-help-key="volume_builder_volume_readout">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="text-center">
-                                            <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('stem.volume')}</div>
+                                            <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('stem.volume_label')}</div>
                                             <div className="text-lg font-bold text-emerald-800">
                                                 {isLBlock ? (
                                                     <>V = ({cubeDims.l}×{cubeDims.w}×{cubeDims.h}) − ({safeNotch.l}×{safeNotch.w}×{safeNotch.h}) = {rectVolume} − {notchVolume} = <span className="text-2xl text-emerald-600">{volume}</span></>

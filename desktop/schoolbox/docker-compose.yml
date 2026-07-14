@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  frontend:
+    image: nginx:alpine
+    container_name: alloflow-schoolbox-frontend
+    ports:
+      - "${WEB_PORT:-32174}:80"
+    volumes:
+      - ../app-build:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    restart: unless-stopped
+
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    container_name: alloflow-schoolbox-pocketbase
+    ports:
+      - "${PB_PORT:-8090}:8090"
+    volumes:
+      - pocketbase_data:/pb/pb_data
+      - ./pocketbase/pb_schema.json:/pb/pb_migrations/schema.json:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: alloflow-schoolbox-ollama
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  piper:
+    image: rhasspy/wyoming-piper:latest
+    container_name: alloflow-schoolbox-piper
+    ports:
+      - "${PIPER_PORT:-10200}:10200"
+    volumes:
+      - piper_data:/data
+    command: --voice en_US-amy-medium --data-dir /data --download-dir /data
+    restart: unless-stopped
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: alloflow-schoolbox-searxng
+    ports:
+      - "${SEARCH_PORT:-8888}:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:${SEARCH_PORT:-8888}
+    volumes:
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
+      - searxng_data:/etc/searxng
+    restart: unless-stopped
+
+volumes:
+  pocketbase_data:
+  ollama_data:
+  piper_data:
+  searxng_data:

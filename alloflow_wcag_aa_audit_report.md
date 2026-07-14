@@ -3,6 +3,8 @@
 **Platform: AlloFlow UDL Educational Platform**
 **URL: https://prismflow-911fe.web.app**
 
+> **Historical audit snapshot.** This report reflects the April 1-2, 2026 Knowbility-prep audit state. It is preserved for traceability and should not be read as the current VPAT, current tool count, or a present-day certification claim. For current deployment/privacy/PDF validation framing, use the July 2026 public docs and VPAT currency notes.
+
 ---
 
 ## Executive Summary

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-climate-kids-greenhouse-effect-card",
+  "title": "NASA Climate Kids: Greenhouse Effect",
+  "description": "A NASA Climate Kids source card about greenhouse gases, warming, and Earth energy balance.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Climate",
+    "Greenhouse gases",
+    "Energy",
+    "Earth science"
+  ],
+  "authors": [
+    "NASA Climate Kids"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Climate Kids",
+    "url": "https://climatekids.nasa.gov/greenhouse-effect/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Climate Kids introduces the greenhouse effect by explaining how gases in the atmosphere affect heat and Earth temperature."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source before more technical climate readings so students have a concrete model for energy entering, leaving, and being trapped by the atmosphere."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 67
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-52734-the-scourge-of-god-a-romance-of-religious-persecution",
+  "title": "The Scourge of God: A Romance of Religious Persecution",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "France -- History -- Insurrection of the Camisards, 1702-1710 -- Fiction",
+    "France -- History -- Louis XIV, 1643-1715 -- Fiction",
+    "Inheritance and succession -- Fiction",
+    "Persecution -- Fiction",
+    "Religious fiction"
+  ],
+  "authors": [
+    "Bloundelle-Burton, John"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/52734"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/52734/pg52734.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Scourge of God: A Romance of Religious Persecution\" by Bloundelle-Burton, John. Metadata tags include: France -- History -- Insurrection of the Camisards, 1702-1710 -- Fiction; France -- History -- Louis XIV, 1643-1715 -- Fiction; Inheritance and succession -- Fiction; Persecution -- Fiction."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 93
+  }
+}

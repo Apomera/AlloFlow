@@ -66,6 +66,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
     color: 'amber',
     category: 'self-awareness',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _wlT = (ctx && ctx.theme) || {};
+      var _wlHC = !!_wlT.isContrast, _wlL = !_wlHC && !_wlT.isDark;
+      var _wl_BGL = {'#0b1220':'#f1f5f9','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _wl_BGH = {'#0b1220':'#000000','#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#f8fafc':'#000000'};
+      var _wl_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#c7d2fe':'#312e81'}, _wl_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _wl_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _wl_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#6366f1':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00'};
+      var _wlBg = function(h){ return _wlHC ? (_wl_BGH[h]||h) : (_wlL ? (_wl_BGL[h]||h) : h); };
+      var _wlFg = function(h){ return _wlHC ? (_wl_FGH[h]||h) : (_wlL ? (_wl_FGL[h]||h) : h); };
+      var _wlBd = function(h){ return _wlHC ? (_wl_BDH[h]||h) : (_wlL ? (_wl_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -90,10 +99,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _wlFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#fcd34d', fontSize: 22, fontWeight: 900 } }, '🛞 Wheel of Life'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } }, 'A self-portrait of 8 life domains, each rated 1 to 10.')
+            h('h2', { style: { margin: 0, color: _wlFg('#fcd34d'), fontSize: 22, fontWeight: 900 } }, '🛞 Wheel of Life'),
+            h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A self-portrait of 8 life domains, each rated 1 to 10.')
           )
         );
       }
@@ -113,8 +122,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             return h('button', { key: t.id, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
-                background: active ? 'rgba(245,158,11,0.18)' : '#1e293b',
-                color: active ? '#fde68a' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                background: active ? 'rgba(245,158,11,0.18)' : _wlBg('#1e293b'),
+                color: active ? _wlFg('#fde68a') : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -122,7 +131,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _wlFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'A low score on a domain is information, not a failure. The Wheel is a snapshot of right now; in three months your shape will look different. Crisis Text Line: text HOME to 741741.'
         );
@@ -139,11 +148,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
           return h('div', null,
             h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(245,158,11,0.4)', textAlign: 'center', marginBottom: 14 } },
               h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🛞'),
-              h('h3', { style: { margin: '0 0 8px', color: '#fde68a', fontSize: 18 } }, 'Your Wheel is empty'),
-              h('p', { style: { margin: '0 0 14px', color: '#cbd5e1', fontSize: 13.5, lineHeight: 1.65 } },
+              h('h3', { style: { margin: '0 0 8px', color: _wlFg('#fde68a'), fontSize: 18 } }, 'Your Wheel is empty'),
+              h('p', { style: { margin: '0 0 14px', color: _wlFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Rate each of the 8 life domains from 1 (very thin) to 10 (very full). The shape of your wheel will show you where life is rich and where it is hungry right now. There are no right answers.'),
               h('button', { onClick: function() { goto('rate'); }, 'aria-label': 'Start rating',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start rating')
             ),
             softPointer()
@@ -178,7 +187,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
           DOMAINS.map(function(dom) { return dom.label + ': ' + (ratingOf(dom.id) || '0') + '/10'; }).join('; ') + '.';
 
         return h('div', null,
-          h('div', { style: { padding: 10, borderRadius: 12, background: '#0b1220', border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto' } },
+          h('div', { style: { padding: 10, borderRadius: 12, background: _wlBg('#0b1220'), border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto' } },
             h('svg', { width: '100%', viewBox: '0 0 560 560', style: { maxWidth: 560 }, 'aria-labelledby': 'wol-svg-title wol-svg-desc', role: 'img' },
               h('title', { id: 'wol-svg-title' }, 'Wheel of Life radar chart'),
               h('desc', { id: 'wol-svg-desc' }, svgDesc),
@@ -211,7 +220,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
                 var v = ratingOf(dom.id);
                 return h('g', { key: 'lbl_' + dom.id },
                   h('text', { x: lp.x, y: lp.y - 6, textAnchor: 'middle', fontSize: 16, fill: dom.color }, dom.icon),
-                  h('text', { x: lp.x, y: lp.y + 10, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0', style: { fontWeight: 700 } }, dom.label.slice(0, 18)),
+                  h('text', { x: lp.x, y: lp.y + 10, textAnchor: 'middle', fontSize: 11, fill: _wlFg('#e2e8f0'), style: { fontWeight: 700 } }, dom.label.slice(0, 18)),
                   h('text', { x: lp.x, y: lp.y + 24, textAnchor: 'middle', fontSize: 13, fill: dom.color, style: { fontWeight: 900 } }, v || '0')
                 );
               })
@@ -220,10 +229,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
           // Text-equivalent (accessible to all users; WCAG 1.1.1)
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: '#fcd34d', fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: '#0f172a', border: '1px solid #1e293b' } }, '🔤 Read this wheel as text'),
-            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: '#0f172a', border: '1px solid #1e293b' } },
-              h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.65 } }, 'Ratings 0-10, where 0 means thin/empty in this area and 10 means full/thriving:'),
-              h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 } },
+            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _wlFg('#fcd34d'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _wlBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this wheel as text'),
+            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _wlBg('#0f172a'), border: '1px solid #1e293b' } },
+              h('p', { style: { margin: '0 0 8px', color: _wlFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, 'Ratings 0-10, where 0 means thin/empty in this area and 10 means full/thriving:'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _wlFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
                 DOMAINS.map(function(dom) {
                   var v = ratingOf(dom.id);
                   return h('li', { key: dom.id, style: { marginBottom: 2 } },
@@ -237,12 +246,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('rate'); }, 'aria-label': 'Adjust ratings',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Adjust ratings'),
             h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
           softPointer()
         );
@@ -264,7 +273,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _wlFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '✏️ Rate each from 1 to 10. '),
             '1 means thin / empty in this area; 10 means full / thriving. Use your gut, not your math.'
           ),
@@ -273,26 +282,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             var v = ratingOf(dom.id);
             var note = (d.notes || {})[dom.id] || '';
             var noteId = 'wol-note-' + dom.id;
-            return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
+            return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 26 } }, dom.icon),
                 h('div', { style: { flex: 1, minWidth: 140 } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: dom.color } }, dom.label)
                 ),
-                h('div', { style: { fontSize: 22, fontWeight: 900, color: v > 0 ? dom.color : '#475569' } }, v || '–')
+                h('div', { style: { fontSize: 22, fontWeight: 900, color: v > 0 ? dom.color : _wlFg('#475569') } }, v || '–')
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }, role: 'radiogroup', 'aria-label': 'Rate ' + dom.label },
                 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function(n) {
                   var active = v === n;
                   return h('button', { key: n, onClick: function() { setRating(dom.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + n,
-                    style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? dom.color : '#475569'), background: active ? dom.color : '#1e293b', color: active ? '#0f172a' : '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700, minWidth: 32 } }, n);
+                    style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? dom.color : _wlFg('#475569')), background: active ? dom.color : _wlBg('#1e293b'), color: active ? '#0f172a' : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700, minWidth: 32 } }, n);
                 })
               ),
-              h('label', { htmlFor: noteId, style: { display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'Note (optional)'),
+              h('label', { htmlFor: noteId, style: { display: 'block', fontSize: 11, color: _wlFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Note (optional)'),
               h('textarea', { id: noteId, value: note,
                 placeholder: 'What is true about this area right now? Why this number?',
                 onChange: function(e) { setNote(dom.id, e.target.value); },
-                style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } })
+                style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _wlBg('#1e293b'), color: _wlFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } })
             );
           }),
 
@@ -307,10 +316,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         var rated = DOMAINS.filter(function(d2) { return ratingOf(d2.id) > 0; });
         if (rated.length === 0) {
           return h('div', null,
-            h('div', { style: { padding: 20, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', textAlign: 'center' } },
-              h('div', { style: { color: '#cbd5e1', fontSize: 14, marginBottom: 4 } }, 'Rate at least a few domains first'),
+            h('div', { style: { padding: 20, borderRadius: 12, background: _wlBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
+              h('div', { style: { color: _wlFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Rate at least a few domains first'),
               h('button', { onClick: function() { goto('rate'); }, 'aria-label': 'Go to rate',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: '#fde68a', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Rate')
+                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _wlFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Rate')
             )
           );
         }
@@ -320,32 +329,32 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         var avg = rated.reduce(function(sum, d2) { return sum + ratingOf(d2.id); }, 0) / rated.length;
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: _wlFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '💭 What to do with this shape: '),
             'A round wheel is not the goal. The goal is honesty about right now, and one or two intentional moves toward something that matters. Average across rated domains: ', h('strong', null, avg.toFixed(1)), '.'
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 8 } }, '🟢 Where my wheel is fullest'),
+          h('div', { style: { padding: 12, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _wlFg('#bbf7d0'), marginBottom: 8 } }, '🟢 Where my wheel is fullest'),
             top.map(function(d2) {
-              return h('div', { key: d2.id, style: { fontSize: 13, color: '#e2e8f0', marginBottom: 4 } },
+              return h('div', { key: d2.id, style: { fontSize: 13, color: _wlFg('#e2e8f0'), marginBottom: 4 } },
                 d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: d2.color } }, ratingOf(d2.id)));
             }),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } },
+            h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } },
               'These are doing well. Notice them. They are part of how you are holding the rest.')
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fecaca', marginBottom: 8 } }, '🔴 Where my wheel is thinnest'),
+          h('div', { style: { padding: 12, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _wlFg('#fecaca'), marginBottom: 8 } }, '🔴 Where my wheel is thinnest'),
             bottom.map(function(d2) {
-              return h('div', { key: d2.id, style: { fontSize: 13, color: '#e2e8f0', marginBottom: 4 } },
+              return h('div', { key: d2.id, style: { fontSize: 13, color: _wlFg('#e2e8f0'), marginBottom: 4 } },
                 d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: d2.color } }, ratingOf(d2.id)));
             }),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } },
+            h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } },
               'A low score is not a moral judgment. Sometimes a domain is intentionally thin right now (you are pouring into work for a season, or family is intense and there is no room for romance). The question worth sitting with: which of these would you actually want to move from a 3 to a 5 in the next month? Only one. Pick one.')
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 12.5, color: _wlFg('#c7d2fe'), lineHeight: 1.6 } },
             h('strong', null, '🎯 One-move-at-a-time: '),
             'Coaching tradition wisdom on this tool: do not try to raise three numbers at once. Pick ONE domain. What is one small thing you could do this week that would move it by half a point? Half-point moves are what builds wheels over time. Big-leap moves usually do not stick.'
           ),
@@ -360,18 +369,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       function renderPrintView() {
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)' } },
-            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: '#fde68a', lineHeight: 1.55 } },
+            h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _wlFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
             h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('wheel'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'wol-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: '#fff', color: '#0f172a', borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _wlBg('#fff'), color: _wlFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
@@ -382,25 +391,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #d97706' } },
-              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Wheel of Life'),
+              h('div', { style: { fontSize: 10, color: _wlFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Wheel of Life'),
               h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, 'My Wheel of Life'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: '#475569', marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _wlFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             DOMAINS.map(function(dom) {
               var v = ratingOf(dom.id);
               var note = (d.notes || {})[dom.id] || '';
-              return h('div', { key: dom.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + dom.color, background: '#f8fafc' } },
+              return h('div', { key: dom.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + dom.color, background: _wlBg('#f8fafc') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                   h('span', { style: { fontSize: 18 } }, dom.icon),
-                  h('span', { style: { fontSize: 14, fontWeight: 800, color: '#0f172a', flex: 1 } }, dom.label),
+                  h('span', { style: { fontSize: 14, fontWeight: 800, color: _wlFg('#0f172a'), flex: 1 } }, dom.label),
                   h('span', { style: { fontSize: 22, fontWeight: 900, color: dom.color } }, v || '–')
                 ),
-                note ? h('p', { style: { margin: 0, color: '#0f172a', fontSize: 12, lineHeight: 1.6, fontStyle: 'italic' } }, note) : null
+                note ? h('p', { style: { margin: 0, color: _wlFg('#0f172a'), fontSize: 12, lineHeight: 1.6, fontStyle: 'italic' } }, note) : null
               );
             }),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _wlFg('#94a3b8'), textAlign: 'center', lineHeight: 1.5 } },
               'Wheel of Life format from the coaching tradition (commonly attributed to Paul J. Meyer, Success Motivation Institute, 1960s; standardized in Co-Active Coaching). ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -416,27 +425,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       function renderAbout() {
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('wheelOfLife', h, ctx) : null),
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 16 } }, 'What the Wheel of Life is'),
-            h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _wlBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _wlFg('#fcd34d'), fontSize: 16 } }, 'What the Wheel of Life is'),
+            h('p', { style: { margin: '0 0 10px', color: _wlFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'A self-portrait: eight life domains, each rated 1 to 10. The shape of your wheel makes visible where life is rich and where it is hungry right now. The point is not to have a perfectly round wheel; the point is honesty.'
             ),
-            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.7 } },
+            h('p', { style: { margin: 0, color: _wlFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'Drawing it once a quarter and comparing across versions shows how life shifts. Domains that were thin sometimes get full; full domains sometimes thin out for a season. Tracking the shape over time tells a story that a snapshot does not.'
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 16 } }, 'Where the format comes from'),
-            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _wlBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _wlFg('#fcd34d'), fontSize: 16 } }, 'Where the format comes from'),
+            h('p', { style: { margin: 0, color: _wlFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'The Wheel of Life is from the coaching tradition. The most common attribution is Paul J. Meyer, founder of the Success Motivation Institute in the 1960s, though similar life-balance wheel exercises appear in earlier self-improvement and personal development literature. The form was standardized in Whitworth, Kimsey-House, and Sandahl\'s Co-Active Coaching (1998 and later editions), which is the foundational text of the International Coaching Federation\'s coaching profession. The tool is now widely used in coaching, counseling, and personal-development contexts.'
             )
           ),
 
           // Sources
-          h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 16 } }, '📚 Sources and learn more'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources for the Wheel of Life.'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _wlBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', color: _wlFg('#fcd34d'), fontSize: 16 } }, '📚 Sources and learn more'),
+            h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources for the Wheel of Life.'),
             sourceCard('Whitworth, L., Kimsey-House, K., Kimsey-House, H., and Sandahl, P. (2007)', 'Co-Active Coaching: Changing Business, Transforming Lives (3rd edition), Nicholas Brealey', 'The standardization of the Wheel of Life as a coaching tool. Foundational text of the modern coaching profession.', null),
             sourceCard('International Coaching Federation', 'coachingfederation.org', 'The profession\'s standard-setting body. Resources on coaching frameworks, including life-balance tools.', 'https://coachingfederation.org/'),
             sourceCard('MindTools (free resources)', 'mindtools.com', 'Free template and detailed walkthrough of the Wheel of Life exercise.', 'https://www.mindtools.com/')
@@ -444,8 +453,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
           // Honest limits
           h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
-            h('h3', { style: { margin: '0 0 10px', color: '#fcd34d', fontSize: 15 } }, '⚖️ Honest limits'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#fde68a', fontSize: 13, lineHeight: 1.75 } },
+            h('h3', { style: { margin: '0 0 10px', color: _wlFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
+            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _wlFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'The Wheel of Life is a heuristic, not a validated psychometric instrument. There is no scientific evidence that a 1-10 self-rating across 8 domains predicts anything; the point is reflection, not measurement.'),
               h('li', null, 'The 8 domains are conventional, not natural. Different versions use 6, 10, or 12 domains; some add a "spirituality" or "purpose" domain; some split work and school. Your version can use the domains that fit your life.'),
               h('li', null, 'A low rating in a domain is information, not a deficiency. Some seasons of life have an intentionally thin domain (recovery, focused work, intense family caretaking). The wheel does not say "balance every spoke"; it shows you what is true so you can choose.'),
@@ -453,7 +462,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: '#fde68a', lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: _wlFg('#fde68a'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'The Wheel works well as a beginning-of-quarter Crew activity, with a follow-up at the end of the quarter ("how did your wheel shift?"). For students whose home life is complicated, do NOT require them to share their wheel publicly; private reflection followed by an optional pair-share at the student\'s choosing is much safer.'
           ),
@@ -463,13 +472,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: '#1e293b', border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: '#fcd34d', fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _wlBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+          h('div', { style: { fontSize: 11, color: _wlFg('#fcd34d'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: '#fde68a', fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
-            : h('div', { style: { fontSize: 13, color: '#fde68a', fontWeight: 700, marginBottom: 4 } }, title),
-          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, blurb)
+                style: { fontSize: 13, color: _wlFg('#fde68a'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+            : h('div', { style: { fontSize: 13, color: _wlFg('#fde68a'), fontWeight: 700, marginBottom: 4 } }, title),
+          h('div', { style: { fontSize: 12, color: _wlFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
 

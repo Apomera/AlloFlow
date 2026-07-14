@@ -52,7 +52,10 @@ const createGeminiAPI = (deps) => {
           : perDayHint
             ? 'Gemini API daily quota reached — resolves at midnight Pacific time.'
             : 'Gemini API rate or quota limit hit. May be a per-minute burst (clears in seconds) or a daily quota (resolves at midnight Pacific) — try again in a minute first.';
-        return { kind: 'quota', userMessage, model: null };
+        // Carry the per-minute/per-day evidence on the classification so downstream retry layers
+        // can treat a per-minute burst as a throttle (retryable) without re-parsing the raw body
+        // (which _throwClassified replaces with the API_QUOTA_EXHAUSTED sentinel).
+        return { kind: 'quota', userMessage, model: null, perMinute: perMinHint, perDay: perDayHint };
       }
       // Auth: HTTP 401 + the documented Gemini codes.
       if (
@@ -67,7 +70,7 @@ const createGeminiAPI = (deps) => {
         // and permission denials. If the body actually mentions quota, treat
         // it as quota; otherwise as auth.
         if (lower.includes('quota') || lower.includes('rate')) {
-          return { kind: 'quota', userMessage: 'Gemini API rate or quota limit hit — try again in a minute first; if it persists, you may have hit the daily quota.', model: null };
+          return { kind: 'quota', userMessage: 'Gemini API rate or quota limit hit — try again in a minute first; if it persists, you may have hit the daily quota.', model: null, perMinute: false, perDay: false };
         }
         // 401 handling, in plain language. In Canvas the app auto-injects the key each session —
         // the user never manages one — so a 401 there is almost always a brief rate-limit / hiccup,
@@ -141,6 +144,12 @@ const createGeminiAPI = (deps) => {
         window.__alloflowQuotaState = {
           active: true,
           kind: classification.kind,
+          // Carry the per-day/per-minute evidence (ChatGPT review 2026-07-10, finding 8): the
+          // batch layer's daily-stop must fire only for a REAL daily quota — a per-minute burst
+          // pausing a whole batch turned one blip into a full stop. (H2 added these to the
+          // classification; the global stash used to drop them.)
+          perDay: !!classification.perDay,
+          perMinute: !!classification.perMinute,
           message: classification.userMessage,
           model: classification.model,
           hitAt: window.__alloflowQuotaState?.hitAt || (typeof Date !== 'undefined' ? Date.now() : 0)
@@ -182,7 +191,10 @@ const createGeminiAPI = (deps) => {
           closeBtn.setAttribute('aria-label', 'Dismiss quota notice');
           closeBtn.style.cssText = 'background:rgba(255,255,255,0.18);color:#fff;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font:600 13px system-ui,sans-serif';
           closeBtn.onclick = () => {
-            try { if (window.sessionStorage) sessionStorage.setItem('__alloflowQuotaBannerDismissed', '1'); } catch (_) {}
+            // A3 (2026-06-28): don't swallow a sessionStorage QuotaExceededError silently — on a storage-full
+            // device the dismissal can't persist and the banner re-appears each load; a warn makes it diagnosable.
+            try { if (window.sessionStorage) sessionStorage.setItem('__alloflowQuotaBannerDismissed', '1'); }
+            catch (e) { try { console.warn('[AlloFlow] could not persist quota-banner dismissal (sessionStorage full/blocked):', e && e.message); } catch (_) {} }
             banner.remove();
           };
           banner.appendChild(msgEl);
@@ -318,11 +330,87 @@ const createGeminiAPI = (deps) => {
         out.isQuota = cls.kind === 'quota';
         out.isAuth = cls.kind === 'auth';
         out.isConfig = cls.kind === 'config';
+        // In Canvas an 'auth' (401/403) is almost always a brief throttle/rate-limit, NOT a real key
+        // problem (the app injects the key — see the classifier's own note). Flag it so the pipeline's
+        // retry layer treats it as RETRYABLE (transient) rather than permanent. (2026-06-19)
+        out.canvasTransientAuth = (cls.kind === 'auth' && !!_isCanvasEnv);
         out.classification = cls;
         out.originalMessage = err && err.message;
         throw out;
       }
       throw err;
+    };
+
+    const _readLocalFallbackConfig = () => {
+      if (_isCanvasEnv || typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
+      try {
+        const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null');
+        const fallback = cfg && cfg.localFallback;
+        if (!fallback || !fallback.enabled || fallback.backend !== 'alloflow-local') return null;
+        return fallback;
+      } catch (_) {
+        return null;
+      }
+    };
+
+    const _inferLocalFallbackTask = (prompt, jsonMode) => {
+      if (!jsonMode) return 'simple-text';
+      const text = String(prompt || '').toLowerCase();
+      if (/remediation|accessib|pdf audit|alt[-\s]?text|contrast|ocr|tagged pdf|artifact audit|auto[-\s]?fix|fix plan/.test(text)) {
+        return 'remediation-json';
+      }
+      return 'strict-json';
+    };
+
+    const _localFallbackTaskAllowed = (fallback, task) => {
+      const support = fallback && fallback.localModelProfile && fallback.localModelProfile.taskSupport;
+      if (!support) return false;
+      if (task === 'remediation-json') return support.remediationJson === 'pass';
+      if (task === 'strict-json') return support.strictJson === 'pass';
+      return support.simpleText === 'pass';
+    };
+
+    const _tryLocalFallbackAfterQuota = async (prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution }) => {
+      if (useSearch || useCodeExecution || (signal && signal.aborted)) return { used: false };
+      const fallback = _readLocalFallbackConfig();
+      if (!fallback) return { used: false };
+      const task = _inferLocalFallbackTask(prompt, jsonMode);
+      if (!_localFallbackTaskAllowed(fallback, task)) {
+        try { console.warn('[callGemini] Local fallback skipped: model check has not passed task ' + task + '.'); } catch (_) {}
+        return { used: false };
+      }
+      const Provider = typeof window !== 'undefined' ? window.AIProvider : null;
+      if (!Provider) return { used: false };
+      try {
+        const ai = new Provider({
+          backend: 'alloflow-local',
+          apiKey: '',
+          baseUrl: fallback.baseUrl || 'http://127.0.0.1:32173',
+          models: fallback.models || { default: fallback.localModelProfile && fallback.localModelProfile.modelId || 'local-model' },
+          localModelProfile: fallback.localModelProfile,
+          fetchWithRetry: fetchWithExponentialBackoff,
+          optimizeImage,
+          debugLog,
+          warnLog,
+        });
+        const value = await ai.generateText(prompt, {
+          json: Boolean(jsonMode),
+          search: false,
+          temperature: temperature == null ? null : Number(temperature),
+        });
+        try {
+          window.__alloLocalFallbackLastUsed = {
+            at: Date.now ? Date.now() : 0,
+            task,
+            model: fallback.localModelProfile && fallback.localModelProfile.modelId || '',
+          };
+          window.dispatchEvent(new CustomEvent('alloflow:local-fallback-used', { detail: window.__alloLocalFallbackLastUsed }));
+        } catch (_) {}
+        return { used: true, value };
+      } catch (localErr) {
+        try { console.warn('[callGemini] Local fallback failed:', localErr && localErr.message ? localErr.message : localErr); } catch (_) {}
+        return { used: false };
+      }
     };
 
     const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false) => {
@@ -518,6 +606,10 @@ const createGeminiAPI = (deps) => {
         // is "Daily Usage Limit Reached" (which masked the gemini-3-flash-preview
         // deploy fabrication for weeks).
         if (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') {
+          if (cls.kind === 'quota') {
+            const localFallback = await _tryLocalFallbackAfterQuota(prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution });
+            if (localFallback.used) return localFallback.value;
+          }
           _throwClassified(err);
         }
         throw err;
@@ -610,7 +702,7 @@ const createGeminiAPI = (deps) => {
           const partialMatch = rawText.match(/"text"\s*:\s*"([\s\S]*?)(?:"|$)/);
           if (partialMatch) {
             const partial = partialMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
-            warnLog("[Vision] Recovered partial text:", partial.substring(0, 100));
+            warnLog("[Vision] Recovered partial text:", partial.length + ' chars'); // H-3 (audit 2026-06-23): log LENGTH only — this is OCR'd document text (potential student PII) and warnLog feeds the copyable in-app diagnostics buffer (FERPA: egress to Gemini is permitted, replication into a sharable artifact is not)
             return partial + '\n\n[Note: Document was partially extracted. Some content may be missing due to document size.]';
           }
           throw new Error("Vision API returned invalid response. The document may be too large — try a shorter PDF.");

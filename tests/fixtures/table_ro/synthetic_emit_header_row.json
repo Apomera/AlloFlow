@@ -1,0 +1,17 @@
+{
+  "name": "synthetic-emit-header-row",
+  "kind": "table",
+  "mode": "emit",
+  "metric": "teds",
+  "source": "synthetic",
+  "note": "Regression-guards the shipped _emitAccessibleTableHtml: a header-row + data grid must round-trip to ground-truth structure (cells, spans, text preserved; header role/caption are intentionally outside TEDS).",
+  "inputGrid": {
+    "caption": "Quarterly scores",
+    "rows": [
+      { "cells": [ { "text": "Student", "isHeader": true, "scope": "col" }, { "text": "Q1", "isHeader": true, "scope": "col" }, { "text": "Q2", "isHeader": true, "scope": "col" } ] },
+      { "cells": [ { "text": "Ada" }, { "text": "95" }, { "text": "88" } ] },
+      { "cells": [ { "text": "Linus" }, { "text": "72" }, { "text": "81" } ] }
+    ]
+  },
+  "groundTruth": "<table><caption>Quarterly scores</caption><thead><tr><th scope=\"col\">Student</th><th scope=\"col\">Q1</th><th scope=\"col\">Q2</th></tr></thead><tbody><tr><td>Ada</td><td>95</td><td>88</td></tr><tr><td>Linus</td><td>72</td><td>81</td></tr></tbody></table>"
+}

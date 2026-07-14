@@ -17,13 +17,33 @@
  *   addToast                — surface user-facing status messages
  */
 function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast }) {
+  const dialogRef = React.useRef(null);
+  React.useEffect(function () {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = function (event) {
+      if (event.key === 'Escape') { event.preventDefault(); setShowKokoroOfferModal(false); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return function () { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
+  }, [setShowKokoroOfferModal]);
   return (
-    <div className="fixed inset-0 z-[9998] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowKokoroOfferModal(false)}>
-      <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[9998] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200" role="presentation" onClick={() => setShowKokoroOfferModal(false)}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="kokoro-offer-title" tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 animate-in zoom-in-95 duration-200 focus:outline-none" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-4">
           <div className="bg-amber-100 p-3 rounded-full"><span className="text-2xl">🎤</span></div>
           <div>
-            <h3 className="text-lg font-bold text-slate-800">Cloud Voice Unavailable</h3>
+            <h3 id="kokoro-offer-title" className="text-lg font-bold text-slate-800">Cloud Voice Unavailable</h3>
             <p className="text-xs text-slate-600">Gemini TTS is temporarily unavailable (quota or network issue)</p>
           </div>
         </div>

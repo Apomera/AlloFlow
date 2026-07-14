@@ -247,10 +247,186 @@
           top2.mass += ELEMENTS[el].m * n2;
           top2.elems[el] = (top2.elems[el] || 0) + n2;
         }
+      } else if (clean[i] === '·' || clean[i] === '.') {
+        // Hydrate / addition dot: "·5H2O" = 5 waters of crystallization. Read the
+        // multiplier, parse the remainder of the formula, and fold it in multiplied
+        // by that count — so the molar mass of CuSO4·5H2O counts all five waters,
+        // not one. (Previously the dot AND the multiplier digit were skipped, giving
+        // a badly wrong molar mass for every hydrate.)
+        i++;
+        var hcnt = '';
+        while (i < clean.length && clean[i] >= '0' && clean[i] <= '9') { hcnt += clean[i]; i++; }
+        var hn = hcnt ? parseInt(hcnt, 10) : 1;
+        var sub = parseFormula(clean.slice(i));
+        var topH = stack[stack.length - 1];
+        topH.mass += sub.mass * hn;
+        var hk = Object.keys(sub.elems);
+        for (var hi = 0; hi < hk.length; hi++) {
+          topH.elems[hk[hi]] = (topH.elems[hk[hi]] || 0) + sub.elems[hk[hi]] * hn;
+        }
+        break;
       } else { i++; }
     }
     return stack[0];
   };
+
+
+  // ── Deterministic equation balancer + stoichiometry (ground-truth math; NEVER via the LLM) ──
+  // Reuses parseFormula (per-element atom counts) + ELEMENTS (molar masses). The balancer
+  // builds the element-conservation matrix M and solves M·c = 0 for the smallest positive
+  // integer coefficient vector using EXACT rational (fraction) Gaussian elimination, so there
+  // is zero floating-point drift. Exposed on window.__alloChemPure for unit tests.
+  function _chemGcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = b; b = a % b; a = t; } return a || 1; }
+  function _chemLcm(a, b) { if (!a || !b) return Math.abs(a || b) || 1; return Math.abs(a / _chemGcd(a, b) * b); }
+  function _rat(n, d) { if (d === undefined) d = 1; if (d === 0) return [0, 1]; if (d < 0) { n = -n; d = -d; } var g = _chemGcd(n, d); return [n / g, d / g]; }
+  function _rAdd(a, b) { return _rat(a[0] * b[1] + b[0] * a[1], a[1] * b[1]); }
+  function _rSub(a, b) { return _rat(a[0] * b[1] - b[0] * a[1], a[1] * b[1]); }
+  function _rMul(a, b) { return _rat(a[0] * b[0], a[1] * b[1]); }
+  function _rDiv(a, b) { return _rat(a[0] * b[1], a[1] * b[0]); }
+  function _rZero(a) { return a[0] === 0; }
+  function _scanElementSymbols(formula) { var out = [], m, re = /[A-Z][a-z]?/g; while ((m = re.exec(formula)) !== null) out.push(m[0]); return out; }
+
+  function _validateFormulaSyntax(formula) {
+    if (!formula) return 'Formula is empty';
+    var tokens = formula.match(/[A-Z][a-z]?|\d+|[().\u00b7]/g) || [];
+    if (tokens.join('') !== formula) return 'Formula contains unsupported characters or misplaced lowercase letters';
+    var depth = 0;
+    for (var i = 0; i < tokens.length; i++) {
+      if (tokens[i] === '(') depth++;
+      else if (tokens[i] === ')') {
+        depth--;
+        if (depth < 0) return 'Formula has a closing parenthesis without a matching opening parenthesis';
+      } else if (/^\d+$/.test(tokens[i]) && parseInt(tokens[i], 10) < 1) {
+        return 'Subscripts and hydrate multipliers must be positive whole numbers';
+      }
+    }
+    if (depth !== 0) return 'Formula has unmatched parentheses';
+    if (!/[A-Z]/.test(formula)) return 'Formula needs at least one element symbol';
+    return '';
+  }
+
+  // parseSpecies('2H2O') -> { coef, formula, elems, mass, ok, unknown[], syntaxError }
+  function parseSpecies(token) {
+    token = String(token == null ? '' : token).trim();
+    var coef = 1;
+    var cm = token.match(/^\s*(\d+)\s*/);
+    var formula = token;
+    if (cm) { coef = parseInt(cm[1], 10); formula = token.slice(cm[0].length); }
+    formula = formula.trim().replace(/\((?:s|l|g|aq)\)/gi, ''); // drop state labels (s),(l),(g),(aq)
+    var unknown = [];
+    var syntaxError = coef < 1 ? 'Coefficients must be positive whole numbers' : _validateFormulaSyntax(formula);
+    var syms = _scanElementSymbols(formula);
+    for (var i = 0; i < syms.length; i++) { if (!ELEMENTS[syms[i]] && unknown.indexOf(syms[i]) < 0) unknown.push(syms[i]); }
+    var pf = parseFormula(formula);
+    return {
+      coef: coef,
+      formula: formula,
+      elems: pf.elems,
+      mass: pf.mass,
+      ok: formula.length > 0 && unknown.length === 0 && !syntaxError,
+      unknown: unknown,
+      syntaxError: syntaxError
+    };
+  }
+
+  // parseEquation('H2 + O2 -> H2O') -> { ok, reactants[], products[], elements[], error? }
+  function parseEquation(str) {
+    if (!str || typeof str !== 'string') return { ok: false, error: 'Type an equation, e.g. H2 + O2 -> H2O' };
+    var norm = str.replace(/\u2192|\u27f6|\u21d2|=>|->/g, '=').replace(/\s+/g, ' ').trim();
+    // This matrix conserves atoms but does not include electrical charge.
+    // Refuse ionic notation instead of silently treating ions as neutral.
+    if (/(?:\^?\d*[+-])(?=\s*(?:\+|=|$))/.test(norm)) {
+      return { ok: false, error: 'Ionic charge notation is not supported in this balancer. Use a neutral molecular equation; charge must be conserved separately in ionic equations.' };
+    }
+    var sides = norm.split('=');
+    if (sides.length !== 2) return { ok: false, error: 'Use exactly one arrow (→ or ->) between reactants and products' };
+    function parseSide(s) { return s.split('+').map(function (t) { return t.trim(); }).filter(Boolean).map(parseSpecies); }
+    var reactants = parseSide(sides[0]), products = parseSide(sides[1]);
+    if (!reactants.length || !products.length) return { ok: false, error: 'Both sides need at least one compound' };
+    var all = reactants.concat(products), unknown = [];
+    for (var i = 0; i < all.length; i++) {
+      if (all[i].syntaxError) {
+        return { ok: false, error: 'Invalid formula ' + (all[i].formula || '(empty)') + ': ' + all[i].syntaxError };
+      }
+      for (var u = 0; u < all[i].unknown.length; u++) {
+        if (unknown.indexOf(all[i].unknown[u]) < 0) unknown.push(all[i].unknown[u]);
+      }
+    }
+    if (unknown.length) return { ok: false, error: 'Unsupported element(s): ' + unknown.join(', ') + ' - this tool knows 26 common elements' };    var elements = [];
+    for (var j = 0; j < all.length; j++) { var ek = Object.keys(all[j].elems); for (var k = 0; k < ek.length; k++) if (elements.indexOf(ek[k]) < 0) elements.push(ek[k]); }
+    return { ok: true, reactants: reactants, products: products, elements: elements };
+  }
+
+  // balanceEquation('H2 + O2 -> H2O') -> { ok, coefficients[], balancedString, alreadyBalanced, error? }
+  function balanceEquation(str) {
+    var pe = parseEquation(str);
+    if (!pe.ok) return { ok: false, error: pe.error };
+    var species = pe.reactants.concat(pe.products), nR = pe.reactants.length, nS = species.length, elements = pe.elements;
+    for (var e = 0; e < elements.length; e++) {
+      var el = elements[e], inR = false, inP = false;
+      for (var s = 0; s < nS; s++) { if (species[s].elems[el]) { if (s < nR) inR = true; else inP = true; } }
+      if (!inR || !inP) return { ok: false, error: 'Element ' + el + ' is only on one side — this cannot be balanced' };
+    }
+    var M = [];
+    for (var er = 0; er < elements.length; er++) { var row = []; for (var sc = 0; sc < nS; sc++) { var cnt = species[sc].elems[elements[er]] || 0; row.push(_rat(sc < nR ? cnt : -cnt, 1)); } M.push(row); }
+    var rows = M.length, cols = nS, pivotCols = [], r = 0;
+    for (var c = 0; c < cols && r < rows; c++) {
+      var piv = -1; for (var rr = r; rr < rows; rr++) { if (!_rZero(M[rr][c])) { piv = rr; break; } }
+      if (piv < 0) continue;
+      var tmp = M[r]; M[r] = M[piv]; M[piv] = tmp;
+      var pv = M[r][c]; for (var cc = 0; cc < cols; cc++) M[r][cc] = _rDiv(M[r][cc], pv);
+      for (var rr2 = 0; rr2 < rows; rr2++) { if (rr2 === r) continue; var factor = M[rr2][c]; if (_rZero(factor)) continue; for (var cc2 = 0; cc2 < cols; cc2++) M[rr2][cc2] = _rSub(M[rr2][cc2], _rMul(factor, M[r][cc2])); }
+      pivotCols.push(c); r++;
+    }
+    var rank = pivotCols.length, freeCols = [];
+    for (var cf = 0; cf < cols; cf++) if (pivotCols.indexOf(cf) < 0) freeCols.push(cf);
+    if (freeCols.length === 0) return { ok: false, error: 'No whole-number balance exists for this equation' };
+    if (freeCols.length > 1) return { ok: false, error: 'Ambiguous — this looks like several independent reactions; balance them one at a time' };
+    var freeCol = freeCols[0], sol = new Array(cols);
+    for (var z = 0; z < cols; z++) sol[z] = _rat(0, 1);
+    sol[freeCol] = _rat(1, 1);
+    for (var pr = 0; pr < rank; pr++) { var pc = pivotCols[pr]; sol[pc] = _rSub(_rat(0, 1), M[pr][freeCol]); }
+    var denomLcm = 1; for (var d = 0; d < cols; d++) denomLcm = _chemLcm(denomLcm, sol[d][1]);
+    var ints = sol.map(function (x) { return Math.round(x[0] * denomLcm / x[1]); });
+    if (ints[0] < 0) ints = ints.map(function (v) { return -v; });
+    if (ints.some(function (v) { return v <= 0; })) return { ok: false, error: 'This equation cannot be balanced with positive whole numbers' };
+    var g = ints.reduce(function (a, b) { return _chemGcd(a, b); }, 0); if (g > 1) ints = ints.map(function (v) { return v / g; });
+    for (var ve = 0; ve < elements.length; ve++) { var sum = 0; for (var vs = 0; vs < nS; vs++) sum += (species[vs].elems[elements[ve]] || 0) * (vs < nR ? 1 : -1) * ints[vs]; if (sum !== 0) return { ok: false, error: 'Could not verify a balance for this equation' }; }
+    function fmtSide(list, start) { return list.map(function (sp, idx) { var k = ints[start + idx]; return (k === 1 ? '' : k) + sp.formula; }).join(' + '); }
+    var balancedString = fmtSide(pe.reactants, 0) + ' → ' + fmtSide(pe.products, nR);
+    var alreadyBalanced = species.every(function (sp, idx) { return sp.coef === ints[idx]; });
+    return { ok: true, coefficients: ints, balancedString: balancedString, alreadyBalanced: alreadyBalanced, reactantCount: nR, species: species, elements: elements };
+  }
+
+  // stoichiometry — limiting reagent + theoretical/percent yield from balanced coefficients.
+  function stoichiometry(opts) {
+    if (!opts || !opts.coefficients || !opts.species) return { error: 'Balance the equation first' };
+    var coefs = opts.coefficients, species = opts.species;
+    function molar(idx) { return parseFormula(species[idx].formula).mass; }
+    var ratios = [];
+    var given = opts.given || [];
+    for (var i = 0; i < given.length; i++) {
+      var gv = given[i], idx = gv.index, mm = molar(idx);
+      if (!(mm > 0)) return { error: 'Unknown molar mass for ' + species[idx].formula };
+      var moles = (gv.moles != null) ? gv.moles : (gv.grams != null ? gv.grams / mm : null);
+      if (moles == null || isNaN(moles) || moles < 0) return { error: 'Enter a valid amount for ' + species[idx].formula };
+      var coef = coefs[idx]; if (!coef) return { error: 'Zero coefficient for ' + species[idx].formula };
+      ratios.push({ index: idx, moles: moles, perCoef: moles / coef });
+    }
+    if (!ratios.length) return { error: 'Enter how much of each reactant you have' };
+    var lim = ratios[0]; for (var rr = 1; rr < ratios.length; rr++) if (ratios[rr].perCoef < lim.perCoef) lim = ratios[rr];
+    var pIdx = opts.productIndex, pCoef = coefs[pIdx], pMM = molar(pIdx);
+    if (!(pMM > 0)) return { error: 'Unknown molar mass for the product' };
+    var molesProduct = lim.perCoef * pCoef, theoreticalGrams = molesProduct * pMM;
+    var out = { limitingIndex: lim.index, limitingFormula: species[lim.index].formula, molesProduct: molesProduct, theoreticalGrams: theoreticalGrams, productFormula: species[pIdx].formula };
+    if (opts.actualGrams != null && opts.actualGrams !== '' && !isNaN(opts.actualGrams)) {
+      out.actualGrams = Number(opts.actualGrams);
+      out.percentYield = theoreticalGrams > 0 ? (out.actualGrams / theoreticalGrams) * 100 : null;
+    }
+    return out;
+  }
+
+  try { window.__alloChemPure = { parseFormula: parseFormula, parseSpecies: parseSpecies, parseEquation: parseEquation, balanceEquation: balanceEquation, stoichiometry: stoichiometry, ELEMENTS: ELEMENTS }; } catch (_e) {}
 
   // ── Molecule data for viewer ──
   var MOLECULES = [
@@ -18339,6 +18515,7 @@
     ],
 
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -18372,6 +18549,8 @@
         };
 
         var subtool = d.subtool || 'balance';
+        var chemSearchRaw = d._chemSearch || '';
+        var isChemHub = !d._activeCategory && !chemSearchRaw && !d._everPicked;
 
         // ═══ SOUND EFFECTS ═══
         var chemSound = function(type) {
@@ -18490,12 +18669,17 @@
         var tierLabels = { beginner:'\uD83C\uDF31 Beginner', intermediate:'\u26A1 Intermediate', advanced:'\uD83D\uDE80 Advanced' };
 
         var checkBalance = function() {
-          var isCorrect = coeffs.every(function(c, i) { return c === preset.target[i]; });
+          // Accept any atom-conserving solution \u2014 this matches the balance scale + the per-element
+          // tally (both keyed on isBalanced). A balanced multiple IS balanced; previously Check
+          // demanded the exact hardcoded lowest-terms `target`, so e.g. 4,2,4 for water lit the scale
+          // green yet Check said "not balanced." Now affirm, and nudge toward lowest whole numbers.
+          var isCorrect = isBalanced;
+          var atLowest = coeffs.every(function(c, i) { return c === preset.target[i]; });
           if (isCorrect) {
             chemSound('correct');
             var newStreak = streak + 1;
             upd('streak', newStreak);
-            upd('feedback', { correct: true, msg: '\u2705 Balanced! ' + (newStreak > 1 ? '\uD83D\uDD25 ' + newStreak + ' in a row!' : 'Great job!') });
+            upd('feedback', { correct: true, msg: atLowest ? ('\u2705 Balanced! ' + (newStreak > 1 ? '\uD83D\uDD25 ' + newStreak + ' in a row!' : 'Great job!')) : '\u2705 Atoms balance! Now try the lowest whole-number coefficients.' });
             var speedTime = Infinity;
             if (d.timerActive && d.timerStart) speedTime = (Date.now() - d.timerStart) / 1000;
             var newBest = speedTime < ext.speedBest ? speedTime : ext.speedBest;
@@ -18520,6 +18704,9 @@
 
         // ═══ STOICH STATE ═══
         var stoichFormula = d._stoichFormula || 'H2O';
+        // Deterministic auto-balancer state (ground-truth math; never the LLM tutor).
+        var runAutoBalance = function() { var inp = (d._balanceInput || '').trim(); upd('_balanceResult', inp ? balanceEquation(inp) : null); };
+        var _balRes = d._balanceResult || null;
         var stoichGrams = d._stoichGrams != null ? d._stoichGrams : '';
         var stoichMoles = d._stoichMoles != null ? d._stoichMoles : '';
 
@@ -18569,30 +18756,42 @@
         // ════════════════════════════════════════
         // RENDER
         // ════════════════════════════════════════
-        return h('div', { className: 'max-w-3xl mx-auto animate-in fade-in duration-200' },
+        return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200' },
 
           // ── Header ──
-          h('div', { className: 'flex items-center gap-3 mb-3' },
-            h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' },
+          h('div', { className: 'flex items-center gap-3 mb-3 flex-wrap' },
+            h('button', { onClick: function() { setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.chembalance.back_to_tools', 'Back to tools') },
               h(ArrowLeft, { size: 18, className: 'text-slate-600' })
             ),
-            h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u2697\uFE0F Chemistry Lab'),
-            h('span', { className: 'px-2 py-0.5 bg-lime-100 text-lime-700 text-[11px] font-bold rounded-full' }, 'CHEM v3'),
+            h('h3', { className: 'text-lg font-bold text-slate-800' }, __alloT('stem.chembalance.chemistry_lab', '\u2697\uFE0F Chemistry Lab')),
+            h('span', { className: 'px-2 py-0.5 bg-lime-100 text-lime-700 text-[11px] font-bold rounded-full' }, __alloT('stem.chembalance.chem_v3', 'CHEM v3')),
             streak > 0 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full animate-in zoom-in' }, '\uD83D\uDD25 ' + streak),
             h('button', { onClick: function() { upd('_showBadges', !d._showBadges); },
               className: 'ml-auto px-2 py-1 text-[11px] font-bold rounded-lg border ' + (d._showBadges ? 'bg-amber-100 text-amber-700 border-amber-600' : 'bg-slate-50 text-slate-600 border-slate-200')
             }, '\uD83C\uDFC5 ' + ext.badges.length + '/' + Object.keys(CHEM_BADGES).length),
             h('button', { onClick: function() { upd('_showAI', !d._showAI); },
               className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (d._showAI ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200')
-            }, '\uD83E\uDD16 AI')
+            }, __alloT('stem.chembalance.ai', '\uD83E\uDD16 AI'))
           ),
 
           // ── Category-aware Navigation ──
           (function() {
             var activeCategoryId = d._activeCategory || CHEM_SECTION_TO_CATEGORY[subtool] || null;
-            var searchTerm = (d._chemSearch || '').toLowerCase();
-            var atHub = !d._activeCategory && !searchTerm && !d._everPicked;
+            var searchTerm = chemSearchRaw.toLowerCase();
+            var atHub = isChemHub;
             var activeCat = CHEM_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
+            var categoryPalette = {
+              lime: { solid: '#4d7c0f', border: '#84cc16', soft: '#f7fee7', ink: '#365314' },
+              cyan: { solid: '#0e7490', border: '#22d3ee', soft: '#ecfeff', ink: '#164e63' },
+              indigo: { solid: '#4f46e5', border: '#818cf8', soft: '#eef2ff', ink: '#312e81' },
+              orange: { solid: '#c2410c', border: '#fb923c', soft: '#fff7ed', ink: '#7c2d12' },
+              amber: { solid: '#b45309', border: '#f59e0b', soft: '#fffbeb', ink: '#78350f' },
+              purple: { solid: '#7e22ce', border: '#c084fc', soft: '#faf5ff', ink: '#581c87' }
+            };
+
+            function catStyle(color) {
+              return categoryPalette[color] || categoryPalette.lime;
+            }
 
             var searchResults = searchTerm
               ? SUBTOOLS.filter(function(s) { return s.label.toLowerCase().indexOf(searchTerm) !== -1; })
@@ -18614,17 +18813,19 @@
             elements.push(h('div', { key: 'topbar', className: 'flex flex-wrap items-center gap-2 mb-2' },
               h('button', {
                 onClick: function() { setCategory(null); upd('_everPicked', false); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-lime-600 text-white' : 'bg-slate-100 text-lime-700 hover:bg-lime-50 border border-lime-300')
-              }, '🏠 Hub'),
+                'aria-label': __alloT('stem.chembalance.return_to_chemistry_hub', 'Return to Chemistry Lab hub'),
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-lime-600 text-white' : 'transition-colors bg-slate-100 text-lime-700 hover:bg-lime-50 border border-lime-300')
+              }, __alloT('stem.chembalance.hub', '🏠 Hub')),
               activeCat && !atHub && h('span', { className: 'text-xs text-slate-400' }, '/'),
               activeCat && !atHub && h('span', { className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-lime-700 border border-lime-200' }, activeCat.icon + ' ' + activeCat.label),
               h('div', { className: 'ml-auto flex items-center gap-2' },
                 h('input', {
                   type: 'text',
-                  placeholder: 'Search 38 sub-tools...',
+                  placeholder: __alloT('stem.chembalance.search_38_sub_tools', 'Search 38 sub-tools...'),
                   value: d._chemSearch || '',
                   onChange: function(e) { upd('_chemSearch', e.target.value); upd('_activeCategory', null); },
-                  className: 'px-2 py-1.5 text-xs bg-white border border-slate-300 rounded text-slate-700 placeholder-slate-400 w-44'
+                  'aria-label': __alloT('stem.chembalance.search_chemistry_sub_tools', 'Search chemistry sub-tools'),
+                  className: 'px-2 py-1.5 text-xs bg-white border border-slate-300 rounded text-slate-700 placeholder-slate-400 w-full sm:w-52'
                 }),
                 searchTerm && h('span', { className: 'text-xs text-slate-500 font-mono' }, searchResults.length + ' match')
               )
@@ -18634,12 +18835,12 @@
             if (searchResults) {
               elements.push(h('div', { key: 'search-results', className: 'flex flex-wrap gap-1 mb-3 p-2 bg-slate-50 rounded' },
                 searchResults.length === 0
-                  ? h('span', { className: 'text-xs text-slate-500 italic' }, 'No matches. Try a different keyword.')
+                  ? h('span', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.chembalance.no_matches_try_a_different_keyword', 'No matches. Try a different keyword.'))
                   : searchResults.map(function(s) {
                       return h('button', {
                         key: s.id,
                         onClick: function() { goSection(s.id); upd('_chemSearch', ''); },
-                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-300 text-slate-700 hover:bg-lime-50 hover:border-lime-500'
+                        className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-300 text-slate-700 hover:bg-lime-50 hover:border-lime-500'
                       }, s.icon + ' ' + s.label);
                     })
               ));
@@ -18649,15 +18850,19 @@
             if (atHub) {
               elements.push(h('div', { key: 'hub-cards', className: 'grid grid-cols-2 md:grid-cols-3 gap-3 mb-3' },
                 CHEM_CATEGORIES.map(function(c) {
+                  var pal = catStyle(c.color);
                   return h('button', {
                     key: c.id,
                     onClick: function() { setCategory(c.id); goSection(c.sections[0]); },
-                    className: 'text-left p-3 rounded-xl bg-white border-2 border-' + c.color + '-200 hover:border-' + c.color + '-500 hover:bg-' + c.color + '-50 transition-all'
+                    title: c.desc,
+                    'aria-label': 'Open ' + c.label,
+                    className: 'text-left p-3 rounded-xl bg-white border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    style: { borderColor: pal.border, background: pal.soft, boxShadow: '0 10px 22px rgba(15, 23, 42, 0.07)' }
                   },
                     h('div', { className: 'text-2xl mb-1' }, c.icon),
-                    h('div', { className: 'text-sm font-bold text-' + c.color + '-700 mb-1' }, c.label),
-                    h('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, c.desc),
-                    h('div', { className: 'text-[10px] text-' + c.color + '-600 font-mono' }, c.sections.length + ' sub-tools')
+                    h('div', { className: 'text-sm font-bold mb-1', style: { color: pal.ink } }, c.label),
+                    h('div', { className: 'text-xs text-slate-600 italic mb-1 leading-snug' }, __alloT('stem.chembalance.' + (c.id) + '_desc', c.desc)),
+                    h('div', { className: 'text-xs font-mono font-bold', style: { color: pal.solid } }, c.sections.length + ' sub-tools')
                   );
                 })
               ));
@@ -18671,11 +18876,14 @@
               elements.push(h('div', { key: 'cat-subs', className: 'flex flex-wrap gap-1 mb-3 p-2 bg-slate-50 rounded' },
                 catSubs.map(function(st) {
                   var isActive = subtool === st.id;
+                  var pal = catStyle(activeCat.color);
                   return h('button', { key: st.id,
                     onClick: function() { goSection(st.id); },
                     title: st.desc,
-                    className: 'px-2 py-1 rounded text-[11px] font-bold transition-all border ' +
-                      (isActive ? 'bg-' + activeCat.color + '-600 text-white border-' + activeCat.color + '-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-' + activeCat.color + '-500 hover:bg-' + activeCat.color + '-50')
+                    className: 'px-2 py-1 rounded text-xs font-bold transition-all border',
+                    style: isActive
+                      ? { background: pal.solid, color: '#fff', borderColor: pal.solid, boxShadow: '0 6px 14px rgba(15, 23, 42, 0.14)' }
+                      : { background: '#fff', color: '#475569', borderColor: pal.border }
                   }, st.icon + ' ' + st.label);
                 })
               ));
@@ -18687,15 +18895,68 @@
 
           // ── Topic-accent hero band per sub-tool ──
           (function() {
+            if (isChemHub) {
+              var hubStats = [
+                { label: 'Pathways', value: CHEM_CATEGORIES.length },
+                { label: 'Sub-tools', value: SUBTOOLS.length },
+                { label: 'Equation presets', value: ALL_PRESETS.length },
+                { label: 'Elements', value: ELEMENT_DB.length + ELEMENT_DB_2.length + ELEMENT_DB_3.length + ELEMENT_DB_4.length }
+              ];
+              return h('section', {
+                'data-chembalance-command': 'true',
+                className: 'mb-3 rounded-2xl border border-lime-300 bg-white p-4 shadow-sm',
+                style: { background: 'linear-gradient(135deg, #f7fee7 0%, #ecfeff 52%, #fff7ed 100%)' }
+              },
+                h('div', { className: 'grid md:grid-cols-2 gap-4 items-stretch' },
+                  h('div', null,
+                    h('p', { className: 'text-xs font-black uppercase tracking-wide text-lime-800 mb-1' }, __alloT('stem.chembalance.start_at_the_bench', 'Start at the bench')),
+                    h('h3', { className: 'text-xl font-black text-slate-900 mb-2 leading-tight' }, __alloT('stem.chembalance.choose_a_chemistry_pathway', 'Choose a chemistry pathway')),
+                    h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-3' },
+                      __alloT('stem.chembalance.hub_intro', 'Pick a focused lab pathway first: balance equations, look up reference data, explore domains, or jump into applied chemistry. The active workspace opens only after you choose a path.')
+                    ),
+                    h('div', { className: 'grid grid-cols-2 gap-2' },
+                      hubStats.map(function(s) {
+                        return h('div', { key: s.label, className: 'rounded-xl bg-white/85 border border-white p-2 shadow-sm' },
+                          h('div', { className: 'text-lg font-black text-slate-900 leading-none' }, s.value),
+                          h('div', { className: 'text-xs font-bold text-slate-600 mt-1' }, s.label)
+                        );
+                      })
+                    )
+                  ),
+                  h('div', {
+                    role: 'img',
+                    'aria-label': __alloT('stem.chembalance.reaction_bench_visual', 'Reaction bench showing reactants, a reaction arrow, and products'),
+                    className: 'rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white overflow-hidden'
+                  },
+                    h('div', { className: 'text-xs font-bold text-cyan-200 uppercase tracking-wide mb-3' }, __alloT('stem.chembalance.reaction_flow', 'Reaction flow')),
+                    h('div', { className: 'flex items-center justify-between gap-2' },
+                      h('div', { className: 'rounded-xl border border-cyan-300 bg-cyan-400/15 p-3 text-center flex-1' },
+                        h('div', { className: 'text-2xl font-black text-cyan-100' }, 'H2 + O2'),
+                        h('div', { className: 'text-xs text-cyan-200 mt-1' }, __alloT('stem.chembalance.reactants', 'Reactants'))
+                      ),
+                      h('div', { className: 'text-2xl font-black text-amber-200', 'aria-hidden': 'true' }, '\u2192'),
+                      h('div', { className: 'rounded-xl border border-emerald-300 bg-emerald-400/15 p-3 text-center flex-1' },
+                        h('div', { className: 'text-2xl font-black text-emerald-100' }, 'H2O'),
+                        h('div', { className: 'text-xs text-emerald-200 mt-1' }, __alloT('stem.chembalance.products', 'Products'))
+                      )
+                    ),
+                    h('div', { className: 'mt-3 h-2 rounded-full bg-slate-800 overflow-hidden' },
+                      h('div', { className: 'h-full rounded-full', style: { width: '67%', background: 'linear-gradient(90deg, #22d3ee, #84cc16, #f59e0b)' } })
+                    ),
+                    h('div', { className: 'mt-2 text-xs text-slate-300' }, __alloT('stem.chembalance.bench_hint', 'Choose Core Labs to open the interactive balancer.'))
+                  )
+                )
+              );
+            }
             var TAB_META = {
-              balance:   { accent: '#65a30d', soft: 'rgba(101,163,13,0.10)', icon: '\u2696\uFE0F', title: 'Balance \u2014 atoms in = atoms out',                       hint: 'Lavoisier 1789: conservation of mass. Trick is the coefficient (NOT the subscript). 2H\u2082 + O\u2082 \u2192 2H\u2082O. Balance metals first, then non-metals, then hydrogen, then oxygen.' },
-              reactions: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2697\uFE0F', title: 'Reaction Types \u2014 the 5 patterns',                       hint: 'Synthesis (A+B\u2192AB), decomposition (AB\u2192A+B), single replace (A+BC\u2192AC+B), double replace (AB+CD\u2192AD+CB), combustion (CxHy + O\u2082 \u2192 CO\u2082 + H\u2082O). 95% of high-school equations fit one of these.' },
-              stoich:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDEE', title: 'Stoichiometry \u2014 mole math',                              hint: '1 mole = 6.022\u00d710\u00b2\u00b3 particles (Avogadro). Molar mass = sum of atomic masses. Grams \u2192 moles \u2192 moles \u2192 grams. The bridge between balanced equations and lab quantities.' },
-              molecular: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\u269B\uFE0F', title: 'Molecular \u2014 ball-and-stick geometry',                   hint: 'VSEPR predicts shape: linear, trigonal planar, tetrahedral, trigonal pyramidal, bent. Lone pairs occupy more space than bonded pairs. CH\u2084 is a perfect tetrahedron, NH\u2083 is a slightly squashed one.' },
-              safety:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDDEA', title: 'Lab Safety \u2014 GHS symbols + emergency response',          hint: '9 GHS pictograms: explosive, flammable, oxidizer, gas pressure, corrosive, toxic, irritant, environmental hazard, health hazard. Acid into water (never reverse) \u2014 splashes are violent.' },
-              challenge: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFC6', title: 'Challenge \u2014 graded quiz across 3 tiers',                hint: 'Beginner = naming + counting atoms; Intermediate = balancing; Advanced = mole math + limiting reagent. AP Chem topics 1\u20136. NGSS HS-PS1.' },
-              battle:    { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\u2694\uFE0F', title: 'Element Battle \u2014 retrieval as combat',                  hint: 'Speed builds automaticity. Once balancing + naming are automatic, your working memory is free for higher-order reasoning like predicting product formation and equilibrium shifts.' },
-              learn:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCD6', title: 'Learn \u2014 concepts by grade band',                        hint: 'K-2: matter is stuff. 3-5: matter cycles. MS: atoms + simple compounds. HS: full periodic-table reasoning. AP: thermodynamics + kinetics + equilibrium. The vertical alignment runs through every grade.' }
+              balance:   { accent: '#65a30d', soft: 'rgba(101,163,13,0.10)', icon: '\u2696\uFE0F', title: __alloT('stem.chembalance.balance_atoms_in_atoms_out', 'Balance \u2014 atoms in = atoms out'),                       hint: __alloT('stem.chembalance.lavoisier_1789_conservation_of_mass_tr', 'Lavoisier 1789: conservation of mass. Trick is the coefficient (NOT the subscript). 2H\u2082 + O\u2082 \u2192 2H\u2082O. Balance metals first, then non-metals, then hydrogen, then oxygen.') },
+              reactions: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2697\uFE0F', title: __alloT('stem.chembalance.reaction_types_the_5_patterns', 'Reaction Types \u2014 the 5 patterns'),                       hint: __alloT('stem.chembalance.synthesis_a_b_ab_decomposition_ab_a_b_', 'Synthesis (A+B\u2192AB), decomposition (AB\u2192A+B), single replace (A+BC\u2192AC+B), double replace (AB+CD\u2192AD+CB), combustion (CxHy + O\u2082 \u2192 CO\u2082 + H\u2082O). 95% of high-school equations fit one of these.') },
+              stoich:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDEE', title: __alloT('stem.chembalance.stoichiometry_mole_math', 'Stoichiometry \u2014 mole math'),                              hint: __alloT('stem.chembalance.1_mole_6_022_10_particles_avogadro_mol', '1 mole = 6.022\u00d710\u00b2\u00b3 particles (Avogadro). Molar mass = sum of atomic masses. Grams \u2192 moles \u2192 moles \u2192 grams. The bridge between balanced equations and lab quantities.') },
+              molecular: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\u269B\uFE0F', title: __alloT('stem.chembalance.molecular_ball_and_stick_geometry', 'Molecular \u2014 ball-and-stick geometry'),                   hint: __alloT('stem.chembalance.vsepr_predicts_shape_linear_trigonal_p', 'VSEPR predicts shape: linear, trigonal planar, tetrahedral, trigonal pyramidal, bent. Lone pairs occupy more space than bonded pairs. CH\u2084 is a perfect tetrahedron, NH\u2083 is a slightly squashed one.') },
+              safety:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDDEA', title: __alloT('stem.chembalance.lab_safety_ghs_symbols_emergency_respo', 'Lab Safety \u2014 GHS symbols + emergency response'),          hint: __alloT('stem.chembalance.9_ghs_pictograms_explosive_flammable_o', '9 GHS pictograms: explosive, flammable, oxidizer, gas pressure, corrosive, toxic, irritant, environmental hazard, health hazard. Acid into water (never reverse) \u2014 splashes are violent.') },
+              challenge: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFC6', title: __alloT('stem.chembalance.challenge_graded_quiz_across_3_tiers', 'Challenge \u2014 graded quiz across 3 tiers'),                hint: __alloT('stem.chembalance.beginner_naming_counting_atoms_interme', 'Beginner = naming + counting atoms; Intermediate = balancing; Advanced = mole math + limiting reagent. AP Chem topics 1\u20136. NGSS HS-PS1.') },
+              battle:    { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\u2694\uFE0F', title: __alloT('stem.chembalance.element_battle_retrieval_as_combat', 'Element Battle \u2014 retrieval as combat'),                  hint: __alloT('stem.chembalance.speed_builds_automaticity_once_balanci', 'Speed builds automaticity. Once balancing + naming are automatic, your working memory is free for higher-order reasoning like predicting product formation and equilibrium shifts.') },
+              learn:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCD6', title: __alloT('stem.chembalance.learn_concepts_by_grade_band', 'Learn \u2014 concepts by grade band'),                        hint: __alloT('stem.chembalance.k_2_matter_is_stuff_3_5_matter_cycles_', 'K-2: matter is stuff. 3-5: matter cycles. MS: atoms + simple compounds. HS: full periodic-table reasoning. AP: thermodynamics + kinetics + equilibrium. The vertical alignment runs through every grade.') }
             };
             var meta = TAB_META[subtool] || TAB_META.balance;
             return h('div', {
@@ -18719,7 +18980,7 @@
 
           // ── Badge Panel ──
           d._showBadges && h('div', { className: 'mb-3 bg-amber-50 rounded-xl p-3 border border-amber-200' },
-            h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Chemistry Badges'),
+            h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.chemistry_badges', '\uD83C\uDFC5 Chemistry Badges')),
             h('div', { className: 'grid grid-cols-6 gap-1.5' },
               Object.keys(CHEM_BADGES).map(function(bid) {
                 var b = CHEM_BADGES[bid];
@@ -18734,10 +18995,10 @@
 
           // ── AI Tutor ──
           d._showAI && h('div', { className: 'mb-3 bg-sky-50 rounded-xl p-3 border border-sky-200' },
-            h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 AI Chemistry Tutor'),
+            h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.ai_chemistry_tutor', '\uD83E\uDD16 AI Chemistry Tutor')),
             h('div', { className: 'flex gap-2 mb-2' },
-              h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: 'Ask a chemistry question...', 'aria-label': 'Ask the chemistry tutor', className: 'flex-1 px-3 py-1.5 text-sm border border-sky-600 rounded-lg focus:border-sky-400' }),
-              h('button', { onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, 'aria-busy': d._chemAILoading, 'aria-label': d._chemAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
+              h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: __alloT('stem.chembalance.ask_a_chemistry_question', 'Ask a chemistry question...'), 'aria-label': __alloT('stem.chembalance.ask_the_chemistry_tutor', 'Ask the chemistry tutor'), className: 'flex-1 px-3 py-1.5 text-sm border border-sky-600 rounded-lg focus:border-sky-400' }),
+              h('button', { onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, 'aria-busy': d._chemAILoading, 'aria-label': d._chemAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: 'transition-colors px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
             ),
             d._chemAIResp && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, d._chemAIResp)
           ),
@@ -18745,7 +19006,7 @@
           // ════════════════════════════════════════
           // BALANCE SUB-TOOL
           // ════════════════════════════════════════
-          subtool === 'balance' && h('div', null,
+          !isChemHub && subtool === 'balance' && h('div', null,
             // Tier filter
             h('div', { className: 'flex gap-2 mb-3' },
               ['all', 'beginner', 'intermediate', 'advanced'].map(function(tier) {
@@ -18755,11 +19016,11 @@
             // Equation chips
             h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
               filtered.map(function(p) {
-                return h('button', { 'aria-label': 'Switch Preset', key: p.name, onClick: function() { switchPreset(p.name); }, className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (d.equation === p.name ? 'bg-lime-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-lime-50 border border-slate-400') }, p.name);
+                return h('button', { 'aria-label': __alloT('stem.chembalance.switch_preset', 'Switch Preset'), key: p.name, onClick: function() { switchPreset(p.name); }, className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (d.equation === p.name ? 'bg-lime-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-lime-50 border border-slate-400') }, p.name);
               })
             ),
             // Balance Scale SVG
-            h('svg', { viewBox: '0 0 400 100', className: 'w-full mb-3', style: { maxHeight: '100px' } },
+            h('svg', { viewBox: '0 0 400 100', role: 'img', 'aria-label': __alloT('stem.chembalance.balance_scale_visual', 'Balance scale comparing reactant and product atom counts'), className: 'w-full mb-3', style: { maxHeight: '100px' } },
               h('polygon', { points: '200,95 190,75 210,75', fill: '#94a3b8' }),
               h('line', { x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 3, strokeLinecap: 'round', style: { transition: 'all 0.3s', filter: isBalanced ? 'drop-shadow(0 0 3px rgba(34,197,94,0.7))' : 'none' } }),
               h('ellipse', { cx: 100, cy: 80 + tilt * 8, rx: 50, ry: 8, fill: isBalanced ? '#dcfce7' : '#f1f5f9', stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 1.5, style: { transition: 'all 0.3s' } }),
@@ -18767,16 +19028,16 @@
               Object.keys(leftAtoms).map(function(atom, idx) {
                 var count = leftAtoms[atom]; var balls = [];
                 for (var b = 0; b < Math.min(count, 8); b++) balls.push(h('circle', { key: atom + b, cx: 70 + idx * 18 + (b % 3) * 10, cy: 60 + tilt * 8 - Math.floor(b / 3) * 10, r: 5, fill: atomColors[atom] || '#94a3b8', stroke: 'white', strokeWidth: 0.5 }));
-                return h('g', { key: 'l' + atom }, balls, h('text', { x: 70 + idx * 18, y: 42 + tilt * 8, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold' }, fill: atomColors[atom] || '#94a3b8' }, atom + '\u00D7' + count));
+                return h('g', { key: 'l' + atom }, balls, h('text', { x: 70 + idx * 18, y: 42 + tilt * 8, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: atomColors[atom] || '#94a3b8' }, atom + '\u00D7' + count));
               }),
               Object.keys(rightAtoms).map(function(atom, idx) {
                 var count = rightAtoms[atom]; var balls = [];
                 for (var b = 0; b < Math.min(count, 8); b++) balls.push(h('circle', { key: atom + b, cx: 270 + idx * 18 + (b % 3) * 10, cy: 60 - tilt * 8 - Math.floor(b / 3) * 10, r: 5, fill: atomColors[atom] || '#94a3b8', stroke: 'white', strokeWidth: 0.5 }));
-                return h('g', { key: 'r' + atom }, balls, h('text', { x: 270 + idx * 18, y: 42 - tilt * 8, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold' }, fill: atomColors[atom] || '#94a3b8' }, atom + '\u00D7' + count));
+                return h('g', { key: 'r' + atom }, balls, h('text', { x: 270 + idx * 18, y: 42 - tilt * 8, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: atomColors[atom] || '#94a3b8' }, atom + '\u00D7' + count));
               }),
-              h('text', { x: 100, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, 'Reactants'),
-              h('text', { x: 300, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, 'Products'),
-              isBalanced && h('text', { x: 200, y: 15, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: '#22c55e' }, '\u2705 Balanced!')
+              h('text', { x: 100, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, __alloT('stem.chembalance.reactants', 'Reactants')),
+              h('text', { x: 300, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, __alloT('stem.chembalance.products', 'Products')),
+              isBalanced && h('text', { x: 200, y: 15, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: '#22c55e' }, __alloT('stem.chembalance.balanced', '\u2705 Balanced!'))
             ),
             // Equation card
             h('div', { className: 'bg-white rounded-xl border-2 p-5 text-center transition-colors ' + (isBalanced ? 'border-emerald-300 bg-emerald-50/30' : 'border-lime-200') },
@@ -18791,9 +19052,9 @@
                 coeffs.map(function(c, i) {
                   return h('div', { key: i, className: 'flex flex-col items-center gap-1' },
                     h('span', { className: 'text-[11px] font-bold text-slate-600 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
-                    h('button', { 'aria-label': 'Add', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-700 hover:bg-lime-200 transition-colors text-lg' }, '+'),
+                    h('button', { 'aria-label': 'Add', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-700 hover:bg-lime-200 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1' }, '+'),
                     h('span', { className: 'text-2xl font-black text-slate-700 w-9 text-center' }, c),
-                    h('button', { 'aria-label': 'Chem Sound', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-500 hover:bg-red-100 transition-colors text-lg' }, '\u2212')
+                    h('button', { 'aria-label': __alloT('stem.chembalance.subtract', 'Subtract'), onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-600 hover:bg-red-100 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1' }, '\u2212')
                   );
                 })
               ),
@@ -18812,30 +19073,48 @@
                       h('span', { className: 'text-slate-600' }, match ? '=' : '\u2260'),
                       h('span', { className: match ? 'text-emerald-600' : (deficitSide === 'R' ? 'text-red-700 underline decoration-wavy' : 'text-red-600') }, right)
                     ),
-                    !match && h('div', { className: 'text-[9px] font-bold text-red-700 leading-tight mt-0.5' },
+                    !match && h('div', { className: 'text-[10px] font-bold text-red-700 leading-tight mt-0.5' },
                       deficitSide === 'L' ? ('+' + delta + ' need \u2190') : ('\u2192 need +' + delta)
                     ),
-                    match && h('div', { className: 'text-[9px] font-bold text-emerald-600 leading-tight mt-0.5' }, '\u2713 balanced')
+                    match && h('div', { className: 'text-[10px] font-bold text-emerald-600 leading-tight mt-0.5' }, __alloT('stem.chembalance.balanced_2', '\u2713 balanced'))
                   );
                 })
               ),
               // Action buttons
               h('div', { className: 'flex justify-center gap-2 mb-3 flex-wrap' },
-                h('button', { onClick: checkBalance, className: 'px-5 py-2 bg-lime-600 text-white font-bold rounded-lg hover:bg-lime-700 transition-colors shadow-sm text-sm' }, '\u2696\uFE0F Check'),
-                h('button', { 'aria-label': 'Hints', onClick: function() { upd('showHints', !showHints); }, className: 'px-3 py-2 rounded-lg font-bold text-xs transition-colors ' + (showHints ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-blue-50') }, '\uD83D\uDCA1 Hints'),
-                h('button', { 'aria-label': 'Reset', onClick: function() { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ coefficients: arr, feedback: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-200' }, '\uD83D\uDD04 Reset'),
-                h('button', { 'aria-label': 'Random', onClick: function() { var pick = filtered[Math.floor(Math.random() * filtered.length)]; switchPreset(pick.name); addToast('\uD83C\uDFB2 ' + pick.name, 'info'); }, className: 'px-3 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 border border-purple-600' }, '\uD83C\uDFB2 Random')
+                h('button', { onClick: checkBalance, className: 'px-5 py-2 bg-lime-600 text-white font-bold rounded-lg hover:bg-lime-700 transition-colors shadow-sm text-sm' }, __alloT('stem.chembalance.check', '\u2696\uFE0F Check')),
+                h('button', { 'aria-label': __alloT('stem.chembalance.hints', 'Hints'), onClick: function() { upd('showHints', !showHints); }, className: 'px-3 py-2 rounded-lg font-bold text-xs transition-colors ' + (showHints ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-blue-50') }, __alloT('stem.chembalance.hints_2', '\uD83D\uDCA1 Hints')),
+                h('button', { 'aria-label': __alloT('stem.chembalance.reset', 'Reset'), onClick: function() { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ coefficients: arr, feedback: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-200' }, __alloT('stem.chembalance.reset_2', '\uD83D\uDD04 Reset')),
+                h('button', { 'aria-label': __alloT('stem.chembalance.random', 'Random'), onClick: function() { var pick = filtered[Math.floor(Math.random() * filtered.length)]; switchPreset(pick.name); addToast('\uD83C\uDFB2 ' + pick.name, 'info'); }, className: 'transition-colors px-3 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 border border-purple-600' }, __alloT('stem.chembalance.random_2', '\uD83C\uDFB2 Random'))
+              ),
+              h('div', { className: 'mt-4 bg-gradient-to-br from-indigo-50 to-slate-50 rounded-xl p-4 border-2 border-indigo-200 text-left' },
+                h('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
+                  h('span', { 'aria-hidden': 'true', className: 'text-lg' }, '🧮'),
+                  h('h4', { className: 'font-bold text-slate-800 text-sm' }, __alloT('stem.chembalance.autobalance_title', 'Balance any equation')),
+                  h('span', { className: 'ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full' }, __alloT('stem.chembalance.calc_badge', 'Calculated · not AI'))
+                ),
+                h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.autobalance_hint', 'Type a neutral molecular equation. Solved exactly by atom-conservation math - the AI tutor is never the authority on coefficients. Ionic equations require separate charge conservation and are not supported here.')),
+                h('div', { className: 'flex gap-2' },
+                  h('input', { type: 'text', value: d._balanceInput || '', onChange: function(e) { upd('_balanceInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runAutoBalance(); }, placeholder: 'H2 + O2 -> H2O', 'aria-label': __alloT('stem.chembalance.equation_to_balance', 'Equation to balance'), className: 'flex-1 px-3 py-2 text-sm font-mono border border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none' }),
+                  h('button', { onClick: runAutoBalance, className: 'px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors text-sm whitespace-nowrap' }, __alloT('stem.chembalance.balance_it', 'Balance'))
+                ),
+                _balRes && _balRes.ok && h('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-emerald-300' },
+                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-emerald-700 mb-1' }, '✓ ' + __alloT('stem.chembalance.balanced_result', 'Balanced')),
+                  h('div', { dir: 'auto', className: 'text-base font-mono font-bold text-slate-800 break-words' }, _balRes.balancedString),
+                  _balRes.alreadyBalanced && h('div', { className: 'text-xs text-slate-500 mt-1' }, __alloT('stem.chembalance.already_balanced_note', 'You typed it already balanced — nice.'))
+                ),
+                _balRes && !_balRes.ok && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'mt-3 bg-rose-50 rounded-lg p-3 border border-rose-200 text-sm text-rose-700' }, '⚠ ' + _balRes.error)
               ),
               showHints && h('div', { className: 'mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200 text-left' },
                 h('p', { className: 'text-xs font-bold text-blue-700 mb-1' }, '\uD83D\uDCA1 ' + preset.hint),
-                h('p', { className: 'text-[11px] text-blue-600' }, '\u2022 Balance one element at a time \u2022 Start with the most complex compound \u2022 Save O or H for last')
+                h('p', { className: 'text-[11px] text-blue-600' }, __alloT('stem.chembalance.balance_one_element_at_a_time_start_wi', '\u2022 Balance one element at a time \u2022 Start with the most complex compound \u2022 Save O or H for last'))
               ),
               d.feedback && h('p', { className: 'mt-3 text-sm font-bold ' + (d.feedback.correct ? 'text-emerald-600' : 'text-red-600') }, d.feedback.msg)
             ),
             // Timer
             h('div', { className: 'mt-3 flex items-center gap-3' },
-              h('button', { onClick: function() { if (d.timerActive) { updMulti({ timerActive: false, timerEnd: null }); } else { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ timerActive: true, timerStart: Date.now(), coefficients: arr, feedback: null }); } }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (d.timerActive ? 'bg-red-100 text-red-600 border border-red-600' : 'bg-amber-100 text-amber-700 border border-amber-600 hover:bg-amber-200') }, d.timerActive ? '\u23F9 Stop' : '\u23F1 Speed Challenge'),
-              d.timerActive && d.timerStart && h('span', { className: 'text-xs font-mono font-bold text-amber-600' }, '\u23F1 ' + ((Date.now() - d.timerStart) / 1000).toFixed(0) + 's')
+              h('button', { onClick: function() { if (d.timerActive) { updMulti({ timerActive: false, timerEnd: null }); } else { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ timerActive: true, timerStart: Date.now(), coefficients: arr, feedback: null }); } }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (d.timerActive ? 'bg-red-100 text-red-600 border border-red-600' : 'transition-colors bg-amber-100 text-amber-700 border border-amber-600 hover:bg-amber-200') }, d.timerActive ? '\u23F9 Stop' : '\u23F1 Speed Challenge'),
+              d.timerActive && d.timerStart && h('span', { className: 'text-xs font-mono font-bold text-amber-700' }, '\u23F1 ' + ((Date.now() - d.timerStart) / 1000).toFixed(0) + 's')
             )
           ),
 
@@ -18864,12 +19143,12 @@
                     h('span', { className: 'text-xs text-slate-600' }, isOpen ? '\u25B2' : '\u25BC')
                   ),
                   isOpen && h('div', { className: 'px-3 pb-3' },
-                    h('p', { className: 'text-xs text-slate-600 mb-2' }, rt.desc),
+                    h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.chembalance.' + (rt.id) + '_desc', rt.desc)),
                     h('div', { className: 'space-y-1' },
                       rt.examples.map(function(ex, ei) {
                         return h('div', { key: ei, className: 'flex items-center gap-2 bg-' + rt.color + '-50 rounded-lg p-2 border border-' + rt.color + '-100' },
                           h('span', { className: 'text-xs font-mono font-bold text-' + rt.color + '-700 flex-1' }, ex.eq),
-                          h('span', { className: 'text-[11px] text-' + rt.color + '-500' }, ex.name)
+                          h('span', { className: 'text-[11px] font-medium text-' + rt.color + '-700' }, ex.name)
                         );
                       })
                     )
@@ -18879,17 +19158,17 @@
             ),
             // Classify mini-game
             h('div', { className: 'mt-3 bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl p-3 border border-purple-200' },
-              h('p', { className: 'text-[11px] font-bold text-purple-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDE9 Classify This Reaction'),
+              h('p', { className: 'text-[11px] font-bold text-purple-600 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.classify_this_reaction', '\uD83E\uDDE9 Classify This Reaction')),
               (function() {
                 var classifyQ = d._classifyQ;
                 if (!classifyQ) {
-                  return h('button', { 'aria-label': 'Start', onClick: function() {
+                  return h('button', { 'aria-label': __alloT('stem.chembalance.start', 'Start'), onClick: function() {
                     var all = [];
                     REACTION_TYPES.forEach(function(rt) { rt.examples.forEach(function(ex) { all.push({ eq: ex.eq, type: rt.id, label: rt.label }); }); });
                     var pick = all[Math.floor(Math.random() * all.length)];
                     upd('_classifyQ', pick);
                     upd('_classifyFb', null);
-                  }, className: 'px-4 py-2 text-xs font-bold text-white bg-purple-700 rounded-lg hover:bg-purple-600' }, '\u25B6 Start');
+                  }, className: 'transition-colors px-4 py-2 text-xs font-bold text-white bg-purple-700 rounded-lg hover:bg-purple-600' }, __alloT('stem.chembalance.start_2', '\u25B6 Start'));
                 }
                 return h('div', null,
                   h('p', { className: 'text-sm font-bold text-slate-700 mb-2' }, classifyQ.eq),
@@ -18905,12 +19184,12 @@
                       }, className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border transition-all ' + (isCorrect ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : isWrong ? 'bg-red-100 text-red-700 border-red-600' : fb ? 'bg-slate-50 text-slate-600 border-slate-200' : 'bg-white text-slate-600 border-slate-200 hover:border-purple-600') }, rt.icon + ' ' + rt.label);
                     })
                   ),
-                  d._classifyFb && h('button', { 'aria-label': 'Next', onClick: function() {
+                  d._classifyFb && h('button', { 'aria-label': __alloT('stem.chembalance.next', 'Next'), onClick: function() {
                     var all = [];
                     REACTION_TYPES.forEach(function(rt) { rt.examples.forEach(function(ex) { all.push({ eq: ex.eq, type: rt.id, label: rt.label }); }); });
                     var pick = all[Math.floor(Math.random() * all.length)];
                     updMulti({ _classifyQ: pick, _classifyFb: null });
-                  }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-purple-600 bg-purple-50 border border-purple-600 rounded-lg hover:bg-purple-100' }, '\u27A1 Next')
+                  }, className: 'transition-colors mt-2 px-3 py-1 text-[11px] font-bold text-purple-600 bg-purple-50 border border-purple-600 rounded-lg hover:bg-purple-100' }, __alloT('stem.chembalance.next_2', '\u27A1 Next'))
                 );
               })()
             )
@@ -18930,12 +19209,12 @@
             ),
             // Formula input
             h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200 mb-3' },
-              h('label', { className: 'text-[11px] font-bold text-teal-600 uppercase tracking-wider block mb-1' }, '\uD83E\uDDEE Enter Chemical Formula'),
-              h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: 'e.g. H2O, NaCl, Ca(OH)2', 'aria-label': 'Chemical formula input', className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-600 rounded-lg focus:border-teal-400 tracking-widest mb-2' }),
+              h('label', { className: 'text-[11px] font-bold text-teal-600 uppercase tracking-wider block mb-1' }, __alloT('stem.chembalance.enter_chemical_formula', '\uD83E\uDDEE Enter Chemical Formula')),
+              h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: __alloT('stem.chembalance.e_g_h2o_nacl_ca_oh_2', 'e.g. H2O, NaCl, Ca(OH)2'), 'aria-label': __alloT('stem.chembalance.chemical_formula_input', 'Chemical formula input'), className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-600 rounded-lg focus:border-teal-400 tracking-widest mb-2' }),
               // Presets
               h('div', { className: 'flex flex-wrap gap-1' },
                 MOLAR_PRESETS.map(function(mp) {
-                  return h('button', { 'aria-label': 'Enter a valid formula above', key: mp.formula, onClick: function() { upd('_stoichFormula', mp.formula); chemSound('click'); }, className: 'px-2 py-0.5 text-[11px] font-bold rounded bg-white text-teal-600 border border-teal-600 hover:bg-teal-50' }, mp.name);
+                  return h('button', { 'aria-label': __alloT('stem.chembalance.enter_a_valid_formula_above', 'Enter a valid formula above'), key: mp.formula, onClick: function() { upd('_stoichFormula', mp.formula); chemSound('click'); }, className: 'transition-colors px-2 py-0.5 text-[11px] font-bold rounded bg-white text-teal-600 border border-teal-600 hover:bg-teal-50' }, mp.name);
                 })
               )
             ),
@@ -18944,7 +19223,7 @@
               var result = parseFormula(stoichFormula);
               var mass = result.mass;
               var elems = result.elems;
-              if (mass <= 0) return h('p', { className: 'text-xs text-slate-600 italic' }, 'Enter a valid formula above');
+              if (mass <= 0) return h('p', { className: 'text-xs text-slate-600 italic' }, __alloT('stem.chembalance.enter_a_valid_formula_above_2', 'Enter a valid formula above'));
               return h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                   h('p', { className: 'text-lg font-bold text-teal-700' }, 'Molar Mass: ' + mass.toFixed(3) + ' g/mol'),
@@ -18965,15 +19244,59 @@
                 // Gram-mole converter
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Grams \u2192 Moles'),
-                    h('input', { type: 'number', value: stoichGrams, onChange: function(e) { var g = parseFloat(e.target.value); upd('_stoichGrams', e.target.value); if (!isNaN(g) && mass > 0) upd('_stoichMoles', (g / mass).toFixed(4)); }, placeholder: 'grams', 'aria-label': 'Grams to convert to moles', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, __alloT('stem.chembalance.grams_moles', 'Grams \u2192 Moles')),
+                    h('input', { type: 'number', value: stoichGrams, onChange: function(e) { var g = parseFloat(e.target.value); upd('_stoichGrams', e.target.value); if (!isNaN(g) && mass > 0) upd('_stoichMoles', (g / mass).toFixed(4)); }, placeholder: 'grams', 'aria-label': __alloT('stem.chembalance.grams_to_convert_to_moles', 'Grams to convert to moles'), className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
                     stoichGrams && h('p', { className: 'text-[11px] font-bold text-teal-600 mt-1' }, stoichGrams + 'g = ' + (parseFloat(stoichGrams) / mass).toFixed(4) + ' mol')
                   ),
                   h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Moles \u2192 Grams'),
-                    h('input', { type: 'number', value: stoichMoles, onChange: function(e) { var m = parseFloat(e.target.value); upd('_stoichMoles', e.target.value); if (!isNaN(m) && mass > 0) upd('_stoichGrams', (m * mass).toFixed(4)); }, placeholder: 'moles', 'aria-label': 'Moles to convert to grams', className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, __alloT('stem.chembalance.moles_grams', 'Moles \u2192 Grams')),
+                    h('input', { type: 'number', value: stoichMoles, onChange: function(e) { var m = parseFloat(e.target.value); upd('_stoichMoles', e.target.value); if (!isNaN(m) && mass > 0) upd('_stoichGrams', (m * mass).toFixed(4)); }, placeholder: 'moles', 'aria-label': __alloT('stem.chembalance.moles_to_convert_to_grams', 'Moles to convert to grams'), className: 'w-full px-2 py-1 text-sm border rounded-lg' }),
                     stoichMoles && h('p', { className: 'text-[11px] font-bold text-teal-600 mt-1' }, stoichMoles + ' mol = ' + (parseFloat(stoichMoles) * mass).toFixed(4) + 'g')
                   )
+                )
+              );
+            })(),
+            (function() {
+              var yr = d._yieldResult || null;
+              var runYield = function() { var inp = (d._yieldInput || '').trim(); upd('_yieldResult', inp ? balanceEquation(inp) : null); };
+              var sr = null;
+              if (yr && yr.ok) {
+                var given = [];
+                for (var qi = 0; qi < yr.reactantCount; qi++) { var gv = (d._yieldGrams || {})[qi]; if (gv !== undefined && gv !== '' && !isNaN(gv)) given.push({ index: qi, grams: parseFloat(gv) }); }
+                if (given.length === yr.reactantCount) sr = stoichiometry({ coefficients: yr.coefficients, species: yr.species, given: given, productIndex: yr.reactantCount, actualGrams: (d._yieldActual !== undefined && d._yieldActual !== '') ? parseFloat(d._yieldActual) : undefined });
+              }
+              return h('div', { className: 'bg-gradient-to-br from-purple-50 to-slate-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
+                h('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
+                  h('span', { 'aria-hidden': 'true' }, '\u2696\uFE0F'),
+                  h('h4', { className: 'font-bold text-slate-800 text-sm' }, __alloT('stem.chembalance.yield_title', 'Limiting reagent & yield')),
+                  h('span', { className: 'ml-auto text-[10px] font-bold uppercase tracking-wide text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full' }, __alloT('stem.chembalance.calc_badge_2', 'Calculated \u00B7 not AI'))
+                ),
+                h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.yield_hint', 'Type a reaction, then enter how many grams of each reactant you have.')),
+                h('div', { className: 'flex gap-2 mb-2' },
+                  h('input', { type: 'text', value: d._yieldInput || '', onChange: function(e) { upd('_yieldInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runYield(); }, placeholder: 'N2 + H2 -> NH3', 'aria-label': __alloT('stem.chembalance.reaction_for_yield', 'Reaction for the yield calculator'), className: 'flex-1 px-3 py-2 text-sm font-mono border border-purple-300 rounded-lg focus:border-purple-500 focus:outline-none' }),
+                  h('button', { onClick: runYield, className: 'px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 text-sm whitespace-nowrap' }, __alloT('stem.chembalance.set_up', 'Set up'))
+                ),
+                yr && !yr.ok && h('div', { className: 'bg-rose-50 rounded-lg p-2 border border-rose-200 text-xs text-rose-700' }, '\u26A0 ' + yr.error),
+                yr && yr.ok && h('div', null,
+                  h('div', { dir: 'auto', className: 'text-xs font-mono font-bold text-slate-700 mb-2 break-words' }, yr.balancedString),
+                  h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                    yr.species.slice(0, yr.reactantCount).map(function(sp, ri) {
+                      return h('div', { key: ri },
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-0.5' }, sp.formula + ' (g)'),
+                        h('input', { type: 'number', value: (d._yieldGrams || {})[ri] || '', onChange: function(e) { var ng = Object.assign({}, d._yieldGrams || {}); ng[ri] = e.target.value; upd('_yieldGrams', ng); }, placeholder: 'grams', 'aria-label': sp.formula + ' grams available', className: 'w-full px-2 py-1 text-sm border rounded-lg' })
+                      );
+                    })
+                  ),
+                  h('div', { className: 'mb-2' },
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-0.5' }, __alloT('stem.chembalance.actual_yield_opt', 'Actual yield (g, optional)')),
+                    h('input', { type: 'number', value: d._yieldActual || '', onChange: function(e) { upd('_yieldActual', e.target.value); }, placeholder: 'grams produced', 'aria-label': __alloT('stem.chembalance.actual_grams_produced', 'Actual grams produced'), className: 'w-full px-2 py-1 text-sm border rounded-lg' })
+                  ),
+                  sr && !sr.error && h('div', { className: 'bg-white rounded-lg p-3 border border-emerald-300 text-sm' },
+                    h('div', { className: 'font-bold text-slate-800 mb-1' }, '\u2192 ' + __alloT('stem.chembalance.limiting', 'Limiting reagent') + ': ' + sr.limitingFormula),
+                    h('div', { className: 'text-slate-700' }, __alloT('stem.chembalance.theoretical', 'Theoretical yield') + ': ' + sr.theoreticalGrams.toFixed(2) + ' g ' + sr.productFormula + ' (' + sr.molesProduct.toFixed(3) + ' mol)'),
+                    (sr.percentYield != null) && h('div', { className: 'text-slate-700 font-bold mt-0.5' }, __alloT('stem.chembalance.percent_yield', 'Percent yield') + ': ' + sr.percentYield.toFixed(1) + '%')
+                  ),
+                  sr && sr.error && h('div', { className: 'text-xs text-amber-700 mt-1' }, sr.error)
                 )
               );
             })()
@@ -19038,15 +19361,15 @@
               // Info cards
               h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
-                  h('p', { className: 'text-[11px] font-bold text-indigo-500' }, 'SHAPE'),
+                  h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider' }, 'SHAPE'),
                   h('p', { className: 'text-[11px] font-bold text-indigo-700' }, currentMol.shape)
                 ),
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
-                  h('p', { className: 'text-[11px] font-bold text-indigo-500' }, 'BOND ANGLE'),
+                  h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider' }, __alloT('stem.chembalance.bond_angle', 'BOND ANGLE')),
                   h('p', { className: 'text-[11px] font-bold text-indigo-700' }, currentMol.angle)
                 ),
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
-                  h('p', { className: 'text-[11px] font-bold text-indigo-500' }, 'POLARITY'),
+                  h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider' }, 'POLARITY'),
                   h('p', { className: 'text-[11px] font-bold text-indigo-700' }, currentMol.polarity)
                 )
               ),
@@ -19068,8 +19391,8 @@
             ),
             // Safety tabs
             h('div', { className: 'flex gap-2 mb-3' },
-              [{ id: 'symbols', label: '\u26A0\uFE0F GHS Symbols' }, { id: 'emergencies', label: '\uD83D\uDEA8 Emergencies' }, { id: 'rules', label: '\uD83D\uDCCB Lab Rules' }].map(function(tab) {
-                return h('button', { key: tab.id, onClick: function() { upd('_safetyTab', tab.id); }, className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border ' + (safetyTab === tab.id ? 'bg-red-700 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200 hover:border-red-600') }, tab.label);
+              [{ id: 'symbols', label: __alloT('stem.chembalance.ghs_symbols', '\u26A0\uFE0F GHS Symbols') }, { id: 'emergencies', label: __alloT('stem.chembalance.emergencies', '\uD83D\uDEA8 Emergencies') }, { id: 'rules', label: __alloT('stem.chembalance.lab_rules', '\uD83D\uDCCB Lab Rules') }].map(function(tab) {
+                return h('button', { key: tab.id, onClick: function() { upd('_safetyTab', tab.id); }, className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border ' + (safetyTab === tab.id ? 'bg-red-700 text-white border-red-500' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:border-red-600') }, tab.label);
               })
             ),
             // GHS Symbols
@@ -19085,7 +19408,7 @@
                     )
                   ),
                   isOpen && h('div', { className: 'mt-2 pt-2 border-t border-red-200' },
-                    h('p', { className: 'text-xs text-slate-600 mb-1' }, sym.desc),
+                    h('p', { className: 'text-xs text-slate-600 mb-1' }, __alloT('stem.chembalance.' + (sym.id) + '_desc', sym.desc)),
                     h('p', { className: 'text-[11px] text-red-600 font-bold' }, 'Examples: ' + sym.examples)
                   )
                 );
@@ -19134,13 +19457,13 @@
             // Lab Rules
             safetyTab === 'rules' && h('div', { className: 'space-y-2' },
               [
-                { icon: '\uD83E\uDDEA', rule: 'Always wear safety goggles', desc: 'Protect your eyes from splashes, fumes, and debris. Put goggles on before starting and keep them on until cleanup is complete.' },
-                { icon: '\uD83E\uDDE4', rule: 'Wear gloves when handling chemicals', desc: 'Nitrile gloves protect against most lab chemicals. Replace immediately if torn or contaminated.' },
-                { icon: '\uD83D\uDC43', rule: 'Never smell chemicals directly', desc: 'Use the wafting technique: hold the container away and gently wave the air toward your nose with your hand.' },
-                { icon: '\uD83D\uDEAB', rule: 'No food or drink in the lab', desc: 'Chemical contamination is invisible. Even trace amounts on hands or surfaces can be ingested.' },
-                { icon: '\uD83E\uDDFC', rule: 'Wash hands after every lab', desc: 'Wash thoroughly with soap and water for at least 20 seconds, even if you wore gloves.' },
-                { icon: '\uD83D\uDD25', rule: 'Know fire extinguisher & eyewash locations', desc: 'Before starting any lab, locate the nearest fire extinguisher, eyewash station, safety shower, and exits.' },
-                { icon: '\uD83D\uDCE2', rule: 'Report all spills and accidents immediately', desc: 'No matter how small. Your teacher needs to know so proper cleanup and safety measures can be taken.' }
+                { icon: '\uD83E\uDDEA', rule: 'Always wear safety goggles', desc: __alloT('stem.chembalance.protect_your_eyes_from_splashes_fumes_', 'Protect your eyes from splashes, fumes, and debris. Put goggles on before starting and keep them on until cleanup is complete.') },
+                { icon: '\uD83E\uDDE4', rule: 'Wear gloves when handling chemicals', desc: __alloT('stem.chembalance.nitrile_gloves_protect_against_most_la', 'Nitrile gloves protect against most lab chemicals. Replace immediately if torn or contaminated.') },
+                { icon: '\uD83D\uDC43', rule: 'Never smell chemicals directly', desc: __alloT('stem.chembalance.use_the_wafting_technique_hold_the_con', 'Use the wafting technique: hold the container away and gently wave the air toward your nose with your hand.') },
+                { icon: '\uD83D\uDEAB', rule: 'No food or drink in the lab', desc: __alloT('stem.chembalance.chemical_contamination_is_invisible_ev', 'Chemical contamination is invisible. Even trace amounts on hands or surfaces can be ingested.') },
+                { icon: '\uD83E\uDDFC', rule: 'Wash hands after every lab', desc: __alloT('stem.chembalance.wash_thoroughly_with_soap_and_water_fo', 'Wash thoroughly with soap and water for at least 20 seconds, even if you wore gloves.') },
+                { icon: '\uD83D\uDD25', rule: 'Know fire extinguisher & eyewash locations', desc: __alloT('stem.chembalance.before_starting_any_lab_locate_the_nea', 'Before starting any lab, locate the nearest fire extinguisher, eyewash station, safety shower, and exits.') },
+                { icon: '\uD83D\uDCE2', rule: 'Report all spills and accidents immediately', desc: __alloT('stem.chembalance.no_matter_how_small_your_teacher_needs', 'No matter how small. Your teacher needs to know so proper cleanup and safety measures can be taken.') }
               ].map(function(r, ri) {
                 return h('div', { key: ri, className: 'flex items-start gap-3 bg-white rounded-xl border p-3' },
                   h('span', { className: 'text-xl' }, r.icon),
@@ -19157,7 +19480,7 @@
           // CHALLENGE SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'challenge' && h('div', null,
-            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Test your chemistry knowledge across 3 difficulty levels!'),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.test_your_chemistry_knowledge_across_3', 'Test your chemistry knowledge across 3 difficulty levels!')),
             h('div', { className: 'flex gap-2 mb-3' },
               ['easy', 'medium', 'hard'].map(function(diff) {
                 var labels = { easy: '\uD83C\uDF31 Beginner', medium: '\u26A1 Intermediate', hard: '\uD83D\uDE80 Advanced' };
@@ -19169,7 +19492,7 @@
               h('span', { className: 'text-xs font-bold text-slate-600' }, 'Q ' + (chalIdx + 1) + '/' + chalQuestions.length),
               h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2705 ' + chalScore),
               h('span', { className: 'text-xs font-bold text-amber-600' }, '\uD83D\uDD25 ' + chalStreak),
-              chalStreak >= 3 && h('span', { className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse' }, '\u2B50 BONUS!')
+              chalStreak >= 3 && h('span', { className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse' }, __alloT('stem.chembalance.bonus', '\u2B50 BONUS!'))
             ),
             chalIdx < chalQuestions.length ? h('div', { className: 'bg-white rounded-xl border p-4' },
               h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, chalQuestions[chalIdx].q),
@@ -19193,7 +19516,7 @@
             ) : h('div', { className: 'text-center bg-lime-50 rounded-xl border border-lime-200 p-4' },
               h('p', { className: 'text-2xl mb-1' }, '\uD83C\uDFC6'),
               h('p', { className: 'text-sm font-bold text-lime-700' }, 'Challenge Complete! ' + chalScore + '/' + chalQuestions.length),
-              h('button', { 'aria-label': 'Retry', onClick: function() { updMulti({ _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); }, className: 'mt-2 px-4 py-1.5 text-xs font-bold text-white bg-lime-500 rounded-lg hover:bg-lime-600' }, '\u21BA Retry')
+              h('button', { 'aria-label': __alloT('stem.chembalance.retry', 'Retry'), onClick: function() { updMulti({ _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); }, className: 'transition-colors mt-2 px-4 py-1.5 text-xs font-bold text-white bg-lime-500 rounded-lg hover:bg-lime-600' }, __alloT('stem.chembalance.retry_2', '\u21BA Retry'))
             )
           ),
 
@@ -19201,24 +19524,24 @@
           // ELEMENT BATTLE SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'battle' && h('div', null,
-            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'A rogue element is destabilizing the compound! Answer chemistry questions to restore stability!'),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.a_rogue_element_is_destabilizing_the_c', 'A rogue element is destabilizing the compound! Answer chemistry questions to restore stability!')),
             !battleActive && !battleResult && h('div', { className: 'text-center bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 p-6' },
               h('p', { className: 'text-4xl mb-3' }, '\u2694\uFE0F'),
-              h('p', { className: 'text-lg font-bold text-red-700 mb-1' }, 'Element Battle'),
-              h('p', { className: 'text-xs text-slate-600 mb-4' }, 'Answer correctly to deal damage. Wrong answers destabilize your compound!'),
-              h('button', { 'aria-label': 'Start Battle', onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg hover:from-red-600 hover:to-orange-600 shadow-lg' }, '\u2694\uFE0F Start Battle')
+              h('p', { className: 'text-lg font-bold text-red-700 mb-1' }, __alloT('stem.chembalance.element_battle', 'Element Battle')),
+              h('p', { className: 'text-xs text-slate-600 mb-4' }, __alloT('stem.chembalance.answer_correctly_to_deal_damage_wrong_', 'Answer correctly to deal damage. Wrong answers destabilize your compound!')),
+              h('button', { 'aria-label': __alloT('stem.chembalance.start_battle', 'Start Battle'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg hover:from-red-600 hover:to-orange-600 shadow-lg' }, __alloT('stem.chembalance.start_battle_2', '\u2694\uFE0F Start Battle'))
             ),
             battleActive && battleRound < BATTLE_QS.length && h('div', null,
               h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
                 h('div', { className: 'bg-emerald-50 rounded-xl p-2 border border-emerald-200' },
-                  h('p', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, '\u2697\uFE0F Your Compound'),
+                  h('p', { className: 'text-[11px] font-bold text-emerald-600 mb-1' }, __alloT('stem.chembalance.your_compound', '\u2697\uFE0F Your Compound')),
                   h('div', { className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden' },
                     h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: Math.max(0, battleHP) + '%', background: battleHP > 50 ? '#22c55e' : battleHP > 25 ? '#f59e0b' : '#ef4444' } })
                   ),
                   h('p', { className: 'text-[11px] font-bold text-emerald-700 mt-0.5' }, battleHP + ' HP')
                 ),
                 h('div', { className: 'bg-red-50 rounded-xl p-2 border border-red-200' },
-                  h('p', { className: 'text-[11px] font-bold text-red-600 mb-1' }, '\uD83D\uDCA5 Rogue Element'),
+                  h('p', { className: 'text-[11px] font-bold text-red-600 mb-1' }, __alloT('stem.chembalance.rogue_element', '\uD83D\uDCA5 Rogue Element')),
                   h('div', { className: 'w-full bg-slate-200 rounded-full h-3 overflow-hidden' },
                     h('div', { className: 'bg-red-500 h-full rounded-full transition-all duration-500', style: { width: Math.max(0, battleEnemyHP) + '%' } })
                   ),
@@ -19253,11 +19576,11 @@
               h('p', { className: 'text-4xl mb-2' }, battleResult === 'won' ? '\uD83C\uDFC6' : '\uD83D\uDCA5'),
               h('p', { className: 'text-lg font-bold ' + (battleResult === 'won' ? 'text-emerald-700' : 'text-red-700') }, battleResult === 'won' ? 'Victory! Compound Stabilized!' : 'Defeated! The element escaped...'),
               h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length),
-              h('button', { 'aria-label': 'Battle Again', onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg' }, '\u2694\uFE0F Battle Again')
+              h('button', { 'aria-label': __alloT('stem.chembalance.battle_again', 'Battle Again'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg' }, __alloT('stem.chembalance.battle_again_2', '\u2694\uFE0F Battle Again'))
             ),
             battleActive && battleRound >= BATTLE_QS.length && !battleResult && h('div', { className: 'text-center bg-amber-50 rounded-xl border border-amber-200 p-6' },
               h('p', { className: 'text-lg font-bold text-amber-700' }, 'Battle Over! Score: ' + battleScore + '/' + BATTLE_QS.length),
-              h('button', { 'aria-label': 'Try Again', onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'mt-2 px-6 py-2 text-sm font-bold text-white bg-amber-700 rounded-lg' }, '\u2694\uFE0F Try Again')
+              h('button', { 'aria-label': __alloT('stem.chembalance.try_again', 'Try Again'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'mt-2 px-6 py-2 text-sm font-bold text-white bg-amber-700 rounded-lg' }, __alloT('stem.chembalance.try_again_2', '\u2694\uFE0F Try Again'))
             )
           ),
 
@@ -19281,10 +19604,10 @@
                       h('p', { className: 'text-[11px] font-bold text-lime-600 uppercase tracking-wider mb-1' }, band.toUpperCase() + ' Level'),
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, content)
                     ),
-                    idx === 0 && h('button', { onClick: function() { upd('subtool', 'reactions'); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-lime-600 bg-lime-50 border border-lime-600 rounded-lg hover:bg-lime-100' }, '\u2192 Explore Reaction Types'),
-                    idx === 2 && h('button', { onClick: function() { upd('subtool', 'molecular'); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-600 rounded-lg hover:bg-indigo-100' }, '\u2192 View Molecular Models'),
-                    idx === 3 && h('button', { onClick: function() { upd('subtool', 'stoich'); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-600 rounded-lg hover:bg-teal-100' }, '\u2192 Try Stoichiometry Calculator'),
-                    callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(content); }, className: 'mt-2 ml-2 px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-50 border border-slate-400 rounded-lg hover:bg-slate-100' }, '\uD83D\uDD0A Read Aloud')
+                    idx === 0 && h('button', { onClick: function() { upd('subtool', 'reactions'); }, className: 'transition-colors mt-2 px-3 py-1 text-[11px] font-bold text-lime-600 bg-lime-50 border border-lime-600 rounded-lg hover:bg-lime-100' }, __alloT('stem.chembalance.explore_reaction_types', '\u2192 Explore Reaction Types')),
+                    idx === 2 && h('button', { onClick: function() { upd('subtool', 'molecular'); }, className: 'transition-colors mt-2 px-3 py-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-600 rounded-lg hover:bg-indigo-100' }, __alloT('stem.chembalance.view_molecular_models', '\u2192 View Molecular Models')),
+                    idx === 3 && h('button', { onClick: function() { upd('subtool', 'stoich'); }, className: 'transition-colors mt-2 px-3 py-1 text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-600 rounded-lg hover:bg-teal-100' }, __alloT('stem.chembalance.try_stoichiometry_calculator', '\u2192 Try Stoichiometry Calculator')),
+                    callTTS && h('button', { 'aria-label': __alloT('stem.chembalance.read_aloud', 'Read Aloud'), onClick: function() { callTTS(content); }, className: 'transition-colors mt-2 ml-2 px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-50 border border-slate-400 rounded-lg hover:bg-slate-100' }, __alloT('stem.chembalance.read_aloud_2', '\uD83D\uDD0A Read Aloud'))
                   )
                 );
               })
@@ -19299,7 +19622,7 @@
             var elIdx = (d._elementIdx != null) ? d._elementIdx : 0;
             var elem = allElements[elIdx] || allElements[0];
             return h('div', null,
-              h('p', { className: 'text-xs text-slate-600 italic mb-3' }, '118 elements deep profiles.'),
+              h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.118_elements_deep_profiles', '118 elements deep profiles.')),
               h('div', { className: 'flex flex-wrap gap-1 mb-3 max-h-48 overflow-y-auto p-2 bg-slate-50 rounded-lg border' },
                 allElements.slice(0, 60).map(function(e, i) {
                   var sel = elIdx === i;
@@ -19322,7 +19645,7 @@
           subtool === 'periodic' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, PERIODIC_INFO.intro),
             h('div', { className: 'mb-4' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, '🔢 Groups'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.groups', '🔢 Groups')),
               h('div', { className: 'space-y-2' },
                 PERIODIC_INFO.groups.map(function(g, i) {
                   return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded-lg p-3' },
@@ -19338,7 +19661,7 @@
               )
             ),
             h('div', null,
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, '📈 Periodic Trends'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.periodic_trends', '📈 Periodic Trends')),
               h('div', { className: 'space-y-2' },
                 PERIODIC_INFO.trends.map(function(t, i) {
                   return h('div', { key: i, className: 'bg-cyan-50 border border-cyan-200 rounded-lg p-3' },
@@ -19362,7 +19685,7 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
                 FAMOUS_REACTIONS.map(function(rx, i) {
                   var sel = rxnIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_rxnIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-red-600 text-white' : 'bg-white text-slate-700 border border-slate-300 hover:bg-red-50') }, '#' + (i + 1));
+                  return h('button', { key: i, onClick: function() { upd('_rxnIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-red-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-red-50') }, '#' + (i + 1));
                 })
               ),
               h('div', { className: 'bg-red-50 border-2 border-red-300 rounded-xl p-4 space-y-2' },
@@ -19374,12 +19697,12 @@
                     h('div', { className: 'text-amber-900' }, r.delta)
                   ),
                   h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded p-2' },
-                    h('div', { className: 'font-bold text-cyan-700' }, 'Type'),
+                    h('div', { className: 'font-bold text-cyan-700' }, __alloT('stem.chembalance.type', 'Type')),
                     h('div', { className: 'text-cyan-900' }, r.type)
                   )
                 ),
                 h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-emerald-700 mb-1' }, 'Context'),
+                  h('div', { className: 'font-bold text-emerald-700 mb-1' }, __alloT('stem.chembalance.context', 'Context')),
                   h('div', { className: 'text-emerald-900 leading-relaxed' }, r.context)
                 )
               )
@@ -19397,7 +19720,7 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3' },
                 INDUSTRIAL_CHEM.processes.map(function(pr, i) {
                   var sel = iIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_industrialIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-orange-600 text-white' : 'bg-white text-slate-700 border border-slate-300 hover:bg-orange-50') }, pr.name.split(' ')[0]);
+                  return h('button', { key: i, onClick: function() { upd('_industrialIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-orange-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-orange-50') }, pr.name.split(' ')[0]);
                 })
               ),
               h('div', { className: 'bg-orange-50 border-2 border-orange-300 rounded-xl p-4 space-y-2' },
@@ -19405,11 +19728,11 @@
                 h('div', { className: 'text-xs italic text-slate-600' }, 'Invented: ' + p.invented),
                 h('div', { className: 'bg-white border border-orange-200 rounded p-3 font-mono text-sm text-slate-900' }, p.reaction),
                 h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-emerald-700 mb-1' }, 'Importance'),
+                  h('div', { className: 'font-bold text-emerald-700 mb-1' }, __alloT('stem.chembalance.importance', 'Importance')),
                   h('div', { className: 'text-emerald-900 leading-relaxed' }, p.importance)
                 ),
                 h('div', { className: 'bg-red-50 border border-red-200 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-red-700 mb-1' }, 'Drawbacks'),
+                  h('div', { className: 'font-bold text-red-700 mb-1' }, __alloT('stem.chembalance.drawbacks', 'Drawbacks')),
                   h('div', { className: 'text-red-900' }, p.drawbacks)
                 )
               )
@@ -19427,7 +19750,7 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3' },
                 AP_CHEMISTRY.units.map(function(un, i) {
                   var sel = uIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_apUnit', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 border border-slate-300 hover:bg-indigo-50') }, 'Unit ' + un.unit);
+                  return h('button', { key: i, onClick: function() { upd('_apUnit', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-indigo-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-indigo-50') }, 'Unit ' + un.unit);
                 })
               ),
               h('div', { className: 'bg-indigo-50 border-2 border-indigo-300 rounded-xl p-4 space-y-2' },
@@ -19436,18 +19759,18 @@
                   h('div', { className: 'text-xs text-amber-600 font-mono font-bold' }, u.weight)
                 ),
                 h('div', { className: 'bg-white border border-indigo-200 rounded p-3' },
-                  h('div', { className: 'text-xs font-bold text-indigo-700 mb-2' }, 'Topics'),
+                  h('div', { className: 'text-xs font-bold text-indigo-700 mb-2' }, __alloT('stem.chembalance.topics', 'Topics')),
                   h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-slate-700' },
                     u.topics.map(function(t, i) { return h('li', { key: i }, t); })
                   )
                 ),
                 h('div', { className: 'bg-amber-50 border border-amber-200 rounded p-3 text-xs' },
-                  h('div', { className: 'font-bold text-amber-700 mb-1' }, 'Study Tip'),
+                  h('div', { className: 'font-bold text-amber-700 mb-1' }, __alloT('stem.chembalance.study_tip', 'Study Tip')),
                   h('div', { className: 'text-amber-900 italic' }, u.tip)
                 )
               ),
               h('div', { className: 'mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4' },
-                h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Exam Tips'),
+                h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.exam_tips', 'Exam Tips')),
                 h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-emerald-900' },
                   AP_CHEMISTRY.examTips.map(function(t, i) { return h('li', { key: i, className: 'leading-relaxed' }, t); })
                 )
@@ -19466,23 +19789,23 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
                 LAB_TECHNIQUES.techniques.map(function(tc, i) {
                   var sel = tIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_techIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 border border-slate-300 hover:bg-blue-50') }, tc.name);
+                  return h('button', { key: i, onClick: function() { upd('_techIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-blue-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-blue-50') }, tc.name);
                 })
               ),
               h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-4 space-y-2' },
                 h('div', { className: 'text-lg font-bold text-blue-700' }, '🔬 ' + t.name),
                 h('div', { className: 'bg-white border border-blue-200 rounded p-3 text-xs' },
-                  h('div', { className: 'font-bold text-blue-700 mb-1' }, 'Purpose'),
+                  h('div', { className: 'font-bold text-blue-700 mb-1' }, __alloT('stem.chembalance.purpose', 'Purpose')),
                   h('div', { className: 'text-blue-900' }, t.purpose)
                 ),
                 h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded p-3 text-xs' },
-                  h('div', { className: 'font-bold text-emerald-700 mb-2' }, 'Procedure'),
+                  h('div', { className: 'font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.procedure', 'Procedure')),
                   h('ol', { className: 'space-y-1 list-decimal list-inside text-emerald-900' },
                     t.steps.map(function(s, i) { return h('li', { key: i, className: 'leading-relaxed' }, s); })
                   )
                 ),
                 h('div', { className: 'bg-red-50 border border-red-200 rounded p-2 text-xs' },
-                  h('div', { className: 'font-bold text-red-700 mb-1' }, 'Hazards'),
+                  h('div', { className: 'font-bold text-red-700 mb-1' }, __alloT('stem.chembalance.hazards', 'Hazards')),
                   h('div', { className: 'text-red-900' }, t.danger)
                 )
               )
@@ -19496,11 +19819,11 @@
             var cIdx = (d._chemistIdx != null) ? d._chemistIdx : 0;
             var c = FAMOUS_CHEMISTS[cIdx];
             return h('div', null,
-              h('p', { className: 'text-xs text-slate-600 italic mb-3' }, '25 legendary chemists.'),
+              h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.25_legendary_chemists', '25 legendary chemists.')),
               h('div', { className: 'flex flex-wrap gap-1 mb-3 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded' },
                 FAMOUS_CHEMISTS.map(function(cm, i) {
                   var sel = cIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_chemistIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-purple-600 text-white' : 'bg-white text-slate-700 border border-slate-300 hover:bg-purple-50') }, cm.name.split(' ').pop());
+                  return h('button', { key: i, onClick: function() { upd('_chemistIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-purple-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-purple-50') }, cm.name.split(' ').pop());
                 })
               ),
               h('div', { className: 'bg-purple-50 border-2 border-purple-300 rounded-xl p-4 space-y-2' },
@@ -19510,11 +19833,11 @@
                 ),
                 h('div', { className: 'text-xs italic text-slate-600' }, c.country),
                 h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded p-3 text-xs' },
-                  h('div', { className: 'font-bold text-emerald-700 mb-1' }, 'Achievement'),
+                  h('div', { className: 'font-bold text-emerald-700 mb-1' }, __alloT('stem.chembalance.achievement', 'Achievement')),
                   h('div', { className: 'text-emerald-900 leading-relaxed' }, c.achievement)
                 ),
                 h('div', { className: 'bg-amber-50 border border-amber-200 rounded p-3 text-xs' },
-                  h('div', { className: 'font-bold text-amber-700 mb-1' }, 'Note'),
+                  h('div', { className: 'font-bold text-amber-700 mb-1' }, __alloT('stem.chembalance.note', 'Note')),
                   h('div', { className: 'text-amber-900 italic leading-relaxed' }, c.tragic)
                 )
               )
@@ -19543,7 +19866,7 @@
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, ACIDS_BASES.intro),
             h('div', { className: 'space-y-3' },
               h('div', { className: 'bg-blue-50 border border-blue-300 rounded-xl p-3' },
-                h('div', { className: 'text-sm font-bold text-blue-700 mb-2' }, 'Three Acid/Base Theories'),
+                h('div', { className: 'text-sm font-bold text-blue-700 mb-2' }, __alloT('stem.chembalance.three_acid_base_theories', 'Three Acid/Base Theories')),
                 ACIDS_BASES.definitions.map(function(def, i) {
                   return h('div', { key: i, className: 'bg-white border border-blue-200 rounded p-2 mb-1 text-xs' },
                     h('div', { className: 'font-bold text-blue-700' }, def.theory),
@@ -19554,7 +19877,7 @@
                 })
               ),
               h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3' },
-                h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, 'Strong Acids (Memorize)'),
+                h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, __alloT('stem.chembalance.strong_acids_memorize', 'Strong Acids (Memorize)')),
                 h('div', { className: 'flex flex-wrap gap-2' },
                   ACIDS_BASES.strongAcids.map(function(a, i) {
                     return h('span', { key: i, className: 'px-2 py-1 bg-white border border-rose-200 rounded font-mono text-xs text-rose-800 font-bold' }, a);
@@ -19562,7 +19885,7 @@
                 )
               ),
               h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-3' },
-                h('div', { className: 'text-sm font-bold text-indigo-700 mb-2' }, 'Strong Bases'),
+                h('div', { className: 'text-sm font-bold text-indigo-700 mb-2' }, __alloT('stem.chembalance.strong_bases', 'Strong Bases')),
                 h('div', { className: 'flex flex-wrap gap-2' },
                   ACIDS_BASES.strongBases.map(function(b, i) {
                     return h('span', { key: i, className: 'px-2 py-1 bg-white border border-indigo-200 rounded font-mono text-xs text-indigo-800 font-bold' }, b);
@@ -19570,7 +19893,7 @@
                 )
               ),
               h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3' },
-                h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Weak Acids'),
+                h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.weak_acids', 'Weak Acids')),
                 h('div', { className: 'grid grid-cols-2 gap-1' },
                   ACIDS_BASES.weakAcids.map(function(a, i) {
                     return h('div', { key: i, className: 'flex justify-between bg-white border border-amber-200 rounded p-1 text-[10px]' },
@@ -19581,16 +19904,16 @@
                 )
               ),
               h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3' },
-                h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Key Equations'),
+                h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.key_equations', 'Key Equations')),
                 h('div', { className: 'space-y-1 text-xs' },
-                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, 'pH = -log[H+]'),
-                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, 'pH + pOH = 14'),
-                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, 'Kw = [H+][OH-] = 1e-14'),
-                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, 'pH = pKa + log([A-]/[HA])')
+                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.ph_log_h', 'pH = -log[H+]')),
+                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.ph_poh_14', 'pH + pOH = 14')),
+                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.kw_h_oh_1e_14', 'Kw = [H+][OH-] = 1e-14')),
+                  h('div', { className: 'bg-white border border-cyan-200 rounded p-2 font-mono' }, __alloT('stem.chembalance.ph_pka_log_a_ha', 'pH = pKa + log([A-]/[HA])'))
                 )
               ),
               h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-                h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Key Concepts'),
+                h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.key_concepts', 'Key Concepts')),
                 ACIDS_BASES.keyConcepts.map(function(k, i) {
                   return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
                     h('div', { className: 'font-bold text-emerald-700' }, k.concept),
@@ -19607,12 +19930,12 @@
           subtool === 'redox' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, REDOX.intro),
             h('div', { className: 'bg-yellow-50 border-2 border-yellow-400 rounded-xl p-4 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Memory Tricks'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.memory_tricks', 'Memory Tricks')),
               h('div', { className: 'bg-white border border-amber-200 rounded p-2 text-xs mb-1' }, REDOX.oilrig),
               h('div', { className: 'bg-white border border-amber-200 rounded p-2 text-xs' }, REDOX.leorigers)
             ),
             h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Oxidation Number Rules'),
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.oxidation_number_rules', 'Oxidation Number Rules')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-xs text-cyan-900' },
                 REDOX.rules.map(function(r, i) { return h('li', { key: i }, r); })
               )
@@ -19629,7 +19952,7 @@
               )
             ),
             h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Electrochemical Cells'),
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.electrochemical_cells', 'Electrochemical Cells')),
               REDOX.cells.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-purple-700' }, c.type),
@@ -19639,7 +19962,7 @@
               })
             ),
             h('div', { className: 'bg-orange-50 border border-orange-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-orange-700 mb-2' }, 'Common Batteries'),
+              h('div', { className: 'text-sm font-bold text-orange-700 mb-2' }, __alloT('stem.chembalance.common_batteries', 'Common Batteries')),
               REDOX.batteries.map(function(b, i) {
                 return h('div', { key: i, className: 'bg-white border border-orange-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'flex justify-between mb-1' },
@@ -19658,7 +19981,7 @@
           subtool === 'organic' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, ORGANIC_CHEM.intro),
             h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Functional Groups'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.functional_groups', 'Functional Groups')),
               ORGANIC_CHEM.functionalGroups.map(function(fg, i) {
                 return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-emerald-700' }, fg.name),
@@ -19669,13 +19992,13 @@
               })
             ),
             h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'IUPAC Naming Rules'),
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.iupac_naming_rules', 'IUPAC Naming Rules')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-xs text-cyan-900' },
                 ORGANIC_CHEM.namingRules.map(function(r, i) { return h('li', { key: i, className: 'leading-relaxed' }, r); })
               )
             ),
             h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Major Reaction Types'),
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.major_reaction_types', 'Major Reaction Types')),
               ORGANIC_CHEM.reactions.map(function(r, i) {
                 return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-purple-700' }, r.type),
@@ -19692,7 +20015,7 @@
           subtool === 'biochem' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, BIOCHEM.intro),
             h('div', { className: 'bg-pink-50 border border-pink-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-pink-700 mb-2' }, 'Four Macromolecule Classes'),
+              h('div', { className: 'text-sm font-bold text-pink-700 mb-2' }, __alloT('stem.chembalance.four_macromolecule_classes', 'Four Macromolecule Classes')),
               BIOCHEM.macromolecules.map(function(m, i) {
                 return h('div', { key: i, className: 'bg-white border border-pink-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-pink-700' }, m.type),
@@ -19704,7 +20027,7 @@
               })
             ),
             h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, '20 Standard Amino Acids'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.20_standard_amino_acids', '20 Standard Amino Acids')),
               h('div', { className: 'grid grid-cols-2 gap-1' },
                 BIOCHEM.aminoAcids.map(function(aa, i) {
                   return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-1 text-[10px]' },
@@ -19718,13 +20041,13 @@
               )
             ),
             h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'DNA + RNA Basics'),
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.dna_rna_basics', 'DNA + RNA Basics')),
               h('div', { className: 'bg-white border border-cyan-200 rounded p-2 text-xs mb-1' }, BIOCHEM.dna),
               h('div', { className: 'bg-white border border-cyan-200 rounded p-2 text-xs mb-1' }, BIOCHEM.rna),
               h('div', { className: 'bg-white border border-cyan-200 rounded p-2 text-xs font-bold text-cyan-700' }, BIOCHEM.centralDogma)
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Key Metabolic Pathways'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.key_metabolic_pathways', 'Key Metabolic Pathways')),
               BIOCHEM.metabolism.map(function(p, i) {
                 return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-emerald-700' }, p.pathway),
@@ -19742,7 +20065,7 @@
           subtool === 'thermo' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, THERMO.intro),
             h('div', { className: 'bg-red-50 border border-red-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-red-700 mb-2' }, 'Four Laws of Thermodynamics'),
+              h('div', { className: 'text-sm font-bold text-red-700 mb-2' }, __alloT('stem.chembalance.four_laws_of_thermodynamics', 'Four Laws of Thermodynamics')),
               THERMO.laws.map(function(l, i) {
                 return h('div', { key: i, className: 'bg-white border border-red-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-red-700' }, l.name + ' (Law ' + l.number + ')'),
@@ -19752,7 +20075,7 @@
               })
             ),
             h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Key Concepts'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.key_concepts_2', 'Key Concepts')),
               THERMO.concepts.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-amber-700' }, c.name),
@@ -19762,7 +20085,7 @@
               })
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Example Reactions'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.example_reactions', 'Example Reactions')),
               THERMO.examples.map(function(e, i) {
                 return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-mono font-bold text-slate-800' }, e.reaction),
@@ -19782,7 +20105,7 @@
           subtool === 'kinetics' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, KINETICS.intro),
             h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Factors Affecting Rate'),
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.factors_affecting_rate', 'Factors Affecting Rate')),
               KINETICS.factors.map(function(f, i) {
                 return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-cyan-700' }, f.factor),
@@ -19791,7 +20114,7 @@
               })
             ),
             h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Rate Laws'),
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.rate_laws', 'Rate Laws')),
               KINETICS.rateLaws.map(function(r, i) {
                 return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-purple-700' }, r.type),
@@ -19802,11 +20125,11 @@
               })
             ),
             h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Arrhenius Equation'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.arrhenius_equation', 'Arrhenius Equation')),
               h('div', { className: 'bg-white border border-amber-200 rounded p-2 font-mono text-xs' }, KINETICS.arrhenius)
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Reaction Mechanisms'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.reaction_mechanisms', 'Reaction Mechanisms')),
               KINETICS.mechanisms.map(function(m, i) {
                 return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-emerald-700' }, m.type),
@@ -19822,7 +20145,7 @@
           subtool === 'equilibrium' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, EQUILIBRIUM.intro),
             h('div', { className: 'bg-indigo-50 border border-indigo-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-indigo-700 mb-2' }, 'Key Concepts'),
+              h('div', { className: 'text-sm font-bold text-indigo-700 mb-2' }, __alloT('stem.chembalance.key_concepts_3', 'Key Concepts')),
               EQUILIBRIUM.concepts.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-indigo-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-indigo-700' }, c.name),
@@ -19832,7 +20155,7 @@
               })
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Example Equilibria'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.example_equilibria', 'Example Equilibria')),
               EQUILIBRIUM.examples.map(function(e, i) {
                 return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-mono font-bold text-slate-800' }, e.reaction),
@@ -19849,7 +20172,7 @@
           subtool === 'gas_laws' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, GAS_LAWS.intro),
             h('div', { className: 'bg-blue-50 border border-blue-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-blue-700 mb-2' }, 'Gas Laws'),
+              h('div', { className: 'text-sm font-bold text-blue-700 mb-2' }, __alloT('stem.chembalance.gas_laws', 'Gas Laws')),
               GAS_LAWS.laws.map(function(l, i) {
                 return h('div', { key: i, className: 'bg-white border border-blue-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-blue-700' }, l.name),
@@ -19860,7 +20183,7 @@
               })
             ),
             h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Constants'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.constants', 'Constants')),
               GAS_LAWS.constants.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs flex justify-between' },
                   h('span', { className: 'font-bold text-amber-700' }, c.name),
@@ -19869,13 +20192,13 @@
               })
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Kinetic Molecular Theory'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.kinetic_molecular_theory', 'Kinetic Molecular Theory')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-xs text-emerald-900' },
                 GAS_LAWS.kineticTheory.map(function(t, i) { return h('li', { key: i }, t); })
               )
             ),
             h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, 'Deviations from Ideal'),
+              h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, __alloT('stem.chembalance.deviations_from_ideal', 'Deviations from Ideal')),
               h('div', { className: 'text-xs text-rose-900 leading-relaxed' }, GAS_LAWS.deviations)
             )
           ),
@@ -19886,7 +20209,7 @@
           subtool === 'solutions' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, SOLUTIONS.intro),
             h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Concentration Units'),
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.concentration_units', 'Concentration Units')),
               SOLUTIONS.concentration.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-cyan-700' }, c.unit),
@@ -19897,13 +20220,13 @@
               })
             ),
             h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Solubility Rules'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.solubility_rules', 'Solubility Rules')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-900' },
                 SOLUTIONS.solubilityRules.map(function(r, i) { return h('li', { key: i }, r); })
               )
             ),
             h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Colligative Properties'),
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.colligative_properties', 'Colligative Properties')),
               SOLUTIONS.colligative.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-purple-700' }, c.property),
@@ -19913,7 +20236,7 @@
               })
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Factors Affecting Solubility'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.factors_affecting_solubility', 'Factors Affecting Solubility')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-emerald-900' },
                 SOLUTIONS.factors.map(function(f, i) { return h('li', { key: i }, f); })
               )
@@ -19926,7 +20249,7 @@
           subtool === 'nuclear' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, NUCLEAR.intro),
             h('div', { className: 'bg-yellow-50 border-2 border-yellow-400 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Types of Radiation'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.types_of_radiation', 'Types of Radiation')),
               NUCLEAR.radioactivity.map(function(r, i) {
                 return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'flex justify-between font-bold text-amber-700' },
@@ -19941,7 +20264,7 @@
               })
             ),
             h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Common Half-Lives'),
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.common_half_lives', 'Common Half-Lives')),
               NUCLEAR.halfLives.map(function(h2, i) {
                 return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs flex justify-between' },
                   h('span', { className: 'font-mono font-bold text-cyan-700' }, h2.isotope + ' (' + h2.halflife + ')'),
@@ -19950,15 +20273,15 @@
               })
             ),
             h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, 'Fission'),
+              h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, __alloT('stem.chembalance.fission', 'Fission')),
               h('div', { className: 'text-xs text-rose-900 leading-relaxed' }, NUCLEAR.fission)
             ),
             h('div', { className: 'bg-orange-50 border border-orange-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-orange-700 mb-2' }, 'Fusion'),
+              h('div', { className: 'text-sm font-bold text-orange-700 mb-2' }, __alloT('stem.chembalance.fusion', 'Fusion')),
               h('div', { className: 'text-xs text-orange-900 leading-relaxed' }, NUCLEAR.fusion)
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Medical Uses'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.medical_uses', 'Medical Uses')),
               NUCLEAR.medical.map(function(m, i) {
                 return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-emerald-700' }, m.use),
@@ -19975,7 +20298,7 @@
           subtool === 'environmental' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, ENV_CHEM.intro),
             h('div', { className: 'bg-green-50 border border-green-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-green-700 mb-2' }, 'Environmental Topics'),
+              h('div', { className: 'text-sm font-bold text-green-700 mb-2' }, __alloT('stem.chembalance.environmental_topics', 'Environmental Topics')),
               ENV_CHEM.topics.map(function(t, i) {
                 return h('div', { key: i, className: 'bg-white border border-green-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-green-700' }, t.topic),
@@ -19986,7 +20309,7 @@
               })
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, '12 Principles of Green Chemistry'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.12_principles_of_green_chemistry', '12 Principles of Green Chemistry')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-xs text-emerald-900' },
                 ENV_CHEM.greenChemistry.map(function(g, i) { return h('li', { key: i, className: 'leading-relaxed' }, g); })
               )
@@ -19999,7 +20322,7 @@
           subtool === 'pharma' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, PHARMA.intro),
             h('div', { className: 'bg-pink-50 border border-pink-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-pink-700 mb-2' }, 'Drug Development Process'),
+              h('div', { className: 'text-sm font-bold text-pink-700 mb-2' }, __alloT('stem.chembalance.drug_development_process', 'Drug Development Process')),
               PHARMA.process.map(function(s, i) {
                 return h('div', { key: i, className: 'bg-white border border-pink-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'flex justify-between mb-1' },
@@ -20011,7 +20334,7 @@
               })
             ),
             h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Famous Drugs'),
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.famous_drugs', 'Famous Drugs')),
               PHARMA.famousDrugs.map(function(d, i) {
                 return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-cyan-700' }, d.name + ' (' + d.invented + ')'),
@@ -20022,7 +20345,7 @@
               })
             ),
             h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Common Drug Classes'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.common_drug_classes', 'Common Drug Classes')),
               PHARMA.drugClasses.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-amber-700' }, c.class),
@@ -20040,7 +20363,7 @@
           subtool === 'materials' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, MATERIALS.intro),
             h('div', { className: 'bg-stone-50 border border-stone-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-stone-700 mb-2' }, 'Material Classes'),
+              h('div', { className: 'text-sm font-bold text-stone-700 mb-2' }, __alloT('stem.chembalance.material_classes', 'Material Classes')),
               MATERIALS.classes.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-stone-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-stone-700' }, c.class),
@@ -20051,7 +20374,7 @@
               })
             ),
             h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Common Polymers'),
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.common_polymers', 'Common Polymers')),
               MATERIALS.polymers.map(function(p, i) {
                 return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-purple-700' }, p.type),
@@ -20069,7 +20392,7 @@
           subtool === 'food_chem' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, FOOD_CHEM.intro),
             h('div', { className: 'bg-orange-50 border border-orange-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-orange-700 mb-2' }, 'Key Reactions in Cooking'),
+              h('div', { className: 'text-sm font-bold text-orange-700 mb-2' }, __alloT('stem.chembalance.key_reactions_in_cooking', 'Key Reactions in Cooking')),
               FOOD_CHEM.reactions.map(function(r, i) {
                 return h('div', { key: i, className: 'bg-white border border-orange-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-orange-700' }, r.name),
@@ -20080,7 +20403,7 @@
               })
             ),
             h('div', { className: 'bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-yellow-700 mb-2' }, 'Food Additives'),
+              h('div', { className: 'text-sm font-bold text-yellow-700 mb-2' }, __alloT('stem.chembalance.food_additives', 'Food Additives')),
               FOOD_CHEM.additives.map(function(a, i) {
                 return h('div', { key: i, className: 'bg-white border border-yellow-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-yellow-700' }, a.name),
@@ -20090,7 +20413,7 @@
               })
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Nutrient Macros'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.nutrient_macros', 'Nutrient Macros')),
               FOOD_CHEM.nutrition.map(function(n, i) {
                 return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'flex justify-between' },
@@ -20110,7 +20433,7 @@
           subtool === 'forensic' && h('div', null,
             h('p', { className: 'text-xs text-slate-600 italic mb-3' }, FORENSIC.intro),
             h('div', { className: 'bg-slate-50 border border-slate-300 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-slate-700 mb-2' }, 'Forensic Techniques'),
+              h('div', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.chembalance.forensic_techniques', 'Forensic Techniques')),
               FORENSIC.techniques.map(function(t, i) {
                 return h('div', { key: i, className: 'bg-white border border-slate-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-slate-700' }, t.name),
@@ -20121,7 +20444,7 @@
               })
             ),
             h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Famous Cases'),
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.famous_cases', 'Famous Cases')),
               FORENSIC.famousCases.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-2 mb-1 text-xs' },
                   h('div', { className: 'font-bold text-purple-700' }, c.case),
@@ -20136,7 +20459,7 @@
           // CAREERS SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'careers' && h('div', null,
-            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, '20+ chemistry careers spanning research, industry, education, regulation.'),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.20_chemistry_careers_spanning_research', '20+ chemistry careers spanning research, industry, education, regulation.')),
             CHEM_CAREERS.map(function(c, i) {
               return h('div', { key: i, className: 'bg-white border border-amber-300 rounded p-2 mb-1 text-xs' },
                 h('div', { className: 'flex justify-between mb-1' },
@@ -20154,7 +20477,7 @@
           // LAB KITS SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'lab_kits' && h('div', null,
-            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, '15 ready-to-use classroom labs for K-12.'),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.15_ready_to_use_classroom_labs_for_k_1', '15 ready-to-use classroom labs for K-12.')),
             LAB_KITS.map(function(k, i) {
               return h('div', { key: i, className: 'bg-white border border-blue-300 rounded p-2 mb-1 text-xs' },
                 h('div', { className: 'flex justify-between mb-1' },
@@ -20164,7 +20487,7 @@
                 h('div', { className: 'text-slate-800' }, 'Concept: ' + k.concept),
                 h('div', { className: 'text-cyan-700' }, 'Materials: ' + k.materials),
                 h('details', { className: 'mt-1' },
-                  h('summary', { className: 'cursor-pointer text-emerald-700 font-bold' }, 'Steps'),
+                  h('summary', { className: 'cursor-pointer text-emerald-700 font-bold' }, __alloT('stem.chembalance.steps', 'Steps')),
                   h('ol', { className: 'mt-1 list-decimal list-inside space-y-1' },
                     k.steps.map(function(s, si) { return h('li', { key: si, className: 'text-slate-700' }, s); })
                   )
@@ -20177,7 +20500,7 @@
           // MYTHBUSTERS SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'mythbusters' && h('div', null,
-            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Common chemistry misconceptions debunked.'),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.common_chemistry_misconceptions_debunk', 'Common chemistry misconceptions debunked.')),
             CHEM_MYTHS.map(function(m, i) {
               return h('div', { key: i, className: 'bg-white border border-rose-300 rounded p-2 mb-2 text-xs' },
                 h('div', { className: 'flex items-start gap-2 mb-1' },
@@ -20196,7 +20519,7 @@
           // RECORDS SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'records' && h('div', null,
-            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Chemistry superlatives.'),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.chemistry_superlatives', 'Chemistry superlatives.')),
             h('div', { className: 'grid gap-2' },
               CHEM_RECORDS.map(function(r, i) {
                 return h('div', { key: i, className: 'bg-white border border-yellow-300 rounded p-2 text-xs' },
@@ -20222,7 +20545,7 @@
             return h('div', null,
               h('p', { className: 'text-xs text-slate-600 italic mb-3' }, CHEM_GLOSSARY.length + ' chemistry terms.'),
               h('div', { className: 'mb-3' },
-                h('input', { type: 'text', placeholder: 'Search terms...', value: glossSearch, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg' })
+                h('input', { type: 'text', placeholder: __alloT('stem.chembalance.search_terms', 'Search terms...'), value: glossSearch, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg' })
               ),
               h('div', { className: 'grid md:grid-cols-2 gap-2' },
                 filtered.map(function(g, i) {
@@ -20239,9 +20562,9 @@
           // DATA TABLES SUB-TOOL
           // ════════════════════════════════════════
           subtool === 'datatables' && h('div', null,
-            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Reference tables for chemistry.'),
+            h('p', { className: 'text-xs text-slate-600 italic mb-3' }, __alloT('stem.chembalance.reference_tables_for_chemistry', 'Reference tables for chemistry.')),
             h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, 'Physical Constants'),
+              h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.physical_constants', 'Physical Constants')),
               CHEM_DATA_TABLES.constants.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-cyan-200 rounded p-2 mb-1 text-xs flex justify-between' },
                   h('span', { className: 'font-bold text-cyan-700' }, c.name + ' (' + c.symbol + ')'),
@@ -20250,7 +20573,7 @@
               })
             ),
             h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, 'Unit Conversions'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.unit_conversions', 'Unit Conversions')),
               CHEM_DATA_TABLES.conversions.map(function(c, i) {
                 return h('div', { key: i, className: 'bg-white border border-amber-200 rounded p-2 mb-1 text-xs flex justify-between' },
                   h('span', { className: 'text-slate-700' }, c.from),
@@ -20259,7 +20582,7 @@
               })
             ),
             h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, 'Average Bond Energies'),
+              h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.average_bond_energies', 'Average Bond Energies')),
               h('div', { className: 'grid grid-cols-2 gap-1' },
                 CHEM_DATA_TABLES.bondEnergies.map(function(b, i) {
                   return h('div', { key: i, className: 'bg-white border border-purple-200 rounded p-1 text-[10px] flex justify-between' },
@@ -20270,7 +20593,7 @@
               )
             ),
             h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 mb-3' },
-              h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, 'Electronegativity Values'),
+              h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, __alloT('stem.chembalance.electronegativity_values', 'Electronegativity Values')),
               h('div', { className: 'grid grid-cols-4 gap-1' },
                 CHEM_DATA_TABLES.electronegativity.map(function(e, i) {
                   return h('div', { key: i, className: 'bg-white border border-rose-200 rounded p-1 text-[10px] flex justify-between' },
@@ -20281,7 +20604,7 @@
               )
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, 'Specific Heat Capacities'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.specific_heat_capacities', 'Specific Heat Capacities')),
               CHEM_DATA_TABLES.specificHeats.map(function(s, i) {
                 return h('div', { key: i, className: 'bg-white border border-emerald-200 rounded p-2 mb-1 text-xs flex justify-between' },
                   h('span', { className: 'text-emerald-700' }, s.substance),
@@ -20297,11 +20620,11 @@
           subtool === 'finale' && h('div', null,
             h('div', { className: 'bg-gradient-to-br from-yellow-100 to-amber-100 border-2 border-amber-400 rounded-xl p-6 text-center mb-4' },
               h('div', { className: 'text-6xl mb-2' }, '🎆'),
-              h('div', { className: 'text-2xl font-bold text-amber-800 mb-1' }, 'Chemistry Mastery Achievement'),
-              h('div', { className: 'text-sm text-amber-700 italic' }, '36 sub-tools · 118 elements · Hundreds of facts')
+              h('div', { className: 'text-2xl font-bold text-amber-800 mb-1' }, __alloT('stem.chembalance.chemistry_mastery_achievement', 'Chemistry Mastery Achievement')),
+              h('div', { className: 'text-sm text-amber-700 italic' }, __alloT('stem.chembalance.36_sub_tools_118_elements_hundreds_of_', '36 sub-tools · 118 elements · Hundreds of facts'))
             ),
             h('div', { className: 'bg-white border border-amber-300 rounded-xl p-4 mb-3' },
-              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, '📚 What You Now Have Access To'),
+              h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.what_you_now_have_access_to', '📚 What You Now Have Access To')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-slate-800' },
                 [
                   'Balance chemical equations with 12 presets across 3 difficulty tiers',
@@ -20345,7 +20668,7 @@
               )
             ),
             h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-4 mb-3' },
-              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, '🎯 Next Steps'),
+              h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.next_steps', '🎯 Next Steps')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-emerald-900' },
                 [
                   'Try a hands-on lab from the Lab Kits',
@@ -20359,16 +20682,16 @@
               )
             ),
             h('div', { className: 'bg-purple-50 border border-purple-300 rounded-xl p-4 text-center' },
-              h('div', { className: 'text-base font-bold text-purple-700 mb-2' }, '✨ A Closing Thought'),
+              h('div', { className: 'text-base font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.a_closing_thought', '✨ A Closing Thought')),
               h('div', { className: 'text-sm text-purple-900 italic leading-relaxed' },
-                'Chemistry is the science of substances + their transformations. ',
-                'Every atom in your body was forged in a star. ',
-                'Every reaction you observe was already happening 4 billion years ago. ',
+                __alloT('stem.chembalance.chemistry_is_the_science_of_substances', 'Chemistry is the science of substances + their transformations. '),
+                __alloT('stem.chembalance.every_atom_in_your_body_was_forged_in_', 'Every atom in your body was forged in a star. '),
+                __alloT('stem.chembalance.every_reaction_you_observe_was_already', 'Every reaction you observe was already happening 4 billion years ago. '),
                 'You are not separate from chemistry. You ARE chemistry. ',
-                'Now you have the tools to understand the world you\'re made of.'
+                __alloT('stem.chembalance.now_you_have_the_tools_to_understand_t', 'Now you have the tools to understand the world you\'re made of.')
               )
             ),
-            h('div', { className: 'text-center mt-6 text-xs text-slate-500 italic' }, 'ChemBalance v3.x · AlloFlow STEM Lab')
+            h('div', { className: 'text-center mt-6 text-xs text-slate-500 italic' }, __alloT('stem.chembalance.chembalance_v3_x_alloflow_stem_lab', 'ChemBalance v3.x · AlloFlow STEM Lab'))
           ),
 
           // === H7b'' inquiry widget: pH discovery ===
@@ -20387,28 +20710,28 @@
             else if (pH < 11) band = 'weak-base';
             else band = 'strong-base';
             var bandMeta = {
-              'strong-acid': { label: '🔴 Strong acid (pH < 3)',     color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-              'weak-acid':   { label: '🟠 Weak acid (3 ≤ pH < 6)',   color: '#ea580c', bg: '#fff7ed', border: '#fdba74' },
-              'neutral':     { label: '🟢 Near neutral (6 ≤ pH < 8)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-              'weak-base':   { label: '🔵 Weak base (8 ≤ pH < 11)',  color: '#2563eb', bg: '#eff6ff', border: '#93c5fd' },
-              'strong-base': { label: '🟣 Strong base (pH ≥ 11)',    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' }
+              'strong-acid': { label: __alloT('stem.chembalance.strong_acid_ph_3', '🔴 Strong acid (pH < 3)'),     color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+              'weak-acid':   { label: __alloT('stem.chembalance.weak_acid_3_ph_6', '🟠 Weak acid (3 ≤ pH < 6)'),   color: '#ea580c', bg: '#fff7ed', border: '#fdba74' },
+              'neutral':     { label: __alloT('stem.chembalance.near_neutral_6_ph_8', '🟢 Near neutral (6 ≤ pH < 8)'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+              'weak-base':   { label: __alloT('stem.chembalance.weak_base_8_ph_11', '🔵 Weak base (8 ≤ pH < 11)'),  color: '#2563eb', bg: '#eff6ff', border: '#93c5fd' },
+              'strong-base': { label: __alloT('stem.chembalance.strong_base_ph_11', '🟣 Strong base (pH ≥ 11)'),    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' }
             }[band];
             function logObs() {
               setIQ({ log: (iq.log || []).concat([{ h: iq.hExpo, b: iq.buffer, t: iq.tempC, p: parseFloat(pH.toFixed(2)), bd: band }]).slice(-8) });
             }
             return h('div', { className: 'rounded-2xl bg-white border border-cyan-300 p-4 shadow-sm' },
-              h('h3', { className: 'text-sm font-black text-cyan-700 mb-1' }, '🧪 pH discovery'),
+              h('h3', { className: 'text-sm font-black text-cyan-700 mb-1' }, __alloT('stem.chembalance.ph_discovery', '🧪 pH discovery')),
               h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-                'Three sliders: H⁺ exponent (log scale), buffer capacity, temperature. The solution shows one of five discrete pH bands. No score, no reveal — sweep and notice.'),
+                __alloT('stem.chembalance.three_sliders_h_exponent_log_scale_buf', 'Three sliders: H⁺ exponent (log scale), buffer capacity, temperature. The solution shows one of five discrete pH bands. No score, no reveal — sweep and notice.')),
               h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: bandMeta.bg, border: '2px solid ' + bandMeta.border } },
                 h('div', { className: 'text-lg font-black', style: { color: bandMeta.color } }, bandMeta.label),
                 h('div', { className: 'text-[11px] text-slate-700 mt-1' }, 'pH ≈ ' + pH.toFixed(2))
               ),
               h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                 [
-                  { key: 'hExpo',  label: 'H⁺ exponent (10^)',  val: iq.hExpo,  min: -14, max: 0,  step: 1   },
-                  { key: 'buffer', label: 'Buffer capacity (%)', val: iq.buffer, min: 0,   max: 100, step: 5   },
-                  { key: 'tempC',  label: 'Temp (°C)',           val: iq.tempC,  min: 0,   max: 100, step: 5   }
+                  { key: 'hExpo',  label: __alloT('stem.chembalance.h_exponent_10', 'H⁺ exponent (10^)'),  val: iq.hExpo,  min: -14, max: 0,  step: 1   },
+                  { key: 'buffer', label: __alloT('stem.chembalance.buffer_capacity', 'Buffer capacity (%)'), val: iq.buffer, min: 0,   max: 100, step: 5   },
+                  { key: 'tempC',  label: __alloT('stem.chembalance.temp_c', 'Temp (°C)'),           val: iq.tempC,  min: 0,   max: 100, step: 5   }
                 ].map(function(s) {
                   return h('div', { key: s.key },
                     h('label', { htmlFor: 'ph-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
@@ -20419,9 +20742,9 @@
                 })
               ),
               h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
-                h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.chembalance.log', '📋 Log')),
                 h('button', { onClick: function() { setIQ({ hExpo: -7, buffer: 0, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                  className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                  className: 'transition-colors px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.chembalance.reset_3', '↺ Reset')),
                 (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
               ),
               (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
@@ -20437,38 +20760,41 @@
                 }))
               ),
               h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-                placeholder: 'Hypothesis (free text — no right answer): How does buffer affect the H+ → pH relationship?',
+                placeholder: __alloT('stem.chembalance.hypothesis_free_text_no_right_answer_h', 'Hypothesis (free text — no right answer): How does buffer affect the H+ → pH relationship?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-2', rows: 3 }),
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 mb-2' }, '🤔 Stuck — show open prompts'),
+                className: 'transition-colors px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 mb-2' }, __alloT('stem.chembalance.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-2' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
-                  h('li', null, 'Hold two sliders steady. Move the third. Watch what happens.'),
-                  h('li', null, 'What happens to pure water (H⁺ exp = -7) as you change temperature?'),
-                  h('li', null, 'Find two settings producing the same band. What do they share?'),
-                  h('li', null, 'Investigate: why is the pH scale logarithmic?'))),
+                  h('li', null, __alloT('stem.chembalance.hold_two_sliders_steady_move_the_third', 'Hold two sliders steady. Move the third. Watch what happens.')),
+                  h('li', null, __alloT('stem.chembalance.what_happens_to_pure_water_h_exp_7_as_', 'What happens to pure water (H⁺ exp = -7) as you change temperature?')),
+                  h('li', null, __alloT('stem.chembalance.find_two_settings_producing_the_same_b', 'Find two settings producing the same band. What do they share?')),
+                  h('li', null, __alloT('stem.chembalance.investigate_why_is_the_ph_scale_logari', 'Investigate: why is the pH scale logarithmic?')))),
               h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I think I understand — explain in own words'),
+                  __alloT('stem.chembalance.i_think_i_understand_explain_in_own_wo', 'I think I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                  placeholder: 'Explain how H⁺ concentration, buffering, and temperature jointly determine pH.',
+                  placeholder: __alloT('stem.chembalance.explain_how_h_concentration_buffering_', 'Explain how H⁺ concentration, buffering, and temperature jointly determine pH.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
               h('div', { className: 'mt-2 text-[10px] italic text-slate-500' },
-                'Design note: discrete 5-band pH marker; no numeric optimization target; no reveal — by design.')
+                __alloT('stem.chembalance.design_note_discrete_5_band_ph_marker_', 'Design note: discrete 5-band pH marker; no numeric optimization target; no reveal — by design.'))
             );
           })(),
 
           // ── Footer ──
           h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
-            h('button', { onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); }, className: 'px-3 py-1.5 text-xs font-bold text-lime-600 bg-lime-50 border border-lime-600 rounded-full hover:bg-lime-100' }, '\u2697\uFE0F Titration Lab \u2192'),
-            h('button', { 'aria-label': 'Snapshot', onClick: takeSnapshot, className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all' }, '\uD83D\uDCF8 Snapshot')
+            h('button', { onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold text-lime-600 bg-lime-50 border border-lime-600 rounded-full hover:bg-lime-100' }, __alloT('stem.chembalance.titration_lab', '\u2697\uFE0F Titration Lab \u2192')),
+            h('button', { 'aria-label': __alloT('stem.chembalance.snapshot', 'Snapshot'), onClick: takeSnapshot, className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all' }, __alloT('stem.chembalance.snapshot_2', '\uD83D\uDCF8 Snapshot'))
           ),
           // \u2550\u2550\u2550 PERIODIC TABLE BLOCKS \u2550\u2550\u2550
           h('div', { className: 'mt-5 rounded-2xl border border-lime-300 bg-white p-3 shadow-sm' },
-            h('h4', { className: 'text-sm font-bold text-lime-700 mb-2' }, '\u269B Periodic Table \u2014 Four major blocks'),
+            h('h4', { className: 'text-sm font-bold text-lime-700 mb-2' }, __alloT('stem.chembalance.periodic_table_four_major_blocks', '\u269B Periodic Table \u2014 Four major blocks')),
             h('div', { className: 'rounded-xl overflow-hidden border border-lime-200', style: { background: '#020210', aspectRatio: '16/5' } },
               h('canvas', {
+                role: 'img',
+                tabIndex: 0,
+                'aria-label': __alloT('stem.chembalance.periodic_table_blocks_canvas', 'Periodic table block diagram showing s, p, d, and f blocks'),
                 ref: function(cvEl) {
                   if (!cvEl) return;
                   if (cvEl._ptDone) return;
@@ -20496,10 +20822,13 @@
                       var by = (b.y || 0.10) * H;
                       var bw = b.w * W;
                       var bh = (b.rows / 7) * H * 0.50;
+                      c2.save();
+                      c2.shadowColor = b.color; c2.shadowBlur = 10;
                       c2.fillStyle = b.color + '50';
                       c2.fillRect(bx, by, bw, bh);
                       c2.strokeStyle = b.color; c2.lineWidth = 1.5;
                       c2.strokeRect(bx, by, bw, bh);
+                      c2.restore();
                       c2.font = 'bold 10px sans-serif'; c2.fillStyle = b.color; c2.textAlign = 'center';
                       c2.fillText(b.name, bx + bw / 2, by + bh / 2 + 4);
                     });
@@ -20518,10 +20847,15 @@
                   }
                   drawPt();
                   var ro = new ResizeObserver(function() {
+                    // Disconnect when the canvas detaches — otherwise a new ResizeObserver leaks on
+                    // every re-render of this always-mounted footer. Reset the transform before
+                    // re-scaling so DPR scaling can't accumulate.
+                    if (!cvEl.isConnected) { ro.disconnect(); cvEl._ptRO = null; return; }
                     W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                    cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
                     drawPt(); // repaint the static diagram at the new size
                   });
+                  cvEl._ptRO = ro;
                   ro.observe(cvEl);
                 },
                 style: { width: '100%', height: '100%', display: 'block' }

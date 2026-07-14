@@ -1,5 +1,7 @@
 # PPTX Visual Remediation Pipeline — Design Exploration
 
+> **Design snapshot note (2026-07-09):** This is a June 2026 exploration, not current product documentation. Re-test the Office/PPTX import surface, AI Diagnostics behavior, and current PDF pipeline before using the "works today" / "needs smoke test" statements below as implementation guidance.
+
 **Status:** design only (2026-06-09). Nothing here is built. Companion to the
 Office-coverage work (deterministic DOCX/PPTX audit + accessible Word export,
 commit `1cbafcf3`) which deliberately deferred PPTX *output* and visual analysis.

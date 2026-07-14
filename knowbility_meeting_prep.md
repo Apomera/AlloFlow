@@ -3,6 +3,8 @@
 **Last Updated:** April 2, 2026
 **Context:** Aaron met with Sharron Rush (outgoing ED) and Jillian Fortin Burtnett (incoming ED). This document prepares for follow-up conversations.
 
+> **Status note, July 9, 2026:** This is a historical strategy brief from the April outreach window. It predates DOJ's April 20, 2026 deadline extension, so old "April 24" and "17 days after deadline" timing lines are not current. Use current AlloFlow claims from `README.md`, `AdminBrief.md`, and `accessibility_brief.md` before sending anything externally.
+
 ---
 
 ## Key People
@@ -31,7 +33,7 @@
 
 | Program | Relevance |
 |---------|-----------|
-| **AccessU 2026** (May 11-14, Austin TX, hybrid) | Session proposal opportunity. CFP is open. 7 parallel tracks. Perfect timing: 17 days after Title II deadline. |
+| **AccessU 2026** (May 11-14, Austin TX, hybrid) | Session proposal opportunity. CFP is open. 7 parallel tracks. Timely for the 2027/2028 Title II readiness window, but do not use the old "17 days after deadline" framing. |
 | **AIR** (Accessibility Internet Rally) | Annual competition where teams build accessible websites for nonprofits. AlloFlow could be a technology sponsor or resource provider. |
 | **AccessWorks** | Community of 1,000+ testers with disabilities who evaluate digital products. This is what AlloFlow needs most — native screen reader testing. |
 | **K-12 Digital Accessibility** | **THIS IS KEY.** Knowbility has a dedicated K-12 program: K-12 Access Toolkit (built on ATSTAR teacher training), K-12 Access Summit (virtual conference for districts), and a K-12 Community network. AlloFlow fits directly into this existing program. |
@@ -41,7 +43,7 @@
 
 ## What We Offer Knowbility
 
-1. **A free tool to recommend to education clients** — When districts say "we can't afford $5-25/page," Knowbility can point them to AlloFlow's pipeline for the ~70-80% of simple documents, reserving Knowbility's expert services for the complex 20-30%.
+1. **A free triage tool to recommend to education clients** — When districts say "we can't afford $5-25/page," Knowbility can point them to AlloFlow's pipeline as a first-pass option for straightforward text-heavy documents, reserving Knowbility's expert services for complex documents and final human review.
 
 2. **An AccessU session** — "When AI Meets axe-core" workshop (draft proposal ready). Could be co-presented with Knowbility staff.
 
@@ -49,7 +51,7 @@
 
 4. **Education sector impact at scale** — AlloFlow serves K-12 and higher ed, where Knowbility's mission is most needed but budgets are smallest.
 
-5. **Compliance portfolio report** — NEW: The batch pipeline now generates a comprehensive WCAG compliance evidence document suitable for institutional review. This could be a template Knowbility recommends to clients.
+5. **Accessibility evidence report** — The batch pipeline generates a WCAG-oriented evidence document that can support institutional review. It is documentation support, not a substitute for expert certification.
 
 ---
 
@@ -69,10 +71,10 @@
 "Thank you for the initial meeting — I came away even more convinced that a partnership would benefit both of us. I've been doing homework since we spoke."
 
 ### The K-12 Connection
-"I noticed Knowbility already has a K-12 Digital Accessibility program — the Access Toolkit, the K-12 Summit, the community network. AlloFlow is built specifically for K-12. I'm starting as a school psychologist at Portland Public Schools next week. Portland falls under the April 24th deadline as a 50,000+ entity. This isn't abstract for me — it's my district, my students, my colleagues' documents."
+"I noticed Knowbility already has a K-12 Digital Accessibility program — the Access Toolkit, the K-12 Summit, the community network. AlloFlow is built specifically for K-12. I'm starting as a school psychologist at Portland Public Schools next week. Portland likely falls in the larger-entity Title II readiness track, but the exact compliance posture belongs with district counsel. This isn't abstract for me — it's my district, my students, my colleagues' documents."
 
 ### The Title II Urgency
-"April 24th is 22 days away. Every school district in the country is facing the same problem: thousands of inaccessible documents and a budget that can't cover professional remediation at scale. AlloFlow's pipeline isn't a replacement for Knowbility's expertise — it's a force multiplier. Handle the 70% automatically, so your team can focus on the 30% that actually needs human judgment."
+"The DOJ's extended 2027/2028 Title II timeline gives districts a runway, not a solution: they still face thousands of inaccessible documents and a budget that can't cover professional remediation at scale. AlloFlow's pipeline isn't a replacement for Knowbility's expertise — it's a force multiplier for first-pass triage and evidence gathering, so your team can focus on the documents that need human judgment."
 
 ### The Demo Offer
 "I'd love to do a live demo — upload a real PDF, watch the multi-auditor analysis, see the axe-core verification, look at the compliance report that comes out. It takes about 3 minutes per document. I think once you see it in action, the partnership conversation becomes very concrete."
@@ -94,7 +96,7 @@
 |------|--------|
 | **Now** | Send follow-up email (draft in `outreach_knowbility_response_draft.md`) |
 | **Before Apr 10** | Submit AccessU session proposal (draft in `accessu_2026_proposal_draft.md`) |
-| **Apr 24** | Title II deadline hits — media coverage, institutional urgency peaks |
+| **Apr 24** | Original 2026 deadline window; DOJ later extended the web/mobile rule dates to 2027/2028 |
 | **May 1** | Jillian officially becomes ED — fresh start for partnership framing |
 | **May 11-14** | AccessU 2026 — present session (if accepted), network in person |
 

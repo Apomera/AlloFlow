@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  veraPDF IzPack auto-install descriptor for CI (.github/workflows/verify.yml → veraPDF job).
+
+  @@INSTALL_DIR@@ is sed-replaced with "$HOME/verapdf" by the workflow step (so the path
+  stays correct whatever the runner's home is). The installer is the official greenfield
+  release from https://software.verapdf.org/releases/verapdf-installer.zip.
+
+  The PacksPanel is intentionally EMPTY: that installs the installer's DEFAULT pack
+  selection (which includes the *nix CLI launcher + the validation model) rather than a
+  hard-coded pack list — so this descriptor stays robust across veraPDF versions that
+  rename individual packs. The workflow verifies the launcher actually landed (test -x +
+  --version) before running the gate, so a layout change fails loudly instead of silently
+  degrading the gate to a vacuous skip.
+-->
+<AutomatedInstallation langpack="eng">
+  <com.izforge.izpack.panels.htmlhello.HTMLHelloPanel id="welcome"/>
+  <com.izforge.izpack.panels.target.TargetPanel id="install_dir">
+    <installpath>@@INSTALL_DIR@@</installpath>
+  </com.izforge.izpack.panels.target.TargetPanel>
+  <com.izforge.izpack.panels.packs.PacksPanel id="sdk_pack_select"/>
+  <com.izforge.izpack.panels.install.InstallPanel id="install"/>
+  <com.izforge.izpack.panels.finish.FinishPanel id="finish"/>
+</AutomatedInstallation>

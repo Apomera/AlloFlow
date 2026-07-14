@@ -1,5 +1,7 @@
 # AlloFlow Remediation Pipeline & Document Builder — Strategic Audit (June 2026)
 
+> **Historical strategic audit, not current documentation status (2026-07-09):** This June audit is preserved for its evidence map and higher-ed strategy thinking. Several document-consistency risks it names (uncaveated "Zero Cost," "fully accessible," browser-only privacy claims, AdminBrief statistical phrasing, and outdated outreach copy) were addressed in the July 9 documentation sweeps. Treat the remaining technical evidence questions as planning context and verify current status against `PIPELINE_ARCHITECTURE.md`, `docs/wcag_sc_coverage.md`, `docs/verapdf_install.md`, and the latest tests before quoting externally.
+
 *Prepared for the maintainer ahead of the UMaine System stewardship conversation. Synthesizes four investigations: feature inventory (verified against source/tests/git, 2026-06-10), verification-evidence ledger (repo HEAD `05e45180`), UMS utility analysis, and a 2025–2026 higher-ed market refresh. Investigator-marked inferences are flagged as such; investigator disagreements are called out where they exist.*
 
 ---
@@ -10,7 +12,7 @@
 - **The verification architecture is the strongest credibility asset, but it has two load-bearing gaps**: the veraPDF ISO ground-truth harness has *never produced a recorded successful run* (Java absent locally, gate informational, not in CI), and the score-calibration corpus is **empty** — so the two claims most likely to be probed by faculty ("output is ISO-conformant-or-better" and "scores approximate expert judgment") are currently PLAUSIBLE-UNPROVEN.
 - **Nothing has ever been validated on the primary runtime (Gemini Canvas), on a real teacher's messy PDF corpus, or by a human with PAC 2024/NVDA.** These are honest, acknowledged gaps — the Garry demo docs explicitly ask Cochrane's team to run the independent checks — but they gate the stewardship conversation and nothing else matters until they close.
 - **The competitive map shifted in 2025–2026**: "they score, it fixes" no longer distinguishes AlloFlow from YuJa Panorama Max, Continual Engine PREP, CampusMind, or the ASU/OSU AWS pipeline, all of which now auto-remediate. The defensible niche is the *combination*: free at point of use, individually adoptable without procurement, browser-side processing (with the Gemini-egress caveat below), and an evidence-gated conformance claim rather than a marketing badge — a stance DOJ implicitly validated by citing "the limits of generative AI to automate accessibility remediation at scale" when extending Title II deadlines.
-- **The biggest near-term credibility risks are self-inflicted document inconsistencies**: live outreach copy still says "Zero Cost" uncaveated and "fully accessible HTML"; the stewardship draft claims "no data leaving the browser" (false for the pipeline — content goes to Gemini); AdminBrief still says "ICC/Cronbach's-α"; and two documents contradict each other on user counts. A skeptical gatekeeper reading the set will find these in an afternoon.
+- **The biggest near-term credibility risks were self-inflicted document inconsistencies**: the June snapshot found uncaveated "Zero Cost" and accessibility language, browser-only privacy claims that ignored Gemini API egress, stale AdminBrief statistical phrasing, and contradictory user-count wording. July 9 documentation sweeps addressed the known doc-copy issues; verify current outreach before sending anything externally.
 
 ---
 
@@ -61,7 +63,7 @@ Maturity grades from the inventory: **[T]** verified-by-tests · **[S]** shipped
 |---|---|
 | Score-blend disclosure | **PAID** — UI labels the blend, per-engine breakdown, divergence override. Residual [inferred]: an internal 70/30 AI+local chunk blend remains undisclosed. |
 | Axe-proxy labeling | **PAID** (commit `a8bcdeb6`) — UI states axe runs on a text reconstruction, not original PDF bytes. |
-| Zero-cost claim | **PARTIALLY PAID** — honest cost table in deploy docs, but `outreach_emails.md` (current as of June 9) still carries uncaveated "Zero Cost" at three sites. |
+| Zero-cost claim | **JULY DOC SWEEP DONE** — deploy docs now carry an honest cost table and July 9 cleanup passes revisited the known outreach drafts. Recheck any final outbound copy before sending. |
 | Evidence-gated declaration | **REAL** — but the orphan walk is wrapped in `catch (_) {}`; a crashed walk falls to a regex fallback and could declare without evidence. Fail-open in a corner [inferred]. Small, code-actionable. |
 
 **Verdict summary for the conversation:** tag-tree invariants, declaration gating, validator parity, render safety, AI-loop contracts — PROVEN on synthetic fixtures. ISO conformance claim and score-blend validity — PLAUSIBLE-UNPROVEN. Canvas behavior, real-document survival, human AT experience — HONEST-GAP, staged but unexecuted. The codebase is more honest than its outreach copy; the two places the honesty story outruns evidence are the veraPDF layer (cited as ground truth, currently proving nothing) and the older marketing files.

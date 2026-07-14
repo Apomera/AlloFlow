@@ -8,13 +8,34 @@
 > [architecture.md](architecture.md). The two documents pair deliberately:
 > feature inventory for product/educator review, architecture for engineering review.
 
-**Generated:** 2026-05-09 (last revised May 15, 2026 — May 14-15 annotation-suite + doc-pipeline-polish + physics-lab + flightsim additions integrated)
-**Codebase scale:** ~656,000 lines of non-redundant source code, 1 maintainer (Aaron Pomeranz, PsyD)
-**Monolith size:** ~24,000 lines (`AlloFlowANTI.txt`) after May 10 2026 refactor session (down from 26,754 at initial inventory)
-**Total user-facing features:** ~570+ documented (was ~177 in initial draft; deepened across 10 review passes — most recent May 14-15 added the annotation suite (§10), in-doc theme switcher in exports, image-size controls across 3 resource types, expanded physics-lab pedagogy, and the resolved Skylab takeoff bug)
+> **Current audit note - July 3, 2026:** The live local workspace now contains
+> 111 STEM tool files, 116 registered STEM plugin IDs, 70 SEL tool files,
+> 151 top-level `build.js` module definitions, 111 root source/module pairs,
+> 413 test files, and about 2.70M canonical-ish source lines after excluding
+> deploy mirrors and generated source/module pairs. The older May/June counts
+> below are kept for history where they describe point-in-time sections. For
+> the current evidence-based review, see
+> [docs/codebase_review_2026-07-03.md](docs/codebase_review_2026-07-03.md).
+> For file-level unique-code size review, see
+> [docs/code_size_inventory_2026-07-03.csv](docs/code_size_inventory_2026-07-03.csv).
+
+> **Deployment/privacy addendum - July 9, 2026:** the current local-first
+> product framing is AlloFlow Desktop first, with Desktop LAN / Local Network
+> for same-room classroom sessions and the Docker School Box stack as optional
+> server/appliance infrastructure. Treat older "Docker air-gap" and
+> "School Box" entries below as historical unless they are explicitly marked
+> current. Public privacy wording should say "FERPA-aligned/supports" rather
+> than "guaranteed compliant."
+
+**Generated:** 2026-05-09 (headline counts last reconciled June 20, 2026 — see §13.12 for the running delta table; the dated entries in §3–§12 are point-in-time snapshots)
+**Codebase scale:** July 3, 2026 local review found ~5.69M physical code lines including generated/deploy mirrors, ~4.07M exact-hash unique code lines, and ~2.70M canonical-ish source lines after excluding deploy mirrors and generated root module pairs. See the current audit note above for caveats.
+**Monolith size:** ~31K deployed lines (`prismflow-deploy/src/App.jsx`, ~1.7 MB) with `AlloFlowANTI.txt` remaining the Gemini Canvas orchestration source.
+**Total user-facing features:** ~720+ documented (was ~177 in initial draft; deepened across 10+ review passes)
 - ~95 monolith-level features across 16 categories + 25 deep-dive subsections (§3.17–§3.41)
-- **95 STEM Lab tools** across 9 subject areas (on-disk file count May 14 2026; PrintingPress added May 10 for King Middle demo. Multi-module sub-feature counts: DNA Lab 11, Chemistry 8, Punnett 8, Optics 8, Baking 7, PrintingPress 7, Economics 5)
-- **34 SEL Hub items** (32 tools + 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope. **5 tools gained generative-AI Rehearse tabs May 11-14** (Upstander, Restorative Circle, Self-Advocacy, Coping, Friendship) — see §5.8 for the cross-cutting safety pipeline that protects 33 student-free-text AI surfaces across 18 SEL Hub tools + 1 STEM Lab surface (defense-in-depth pre-flight regex gate layered on top of existing assessSafety LLM checks).
+- **111 STEM Lab tool files / 116 registered STEM plugin IDs** across math, science, engineering, ecology, life skills, creative, strategy, technology, speech/music, and applied simulation domains. The registered-ID count is higher than the file count because some files preserve aliases or export paired IDs.
+- **July 2026 additions surfaced by code review:** AlloStudio (`studio_module.js` / `studio_core.js`) is the born-accessible flyer, worksheet, and digital-art object editor with explicit reading order, alt/decorative image gates, and process/provenance history. Open Groove Studio (`music_studio/open_groove_core.js`, `open_groove_scheduler.js`, `open_groove_audio.js`, `open_groove_module.js`) is a browser-based groovebox/composition studio covering pads, rhythm, synthesis, samples, notation concepts, timing math, and license-aware audio assets.
+- **70 SEL Hub tools** (+ 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope. See §5.8 for the cross-cutting safety pipeline (defense-in-depth pre-flight regex gate layered on top of the assessSafety LLM checks).
+- **New June 2026 subsystems** (built after the bulk of §3–§12 was written): Cinematic Studio (`cinematic_studio_module.js` — agentic document→video, client-side WebCodecs/Remotion), in-app Professional Development (`pd_core_module.js` + `catalog/pd/`), Research Hub + 3 Research Lanes (`research_lane_*_module.js`), Lumen, Dynamic Assessment, Live Polling, Translation Feedback (`translation_feedback_module.js`), Generate-Unit/Throughline (`mind_map_module.js`), footnotes + APA/MLA/Chicago `DOC_MODES`, PDF redaction + fillable AcroForm worksheets, native tagged-PDF output, in-app structural checks, and local veraPDF/PDF-UA QA workflows in the doc pipeline.
 - ~290 deep-feature enumerations inside major subsystems (Doc Pipeline 35+ exports, Behavior Lens 15+, Symbol Studio 10+, AlloHaven 4+18, AlloBot Sage 19+5+3, Quiz subsystem 4 modes + AI grader + live aggregator, Adventure 7 components + handlers, Voice + TTS multi-provider, Adaptive Controller gamepad layer, 28 view modules, 20 infrastructure modules, **5 SEL Hub Rehearse tabs with multi-turn role-play + scene generation + break-character coach + end-reflect**, etc.)
 **Inventory completeness:** ~99% — remaining gaps are translation-string libraries, individual quest content, and per-tool internal sub-modes that are largely cosmetic. Every major subsystem and every CDN module is now documented with discoverability.
 **Bugs fixed during this audit:** 6 net new (Report Writer never loaded, Immersive Reader null overwrites, Teacher Dashboard 10 components unregistered, WordSoundsReviewPanel duplicate registration, view_misc_modals null registrations, GeminiBridgeView deleted-but-consumed) + additional May 11-15 fixes (ExportPreviewView missing `history` prop, doc_pipeline missing `setError`/`pdfBatchSummary`, teacher `LearnerProgressView` missing `isTeacherMode`, word_sounds probe-mode `probeActivity` crash, Space Colony minimap `ctx` typo, Crisis Companion exit-button silent no-op, misleading "monitored for your safety" copy in 5 tools, **launch pad Learning Tools modal showed only after second click** (setTimeout race), **Physics target-destruction mode stale closure** (first-target-disappears + projectile-passes-through-targets, 2-in-1), **Skylab takeoff bleached ground + jolt + missing motion cue**, **Tier 1 bug-fix pass (May 15) on annotation-suite drag**: Rules-of-Hooks violation in NoteBubble/VoiceNoteBubble, drag flooding undo stack with intermediate positions, missing right/bottom drag clamp) — see §7
@@ -43,8 +64,8 @@ This inventory complements those by adding **discoverability paths** (where in t
 1. [How to navigate this document](#1-how-to-navigate)
 2. [Architectural primer](#2-architectural-primer)
 3. [Monolith features (16 categories)](#3-monolith-features)
-4. [STEM Lab tools (95 tools, 9 subject areas)](#4-stem-lab-tools)
-5. [SEL Hub tools (34 items: 32 tools + 2 infrastructure) + §5.8 cross-cutting safety pipeline](#5-sel-hub-tools)
+4. [STEM Lab tools (111 files / 116 registered plugin IDs)](#4-stem-lab-tools)
+5. [SEL Hub tools (70 tools + safety/standards infrastructure)](#5-sel-hub-tools)
 6. [Discoverability cheat sheet](#6-discoverability-cheat-sheet)
 7. [Status & known gaps](#7-status--known-gaps)
 8. [Architectural patterns by family](#8-architectural-patterns)
@@ -87,7 +108,7 @@ grep -n "expandedTools.includes('X')" AlloFlowANTI.txt
 
 ## 2. Architectural primer
 
-AlloFlow is a **hub-and-spoke React app** that runs as a single Gemini Canvas artifact. The host monolith (`AlloFlowANTI.txt`, compiled to `App.jsx`) is the artifact itself; CDN modules load via `<script>` tags from `cdn.jsdelivr.net/gh/Apomera/AlloFlow@<git-hash>/`.
+AlloFlow is a **hub-and-spoke React app** that runs as a single Gemini Canvas artifact. The host monolith (`AlloFlowANTI.txt`, compiled to `App.jsx`) is the artifact itself; CDN modules load via `<script>` tags from the hashless Cloudflare Pages CDN (`alloflow-cdn.pages.dev/<file>`, with a `?v=<git-hash>` cache-buster). (Earlier builds used `cdn.jsdelivr.net/gh/Apomera/AlloFlow@<git-hash>/`; jsDelivr was dropped in 2026 after GitHub 429s.)
 
 **Key state gates** (declared in `AlloFlowANTI.txt`):
 - `activeView` — string keying which content view renders in the right pane (`'simplified'`, `'glossary'`, `'quiz'`, `'dbq'`, `'adventure'`, etc., 26 values)
@@ -101,7 +122,7 @@ AlloFlow is a **hub-and-spoke React app** that runs as a single Gemini Canvas ar
 - `window.SelHub.registerTool(id, config)` — SEL tools same pattern
 - `window.AlloModules.X` — top-level CDN module exports (e.g., `PdfAuditView`, `BridgeSendModal`, `GroupSessionModal`)
 
-**Module loading** happens eagerly in AlloFlowContent's first useEffect via `loadModule(name, url)` — script tags inserted into `<head>` with jsdelivr CDN URLs pinned to a specific git hash (rewritten by `build.js --mode=prod`). Fallback to `raw.githubusercontent.com` if jsdelivr 404s.
+**Module loading** happens via `loadModule(name, url)` — script tags inserted into `<head>` with hashless Cloudflare Pages CDN URLs (`alloflow-cdn.pages.dev/<file>`, `?v=<git-hash>` cache-buster, rewritten by `build.js --mode=prod`). Core modules load eagerly; STEM/SEL plugins load lazily on first hub-open (`window.__alloEnsureStemPluginsLoaded` / `__alloEnsureSelPluginsLoaded`). Fallback to `raw.githubusercontent.com` if the CDN fails.
 
 **Top-level CDN modules:** 98 (post-Round-8). Of these, 9 were created in May 2026 extraction sessions (this session). The rest are older.
 
@@ -919,7 +940,7 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 
 ### Multi-module STEM tool sub-feature breakdown
 
-When sub-modules count as discrete features, the STEM count expands from 95 tools to ~140 distinct activities. Full enumeration:
+When sub-modules count as discrete features, the STEM surface expands beyond the 111 tool files / 116 registered IDs into well over 140 distinct activities. Full enumeration:
 
 **DNA / Genetics Lab — 11 sub-tools:** Build (sequence editor) · Replicate (DNA polymerase simulation) · Transcribe (DNA → RNA) · Translate (RNA → protein with codon table) · Mutate (point mutations + frameshift) · CRISPR (gene editing simulation) · Protein (structure folding viz) · Forensics (DNA fingerprinting) · Challenge (tiered quiz) · Battle (game-mode genetics combat) · Learn (concept reference by grade)
 
@@ -937,7 +958,7 @@ When sub-modules count as discrete features, the STEM count expands from 95 tool
 
 ## 5. SEL Hub tools
 
-32 tools + 2 infrastructure files. Accessed via the **SEL Hub modal** (`showSelHub=true`). Many cite specific clinical/research frameworks (CASEL, Neff, Dweck, Kuypers, Bridges, AFSP, SAMHSA, QPR, Sources of Strength, Olweus, Gilligan, Noddings, Rawls, Indigenous wisdom traditions).
+70 tools plus shared safety/standards infrastructure. Accessed via the **SEL Hub modal** (`showSelHub=true`). Many cite specific clinical/research frameworks (CASEL, Neff, Dweck, Kuypers, Bridges, AFSP, SAMHSA, QPR, Sources of Strength, Olweus, Gilligan, Noddings, Rawls, Indigenous wisdom traditions).
 
 ### 5.1 Self-Awareness (8 tools)
 
@@ -1092,6 +1113,15 @@ Quick lookup for the most-used features:
 
 ## 7. Status & known gaps
 
+### Current code-review findings (2026-07-03)
+
+- **Counts need generated support.** STEM/SEL/module counts now drift too quickly for hand-maintained documentation. Add a docs generator that reads `build.js`, `stem_lab/stem_tool_*.js`, `sel_hub/sel_tool_*.js`, test files, and audit outputs, then emits a current appendix.
+- **Tool metadata is inconsistent.** Runtime registration works, but some tools use `label`, some `name`, some `desc`, some `description`, and some alias IDs. A normalized schema would improve search, catalog exports, docs, and QA.
+- **Readiness tiers need to be visible.** The product is broad enough that user trust depends on clear Ready / Beta / Experimental / Design-only labels in both docs and UI.
+- **First-run path should be calmer.** The strongest workflows should be presented first: source-to-accessible lesson pack, one live activity, one showcase STEM tool, one PDF remediation, and one SEL pathway.
+- **Mirror/generated size needs explanation.** Current physical line counts are inflated by public deploy mirrors and generated modules. Public docs should report physical, exact-hash unique, and canonical-ish source counts with caveats.
+- **New studio work should be positioned intentionally.** AlloStudio, Video Studio, Cinematic Studio, and Open Groove Studio together suggest a born-accessible classroom media suite; that story should be surfaced after the core UDL flow.
+
 ### Tools awaiting review
 - **Crisis Companion** (`sel_tool_crisiscompanion.js`) — awaiting Aaron's editorial pass before student-facing release. Content-warning gate is functional; the editorial review covers safe-messaging audit + clinical accuracy.
 
@@ -1165,8 +1195,8 @@ Five latent bugs surfaced by extraction work and fixed:
 ### CDN module loading
 - Eager load via `loadModule(name, url)` in AlloFlowContent's first useEffect
 - URLs pinned to git hash via `build.js --mode=prod` rewrite
-- Fallback chain: jsdelivr CDN → raw.githubusercontent.com → fail-soft (host shim renders nothing)
-- 98 top-level modules at build time (May 9, 2026)
+- Fallback chain: Cloudflare Pages CDN → raw.githubusercontent.com → fail-soft (host shim renders nothing)
+- 151 top-level `build.js` module definitions at the July 3, 2026 review, plus large lazy plugin families for STEM, SEL, probes, and TTS loaders.
 
 ### Distribution model
 - Runs as a single Gemini Canvas artifact
@@ -1194,8 +1224,8 @@ Five latent bugs surfaced by extraction work and fixed:
 | [examples/lesson_briefs.md](examples/lesson_briefs.md) | Sample lesson briefs / use cases |
 
 ### Memory references for context
-- `project_alloflow_scope.md` — ~650K lines, 80+ tools, hub-and-spoke architecture
-- `project_school_box.md` — Docker air-gap deployment status (Tyler Despain collaborating)
+- `project_alloflow_scope.md` — historical scope memory (~650K lines, 80+ tools, hub-and-spoke architecture); use the July 2026 audit note at the top of this file for current counts
+- `project_school_box.md` — historical Docker School Box deployment notes; current framing is Desktop-first with optional School Box Server stack
 - `project_el_conference_king_pitch.md` — King Middle pilot pitch context
 - `project_sel_hub_howl_mapping.md` — SEL Hub ↔ EL Education HOWLs mapping
 - `feedback_dep_enumerator_must_be_scope_aware.md` — Lessons from May 2026 extraction work
@@ -1244,9 +1274,9 @@ Export toolbar (in the Reading Tools strip): theme switcher (4 themes) + annotat
 - **Import**: `_m.importAnnotations(existing, payload, { forceAuthor: 'student' })` — accepts either bare array or wrapped `{annotations: [...]}`; dedupes by id; tracks provenance via `importedFrom + importedAt`.
 - **Migration**: `migrateLegacyShape(annotations)` stamps `kind: 'sticker'` on pre-Phase-3 saves that lack the field.
 
-### 10.6 Voice note privacy guarantees
+### 10.6 Voice note privacy guardrails
 
-Zero network calls in the voice path. `MediaRecorder` → `Blob` → `FileReader.readAsDataURL` → base64 → React state → project JSON / localStorage. MediaStream tracks explicitly released on stop or cancel. 60s recording cap (`VOICE_MAX_SECONDS`); 500 KB base64 size cap (`VOICE_MAX_BYTES`). Refuses to attach over-size clips with a clear warning.
+The voice-note path is designed to stay local: `MediaRecorder` → `Blob` → `FileReader.readAsDataURL` → base64 → React state → project JSON / localStorage. MediaStream tracks explicitly released on stop or cancel. 60s recording cap (`VOICE_MAX_SECONDS`); 500 KB base64 size cap (`VOICE_MAX_BYTES`). Refuses to attach over-size clips with a clear warning.
 
 ### 10.7 Drag-to-reposition (May 15 2026)
 
@@ -1514,15 +1544,17 @@ Frayer Sort, See-Think-Wonder Sort, Story Map Sort.
   constraints: only inside `className="..."` contexts (not CSS rule strings),
   only `color:` property, excludes print stylesheets + SVG fill/stroke.
 
-**Final state:** ~270+ files now WCAG-compliant. ~391 long-tail findings
-remain for per-instance review.
+**Final state for that pass:** ~270+ files had targeted WCAG fixes applied. ~391 long-tail findings
+remained for per-instance review.
 
-### 13.12 Updated totals
+### 13.12 Updated totals (May 17 historical snapshot)
+
+The table below is retained as a May 17, 2026 delta snapshot. For current July 3, 2026 codebase scale and tool counts, use the audit note at the top of this file and [docs/codebase_review_2026-07-03.md](docs/codebase_review_2026-07-03.md).
 
 | Metric | Previous (May 14) | Current (May 17) | Delta |
 |---|---|---|---|
 | Documented user-facing features | ~570+ | **~720+** | +150 |
-| STEM Lab tools | 95 | **104** | +9 |
+| STEM Lab tools | 95 | **108** | +13 |
 | 20K+ MILESTONE curriculum tools | 0 | **8** | +8 |
 | SEL Hub items | 34 | **70+ (with personalization Kit tools)** | substantial |
 | Total source lines (approx) | ~656K | **~880K+** | +224K |
@@ -1606,7 +1638,8 @@ placeholders, prefers-reduced-motion gaps, transition durations.
 ---
 
 **End of inventory.** Total documented features: **~720+** user-facing across
-~165+ files (104 STEM Lab tools + 70+ SEL Hub items + 98 monolith CDN
-modules + 1 annotation suite cross-cutting + expanded doc pipeline export
-runtime + 10 rounds of teacher dashboard expansion + tool catalog single
-source of truth + ~360 personalized student kit tools, with overlap).
+151 top-level build-managed modules, 111 STEM tool files / 116 registered STEM
+plugin IDs, 70 SEL Hub tools, expanded doc pipeline export/runtime surfaces,
+AlloStudio, Open Groove Studio, Video/Cinematic Studio work, annotation suite
+cross-cutting features, teacher dashboard expansion, tool catalog single source
+of truth, and hundreds of personalized student kit surfaces, with overlap.

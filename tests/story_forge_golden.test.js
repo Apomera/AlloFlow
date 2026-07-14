@@ -67,6 +67,25 @@ describe('gradeLevelToNumber', () => {
   });
 });
 
+describe('comic lettering width persistence', () => {
+  it('clamps imported bubble widths and keeps valid placement data', () => {
+    expect(FK.clampComicLetteringWidth(12)).toBe(28);
+    expect(FK.clampComicLetteringWidth(120)).toBe(86);
+    expect(FK.clampComicLetteringWidth(54.44)).toBe(54.4);
+    expect(FK.clampComicLetteringWidth(null)).toBe(72);
+
+    expect(FK.sanitizePanelThumbnails({
+      panelA: { letteringSpace: 'top-right', letteringWidth: 120, letteringX: 4, letteringY: 99 },
+      panelB: { letteringWidth: 12 },
+      invalid: { letteringWidth: 'wide' },
+      empty: { letteringWidth: null },
+    })).toEqual({
+      panelA: { letteringSpace: 'top-right', letteringWidth: 86, letteringX: 8, letteringY: 92 },
+      panelB: { letteringWidth: 28 },
+    });
+  });
+});
+
 describe('StoryForge — SSR render contract', () => {
   const render = (props) => ReactDOMServer.renderToStaticMarkup(React.createElement(StoryForge, props));
   const base = { isOpen: true, onClose: () => {}, onCallGemini: async () => '', t: (k) => k, codename: 'Bright Tiger', gradeLevel: '5th Grade' };

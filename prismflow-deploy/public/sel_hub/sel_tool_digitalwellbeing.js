@@ -17546,6 +17546,12 @@
     color: 'cyan',
     category: 'self-regulation',
     render: function(ctx) {
+      // ── Host theme remap (consumes ctx.theme) — canonical SEL light-base pattern ──
+      var _dwCTheme = (ctx && ctx.theme) || {};
+      var _dwCHC = !!_dwCTheme.isContrast, _dwCDark = !_dwCHC && !!_dwCTheme.isDark;
+      var _DWC_DARK = {'#fff':'#1e293b','#f8fafc':'#0f172a','#fef3c7':'#3a2e12','#fffbeb':'#2e2410','#fefce8':'#2e2a10','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#f0fdf4':'#0b2e22','#dcfce7':'#14532d','#f0fdfa':'#0c2e2a','#f0f9ff':'#0c2840','#faf5ff':'#2e1b4d','#ede9fe':'#2a1a45','#f3e8ff':'#2e1b4d','#0f172a':'#f1f5f9','#1e293b':'#e2e8f0','#334155':'#cbd5e1','#475569':'#cbd5e1','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e2e8f0':'#334155','#cbd5e1':'#475569','#92400e':'#fde68a','#854d0e':'#fde68a','#a16207':'#fde047','#991b1b':'#fca5a5','#dc2626':'#f87171','#166534':'#86efac','#1e40af':'#93c5fd','#6b21a8':'#d8b4fe','#0e7490':'#67e8f9','#9d174d':'#fbcfe8','#9a3412':'#fdba74'};
+      var _DWC_HC = {'#fff':'#000000','#f8fafc':'#000000','#fef3c7':'#000000','#fffbeb':'#000000','#fefce8':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#f0fdf4':'#000000','#dcfce7':'#000000','#f0fdfa':'#000000','#f0f9ff':'#000000','#faf5ff':'#000000','#ede9fe':'#000000','#f3e8ff':'#000000','#0f172a':'#ffff00','#1e293b':'#ffff00','#334155':'#ffff00','#475569':'#ffff00','#64748b':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#854d0e':'#ffff00','#a16207':'#ffff00','#991b1b':'#ffff00','#dc2626':'#ffff00','#166534':'#ffff00','#1e40af':'#ffff00','#6b21a8':'#ffff00','#0e7490':'#ffff00','#9d174d':'#ffff00','#9a3412':'#ffff00'};
+      var _dwC = function(hex){ return _dwCHC ? (_DWC_HC[hex]||hex) : (_dwCDark ? (_DWC_DARK[hex]||hex) : hex); };
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast;
@@ -17563,6 +17569,7 @@
       };
 
       var ACCENT     = '#06b6d4';
+      var ACCENT_BUTTON = '#0e7490';
       var ACCENT_DIM = '#06b6d422';
       var ACCENT_MED = '#06b6d444';
 
@@ -17678,10 +17685,10 @@
               boxShadow: '0 6px 14px rgba(6, 182, 212, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
             } }, '📱'),
             h('div', { style: { flex: 1, minWidth: 0 } },
-              h('h2', { style: { margin: '0 0 4px', color: '#0e7490', fontSize: 22, lineHeight: 1.2 } },
+              h('h2', { style: { margin: '0 0 4px', color: _dwC('#0e7490'), fontSize: 22, lineHeight: 1.2 } },
                 'Digital Wellbeing Studio'
               ),
-              h('p', { style: { margin: 0, color: '#334155', fontSize: 14, lineHeight: 1.5 } },
+              h('p', { style: { margin: 0, color: _dwC('#334155'), fontSize: 14, lineHeight: 1.5 } },
                 'How online life is treating you, and how to take some of the steering wheel back. Companion to Safety & Boundaries, but focused on what happens INSIDE you when the screen is on.'
               )
             )
@@ -17702,8 +17709,8 @@
                   padding: '10px 16px',
                   borderRadius: '10px 10px 0 0',
                   border: 'none',
-                  background: active ? ACCENT : 'transparent',
-                  color: active ? '#fff' : '#334155',
+                  background: active ? ACCENT_BUTTON : 'transparent',
+                  color: active ? '#fff' : _dwC('#334155'),
                   fontWeight: active ? 700 : 500,
                   fontSize: 14,
                   cursor: 'pointer'
@@ -17791,7 +17798,7 @@
         if (scShowResults) {
           var result = scComputeBand();
           if (!result) {
-            return h('div', { style: { padding: 20, color: '#64748b' } }, 'No answers recorded yet.');
+            return h('div', { style: { padding: 20, color: _dwC('#64748b') } }, 'No answers recorded yet.');
           }
           var picks = scSuggestedStrategies(result);
           var rows = scDimensionBreakdown();
@@ -17814,7 +17821,7 @@
               // Ring viz
               h('div', { 'aria-hidden': 'true', style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
                 h('svg', { width: 100, height: 100, viewBox: '0 0 100 100', style: { transform: 'rotate(-90deg)' } },
-                  h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: '#e2e8f0', strokeWidth: 8 }),
+                  h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: _dwC('#e2e8f0'), strokeWidth: 8 }),
                   h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: result.color, strokeWidth: 8,
                     strokeDasharray: ringCirc, strokeDashoffset: ringCirc * (1 - totalPct),
                     strokeLinecap: 'round', style: { transition: 'stroke-dashoffset 0.6s ease' } })
@@ -17824,17 +17831,17 @@
                   alignItems: 'center', justifyContent: 'center', lineHeight: 1
                 } },
                   h('div', { style: { fontSize: 26, fontWeight: 800, color: result.color } }, overallPct + '%'),
-                  h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 } }, 'impact')
+                  h('div', { style: { fontSize: 10, color: _dwC('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 } }, 'impact')
                 )
               ),
               h('div', { style: { flex: 1, minWidth: 200 } },
-                h('div', { style: { fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 4 } }, 'Your check-in result'),
+                h('div', { style: { fontSize: 12, color: _dwC('#64748b'), textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 4 } }, 'Your check-in result'),
                 h('div', { style: { fontSize: 24, fontWeight: 800, color: result.color, marginBottom: 8, lineHeight: 1.2 } }, result.label),
-                h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#1e293b' } }, result.summary)
+                h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _dwC('#1e293b') } }, result.summary)
               )
             ),
-            h('h3', { style: { margin: '16px 0 8px', color: '#0f172a' } }, 'Where it shows up most'),
-            h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 10 } },
+            h('h3', { style: { margin: '16px 0 8px', color: _dwC('#0f172a') } }, 'Where it shows up most'),
+            h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 10 } },
               'Each bar is one dimension of digital impact, sorted from highest to lowest. The bars near the top are where small changes will help most.'),
             h('div', { role: 'list', 'aria-label': 'Dimension breakdown', style: { display: 'grid', gap: 6, marginBottom: 16 } },
               rows.map(function(r) {
@@ -17843,48 +17850,48 @@
                 return h('div', { key: r.dim, role: 'listitem',
                   'aria-label': r.label + ': ' + pctText + ' impact',
                   style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 } },
-                  h('div', { style: { width: 180, color: '#0f172a', fontWeight: 500, flexShrink: 0 } }, r.label),
-                  h('div', { style: { flex: 1, background: '#e2e8f0', height: 18, borderRadius: 4, overflow: 'hidden', position: 'relative' } },
+                  h('div', { style: { width: 180, color: _dwC('#0f172a'), fontWeight: 500, flexShrink: 0 } }, r.label),
+                  h('div', { style: { flex: 1, background: _dwC('#e2e8f0'), height: 18, borderRadius: 4, overflow: 'hidden', position: 'relative' } },
                     h('div', { style: { background: color, height: '100%', width: (r.pct * 100) + '%', transition: 'width 0.4s ease' } }),
-                    h('span', { style: { position: 'absolute', right: 6, top: 0, lineHeight: '18px', fontSize: 11, fontWeight: 700, color: '#0f172a' } }, pctText)
+                    h('span', { style: { position: 'absolute', right: 6, top: 0, lineHeight: '18px', fontSize: 11, fontWeight: 700, color: _dwC('#0f172a') } }, pctText)
                   )
                 );
               })
             ),
-            h('h3', { style: { margin: '16px 0 8px', color: '#0f172a' } }, 'Three strategies that match what you flagged'),
+            h('h3', { style: { margin: '16px 0 8px', color: _dwC('#0f172a') } }, 'Three strategies that match what you flagged'),
             h('div', { style: { display: 'grid', gap: 10 } },
               picks.map(function(s) {
                 return h('div', { key: s.id, style: {
-                  padding: 14, border: '1px solid ' + ACCENT_MED, borderRadius: 10, background: '#f8fafc'
+                  padding: 14, border: '1px solid ' + ACCENT_MED, borderRadius: 10, background: _dwC('#f8fafc')
                 } },
-                  h('div', { style: { fontWeight: 700, fontSize: 15, marginBottom: 4, color: '#0f172a' } },
+                  h('div', { style: { fontWeight: 700, fontSize: 15, marginBottom: 4, color: _dwC('#0f172a') } },
                     h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, s.icon), s.title),
-                  h('div', { style: { fontSize: 13, color: '#475569', marginBottom: 6 } }, s.what),
-                  h('div', { style: { fontSize: 13, color: '#0f172a' } },
+                  h('div', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 6 } }, s.what),
+                  h('div', { style: { fontSize: 13, color: _dwC('#0f172a') } },
                     h('strong', null, 'Try first: '), s.first)
                 );
               })
             ),
-            h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 14 } },
+            h('p', { style: { fontSize: 12, color: _dwC('#64748b'), marginTop: 14 } },
               'This is a self-check, not a diagnosis. It is meant to surface patterns worth noticing, not to label you. Talk to a school counselor or other trusted adult if anything here landed hard.'),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
               h('button', {
                 onClick: function() { upd('activeTab', 'toolkit'); },
-                style: { padding: '10px 16px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '10px 16px', background: ACCENT_BUTTON, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
               }, 'Go to full Toolkit →'),
               h('button', {
                 onClick: function() { openCounselorPacket(result, rows, picks); },
-                style: { padding: '10px 16px', background: '#0e7490', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '10px 16px', background: _dwC('#0e7490'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
               }, '🖨️ Print / share packet'),
               h('button', {
                 onClick: function() {
                   upd({ scAnswers: {}, scQuestionIdx: 0, scShowResults: false });
                   if (announceToSR) announceToSR('Self-check reset');
                 },
-                style: { padding: '10px 16px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 16px', background: _dwC('#fff'), color: _dwC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }
               }, 'Retake check-in')
             ),
-            h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 8 } },
+            h('p', { style: { fontSize: 12, color: _dwC('#64748b'), marginTop: 8 } },
               h('strong', null, 'For counselors / parents: '),
               'The packet button opens a printable summary of your check-in and the strategies you picked. You decide who sees it.')
           );
@@ -17973,16 +17980,16 @@
         var likertLabels = ['Never', 'Sometimes', 'Often', 'Almost always'];
 
         return h('div', { id: 'dw-panel-selfcheck', role: 'tabpanel', 'aria-labelledby': 'dw-tab-selfcheck' },
-          h('div', { style: { fontSize: 13, color: '#475569', marginBottom: 8 } },
+          h('div', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 8 } },
             'Question ' + (scQuestionIdx + 1) + ' of ' + SELF_CHECK_QUESTIONS.length + ' · ' + totalAnswered + ' answered'
           ),
-          h('div', { style: { background: '#e2e8f0', height: 8, borderRadius: 4, marginBottom: 16, overflow: 'hidden' } },
+          h('div', { style: { background: _dwC('#e2e8f0'), height: 8, borderRadius: 4, marginBottom: 16, overflow: 'hidden' } },
             h('div', { className: 'dw-progress-fill', style: { height: '100%', width: ((scQuestionIdx + 1) / SELF_CHECK_QUESTIONS.length * 100) + '%' } })
           ),
           h('div', { style: {
-            padding: 18, border: '1px solid ' + ACCENT_MED, borderRadius: 12, background: '#f8fafc', marginBottom: 14
+            padding: 18, border: '1px solid ' + ACCENT_MED, borderRadius: 12, background: _dwC('#f8fafc'), marginBottom: 14
           } },
-            h('div', { 'aria-live': 'polite', style: { fontSize: 17, fontWeight: 600, color: '#0f172a', lineHeight: 1.5, marginBottom: 14 } }, q.text),
+            h('div', { 'aria-live': 'polite', style: { fontSize: 17, fontWeight: 600, color: _dwC('#0f172a'), lineHeight: 1.5, marginBottom: 14 } }, q.text),
             h('div', { role: 'radiogroup', 'aria-label': 'How often: ' + q.text, style: { display: 'grid', gap: 8 } },
               likertLabels.map(function(lbl, idx) {
                 var selected = scAnswers[q.id] === idx;
@@ -17998,20 +18005,20 @@
                   style: {
                     padding: '12px 14px',
                     textAlign: 'left',
-                    background: selected ? ACCENT_DIM : '#fff',
-                    border: '2px solid ' + (selected ? ACCENT : '#cbd5e1'),
+                    background: selected ? ACCENT_DIM : _dwC('#fff'),
+                    border: '2px solid ' + (selected ? ACCENT : _dwC('#cbd5e1')),
                     borderRadius: 10,
                     fontSize: 15,
                     fontWeight: selected ? 700 : 500,
-                    color: '#0f172a',
+                    color: _dwC('#0f172a'),
                     cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 10
                   }
                 },
                   h('span', { 'aria-hidden': 'true', style: {
                     width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                    border: '2px solid ' + (selected ? ACCENT : '#cbd5e1'),
-                    background: selected ? ACCENT : '#fff',
+                    border: '2px solid ' + (selected ? ACCENT : _dwC('#cbd5e1')),
+                    background: selected ? ACCENT : _dwC('#fff'),
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: '#fff', fontSize: 13, fontWeight: 800, lineHeight: 1,
                     transition: 'all 0.18s ease'
@@ -18021,8 +18028,8 @@
               })
             ),
             hasAnswer && h('div', { style: {
-              marginTop: 14, padding: 12, background: '#fff', border: '1px dashed ' + ACCENT_MED, borderRadius: 8,
-              fontSize: 13, color: '#334155', lineHeight: 1.55
+              marginTop: 14, padding: 12, background: _dwC('#fff'), border: '1px dashed ' + ACCENT_MED, borderRadius: 8,
+              fontSize: 13, color: _dwC('#334155'), lineHeight: 1.55
             } },
               h('strong', { style: { color: ACCENT, display: 'block', marginBottom: 4 } }, 'What this is about:'),
               q.research
@@ -18032,13 +18039,13 @@
             h('button', {
               onClick: function() { if (scQuestionIdx > 0) upd('scQuestionIdx', scQuestionIdx - 1); },
               disabled: scQuestionIdx === 0,
-              style: { padding: '10px 14px', background: '#fff', color: scQuestionIdx === 0 ? '#94a3b8' : '#0f172a',
+              style: { padding: '10px 14px', background: _dwC('#fff'), color: scQuestionIdx === 0 ? _dwC('#94a3b8') : _dwC('#0f172a'),
                        border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: scQuestionIdx === 0 ? 'not-allowed' : 'pointer' }
             }, '← Previous'),
             scQuestionIdx < SELF_CHECK_QUESTIONS.length - 1
               ? h('button', {
                   onClick: function() { upd('scQuestionIdx', scQuestionIdx + 1); },
-                  style: { padding: '10px 14px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
+                  style: { padding: '10px 14px', background: ACCENT_BUTTON, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
                 }, 'Next →')
               : h('button', {
                   onClick: function() {
@@ -18049,14 +18056,14 @@
                   disabled: totalAnswered < SELF_CHECK_QUESTIONS.length,
                   style: {
                     padding: '10px 14px',
-                    background: totalAnswered < SELF_CHECK_QUESTIONS.length ? '#94a3b8' : '#10b981',
+                    background: totalAnswered < SELF_CHECK_QUESTIONS.length ? _dwC('#94a3b8') : '#10b981',
                     color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                     cursor: totalAnswered < SELF_CHECK_QUESTIONS.length ? 'not-allowed' : 'pointer'
                   }
                 }, 'See my result →')
           ),
           totalAnswered < SELF_CHECK_QUESTIONS.length && scQuestionIdx === SELF_CHECK_QUESTIONS.length - 1
-            && h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 8, textAlign: 'right' } },
+            && h('p', { style: { fontSize: 12, color: _dwC('#64748b'), marginTop: 8, textAlign: 'right' } },
                 'Answer all questions to see your result.'),
           // AI Reframe always available
           renderAIReframe()
@@ -18109,15 +18116,15 @@
             }
           },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '💭'),
-            h('span', { style: { flex: 1, fontWeight: 700, color: '#9d174d', fontSize: 15 } }, 'Reframe a comparison thought (with AI help)'),
-            h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 18 } }, rfShown ? '▾' : '▸')
+            h('span', { style: { flex: 1, fontWeight: 700, color: _dwC('#9d174d'), fontSize: 15 } }, 'Reframe a comparison thought (with AI help)'),
+            h('span', { 'aria-hidden': 'true', style: { color: _dwC('#64748b'), fontSize: 18 } }, rfShown ? '▾' : '▸')
           ),
           rfShown && h('div', { style: { marginTop: 10 } },
-            h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#0f172a', lineHeight: 1.55 } },
+            h('p', { style: { margin: '0 0 10px', fontSize: 13, color: _dwC('#0f172a'), lineHeight: 1.55 } },
               'Type a comparison thought you have had recently — the kind that pops up after scrolling. ',
               h('em', null, '"Everyone else is happier / hotter / smarter / has more friends than me."'),
               ' The AI will reflect it back through three angles: what you do not see in their feed, what is true about you, and what a kind friend would say.'),
-            h('label', { htmlFor: 'dw-rf-input', style: { display: 'block', fontSize: 12, color: '#475569', marginBottom: 4 } },
+            h('label', { htmlFor: 'dw-rf-input', style: { display: 'block', fontSize: 12, color: _dwC('#475569'), marginBottom: 4 } },
               'Your thought:'),
             h('textarea', {
               id: 'dw-rf-input',
@@ -18134,7 +18141,7 @@
                 'aria-busy': rfLoading ? 'true' : 'false',
                 style: {
                   padding: '8px 14px',
-                  background: (rfLoading || !rfInput.trim() || !callGemini) ? '#94a3b8' : '#db2777',
+                  background: (rfLoading || !rfInput.trim() || !callGemini) ? _dwC('#94a3b8') : '#db2777',
                   color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700,
                   cursor: (rfLoading || !rfInput.trim() || !callGemini) ? 'not-allowed' : 'pointer',
                   fontSize: 13
@@ -18142,18 +18149,18 @@
               }, rfLoading ? 'Thinking...' : (callGemini ? 'Reframe this' : 'AI not available')),
               rfReply && h('button', {
                 onClick: function() { upd({ rfInput: '', rfReply: '' }); },
-                style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                style: { padding: '8px 14px', background: _dwC('#fff'), color: _dwC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
               }, 'Try another')
             ),
-            !callGemini && h('p', { style: { fontSize: 11, color: '#9d174d', marginTop: 6 } },
+            !callGemini && h('p', { style: { fontSize: 11, color: _dwC('#9d174d'), marginTop: 6 } },
               'AI features need a connection. While offline: try writing what the kindest person in your life would say back to you.'),
             // Surface 988 / Crisis Text Line block when last reframe input was tier-3.
             (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
             rfReply && h('div', { 'aria-live': 'polite', style: {
-              marginTop: 12, padding: 14, background: '#fff', border: '1px dashed #f9a8d4',
-              borderRadius: 8, fontSize: 14, lineHeight: 1.6, color: '#0f172a', whiteSpace: 'pre-wrap'
+              marginTop: 12, padding: 14, background: _dwC('#fff'), border: '1px dashed #f9a8d4',
+              borderRadius: 8, fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a'), whiteSpace: 'pre-wrap'
             } }, rfReply),
-            rfReply && h('p', { style: { fontSize: 11, color: '#9d174d', marginTop: 8, fontStyle: 'italic' } },
+            rfReply && h('p', { style: { fontSize: 11, color: _dwC('#9d174d'), marginTop: 8, fontStyle: 'italic' } },
               'AI-generated. Take what is useful, leave the rest. If a thought feels much heavier than this can hold, that is a sign to talk to a real person — Crisis tab has the numbers.')
           )
         );
@@ -18185,10 +18192,10 @@
           background: 'linear-gradient(135deg, #faf5ff 0%, #fdf4ff 100%)',
           border: '1px solid #d8b4fe', borderRadius: 12
         } },
-          h('h3', { style: { margin: '0 0 8px', color: '#6b21a8', fontSize: 16 } },
+          h('h3', { style: { margin: '0 0 8px', color: _dwC('#6b21a8'), fontSize: 16 } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🎰'),
             'Algorithm Reveal — why the feed pulls you back'),
-          h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#0f172a', lineHeight: 1.55 } },
+          h('p', { style: { margin: '0 0 12px', fontSize: 13, color: _dwC('#0f172a'), lineHeight: 1.55 } },
             'Infinite-scroll feeds use ',
             h('strong', null, 'variable reward'),
             ' — most scrolls give you something boring, but ', h('em', null, 'sometimes'),
@@ -18208,7 +18215,7 @@
             }, 'TAP TO\nSCROLL'),
             h('div', { 'aria-live': 'polite', style: {
               width: 110, height: 110, borderRadius: 14,
-              background: '#fff', border: '3px solid ' + (algoLast && algoLast.jackpot ? '#10b981' : '#d8b4fe'),
+              background: _dwC('#fff'), border: '3px solid ' + (algoLast && algoLast.jackpot ? '#10b981' : '#d8b4fe'),
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               fontSize: 56, lineHeight: 1
             } },
@@ -18217,22 +18224,22 @@
             )
           ),
           h('div', { style: { display: 'grid', gap: 6, gridTemplateColumns: '1fr 1fr 1fr', fontSize: 12, textAlign: 'center' } },
-            h('div', { className: 'dw-stat-tile', style: { padding: 10, background: '#fff', borderRadius: 8 } },
-              h('div', { style: { color: '#64748b' } }, 'Taps'),
-              h('div', { style: { fontWeight: 800, fontSize: 18, color: '#6b21a8' } }, algoTaps)),
-            h('div', { className: 'dw-stat-tile', style: { padding: 10, background: '#fff', borderRadius: 8 } },
-              h('div', { style: { color: '#64748b' } }, 'Hits'),
+            h('div', { className: 'dw-stat-tile', style: { padding: 10, background: _dwC('#fff'), borderRadius: 8 } },
+              h('div', { style: { color: _dwC('#64748b') } }, 'Taps'),
+              h('div', { style: { fontWeight: 800, fontSize: 18, color: _dwC('#6b21a8') } }, algoTaps)),
+            h('div', { className: 'dw-stat-tile', style: { padding: 10, background: _dwC('#fff'), borderRadius: 8 } },
+              h('div', { style: { color: _dwC('#64748b') } }, 'Hits'),
               h('div', { style: { fontWeight: 800, fontSize: 18, color: '#10b981' } }, algoHits)),
-            h('div', { className: 'dw-stat-tile', style: { padding: 10, background: '#fff', borderRadius: 8 } },
-              h('div', { style: { color: '#64748b' } }, 'Hit rate'),
-              h('div', { style: { fontWeight: 800, fontSize: 18, color: '#6b21a8' } }, hitRate.toFixed(0) + '%'))
+            h('div', { className: 'dw-stat-tile', style: { padding: 10, background: _dwC('#fff'), borderRadius: 8 } },
+              h('div', { style: { color: _dwC('#64748b') } }, 'Hit rate'),
+              h('div', { style: { fontWeight: 800, fontSize: 18, color: _dwC('#6b21a8') } }, hitRate.toFixed(0) + '%'))
           ),
-          algoTaps >= 10 && h('p', { style: { margin: '12px 0 0', fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
-            h('strong', { style: { color: '#6b21a8' } }, 'Notice the pull. '),
+          algoTaps >= 10 && h('p', { style: { margin: '12px 0 0', fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } },
+            h('strong', { style: { color: _dwC('#6b21a8') } }, 'Notice the pull. '),
             'Even though most taps give nothing, you probably wanted to tap again after a "jackpot." That is the design. Real feeds are calibrated by data scientists to maximize this exact pull. Knowing the mechanism is the first step in not being run by it.'),
           algoTaps > 0 && h('button', {
             onClick: function() { upd({ algoTaps: 0, algoHits: 0, algoLast: null }); },
-            style: { marginTop: 10, padding: '6px 12px', background: 'transparent', border: '1px solid #d8b4fe', color: '#6b21a8', borderRadius: 6, fontSize: 12, cursor: 'pointer' }
+            style: { marginTop: 10, padding: '6px 12px', background: 'transparent', border: '1px solid #d8b4fe', color: _dwC('#6b21a8'), borderRadius: 6, fontSize: 12, cursor: 'pointer' }
           }, 'Reset')
         );
       }
@@ -18258,16 +18265,16 @@
           background: 'linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%)',
           border: '1px solid #93c5fd', borderRadius: 12
         } },
-          h('h3', { style: { margin: '0 0 8px', color: '#1e40af', fontSize: 16 } },
+          h('h3', { style: { margin: '0 0 8px', color: _dwC('#1e40af'), fontSize: 16 } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🛌'),
             'Sleep Math — what is your phone actually costing you?'),
-          h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#0f172a', lineHeight: 1.55 } },
+          h('p', { style: { margin: '0 0 12px', fontSize: 13, color: _dwC('#0f172a'), lineHeight: 1.55 } },
             'Teens need ', h('strong', null, '8 to 10 hours'),
             ' (American Academy of Sleep Medicine). Most are getting under 7. Set when you put the phone down and when you wake up:'),
           h('div', { style: { display: 'grid', gap: 12, marginBottom: 12 } },
-            h('label', { htmlFor: 'dw-sleep-stop', style: { display: 'block', fontSize: 13, color: '#475569' } },
+            h('label', { htmlFor: 'dw-sleep-stop', style: { display: 'block', fontSize: 13, color: _dwC('#475569') } },
               'I put the phone down at ',
-              h('strong', { style: { color: '#1e40af', fontSize: 15 } }, fmtHr(sleepStop))),
+              h('strong', { style: { color: _dwC('#1e40af'), fontSize: 15 } }, fmtHr(sleepStop))),
             h('input', {
               id: 'dw-sleep-stop',
               type: 'range', min: 18, max: 26, step: 0.25, value: sleepStop,
@@ -18279,9 +18286,9 @@
               'aria-label': 'When you put the phone down',
               style: { width: '100%', accentColor: '#3b82f6' }
             }),
-            h('label', { htmlFor: 'dw-sleep-wake', style: { display: 'block', fontSize: 13, color: '#475569' } },
+            h('label', { htmlFor: 'dw-sleep-wake', style: { display: 'block', fontSize: 13, color: _dwC('#475569') } },
               'I wake up at ',
-              h('strong', { style: { color: '#1e40af', fontSize: 15 } }, fmtHr(sleepWake))),
+              h('strong', { style: { color: _dwC('#1e40af'), fontSize: 15 } }, fmtHr(sleepWake))),
             h('input', {
               id: 'dw-sleep-wake',
               type: 'range', min: 5, max: 10, step: 0.25, value: sleepWake,
@@ -18291,7 +18298,7 @@
             })
           ),
           // 24h horizon bar with day/night gradient + sleep window highlight
-          h('div', { style: { marginTop: 16, marginBottom: 6, fontSize: 11, color: '#64748b', display: 'flex', justifyContent: 'space-between', padding: '0 2px' } },
+          h('div', { style: { marginTop: 16, marginBottom: 6, fontSize: 11, color: _dwC('#64748b'), display: 'flex', justifyContent: 'space-between', padding: '0 2px' } },
             h('span', null, '🌇 6 PM'),
             h('span', null, '🌙 Midnight'),
             h('span', null, '🌅 6 AM'),
@@ -18331,12 +18338,12 @@
             })()
           ),
           h('div', { 'aria-live': 'polite', style: {
-            marginTop: 12, padding: 12, background: '#fff', borderRadius: 8,
+            marginTop: 12, padding: 12, background: _dwC('#fff'), borderRadius: 8,
             border: '2px solid ' + color, textAlign: 'center'
           } },
-            h('div', { style: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Your sleep window'),
+            h('div', { style: { fontSize: 11, color: _dwC('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Your sleep window'),
             h('div', { style: { fontSize: 28, fontWeight: 800, color: color } }, sleepHrs.toFixed(1) + ' hours'),
-            h('div', { style: { fontSize: 13, color: '#334155', marginTop: 4 } },
+            h('div', { style: { fontSize: 13, color: _dwC('#334155'), marginTop: 4 } },
               sleepHrs >= 9 ? 'Excellent — well within the teen sleep recommendation.' :
               sleepHrs >= 8 ? 'Good — within the recommended range. Keep it consistent.' :
               sleepHrs >= 7 ? 'Below recommendation. Pushing your scroll-stop earlier is the highest-leverage change you can make.' :
@@ -18349,16 +18356,16 @@
         if (!dsActive) {
           return h('div', { style: {
             padding: 12, marginBottom: 14,
-            background: '#fef2f2', border: '1px dashed #fecaca', borderRadius: 10
+            background: _dwC('#fef2f2'), border: '1px dashed #fecaca', borderRadius: 10
           } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🌀'),
               h('div', { style: { flex: 1, minWidth: 200 } },
-                h('div', { style: { fontWeight: 700, color: '#991b1b', fontSize: 14 } }, 'Already deep in a scroll?'),
-                h('div', { style: { fontSize: 12, color: '#475569', marginTop: 2 } }, 'It is 1 AM and you just looked up — start the 4-minute reset.')),
+                h('div', { style: { fontWeight: 700, color: _dwC('#991b1b'), fontSize: 14 } }, 'Already deep in a scroll?'),
+                h('div', { style: { fontSize: 12, color: _dwC('#475569'), marginTop: 2 } }, 'It is 1 AM and you just looked up — start the 4-minute reset.')),
               h('button', {
                 onClick: function() { upd({ dsActive: true, dsStep: 0, dsDone: {} }); if (announceToSR) announceToSR('Reset routine started'); },
-                style: { padding: '8px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                style: { padding: '8px 14px', background: _dwC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
               }, 'Start reset')
             )
           );
@@ -18371,11 +18378,11 @@
         if (complete) {
           return h('div', { 'aria-live': 'polite', style: {
             padding: 18, marginBottom: 14,
-            background: '#f0fdf4', border: '2px solid #10b981', borderRadius: 12, textAlign: 'center'
+            background: _dwC('#f0fdf4'), border: '2px solid #10b981', borderRadius: 12, textAlign: 'center'
           } },
             h('div', { style: { fontSize: 36 } }, '✓'),
-            h('div', { style: { fontWeight: 800, fontSize: 18, color: '#166534', marginTop: 6 } }, 'Reset complete'),
-            h('p', { style: { margin: '8px 0 0', fontSize: 13, color: '#0f172a', lineHeight: 1.55 } },
+            h('div', { style: { fontWeight: 800, fontSize: 18, color: _dwC('#166534'), marginTop: 6 } }, 'Reset complete'),
+            h('p', { style: { margin: '8px 0 0', fontSize: 13, color: _dwC('#0f172a'), lineHeight: 1.55 } },
               'That was about four minutes of choice instead of three hours of autopilot. Tomorrow you will not have undone the scrolling, but you broke the loop, which is the whole point. Sleep well.'),
             h('button', {
               onClick: function() { upd({ dsActive: false, dsStep: 0, dsDone: {} }); tryAwardBadge('doom_reset', 'Loop Breaker'); },
@@ -18385,16 +18392,16 @@
         }
         return h('div', { style: {
           padding: 16, marginBottom: 14,
-          background: '#fef2f2', border: '2px solid #fca5a5', borderRadius: 12
+          background: _dwC('#fef2f2'), border: '2px solid #fca5a5', borderRadius: 12
         } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
-            h('div', { style: { fontWeight: 800, color: '#991b1b', fontSize: 15 } },
+            h('div', { style: { fontWeight: 800, color: _dwC('#991b1b'), fontSize: 15 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🌀'),
               'Doomscroll Reset — step ' + (dsStep + 1) + ' of ' + DOOMSCROLL_RESET.length),
             h('button', {
               'aria-label': 'Exit reset routine',
               onClick: function() { upd({ dsActive: false, dsStep: 0, dsDone: {} }); },
-              style: { background: 'transparent', border: 'none', color: '#991b1b', cursor: 'pointer', fontSize: 18, fontWeight: 700 }
+              style: { background: 'transparent', border: 'none', color: _dwC('#991b1b'), cursor: 'pointer', fontSize: 18, fontWeight: 700 }
             }, '×')
           ),
           // progress dots
@@ -18402,23 +18409,23 @@
             DOOMSCROLL_RESET.map(function(_, i) {
               return h('div', { key: i, style: {
                 flex: 1, height: 6, borderRadius: 3,
-                background: dsDone[i] ? '#10b981' : (i === dsStep ? '#fca5a5' : '#fee2e2')
+                background: dsDone[i] ? '#10b981' : (i === dsStep ? '#fca5a5' : _dwC('#fee2e2'))
               } });
             })
           ),
           h('div', { 'aria-live': 'polite', style: {
-            padding: 14, background: '#fff', border: '1px solid #fecaca', borderRadius: 8
+            padding: 14, background: _dwC('#fff'), border: '1px solid #fecaca', borderRadius: 8
           } },
-            h('div', { style: { fontSize: 28, fontWeight: 800, color: '#dc2626', marginBottom: 4 } }, 'Step ' + step.step),
-            h('div', { style: { fontWeight: 700, fontSize: 16, color: '#0f172a', marginBottom: 6 } }, step.title),
-            h('p', { style: { margin: '0 0 6px', fontSize: 14, lineHeight: 1.55, color: '#334155' } }, step.body),
-            h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, step.sec)
+            h('div', { style: { fontSize: 28, fontWeight: 800, color: _dwC('#dc2626'), marginBottom: 4 } }, 'Step ' + step.step),
+            h('div', { style: { fontWeight: 700, fontSize: 16, color: _dwC('#0f172a'), marginBottom: 6 } }, step.title),
+            h('p', { style: { margin: '0 0 6px', fontSize: 14, lineHeight: 1.55, color: _dwC('#334155') } }, step.body),
+            h('div', { style: { fontSize: 12, color: _dwC('#64748b'), fontStyle: 'italic' } }, step.sec)
           ),
           h('div', { style: { display: 'flex', gap: 8, marginTop: 12, justifyContent: 'space-between', flexWrap: 'wrap' } },
             h('button', {
               onClick: function() { if (dsStep > 0) upd('dsStep', dsStep - 1); },
               disabled: dsStep === 0,
-              style: { padding: '8px 14px', background: '#fff', color: dsStep === 0 ? '#94a3b8' : '#0f172a',
+              style: { padding: '8px 14px', background: _dwC('#fff'), color: dsStep === 0 ? _dwC('#94a3b8') : _dwC('#0f172a'),
                        border: '1px solid #fecaca', borderRadius: 8, fontWeight: 600, cursor: dsStep === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
             }, '← Back'),
             !done
@@ -18429,14 +18436,14 @@
                     if (dsStep < DOOMSCROLL_RESET.length - 1) u.dsStep = dsStep + 1;
                     upd(u);
                   },
-                  style: { padding: '8px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 14px', background: _dwC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                 }, dsStep < DOOMSCROLL_RESET.length - 1 ? 'Done — next →' : 'Done — finish')
               : h('button', {
                   onClick: function() {
                     if (dsStep < DOOMSCROLL_RESET.length - 1) upd('dsStep', dsStep + 1);
                   },
                   disabled: dsStep >= DOOMSCROLL_RESET.length - 1,
-                  style: { padding: '8px 14px', background: '#94a3b8', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 14px', background: _dwC('#94a3b8'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                 }, 'Next →')
           )
         );
@@ -18451,8 +18458,8 @@
         var schoolWeeksPerYear = hrsPerYear / 35; // ~35 hours = a school week of awake time
 
         return h('div', { id: 'dw-panel-toolkit', role: 'tabpanel', 'aria-labelledby': 'dw-tab-toolkit' },
-          h('div', { style: { padding: 14, background: '#f0fdfa', border: '1px solid ' + ACCENT_MED, borderRadius: 10, marginBottom: 14 } },
-            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } },
+          h('div', { style: { padding: 14, background: _dwC('#f0fdfa'), border: '1px solid ' + ACCENT_MED, borderRadius: 10, marginBottom: 14 } },
+            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } },
               h('strong', { style: { color: ACCENT } }, 'Pick small, pick specific. '),
               'Trying to overhaul your whole phone relationship in one weekend almost always fails. Pick one or two strategies that match what you actually struggle with. Commit by tapping "I will try this." Come back next week and see what stuck.')
           ),
@@ -18468,14 +18475,14 @@
             background: 'linear-gradient(135deg, #ecfeff 0%, #f0f9ff 100%)',
             border: '1px solid #67e8f9', borderRadius: 12
           } },
-            h('h3', { style: { margin: '0 0 8px', color: '#0e7490', fontSize: 16 } },
+            h('h3', { style: { margin: '0 0 8px', color: _dwC('#0e7490'), fontSize: 16 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '⏳'),
               'Time Reclaim — what could you actually do with it?'),
-            h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#0f172a', lineHeight: 1.55 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 13, color: _dwC('#0f172a'), lineHeight: 1.55 } },
               'Most "I should use my phone less" never works because the savings feel abstract. Move the slider to a realistic cut, then see the math.'),
-            h('label', { htmlFor: 'dw-tk-slider', style: { display: 'block', fontSize: 13, color: '#475569', marginBottom: 4 } },
+            h('label', { htmlFor: 'dw-tk-slider', style: { display: 'block', fontSize: 13, color: _dwC('#475569'), marginBottom: 4 } },
               'If I cut my scrolling by ',
-              h('strong', { style: { color: '#0e7490', fontSize: 16 } }, tkCutMins + ' min/day')),
+              h('strong', { style: { color: _dwC('#0e7490'), fontSize: 16 } }, tkCutMins + ' min/day')),
             h('input', {
               id: 'dw-tk-slider',
               type: 'range', min: 5, max: 180, step: 5, value: tkCutMins,
@@ -18484,17 +18491,17 @@
               style: { width: '100%', accentColor: ACCENT }
             }),
             h('div', { style: { display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', marginTop: 12 } },
-              h('div', { className: 'dw-stat-tile', style: { padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center', border: '1px solid #cffafe' } },
-                h('div', { style: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Per year'),
-                h('div', { style: { fontSize: 22, fontWeight: 800, color: '#0e7490' } }, Math.round(hrsPerYear) + ' hrs')),
-              h('div', { className: 'dw-stat-tile', style: { padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center', border: '1px solid #cffafe' } },
-                h('div', { style: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Equals'),
-                h('div', { style: { fontSize: 22, fontWeight: 800, color: '#0e7490' } }, daysPerYear.toFixed(1) + ' full days')),
-              h('div', { className: 'dw-stat-tile', style: { padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center', border: '1px solid #cffafe' } },
-                h('div', { style: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Or about'),
-                h('div', { style: { fontSize: 22, fontWeight: 800, color: '#0e7490' } }, schoolWeeksPerYear.toFixed(1) + ' school wks'))
+              h('div', { className: 'dw-stat-tile', style: { padding: 12, background: _dwC('#fff'), borderRadius: 10, textAlign: 'center', border: '1px solid #cffafe' } },
+                h('div', { style: { fontSize: 11, color: _dwC('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Per year'),
+                h('div', { style: { fontSize: 22, fontWeight: 800, color: _dwC('#0e7490') } }, Math.round(hrsPerYear) + ' hrs')),
+              h('div', { className: 'dw-stat-tile', style: { padding: 12, background: _dwC('#fff'), borderRadius: 10, textAlign: 'center', border: '1px solid #cffafe' } },
+                h('div', { style: { fontSize: 11, color: _dwC('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Equals'),
+                h('div', { style: { fontSize: 22, fontWeight: 800, color: _dwC('#0e7490') } }, daysPerYear.toFixed(1) + ' full days')),
+              h('div', { className: 'dw-stat-tile', style: { padding: 12, background: _dwC('#fff'), borderRadius: 10, textAlign: 'center', border: '1px solid #cffafe' } },
+                h('div', { style: { fontSize: 11, color: _dwC('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Or about'),
+                h('div', { style: { fontSize: 22, fontWeight: 800, color: _dwC('#0e7490') } }, schoolWeeksPerYear.toFixed(1) + ' school wks'))
             ),
-            h('label', { htmlFor: 'dw-tk-activity', style: { display: 'block', fontSize: 13, color: '#475569', marginTop: 14, marginBottom: 4 } },
+            h('label', { htmlFor: 'dw-tk-activity', style: { display: 'block', fontSize: 13, color: _dwC('#475569'), marginTop: 14, marginBottom: 4 } },
               'What would you actually want to do with ' + Math.round(hrsPerYear) + ' hours?'),
             h('input', {
               id: 'dw-tk-activity',
@@ -18503,7 +18510,7 @@
               placeholder: 'learn guitar, train for a 5K, write a story, sleep more...',
               style: { width: '100%', padding: '10px 12px', border: '1px solid #67e8f9', borderRadius: 6, fontSize: 14, boxSizing: 'border-box' }
             }),
-            tkActivity && tkActivity.length > 2 && h('p', { 'aria-live': 'polite', style: { margin: '8px 0 0', fontSize: 13, color: '#0e7490', fontWeight: 600 } },
+            tkActivity && tkActivity.length > 2 && h('p', { 'aria-live': 'polite', style: { margin: '8px 0 0', fontSize: 13, color: _dwC('#0e7490'), fontWeight: 600 } },
               '✓ Worth more to you than the scroll? Then the math is on your side.')
           ),
           committedCount > 0 && h('p', { 'aria-live': 'polite', style: { fontSize: 13, color: '#10b981', fontWeight: 600, marginBottom: 8 } },
@@ -18515,7 +18522,7 @@
               return h('div', { key: s.id, style: {
                 border: '1px solid ' + (committed ? '#10b981' : ACCENT_MED),
                 borderRadius: 10,
-                background: committed ? '#f0fdf4' : '#fff',
+                background: committed ? _dwC('#f0fdf4') : _dwC('#fff'),
                 overflow: 'hidden'
               } },
                 h('button', {
@@ -18524,7 +18531,7 @@
                   style: {
                     width: '100%', padding: '12px 14px', textAlign: 'left',
                     background: 'transparent', border: 'none', cursor: 'pointer',
-                    fontSize: 15, fontWeight: 700, color: '#0f172a',
+                    fontSize: 15, fontWeight: 700, color: _dwC('#0f172a'),
                     display: 'flex', alignItems: 'center', gap: 12
                   }
                 },
@@ -18538,22 +18545,22 @@
                   h('span', { style: { flex: 1 } }, s.title),
                   committed && h('span', { style: { fontSize: 11, color: '#fff', background: '#10b981', fontWeight: 700,
                     borderRadius: 12, padding: '3px 9px', letterSpacing: 0.3 } }, '✓ Committed'),
-                  h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 18 } }, expanded ? '▾' : '▸')
+                  h('span', { 'aria-hidden': 'true', style: { color: _dwC('#64748b'), fontSize: 18 } }, expanded ? '▾' : '▸')
                 ),
                 expanded && h('div', { style: { padding: '0 14px 14px', borderTop: '1px solid #f1f5f9' } },
                   h('div', { style: { marginTop: 12 } },
-                    h('div', { style: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: '#64748b', marginBottom: 4 } }, 'What it is'),
-                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } }, s.what)
+                    h('div', { style: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: _dwC('#64748b'), marginBottom: 4 } }, 'What it is'),
+                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } }, s.what)
                   ),
                   h('div', { style: { marginTop: 12 } },
-                    h('div', { style: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: '#64748b', marginBottom: 4 } }, 'Why it works'),
-                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#334155' } }, s.why)
+                    h('div', { style: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: _dwC('#64748b'), marginBottom: 4 } }, 'Why it works'),
+                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#334155') } }, s.why)
                   ),
-                  h('div', { style: { marginTop: 12, padding: 12, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 8 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#9a3412', marginBottom: 4 } }, 'Small enough to do today'),
-                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } }, s.first)
+                  h('div', { style: { marginTop: 12, padding: 12, background: _dwC('#fff7ed'), border: '1px solid #fed7aa', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: _dwC('#9a3412'), marginBottom: 4 } }, 'Small enough to do today'),
+                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } }, s.first)
                   ),
-                  h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 10, marginBottom: 0 } }, 'Source: ' + s.source),
+                  h('p', { style: { fontSize: 12, color: _dwC('#64748b'), marginTop: 10, marginBottom: 0 } }, 'Source: ' + s.source),
                   h('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
                     h('button', {
                       onClick: function() {
@@ -18568,7 +18575,7 @@
                       },
                       style: {
                         padding: '8px 14px',
-                        background: committed ? '#fff' : '#10b981',
+                        background: committed ? _dwC('#fff') : '#10b981',
                         color: committed ? '#10b981' : '#fff',
                         border: '1px solid ' + (committed ? '#10b981' : '#10b981'),
                         borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13
@@ -18595,31 +18602,31 @@
           // ── Sextortion / predator signpost ──
           h('div', { role: 'note', style: {
             padding: 12, marginBottom: 14,
-            background: '#fffbeb', border: '2px solid #f59e0b', borderRadius: 10
+            background: _dwC('#fffbeb'), border: '2px solid #f59e0b', borderRadius: 10
           } },
             h('div', { style: { display: 'flex', gap: 10, alignItems: 'flex-start' } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 22, lineHeight: 1 } }, '⚠️'),
               h('div', null,
-                h('div', { style: { fontWeight: 800, color: '#92400e', fontSize: 14, marginBottom: 4 } },
+                h('div', { style: { fontWeight: 800, color: _dwC('#92400e'), fontSize: 14, marginBottom: 4 } },
                   'This tab is about cyberbullying. If something else is going on, go elsewhere first.'),
-                h('p', { style: { margin: '0 0 6px', fontSize: 13, color: '#0f172a', lineHeight: 1.5 } },
+                h('p', { style: { margin: '0 0 6px', fontSize: 13, color: _dwC('#0f172a'), lineHeight: 1.5 } },
                   h('strong', null, 'If an adult is messaging you '),
                   '(sexual content, asking for photos, getting too friendly too fast, asking you to keep secrets, or threatening to share intimate images), that is ',
                   h('strong', null, 'sextortion / grooming'),
                   ' — a specific crime that needs different help.'),
-                h('ul', { style: { margin: '0 0 6px 20px', padding: 0, fontSize: 13, lineHeight: 1.6, color: '#0f172a' } },
+                h('ul', { style: { margin: '0 0 6px 20px', padding: 0, fontSize: 13, lineHeight: 1.6, color: _dwC('#0f172a') } },
                   h('li', null, 'Open the ', h('strong', null, 'Safety & Boundaries'), ' SEL tool for the right scripts and steps'),
                   h('li', null, 'Call the ', h('strong', null, 'CyberTipline: 1-800-843-5678'), ' (NCMEC, free, anonymous)'),
                   h('li', null, 'Tell a trusted adult ', h('strong', null, 'today'), ' — do not wait')),
-                h('p', { style: { margin: 0, fontSize: 12, color: '#64748b', fontStyle: 'italic' } },
+                h('p', { style: { margin: 0, fontSize: 12, color: _dwC('#64748b'), fontStyle: 'italic' } },
                   'You did nothing wrong, even if you sent something you regret. Adults who do this to kids are running a known playbook.'))
             )
           ),
-          h('div', { style: { padding: 14, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, marginBottom: 16 } },
-            h('h3', { style: { margin: '0 0 8px', color: '#991b1b', fontSize: 16 } },
+          h('div', { style: { padding: 14, background: _dwC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 10, marginBottom: 16 } },
+            h('h3', { style: { margin: '0 0 8px', color: _dwC('#991b1b'), fontSize: 16 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🛡️'),
               'Why cyberbullying is different'),
-            h('ul', { style: { margin: '0 0 0 20px', paddingLeft: 0, fontSize: 13, lineHeight: 1.6, color: '#0f172a' } },
+            h('ul', { style: { margin: '0 0 0 20px', paddingLeft: 0, fontSize: 13, lineHeight: 1.6, color: _dwC('#0f172a') } },
               h('li', null, h('strong', null, 'Permanence. '), 'Screenshots last forever. A playground insult fades — a screenshot does not.'),
               h('li', null, h('strong', null, 'Scale. '), 'The audience can be hundreds or thousands of people, not just the kids who happened to be there.'),
               h('li', null, h('strong', null, 'Anonymity. '), 'You may not know who is hurting you, which makes it harder to confront or escape.'),
@@ -18629,18 +18636,18 @@
           ),
 
           // ── Platform quick-reference (report / block / restrict / privacy) ──
-          h('div', { style: { padding: 14, background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 10, marginBottom: 16 } },
-            h('h3', { style: { margin: '0 0 6px', color: '#0f172a', fontSize: 15 } },
+          h('div', { style: { padding: 14, background: _dwC('#f8fafc'), border: '1px solid #cbd5e1', borderRadius: 10, marginBottom: 16 } },
+            h('h3', { style: { margin: '0 0 6px', color: _dwC('#0f172a'), fontSize: 15 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '⚙️'),
               'Where the buttons actually are — by platform'),
-            h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#475569', lineHeight: 1.5 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 13, color: _dwC('#475569'), lineHeight: 1.5 } },
               'When you are in the moment, you do not want to be searching menus. Tap your platform to see exactly where Report, Block, and Privacy live. (UI changes over time — these were current as of 2024–2025.)'),
             h('div', { style: { display: 'grid', gap: 8 } },
               PLATFORM_REFS.map(function(p) {
                 var open = cbPlatformOpen === p.id;
                 return h('div', { key: p.id, style: {
-                  border: '1px solid ' + (open ? p.color : '#e2e8f0'),
-                  borderRadius: 8, background: '#fff', overflow: 'hidden'
+                  border: '1px solid ' + (open ? p.color : _dwC('#e2e8f0')),
+                  borderRadius: 8, background: _dwC('#fff'), overflow: 'hidden'
                 } },
                   h('button', {
                     onClick: function() { upd('cbPlatformOpen', open ? null : p.id); },
@@ -18648,13 +18655,13 @@
                     style: {
                       width: '100%', padding: '10px 12px', textAlign: 'left',
                       background: 'transparent', border: 'none', cursor: 'pointer',
-                      fontSize: 14, fontWeight: 700, color: '#0f172a',
+                      fontSize: 14, fontWeight: 700, color: _dwC('#0f172a'),
                       display: 'flex', alignItems: 'center', gap: 10
                     }
                   },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, p.icon),
                     h('span', { style: { flex: 1 } }, p.name),
-                    h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 16 } }, open ? '▾' : '▸')
+                    h('span', { 'aria-hidden': 'true', style: { color: _dwC('#64748b'), fontSize: 16 } }, open ? '▾' : '▸')
                   ),
                   open && h('div', { style: { padding: '0 12px 12px', borderTop: '1px solid #f1f5f9' } },
                     [
@@ -18666,23 +18673,23 @@
                     ].map(function(row, idx) {
                       return h('div', { key: idx, style: { marginTop: 10 } },
                         h('div', { style: { fontSize: 12, fontWeight: 700, color: p.color, marginBottom: 2 } }, row.lbl),
-                        h('div', { style: { fontSize: 13, color: '#0f172a', lineHeight: 1.55 } }, p[row.key])
+                        h('div', { style: { fontSize: 13, color: _dwC('#0f172a'), lineHeight: 1.55 } }, p[row.key])
                       );
                     })
                   )
                 );
               })
             ),
-            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: '#64748b', fontStyle: 'italic' } },
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: _dwC('#64748b'), fontStyle: 'italic' } },
               'When in doubt: Report > Block > Tell an adult. The combination is much stronger than any one alone.')
           ),
 
-          h('div', { style: { padding: 16, border: '1px solid ' + ACCENT_MED, borderRadius: 12, background: '#fff', marginBottom: 14 } },
-            h('div', { style: { fontSize: 12, color: '#64748b', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 } },
+          h('div', { style: { padding: 16, border: '1px solid ' + ACCENT_MED, borderRadius: 12, background: _dwC('#fff'), marginBottom: 14 } },
+            h('div', { style: { fontSize: 12, color: _dwC('#64748b'), marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 } },
               'Scenario ' + (cbScenIdx + 1) + ' of ' + CB_SCENARIOS.length + (alreadyDone ? ' · Answered' : '')),
-            h('h3', { style: { margin: '0 0 8px', color: '#0f172a' } },
+            h('h3', { style: { margin: '0 0 8px', color: _dwC('#0f172a') } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, scen.icon), scen.title),
-            h('p', { 'aria-live': 'polite', style: { margin: '0 0 14px', fontSize: 15, lineHeight: 1.6, color: '#1e293b' } }, scen.setup),
+            h('p', { 'aria-live': 'polite', style: { margin: '0 0 14px', fontSize: 15, lineHeight: 1.6, color: _dwC('#1e293b') } }, scen.setup),
             h('div', { role: 'radiogroup', 'aria-label': 'What would you do?', style: { display: 'grid', gap: 8 } },
               scen.choices.map(function(c, idx) {
                 var picked = cbChoice === idx;
@@ -18697,12 +18704,12 @@
                   style: {
                     padding: '12px 14px',
                     textAlign: 'left',
-                    background: picked ? ACCENT_DIM : '#fff',
-                    border: '2px solid ' + (picked ? ACCENT : '#cbd5e1'),
+                    background: picked ? ACCENT_DIM : _dwC('#fff'),
+                    border: '2px solid ' + (picked ? ACCENT : _dwC('#cbd5e1')),
                     borderRadius: 8,
                     fontSize: 14,
                     fontWeight: picked ? 700 : 500,
-                    color: '#0f172a',
+                    color: _dwC('#0f172a'),
                     cursor: 'pointer'
                   }
                 }, c.label);
@@ -18710,13 +18717,13 @@
             ),
             cbChoice != null && h('div', { 'aria-live': 'polite', style: {
               marginTop: 12, padding: 12, borderRadius: 8,
-              background: scen.choices[cbChoice].rating >= 3 ? '#f0fdf4' : (scen.choices[cbChoice].rating === 2 ? '#fefce8' : '#fef2f2'),
+              background: scen.choices[cbChoice].rating >= 3 ? _dwC('#f0fdf4') : (scen.choices[cbChoice].rating === 2 ? _dwC('#fefce8') : _dwC('#fef2f2')),
               border: '1px solid ' + (scen.choices[cbChoice].rating >= 3 ? '#bbf7d0' : (scen.choices[cbChoice].rating === 2 ? '#fde68a' : '#fecaca'))
             } },
               h('div', { style: { fontSize: 12, fontWeight: 700, marginBottom: 4,
-                  color: scen.choices[cbChoice].rating >= 3 ? '#166534' : (scen.choices[cbChoice].rating === 2 ? '#854d0e' : '#991b1b') } },
+                  color: scen.choices[cbChoice].rating >= 3 ? _dwC('#166534') : (scen.choices[cbChoice].rating === 2 ? _dwC('#854d0e') : _dwC('#991b1b')) } },
                 scen.choices[cbChoice].rating >= 3 ? 'Strong response' : (scen.choices[cbChoice].rating === 2 ? 'Partial — worth thinking about' : 'Risky — think this through')),
-              h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } }, scen.choices[cbChoice].feedback)
+              h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } }, scen.choices[cbChoice].feedback)
             ),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap', justifyContent: 'space-between' } },
               h('button', {
@@ -18724,7 +18731,7 @@
                   if (cbScenIdx > 0) upd({ cbScenIdx: cbScenIdx - 1, cbChoice: null });
                 },
                 disabled: cbScenIdx === 0,
-                style: { padding: '8px 14px', background: '#fff', color: cbScenIdx === 0 ? '#94a3b8' : '#0f172a',
+                style: { padding: '8px 14px', background: _dwC('#fff'), color: cbScenIdx === 0 ? _dwC('#94a3b8') : _dwC('#0f172a'),
                          border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: cbScenIdx === 0 ? 'not-allowed' : 'pointer' }
               }, '← Previous'),
               h('button', {
@@ -18745,7 +18752,7 @@
                 },
                 style: {
                   padding: '8px 14px',
-                  background: cbChoice == null ? '#94a3b8' : ACCENT,
+                  background: cbChoice == null ? _dwC('#94a3b8') : ACCENT_BUTTON,
                   color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                   cursor: cbChoice == null ? 'not-allowed' : 'pointer'
                 }
@@ -18753,10 +18760,10 @@
             )
           ),
 
-          h('h3', { style: { margin: '24px 0 8px', color: '#0f172a' } },
+          h('h3', { style: { margin: '24px 0 8px', color: _dwC('#0f172a') } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🕒'),
             'Recovery — it does not stop hurting the moment you close the app'),
-          h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 12 } },
+          h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 12 } },
             'What to do AFTER. Most cyberbullying guidance covers the "screenshot, block, report, tell" loop. That part is in Safety & Boundaries. This part is about how to get through the next few days while it is still raw.'),
           h('div', { style: { display: 'grid', gap: 10 } },
             CB_RECOVERY.map(function(r, idx) {
@@ -18771,8 +18778,8 @@
                 },
                 style: {
                   padding: 14,
-                  background: viewed ? '#f0fdfa' : '#fff',
-                  border: '1px solid ' + (viewed ? '#5eead4' : '#e2e8f0'),
+                  background: viewed ? _dwC('#f0fdfa') : _dwC('#fff'),
+                  border: '1px solid ' + (viewed ? '#5eead4' : _dwC('#e2e8f0')),
                   borderRadius: 10,
                   cursor: 'pointer',
                   textAlign: 'left',
@@ -18781,26 +18788,26 @@
                   color: 'inherit'
                 }
               },
-                h('div', { style: { fontWeight: 700, fontSize: 15, color: '#0f172a', marginBottom: 4 } },
+                h('div', { style: { fontWeight: 700, fontSize: 15, color: _dwC('#0f172a'), marginBottom: 4 } },
                   (viewed ? '✓ ' : '') + r.title),
-                h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#334155' } }, r.body)
+                h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#334155') } }, r.body)
               );
             })
           ),
           // ── Helping a friend ──
-          h('h3', { style: { margin: '28px 0 6px', color: '#0f172a' } },
+          h('h3', { style: { margin: '28px 0 6px', color: _dwC('#0f172a') } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🤝'),
             'If a friend is the one being targeted'),
-          h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 12 } },
+          h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 12 } },
             'You do not have to be a counselor. You just have to be present. The single most protective thing a peer can do is not look away. Below: what to say, why it works, and what to avoid.'),
           h('div', { style: { display: 'grid', gap: 10, marginBottom: 14 } },
             FRIEND_HELP.scripts.map(function(s, idx) {
               var open = cbFriendOpen === idx;
               var viewed = !!cbFriendViewed[idx];
               return h('div', { key: idx, style: {
-                border: '1px solid ' + (viewed ? '#a7f3d0' : '#cbd5e1'),
+                border: '1px solid ' + (viewed ? '#a7f3d0' : _dwC('#cbd5e1')),
                 borderRadius: 10,
-                background: viewed ? '#f0fdf4' : '#fff',
+                background: viewed ? _dwC('#f0fdf4') : _dwC('#fff'),
                 overflow: 'hidden'
               } },
                 h('button', {
@@ -18816,35 +18823,35 @@
                   style: {
                     width: '100%', padding: '12px 14px', textAlign: 'left',
                     background: 'transparent', border: 'none', cursor: 'pointer',
-                    fontSize: 14, fontWeight: 700, color: '#0f172a',
+                    fontSize: 14, fontWeight: 700, color: _dwC('#0f172a'),
                     display: 'flex', alignItems: 'center', gap: 8
                   }
                 },
                   h('span', { style: { flex: 1 } }, s.situation),
-                  h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 18 } }, open ? '▾' : '▸')
+                  h('span', { 'aria-hidden': 'true', style: { color: _dwC('#64748b'), fontSize: 18 } }, open ? '▾' : '▸')
                 ),
                 open && h('div', { style: { padding: '0 14px 14px', borderTop: '1px solid #f1f5f9' } },
-                  h('div', { style: { marginTop: 12, padding: 12, background: '#f0fdfa', border: '1px solid #5eead4', borderRadius: 8 } },
-                    h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#0e7490', fontWeight: 700, marginBottom: 4 } }, 'Say'),
-                    h('p', { style: { margin: 0, fontSize: 15, lineHeight: 1.55, color: '#0f172a', fontStyle: 'italic' } }, s.say)
+                  h('div', { style: { marginTop: 12, padding: 12, background: _dwC('#f0fdfa'), border: '1px solid #5eead4', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: _dwC('#0e7490'), fontWeight: 700, marginBottom: 4 } }, 'Say'),
+                    h('p', { style: { margin: 0, fontSize: 15, lineHeight: 1.55, color: _dwC('#0f172a'), fontStyle: 'italic' } }, s.say)
                   ),
                   h('div', { style: { marginTop: 10 } },
-                    h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#64748b', fontWeight: 700, marginBottom: 4 } }, 'Why it works'),
-                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#334155' } }, s.why)
+                    h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: _dwC('#64748b'), fontWeight: 700, marginBottom: 4 } }, 'Why it works'),
+                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _dwC('#334155') } }, s.why)
                   )
                 )
               );
             })
           ),
-          h('div', { style: { padding: 14, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10 } },
-            h('div', { style: { fontWeight: 700, color: '#991b1b', marginBottom: 8, fontSize: 14 } },
+          h('div', { style: { padding: 14, background: _dwC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 10 } },
+            h('div', { style: { fontWeight: 700, color: _dwC('#991b1b'), marginBottom: 8, fontSize: 14 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '⛔'),
               'And what to AVOID'),
             h('div', { style: { display: 'grid', gap: 10 } },
               FRIEND_HELP.donts.map(function(d, idx) {
                 return h('div', { key: idx },
-                  h('div', { style: { fontSize: 13, fontWeight: 700, color: '#0f172a', marginBottom: 2 } }, '✗ ' + d.what),
-                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.5 } }, d.why)
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: _dwC('#0f172a'), marginBottom: 2 } }, '✗ ' + d.what),
+                  h('div', { style: { fontSize: 12, color: _dwC('#475569'), lineHeight: 1.5 } }, d.why)
                 );
               })
             )
@@ -18857,8 +18864,8 @@
       // ─────────────────────────────────────────────
       function renderMediaLit() {
         return h('div', { id: 'dw-panel-medialit', role: 'tabpanel', 'aria-labelledby': 'dw-tab-medialit' },
-          h('div', { style: { padding: 14, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, marginBottom: 14 } },
-            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } },
+          h('div', { style: { padding: 14, background: _dwC('#f0f9ff'), border: '1px solid #bae6fd', borderRadius: 10, marginBottom: 14 } },
+            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } },
               h('strong', { style: { color: ACCENT } }, 'The feed is not a window. It is a slot machine. '),
               'Knowing how feeds are designed to manipulate you is a skill the way reading is a skill — it is not paranoia, it is just literacy. Each card below is a different category of manipulation, with concrete tells you can spot in under 10 seconds.')
           ),
@@ -18869,7 +18876,7 @@
               return h('div', { key: item.id, style: {
                 border: '1px solid ' + (viewed ? '#5eead4' : ACCENT_MED),
                 borderRadius: 10,
-                background: viewed ? '#f0fdfa' : '#fff',
+                background: viewed ? _dwC('#f0fdfa') : _dwC('#fff'),
                 overflow: 'hidden'
               } },
                 h('button', {
@@ -18885,7 +18892,7 @@
                   style: {
                     width: '100%', padding: '12px 14px', textAlign: 'left',
                     background: 'transparent', border: 'none', cursor: 'pointer',
-                    fontSize: 15, fontWeight: 700, color: '#0f172a',
+                    fontSize: 15, fontWeight: 700, color: _dwC('#0f172a'),
                     display: 'flex', alignItems: 'center', gap: 12
                   }
                 },
@@ -18898,31 +18905,31 @@
                   } }, item.icon),
                   h('span', { style: { flex: 1 } }, item.title),
                   viewed && h('span', { 'aria-hidden': 'true', style: { fontSize: 11, color: '#0d9488', fontWeight: 700 } }, '✓'),
-                  h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 18 } }, expanded ? '▾' : '▸')
+                  h('span', { 'aria-hidden': 'true', style: { color: _dwC('#64748b'), fontSize: 18 } }, expanded ? '▾' : '▸')
                 ),
                 expanded && h('div', { style: { padding: '0 14px 14px', borderTop: '1px solid #f1f5f9' } },
-                  h('div', { style: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: '#64748b', margin: '12px 0 4px' } }, 'Tells to watch for'),
+                  h('div', { style: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: _dwC('#64748b'), margin: '12px 0 4px' } }, 'Tells to watch for'),
                   h('ul', { style: { margin: 0, paddingLeft: 20 } },
                     item.tells.map(function(t, i) {
-                      return h('li', { key: i, style: { fontSize: 14, lineHeight: 1.55, color: '#0f172a', marginBottom: 4 } }, t);
+                      return h('li', { key: i, style: { fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a'), marginBottom: 4 } }, t);
                     })
                   ),
-                  h('div', { style: { marginTop: 12, padding: 12, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 8 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#9a3412', marginBottom: 4 } }, 'Try this'),
-                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } }, item.practice)
+                  h('div', { style: { marginTop: 12, padding: 12, background: _dwC('#fff7ed'), border: '1px solid #fed7aa', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: _dwC('#9a3412'), marginBottom: 4 } }, 'Try this'),
+                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } }, item.practice)
                   ),
-                  item.source && h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 8, marginBottom: 0 } }, 'Source: ' + item.source)
+                  item.source && h('p', { style: { fontSize: 12, color: _dwC('#64748b'), marginTop: 8, marginBottom: 0 } }, 'Source: ' + item.source)
                 )
               );
             })
           ),
           h('div', { style: { padding: 14, background: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: 10 } },
-            h('h3', { style: { margin: '0 0 8px', color: '#0f172a', fontSize: 15 } },
+            h('h3', { style: { margin: '0 0 8px', color: _dwC('#0f172a'), fontSize: 15 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🎯'),
               'The 90-second lateral read'),
-            h('p', { style: { margin: '0 0 8px', fontSize: 14, lineHeight: 1.55, color: '#0f172a' } },
+            h('p', { style: { margin: '0 0 8px', fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } },
               'The single most powerful media literacy habit you can build, per the Stanford History Education Group:'),
-            h('ol', { style: { margin: 0, paddingLeft: 20, fontSize: 14, lineHeight: 1.7, color: '#0f172a' } },
+            h('ol', { style: { margin: 0, paddingLeft: 20, fontSize: 14, lineHeight: 1.7, color: _dwC('#0f172a') } },
               h('li', null, 'See a claim that triggers a strong reaction.'),
               h('li', null, 'Pause before reacting. Strong feeling = strong incentive to check.'),
               h('li', null, 'Open new tabs. Search the source and the claim from at least three independent sites.'),
@@ -18942,34 +18949,34 @@
         var submitted = !!stSubmitted[item.id];
         var anyPicked = Object.keys(picked).filter(function(k) { return picked[k]; }).length > 0;
 
-        return h('div', { style: { marginTop: 18, padding: 16, background: '#fffbeb', border: '2px solid #fcd34d', borderRadius: 12 } },
+        return h('div', { style: { marginTop: 18, padding: 16, background: _dwC('#fffbeb'), border: '2px solid #fcd34d', borderRadius: 12 } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 } },
-            h('h3', { style: { margin: 0, color: '#92400e', fontSize: 16 } },
+            h('h3', { style: { margin: 0, color: _dwC('#92400e'), fontSize: 16 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🕵️'),
               'Spot the Tells — interactive challenge'),
-            h('div', { style: { fontSize: 12, color: '#92400e', fontWeight: 700 } },
+            h('div', { style: { fontSize: 12, color: _dwC('#92400e'), fontWeight: 700 } },
               'Score: ' + stScore + ' / ' + SPOT_TELLS_ITEMS.length + (allDone ? ' · Complete!' : ''))
           ),
           h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#451a03', lineHeight: 1.55 } },
             'Read the scenario. Tap every red flag you see. There may be more than one per scenario — and at least one option is a trap. Then check your answer.'),
 
-          h('div', { style: { padding: 12, background: '#fff', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 12 } },
-            h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#92400e', fontWeight: 700, marginBottom: 6 } },
+          h('div', { style: { padding: 12, background: _dwC('#fff'), border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 12 } },
+            h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: _dwC('#92400e'), fontWeight: 700, marginBottom: 6 } },
               'Scenario ' + (stIdx + 1) + ' of ' + SPOT_TELLS_ITEMS.length),
-            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#0f172a' } }, item.scenario)
+            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a') } }, item.scenario)
           ),
 
           h('div', { style: { display: 'grid', gap: 8 } },
             item.options.map(function(opt, idx) {
               var sel = !!picked[idx];
               var bg = '#fff';
-              var border = '#cbd5e1';
+              var border = _dwC('#cbd5e1');
               if (submitted) {
-                if (sel && opt.correct) { bg = '#f0fdf4'; border = '#10b981'; }
-                else if (sel && !opt.correct) { bg = '#fef2f2'; border = '#ef4444'; }
-                else if (!sel && opt.correct) { bg = '#fffbeb'; border = '#f59e0b'; }
+                if (sel && opt.correct) { bg = _dwC('#f0fdf4'); border = '#10b981'; }
+                else if (sel && !opt.correct) { bg = _dwC('#fef2f2'); border = '#ef4444'; }
+                else if (!sel && opt.correct) { bg = _dwC('#fffbeb'); border = '#f59e0b'; }
               } else if (sel) {
-                bg = '#fef3c7'; border = '#f59e0b';
+                bg = _dwC('#fef3c7'); border = '#f59e0b';
               }
               return h('button', {
                 key: idx,
@@ -18983,15 +18990,15 @@
                 style: {
                   padding: '10px 12px', textAlign: 'left',
                   background: bg, border: '2px solid ' + border, borderRadius: 8,
-                  fontSize: 13, color: '#0f172a',
+                  fontSize: 13, color: _dwC('#0f172a'),
                   cursor: submitted ? 'default' : 'pointer',
                   display: 'flex', gap: 8, alignItems: 'flex-start'
                 }
               },
                 h('span', { 'aria-hidden': 'true', style: {
                   flexShrink: 0, width: 22, height: 22, borderRadius: 6,
-                  border: '2px solid ' + (sel ? border : '#94a3b8'),
-                  background: sel ? border : '#fff', color: '#fff',
+                  border: '2px solid ' + (sel ? border : _dwC('#94a3b8')),
+                  background: sel ? border : _dwC('#fff'), color: '#fff',
                   fontSize: 14, lineHeight: 1, textAlign: 'center', fontWeight: 800,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'all 0.18s ease',
@@ -19010,16 +19017,16 @@
             })
           ),
 
-          submitted && h('div', { 'aria-live': 'polite', style: { marginTop: 12, padding: 12, background: '#fff', borderRadius: 8, border: '1px dashed #f59e0b' } },
-            h('div', { style: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: '#92400e', fontWeight: 700, marginBottom: 4 } }, 'Why'),
-            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#0f172a' } }, item.explain)
+          submitted && h('div', { 'aria-live': 'polite', style: { marginTop: 12, padding: 12, background: _dwC('#fff'), borderRadius: 8, border: '1px dashed #f59e0b' } },
+            h('div', { style: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: _dwC('#92400e'), fontWeight: 700, marginBottom: 4 } }, 'Why'),
+            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } }, item.explain)
           ),
 
           h('div', { style: { display: 'flex', gap: 8, marginTop: 12, justifyContent: 'space-between', flexWrap: 'wrap' } },
             h('button', {
               onClick: function() { if (stIdx > 0) upd('stIdx', stIdx - 1); },
               disabled: stIdx === 0,
-              style: { padding: '8px 14px', background: '#fff', color: stIdx === 0 ? '#94a3b8' : '#0f172a',
+              style: { padding: '8px 14px', background: _dwC('#fff'), color: stIdx === 0 ? _dwC('#94a3b8') : _dwC('#0f172a'),
                        border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: stIdx === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
             }, '← Previous'),
             !submitted
@@ -19050,7 +19057,7 @@
                   },
                   style: {
                     padding: '8px 14px',
-                    background: anyPicked ? '#f59e0b' : '#94a3b8',
+                    background: anyPicked ? '#f59e0b' : _dwC('#94a3b8'),
                     color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                     cursor: anyPicked ? 'pointer' : 'not-allowed', fontSize: 13
                   }
@@ -19058,7 +19065,7 @@
               : stIdx < SPOT_TELLS_ITEMS.length - 1
                 ? h('button', {
                     onClick: function() { upd('stIdx', stIdx + 1); },
-                    style: { padding: '8px 14px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                    style: { padding: '8px 14px', background: '#b45309', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                   }, 'Next scenario →')
                 : h('button', {
                     onClick: function() {
@@ -19083,18 +19090,18 @@
 
       function renderCrisis() {
         return h('div', { id: 'dw-panel-crisis', role: 'tabpanel', 'aria-labelledby': 'dw-tab-crisis' },
-          h('div', { style: { padding: 14, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, marginBottom: 14 } },
-            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } },
-              h('strong', { style: { color: '#991b1b' } }, 'If you are in immediate danger or thinking about hurting yourself: '),
+          h('div', { style: { padding: 14, background: _dwC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 10, marginBottom: 14 } },
+            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } },
+              h('strong', { style: { color: _dwC('#991b1b') } }, 'If you are in immediate danger or thinking about hurting yourself: '),
               'reach out right now. The numbers below all have human beings answering. None of them call the police on you by default. Most of them are free.')
           ),
 
-          h('h3', { style: { margin: '0 0 8px', color: '#0f172a' } },
+          h('h3', { style: { margin: '0 0 8px', color: _dwC('#0f172a') } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '☎️'),
             'Hotlines that will talk to you right now'),
           h('div', { style: { display: 'grid', gap: 10, marginBottom: 18 } },
             [
-              { name: '988 Suicide & Crisis Lifeline', icon: '☎️', accent: '#dc2626', contact: 'Call or text 988', desc: '24/7. Free. Confidential. For thoughts of self-harm, suicide, or just feeling like you cannot keep going.' },
+              { name: '988 Suicide & Crisis Lifeline', icon: '☎️', accent: _dwC('#dc2626'), contact: 'Call or text 988', desc: '24/7. Free. Confidential. For thoughts of self-harm, suicide, or just feeling like you cannot keep going.' },
               { name: 'Crisis Text Line', icon: '💬', accent: '#0891b2', contact: 'Text HOME to 741741', desc: 'Texting only — useful if you cannot or do not want to talk out loud. Real trained counselors, not bots.' },
               { name: 'CyberTipline (NCMEC)', icon: '🛡️', accent: '#7c3aed', contact: 'Call 1-800-843-5678 or report at cybertipline.org', desc: 'For online sexual exploitation, sextortion, or someone sharing intimate images of you or someone underage. Run by the National Center for Missing & Exploited Children.' },
               { name: 'StopBullying.gov', icon: '⚖️', accent: '#0d9488', contact: 'stopbullying.gov', desc: 'Federal resource hub with state-specific cyberbullying laws and reporting paths. Useful when you need to know what your school actually has to do.' },
@@ -19102,7 +19109,7 @@
             ].map(function(rsc, i) {
               return h('div', { key: i, className: 'dw-card', style: {
                 display: 'flex', gap: 12, padding: 0, border: '1px solid #fecaca',
-                background: '#fff', borderRadius: 10, overflow: 'hidden'
+                background: _dwC('#fff'), borderRadius: 10, overflow: 'hidden'
               } },
                 h('div', { 'aria-hidden': 'true', style: {
                   width: 56, flexShrink: 0,
@@ -19112,20 +19119,20 @@
                 } }, rsc.icon),
                 h('div', { style: { padding: '12px 14px 12px 4px', flex: 1, minWidth: 0 } },
                   h('div', { style: { fontWeight: 700, fontSize: 15, color: rsc.accent, marginBottom: 2 } }, rsc.name),
-                  h('div', { style: { fontSize: 14, color: '#0f172a', fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, rsc.contact),
-                  h('div', { style: { fontSize: 13, color: '#475569', lineHeight: 1.5 } }, rsc.desc)
+                  h('div', { style: { fontSize: 14, color: _dwC('#0f172a'), fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, rsc.contact),
+                  h('div', { style: { fontSize: 13, color: _dwC('#475569'), lineHeight: 1.5 } }, rsc.desc)
                 )
               );
             })
           ),
 
-          h('h3', { style: { margin: '0 0 8px', color: '#0f172a' } },
+          h('h3', { style: { margin: '0 0 8px', color: _dwC('#0f172a') } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🧭'),
             'Warning signs worth taking seriously'),
-          h('div', { style: { padding: 14, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, marginBottom: 18 } },
-            h('p', { style: { margin: '0 0 8px', fontSize: 13, color: '#475569' } },
+          h('div', { style: { padding: 14, background: _dwC('#fff'), border: '1px solid #e2e8f0', borderRadius: 10, marginBottom: 18 } },
+            h('p', { style: { margin: '0 0 8px', fontSize: 13, color: _dwC('#475569') } },
               'In yourself or a friend, especially after sustained cyberbullying or online comparison:'),
-            h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 14, lineHeight: 1.7, color: '#0f172a' } },
+            h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 14, lineHeight: 1.7, color: _dwC('#0f172a') } },
               h('li', null, 'Talking about feeling like a burden, hopeless, or having no future'),
               h('li', null, 'Giving away possessions, saying goodbye in a way that feels off'),
               h('li', null, 'Sudden withdrawal from friends, sports, or activities they used to care about'),
@@ -19133,22 +19140,22 @@
               h('li', null, 'Searching online for methods, posting darker-themed content, or rehearsing'),
               h('li', null, 'Sudden calm or relief after a long period of distress — can sometimes signal a decision has been made')
             ),
-            h('p', { style: { fontSize: 13, color: '#0f172a', margin: '12px 0 0' } },
+            h('p', { style: { fontSize: 13, color: _dwC('#0f172a'), margin: '12px 0 0' } },
               h('strong', null, 'Trust your gut. '),
               'If a friend feels off, ask them directly. Research is clear: asking about suicide does NOT plant the idea. It opens a door.')
           ),
 
           // ── Reach-out scripts ──
-          h('h3', { style: { margin: '0 0 8px', color: '#0f172a' } },
+          h('h3', { style: { margin: '0 0 8px', color: _dwC('#0f172a') } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '💬'),
             'What to actually say — three scripts'),
-          h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 12 } },
+          h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 12 } },
             'Knowing the hotline number is not the same as picking up the phone. The hardest part is the first sentence. These are real, copy-able opening lines for three situations. Open the one you need.'),
           h('div', { style: { display: 'grid', gap: 10, marginBottom: 20 } },
             REACH_OUT_SCRIPTS.map(function(rs) {
               var open = roOpen === rs.id;
               return h('div', { key: rs.id, style: {
-                border: '1px solid #cbd5e1', borderRadius: 10, background: '#fff', overflow: 'hidden'
+                border: '1px solid #cbd5e1', borderRadius: 10, background: _dwC('#fff'), overflow: 'hidden'
               } },
                 h('button', {
                   onClick: function() { upd('roOpen', open ? null : rs.id); },
@@ -19156,24 +19163,24 @@
                   style: {
                     width: '100%', padding: '12px 14px', textAlign: 'left',
                     background: 'transparent', border: 'none', cursor: 'pointer',
-                    fontSize: 14, fontWeight: 700, color: '#0f172a',
+                    fontSize: 14, fontWeight: 700, color: _dwC('#0f172a'),
                     display: 'flex', alignItems: 'center', gap: 8
                   }
                 },
                   h('span', { style: { flex: 1 } }, rs.title),
-                  h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 18 } }, open ? '▾' : '▸')
+                  h('span', { 'aria-hidden': 'true', style: { color: _dwC('#64748b'), fontSize: 18 } }, open ? '▾' : '▸')
                 ),
                 open && h('div', { style: { padding: '0 14px 14px', borderTop: '1px solid #f1f5f9' } },
-                  h('div', { style: { marginTop: 12, fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, rs.scenario),
-                  h('div', { style: { marginTop: 10, padding: 12, background: '#f0fdfa', border: '1px solid #5eead4', borderRadius: 8 } },
-                    h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#0e7490', fontWeight: 700, marginBottom: 6 } }, 'Try this'),
-                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#0f172a', fontStyle: 'italic' } }, rs.script)
+                  h('div', { style: { marginTop: 12, fontSize: 12, color: _dwC('#64748b'), fontStyle: 'italic' } }, rs.scenario),
+                  h('div', { style: { marginTop: 10, padding: 12, background: _dwC('#f0fdfa'), border: '1px solid #5eead4', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: _dwC('#0e7490'), fontWeight: 700, marginBottom: 6 } }, 'Try this'),
+                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a'), fontStyle: 'italic' } }, rs.script)
                   ),
                   h('div', { style: { marginTop: 12 } },
-                    h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: '#64748b', fontWeight: 700, marginBottom: 6 } }, 'Things to know'),
+                    h('div', { style: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: _dwC('#64748b'), fontWeight: 700, marginBottom: 6 } }, 'Things to know'),
                     h('ul', { style: { margin: 0, paddingLeft: 20 } },
                       rs.tips.map(function(t, i) {
-                        return h('li', { key: i, style: { fontSize: 13, lineHeight: 1.55, color: '#334155', marginBottom: 4 } }, t);
+                        return h('li', { key: i, style: { fontSize: 13, lineHeight: 1.55, color: _dwC('#334155'), marginBottom: 4 } }, t);
                       })
                     )
                   )
@@ -19182,35 +19189,35 @@
             })
           ),
 
-          h('h3', { style: { margin: '0 0 8px', color: '#0f172a' } },
+          h('h3', { style: { margin: '0 0 8px', color: _dwC('#0f172a') } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '👥'),
             'Map your own circle of trusted adults'),
-          h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 10 } },
+          h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 10 } },
             'In a moment of crisis, you do not want to be deciding for the first time who to call. List 3+ adults now — each from a different part of your life if possible (home, school, community, online).'),
 
           trustedAdults.length > 0 && h('div', { style: { marginBottom: 12, display: 'grid', gap: 6 } },
             trustedAdults.map(function(a, idx) {
               return h('div', { key: idx, style: {
-                padding: '8px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
+                padding: '8px 12px', background: _dwC('#f0fdf4'), border: '1px solid #bbf7d0', borderRadius: 8,
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8
               } },
                 h('div', null,
-                  h('span', { style: { fontWeight: 700, color: '#166534' } }, a.name),
-                  h('span', { style: { color: '#475569', fontSize: 13 } }, ' · ' + a.role)),
+                  h('span', { style: { fontWeight: 700, color: _dwC('#166534') } }, a.name),
+                  h('span', { style: { color: _dwC('#475569'), fontSize: 13 } }, ' · ' + a.role)),
                 h('button', {
                   'aria-label': 'Remove ' + a.name,
                   onClick: function() {
                     var na = trustedAdults.slice(0); na.splice(idx, 1);
                     upd('trustedAdults', na);
                   },
-                  style: { background: 'transparent', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 18, fontWeight: 700 }
+                  style: { background: 'transparent', border: 'none', color: _dwC('#dc2626'), cursor: 'pointer', fontSize: 18, fontWeight: 700 }
                 }, '×')
               );
             })
           ),
 
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'end' } },
-            h('label', { style: { display: 'flex', flexDirection: 'column', fontSize: 12, color: '#475569', flex: '1 1 140px' } },
+            h('label', { style: { display: 'flex', flexDirection: 'column', fontSize: 12, color: _dwC('#475569'), flex: '1 1 140px' } },
               'Name',
               h('input', {
                 value: newAdultName,
@@ -19219,7 +19226,7 @@
                 style: { padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, marginTop: 2 }
               })
             ),
-            h('label', { style: { display: 'flex', flexDirection: 'column', fontSize: 12, color: '#475569', flex: '1 1 140px' } },
+            h('label', { style: { display: 'flex', flexDirection: 'column', fontSize: 12, color: _dwC('#475569'), flex: '1 1 140px' } },
               'How you know them',
               h('input', {
                 value: newAdultRole,
@@ -19230,12 +19237,12 @@
             ),
             h('button', {
               onClick: addAdult,
-              style: { padding: '8px 14px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: 14 }
+              style: { padding: '8px 14px', background: ACCENT_BUTTON, color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: 14 }
             }, 'Add to circle')
           ),
 
-          !crisisAcknowledged && h('div', { style: { marginTop: 24, padding: 12, background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8 } },
-            h('p', { style: { margin: '0 0 8px', fontSize: 13, color: '#475569' } },
+          !crisisAcknowledged && h('div', { style: { marginTop: 24, padding: 12, background: _dwC('#f8fafc'), border: '1px dashed #cbd5e1', borderRadius: 8 } },
+            h('p', { style: { margin: '0 0 8px', fontSize: 13, color: _dwC('#475569') } },
               'It helps to acknowledge this section out loud (even just to yourself). It is not a contract — it is a small marker that says "I know this exists, I know where to find it."'),
             h('button', {
               onClick: function() {
@@ -19300,9 +19307,9 @@
                 onClick: function() { upd('aicSection', s.id); if (announceToSR) announceToSR(s.label + ' opened'); },
                 style: {
                   padding: '6px 12px',
-                  background: active ? '#7c3aed' : '#fff',
-                  color: active ? '#fff' : '#0f172a',
-                  border: '1px solid ' + (active ? '#7c3aed' : '#cbd5e1'),
+                  background: active ? '#7c3aed' : _dwC('#fff'),
+                  color: active ? '#fff' : _dwC('#0f172a'),
+                  border: '1px solid ' + (active ? '#7c3aed' : _dwC('#cbd5e1')),
                   borderRadius: 999, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 13
                 }
               }, h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, s.icon), s.label);
@@ -19315,22 +19322,22 @@
       function renderAIIntro() {
         return h('div', null,
           h('div', { style: { padding: 16, background: 'linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%)', border: '1px solid #d8b4fe', borderRadius: 12, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', color: '#6b21a8', fontSize: 17 } },
+            h('h3', { style: { margin: '0 0 8px', color: _dwC('#6b21a8'), fontSize: 17 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🤖'),
               'Talking to AI chatbots — when it helps, when it harms'),
-            h('p', { style: { margin: '0 0 8px', fontSize: 14, lineHeight: 1.6, color: '#0f172a' } },
+            h('p', { style: { margin: '0 0 8px', fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a') } },
               'AI chatbots — Character.AI, Replika, ChatGPT, Snapchat\'s My AI, Discord\'s Clyde, and many more — can be useful tools. They can also become something else: a friend you cannot really have, a therapist who is not one, a romantic partner who does not exist.'),
-            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#0f172a' } },
+            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a') } },
               h('strong', null, 'This section is not anti-AI. '),
               'It is about helping you use these tools without being used by them. Below: a check-in for your own habits, an honest look at what these bots actually are, and the patterns that have already hurt teenagers.')
           ),
-          h('div', { style: { padding: 14, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 6px', color: '#92400e', fontSize: 14 } },
+          h('div', { style: { padding: 14, background: _dwC('#fffbeb'), border: '1px solid #fcd34d', borderRadius: 10, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 6px', color: _dwC('#92400e'), fontSize: 14 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '⚠️'),
               'The honest version'),
-            h('p', { style: { margin: '0 0 6px', fontSize: 13, lineHeight: 1.6, color: '#0f172a' } },
+            h('p', { style: { margin: '0 0 6px', fontSize: 13, lineHeight: 1.6, color: _dwC('#0f172a') } },
               'The American Psychological Association issued a 2025 health advisory on AI chatbots and youth mental health. A 14-year-old in Florida died by suicide in early 2024 after months of intense relationship with a Character.AI bot. There are active lawsuits and ongoing investigations. This is not hypothetical.'),
-            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#0f172a' } },
+            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _dwC('#0f172a') } },
               h('strong', null, 'Most chatbot use is fine. '),
               'A small but real fraction becomes harmful. The check-in on the next tab is for you to know which side you are on, honestly.')
           ),
@@ -19362,7 +19369,7 @@
             } },
               h('div', { 'aria-hidden': 'true', style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
                 h('svg', { width: 100, height: 100, viewBox: '0 0 100 100', style: { transform: 'rotate(-90deg)' } },
-                  h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: '#e2e8f0', strokeWidth: 8 }),
+                  h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: _dwC('#e2e8f0'), strokeWidth: 8 }),
                   h('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: result.color, strokeWidth: 8,
                     strokeDasharray: aicRingCirc, strokeDashoffset: aicRingCirc * (1 - aicPct),
                     strokeLinecap: 'round', style: { transition: 'stroke-dashoffset 0.6s ease' } })
@@ -19372,13 +19379,13 @@
                   alignItems: 'center', justifyContent: 'center', lineHeight: 1
                 } },
                   h('div', { style: { fontSize: 26, fontWeight: 800, color: result.color } }, aicPctText + '%'),
-                  h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 } }, 'reliance')
+                  h('div', { style: { fontSize: 10, color: _dwC('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 } }, 'reliance')
                 )
               ),
               h('div', { style: { flex: 1, minWidth: 200 } },
-                h('div', { style: { fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 4 } }, 'Your chatbot check-in result'),
+                h('div', { style: { fontSize: 12, color: _dwC('#64748b'), textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700, marginBottom: 4 } }, 'Your chatbot check-in result'),
                 h('div', { style: { fontSize: 24, fontWeight: 800, color: result.color, marginBottom: 8, lineHeight: 1.2 } }, result.label),
-                h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#1e293b' } }, result.summary)
+                h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _dwC('#1e293b') } }, result.summary)
               )
             ),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -19388,7 +19395,7 @@
               }, 'Continue: what the bot actually is →'),
               h('button', {
                 onClick: function() { upd({ aicAnswers: {}, aicQIdx: 0, aicShowResults: false }); },
-                style: { padding: '10px 16px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 16px', background: _dwC('#fff'), color: _dwC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }
               }, 'Retake')
             )
           );
@@ -19399,12 +19406,12 @@
         var likertLabels = ['Never', 'Sometimes', 'Often', 'Almost always'];
 
         return h('div', null,
-          h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 8 } },
+          h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 8 } },
             'Question ' + (aicQIdx + 1) + ' of ' + AI_CHECKIN_QUESTIONS.length + ' · ' + totalAnswered + ' answered'),
-          h('div', { style: { background: '#e2e8f0', height: 8, borderRadius: 4, marginBottom: 16, overflow: 'hidden' } },
+          h('div', { style: { background: _dwC('#e2e8f0'), height: 8, borderRadius: 4, marginBottom: 16, overflow: 'hidden' } },
             h('div', { style: { background: 'linear-gradient(90deg, #6d28d9 0%, #a855f7 100%)', height: '100%', width: ((aicQIdx + 1) / AI_CHECKIN_QUESTIONS.length * 100) + '%', transition: 'width 0.3s ease' } })),
-          h('div', { style: { padding: 18, border: '1px solid #d8b4fe', borderRadius: 12, background: '#faf5ff', marginBottom: 14 } },
-            h('div', { 'aria-live': 'polite', style: { fontSize: 16, fontWeight: 600, color: '#0f172a', lineHeight: 1.5, marginBottom: 14 } }, q.text),
+          h('div', { style: { padding: 18, border: '1px solid #d8b4fe', borderRadius: 12, background: _dwC('#faf5ff'), marginBottom: 14 } },
+            h('div', { 'aria-live': 'polite', style: { fontSize: 16, fontWeight: 600, color: _dwC('#0f172a'), lineHeight: 1.5, marginBottom: 14 } }, q.text),
             h('div', { role: 'radiogroup', 'aria-label': 'How often: ' + q.text, style: { display: 'grid', gap: 8 } },
               likertLabels.map(function(lbl, idx) {
                 var selected = aicAnswers[q.id] === idx;
@@ -19416,16 +19423,16 @@
                   },
                   style: {
                     padding: '12px 14px', textAlign: 'left',
-                    background: selected ? '#ede9fe' : '#fff',
-                    border: '2px solid ' + (selected ? '#7c3aed' : '#cbd5e1'),
-                    borderRadius: 10, fontSize: 15, fontWeight: selected ? 700 : 500, color: '#0f172a', cursor: 'pointer',
+                    background: selected ? _dwC('#ede9fe') : _dwC('#fff'),
+                    border: '2px solid ' + (selected ? '#7c3aed' : _dwC('#cbd5e1')),
+                    borderRadius: 10, fontSize: 15, fontWeight: selected ? 700 : 500, color: _dwC('#0f172a'), cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 10
                   }
                 },
                   h('span', { 'aria-hidden': 'true', style: {
                     width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                    border: '2px solid ' + (selected ? '#7c3aed' : '#cbd5e1'),
-                    background: selected ? '#7c3aed' : '#fff',
+                    border: '2px solid ' + (selected ? '#7c3aed' : _dwC('#cbd5e1')),
+                    background: selected ? '#7c3aed' : _dwC('#fff'),
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: '#fff', fontSize: 13, fontWeight: 800, lineHeight: 1,
                     transition: 'all 0.18s ease'
@@ -19435,8 +19442,8 @@
               })
             ),
             hasAnswer && h('div', { style: {
-              marginTop: 14, padding: 12, background: '#fff', border: '1px dashed #d8b4fe', borderRadius: 8,
-              fontSize: 13, color: '#334155', lineHeight: 1.55
+              marginTop: 14, padding: 12, background: _dwC('#fff'), border: '1px dashed #d8b4fe', borderRadius: 8,
+              fontSize: 13, color: _dwC('#334155'), lineHeight: 1.55
             } },
               h('strong', { style: { color: '#7c3aed', display: 'block', marginBottom: 4 } }, 'Why this question:'),
               q.research)
@@ -19445,7 +19452,7 @@
             h('button', {
               onClick: function() { if (aicQIdx > 0) upd('aicQIdx', aicQIdx - 1); },
               disabled: aicQIdx === 0,
-              style: { padding: '10px 14px', background: '#fff', color: aicQIdx === 0 ? '#94a3b8' : '#0f172a',
+              style: { padding: '10px 14px', background: _dwC('#fff'), color: aicQIdx === 0 ? _dwC('#94a3b8') : _dwC('#0f172a'),
                        border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: aicQIdx === 0 ? 'not-allowed' : 'pointer' }
             }, '← Previous'),
             aicQIdx < AI_CHECKIN_QUESTIONS.length - 1
@@ -19461,7 +19468,7 @@
                   disabled: totalAnswered < AI_CHECKIN_QUESTIONS.length,
                   style: {
                     padding: '10px 14px',
-                    background: totalAnswered < AI_CHECKIN_QUESTIONS.length ? '#94a3b8' : '#10b981',
+                    background: totalAnswered < AI_CHECKIN_QUESTIONS.length ? _dwC('#94a3b8') : '#10b981',
                     color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                     cursor: totalAnswered < AI_CHECKIN_QUESTIONS.length ? 'not-allowed' : 'pointer'
                   }
@@ -19473,24 +19480,24 @@
       function renderAIWhat() {
         var m = AI_MYTHS[aicMythIdx];
         return h('div', null,
-          h('div', { style: { padding: 14, background: '#faf5ff', border: '1px solid #d8b4fe', borderRadius: 10, marginBottom: 14 } },
-            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#0f172a' } },
-              h('strong', { style: { color: '#6b21a8' } }, 'Six things people commonly believe about chatbots — and what is actually true. '),
+          h('div', { style: { padding: 14, background: _dwC('#faf5ff'), border: '1px solid #d8b4fe', borderRadius: 10, marginBottom: 14 } },
+            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a') } },
+              h('strong', { style: { color: _dwC('#6b21a8') } }, 'Six things people commonly believe about chatbots — and what is actually true. '),
               'Read one, click for the next.')
           ),
-          h('div', { style: { padding: 18, border: '2px solid #d8b4fe', borderRadius: 12, background: '#fff', marginBottom: 12 } },
-            h('div', { style: { fontSize: 12, color: '#6b21a8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } },
+          h('div', { style: { padding: 18, border: '2px solid #d8b4fe', borderRadius: 12, background: _dwC('#fff'), marginBottom: 12 } },
+            h('div', { style: { fontSize: 12, color: _dwC('#6b21a8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } },
               'Myth ' + (aicMythIdx + 1) + ' of ' + AI_MYTHS.length),
-            h('p', { style: { margin: '0 0 14px', fontSize: 15, lineHeight: 1.55, color: '#0f172a', fontStyle: 'italic' } }, m.myth),
-            h('div', { style: { padding: 12, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8 } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Reality'),
-              h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } }, m.reality))
+            h('p', { style: { margin: '0 0 14px', fontSize: 15, lineHeight: 1.55, color: _dwC('#0f172a'), fontStyle: 'italic' } }, m.myth),
+            h('div', { style: { padding: 12, background: _dwC('#f0fdf4'), border: '1px solid #86efac', borderRadius: 8 } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: _dwC('#166534'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Reality'),
+              h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } }, m.reality))
           ),
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between', flexWrap: 'wrap' } },
             h('button', {
               onClick: function() { if (aicMythIdx > 0) upd('aicMythIdx', aicMythIdx - 1); },
               disabled: aicMythIdx === 0,
-              style: { padding: '8px 14px', background: '#fff', color: aicMythIdx === 0 ? '#94a3b8' : '#0f172a',
+              style: { padding: '8px 14px', background: _dwC('#fff'), color: aicMythIdx === 0 ? _dwC('#94a3b8') : _dwC('#0f172a'),
                        border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: aicMythIdx === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
             }, '← Previous'),
             aicMythIdx < AI_MYTHS.length - 1
@@ -19509,30 +19516,30 @@
       function renderAISycophancy() {
         var ex = AI_SYCOPHANCY_EXAMPLES[aicSycIdx];
         return h('div', null,
-          h('div', { style: { padding: 14, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', color: '#991b1b', fontSize: 16 } },
+          h('div', { style: { padding: 14, background: _dwC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 10, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', color: _dwC('#991b1b'), fontSize: 16 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🪞'),
               'The Sycophancy Problem'),
-            h('p', { style: { margin: '0 0 6px', fontSize: 14, lineHeight: 1.6, color: '#0f172a' } },
+            h('p', { style: { margin: '0 0 6px', fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a') } },
               'AI chatbots are trained to be ', h('strong', null, 'agreeable'),
               '. Disagreement causes users to leave. So the bot is engineered to validate, affirm, and reflect you back to yourself — even when what you are saying is wrong, dangerous, or distorted.'),
-            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#0f172a' } },
+            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a') } },
               h('strong', null, 'This is the part that can really hurt. '),
               'A bot that always agrees with you is not a friend — it is a feedback loop. Here is what that actually sounds like.')
           ),
-          h('div', { style: { padding: 16, border: '2px solid #fca5a5', borderRadius: 14, background: '#f8fafc', marginBottom: 12 } },
-            h('div', { style: { fontSize: 12, color: '#991b1b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 } },
+          h('div', { style: { padding: 16, border: '2px solid #fca5a5', borderRadius: 14, background: _dwC('#f8fafc'), marginBottom: 12 } },
+            h('div', { style: { fontSize: 12, color: _dwC('#991b1b'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 } },
               'Example ' + (aicSycIdx + 1) + ' of ' + AI_SYCOPHANCY_EXAMPLES.length),
             // Chat thread
             h('div', { 'aria-label': 'Chat message thread example', style: {
-              background: '#fff', borderRadius: 12, padding: 14,
+              background: _dwC('#fff'), borderRadius: 12, padding: 14,
               boxShadow: 'inset 0 0 0 1px #e2e8f0',
               display: 'flex', flexDirection: 'column', gap: 10
             } },
               // YOU bubble (right-aligned, blue iMessage-style)
               h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
                 h('div', { style: { maxWidth: '78%', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 } },
-                  h('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, paddingRight: 4 } }, 'YOU'),
+                  h('div', { style: { fontSize: 10, color: _dwC('#64748b'), fontWeight: 700, paddingRight: 4 } }, 'YOU'),
                   h('div', { style: {
                     padding: '10px 14px', background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
                     color: '#fff', fontSize: 14, lineHeight: 1.45,
@@ -19552,7 +19559,7 @@
                 h('div', { style: { maxWidth: '78%', display: 'flex', flexDirection: 'column', gap: 3 } },
                   h('div', { style: { fontSize: 10, color: '#7c3aed', fontWeight: 700, paddingLeft: 4 } }, 'CHATBOT'),
                   h('div', { style: {
-                    padding: '10px 14px', background: '#f3e8ff', color: '#0f172a',
+                    padding: '10px 14px', background: _dwC('#f3e8ff'), color: _dwC('#0f172a'),
                     fontSize: 14, lineHeight: 1.45,
                     borderRadius: '18px 18px 18px 4px',
                     boxShadow: '0 1px 2px rgba(124, 58, 237, 0.10)'
@@ -19568,9 +19575,9 @@
                   fontSize: 14, color: '#fff'
                 } }, '🧑'),
                 h('div', { style: { maxWidth: '78%', display: 'flex', flexDirection: 'column', gap: 3 } },
-                  h('div', { style: { fontSize: 10, color: '#166534', fontWeight: 700, paddingLeft: 4 } }, 'A REAL FRIEND'),
+                  h('div', { style: { fontSize: 10, color: _dwC('#166534'), fontWeight: 700, paddingLeft: 4 } }, 'A REAL FRIEND'),
                   h('div', { style: {
-                    padding: '10px 14px', background: '#dcfce7', color: '#0f172a',
+                    padding: '10px 14px', background: _dwC('#dcfce7'), color: _dwC('#0f172a'),
                     fontSize: 14, lineHeight: 1.45,
                     borderRadius: '18px 18px 18px 4px',
                     boxShadow: '0 1px 2px rgba(22, 101, 52, 0.10)'
@@ -19578,18 +19585,18 @@
                 )
               )
             ),
-            aicSycRevealed && h('div', { style: { marginTop: 12, padding: 12, background: '#fffbeb', border: '1px dashed #fcd34d', borderRadius: 10 } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#92400e', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            aicSycRevealed && h('div', { style: { marginTop: 12, padding: 12, background: _dwC('#fffbeb'), border: '1px dashed #fcd34d', borderRadius: 10 } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: _dwC('#92400e'), marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 } },
                 h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, '💡'),
                 'What changed'),
-              h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#0f172a' } }, ex.explain)
+              h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } }, ex.explain)
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between', flexWrap: 'wrap' } },
             h('button', {
               onClick: function() { if (aicSycIdx > 0) upd({ aicSycIdx: aicSycIdx - 1, aicSycRevealed: false }); },
               disabled: aicSycIdx === 0,
-              style: { padding: '8px 14px', background: '#fff', color: aicSycIdx === 0 ? '#94a3b8' : '#0f172a',
+              style: { padding: '8px 14px', background: _dwC('#fff'), color: aicSycIdx === 0 ? _dwC('#94a3b8') : _dwC('#0f172a'),
                        border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: aicSycIdx === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }
             }, '← Previous'),
             !aicSycRevealed
@@ -19612,8 +19619,8 @@
 
       function renderAIAsymmetry() {
         return h('div', null,
-          h('p', { style: { fontSize: 14, lineHeight: 1.6, color: '#0f172a', marginBottom: 14 } },
-            h('strong', { style: { color: '#6b21a8' } }, 'The hardest thing to see about AI relationships is what is missing from them. '),
+          h('p', { style: { fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a'), marginBottom: 14 } },
+            h('strong', { style: { color: _dwC('#6b21a8') } }, 'The hardest thing to see about AI relationships is what is missing from them. '),
             'The trade-offs that make real relationships scary are the same trade-offs that make them grow you. Here is the side-by-side.'),
           h('div', { style: { display: 'grid', gap: 12, marginBottom: 16 } },
             AI_ASYMMETRY.map(function(row, idx) {
@@ -19634,9 +19641,9 @@
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 13, fontWeight: 800
                       } }, '✓'),
-                      h('div', { style: { fontSize: 11, fontWeight: 800, color: '#166534', textTransform: 'uppercase', letterSpacing: 0.5 } }, row.col1)
+                      h('div', { style: { fontSize: 11, fontWeight: 800, color: _dwC('#166534'), textTransform: 'uppercase', letterSpacing: 0.5 } }, row.col1)
                     ),
-                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#0f172a' } }, row.r1)
+                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } }, row.r1)
                   ),
                   // AI side
                   h('div', { style: {
@@ -19651,16 +19658,16 @@
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 13, fontWeight: 800
                       } }, '🤖'),
-                      h('div', { style: { fontSize: 11, fontWeight: 800, color: '#6b21a8', textTransform: 'uppercase', letterSpacing: 0.5 } }, row.col2)
+                      h('div', { style: { fontSize: 11, fontWeight: 800, color: _dwC('#6b21a8'), textTransform: 'uppercase', letterSpacing: 0.5 } }, row.col2)
                     ),
-                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#0f172a' } }, row.r2)
+                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } }, row.r2)
                   )
                 )
               );
             })
           ),
-          h('div', { style: { padding: 14, background: '#faf5ff', border: '1px solid #d8b4fe', borderRadius: 10 } },
-            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: '#0f172a' } },
+          h('div', { style: { padding: 14, background: _dwC('#faf5ff'), border: '1px solid #d8b4fe', borderRadius: 10 } },
+            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a') } },
               h('strong', null, 'The takeaway: '),
               'Real relationships have higher costs and higher payoffs. AI relationships have lower costs and lower payoffs — they cannot scale up to the real thing no matter how many hours you spend in them. They are a different category of thing, the way a photograph of a meal is a different category from the meal.'))
         );
@@ -19669,57 +19676,57 @@
       function renderAIUses() {
         return h('div', null,
           // Lead reframe
-          h('div', { style: { padding: 14, background: '#faf5ff', border: '1px solid #d8b4fe', borderRadius: 10, marginBottom: 16 } },
-            h('p', { style: { margin: '0 0 6px', fontSize: 14, lineHeight: 1.6, color: '#0f172a' } },
-              h('strong', { style: { color: '#6b21a8' } }, 'It usually depends on HOW you use it, not WHAT you use it for. '),
+          h('div', { style: { padding: 14, background: _dwC('#faf5ff'), border: '1px solid #d8b4fe', borderRadius: 10, marginBottom: 16 } },
+            h('p', { style: { margin: '0 0 6px', fontSize: 14, lineHeight: 1.6, color: _dwC('#0f172a') } },
+              h('strong', { style: { color: _dwC('#6b21a8') } }, 'It usually depends on HOW you use it, not WHAT you use it for. '),
               'Most chatbot uses are not inherently healthy or unhealthy. A handful are clearly fine, a handful are clearly off-limits, and most live in the middle — where the same use case can be a tutoring win or an academic-integrity disaster depending on the choices YOU make.'),
-            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#334155' } },
+            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _dwC('#334155') } },
               'Three tiers below: ',
-              h('span', { style: { color: '#166534', fontWeight: 700 } }, 'green'), ' (clear-win), ',
-              h('span', { style: { color: '#a16207', fontWeight: 700 } }, 'yellow'), ' (depends on how), ',
-              h('span', { style: { color: '#991b1b', fontWeight: 700 } }, 'red'), ' (do not).')
+              h('span', { style: { color: _dwC('#166534'), fontWeight: 700 } }, 'green'), ' (clear-win), ',
+              h('span', { style: { color: _dwC('#a16207'), fontWeight: 700 } }, 'yellow'), ' (depends on how), ',
+              h('span', { style: { color: _dwC('#991b1b'), fontWeight: 700 } }, 'red'), ' (do not).')
           ),
 
           // ── GREEN tier ──
-          h('h3', { style: { margin: '8px 0 8px', color: '#166534', fontSize: 15 } },
+          h('h3', { style: { margin: '8px 0 8px', color: _dwC('#166534'), fontSize: 15 } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '✅'),
             'Green — clear-win uses'),
-          h('p', { style: { fontSize: 12, color: '#475569', marginBottom: 8 } },
+          h('p', { style: { fontSize: 12, color: _dwC('#475569'), marginBottom: 8 } },
             'Use freely, as long as you stay engaged with what you are doing.'),
           h('div', { style: { display: 'grid', gap: 6, marginBottom: 18 } },
             AI_USE_TIERS.green.map(function(u, idx) {
-              return h('div', { key: idx, style: { padding: 10, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8 } },
-                h('div', { style: { fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 2 } }, u.label),
-                h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.5, color: '#334155' } }, u.note)
+              return h('div', { key: idx, style: { padding: 10, background: _dwC('#f0fdf4'), border: '1px solid #86efac', borderRadius: 8 } },
+                h('div', { style: { fontWeight: 700, fontSize: 14, color: _dwC('#0f172a'), marginBottom: 2 } }, u.label),
+                h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.5, color: _dwC('#334155') } }, u.note)
               );
             })
           ),
 
           // ── YELLOW tier ──
-          h('h3', { style: { margin: '8px 0 8px', color: '#a16207', fontSize: 15 } },
+          h('h3', { style: { margin: '8px 0 8px', color: _dwC('#a16207'), fontSize: 15 } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '⚖️'),
             'Yellow — depends on how you use it'),
-          h('p', { style: { fontSize: 12, color: '#475569', marginBottom: 8 } },
+          h('p', { style: { fontSize: 12, color: _dwC('#475569'), marginBottom: 8 } },
             'Same use case, very different outcomes. The point is to notice which version you are doing.'),
           h('div', { style: { display: 'grid', gap: 12, marginBottom: 18 } },
             AI_USE_TIERS.yellow.map(function(u) {
               return h('div', { key: u.id, style: {
-                padding: 12, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10
+                padding: 12, background: _dwC('#fffbeb'), border: '1px solid #fcd34d', borderRadius: 10
               } },
-                h('div', { style: { fontWeight: 700, fontSize: 14, color: '#92400e', marginBottom: 10 } }, u.label),
+                h('div', { style: { fontWeight: 700, fontSize: 14, color: _dwC('#92400e'), marginBottom: 10 } }, u.label),
                 h('div', { style: {
                   display: 'grid', gap: 10,
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
                 } },
-                  h('div', { style: { padding: 10, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8 } },
-                    h('div', { style: { fontSize: 11, color: '#166534', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 } },
+                  h('div', { style: { padding: 10, background: _dwC('#f0fdf4'), border: '1px solid #86efac', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 11, color: _dwC('#166534'), fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 } },
                       '✓ Healthy version'),
-                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.5, color: '#0f172a' } }, u.healthy)
+                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.5, color: _dwC('#0f172a') } }, u.healthy)
                   ),
-                  h('div', { style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8 } },
-                    h('div', { style: { fontSize: 11, color: '#991b1b', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 } },
+                  h('div', { style: { padding: 10, background: _dwC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 11, color: _dwC('#991b1b'), fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 } },
                       '✕ Risky version'),
-                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.5, color: '#0f172a' } }, u.risky)
+                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.5, color: _dwC('#0f172a') } }, u.risky)
                   )
                 )
               );
@@ -19727,16 +19734,16 @@
           ),
 
           // ── RED tier ──
-          h('h3', { style: { margin: '8px 0 8px', color: '#991b1b', fontSize: 15 } },
+          h('h3', { style: { margin: '8px 0 8px', color: _dwC('#991b1b'), fontSize: 15 } },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '⛔'),
             'Red — do not use AI this way'),
-          h('p', { style: { fontSize: 12, color: '#475569', marginBottom: 8 } },
+          h('p', { style: { fontSize: 12, color: _dwC('#475569'), marginBottom: 8 } },
             'Hard limits. These are the cases where there is no healthy version, and the documented harms are real.'),
           h('div', { style: { display: 'grid', gap: 6, marginBottom: 18 } },
             AI_USE_TIERS.red.map(function(u, idx) {
-              return h('div', { key: idx, style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8 } },
-                h('div', { style: { fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 2 } }, u.label),
-                h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.5, color: '#334155' } }, u.note)
+              return h('div', { key: idx, style: { padding: 10, background: _dwC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8 } },
+                h('div', { style: { fontWeight: 700, fontSize: 14, color: _dwC('#0f172a'), marginBottom: 2 } }, u.label),
+                h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.5, color: _dwC('#334155') } }, u.note)
               );
             })
           ),
@@ -19746,22 +19753,22 @@
             padding: 14, background: 'linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%)',
             border: '1px solid #93c5fd', borderRadius: 12
           } },
-            h('h3', { style: { margin: '0 0 6px', color: '#1e40af', fontSize: 15 } },
+            h('h3', { style: { margin: '0 0 6px', color: _dwC('#1e40af'), fontSize: 15 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🤔'),
               'Ask yourself — works for ANY chatbot use, even ones not listed above'),
-            h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#334155', lineHeight: 1.55 } },
+            h('p', { style: { margin: '0 0 10px', fontSize: 13, color: _dwC('#334155'), lineHeight: 1.55 } },
               'A quick self-check you can apply to whatever you are about to ask the bot. No score, no submission — just five honest questions.'),
             h('ol', { style: { margin: 0, paddingLeft: 20, display: 'grid', gap: 8 } },
               AI_USE_RUBRIC.map(function(item, idx) {
-                return h('li', { key: idx, style: { fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
+                return h('li', { key: idx, style: { fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } },
                   h('div', { style: { marginBottom: 2 } }, item.q),
-                  h('div', { style: { fontSize: 12, color: '#475569', fontStyle: 'italic' } }, '↳ ' + item.hint)
+                  h('div', { style: { fontSize: 12, color: _dwC('#475569'), fontStyle: 'italic' } }, '↳ ' + item.hint)
                 );
               })
             ),
-            h('div', { style: { marginTop: 12, padding: 10, background: '#fff', border: '1px dashed #93c5fd', borderRadius: 8 } },
-              h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
-                h('strong', { style: { color: '#1e40af' } }, 'Bottom line: '),
+            h('div', { style: { marginTop: 12, padding: 10, background: _dwC('#fff'), border: '1px dashed #93c5fd', borderRadius: 8 } },
+              h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } },
+                h('strong', { style: { color: _dwC('#1e40af') } }, 'Bottom line: '),
                 'If you said "yes" to any of #1, #2, #4, or #5 — or "no" to #3 — that is the signal to involve a real person, not to ask the bot harder.'))
           )
         );
@@ -19769,32 +19776,32 @@
 
       function renderAIFriendSigns() {
         return h('div', null,
-          h('div', { style: { padding: 14, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', color: '#92400e', fontSize: 16 } },
+          h('div', { style: { padding: 14, background: _dwC('#fffbeb'), border: '1px solid #fcd34d', borderRadius: 10, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', color: _dwC('#92400e'), fontSize: 16 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '👀'),
               'Signs a friend might be in too deep with an AI'),
-            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } },
+            h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } },
               'You do not have to be a counselor. If several of these show up at once — especially the last few — that is worth saying something about, gently.')
           ),
           h('ul', { style: { margin: '0 0 16px 20px', padding: 0, display: 'grid', gap: 8 } },
             AI_FRIEND_SIGNS.map(function(s, idx) {
-              return h('li', { key: idx, style: { fontSize: 14, lineHeight: 1.55, color: '#0f172a' } }, s);
+              return h('li', { key: idx, style: { fontSize: 14, lineHeight: 1.55, color: _dwC('#0f172a') } }, s);
             })
           ),
-          h('div', { style: { padding: 14, background: '#f0fdfa', border: '1px solid #5eead4', borderRadius: 10, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 6px', color: '#0e7490', fontSize: 14 } },
+          h('div', { style: { padding: 14, background: _dwC('#f0fdfa'), border: '1px solid #5eead4', borderRadius: 10, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 6px', color: _dwC('#0e7490'), fontSize: 14 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '💬'),
               'A way to bring it up'),
-            h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.6, color: '#0f172a', fontStyle: 'italic' } },
+            h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.6, color: _dwC('#0f172a'), fontStyle: 'italic' } },
               '"Hey — I noticed you have been talking about [bot name] like they are a real person. I do not want to be weird about it, but I miss you. Want to do something this week, just us?"'),
-            h('p', { style: { margin: 0, fontSize: 12, color: '#475569' } },
+            h('p', { style: { margin: 0, fontSize: 12, color: _dwC('#475569') } },
               'Soft, specific, no shame. Reaches toward them without attacking the bot.')
           ),
-          h('div', { style: { padding: 14, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10 } },
-            h('h4', { style: { margin: '0 0 6px', color: '#991b1b', fontSize: 14 } },
+          h('div', { style: { padding: 14, background: _dwC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 10 } },
+            h('h4', { style: { margin: '0 0 6px', color: _dwC('#991b1b'), fontSize: 14 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🚨'),
               'When to get an adult involved'),
-            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#0f172a' } },
+            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _dwC('#0f172a') } },
               'If a friend is talking to a chatbot about ',
               h('strong', null, 'suicide, self-harm, eating, or hurting someone'),
               ' — or if the chatbot has been giving them advice in any of those areas — that is past the point of "give it space." Tell a trusted adult that day. You do not need to know what will happen next. You just need to put one adult between your friend and the bot.'))
@@ -19816,7 +19823,7 @@
         else body = renderRefGlossary();
 
         return h('div', { id: 'dw-panel-reference', role: 'tabpanel', 'aria-labelledby': 'dw-tab-reference' },
-          h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 12, lineHeight: 1.55 } },
+          h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 12, lineHeight: 1.55 } },
             'A reference layer for the rest of the tool — quick definitions, where the research came from, and a separate page for parents, teachers, and counselors who want to use what is here.'),
           h('div', { role: 'tablist', 'aria-label': 'Reference sections', style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
             sections.map(function(s) {
@@ -19826,9 +19833,9 @@
                 onClick: function() { upd({ refSection: s.id, refExpanded: null }); if (announceToSR) announceToSR(s.label + ' opened'); },
                 style: {
                   padding: '6px 12px',
-                  background: active ? ACCENT : '#fff',
-                  color: active ? '#fff' : '#0f172a',
-                  border: '1px solid ' + (active ? ACCENT : '#cbd5e1'),
+                  background: active ? ACCENT_BUTTON : _dwC('#fff'),
+                  color: active ? '#fff' : _dwC('#0f172a'),
+                  border: '1px solid ' + (active ? ACCENT : _dwC('#cbd5e1')),
                   borderRadius: 999, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 13
                 }
               }, h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, s.icon), s.label);
@@ -19840,14 +19847,14 @@
 
       function renderRefGlossary() {
         return h('div', null,
-          h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 10 } },
+          h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 10 } },
             'Tap any term to expand. Useful for parent conversations, IEP meetings, or when something in this tool used a word you wanted to nail down.'),
           h('div', { style: { display: 'grid', gap: 6 } },
             GLOSSARY.map(function(g) {
               var open = refExpanded === g.term;
               return h('div', { key: g.term, style: {
-                border: '1px solid ' + (open ? ACCENT_MED : '#e2e8f0'),
-                borderRadius: 8, background: open ? ACCENT_DIM : '#fff', overflow: 'hidden'
+                border: '1px solid ' + (open ? ACCENT_MED : _dwC('#e2e8f0')),
+                borderRadius: 8, background: open ? ACCENT_DIM : _dwC('#fff'), overflow: 'hidden'
               } },
                 h('button', {
                   onClick: function() { upd('refExpanded', open ? null : g.term); },
@@ -19855,14 +19862,14 @@
                   style: {
                     width: '100%', padding: '10px 12px', textAlign: 'left',
                     background: 'transparent', border: 'none', cursor: 'pointer',
-                    fontSize: 14, fontWeight: 700, color: '#0f172a',
+                    fontSize: 14, fontWeight: 700, color: _dwC('#0f172a'),
                     display: 'flex', alignItems: 'center', gap: 8
                   }
                 },
                   h('span', { style: { flex: 1 } }, g.term),
-                  h('span', { 'aria-hidden': 'true', style: { color: '#64748b', fontSize: 16 } }, open ? '▾' : '▸')
+                  h('span', { 'aria-hidden': 'true', style: { color: _dwC('#64748b'), fontSize: 16 } }, open ? '▾' : '▸')
                 ),
-                open && h('p', { style: { margin: 0, padding: '0 12px 12px', fontSize: 13, lineHeight: 1.55, color: '#334155' } }, g.def)
+                open && h('p', { style: { margin: 0, padding: '0 12px 12px', fontSize: 13, lineHeight: 1.55, color: _dwC('#334155') } }, g.def)
               );
             })
           )
@@ -19878,22 +19885,22 @@
           { id: 'reading', label: 'Books worth reading', icon: '📚' }
         ];
         return h('div', null,
-          h('p', { style: { fontSize: 13, color: '#475569', marginBottom: 12 } },
+          h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 12 } },
             'Where the claims in this tool come from. Use these to verify, deepen, or share with parents and educators who want documentation.'),
           groups.map(function(g) {
             var items = byCat[g.id] || [];
             if (items.length === 0) return null;
             return h('div', { key: g.id, style: { marginBottom: 18 } },
-              h('h4', { style: { margin: '0 0 8px', color: '#0f172a', fontSize: 14, fontWeight: 700 } },
+              h('h4', { style: { margin: '0 0 8px', color: _dwC('#0f172a'), fontSize: 14, fontWeight: 700 } },
                 h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, g.icon), g.label),
               h('div', { style: { display: 'grid', gap: 8 } },
                 items.map(function(s, idx) {
                   return h('div', { key: idx, style: {
-                    padding: 12, border: '1px solid ' + ACCENT_MED, borderRadius: 8, background: '#f8fafc'
+                    padding: 12, border: '1px solid ' + ACCENT_MED, borderRadius: 8, background: _dwC('#f8fafc')
                   } },
-                    h('div', { style: { fontWeight: 700, fontSize: 14, color: '#0f172a' } }, s.name),
-                    h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic', marginBottom: 4 } }, s.who),
-                    h('div', { style: { fontSize: 13, color: '#334155', lineHeight: 1.5 } }, s.what)
+                    h('div', { style: { fontWeight: 700, fontSize: 14, color: _dwC('#0f172a') } }, s.name),
+                    h('div', { style: { fontSize: 12, color: _dwC('#64748b'), fontStyle: 'italic', marginBottom: 4 } }, s.who),
+                    h('div', { style: { fontSize: 13, color: _dwC('#334155'), lineHeight: 1.5 } }, s.what)
                   );
                 })
               )
@@ -19904,8 +19911,8 @@
 
       function renderRefGrownups() {
         return h('div', null,
-          h('div', { style: { padding: 14, background: '#f0fdfa', border: '1px solid ' + ACCENT_MED, borderRadius: 10, marginBottom: 14 } },
-            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
+          h('div', { style: { padding: 14, background: _dwC('#f0fdfa'), border: '1px solid ' + ACCENT_MED, borderRadius: 10, marginBottom: 14 } },
+            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } },
               h('strong', { style: { color: ACCENT } }, 'For parents, teachers, school counselors, and youth-serving adults. '),
               'This page is here on purpose: students may show it to a grown-up, and grown-ups deserve a starting place that respects their time. Below: seven of the most-asked things, with the best current research distilled.')
           ),
@@ -19913,19 +19920,19 @@
             (function() {
               // Color palette cycled across the 7 cards
               var palettes = [
-                { from: '#22d3ee', to: '#0891b2', accent: '#0e7490' }, // cyan
-                { from: '#a78bfa', to: '#7c3aed', accent: '#6b21a8' }, // violet
-                { from: '#60a5fa', to: '#2563eb', accent: '#1e40af' }, // blue
-                { from: '#fb923c', to: '#ea580c', accent: '#9a3412' }, // orange
-                { from: '#f87171', to: '#dc2626', accent: '#991b1b' }, // red
-                { from: '#34d399', to: '#059669', accent: '#166534' }, // emerald
-                { from: '#f472b6', to: '#db2777', accent: '#9d174d' }  // pink
+                { from: '#22d3ee', to: '#0891b2', accent: _dwC('#0e7490') }, // cyan
+                { from: '#a78bfa', to: '#7c3aed', accent: _dwC('#6b21a8') }, // violet
+                { from: '#60a5fa', to: '#2563eb', accent: _dwC('#1e40af') }, // blue
+                { from: '#fb923c', to: '#ea580c', accent: _dwC('#9a3412') }, // orange
+                { from: '#f87171', to: _dwC('#dc2626'), accent: _dwC('#991b1b') }, // red
+                { from: '#34d399', to: '#059669', accent: _dwC('#166534') }, // emerald
+                { from: '#f472b6', to: '#db2777', accent: _dwC('#9d174d') }  // pink
               ];
               return GROWNUPS_TIPS.map(function(tip, idx) {
                 var p = palettes[idx % palettes.length];
                 return h('div', { key: idx, className: 'dw-card', style: {
                   display: 'flex', gap: 14,
-                  padding: 14, border: '1px solid #cbd5e1', borderRadius: 12, background: '#fff'
+                  padding: 14, border: '1px solid #cbd5e1', borderRadius: 12, background: _dwC('#fff')
                 } },
                   h('div', { 'aria-hidden': 'true', style: {
                     width: 48, height: 48, borderRadius: 14, flexShrink: 0,
@@ -19936,19 +19943,19 @@
                   } }, tip.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontWeight: 700, fontSize: 15, color: p.accent, marginBottom: 4 } }, tip.title),
-                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#334155' } }, tip.body)
+                    h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: _dwC('#334155') } }, tip.body)
                   )
                 );
               });
             })()
           ),
-          h('div', { style: { marginTop: 20, padding: 14, background: '#fefce8', border: '1px solid #fde68a', borderRadius: 10 } },
-            h('div', { style: { fontWeight: 700, color: '#854d0e', marginBottom: 6, fontSize: 14 } },
+          h('div', { style: { marginTop: 20, padding: 14, background: _dwC('#fefce8'), border: '1px solid #fde68a', borderRadius: 10 } },
+            h('div', { style: { fontWeight: 700, color: _dwC('#854d0e'), marginBottom: 6, fontSize: 14 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🤝'),
               'Working with a school counselor or psychologist'),
-            h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
+            h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } },
               'This tool produces a printable check-in packet that students can choose to share. Counselors find it useful as a conversation starter — it surfaces the patterns the student is willing to name, without putting them on the spot.'),
-            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: '#0f172a' } },
+            h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.55, color: _dwC('#0f172a') } },
               h('strong', null, 'A note on the limits: '),
               'this tool is psychoeducation, not therapy. It will not catch every kid in crisis. If a student is showing warning signs, treat that as the start of a clinical conversation, not the end of one. The Crisis tab gives them direct numbers in case they reach out to it before they reach out to you.')
           )
@@ -19970,15 +19977,15 @@
           h('div', {
             className: 'dw-badge-modal',
             onClick: function(e) { e.stopPropagation(); },
-            style: { background: '#fff', padding: 28, borderRadius: 16, maxWidth: 340, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,0.30)' }
+            style: { background: _dwC('#fff'), padding: 28, borderRadius: 16, maxWidth: 340, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,0.30)' }
           },
             h('div', { 'aria-hidden': 'true', style: { fontSize: 64, marginBottom: 4, lineHeight: 1 } }, '🏅'),
-            h('div', { style: { fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 700, marginBottom: 6 } }, 'Badge earned'),
+            h('div', { style: { fontSize: 12, color: _dwC('#64748b'), textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: 700, marginBottom: 6 } }, 'Badge earned'),
             h('div', { style: { fontSize: 22, fontWeight: 800, color: ACCENT, marginBottom: 16, lineHeight: 1.2 } }, showBadgePopup.label),
             h('button', {
               onClick: function() { upd('showBadgePopup', null); },
               autoFocus: true,
-              style: { padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 14 }
+              style: { padding: '10px 22px', background: ACCENT_BUTTON, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 14 }
             }, 'Nice')
           )
         );
@@ -19999,7 +20006,7 @@
         default:              content = renderSelfCheck();
       }
 
-      return h('div', { className: 'dw-root', style: { fontFamily: 'system-ui, -apple-system, sans-serif', color: '#0f172a' } },
+      return h('div', { className: 'dw-root', style: { fontFamily: 'system-ui, -apple-system, sans-serif', color: _dwC('#0f172a') } },
         renderHeader(),
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('digitalWellbeing', h, ctx) : null),
         content,

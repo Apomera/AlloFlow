@@ -1,0 +1,563 @@
+{
+  "generatedAt": "2026-07-03T00:28:49.080Z",
+  "harness": "standalone SEL Hub and AlloHaven browser fixture",
+  "summary": {
+    "total": 21,
+    "failed": 0,
+    "passed": 21
+  },
+  "scenarios": [
+    {
+      "name": "desktop-light-focus",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "responsive-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280,
+            "dialogScrollWidth": 1280,
+            "dialogClientWidth": 1280,
+            "offenders": []
+          }
+        },
+        {
+          "id": "theme-class-detected",
+          "pass": true,
+          "details": {
+            "dark": false,
+            "contrast": false,
+            "selText": "rgb(15, 23, 42)"
+          }
+        },
+        {
+          "id": "first-run-explainer-dismissable",
+          "pass": true,
+          "activeBeforeDismiss": {
+            "tag": "button",
+            "id": "",
+            "text": "Got it",
+            "aria": "Got it, start using the SEL Hub",
+            "inExplainer": true,
+            "inSharePacket": false,
+            "inEducators": false
+          },
+          "activeAfterDismiss": {
+            "tag": "button",
+            "id": "",
+            "text": "🎓 For Educators",
+            "aria": "For Educators: how to use this Hub responsibly",
+            "inExplainer": false,
+            "inSharePacket": false,
+            "inEducators": false
+          }
+        },
+        {
+          "id": "for-educators-focus-trap",
+          "pass": true,
+          "modalId": "sel-for-educators-modal",
+          "allTabStopsInside": true,
+          "focusRestoredToTrigger": true,
+          "activeAfterClose": {
+            "tag": "button",
+            "id": "",
+            "text": "🎓 For Educators",
+            "aria": "For Educators: how to use this Hub responsibly",
+            "inExplainer": false,
+            "inSharePacket": false,
+            "inEducators": false
+          },
+          "steps": [
+            {
+              "key": "initial",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Shift+Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            }
+          ]
+        },
+        {
+          "id": "share-packet-focus-trap",
+          "pass": true,
+          "modalId": "sel-share-packet-modal",
+          "allTabStopsInside": true,
+          "focusRestoredToTrigger": true,
+          "activeAfterClose": {
+            "tag": "button",
+            "id": "",
+            "text": "Create Share Packet",
+            "aria": "Create SEL Share Packet from saved checkpoints",
+            "inExplainer": false,
+            "inSharePacket": false,
+            "inEducators": false
+          },
+          "steps": [
+            {
+              "key": "initial",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close SEL Share Packet builder",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "Reopen",
+                "aria": "Reopen saved SEL Share Packet as draft: SEL Share Packet",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "input",
+                "id": "",
+                "text": "",
+                "aria": "Remove Zone check reflection from SEL Share Packet",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "select",
+                "id": "",
+                "text": "Share summary onlyShare full saved textAsk adult to follow upKeep private",
+                "aria": "Sharing choice for Zone check reflection",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "input",
+                "id": "",
+                "text": "",
+                "aria": "Remove Strengths checkpoint from SEL Share Packet",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "select",
+                "id": "",
+                "text": "Share summary onlyShare full saved textAsk adult to follow upKeep private",
+                "aria": "Sharing choice for Strengths checkpoint",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "input",
+                "id": "",
+                "text": "",
+                "aria": "Remove Saved SEL work from SEL Share Packet",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "select",
+                "id": "",
+                "text": "Share summary onlyShare full saved textAsk adult to follow upKeep private",
+                "aria": "Sharing choice for Saved SEL work",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "input",
+                "id": "",
+                "text": "",
+                "aria": "Remove Saved SEL work from SEL Share Packet",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Shift+Tab",
+              "active": {
+                "tag": "select",
+                "id": "",
+                "text": "Share summary onlyShare full saved textAsk adult to follow upKeep private",
+                "aria": "Sharing choice for Saved SEL work",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "share-packet-lifecycle-reopen-draft",
+          "pass": true,
+          "details": {
+            "hasSavedPanel": true,
+            "hasUpdateAction": true,
+            "loadedDraftText": true,
+            "checkedCount": 2
+          }
+        },
+        {
+          "id": "share-packet-lifecycle-update-in-place",
+          "pass": true,
+          "details": {
+            "packetCount": 1,
+            "updatedSamePacket": true,
+            "version": 2,
+            "notice": true,
+            "hasViewCue": true
+          }
+        },
+        {
+          "id": "teacher-launch-loads-station-preview",
+          "pass": true,
+          "details": {
+            "name": "Morning advisory check-in",
+            "note": "Student view: Students privately check their zone, try a regulation option, then choose one need for the day or pass.\nTeacher move: Model the pass option first. Invite one-word or color sharing only after private practice.\nSharing boundary: No journal text is collected; students decide later whether any checkpoint enters a Share Packet.\nTeacher note: Begin with a private zone check, then offer breathing or goal-setting. Students may share one word, a color, or pass.",
+            "hasStudentPreview": true,
+            "hasSharingBoundary": true,
+            "hasTeacherMove": true,
+            "selectedTools": "4 tools selected",
+            "selectedQuests": "2 quests"
+          }
+        },
+        {
+          "id": "station-builder-focus-handoff",
+          "pass": true,
+          "activeAfterOpen": {
+            "tag": "input",
+            "id": "sel-station-name-input",
+            "text": "",
+            "aria": "Station name",
+            "inExplainer": false,
+            "inSharePacket": false,
+            "inEducators": false
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "desktop-dark-responsive",
+      "theme": "dark",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "responsive-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280,
+            "dialogScrollWidth": 1280,
+            "dialogClientWidth": 1280,
+            "offenders": []
+          }
+        },
+        {
+          "id": "theme-class-detected",
+          "pass": true,
+          "details": {
+            "dark": true,
+            "contrast": false,
+            "selText": "rgb(241, 245, 249)"
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "tablet-high-contrast-responsive",
+      "theme": "high-contrast",
+      "viewport": {
+        "width": 820,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "responsive-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 820,
+            "viewportWidth": 820,
+            "dialogScrollWidth": 820,
+            "dialogClientWidth": 820,
+            "offenders": []
+          }
+        },
+        {
+          "id": "theme-class-detected",
+          "pass": true,
+          "details": {
+            "dark": false,
+            "contrast": true,
+            "selText": "rgb(255, 255, 0)"
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "mobile-high-contrast-responsive",
+      "theme": "high-contrast",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "checks": [
+        {
+          "id": "responsive-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 390,
+            "viewportWidth": 390,
+            "dialogScrollWidth": 390,
+            "dialogClientWidth": 390,
+            "offenders": []
+          }
+        },
+        {
+          "id": "theme-class-detected",
+          "pass": true,
+          "details": {
+            "dark": false,
+            "contrast": true,
+            "selText": "rgb(255, 255, 0)"
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "allohaven-empty-portfolio",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "allohaven-empty-portfolio-entry-visible",
+          "pass": true,
+          "details": {
+            "opened": true,
+            "hasSupportedSources": true,
+            "hasProducts": false
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "allohaven-mixed-portfolio",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "student-artifact-store-save-event",
+          "pass": true,
+          "details": {
+            "storeExists": true,
+            "count": 6,
+            "eventSource": "storyforge",
+            "eventAction": "saved",
+            "eventSourceLabel": "StoryForge",
+            "eventPrivacy": "student-controlled",
+            "savedId": "helper-browser-qa"
+          }
+        },
+        {
+          "id": "allohaven-portfolio-controls-labeled",
+          "pass": true,
+          "details": {
+            "hasSearch": true,
+            "hasSort": true,
+            "detailsCount": 6,
+            "printButtons": 6,
+            "downloadButtons": 6
+          }
+        },
+        {
+          "id": "allohaven-portfolio-source-filter",
+          "pass": true,
+          "details": {
+            "cards": [
+              "Helper Saved Story from StoryForge",
+              "The Bridge of Choices from StoryForge"
+            ],
+            "allStoryForge": true
+          }
+        },
+        {
+          "id": "allohaven-portfolio-search",
+          "pass": true,
+          "details": {
+            "cards": 1,
+            "hasRainforest": true,
+            "hasBridge": false
+          }
+        },
+        {
+          "id": "allohaven-portfolio-details-preview",
+          "pass": true,
+          "details": {
+            "open": true,
+            "hasPreviewText": true
+          }
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

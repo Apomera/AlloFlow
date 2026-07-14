@@ -155,12 +155,271 @@
       }
   }
 
+  // ─── Offline oral-reading fluency (on-device whisper.cpp) ───────────────
+  // The cloud path (analyzeFluencyWithGemini) sends the student's VOICE to
+  // Google. In the desktop School Box, a managed whisper.cpp server
+  // (127.0.0.1:32176, see /api/asr/*) transcribes on-device so the audio never
+  // leaves the machine. We align the transcript to the reference passage and
+  // reuse the SAME calculateLocalFluencyMetrics / calculateRunningRecordMetrics.
+  //
+  // INTEGRITY (non-negotiable, per the pilot-readiness audit): this is a
+  // PRACTICE SIGNAL, not a norm-referenced score. whisper has NO child-speech
+  // or dialect tuning — the OPPOSITE of the Gemini prompt's documented bias
+  // mitigations — so every non-match is emitted as lowConfidence for a teacher
+  // to review, never an automatic reading level. Word-level ASR error for
+  // young/accented readers is high (Wu 2020: 2-5x adult rates); we surface
+  // that in the confidence block instead of hiding it.
+
+  function _normalizeFluencyWord(w) {
+    return String(w == null ? '' : w).toLowerCase()
+      .replace(/[^\p{L}\p{N}']/gu, '')   // drop punctuation, keep letters/digits/apostrophe
+      .replace(/^'+|'+$/g, '');
+  }
+  function _tokenizeReference(text) {
+    return String(text || '').split(/\s+/).map(function (t) { return { raw: t, norm: _normalizeFluencyWord(t) }; })
+      .filter(function (t) { return t.norm.length > 0; });
+  }
+
+  // Needleman-Wunsch word alignment of reference vs transcript. Returns per-
+  // reference-word statuses + a list of inserted (extra) transcript words, so
+  // the output plugs straight into the existing metric functions. Costs: match
+  // 0, substitution/insertion/deletion 1 (classic WER edit distance).
+  function alignTranscriptToReference(referenceText, transcript) {
+    var ref = _tokenizeReference(referenceText);
+    var hyp = _tokenizeReference(transcript);
+    var n = ref.length, m = hyp.length;
+    if (!n) return { wordData: [], insertions: [] };
+    // DP matrix (n+1)x(m+1); store backpointers.
+    var dp = new Array(n + 1);
+    for (var i = 0; i <= n; i++) { dp[i] = new Array(m + 1); for (var j = 0; j <= m; j++) dp[i][j] = 0; }
+    for (var i2 = 0; i2 <= n; i2++) dp[i2][0] = i2;
+    for (var j2 = 0; j2 <= m; j2++) dp[0][j2] = j2;
+    for (var a = 1; a <= n; a++) {
+      for (var b = 1; b <= m; b++) {
+        var cost = (ref[a - 1].norm === hyp[b - 1].norm) ? 0 : 1;
+        dp[a][b] = Math.min(dp[a - 1][b - 1] + cost, dp[a - 1][b] + 1, dp[a][b - 1] + 1);
+      }
+    }
+    // Backtrace from (n,m) → sequence of ops.
+    var wordData = new Array(n);
+    var insertions = [];
+    var ci = n, cj = m;
+    while (ci > 0 || cj > 0) {
+      if (ci > 0 && cj > 0) {
+        var same = ref[ci - 1].norm === hyp[cj - 1].norm;
+        var costD = same ? 0 : 1;
+        if (dp[ci][cj] === dp[ci - 1][cj - 1] + costD) {
+          if (same) {
+            wordData[ci - 1] = { word: ref[ci - 1].raw, status: 'correct' };
+          } else {
+            wordData[ci - 1] = { word: ref[ci - 1].raw, status: 'mispronounced', said: hyp[cj - 1].raw, lowConfidence: true };
+          }
+          ci--; cj--; continue;
+        }
+      }
+      if (ci > 0 && dp[ci][cj] === dp[ci - 1][cj] + 1) {
+        // reference word with no transcript match → omission
+        wordData[ci - 1] = { word: ref[ci - 1].raw, status: 'missed', lowConfidence: true };
+        ci--; continue;
+      }
+      // transcript word with no reference match → insertion
+      if (cj > 0) { insertions.unshift(hyp[cj - 1].raw); cj--; continue; }
+      break;
+    }
+    return { wordData: wordData, insertions: insertions };
+  }
+
+  // Encode a mono Float32 buffer as a 16-bit PCM WAV (what whisper-server wants).
+  function _floatToWav16k(float32, sampleRate) {
+    var len = float32.length;
+    var buffer = new ArrayBuffer(44 + len * 2);
+    var view = new DataView(buffer);
+    var writeStr = function (off, s) { for (var i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+    writeStr(0, 'RIFF'); view.setUint32(4, 36 + len * 2, true); writeStr(8, 'WAVE');
+    writeStr(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+    writeStr(36, 'data'); view.setUint32(40, len * 2, true);
+    var off = 44;
+    for (var k = 0; k < len; k++) { var s = Math.max(-1, Math.min(1, float32[k])); view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true); off += 2; }
+    return new Blob([buffer], { type: 'audio/wav' });
+  }
+
+  // Decode any recorded audio (webm/opus, ogg, wav…) to a 16 kHz mono WAV via
+  // the Web Audio API — no server-side ffmpeg needed. Returns a Blob or null.
+  async function _audioBase64ToWav16k(base64, mimeType) {
+    try {
+      var clean = String(base64 || '').replace(/^data:[^;,]*;base64,/, '');
+      var bin = atob(clean);
+      var bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      var tmpCtx = new AC();
+      var decoded = await tmpCtx.decodeAudioData(bytes.buffer.slice(0));
+      try { tmpCtx.close(); } catch (_) {}
+      var targetRate = 16000;
+      var frames = Math.ceil(decoded.duration * targetRate);
+      var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!OAC || !frames) return null;
+      var offline = new OAC(1, frames, targetRate);
+      var src = offline.createBufferSource();
+      src.buffer = decoded;
+      src.connect(offline.destination);
+      src.start(0);
+      var rendered = await offline.startRendering();
+      return _floatToWav16k(rendered.getChannelData(0), targetRate);
+    } catch (e) {
+      (window.warnLog || console.warn)('[Fluency] audio→WAV conversion failed:', e && e.message);
+      return null;
+    }
+  }
+
+  // Discover the managed ASR server (desktop School Box only). Returns the
+  // inference URL if the server is running, else null (caller uses cloud path).
+  async function _getLocalAsrInferenceUrl() {
+    try {
+      if (typeof fetch !== 'function') return null;
+      var res = await fetch('/api/asr/status', { method: 'GET' });
+      if (!res.ok) return null;
+      var st = await res.json();
+      // Prefer the runtime's SAME-ORIGIN proxy over whisper-server's own
+      // port: the direct URL is cross-origin from the app page, which makes
+      // the whole feature hostage to whisper-server's CORS headers. Runtimes
+      // from 2026-07-06 advertise proxyUrl; older ones fall back to the
+      // direct inferenceUrl (pre-existing behavior, unchanged).
+      if (st && st.running && (st.proxyUrl || st.inferenceUrl)) return st.proxyUrl || st.inferenceUrl;
+      return null;
+    } catch (_) { return null; }
+  }
+  function isLocalAsrAvailable() {
+    return _getLocalAsrInferenceUrl().then(function (u) { return !!u; }).catch(function () { return false; });
+  }
+
+  // Transcribe recorded audio ON DEVICE via the managed whisper-server. Returns
+  // the transcript string, or null when the local server isn't available/fails
+  // (caller falls back to the cloud path — never a regression).
+  async function transcribeAudioLocal(audioBase64, mimeType, opts) {
+    opts = opts || {};
+    var inferenceUrl = opts.inferenceUrl || await _getLocalAsrInferenceUrl();
+    if (!inferenceUrl) return null;
+    var wav = await _audioBase64ToWav16k(audioBase64, mimeType);
+    if (!wav) return null;
+    try {
+      var form = new FormData();
+      form.append('file', wav, 'reading.wav');
+      form.append('response_format', 'json');
+      form.append('temperature', '0');
+      if (opts.language && String(opts.language).trim()) form.append('language', String(opts.language).trim());
+      var res = await fetch(inferenceUrl, { method: 'POST', body: form });
+      if (!res.ok) return null;
+      var data = await res.json();
+      var text = (data && (data.text || data.transcription)) || '';
+      if (Array.isArray(data && data.segments) && !text) text = data.segments.map(function (s) { return s.text || ''; }).join(' ');
+      return String(text || '').trim() || null;
+    } catch (e) {
+      (window.warnLog || console.warn)('[Fluency] local ASR transcription failed:', e && e.message);
+      return null;
+    }
+  }
+
+  // On-device fluency analysis: transcribe locally, align to the passage, and
+  // return the SAME shape as analyzeFluencyWithGemini so downstream code is
+  // unchanged — plus an honest confidence block and method:'local-asr'.
+  // Returns null if the local server isn't available (caller uses cloud path).
+  async function analyzeFluencyLocal(audioBase64, mimeType, referenceText, opts) {
+    var transcript = await transcribeAudioLocal(audioBase64, mimeType, opts);
+    if (transcript == null) return null;
+    var aligned = alignTranscriptToReference(referenceText, transcript);
+    var refCount = _tokenizeReference(referenceText).length;
+    var matched = aligned.wordData.filter(function (w) { return w.status === 'correct'; }).length;
+    var agreement = refCount ? matched / refCount : 0;
+    return {
+      wordData: aligned.wordData,
+      insertions: aligned.insertions,
+      transcript: transcript,
+      method: 'local-asr',
+      feedback: 'On-device practice read — the words below are a computer transcription for you and your teacher to review together, not a score.',
+      // No prosody: a plain transcript carries no reliable pacing/expression
+      // signal, and inventing one would be dishonest. Left null on purpose.
+      prosody: null,
+      confidence: {
+        overall: Math.max(1, Math.min(6, Math.round(agreement * 6))), // capped at 6/10 by design
+        source: 'on-device (whisper.cpp)',
+        audioQuality: null,
+        speakerClarity: null,
+        accentDetected: null,
+        youngVoiceDetected: null,
+        dialectalPatternsDetected: null,
+        lowConfidenceWordCount: aligned.wordData.filter(function (w) { return w.lowConfidence; }).length,
+        note: 'Transcribed on-device — the audio never left this computer. Offline speech recognition has NO child-speech or dialect tuning, so it may mishear young or accented readers and flag correct reading as errors. Treat flagged words as prompts to listen again, not as a verdict.',
+        limitationsApplied: 'On-device ASR is not tuned for child or dialectal speech (Wu 2020: child error rates 2-5x adult). Every mismatch is marked low-confidence for teacher review; this is a practice signal, not a norm-referenced or standardized measure.'
+      }
+    };
+  }
+
+  // ── Triangulation: reconcile the local + cloud results when BOTH exist ──
+  // Two INDEPENDENT scorers of the same read (on-device whisper alignment and
+  // Gemini's audio analysis) checking each other — the ASR cousin of the
+  // doc-pipeline Vision-vs-deterministic cross-check. Where they AGREE per
+  // reference word, confidence is high. Where they DIVERGE, we bias toward the
+  // MORE LENIENT status (never over-penalize a reader on a machine disagreement
+  // — the documented ASR-bias literature says errors skew against AAE/child/L2
+  // speakers) and flag the word + the whole result for a teacher.
+  var _STATUS_LENIENCY = { correct: 0, stumbled: 1, self_corrected: 2, mispronounced: 3, missed: 4 };
+  function triangulateFluency(localResult, geminiResult) {
+    if (!localResult || !geminiResult || !Array.isArray(localResult.wordData) || !Array.isArray(geminiResult.wordData)) {
+      return geminiResult || localResult || null;
+    }
+    var a = localResult.wordData, b = geminiResult.wordData;
+    var len = Math.min(a.length, b.length);
+    var merged = [];
+    var agree = 0, divergent = 0;
+    for (var i = 0; i < len; i++) {
+      var la = a[i] || {}, lb = b[i] || {};
+      var sa = la.status || 'correct', sb = lb.status || 'correct';
+      if (sa === sb) { agree++; merged.push({ word: lb.word || la.word, status: sb }); continue; }
+      divergent++;
+      // Pick the more lenient (lower leniency index) of the two disagreeing
+      // statuses; carry the loser's word in `said` for the teacher.
+      var lenA = _STATUS_LENIENCY[sa] == null ? 3 : _STATUS_LENIENCY[sa];
+      var lenB = _STATUS_LENIENCY[sb] == null ? 3 : _STATUS_LENIENCY[sb];
+      var keep = lenA <= lenB ? sa : sb;
+      merged.push({ word: lb.word || la.word, status: keep, lowConfidence: true, triangulation: 'divergent',
+        said: (la.said || lb.said || undefined) });
+    }
+    // Append any tail from the longer wordData (unpaired → low confidence).
+    var longer = a.length > b.length ? a : b;
+    for (var t = len; t < longer.length; t++) merged.push(Object.assign({ lowConfidence: true, triangulation: 'unpaired' }, longer[t]));
+    var total = agree + divergent;
+    return {
+      wordData: merged,
+      insertions: (geminiResult.insertions || localResult.insertions || []),
+      method: 'triangulated',
+      feedback: geminiResult.feedback || localResult.feedback || '',
+      prosody: geminiResult.prosody || null,
+      confidence: {
+        overall: total ? Math.round((agree / total) * 10) : 5,
+        source: 'triangulated (on-device whisper + cloud)',
+        agreementRate: total ? Math.round((agree / total) * 100) : null,
+        divergentWordCount: divergent,
+        needsReview: divergent > 0,
+        note: 'Two independent scorers were compared. Where they disagreed (' + divergent + ' of ' + total + ' words), the more lenient reading was kept and the word flagged — never penalize a reader on a machine disagreement. Review flagged words together.',
+        limitationsApplied: 'Cross-check of on-device ASR and cloud analysis. Still a practice signal, not a norm-referenced or standardized measure.'
+      }
+    };
+  }
+
   // Mirror to window.* so the monolith's _upgradeFluency() can swap its
   // top-level shims to point at the real implementations.
   window.calculateLocalFluencyMetrics = calculateLocalFluencyMetrics;
   window.calculateRunningRecordMetrics = calculateRunningRecordMetrics;
   window.getBenchmarkComparison = getBenchmarkComparison;
   window.analyzeFluencyWithGemini = analyzeFluencyWithGemini;
+  window.alignTranscriptToReference = alignTranscriptToReference;
+  window.transcribeAudioLocal = transcribeAudioLocal;
+  window.analyzeFluencyLocal = analyzeFluencyLocal;
+  window.isLocalAsrAvailable = isLocalAsrAvailable;
+  window.triangulateFluency = triangulateFluency;
 
   // Trigger the monolith's upgrade callback if it exists.
   if (typeof window._upgradeFluency === 'function') {
@@ -172,7 +431,12 @@
       calculateLocalFluencyMetrics: calculateLocalFluencyMetrics,
       calculateRunningRecordMetrics: calculateRunningRecordMetrics,
       getBenchmarkComparison: getBenchmarkComparison,
-      analyzeFluencyWithGemini: analyzeFluencyWithGemini
+      analyzeFluencyWithGemini: analyzeFluencyWithGemini,
+      alignTranscriptToReference: alignTranscriptToReference,
+      transcribeAudioLocal: transcribeAudioLocal,
+      analyzeFluencyLocal: analyzeFluencyLocal,
+      isLocalAsrAvailable: isLocalAsrAvailable,
+      triangulateFluency: triangulateFluency
   };
   console.log('[CDN] Fluency loaded');
 })();

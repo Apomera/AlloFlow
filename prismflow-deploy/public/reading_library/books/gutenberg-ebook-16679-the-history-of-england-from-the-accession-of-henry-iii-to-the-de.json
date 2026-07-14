@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-16679-the-history-of-england-from-the-accession-of-henry-iii-to-the-de",
+  "title": "The history of England, from the accession of Henry III. to the death of Edward III. (1216-1377)",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Great Britain -- History -- 13th century",
+    "Great Britain -- History -- 14th century",
+    "Great Britain -- History -- Plantagenets, 1154-1399",
+    "Plantagenet, House of"
+  ],
+  "authors": [
+    "Tout, T. F. (Thomas Frederick)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/16679"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/16679/pg16679.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The history of England, from the accession of Henry III. to the death of Edward III. (1216-1377)\" by Tout, T. F. (Thomas Frederick). Metadata tags include: Great Britain -- History -- 13th century; Great Britain -- History -- 14th century; Great Britain -- History -- Plantagenets, 1154-1399; Plantagenet, House of."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 100
+  }
+}

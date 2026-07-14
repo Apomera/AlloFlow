@@ -80,7 +80,8 @@ window.StemLab = window.StemLab || {
     questHooks: [
       { id: 'hit_3_targets', label: 'Hit 3 targets in target practice', icon: '\uD83C\uDFAF', check: function(d) { return (d.targetScore || 0) >= 3; }, progress: function(d) { return (d.targetScore || 0) + '/3 targets'; } },
       { id: 'complete_target_round', label: 'Complete a full target round', icon: '\uD83C\uDFC6', check: function(d) { return (d.targetRound || 1) >= 2; }, progress: function(d) { return (d.targetRound || 1) >= 2 ? 'Done!' : 'Round ' + (d.targetRound || 1); } },
-      { id: 'launch_10_projectiles', label: 'Launch 10 projectiles', icon: '\uD83D\uDE80', check: function(d) { return (d.launchCount || 0) >= 10; }, progress: function(d) { return (d.launchCount || 0) + '/10'; } }
+      { id: 'launch_10_projectiles', label: 'Launch 10 projectiles', icon: '\uD83D\uDE80', check: function(d) { return (d.launchCount || 0) >= 10; }, progress: function(d) { return (d.launchCount || 0) + '/10'; } },
+      { id: 'myth_3', label: 'Answer 3 physics myths (True or False)', icon: '\uD83E\uDDE0', check: function(d) { return (d.physMythsDone || 0) >= 3; }, progress: function(d) { return (d.physMythsDone || 0) + '/3 myths'; } }
     ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
@@ -123,7 +124,7 @@ window.StemLab = window.StemLab || {
           if (!labToolData || !labToolData.physics) {
             setLabToolData(function(prev) {
               return Object.assign({}, prev, { physics: {
-                angle: 45, velocity: 25, gravity: 9.8, airResist: false,
+                angle: 45, velocity: 25, gravity: 9.8, mass: 1, airResist: false,
                 showLearn: false, showFlightData: false, showEnergy: false, showVectors: false,
                 challengeTier: 0, challengeActive: false, launchCount: 0, targetsHit: 0,
                 // Live "show your work" formulas panel
@@ -252,7 +253,14 @@ const d = labToolData.physics;
 
           const canvasRef = function (canvasEl) {
 
-            if (!canvasEl) return;
+            if (!canvasEl) {
+              try {
+                var prevCanvas = canvasRef._lastCanvas;
+                if (prevCanvas && prevCanvas._physCleanup) prevCanvas._physCleanup();
+                else if (prevCanvas && prevCanvas._physAnim) { cancelAnimationFrame(prevCanvas._physAnim); prevCanvas._physAnim = null; prevCanvas._physAnimActive = false; }
+              } catch (e) {}
+              return;
+            }
 
             // Always rebind the hit callback so it captures the LATEST
             // checkTargetHit closure (which sees the current `d`). Without
@@ -300,9 +308,11 @@ const d = labToolData.physics;
 
               if (!canvasEl._physAnimActive && canvasEl._drawFunc) {
 
-                canvasEl._physAnimActive = true;
-
-                canvasEl._physAnim = requestAnimationFrame(canvasEl._drawFunc);
+                if (canvasEl._physScheduleFrame) canvasEl._physScheduleFrame();
+                else {
+                  canvasEl._physAnimActive = true;
+                  canvasEl._physAnim = requestAnimationFrame(canvasEl._drawFunc);
+                }
 
               }
 
@@ -328,6 +338,7 @@ const d = labToolData.physics;
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
 
             var ctx = canvasEl.getContext('2d');
+            if (!ctx) { canvasEl._physInit = false; canvasEl._physAnimActive = false; return; }
 
             var dpr = 2;
 
@@ -344,6 +355,46 @@ const d = labToolData.physics;
             var impactParticles = canvasEl._impactParticles || [];
 
             var landingMarkers = canvasEl._landingMarkers || [];
+            var physAlive = true;
+            var physMotionReduced = false;
+            try { physMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isPhysicsHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelPhysicsFrame() {
+              if (canvasEl._physAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._physAnim);
+              canvasEl._physAnim = null;
+              canvasEl._physAnimActive = false;
+            }
+
+            function schedulePhysicsFrame() {
+              if (!physAlive || canvasEl._physAnim || isPhysicsHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvasEl._physAnimActive = true;
+              canvasEl._physAnim = requestAnimationFrame(draw);
+            }
+
+            function cleanupPhysicsCanvas() {
+              physAlive = false;
+              cancelPhysicsFrame();
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onPhysicsVisibilityChange);
+              canvasEl._physCleanup = null;
+              canvasEl._physScheduleFrame = null;
+              canvasEl._physInit = false;
+            }
+
+            function onPhysicsVisibilityChange() {
+              if (!physAlive) return;
+              if (!canvasEl.isConnected) { cleanupPhysicsCanvas(); return; }
+              if (isPhysicsHidden()) cancelPhysicsFrame();
+              else { cancelPhysicsFrame(); draw(); }
+            }
+
+            canvasEl._physCleanup = cleanupPhysicsCanvas;
+            canvasEl._physScheduleFrame = schedulePhysicsFrame;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onPhysicsVisibilityChange);
 
             // Target flags
 
@@ -448,6 +499,18 @@ const d = labToolData.physics;
 
               targets.forEach(function (t) { t.hit = false; });
 
+              // Persist launch state to the canvas element IMMEDIATELY (not just in draw()).
+              // The Launch button's onClick also calls upd() (predict-then-launch scoring), which
+              // triggers a React re-render. canvasRef is recreated every render (unstable), so the
+              // re-render re-fires it → _physCleanup() cancels the pending frame + re-inits, and the
+              // re-init RESTORES anim state from canvasEl._* (lines ~347-353). draw() hasn't run
+              // since this launch, so without persisting here the restore reverts launched→false and
+              // ball→null and the projectile never flies (the "Launch does nothing" regression).
+              canvasEl._ball = ball;
+              canvasEl._launched = true;
+              canvasEl._trails = trails;
+              canvasEl._impactParticles = impactParticles;
+
               // Canvas Narration: launch event
               if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'launch', {
                 first: 'Projectile launched at ' + angle + ' degrees with a velocity of ' + vel + ' meters per second. Gravity is ' + grav + ' meters per second squared.' + (drag > 0 ? ' Air resistance is on.' : ''),
@@ -467,10 +530,13 @@ const d = labToolData.physics;
             var DT_BASE = 0.035;
 
             function draw() {
+              if (!physAlive) return;
+              canvasEl._physAnim = null;
               if (!canvasEl.isConnected) {
-                canvasEl._physAnimActive = false;
+                cleanupPhysicsCanvas();
                 return;
               }
+              if (isPhysicsHidden()) { cancelPhysicsFrame(); return; }
               // Apply user-selected simulation speed (1.0 real-time, 0.5 / 0.25
               // slow-motion, 0 paused). Scales the physics dt every frame so
               // a paused projectile renders normally but advances no physics —
@@ -486,7 +552,7 @@ const d = labToolData.physics;
               } else {
                 dt = DT_BASE * _ss;
               }
-              tick++;
+              tick += physMotionReduced ? 0.2 : 1;
 
               ctx.clearRect(0, 0, cW, cH);
 
@@ -688,6 +754,7 @@ const d = labToolData.physics;
 
                 // Flag pole
 
+                if (tgt.hit) { ctx.save(); ctx.shadowColor = tgt.color; ctx.shadowBlur = 10; }
                 ctx.strokeStyle = tgt.hit ? tgt.color : 'rgba(255,255,255,0.4)';
 
                 ctx.lineWidth = 2 * dpr;
@@ -707,6 +774,7 @@ const d = labToolData.physics;
                 ctx.lineTo(tx, groundY - 16 * dpr);
 
                 ctx.closePath(); ctx.fill();
+                if (tgt.hit) { ctx.restore(); }
 
                 // Label
 
@@ -1694,18 +1762,24 @@ const d = labToolData.physics;
 
               // ── Energy bar (KE vs PE vs Drag Loss) ──
               if (ball && canvasEl.dataset.showEnergy === 'true') {
-                var mass = 1; // normalized
+                var mass = parseFloat(canvasEl.dataset.mass || 1);
+                var dragOn = canvasEl.dataset.airResist === 'true';
                 var KE = 0.5 * mass * ball.speed * ball.speed;
                 var PE = mass * ball.grav * Math.max(0, ball.mY);
                 var totalE = 0.5 * mass * (parseFloat(canvasEl.dataset.velocity || 25)) * (parseFloat(canvasEl.dataset.velocity || 25));
-                var dragLoss = Math.max(0, totalE - KE - PE);
+                // With NO drag, mechanical energy is conserved: KE + PE = totalE throughout the flight.
+                // Only attribute a red "Drag" segment when drag is actually ON — otherwise tiny Euler-
+                // integration drift used to render as a phantom red loss. Clamp totalE up to KE+PE so
+                // the bar never visually overflows from that drift.
+                var dragLoss = dragOn ? Math.max(0, totalE - KE - PE) : 0;
+                if (!dragOn) totalE = Math.max(totalE, KE + PE);
                 var ebX = (cW / dpr - 160) * dpr, ebY = (cH / dpr - 65) * dpr;
                 var ebW = 140 * dpr, ebH = 14 * dpr;
                 // Background
                 ctx.fillStyle = 'rgba(15,23,42,0.7)';
                 ctx.fillRect(ebX - 4 * dpr, ebY - 14 * dpr, ebW + 8 * dpr, ebH + 28 * dpr);
                 ctx.font = 'bold ' + (5 * dpr) + 'px sans-serif'; ctx.textAlign = 'left';
-                ctx.fillStyle = '#94a3b8'; ctx.fillText('Energy', ebX, ebY - 4 * dpr);
+                ctx.fillStyle = '#94a3b8'; ctx.fillText(dragOn ? 'Energy' : 'Energy (KE + PE conserved)', ebX, ebY - 4 * dpr);
                 // Stacked bar
                 var keW = totalE > 0 ? (KE / totalE) * ebW : 0;
                 var peW = totalE > 0 ? (PE / totalE) * ebW : 0;
@@ -1847,13 +1921,13 @@ const d = labToolData.physics;
 
               canvasEl._launched = launched; canvasEl._impactParticles = impactParticles; canvasEl._landingMarkers = landingMarkers;
 
-              canvasEl._physAnim = requestAnimationFrame(draw);
+              schedulePhysicsFrame();
 
             }
 
             canvasEl._drawFunc = draw;
 
-            canvasEl._physAnim = requestAnimationFrame(draw);
+            schedulePhysicsFrame();
 
           };
 
@@ -1878,33 +1952,86 @@ const d = labToolData.physics;
             { target: 200, label: '\uD83C\uDFAF Reach 200m range', tolerance: 12 },
 
           ];
+          var physicsNext = (d.launchCount || 0) === 0
+            ? 'Predict the range, then launch once and compare the result.'
+            : !d.showVectors && !d.showEnergy
+              ? 'Turn on vectors or energy and explain what changes during flight.'
+              : d.targetMode
+                ? 'Use one controlled change to improve your next target attempt.'
+                : 'Change only angle, velocity, or gravity and compare the new trajectory.';
 
-          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { id: "physics-fs-outer", className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: '#0f172a', padding: '10px' } : { position: 'relative' } },
 
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
-
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u26A1 Physics Simulator"),
-
-              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
-
+            React.createElement("section", { "data-physics-command": "true", className: "mb-4 overflow-hidden rounded-2xl border border-cyan-300/40 bg-gradient-to-br from-slate-950 via-cyan-950 to-blue-950 text-white shadow-xl" },
+              React.createElement("div", { className: "p-4 sm:p-5" },
+                React.createElement("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between" },
+                  React.createElement("div", { className: "min-w-0" },
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18 })),
+                      React.createElement("span", { className: "rounded-full bg-cyan-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30" }, "Projectile mission")
+                    ),
+                    React.createElement("h3", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }, "\u26A1 Physics Simulator"),
+                    React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-6 text-cyan-100" }, "Investigate how launch conditions shape motion, then support each claim with trajectory evidence."),
+                    React.createElement("div", { className: "mt-3 rounded-xl border border-white/15 bg-white/10 p-3" },
+                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200" }, "Recommended next move"),
+                      React.createElement("p", { className: "mt-1 text-sm font-semibold text-white" }, physicsNext)
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 lg:w-[22rem]" },
+                    [
+                      { label: 'Angle', value: String(d.angle || 45) + '\u00B0' },
+                      { label: 'Speed', value: String(d.velocity || 25) + ' m/s' },
+                      { label: 'Launches', value: String(d.launchCount || 0) }
+                    ].map(function(metric) {
+                      return React.createElement("div", { key: metric.label, className: "min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center" },
+                        React.createElement("div", { className: "truncate text-sm font-black text-white", title: metric.value }, metric.value),
+                        React.createElement("div", { className: "mt-1 text-[9px] font-bold uppercase tracking-wider text-cyan-200" }, metric.label)
+                      );
+                    })
+                  )
+                ),
+                React.createElement("ol", { className: "mt-4 grid gap-2 text-xs sm:grid-cols-3", "aria-label": "Projectile investigation pathway" },
+                  [
+                    { n: '1', title: 'Predict', detail: 'Choose variables and estimate range.' },
+                    { n: '2', title: 'Launch', detail: 'Observe motion and collect evidence.' },
+                    { n: '3', title: 'Explain', detail: 'Connect forces to the trajectory.' }
+                  ].map(function(step) {
+                    return React.createElement("li", { key: step.n, className: "flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5" },
+                      React.createElement("span", { className: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-300 font-black text-slate-950" }, step.n),
+                      React.createElement("span", null, React.createElement("strong", { className: "block text-white" }, step.title), React.createElement("span", { className: "text-cyan-200" }, step.detail))
+                    );
+                  })
+                )
+              )
             ),
 
-            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
+            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'relative', height: '70vh' } : { height: "420px" } },
 
-              // Fullscreen toggle (top-right) — wrapper is already
-              // position:relative, so absolute placement works directly.
+              // Fullscreen toggle (top-right). Real OS fullscreen only works where the host iframe
+              // grants it (document.fullscreenEnabled). Inside a sandboxed iframe (e.g. Gemini
+              // Canvas) it's blocked by Permissions Policy — requestFullscreen() rejects/throws
+              // "Disallowed by permissions policy" — so fall back to a CSS "fill the frame" mode
+              // toggled via state (physFsMode): the wrapper goes position:fixed/100vw/100vh and,
+              // because the canvas is width/height:100%, the re-render re-measures it to fill.
               React.createElement("button", {
-                'aria-label': 'Toggle fullscreen for the physics canvas',
-                title: 'Fullscreen',
+                'aria-label': (d.physFsMode ? 'Exit fullscreen' : 'Fullscreen') + ' for the physics canvas',
+                title: d.physFsMode ? 'Exit fullscreen' : 'Fullscreen',
                 onClick: function() {
-                  var el = document.getElementById('physics-fs-wrap');
-                  if (!el) return;
-                  var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
-                  if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
-                  else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                  // Fullscreen the OUTER container (header + canvas + controls),
+                  // not just the canvas, so the sim controls stay usable in
+                  // fullscreen. The canvas grows to 70vh; controls flow below in
+                  // the scrollable fixed container.
+                  var el = document.getElementById('physics-fs-outer');
+                  if (d.physFsMode) { upd('physFsMode', false); return; }        // exit CSS fill-frame
+                  var inReal = el && (document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el);
+                  if (inReal) { try { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function(){}); } } catch (e) {} return; }
+                  var rq = el && (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen);
+                  if (rq && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+                    // real fullscreen where the host permits it; if it still rejects, fall back to CSS
+                    try { var pr = rq.call(el); if (pr && pr.catch) pr.catch(function(){ upd('physFsMode', true); }); return; } catch (e) {}
+                  }
+                  upd('physFsMode', true);                                        // sandboxed iframe — CSS fill-frame
                 },
                 style: {
                   position: 'absolute', top: 8, right: 8, zIndex: 10,
@@ -1914,7 +2041,7 @@ const d = labToolData.physics;
                   border: '1px solid rgba(125,211,252,0.5)', color: '#bae6fd',
                   fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
                 }
-              }, '⛶'),
+              }, d.physFsMode ? '✕' : '⛶'),
 
               React.createElement("canvas", {
 
@@ -1929,6 +2056,8 @@ const d = labToolData.physics;
                 "aria-label": "Physics projectile simulator — use arrow keys to adjust angle and velocity, Space to launch",
 
                 "data-angle": d.angle, "data-velocity": d.velocity, "data-gravity": d.gravity,
+
+                "data-mass": d.mass != null ? d.mass : 1,
 
                 "data-air-resist": d.airResist ? 'true' : 'false',
                 "data-show-vectors": d.showVectors ? 'true' : 'false',
@@ -2172,9 +2301,9 @@ const d = labToolData.physics;
 
             ),
 
-            React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" },
+            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
 
-              [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }].map(function (s) {
+              [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }, { k: 'mass', label: 'Mass (kg)', min: 1, max: 10, step: 1 }].map(function (s) {
                 var isLocked = d.targetMode && d.targetConstraint && (
                   (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
                   (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
@@ -2185,7 +2314,7 @@ const d = labToolData.physics;
 
                   React.createElement("span", { className: "text-sm font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-700') }, d[s.k]),
 
-                  React.createElement("input", { type: "range", "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
+                  React.createElement("input", { type: "range", "aria-valuetext": (d[s.k] + " " + ((s.label.match(/\(([^)]+)\)/) || ["", ""])[1])), "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
                     if (!isLocked) {
                       var newVal = parseFloat(e.target.value);
                       upd(s.k, newVal);
@@ -2466,6 +2595,18 @@ const d = labToolData.physics;
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
                   React.createElement("span", { className: "font-bold text-sky-600" }, "\uD83C\uDF11 Gravity Varies: "),
                   "Different planets have different gravitational pull. Moon (1.6 m/s\u00B2) lets projectiles fly 6x farther than Earth (9.8 m/s\u00B2)! Try Jupiter for a challenge."
+                ),
+                React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70 mt-1" },
+                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 Myth: \u201CA moving object needs a forward push.\u201D "),
+                  "Watch Vx \u2014 it never changes, and the Vectors view shows NO horizontal arrow. With no sideways force, the object keeps moving sideways on its own (Newton's 1st Law)."
+                ),
+                React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70" },
+                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 Myth: \u201CHeavier objects fall faster.\u201D "),
+                  "Drag the Mass slider \u2014 the trajectory does NOT change. In a vacuum every mass falls with the same g; mass only scales the energy bar, never the path."
+                ),
+                React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70" },
+                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 Myth: \u201CVelocity points where the force points.\u201D "),
+                  "At the very top of the arc the velocity is purely horizontal, yet gravity still points straight DOWN. A force changes motion \u2014 it doesn't have to point along it."
                 )
               )
             ),
@@ -2762,7 +2903,7 @@ const d = labToolData.physics;
 
               d.quizActive && React.createElement("div", { className: "space-y-2" },
 
-                React.createElement("p", { className: "text-xs text-slate-600" }, "A projectile is launched at ", React.createElement("b", null, d.quizAngle + "\u00B0"), " with velocity ", React.createElement("b", null, d.quizVel + " m/s"), " and gravity ", React.createElement("b", null, d.quizGrav + " m/s\u00B2"), ". How far does it land?"),
+                React.createElement("p", { className: "text-xs text-slate-600" }, "A projectile is launched at ", React.createElement("b", null, d.quizAngle + "\u00B0"), " with velocity ", React.createElement("b", null, d.quizVel + " m/s"), " and gravity ", React.createElement("b", null, d.quizGrav + " m/s\u00B2" + ({ '9.8': ' (Earth)', '1.6': ' (Moon)', '3.7': ' (Mars)', '24.8': ' (Jupiter)' }[String(d.quizGrav)] || '')), ". How far does it land?"),
 
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
@@ -2784,6 +2925,19 @@ const d = labToolData.physics;
 
                         upd('quizFeedback', isCorrect ? 'correct' : 'wrong');
 
+                        // Diagnostic breakdown: walk the formula with THESE numbers and
+                        // say how far off the pick was — velocity-squared is the usual trap.
+                        if (!isCorrect) {
+                          var qRatio = opt / d.quizAnswer;
+                          var qSin = Math.sin(2 * d.quizAngle * Math.PI / 180);
+                          var qDiag = 'Walk it through: R = v²·sin(2θ)/g = ' + d.quizVel + '² × ' + qSin.toFixed(2) + ' / ' + d.quizGrav + ' = ' + d.quizAnswer.toFixed(1) + ' m. Your pick was ' + (qRatio > 1 ? qRatio.toFixed(1) + '× too far' : 'only ' + (qRatio * 100).toFixed(0) + '% of the true range') + '. Remember the biggest lever: velocity enters SQUARED — small speed changes move the landing a lot.';
+                          var qWorld = { '1.6': 'Moon gravity is ~6× weaker than Earth’s, so everything flies ~6× farther.', '3.7': 'Mars gravity is ~2.6× weaker than Earth’s — ranges stretch accordingly.', '24.8': 'Jupiter’s gravity is ~2.5× Earth’s — flights are short and brutal.' }[String(d.quizGrav)];
+                          if (qWorld) qDiag += ' ' + qWorld;
+                          upd('quizDiag', qDiag);
+                        } else {
+                          upd('quizDiag', null);
+                        }
+
                         if (isCorrect) { upd('quizStreak', (d.quizStreak || 0) + 1); awardStemXP('physicsQuiz', 10, 'Predicted the landing!'); }
 
                         else { upd('quizStreak', 0); }
@@ -2802,13 +2956,81 @@ const d = labToolData.physics;
 
                 d.quizFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.quizFeedback === 'correct' ? 'text-emerald-600' : 'text-red-600') },
 
-                  d.quizFeedback === 'correct' ? '\u2705 Correct! R = v\u00B2sin(2\u03B8)/g = ' + d.quizAnswer.toFixed(1) + 'm' : '\u274C Not quite. The answer is ' + d.quizAnswer.toFixed(1) + 'm'),
+                  d.quizFeedback === 'correct' ? '\u2705 Correct! R = v\u00B2sin(2\u03B8)/g = ' + d.quizAnswer.toFixed(1) + 'm' : '\u274C Not quite.'),
+
+                d.quizFeedback === 'wrong' && d.quizDiag && React.createElement("p", { className: "text-xs leading-relaxed text-red-700 bg-red-50 rounded-lg p-2 border border-red-200" }, d.quizDiag),
 
                 d.quizStreak > 1 && React.createElement("p", { className: "text-xs font-bold text-amber-600" }, "\uD83D\uDD25 Streak: " + d.quizStreak + "!")
 
               )
 
             ),
+
+            // \u2500\u2500 \uD83E\uDDE0 Physics Myths \u2014 grade-banded T/F misconceptions, each falsifiable IN the sim \u2500\u2500
+            // Every myth here is a documented projectile misconception (impetus theory,
+            // heavier-falls-faster, zero-velocity-at-apex...), and every verdict comes with
+            // a "Try it" pointing at the sim feature that lets the student SEE the truth.
+            (function () {
+              var glp = (gradeLevel || '5th Grade').toLowerCase();
+              var mythBand = /9th|10|11|12|high/.test(glp) ? '9-12' : /6th|7th|8th/.test(glp) ? '6-8' : '3-5';
+              var MYTHS_35 = [
+                { s: 'A heavier cannonball falls faster, so it lands sooner.', t: false, why: 'Gravity speeds up EVERY mass equally (with air resistance off) \u2014 a 10 kg ball and a 1 kg ball trace the exact same arc. Galileo\u2019s big idea.', tryIt: 'Launch with mass = 1 kg, then slide mass to 10 kg and launch again. Same arc, same landing spot.' },
+                { s: 'At the very top of the arc, the ball has stopped moving.', t: false, why: 'Only the UP-DOWN part of the motion pauses at the top. The ball keeps moving forward the whole time.', tryIt: 'Turn on Vectors and watch the horizontal arrow at the top of the arc \u2014 it never shrinks.' },
+                { s: 'Doubling the launch speed doubles the distance.', t: false, why: 'Distance grows with speed \u00D7 speed. Double the speed and it lands FOUR times farther.', tryIt: 'Launch at 15 m/s, then at 30 m/s with the same angle \u2014 compare the landing markers.' },
+                { s: 'Aiming at 45\u00B0 throws the farthest (no air).', t: true, why: 'Lower angles fly flat but fall too soon; higher angles waste speed going up. 45\u00B0 is the perfect trade.', tryIt: 'Run the complementary-angles demo \u2014 30\u00B0 and 60\u00B0 even land on the SAME spot.' }
+              ];
+              var MYTHS_68 = MYTHS_35.concat([
+                { s: 'After launch, a force keeps pushing the ball forward.', t: false, why: 'Once it leaves the cannon, the ONLY force is gravity, pulling straight down. Forward motion continues because nothing stops it \u2014 Newton\u2019s first law.', tryIt: 'Watch the vector overlay in flight: there is no forward force, yet Vx stays perfectly constant.' },
+                { s: 'A ball fired horizontally and a ball dropped from the same height hit the ground at the same time.', t: true, why: 'Horizontal and vertical motion are independent. Both balls fall with the same gravity from the same height, so they land together.', tryIt: 'Fire at a very low angle and compare the flight time with a steep, short lob from the same height.' }
+              ]);
+              var MYTHS_912 = MYTHS_68.concat([
+                { s: 'With air resistance ON, 45\u00B0 is still the best angle.', t: false, why: 'Drag punishes long, high flights \u2014 it bleeds v\u00B2 the whole way. The optimum drops to roughly 30\u201340\u00B0 depending on speed.', tryIt: 'Toggle air resistance on and sweep the angle slider \u2014 watch where the landing marker actually peaks.' }
+              ]);
+              var mythBank = mythBand === '9-12' ? MYTHS_912 : mythBand === '6-8' ? MYTHS_68 : MYTHS_35;
+              var myth = d.physMyth || null;
+              function startMyth() {
+                var mi = Math.floor(Math.random() * mythBank.length);
+                if (myth && mi === myth.idx) mi = (mi + 1) % mythBank.length;
+                var m = mythBank[mi];
+                upd('physMyth', { idx: mi, s: m.s, t: m.t, why: m.why, tryIt: m.tryIt, answered: false, chosen: null });
+              }
+              return React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-3" },
+                React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700 uppercase tracking-wider" }, "\uD83E\uDDE0 Physics Myths \u2014 true or false?"),
+                  React.createElement("button", { "aria-label": "Start a physics myth question",
+                    onClick: startMyth,
+                    className: "px-3 py-1 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-all"
+                  }, myth ? "\uD83D\uDD04 New Myth" : "\u25B6 Start")
+                ),
+                myth && React.createElement("div", { className: "space-y-2" },
+                  React.createElement("p", { className: "text-xs font-bold text-slate-700" }, "\u201C" + myth.s + "\u201D"),
+                  !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    [true, false].map(function (val) {
+                      return React.createElement("button", { key: String(val),
+                        "aria-label": "Answer " + (val ? 'true' : 'false'),
+                        onClick: function () {
+                          var right = val === myth.t;
+                          upd('physMyth', Object.assign({}, myth, { answered: true, chosen: val }));
+                          upd('physMythsDone', (d.physMythsDone || 0) + 1);
+                          if (right) {
+                            awardStemXP('physicsMyth', 5, 'Myth busted');
+                            if (typeof stemBeep === 'function') stemBeep(784, 0.12);
+                          } else if (typeof stemBeep === 'function') stemBeep(220, 0.15);
+                          if (typeof announceToSR === 'function') announceToSR((right ? 'Correct. ' : 'Not quite. ') + (myth.t ? 'True. ' : 'False. ') + myth.why);
+                        },
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-violet-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
+                      }, val ? '\u2705 True' : '\u274C False');
+                    })
+                  ),
+                  myth.answered && React.createElement("div", { className: "p-2.5 rounded-lg " + (myth.chosen === myth.t ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200') },
+                    React.createElement("p", { className: "text-xs font-bold mb-1 " + (myth.chosen === myth.t ? 'text-emerald-700' : 'text-red-700') },
+                      (myth.chosen === myth.t ? '\u2705 Correct \u2014 ' : '\u274C Not quite \u2014 ') + (myth.t ? 'TRUE.' : 'FALSE.')),
+                    React.createElement("p", { className: "text-xs leading-relaxed text-slate-700 mb-1" }, myth.why),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed font-bold text-indigo-700" }, "\uD83D\uDD2C Try it in the sim: " + myth.tryIt)
+                  )
+                )
+              );
+            })(),
 
             React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
 
@@ -2852,7 +3074,7 @@ const d = labToolData.physics;
                         s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val)),
                       h('input', { id: 'gh-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
                         onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.label }));
+                        className: 'w-full', 'aria-valuetext': (s.val + ' ' + ((s.label.match(/\(([^)]+)\)/) || ['', ''])[1])), 'aria-label': s.label }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },

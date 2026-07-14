@@ -14,6 +14,112 @@
 // + IIFE locals so we don't false-positive on inner declarations.
 
 
+// ── Quick phrases: common educator→family phrases for instant one-tap translation.
+// Generic + FERPA-safe (no student-identifying content), warm, and em-dash-free to
+// match the family-communication style. Tapping one runs it through the SAME
+// translate + read-aloud path as a typed message (zero typing, zero latency wait).
+// Written as React.createElement (not JSX) so the source + compiled module stay
+// byte-aligned without an esbuild round-trip. ──
+var BRIDGE_PHRASES = [
+  { id: 'welcome', icon: '👋', label: 'Welcome', phrases: ['Hello, thank you for coming.', 'It is good to meet you.', 'Please have a seat.', 'I am glad we can talk today.'] },
+  { id: 'reassure', icon: '💚', label: 'Reassure', phrases: ['Your child is doing well.', 'There is nothing to worry about.', 'We are a team, and we are here to help.', 'Your child is safe and cared for here.'] },
+  { id: 'update', icon: '📈', label: 'Share an update', phrases: ['I would like to share an update.', 'Your child is making good progress.', 'Here is something your child did well today.', 'Let us work on this together.'] },
+  { id: 'ask', icon: '❓', label: 'Ask', phrases: ['Do you have any questions?', 'Is there anything you would like to share?', 'What works best for your family?', 'How can we support you?'] },
+  { id: 'plan', icon: '🗓️', label: 'Plan together', phrases: ['Can we set up a time to meet?', 'What time works for you?', 'Please bring this form back when you can.', 'I will send this home with your child.'] },
+  { id: 'close', icon: '🙏', label: 'Close', phrases: ['Thank you for your time.', 'Please reach out anytime.', 'We appreciate you.', 'Goodbye, and take care.'] }
+];
+// Handle to the single active Face-to-Face SpeechRecognition instance. It is
+// created as a bare local inside _startListening, so without this the "stop",
+// "End", and switch-sides paths only flip React state and the recognizer keeps
+// running — its late onresult would then auto-send a phantom message. Stopping
+// it here detaches handlers and aborts so a racing result cannot fire.
+var _bridgeActiveRec = null;
+function _bridgeStopListening() {
+  if (_bridgeActiveRec) {
+    try { _bridgeActiveRec.onresult = null; _bridgeActiveRec.onend = null; _bridgeActiveRec.onerror = null; _bridgeActiveRec.abort(); } catch (e) {}
+    _bridgeActiveRec = null;
+  }
+}
+// onPick now STAGES a phrase into the editable input (edit-before-send) rather than
+// firing it instantly. gen = { phrases, onGenerate, loading } drives the AI custom
+// phrase generator. Collapsed by default (open:false) so the thread leads the panel.
+function _bridgePhrasesPanel(onPick, translating, t, _bt, gen) {
+  _bt = _bt || {};
+  gen = gen || {};
+  var cAccent = _bt.textAccent || '#5eead4', cMuted = _bt.textMuted || '#64748b', cText = _bt.inputText || '#e2e8f0';
+  var genList = Array.isArray(gen.phrases) ? gen.phrases : [];
+  var activeCat = gen.activeCat || null, onCat = gen.onCat || function () {};
+  var editHint = (t && t('roster.bridge_phrase_edit_hint')) || 'Tap to edit, then press Enter to send';
+  function _chip(ph, key, bg, border) {
+    return React.createElement('button', { key: key, disabled: translating, onClick: function () { onPick(ph); }, title: editHint, style: { background: bg, border: border, color: cAccent, padding: '6px 10px', borderRadius: '10px', fontSize: '12px', cursor: translating ? 'default' : 'pointer', opacity: translating ? 0.5 : 1, textAlign: 'left' } }, ph);
+  }
+  function _genSubmit() { var el = document.getElementById('bridge-gen-instruction'); if (el && el.value.trim() && gen.onGenerate && !gen.loading) gen.onGenerate(el.value.trim()); }
+  return React.createElement('details', { open: false, style: { marginBottom: '12px' } },
+    React.createElement('summary', { style: { cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: cAccent, padding: '6px 0' } },
+      '💬 ' + ((t && t('roster.bridge_phrases_title')) || 'Quick phrases'),
+      React.createElement('span', { style: { color: cMuted, fontWeight: 500 } }, ' ' + ((t && t('roster.bridge_phrases_hint')) || '(tap to edit, then Enter to send)'))),
+    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' } },
+      // Topic chips — tap one to reveal just its phrases (category-first, keeps the panel compact).
+      React.createElement('div', { role: 'tablist', 'aria-label': (t && t('roster.bridge_phrases_title')) || 'Quick phrases', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+        BRIDGE_PHRASES.map(function (cat) {
+          var on = activeCat === cat.id;
+          return React.createElement('button', { key: cat.id, type: 'button', role: 'tab', 'aria-selected': on ? 'true' : 'false', onClick: function () { onCat(on ? null : cat.id); }, style: { background: on ? 'rgba(20,184,166,0.22)' : 'rgba(20,184,166,0.06)', border: '1px solid ' + (on ? 'rgba(20,184,166,0.5)' : 'rgba(20,184,166,0.18)'), color: cAccent, padding: '6px 11px', borderRadius: '999px', fontSize: '12px', fontWeight: on ? 700 : 600, cursor: 'pointer', whiteSpace: 'nowrap' } }, cat.icon + ' ' + cat.label);
+        })),
+      // Only the active topic's phrases render.
+      (function () {
+        var cat = activeCat ? BRIDGE_PHRASES.filter(function (c) { return c.id === activeCat; })[0] : null;
+        if (!cat) return null;
+        return React.createElement('div', { role: 'group', 'aria-label': cat.label, style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+          cat.phrases.map(function (ph, pi) { return _chip(ph, pi, 'rgba(20,184,166,0.08)', '1px solid rgba(20,184,166,0.2)'); }));
+      })(),
+      React.createElement('div', { style: { marginTop: '4px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)' } },
+        React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: cMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '5px' } }, '✨ ' + ((t && t('roster.bridge_gen_label')) || 'Generate custom phrases')),
+        React.createElement('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+          React.createElement('input', { id: 'bridge-gen-instruction', type: 'text', disabled: translating || gen.loading, 'aria-label': (t && t('roster.bridge_gen_placeholder')) || 'Describe the phrases to generate', placeholder: (t && t('roster.bridge_gen_placeholder')) || 'e.g. reassure a parent their child had a hard morning', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); _genSubmit(); } }, style: { flex: 1, minWidth: '180px', background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: '10px', padding: '8px 10px', color: cText, fontSize: '12px', outline: 'none', fontFamily: 'inherit', opacity: (translating || gen.loading) ? 0.5 : 1 } }),
+          React.createElement('button', { disabled: translating || gen.loading, onClick: _genSubmit, style: { background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.35)', color: _bt.aiAccent || '#d8b4fe', padding: '8px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: (translating || gen.loading) ? 'default' : 'pointer', whiteSpace: 'nowrap' } }, gen.loading ? ('⏳ ' + ((t && t('roster.bridge_gen_loading')) || 'Generating…')) : ('✨ ' + ((t && t('roster.bridge_gen_btn')) || 'Generate')))),
+        genList.length ? React.createElement('div', { style: { marginTop: '8px' } },
+          React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: cMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } }, '✨ ' + ((t && t('roster.bridge_gen_results')) || 'Generated — tap to edit and send')),
+          React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+            genList.map(function (ph, pi) { return _chip(ph, 'gen' + pi, 'rgba(168,85,247,0.10)', '1px solid rgba(168,85,247,0.3)'); }))) : null)));
+}
+// Plain-text transcript of a Face-to-Face conversation (the exportable "log"). PURE + testable.
+function _bridgeTranscript(messages, aLang, bLang) {
+  return (messages || []).map(function (m) {
+    if (m.ai) return '[AI helper] asked: ' + m.text + '\n   ' + aLang + ': ' + (m.answer || '') + (m.translated ? '\n   ' + bLang + ': ' + m.translated : '');
+    var who = m.sender === 'personA' ? aLang : bLang, other = m.sender === 'personA' ? bLang : aLang;
+    return who + ': ' + m.text + (m.translated ? '\n   ' + other + ': ' + m.translated : '');
+  }).join('\n\n');
+}
+// The "ask the AI for help" + "export" bar shown above the conversation thread.
+function _bridgeAiBar(onAsk, onExport, translating, t, _bt) {
+  _bt = _bt || {};
+  var aiAccent = _bt.aiAccent || '#fcd34d', cText = _bt.inputText || '#e2e8f0', cBg = _bt.cardBg || 'rgba(255,255,255,0.06)', cBorder = _bt.cardBorder || '1px solid rgba(255,255,255,0.1)', cSecondary = _bt.textSecondary || '#94a3b8';
+  function ask() { var el = document.getElementById('bridge-f2f-ai-input'); if (el && el.value.trim()) { onAsk(el.value.trim()); el.value = ''; } }
+  return React.createElement('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
+    React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '16px' } }, '🤖'),
+    React.createElement('input', { id: 'bridge-f2f-ai-input', type: 'text', disabled: translating, 'aria-label': (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI for help', placeholder: (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI: how do I say…, words for…, explain simply…', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } }, style: { flex: 1, minWidth: '170px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '12px', padding: '10px 12px', color: cText, fontSize: '13px', outline: 'none', fontFamily: 'inherit', opacity: translating ? 0.5 : 1 } }),
+    React.createElement('button', { disabled: translating, onClick: ask, style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.35)', color: aiAccent, padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: translating ? 'default' : 'pointer', whiteSpace: 'nowrap' } }, (t && t('roster.bridge_ai_btn')) || 'Ask AI'),
+    React.createElement('button', { onClick: onExport, title: (t && t('roster.bridge_export')) || 'Export the conversation', 'aria-label': (t && t('roster.bridge_export')) || 'Export the conversation', style: { background: cBg, border: cBorder, color: cSecondary, padding: '10px 12px', borderRadius: '12px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' } }, '⬇ ' + ((t && t('roster.bridge_export_short')) || 'Export')));
+}
+// A distinct bubble for an AI-helper exchange: the question + the answer + its translation, shown to BOTH sides.
+function _bridgeAiBubble(msg, aLang, bLang, handleAudio, t, _bt) {
+  _bt = _bt || {};
+  var aiAccent = _bt.aiAccent || '#fcd34d', aiBubbleBg = _bt.aiBubbleBg || 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', aiBorder = _bt.aiBorder || '1px solid rgba(251,191,36,0.3)', cPrimary = _bt.textPrimary || '#fde68a', cSecondary = _bt.textSecondary || '#94a3b8', cMuted = _bt.textMuted || '#64748b', cBg = _bt.cardBg || 'rgba(255,255,255,0.06)', cBorder = _bt.cardBorder || '1px solid rgba(255,255,255,0.1)';
+  return React.createElement('div', { key: msg.id, style: { display: 'flex', justifyContent: 'center' } },
+    React.createElement('div', { style: { maxWidth: '92%', width: '100%', background: aiBubbleBg, border: aiBorder, borderRadius: '14px', padding: '12px 16px' } },
+      React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: aiAccent, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🤖 ' + ((t && t('roster.bridge_ai_helper')) || 'AI helper')),
+      React.createElement('div', { style: { fontSize: '12px', color: cSecondary, marginBottom: '6px', fontStyle: 'italic' } }, '“' + msg.text + '”'),
+      msg.translating
+        ? React.createElement('div', { style: { fontSize: '12px', color: cMuted, fontStyle: 'italic' } }, '⏳ ' + ((t && t('roster.bridge_ai_thinking')) || 'Thinking…'))
+        : React.createElement('div', null,
+            React.createElement('div', { dir: 'auto', style: { fontSize: '14px', color: cPrimary, lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
+            msg.translated ? React.createElement('div', { dir: 'auto', style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: cPrimary, lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
+            React.createElement('div', { style: { marginTop: '8px', display: 'flex', gap: '6px' } },
+              React.createElement('button', { onClick: function () { handleAudio(msg.answer, aLang); }, style: { background: cBg, border: cBorder, color: cSecondary, padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
+              msg.translated ? React.createElement('button', { onClick: function () { handleAudio(msg.translated, bLang); }, style: { background: cBg, border: cBorder, color: cSecondary, padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
+}
+try { window.__alloBridgePure = { BRIDGE_PHRASES: BRIDGE_PHRASES, _bridgeTranscript: _bridgeTranscript }; } catch (e) {}
+
 // ── BridgeSendModal: Teacher-side bridge Send modal (gates on bridgeSendOpen + isTeacherMode). Includes nested bridgeChatOpen IIFE inside. ──
 function BridgeSendModal(props) {
   const {
@@ -30,6 +136,28 @@ function BridgeSendModal(props) {
     setBridgeSending, setBridgeTermsSaved, t, theme,
     updateDoc, user, warnLog
   } = props;
+  // Fullscreen + AI-generated quick-phrase state. Lifted to the component body
+  // because the nested {bridgeChatOpen && (() => {…})()} IIFE runs during render
+  // and therefore cannot call hooks — it closes over these instead.
+  const [bridgeFullscreen, setBridgeFullscreen] = React.useState(false);
+  const [bridgeGenPhrases, setBridgeGenPhrases] = React.useState([]);
+  const [bridgeGenLoading, setBridgeGenLoading] = React.useState(false);
+  // Category-first quick phrases: only the tapped topic's phrases are shown,
+  // so the expanded panel stays compact. null = no topic open yet.
+  const [bridgePhraseCat, setBridgePhraseCat] = React.useState(null);
+  // Reset the per-send selection globals each time the modal opens. The mode /
+  // language / grade / target selects are uncontrolled, so on a 2nd open they
+  // show their defaults again while these globals still hold the previous
+  // open's values — which is what the send path reads (mode has no DOM
+  // fallback). Clearing on open keeps "what you see" and "what you send" in sync.
+  React.useEffect(() => {
+    if (bridgeSendOpen) {
+      window.__bridgeMode = undefined;
+      window.__bridgeLang = undefined;
+      window.__bridgeTarget = undefined;
+      window.__bridgeGrade = undefined;
+    }
+  }, [bridgeSendOpen]);
   if (!(bridgeSendOpen && isTeacherMode)) return null;
         const _isDark = theme === 'dark';
         const _isContrast = theme === 'contrast';
@@ -40,7 +168,7 @@ function BridgeSendModal(props) {
           panelShadow: _isContrast ? 'none' : (_isDark ? '0 25px 60px rgba(0,0,0,0.5), 0 0 80px rgba(20,184,166,0.08)' : '0 25px 60px rgba(0,0,0,0.15), 0 0 40px rgba(20,184,166,0.05)'),
           textPrimary: _isContrast ? '#FFFF00' : (_isDark ? '#e2e8f0' : '#1e293b'),
           textSecondary: _isContrast ? '#FFFFFF' : (_isDark ? '#94a3b8' : '#64748b'),
-          textMuted: _isContrast ? '#FFFF00' : (_isDark ? '#64748b' : '#94a3b8'),
+          textMuted: _isContrast ? '#FFFF00' : (_isDark ? '#94a3b8' : '#64748b'),
           textAccent: _isContrast ? '#FFFF00' : (_isDark ? '#5eead4' : '#0d9488'),
           inputBg: _isContrast ? '#000000' : (_isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
           inputBorder: _isContrast ? '2px solid #FFFF00' : (_isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.12)'),
@@ -57,6 +185,11 @@ function BridgeSendModal(props) {
           selectText: _isContrast ? '#FFFF00' : (_isDark ? '#e2e8f0' : '#1e293b'),
           dotActive: _isContrast ? '#FFFF00' : '#14b8a6',
           dotInactive: _isContrast ? '#666600' : (_isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
+          // AI-assist amber identity, made theme-aware so the helper UI stays legible in
+          // light/high-contrast (it previously hardcoded light-on-light dark-mode colors).
+          aiAccent: _isContrast ? '#FFFF00' : (_isDark ? '#fcd34d' : '#b45309'),
+          aiBubbleBg: _isContrast ? '#1a1a00' : (_isDark ? 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))' : 'linear-gradient(135deg, rgba(251,191,36,0.10), rgba(245,158,11,0.06))'),
+          aiBorder: _isContrast ? '2px solid #FFFF00' : (_isDark ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(217,119,6,0.35)'),
         };
         return (
         <div
@@ -78,8 +211,9 @@ function BridgeSendModal(props) {
             onClick={(e) => e.stopPropagation()}
             style={{
               background:_bt.panelBg,
-              borderRadius:'24px',padding:'0',maxWidth:'720px',width:'94vw',
-              maxHeight:'90vh',overflowY:'auto',
+              borderRadius: bridgeFullscreen ? '0' : '24px',padding:'0',
+              maxWidth: bridgeFullscreen ? '100vw' : '720px',width: bridgeFullscreen ? '100vw' : '94vw',
+              maxHeight: bridgeFullscreen ? '100vh' : '90vh',height: bridgeFullscreen ? '100vh' : 'auto',overflowY:'auto',
               color:_bt.textPrimary,
               boxShadow:_bt.panelShadow,
               border:_bt.panelBorder,
@@ -95,10 +229,18 @@ function BridgeSendModal(props) {
                   Send bilingual content to student devices
                 </p>
               </div>
-              <button
-                onClick={() => setBridgeSendOpen(false)}
-                style={{background:_bt.btnCloseBg,border:_bt.btnCloseBorder,color:_bt.btnCloseColor,width:'36px',height:'36px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
-              >✕</button>
+              <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+                <button
+                  onClick={() => setBridgeFullscreen(f => !f)}
+                  aria-label={bridgeFullscreen ? (t('roster.bridge_exit_fullscreen') || 'Exit full screen') : (t('roster.bridge_fullscreen') || 'Full screen')}
+                  title={bridgeFullscreen ? (t('roster.bridge_exit_fullscreen') || 'Exit full screen') : (t('roster.bridge_fullscreen') || 'Full screen')}
+                  style={{background:_bt.btnCloseBg,border:_bt.btnCloseBorder,color:_bt.btnCloseColor,width:'36px',height:'36px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
+                >{bridgeFullscreen ? '🗗' : '⛶'}</button>
+                <button
+                  onClick={() => setBridgeSendOpen(false)}
+                  style={{background:_bt.btnCloseBg,border:_bt.btnCloseBorder,color:_bt.btnCloseColor,width:'36px',height:'36px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
+                >✕</button>
+              </div>
             </div>
             <div style={{padding:'24px 28px'}}>
               <div data-help-key="bridge_send_quick_templates" style={{marginBottom:'14px'}}>
@@ -158,7 +300,7 @@ function BridgeSendModal(props) {
                   onFocus={(e) => { e.target.style.borderColor = 'rgba(20,184,166,0.4)'; e.target.style.boxShadow = '0 0 0 3px rgba(20,184,166,0.1)'; }}
                   onBlur={(e) => { e.target.style.borderColor = ''; e.target.style.boxShadow = 'none'; }}
                 />
-                <span id="bridge-char-count" style={{position:'absolute',bottom:'10px',right:'16px',fontSize:'11px',color:'#475569',pointerEvents:'none'}}>0 chars</span>
+                <span id="bridge-char-count" style={{position:'absolute',bottom:'10px',right:'16px',fontSize:'11px',color:_bt.textMuted,pointerEvents:'none'}}>0 chars</span>
               </div>
               <div style={{display:'flex',gap:'8px',marginBottom:'20px',flexWrap:'wrap'}}>
                 <button
@@ -513,8 +655,8 @@ function BridgeSendModal(props) {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setBridgeMessage({
-                                    english: msg.english,
-                                    translated: msg.translated,
+                                    english: typeof msg.english === 'string' ? msg.english : String(msg.english ?? ''),
+                                    translated: typeof msg.translated === 'string' ? msg.translated : String(msg.translated ?? ''),
                                     language: msg.language,
                                     languageName: msg.languageName,
                                     imageUrl: msg.imageUrl,
@@ -635,8 +777,11 @@ function BridgeSendModal(props) {
                     }
                     const langNames = { 'English':'🇺🇸 English','Spanish':'🇪🇸 Español','French':'🇫🇷 Français','Arabic':'🇸🇦 العربية','Somali':'🇸🇴 Soomaali','Vietnamese':'🇻🇳 Tiếng Việt','Portuguese':'🇧🇷 Português','Mandarin':'🇨🇳 中文','Korean':'🇰🇷 한국어','Tagalog':'🇵🇭 Tagalog','Russian':'🇷🇺 Русский','Japanese':'🇯🇵 日本語' };
                     setBridgeMessage({
-                      english: parsed.english || bridgeSendText,
-                      translated: parsed.translated || '',
+                      // Coerce to string at the boundary: a model can occasionally return a
+                      // non-string (object/array) for these fields, which would crash the
+                      // receive modal's .split() word-rendering.
+                      english: (typeof parsed.english === 'string' ? parsed.english : '') || bridgeSendText,
+                      translated: typeof parsed.translated === 'string' ? parsed.translated : '',
                       language: targetLang,
                       languageName: langNames[targetLang] || ('🌐 ' + targetLang),
                       imageUrl: imageUrl || window.__bridgeAttachedImage || null,
@@ -669,7 +814,7 @@ function BridgeSendModal(props) {
                           await handleAudio(parsed.english || bridgeSendText);
                           if (parsed.translated) {
                             await new Promise(r => setTimeout(r, 500));
-                            await handleAudio(parsed.translated);
+                            await handleAudio(parsed.translated, targetLang);
                           }
                         } catch(e) { warnLog('Bridge autoplay TTS error', e); }
                       }, 800);
@@ -677,20 +822,34 @@ function BridgeSendModal(props) {
                     if (activeSessionCode) {
                       try {
                         const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                        await updateDoc(sessionRef, {
+                        // Route the class broadcast through the FERPA Tier-2 gate (writeToSession)
+                        // instead of a raw updateDoc, so it is enforced + auditable like every other
+                        // session write. bridgePayload/bridgeReactions are allowlisted in
+                        // SESSION_TIER1_LEAVES with an explicit justification (see that list). The
+                        // sender is de-identified to 'Teacher' (no account display name). Fail CLOSED
+                        // if the gate is unavailable rather than silently bypassing it.
+                        const _gate = (typeof window !== 'undefined') && window.__alloWriteToSession;
+                        const _bridgeBroadcast = {
                           bridgePayload: {
                             text: bridgeSendText,
                             mode: selectedMode,
                             targetGroup: selectedTarget,
                             timestamp: Date.now(),
-                            senderName: user?.displayName || 'Teacher',
+                            senderName: 'Teacher',
                             isBlast: selectedTarget === 'all',
+                            // When the teacher enables "Override group settings", the UI promises
+                            // every student gets THIS exact language & reading level. Carry it so
+                            // the consumer can honor that instead of each student's group profile.
+                            overrideLang: bridgeOverrideGroups ? targetLang : null,
+                            overrideGrade: bridgeOverrideGroups ? gradeLevel : null,
                             languageMap: selectedTarget === 'all' && rosterKey?.groups
                               ? Object.fromEntries(Object.entries(rosterKey.groups).map(([gId, g]) => [gId, g.profile?.leveledTextLanguage || 'English']))
                               : null
                           },
                           bridgeReactions: deleteField()
-                        });
+                        };
+                        if (typeof _gate === 'function') { await _gate(sessionRef, _bridgeBroadcast); }
+                        else { warnLog('Bridge: privacy gate unavailable; class broadcast skipped (not bypassing)'); }
                       } catch(fbErr) { warnLog('Bridge Firebase write failed:', fbErr); }
                     }
                   } catch(err) {
@@ -741,19 +900,36 @@ function BridgeSendModal(props) {
                   'Georgian':'ka-GE','Armenian':'hy-AM','Mongolian':'mn-MN','Kazakh':'kk-KZ',
                   'Uzbek':'uz-UZ'
                 };
-                const _personALang = bridgeF2FCustomLangA || bridgeF2FTeacherLang;
-                const _personBLang = bridgeF2FCustomLangB || bridgeF2FLang;
+                // When "Custom..." (sentinel value 'custom') is selected but the text box
+                // is empty, neither the dropdown value nor the custom text is a real
+                // language — resolve to '' so we never send the literal word "custom" to
+                // the translator (or 'cu' to speech recognition). Send paths guard on this.
+                const _resolveBridgeLang = (sel, custom) => { const c = (custom || '').trim(); return c || (sel === 'custom' ? '' : sel); };
+                const _personALang = _resolveBridgeLang(bridgeF2FTeacherLang, bridgeF2FCustomLangA);
+                const _personBLang = _resolveBridgeLang(bridgeF2FLang, bridgeF2FCustomLangB);
                 const _getLangCode = (lang) => _langCodes[lang] || lang.toLowerCase().slice(0,2);
                 const _sendMessage = async (sender, text, fromLang, toLang) => {
+                  if (!fromLang || !toLang) { addToast(t('roster.bridge_f2f_pick_lang') || 'Type the custom language name first', 'warning'); return; }
                   const msgId = Date.now();
                   setBridgeChatMessages(prev => [...prev, {id:msgId, sender, text, translating:true, timestamp:Date.now()}]);
                   setBridgeF2FTranslating(true);
                   setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
                   try {
-                    const translated = await callGemini('Translate the following ' + fromLang + ' text to ' + toLang + '. Return ONLY the translation, no explanations or notes:\n\n' + text, false, false, 0.3);
+                    // On-device first (translate_loader.js → window.AlloTranslate): when a
+                    // local opus-mt model covers the pair, the text NEVER leaves the machine
+                    // (a real FERPA win + works offline). Falls back to the cloud translate
+                    // when the engine isn't loaded / the pair has no on-device model / it
+                    // fails — so this is never a regression.
+                    let translated = null;
+                    if (window.AlloTranslate && typeof window.AlloTranslate.supports === 'function' && window.AlloTranslate.supports(fromLang, toLang)) {
+                      try { translated = await window.AlloTranslate.translate(text, fromLang, toLang); } catch (_odErr) {}
+                    }
+                    if (translated == null) {
+                      translated = await callGemini('Translate the following ' + fromLang + ' text to ' + toLang + '. Return ONLY the translation, no explanations or notes:\n\n' + text, false, false, 0.3);
+                    }
                     setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, translated, translating:false} : m));
                     setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
-                    try { await handleAudio(translated); } catch(e2) { warnLog('F2F TTS error', e2); }
+                    try { await handleAudio(translated, toLang); } catch(e2) { warnLog('F2F TTS error', e2); }
                   } catch(err) {
                     setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, translated:'[' + (t('roster.bridge_f2f_translate_failed') || 'Translation failed') + ']', translating:false} : m));
                     addToast((t('roster.bridge_f2f_translate_failed') || 'Translation failed') + ': ' + err.message, 'error');
@@ -761,10 +937,13 @@ function BridgeSendModal(props) {
                   setBridgeF2FTranslating(false);
                 };
                 const _startListening = (side, langCode, inputId) => {
+                  if (!langCode) { addToast(t('roster.bridge_f2f_pick_lang') || 'Type the custom language name first', 'warning'); return; }
                   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
                   if (!SR) { addToast(t('roster.bridge_f2f_no_speech') || 'Speech recognition not supported', 'error'); return; }
-                  if (bridgeF2FListening === side) { setBridgeF2FListening(null); return; }
+                  if (bridgeF2FListening === side) { _bridgeStopListening(); setBridgeF2FListening(null); return; }
+                  _bridgeStopListening(); // abort any recognizer still running on the other side
                   const rec = new SR();
+                  _bridgeActiveRec = rec;
                   rec.lang = langCode;
                   rec.interimResults = false;
                   rec.maxAlternatives = 1;
@@ -774,9 +953,66 @@ function BridgeSendModal(props) {
                     const input = document.getElementById(inputId);
                     if (input) { input.value = text; input.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter',bubbles:true})); }
                   };
-                  rec.onerror = () => setBridgeF2FListening(null);
-                  rec.onend = () => setBridgeF2FListening(null);
+                  rec.onerror = () => { _bridgeActiveRec = null; setBridgeF2FListening(null); };
+                  rec.onend = () => { _bridgeActiveRec = null; setBridgeF2FListening(null); };
                   rec.start();
+                };
+                const _askAI = async (question) => {
+                  if (!_personALang || !_personBLang) { addToast(t('roster.bridge_f2f_pick_lang') || 'Type the custom language name first', 'warning'); return; }
+                  const msgId = Date.now();
+                  setBridgeChatMessages(prev => [...prev, {id:msgId, sender:'ai', ai:true, text:question, translating:true, timestamp:Date.now()}]);
+                  setBridgeF2FTranslating(true);
+                  setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
+                  try {
+                    const answer = await callGemini('You are a warm, concise interpreter-helper for a live conversation between an educator (speaking ' + _personALang + ') and a family member (speaking ' + _personBLang + '). The educator asks for help: "' + question + '". Reply in ' + _personALang + ' in 1 to 3 short sentences, or a short list of words if they asked for vocabulary. Be practical, friendly, and plain. If they asked how to say something, give the exact phrasing. Do not use em dashes.', false, false, 0.4);
+                    let answerTranslated = '';
+                    try { answerTranslated = await callGemini('Translate the following ' + _personALang + ' text to ' + _personBLang + '. Return ONLY the translation, no notes:\n\n' + answer, false, false, 0.3); } catch(e2) {}
+                    setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, answer, translated:answerTranslated, translating:false} : m));
+                    setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
+                    try { await handleAudio(answer, _personALang); } catch(e3) { warnLog('AI assist TTS error', e3); }
+                  } catch(err) {
+                    setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, answer:'[' + (t('roster.bridge_ai_unavailable') || 'AI unavailable right now') + ']', translating:false} : m));
+                    addToast((t('roster.bridge_ai_unavailable') || 'AI unavailable right now') + ': ' + err.message, 'error');
+                  }
+                  setBridgeF2FTranslating(false);
+                };
+                const _exportTranscript = async () => {
+                  if (!bridgeChatMessages.length) { addToast(t('roster.bridge_no_convo') || 'Nothing to export yet', 'info'); return; }
+                  const text = 'Bridge conversation (' + _personALang + ' / ' + _personBLang + ')\n\n' + _bridgeTranscript(bridgeChatMessages, _personALang, _personBLang);
+                  // The .txt download is the reliable path; only claim "copied" if the
+                  // clipboard write actually succeeds (it is often blocked in an iframe).
+                  let copied = false;
+                  try { copied = window.alloCopyText ? await window.alloCopyText(text) : (await navigator.clipboard.writeText(text), true); } catch(e) { copied = false; }
+                  try { const blob = new Blob([text], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bridge-conversation.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); } catch(e) {}
+                  addToast(copied ? (t('roster.bridge_exported') || 'Conversation copied to clipboard') : (t('roster.bridge_downloaded') || 'Conversation downloaded'), 'success');
+                };
+                // Edit-before-send: a tapped quick phrase lands in Person A's input,
+                // focused with the caret at the end, so it can be tweaked before Enter
+                // sends it down the normal translate + speak path (falls back to an
+                // instant send only if the input element is somehow absent).
+                const _stagePhrase = (ph) => {
+                  const el = document.getElementById('bridge-f2f-a-input');
+                  if (el) { el.value = ph; el.focus(); try { el.setSelectionRange(ph.length, ph.length); } catch(e) {} }
+                  else { _sendMessage('personA', ph, _personALang, _personBLang); }
+                };
+                // AI custom-phrase batch: turn a free-text instruction into ~6 short,
+                // FERPA-safe phrases in Person A's language for the educator to choose,
+                // edit, and send. JSON-array prompt with a line-split fallback.
+                const _generatePhrases = async (instruction) => {
+                  if (!_personALang) { addToast(t('roster.bridge_f2f_pick_lang') || 'Type the custom language name first', 'warning'); return; }
+                  setBridgeGenLoading(true);
+                  try {
+                    const raw = await callGemini('You are helping an educator speak warmly with a family. Generate 6 short, friendly, FERPA-safe phrases (NO student names or identifying details) an educator could say about: "' + instruction + '". Write each phrase in ' + _personALang + ', one short sentence each, plain and kind. Do not use em dashes. Return ONLY a JSON array of strings.', true, false, 0.7);
+                    let arr = raw;
+                    if (typeof raw === 'string') { try { arr = JSON.parse(raw); } catch(e) { arr = raw.split('\n').map(s => s.replace(/^[\s\-*\d.\)\]"']+/, '').replace(/["'\],]+\s*$/, '').trim()).filter(Boolean); } }
+                    if (!Array.isArray(arr)) arr = [];
+                    arr = arr.map(s => String(s).trim()).filter(Boolean).slice(0, 8);
+                    setBridgeGenPhrases(arr);
+                    if (!arr.length) addToast(t('roster.bridge_gen_none') || 'No phrases generated. Try rephrasing.', 'info');
+                  } catch(err) {
+                    addToast((t('roster.bridge_gen_failed') || 'Could not generate phrases') + ': ' + err.message, 'error');
+                  }
+                  setBridgeGenLoading(false);
                 };
                 return (
                 <div style={{marginTop:'20px',borderTop:'1px solid rgba(20,184,166,0.15)',paddingTop:'20px'}}>
@@ -785,7 +1021,7 @@ function BridgeSendModal(props) {
                       <span>🌐</span> {t('roster.bridge_f2f_title') || 'Face-to-Face Translation'}
                     </h3>
                     <button
-                      onClick={() => { setBridgeChatOpen(false); setBridgeChatMessages([]); setBridgeF2FListening(null); }}
+                      onClick={() => { _bridgeStopListening(); setBridgeChatOpen(false); setBridgeChatMessages([]); setBridgeF2FListening(null); setBridgeGenPhrases([]); setBridgeGenLoading(false); setBridgePhraseCat(null); }}
                       style={{background:'rgba(239,68,68,0.15)',border:'1px solid rgba(239,68,68,0.3)',color:'#fca5a5',padding:'6px 14px',borderRadius:'10px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}
                     >{t('roster.bridge_f2f_end') || 'End'}</button>
                   </div>
@@ -975,22 +1211,55 @@ function BridgeSendModal(props) {
                       )}
                     </div>
                   </div>
-                  <div style={{fontSize:'11px',color:typeof _bt!=='undefined'?_bt.textMuted:'#64748b',marginBottom:'12px',textAlign:'center',fontStyle:'italic'}}>
-                    🔒 {t('roster.bridge_f2f_ferpa') || 'FERPA-Safe — No student data leaves this device'} • {t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'}
-                  </div>
-                  <div id="bridge-f2f-messages" style={{
+                  {(() => {
+                    // On-device translation: when the engine is loaded AND covers this
+                    // language pair, the FERPA note upgrades from "secure AI service" to
+                    // "stays on this device", and the enable button disappears. Stateless
+                    // by design (reads window.AlloTranslate) so there's no cross-scope
+                    // coupling in this large module.
+                    const _odActive = !!(window.AlloTranslate && typeof window.AlloTranslate.supports === 'function' && window.AlloTranslate.supports(_personALang, _personBLang));
+                    const _odPossible = !!(_personALang && _personBLang);
+                    return React.createElement('div', { style: { marginBottom: '12px', textAlign: 'center' } },
+                      React.createElement('div', { style: { fontSize: '11px', color: typeof _bt !== 'undefined' ? _bt.textMuted : '#64748b', fontStyle: 'italic', marginBottom: _odActive ? '0' : '6px' } },
+                        _odActive
+                          ? ('🔒 ' + (t('roster.bridge_f2f_ferpa_ondevice') || 'Private: translated on this device — nothing is sent out.') + ' • ' + (t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'))
+                          : ('🔒 ' + (t('roster.bridge_f2f_ferpa') || 'Private: never saved or synced. Translation is processed by a secure AI service.') + ' • ' + (t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'))
+                      ),
+                      (!_odActive && _odPossible) ? React.createElement('button', {
+                        onClick: async () => {
+                          addToast(t('roster.bridge_ondevice_loading') || 'Loading on-device translation…', 'info');
+                          try {
+                            if (!window.AlloTranslate && window.__alloLoadPlugin) { await window.__alloLoadPlugin('translate_loader.js'); }
+                            if (window.AlloTranslate && window.AlloTranslate.supports(_personALang, _personBLang)) {
+                              const ok = await window.AlloTranslate.preload(_personALang, _personBLang);
+                              addToast(ok ? (t('roster.bridge_ondevice_ready') || 'On-device translation on — this language pair now stays on your device.') : (t('roster.bridge_ondevice_pair_na') || 'No on-device model for this pair yet; using the secure service.'), ok ? 'success' : 'info');
+                            } else {
+                              addToast(t('roster.bridge_ondevice_pair_na') || 'On-device translation isn\'t available for this language pair yet; using the secure service.', 'info');
+                            }
+                          } catch (_e) {
+                            addToast(t('roster.bridge_ondevice_failed') || 'Could not load on-device translation; using the secure service.', 'info');
+                          }
+                        },
+                        title: t('roster.bridge_ondevice_hint') || 'Download a small model so this language pair translates on your device, with nothing sent out',
+                        style: { fontSize: '11px', fontWeight: 600, color: '#0e7490', background: 'rgba(14,116,144,0.08)', border: '1px solid rgba(14,116,144,0.3)', borderRadius: '999px', padding: '3px 12px', cursor: 'pointer' }
+                      }, '🔒 ' + (t('roster.bridge_ondevice_enable') || 'Translate on this device (private)')) : null
+                    );
+                  })()}
+                  {_bridgePhrasesPanel(_stagePhrase, bridgeF2FTranslating, t, _bt, { phrases: bridgeGenPhrases, onGenerate: _generatePhrases, loading: bridgeGenLoading, activeCat: bridgePhraseCat, onCat: setBridgePhraseCat })}
+                  {_bridgeAiBar((q) => _askAI(q), _exportTranscript, bridgeF2FTranslating, t, _bt)}
+                  <div id="bridge-f2f-messages" role="log" aria-live="polite" aria-relevant="additions text" aria-atomic="false" aria-label={t('roster.bridge_f2f_thread_label') || 'Conversation'} style={{
                     background:'rgba(0,0,0,0.15)',border:'1px solid rgba(255,255,255,0.04)',borderRadius:'16px',
-                    padding:'16px',maxHeight:'300px',overflowY:'auto',marginBottom:'16px',
+                    padding:'16px',maxHeight: bridgeFullscreen ? '60vh' : '300px',overflowY:'auto',marginBottom:'16px',
                     display:'flex',flexDirection:'column',gap:'12px'
                   }}>
                     {bridgeChatMessages.length === 0 ? (
-                      <div style={{textAlign:'center',padding:'40px 20px',color:'#475569'}}>
+                      <div style={{textAlign:'center',padding:'40px 20px',color:typeof _bt!=='undefined'?_bt.textSecondary:'#94a3b8'}}>
                         <div style={{fontSize:'40px',marginBottom:'8px'}}>🤝</div>
                         <div style={{fontSize:'14px',fontWeight:700}}>{t('roster.bridge_f2f_ready') || 'Ready for conversation'}</div>
                         <div style={{fontSize:'12px',marginTop:'6px',lineHeight:1.5}}>{_personALang} ↔ {_personBLang}<br/>{t('roster.bridge_f2f_ready_desc') || 'Press the microphone or type to begin'}</div>
                       </div>
                     ) : (
-                      bridgeChatMessages.map((msg, ci) => (
+                      bridgeChatMessages.map((msg, ci) => msg.ai ? _bridgeAiBubble(msg, _personALang, _personBLang, handleAudio, t, _bt) : (
                         <div key={ci} style={{
                           display:'flex',flexDirection:'column',
                           alignItems: msg.sender === 'personA' ? 'flex-end' : 'flex-start',
@@ -1008,26 +1277,26 @@ function BridgeSendModal(props) {
                             <div style={{fontSize:'10px',fontWeight:700,color:msg.sender === 'personA' ? '#5eead4' : '#a5b4fc',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'0.08em'}}>
                               {msg.sender === 'personA' ? (t('roster.bridge_f2f_person_a') || 'Person A') + ' (' + _personALang + ')' : (t('roster.bridge_f2f_person_b') || 'Person B') + ' (' + _personBLang + ')'}
                             </div>
-                            <div style={{fontSize:'16px',color: '#e2e8f0',lineHeight:1.6,fontWeight:500}}>{msg.text}</div>
+                            <div dir="auto" style={{fontSize:'16px',color: '#e2e8f0',lineHeight:1.6,fontWeight:500}}>{msg.text}</div>
                             {msg.translated && (
                               <div style={{marginTop:'10px',paddingTop:'10px',borderTop:'1px solid rgba(255,255,255,0.06)'}}>
                                 <div style={{fontSize:'10px',fontWeight:700,color:msg.sender === 'personA' ? '#a5b4fc' : '#5eead4',marginBottom:'4px',textTransform:'uppercase',letterSpacing:'0.08em'}}>
                                   🌍 {msg.sender === 'personA' ? _personBLang : _personALang}
                                 </div>
-                                <div style={{fontSize:'16px',color:msg.sender === 'personA' ? '#c7d2fe' : '#99f6e4',lineHeight:1.6,fontWeight:500}}>{msg.translated}</div>
+                                <div dir="auto" style={{fontSize:'16px',color:msg.sender === 'personA' ? '#c7d2fe' : '#99f6e4',lineHeight:1.6,fontWeight:500}}>{msg.translated}</div>
                               </div>
                             )}
                             {msg.translating && (
-                              <div style={{marginTop:'8px',fontSize:'12px',color:'#64748b',fontStyle:'italic'}}>
+                              <div style={{marginTop:'8px',fontSize:'12px',color:typeof _bt!=='undefined'?_bt.textMuted:'#94a3b8',fontStyle:'italic'}}>
                                 ⏳ {t('roster.bridge_f2f_translating') || 'Translating...'}
                               </div>
                             )}
                             {msg.translated && (
                               <div style={{marginTop:'8px',display:'flex',gap:'6px'}}>
-                                <button onClick={() => handleAudio(msg.text)}
+                                <button onClick={() => handleAudio(msg.text, msg.sender === 'personA' ? _personALang : _personBLang)}
                                   style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color: '#94a3b8',padding:'4px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
                                 >🔊 {msg.sender === 'personA' ? _personALang.slice(0,3) : _personBLang.slice(0,3)}</button>
-                                <button onClick={() => handleAudio(msg.translated)}
+                                <button onClick={() => handleAudio(msg.translated, msg.sender === 'personA' ? _personBLang : _personALang)}
                                   style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color: '#94a3b8',padding:'4px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
                                 >🔊 {msg.sender === 'personA' ? _personBLang.slice(0,3) : _personALang.slice(0,3)}</button>
                               </div>
@@ -1082,10 +1351,10 @@ function BridgeSendModal(props) {
                     </div>
                   </div>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'10px',padding:'0 4px'}}>
-                    <span style={{fontSize:'11px',color:'#475569'}}>
-                      🔒 {t('roster.bridge_f2f_local_only') || 'Local only'} • {bridgeChatMessages.length} {t('roster.bridge_f2f_messages') || 'messages'} • {bridgeF2FTranslating ? '⏳ ' + (t('roster.bridge_f2f_translating') || 'Translating...') : '✅ Ready'}
+                    <span style={{fontSize:'11px',color:typeof _bt!=='undefined'?_bt.textMuted:'#94a3b8'}}>
+                      🔒 {t('roster.bridge_f2f_local_only') || 'Not saved'} • {bridgeChatMessages.length} {t('roster.bridge_f2f_messages') || 'messages'} • {bridgeF2FTranslating ? '⏳ ' + (t('roster.bridge_f2f_translating') || 'Translating...') : '✅ Ready'}
                     </span>
-                    <span style={{fontSize:'11px',color:'#475569'}}>
+                    <span style={{fontSize:'11px',color:typeof _bt!=='undefined'?_bt.textMuted:'#94a3b8'}}>
                       🔊 {t('roster.bridge_f2f_tts_auto') || 'TTS auto-plays'} • 🎤 {t('roster.bridge_f2f_mic_speak') || 'Hold mic to speak'} • {t('roster.bridge_f2f_enter_send') || 'Enter to send'}
                     </span>
                   </div>
@@ -1187,7 +1456,7 @@ function BridgeMessageModal(props) {
               )}
               <div style={{marginBottom:'20px',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:'16px',padding:'20px'}}>
                 <div style={{fontSize:'12px',fontWeight:700,color: '#94a3b8',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'10px'}}>🇺🇸 {t('roster.bridge_english') || 'English'}</div>
-                <div style={{fontSize: bridgeProjectionMode ? '24px' : '16px',lineHeight:1.8,letterSpacing:'0.01em'}}>
+                <div dir="auto" style={{fontSize: bridgeProjectionMode ? '24px' : '16px',lineHeight:1.8,letterSpacing:'0.01em'}}>
                   {bridgeMessage.english.split(/\s+/).map((word, idx) => {
                     const isBold = /^\*\*(.*?)\*\*$/.test(word.trim());
                     const cleanWord = word.replace(/\*\*/g, '');
@@ -1251,7 +1520,7 @@ function BridgeMessageModal(props) {
               {bridgeMessage.translated && (
                 <div style={{marginBottom:'20px',background:'rgba(20,184,166,0.08)',border:'1px solid rgba(20,184,166,0.18)',borderRadius:'16px',padding:'20px'}}>
                   <div style={{fontSize:'12px',fontWeight:700,color:'#5eead4',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'10px'}}>🌐 {bridgeMessage.languageName || bridgeMessage.language}</div>
-                  <div style={{fontSize: bridgeProjectionMode ? '24px' : '16px',lineHeight:1.8,letterSpacing:'0.01em'}}>
+                  <div dir="auto" style={{fontSize: bridgeProjectionMode ? '24px' : '16px',lineHeight:1.8,letterSpacing:'0.01em'}}>
                     {bridgeMessage.translated.split(/\s+/).map((word, idx) => {
                       const isBold = /^\*\*(.*?)\*\*$/.test(word.trim());
                       const cleanWord = word.replace(/\*\*/g, '');
@@ -1427,8 +1696,14 @@ function BridgeMessageModal(props) {
                 <button
                   data-help-key="bridge_message_print_btn"
                   onClick={() => {
+                    // HTML-escape everything interpolated into the print document (model/teacher
+                    // text) and restrict the image to safe schemes, since this is written via
+                    // document.write into a new window.
+                    const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+                    const safeImg = (u) => (typeof u === 'string' && /^(data:image\/|blob:|https:)/i.test(u)) ? u : '';
+                    const _img = safeImg(bridgeMessage.imageUrl);
                     const printContent = `
-                      <html><head><title>{t('bridge.bridge_message')}</title>
+                      <html><head><title>${esc(t('bridge.bridge_message') || 'Bridge Message')}</title>
                       <style>
                         body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
                         .lang-label { font-size: 14px; font-weight: bold; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
@@ -1438,14 +1713,14 @@ function BridgeMessageModal(props) {
                         .header { text-align: center; margin-bottom: 32px; border-bottom: 2px solid #14b8a6; padding-bottom: 16px; }
                         .header h1 { color: #14b8a6; font-size: 24px; margin: 0; }
                         .header p { color: #999; font-size: 12px; margin: 4px 0 0; }
-                        ${bridgeMessage.imageUrl ? 'img { max-width: 100%; border-radius: 8px; margin-bottom: 24px; }' : ''}
+                        ${_img ? 'img { max-width: 100%; border-radius: 8px; margin-bottom: 24px; }' : ''}
                       </style></head><body>
-                      <div class="header"><h1>🌐 Bridge Message</h1><p>${new Date(bridgeMessage.timestamp).toLocaleString()}</p></div>
-                      ${bridgeMessage.imageUrl ? '<img alt="" src="' + bridgeMessage.imageUrl + '" />' : ''}
+                      <div class="header"><h1>🌐 Bridge Message</h1><p>${esc(new Date(bridgeMessage.timestamp).toLocaleString())}</p></div>
+                      ${_img ? '<img alt="" src="' + esc(_img) + '" />' : ''}
                       <div class="lang-label">🇺🇸 English</div>
-                      <div class="text-block">${bridgeMessage.english}</div>
-                      ${bridgeMessage.translated ? '<div class="lang-label">' + (bridgeMessage.languageName || bridgeMessage.language) + '</div><div class="text-block">' + bridgeMessage.translated + '</div>' : ''}
-                      ${bridgeMessage.terms?.length ? '<div class="lang-label">📖 Key Terms</div><div class="terms">' + bridgeMessage.terms.map(t2 => { const w = typeof t2 === 'object' ? t2.word : t2; const d = typeof t2 === 'object' && t2.definition ? t2.definition : ''; return '<span class="term">' + w + (d ? '<br/><small style="font-weight:400;color:#555">' + d + '</small>' : '') + '</span>'; }).join('') + '</div>' : ''}
+                      <div class="text-block">${esc(bridgeMessage.english)}</div>
+                      ${bridgeMessage.translated ? '<div class="lang-label">' + esc(bridgeMessage.languageName || bridgeMessage.language) + '</div><div class="text-block">' + esc(bridgeMessage.translated) + '</div>' : ''}
+                      ${bridgeMessage.terms?.length ? '<div class="lang-label">📖 Key Terms</div><div class="terms">' + bridgeMessage.terms.map(t2 => { const w = typeof t2 === 'object' ? t2.word : t2; const d = typeof t2 === 'object' && t2.definition ? t2.definition : ''; return '<span class="term">' + esc(w) + (d ? '<br/><small style="font-weight:400;color:#555">' + esc(d) + '</small>' : '') + '</span>'; }).join('') + '</div>' : ''}
                       </body></html>`;
                     const printWin = window.open('', '_blank', 'width=800,height=600');
                     if (printWin) { printWin.document.write(printContent); printWin.document.close(); printWin.print(); }

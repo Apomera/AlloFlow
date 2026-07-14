@@ -1,0 +1,40 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-biology-2e-catalog",
+  "title": "OpenStax Biology 2e",
+  "description": "A source card for the OpenStax Biology 2e textbook and its openly licensed course materials.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": ["Biology", "Textbooks", "Study guides", "Science"],
+  "authors": ["Mary Ann Clark", "Matthew Douglas", "Jung Choi"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "CC BY-NC-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/books/biology-2e/pages/preface"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Biology 2e is a peer-reviewed college-level biology textbook that can support advanced high school, AP, dual-enrollment, and introductory college work. It covers chemistry of life, cells, genetics, evolution, biodiversity, plants, animals, and ecology."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This source is best used as a chapter or section picker rather than a single long reading. Rights note: Biology 2e is licensed CC BY-NC-SA 4.0, and OpenStax brand assets are not covered by that content license."
+    }
+  ],
+  "stats": { "pages": 2, "words": 71 }
+}

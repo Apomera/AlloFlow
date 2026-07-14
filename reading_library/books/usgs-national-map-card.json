@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-national-map-card",
+  "title": "USGS The National Map",
+  "description": "A USGS source card for maps, elevation, hydrography, boundaries, and geographic data.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Geography",
+    "Maps",
+    "Topography",
+    "Data literacy"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/programs/national-geospatial-program/national-map"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The National Map provides USGS information about elevation, landforms, streams, transportation features, boundaries, and downloadable geographic data."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for reading contour maps, comparing physical and political geography, and building map-based questions about local places."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS map and data products are generally public domain, though linked third-party layers or partner materials may have their own attribution rules."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

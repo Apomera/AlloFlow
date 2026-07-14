@@ -71,14 +71,14 @@ function PausableImage(props) {
         position: "absolute",
         top: 2,
         right: 2,
-        width: 18,
-        height: 18,
+        width: 24,
+        height: 24,
         padding: 0,
         border: "none",
         borderRadius: "50%",
         background: "rgba(0,0,0,0.6)",
         color: "#fff",
-        fontSize: 9,
+        fontSize: 11,
         lineHeight: 1,
         cursor: "pointer",
         display: "flex",
@@ -92,6 +92,61 @@ function PausableImage(props) {
 }
 function VisualSupportsModal(props) {
   const { setShowVisualSupports, setVsTab, showVisualSupports, vsTab } = props;
+  const handleTabKeyDown = function(event) {
+    const tabs = ["boards", "schedules"];
+    const current = tabs.indexOf(vsTab);
+    let next = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (current + 1) % tabs.length;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (current - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = tabs.length - 1;
+    if (next === null) return;
+    event.preventDefault();
+    setVsTab(tabs[next]);
+    window.setTimeout(function() {
+      const tab = document.getElementById("visual-supports-tab-" + tabs[next]);
+      if (tab) tab.focus();
+    }, 0);
+  };
+  const dialogRef = React.useRef(null);
+  React.useEffect(function() {
+    const dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    const previousFocus = document.activeElement;
+    const getFocusable = function() {
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    };
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = function(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setShowVisualSupports(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const firstItem = focusable[0];
+      const lastItem = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstItem) {
+        event.preventDefault();
+        lastItem.focus();
+      } else if (!event.shiftKey && document.activeElement === lastItem) {
+        event.preventDefault();
+        firstItem.focus();
+      }
+    };
+    dialog.addEventListener("keydown", onKeyDown);
+    return function() {
+      dialog.removeEventListener("keydown", onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+    };
+  }, [setShowVisualSupports]);
   const vsRead = (base) => {
     try {
       let profs = [];
@@ -130,7 +185,7 @@ function VisualSupportsModal(props) {
     } catch (e) {
     }
   }, [pauseAnim]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3", onClick: () => setShowVisualSupports(false) }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)" }, className: "p-4 flex items-center justify-between flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-white font-bold text-lg" }, "\u{1F5BC}\uFE0F Visual Supports"), /* @__PURE__ */ React.createElement("p", { className: "text-purple-200 text-xs mt-0.5" }, "Your saved boards & schedules")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3", onClick: () => setShowVisualSupports(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "visual-supports-title", tabIndex: -1, className: "bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus:outline-none", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)" }, className: "p-4 flex items-center justify-between flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "visual-supports-title", className: "text-white font-bold text-lg" }, "\u{1F5BC}\uFE0F Visual Supports"), /* @__PURE__ */ React.createElement("p", { className: "text-purple-200 text-xs mt-0.5" }, "Your saved boards & schedules")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -141,7 +196,7 @@ function VisualSupportsModal(props) {
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, pauseAnim ? "\u25B6" : "\u23F8"),
     /* @__PURE__ */ React.createElement("span", null, pauseAnim ? "Resume" : "Pause", " animations")
-  ), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowVisualSupports(false), className: "text-white/70 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "flex border-b border-slate-200 bg-slate-50 flex-shrink-0" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setVsTab("boards"), className: `flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === "boards" ? "text-purple-700 border-b-2 border-purple-600 bg-white" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4CB} Boards (", vsBoards.length, ")"), /* @__PURE__ */ React.createElement("button", { onClick: () => setVsTab("schedules"), className: `flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === "schedules" ? "text-purple-700 border-b-2 border-purple-600 bg-white" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C5} Schedules (", vsSchedules.length, ")")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-4 space-y-6" }, vsTab === "boards" && (vsBoards.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3" }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, "No saved boards yet"), /* @__PURE__ */ React.createElement("p", { className: "text-sm mt-1" }, "Save boards in Symbol Studio to see them here")) : vsBoards.map((board) => /* @__PURE__ */ React.createElement("div", { key: board.id, className: "border border-slate-400 rounded-xl overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200" }, board.title || "Untitled Board"), /* @__PURE__ */ React.createElement("div", { className: "p-3", style: { display: "grid", gridTemplateColumns: `repeat(${Math.min(board.cols || 4, 6)},1fr)`, gap: 6 } }, (board.words || []).map((word, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { background: CAT_BG[word.category] || "#f3f4f6", borderRadius: 8, padding: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 } }, word.image ? /* @__PURE__ */ React.createElement(PausableImage, { src: word.image, alt: word.label, globalPaused: pauseAnim, style: { width: 56, height: 56 } }) : /* @__PURE__ */ React.createElement("div", { style: { width: 56, height: 56, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: "#d1d5db" } }, "?"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, fontWeight: 600, textAlign: "center", color: "#1f2937", lineHeight: 1.2 } }, word.label))))))), vsTab === "schedules" && (vsSchedules.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3" }, "\u{1F4C5}"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, "No saved schedules yet"), /* @__PURE__ */ React.createElement("p", { className: "text-sm mt-1" }, "Save schedules in Symbol Studio to see them here")) : vsSchedules.map((sched) => /* @__PURE__ */ React.createElement("div", { key: sched.id, className: "border border-slate-400 rounded-xl overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200" }, sched.title || "Untitled Schedule"), /* @__PURE__ */ React.createElement("div", { className: "p-3 overflow-x-auto" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, minWidth: "max-content" } }, (sched.items || []).map((item, i) => /* @__PURE__ */ React.createElement("div", { key: item.id || i, style: { display: "flex", flexDirection: "column", alignItems: "center", gap: 4, width: 72 } }, /* @__PURE__ */ React.createElement("div", { style: { width: 72, height: 72, border: "2px solid #e5e7eb", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: "#fafafa" } }, item.image ? /* @__PURE__ */ React.createElement(PausableImage, { src: item.image, alt: item.label, globalPaused: pauseAnim, style: { width: "100%", height: "100%" } }) : /* @__PURE__ */ React.createElement("span", { style: { fontSize: 28, color: "#d1d5db" } }, "?")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, fontWeight: 600, textAlign: "center", color: "#374151", lineHeight: 1.2 } }, item.label)))))))))));
+  ), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowVisualSupports(false), "aria-label": "Close Visual Supports", className: "text-white/70 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "flex border-b border-slate-200 bg-slate-50 flex-shrink-0", role: "tablist", "aria-label": "Visual support type" }, /* @__PURE__ */ React.createElement("button", { id: "visual-supports-tab-boards", role: "tab", "aria-selected": vsTab === "boards", "aria-controls": "visual-supports-panel-boards", tabIndex: vsTab === "boards" ? 0 : -1, onKeyDown: handleTabKeyDown, onClick: () => setVsTab("boards"), className: `flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === "boards" ? "text-purple-700 border-b-2 border-purple-600 bg-white" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4CB} Boards (", vsBoards.length, ")"), /* @__PURE__ */ React.createElement("button", { id: "visual-supports-tab-schedules", role: "tab", "aria-selected": vsTab === "schedules", "aria-controls": "visual-supports-panel-schedules", tabIndex: vsTab === "schedules" ? 0 : -1, onKeyDown: handleTabKeyDown, onClick: () => setVsTab("schedules"), className: `flex-1 py-3 text-sm font-semibold transition-colors ${vsTab === "schedules" ? "text-purple-700 border-b-2 border-purple-600 bg-white" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C5} Schedules (", vsSchedules.length, ")")), /* @__PURE__ */ React.createElement("div", { id: `visual-supports-panel-${vsTab}`, role: "tabpanel", "aria-labelledby": `visual-supports-tab-${vsTab}`, className: "flex-1 overflow-y-auto p-4 space-y-6" }, vsTab === "boards" && (vsBoards.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3" }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, "No saved boards yet"), /* @__PURE__ */ React.createElement("p", { className: "text-sm mt-1" }, "Save boards in Symbol Studio to see them here")) : vsBoards.map((board) => /* @__PURE__ */ React.createElement("div", { key: board.id, className: "border border-slate-400 rounded-xl overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200" }, board.title || "Untitled Board"), /* @__PURE__ */ React.createElement("div", { className: "p-3", style: { display: "grid", gridTemplateColumns: `repeat(${Math.min(board.cols || 4, 6)},1fr)`, gap: 6 } }, (board.words || []).map((word, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { background: CAT_BG[word.category] || "#f3f4f6", borderRadius: 8, padding: 6, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 } }, word.image ? /* @__PURE__ */ React.createElement(PausableImage, { src: word.image, alt: word.label, globalPaused: pauseAnim, style: { width: 56, height: 56 } }) : /* @__PURE__ */ React.createElement("div", { style: { width: 56, height: 56, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: "#d1d5db" } }, "?"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, fontWeight: 600, textAlign: "center", color: "#1f2937", lineHeight: 1.2 } }, word.label))))))), vsTab === "schedules" && (vsSchedules.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-16 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3" }, "\u{1F4C5}"), /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, "No saved schedules yet"), /* @__PURE__ */ React.createElement("p", { className: "text-sm mt-1" }, "Save schedules in Symbol Studio to see them here")) : vsSchedules.map((sched) => /* @__PURE__ */ React.createElement("div", { key: sched.id, className: "border border-slate-400 rounded-xl overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200" }, sched.title || "Untitled Schedule"), /* @__PURE__ */ React.createElement("div", { className: "p-3 overflow-x-auto" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, minWidth: "max-content" } }, (sched.items || []).map((item, i) => /* @__PURE__ */ React.createElement("div", { key: item.id || i, style: { display: "flex", flexDirection: "column", alignItems: "center", gap: 4, width: 72 } }, /* @__PURE__ */ React.createElement("div", { style: { width: 72, height: 72, border: "2px solid #e5e7eb", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: "#fafafa" } }, item.image ? /* @__PURE__ */ React.createElement(PausableImage, { src: item.image, alt: item.label, globalPaused: pauseAnim, style: { width: "100%", height: "100%" } }) : /* @__PURE__ */ React.createElement("span", { style: { fontSize: 28, color: "#d1d5db" } }, "?")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, fontWeight: 600, textAlign: "center", color: "#374151", lineHeight: 1.2 } }, item.label)))))))))));
 }
 
   window.AlloModules = window.AlloModules || {};

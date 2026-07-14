@@ -7311,7 +7311,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function takeProbeReading() {
       var temp = 18 + (Math.random() - 0.5) * 8; // 14-22
       var salinity = 26 + (Math.random() - 0.5) * 6;
-      var DO = 5 + Math.random() * 3;
+      // Dissolved O2 falls as water warms (warmer water holds less oxygen) — couple DO to temp so
+      // the probe stops contradicting the tool's own "warmer water holds less O2" lesson, and so the
+      // low-DO warning below is actually reachable (warm water now dips toward/under the 6 mg/L floor).
+      var DO = 9.5 - (temp - 14) * 0.45 + (Math.random() - 0.5) * 1.4;
       var pH = 7.7 + Math.random() * 0.4;
       var chl = 4 + Math.random() * 12;
       return {
@@ -7325,7 +7328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         warnings: (function() {
           var w = [];
           if (temp > 21) w.push('Temp high (>21°C) — mussel stress risk');
-          if (DO < 5) w.push('DO low (<5 mg/L) — monitor');
+          if (DO < 6) w.push('DO low (<6 mg/L) — below optimal for mussels, monitor');
           if (pH < 7.8) w.push('pH low (<7.8) — acidification window');
           if (chl > 25) w.push('Chl-a high — check DMR for HAB closures');
           return w;
@@ -7843,7 +7846,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function homeTab() {
       var st = loadState();
       var completedCount = Object.keys(st.completedMissions || {}).length;
+      var opsRoutes = [
+        { id: 'launch', label: 'Run the skiff mission', detail: 'Cast off, reach the lease, deploy droppers, and probe water quality.', tab: 'sim', tone: '#5eead4' },
+        { id: 'chart', label: 'Read the river first', detail: 'Preview the channel, buoy marks, lease box, and red-right-returning rule.', tab: 'chart', tone: '#60a5fa' },
+        { id: 'biology', label: 'Plan the crop', detail: 'Compare mussels, oysters, kelp, scallops, and hatchery workflows.', tab: 'species', tone: '#86efac' },
+        { id: 'permits', label: 'Build the farm case', detail: 'Review lease tiers, hearings, costs, safety, and market choices.', tab: 'lease', tone: '#fbbf24' }
+      ];
       return h('div', null,
+        h('section', { 'data-aquaculture-command': 'true', 'aria-label': 'Aquaculture operations dashboard',
+          style: { background: 'linear-gradient(135deg, rgba(4,47,46,0.95), rgba(15,23,42,0.92))', border: '1px solid rgba(94,234,212,0.30)', borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: '0 18px 38px rgba(0,0,0,0.24)' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, alignItems: 'stretch' } },
+            h('div', { style: { padding: 14, borderRadius: 14, background: 'rgba(15,23,42,0.54)', border: '1px solid rgba(148,163,184,0.18)' } },
+              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Farm operations'),
+              h('h2', { style: { margin: '0 0 8px', color: '#ecfeff', fontSize: 22, lineHeight: 1.15 } }, 'Choose the next job on the lease.'),
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, lineHeight: 1.55 } }, 'AquacultureLab has deep reference material, but students start best from the work loop: navigate, monitor, grow, and defend the site plan.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
+                [
+                  ['Missions', completedCount + '/' + MISSIONS.length, '#86efac'],
+                  ['Droppers', droppersDeployed + '/5', '#fbbf24'],
+                  ['Probes', (probes || []).length, '#5eead4']
+                ].map(function(item) {
+                  return h('div', { key: item[0], style: { padding: 9, borderRadius: 10, background: 'rgba(2,6,23,0.48)', border: '1px solid rgba(148,163,184,0.16)' } },
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0 } }, item[0]),
+                    h('div', { style: { marginTop: 3, color: item[2], fontSize: 16, fontWeight: 900 } }, item[1])
+                  );
+                })
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
+              opsRoutes.map(function(route) {
+                return h('button', { key: route.id, className: 'aq-btn',
+                  onClick: function() { setTab(route.tab); aqAnnounce(route.label); },
+                  style: { textAlign: 'left', minHeight: 116, cursor: 'pointer', padding: 12, borderRadius: 12, border: '1px solid rgba(148,163,184,0.20)', borderTop: '4px solid ' + route.tone, background: 'rgba(15,23,42,0.58)', color: '#e2e8f0' } },
+                  h('div', { style: { fontSize: 14, fontWeight: 900, color: route.tone, marginBottom: 5 } }, route.label),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45, marginBottom: 10 } }, route.detail),
+                  h('div', { style: { fontSize: 11, fontWeight: 900, color: route.tone } }, 'Open workspace')
+                );
+              })
+            )
+          )
+        ),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🦪 AquacultureLab — Mussel Farm Sim'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
@@ -7920,6 +7962,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('div', { style: { fontSize: 10 } }, hud.reachedLease ? '✓ Reached lease' : '• Reach lease (yellow buoys)'),
               h('div', { style: { fontSize: 10 } }, (hud.droppersDeployed >= 5) ? '✓ All droppers deployed' : '• Deploy 5 droppers (F)'),
               h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Returned' : '• Return to landing')),
+            probes.length > 0 && (function() {
+              var latest = probes[probes.length - 1];
+              var doVals = probes.map(function(r) { return parseFloat(r.DO); }).filter(function(v) { return !isNaN(v); });
+              var n = doVals.length;
+              var W = 188, H = 38, pad = 2;
+              var doMin = Math.min.apply(null, doVals.concat([5])), doMax = Math.max.apply(null, doVals.concat([10]));
+              var sx = function(i) { return pad + (n === 1 ? W - 2 * pad : i / (n - 1) * (W - 2 * pad)); };
+              var sy = function(v) { return pad + (1 - (v - doMin) / ((doMax - doMin) || 1)) * (H - 2 * pad); };
+              var pts = doVals.map(function(v, i) { return sx(i).toFixed(1) + ',' + sy(v).toFixed(1); }).join(' ');
+              return h('div', { style: { position: 'absolute', bottom: 116, right: 10, background: 'rgba(4,18,18,0.85)', padding: 8, borderRadius: 8, fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', width: 204 } },
+                h('div', { style: { fontWeight: 800, color: '#5eead4', marginBottom: 3 } }, '💧 Water quality (latest)'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px 8px', marginBottom: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  h('span', null, 'Temp ' + latest.temp + '°C'),
+                  h('span', null, 'Sal ' + latest.salinity),
+                  h('span', { style: { color: parseFloat(latest.DO) < 6 ? '#fb923c' : '#86efac' } }, 'DO ' + latest.DO),
+                  h('span', null, 'pH ' + latest.pH)),
+                n > 1 && h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Dissolved oxygen across ' + n + ' probe readings; latest ' + latest.DO + ' milligrams per liter, danger floor 6.' },
+                  h('line', { x1: 0, y1: sy(6), x2: W, y2: sy(6), stroke: '#fb923c', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.75 }),
+                  h('text', { x: W - 2, y: sy(6) - 2, textAnchor: 'end', fontSize: 6, fill: '#fb923c' }, '6 mg/L floor'),
+                  h('polyline', { points: pts, fill: 'none', stroke: '#22d3ee', strokeWidth: 1.5 })),
+                n > 1 && h('div', { style: { fontSize: 8, opacity: 0.7, marginTop: 2 } }, 'Dissolved O₂ across your ' + n + ' probes — warmer water holds less.'));
+            })(),
+
             h('div', { style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(4,18,18,0.85)', padding: 8, borderRadius: 8 } },
               (status || []).slice(-4).map(function(ev, ei) {
                 var color = ev.type === 'probe' ? '#5eead4' : (ev.type === 'dropper' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#a7f3d0')));
@@ -7940,7 +8005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               { k: 'F', d: 'Drop seeded line (at lease)', c: '#5eead4' },
               { k: 'P', d: 'Probe water quality (at lease)', c: '#bef264' }
             ].map(function(c, i) {
-              return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + c.c } },
+              return h('div', { key: i, style: { padding: 8, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 6, borderLeft: '3px solid ' + c.c } },
                 h('div', { style: { fontWeight: 800, color: c.c, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 2 } }, c.k),
                 h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, c.d));
             }))));
@@ -7992,7 +8057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🦪 Species & Methods'),
           SPECIES.map(function(s, i) {
-            return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
+            return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
               h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 6 } },
                 h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, s.emoji),
                 h('div', null,
@@ -8016,7 +8081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', { style: headerStyle }, '💧 Water Quality Parameters'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Six parameters every shellfish farmer monitors. NERACOOS + Bigelow + Maine DMR all provide near-real-time data along the coast.'),
           WATER_QUALITY.map(function(p, i) {
-            return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
+            return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 8 } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, p.param + ' (' + p.symbol + ')'),
               h('div', { style: { fontSize: 11, color: '#bef264', marginBottom: 3 } }, h('b', null, 'Optimal: '), p.optimal),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Effect: '), p.effect),

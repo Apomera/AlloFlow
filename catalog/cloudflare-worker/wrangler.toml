@@ -9,6 +9,50 @@ GITHUB_OWNER = "Apomera"
 GITHUB_REPO  = "AlloFlow"
 GITHUB_BRANCH = "main"
 
+# OPTIONAL — Tier-2 verified PD credentials (POST /issuePd, /verifyPd, GET /pdIssuerKey).
+# Leave unset to keep credentials disabled (the app degrades to the Tier-1 self-paced
+# record). To enable, generate an Ed25519 keypair and set:
+#   PD_ISSUER_PUBLIC_KEY  = base64(SPKI) of the public key  (a [vars] entry — it is public)
+#   PD_ISSUER_PRIVATE_KEY = base64(PKCS8) of the private key (a SECRET: `wrangler secret put PD_ISSUER_PRIVATE_KEY`)
+# Generate with Node:
+#   const {publicKey,privateKey}=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']);
+#   Buffer.from(await crypto.subtle.exportKey('pkcs8',privateKey)).toString('base64'); // -> secret
+#   Buffer.from(await crypto.subtle.exportKey('spki',publicKey)).toString('base64');   // -> PD_ISSUER_PUBLIC_KEY
+# PD_ISSUER_PUBLIC_KEY = "REPLACE_WITH_SPKI_BASE64"
+PD_ISSUER_NAME = "AlloFlow PD"
+PD_ISSUER_KEY_ID = "alloflow-pd-1"
+
+# Private KV store for bug reports (POST /submitBug). These carry error logs + free
+# text that can include student-identifiable data, so they go to PRIVATE KV — NOT the
+# public GitHub repo (unlike lessons/translations). One-time setup:
+#   npx wrangler kv namespace create BUG_REPORTS
+# then paste the printed id below (and, optionally, create a preview namespace for dev).
+# Optional: `npx wrangler secret put ADMIN_TOKEN` to enable the token-gated GET /bugs reader.
+[[kv_namespaces]]
+binding = "BUG_REPORTS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Private KV store for PD module submissions (POST /submitPd). Educator-authored
+# PD modules are staged here for manual review, NOT committed to the public repo.
+# One-time setup:
+#   npx wrangler kv namespace create PD_SUBMISSIONS
+# then paste the printed id below. Until then, /submitPd returns 500 (fail-closed).
+[[kv_namespaces]]
+binding = "PD_SUBMISSIONS"
+id = "REPLACE_WITH_PD_KV_NAMESPACE_ID"
+
+# Private KV store for Tool Forge plugin submissions (POST /submitPlugin). A submission
+# is one self-registering plugin .js file + metadata + the client validator report,
+# staged here for MANUAL review — never auto-committed and never run server-side. The
+# maintainer reviews source + report + a sandboxed preview, then drops the file into
+# PLUGIN_FILES and deploys (the human gate). One-time setup:
+#   npx wrangler kv namespace create PLUGIN_SUBMISSIONS
+# then paste the printed id below. Until then, /submitPlugin returns 500 (fail-closed).
+# Read the queue with the ADMIN_TOKEN-gated GET /pluginSubmissions (?source=1 for code).
+[[kv_namespaces]]
+binding = "PLUGIN_SUBMISSIONS"
+id = "REPLACE_WITH_PLUGIN_KV_NAMESPACE_ID"
+
 # Limits applied at the Worker level. Submission max size is also enforced
 # inside the handler; this is a backstop.
 [limits]

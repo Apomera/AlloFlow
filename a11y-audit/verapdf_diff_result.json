@@ -1,13 +1,14 @@
 {
-  "ranAt": "2026-06-11T01:04:25.374Z",
+  "ranAt": "2026-07-09T22:22:52.922Z",
   "veraPdf": "1.30.2 (greenfield)",
   "flavour": "ua1 (ISO 14289-1)",
   "pairs": [
     {
       "stem": "linkannot-scanned",
       "sourceFailedRules": 11,
-      "taggedFailedRules": 1,
+      "taggedFailedRules": 0,
       "fixedByUs": [
+        "7.1",
         "7.1",
         "7.18.3",
         "7.18.1",
@@ -20,7 +21,7 @@
         "7.1"
       ],
       "introducedByUs": [],
-      "inheritedRemaining": 1,
+      "inheritedRemaining": 0,
       "withheldDeclaration": 0
     },
     {

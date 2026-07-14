@@ -54,7 +54,14 @@ function uiCalls(src) {
 
 // Every identifier exported from the factory's `return { ... }` block.
 function exportsIn(src) {
-  const start = src.indexOf('\n  return {');
+  // Anchor the search to the factory. Top-level helpers defined BEFORE createDocPipeline also have a
+  // 2-space `return {` — e.g. _alloInteractiveObjectProfileFor, added by the export-profile registry
+  // @2e3af6e1 (2026-07-02). The old `indexOf('\n  return {')` grabbed that helper's ~15-key return
+  // instead of the factory's real export block, so EVERY UI call looked dangling and this gate
+  // silently failed (always) for days — blinding the exact regression detector it exists to be. The
+  // factory body's only 2-space `return {` is its own; nested helpers inside it return at ≥4 spaces.
+  const factoryAt = src.indexOf('createDocPipeline = function');
+  const start = src.indexOf('\n  return {', factoryAt === -1 ? 0 : factoryAt);
   if (start === -1) return new Set();
   // Match the closing `};` at indent level 2.
   const end = src.indexOf('\n  };', start);

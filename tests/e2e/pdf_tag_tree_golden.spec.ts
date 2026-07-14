@@ -299,6 +299,146 @@ test.describe('createTaggedPdf — tag-tree unify Slice 1 (scanned single-page)'
   });
 });
 
+// ── Per-leaf MCID experiment (b0d24ae3 rebuilt, 2026-07-01) ──
+// The construction the reverted b0d24ae3 attempt died for, rebuilt WITHOUT its two
+// un-exonerated moves (early getPages(), build-time /K) behind
+// fixResult._experimentPerLeafScanned. The Node harness
+// (dev-tools/debug/tag_tree_live_harness.cjs) verified it at object AND
+// content-stream level (zero loss; every MCR has a matching BDC; artifact split
+// intact; no multi-claimed MCIDs). This block is the browser-side gate for the
+// eventual default-ON flip: every text leaf must carry its OWN MCID (per-leaf
+// granularity, not the shared-MCID-0 degeneracy), no MCID may be claimed by two
+// elements, and nothing may be lost at save.
+let perLeafScanSummary: any = null;
+test.describe('createTaggedPdf — per-leaf MCID experiment (scanned)', () => {
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.addScriptTag({ url: PDFLIB_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
+    await page.addScriptTag({ path: MODULE_PATH });
+    await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.createDocPipeline), null, { timeout: 20000 });
+
+    perLeafScanSummary = await page.evaluate(async (accessibleHtml) => {
+      const PDFLib = (window as any).PDFLib;
+      const { PDFDocument, PDFName, PDFArray, PDFDict, PDFNumber, PDFRef } = PDFLib;
+      try {
+        const inDoc = await PDFDocument.create();
+        const pg = inDoc.addPage([612, 792]);
+        pg.drawRectangle({ x: 40, y: 40, width: 532, height: 712, borderWidth: 1 });
+        const inputBytes = await inDoc.save({ useObjectStreams: false });
+        const pipeline = (window as any).AlloModules.createDocPipeline({
+          callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+          addToast: () => {}, t: (k: string) => k, isRtlLang: () => false, updateExportPreview: () => {},
+          getDefaultTitle: () => 'Document', state: {},
+        });
+        const result = await pipeline.createTaggedPdf(inputBytes, {
+          accessibleHtml,
+          groundTruthMethod: 'tesseract',
+          groundTruthPages: [{ pageNum: 1, text: 'Chapter One\nThis is a paragraph of body text used to exercise the tagger.\nA Subsection\nName Score Alice 90 Bob 82' }],
+          _experimentPerLeafScanned: true,
+        }, { title: 'Per-Leaf Experiment', lang: 'en' });
+        if (!result || !result.bytes) return { error: 'createTaggedPdf returned no bytes' };
+        const outDoc = await PDFDocument.load(result.bytes);
+        const ctx = outDoc.context;
+        const resolve = (o: any) => (o instanceof PDFRef ? ctx.lookup(o) : o);
+        const nm = (n: string) => PDFName.of(n);
+        const LEAF_ROLES = ['H1','H2','H3','H4','H5','H6','P','Figure','Formula','Caption','BlockQuote','Lbl','LBody','TH','TD','Span','Link','Note'];
+        // Walk: per-leaf orphan status + the (pageRef, MCID) claims for multi-claim detection.
+        let leafCount = 0, orphanedLeafCount = 0;
+        const mcidClaims: Record<string, number> = {};
+        const mcids = new Set<number>();
+        const walk = (objIn: any, depth: number) => {
+          let obj = resolve(objIn);
+          if (depth > 80 || obj == null) return;
+          if (obj instanceof PDFArray) { for (let i = 0; i < obj.size(); i++) walk(obj.get(i), depth + 1); return; }
+          if (!(obj instanceof PDFDict)) return;
+          const S = obj.get(nm('S'));
+          if (!S) { const k0 = obj.get(nm('K')); if (k0 != null) walk(k0, depth + 1); return; }
+          const role = String(S).replace(/^\//, '');
+          const K = obj.get(nm('K'));
+          let hasContent = false;
+          if (K != null) {
+            const kr = resolve(K);
+            const items = kr instanceof PDFArray ? Array.from({ length: kr.size() }, (_, i) => resolve(kr.get(i))) : [kr];
+            for (const it of items) {
+              if (it instanceof PDFNumber) hasContent = true;
+              else if (it instanceof PDFDict) {
+                const t = it.get(nm('Type')); const ts = t ? String(t) : '';
+                if (ts === '/MCR' || ts === '/OBJR') {
+                  hasContent = true;
+                  if (ts === '/MCR') {
+                    const pgRef = it.get(nm('Pg')); const mc = it.get(nm('MCID'));
+                    const key = String(pgRef) + ':' + String(mc);
+                    mcidClaims[key] = (mcidClaims[key] || 0) + 1;
+                    mcids.add(Number(String(mc)));
+                  }
+                }
+              }
+            }
+          }
+          if (LEAF_ROLES.includes(role)) { leafCount++; if (!hasContent) orphanedLeafCount++; }
+          if (K != null) walk(K, depth + 1);
+        };
+        const stRoot = resolve(outDoc.catalog.get(nm('StructTreeRoot')));
+        if (stRoot && stRoot.get) walk(stRoot.get(nm('K')), 0);
+        const multiClaimed = Object.values(mcidClaims).filter((c) => c > 1).length;
+        // MCR→BDC verification (2026-07-01): "hasContent" above only proves an MCR EXISTS —
+        // not that the marked-content sequence it references exists in the page stream. A
+        // /K → MCR(page, MCID n) with no matching "<</MCID n>> BDC" is fake linkage (the
+        // exact blind spot the Node harness + app round-trip now check). Decode the saved
+        // pages' streams (pdf-lib's own decodePDFRawStream handles Flate) and verify every
+        // claimed (page, MCID) pair appears in real content.
+        const pagesOut = outDoc.getPages();
+        const pageIdxByRef: Record<string, number> = {};
+        pagesOut.forEach((p: any, i: number) => { pageIdxByRef[p.ref.toString()] = i; });
+        const pageBodies = pagesOut.map((pg: any) => {
+          let body = '';
+          try {
+            const cts = pg.node.get(nm('Contents'));
+            const refs: any[] = [];
+            if (cts && typeof cts.size === 'function') { for (let i = 0; i < cts.size(); i++) refs.push(cts.get(i)); }
+            else if (cts) refs.push(cts);
+            for (const r of refs) {
+              const s: any = ctx.lookup(r);
+              if (!s) continue;
+              let bts: any = null;
+              const filt = s.dict && s.dict.get && s.dict.get(nm('Filter'));
+              try { bts = (filt && (PDFLib as any).decodePDFRawStream) ? (PDFLib as any).decodePDFRawStream(s).decode() : (s.getContents ? s.getContents() : s.contents); } catch (_) { bts = null; }
+              if (bts) { let sb = ''; for (let bi = 0; bi < bts.length; bi++) sb += String.fromCharCode(bts[bi]); body += sb + '\n'; }
+            }
+          } catch (_) {}
+          return body;
+        });
+        let mcrUnbacked = 0;
+        for (const key of Object.keys(mcidClaims)) {
+          const li = key.lastIndexOf(':');
+          const pref = key.slice(0, li);
+          const mc = Number(key.slice(li + 1));
+          const pi = pageIdxByRef[pref];
+          const body = (pi !== undefined) ? pageBodies[pi] : '';
+          if (!new RegExp('<<\\s*\\/MCID\\s+' + mc + '\\s*>>\\s*BDC').test(body)) mcrUnbacked++;
+        }
+        return { leafCount, orphanedLeafCount, distinctMcids: mcids.size, multiClaimed, mcrTotal: Object.keys(mcidClaims).length, mcrUnbacked };
+      } catch (e: any) { return { error: e.message || String(e) }; }
+    }, ACCESSIBLE_HTML);
+  });
+
+  test('Per-leaf: no orphans, per-leaf MCID granularity, no multi-claimed MCIDs', () => {
+    expect(perLeafScanSummary, 'perLeafScanSummary populated').toBeTruthy();
+    if (perLeafScanSummary && perLeafScanSummary.error) console.log('[per-leaf experiment] eval error:', perLeafScanSummary.error);
+    expect(perLeafScanSummary.error, 'no eval error').toBeUndefined();
+    expect(perLeafScanSummary.leafCount, 'leaves produced').toBeGreaterThan(0);
+    expect(perLeafScanSummary.orphanedLeafCount, 'every leaf content-linked').toBe(0);
+    // The shared-MCID-0 approach would yield distinctMcids === 1; per-leaf must exceed it decisively.
+    expect(perLeafScanSummary.distinctMcids, 'per-leaf MCID granularity (not shared MCID 0)').toBeGreaterThan(3);
+    expect(perLeafScanSummary.multiClaimed, 'no MCID claimed by more than one element (ISO 32000 §14.7.4)').toBe(0);
+    expect(perLeafScanSummary.mcrTotal, 'MCRs were actually stream-checked').toBeGreaterThan(0);
+    expect(perLeafScanSummary.mcrUnbacked, 'every MCR resolves to a real BDC in page content (no fake linkage)').toBe(0);
+    console.log(`[per-leaf experiment] leaves: ${perLeafScanSummary.leafCount}, orphaned: ${perLeafScanSummary.orphanedLeafCount}, distinct MCIDs: ${perLeafScanSummary.distinctMcids}, multi-claimed: ${perLeafScanSummary.multiClaimed}, MCRs stream-verified: ${perLeafScanSummary.mcrTotal - perLeafScanSummary.mcrUnbacked}/${perLeafScanSummary.mcrTotal}`);
+  });
+});
+
 // ── Tag-tree unify Slice 2 — multi-page scanned ──
 // Slice 1 was gated to pages.length === 1. Slice 2 extends it to multi-page
 // scanned PDFs via PROPORTIONAL distribution: leaves are assigned to pages in

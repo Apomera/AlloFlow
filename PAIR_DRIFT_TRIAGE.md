@@ -1,5 +1,7 @@
 # Pair Drift Triage — May 12 2026
 
+> **Historical triage snapshot (2026-07-09):** This records the May 12 pair-drift audit and its classifications. Re-run the current pair/source drift tools before treating any module status, line delta, or "remaining" backlog item below as current.
+
 Output of `node dev-tools/audit_pair_drift.js`, classified by whether each
 flagged module represents real risk or audit-tool noise. Use this as a
 backlog: each "Real reverse drift" entry is one focused follow-up commit.

@@ -131,6 +131,12 @@ window.StemLab = window.StemLab || {
     icon: '\uD83C\uDFA8', label: 'Inequality Grapher',
     desc: 'Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.',
     color: 'fuchsia', category: 'math',
+    questHooks: [
+      { id: 'graph_first', label: 'Graph any inequality', icon: '\uD83C\uDFA8', check: function(d) { return !!d.expr; }, progress: function(d) { return d.expr ? 'Done' : 'Pick a preset or type one'; } },
+      { id: 'quiz_5_correct', label: 'Answer 5 challenges correctly', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizCorrectTotal || 0) >= 5; }, progress: function(d) { return (d.quizCorrectTotal || 0) + '/5 correct'; } },
+      { id: 'both_modes', label: 'Graph in both 1D and 2D modes', icon: '\uD83D\uDCCA', check: function(d) { var m = d.modesUsed || {}; return !!(m['1d'] && m['2d']); }, progress: function(d) { var m = d.modesUsed || {}; return ((m['1d'] ? 1 : 0) + (m['2d'] ? 1 : 0)) + '/2 modes'; } },
+      { id: 'solver_3', label: 'Solve 3 inequalities step-by-step', icon: '\uD83E\uDDEA', check: function(d) { return (d.solverCount || 0) >= 3; }, progress: function(d) { return (d.solverCount || 0) + '/3 solved'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -147,6 +153,7 @@ window.StemLab = window.StemLab || {
 
       // ── State ──
       var d = labToolData.inequality || {};
+      var isDark = !!ctx.darkMode;
       var upd = function(key, val) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, {
@@ -336,6 +343,42 @@ window.StemLab = window.StemLab || {
       ];
       var PRESETS = graphMode === '2d' ? PRESETS_2D : PRESETS_1D;
 
+      // ── Corrective feedback: diagnose WHICH part of the inequality was mis-read ──
+      // Quiz distractors differ from the answer in direction (< vs >), boundary
+      // (with/without =), or endpoint inclusion — so we can name the exact mix-up
+      // instead of just revealing the answer.
+      function diagnoseQuizError(chosenRaw, answerRaw) {
+        var norm = function(s) { return s.replace(/\s+/g, '').replace(/≤/g, '<=').replace(/≥/g, '>='); };
+        var pretty = function(s) { return s.replace(/>=/g, '≥').replace(/<=/g, '≤'); };
+        var c = norm(chosenRaw), a = norm(answerRaw);
+        // Compound form: lo op x op hi
+        var am = a.match(/^(-?[\d.]+)(<=?)([a-z])(<=?)(-?[\d.]+)$/);
+        var cm = c.match(/^(-?[\d.]+)(<=?)([a-z])(<=?)(-?[\d.]+)$/);
+        if (am && cm) {
+          var msgs = [];
+          if (cm[2] !== am[2]) msgs.push('the LEFT endpoint ' + am[1] + ' should be ' + (am[2] === '<=' ? 'INCLUDED (● closed dot, ≤)' : 'EXCLUDED (○ open dot, <)'));
+          if (cm[4] !== am[4]) msgs.push('the RIGHT endpoint ' + am[5] + ' should be ' + (am[4] === '<=' ? 'INCLUDED (● closed dot, ≤)' : 'EXCLUDED (○ open dot, <)'));
+          if (msgs.length) return 'Check each endpoint on its own: ' + msgs.join(', and ') + '. Words like "inclusive" and "at least/at most" close a dot; "strictly" and "between (not including)" leave it open.';
+        }
+        // Simple form: x op val
+        var as = a.match(/^([a-z])(<=|>=|<|>)(-?[\d.]+)$/);
+        var cs = c.match(/^([a-z])(<=|>=|<|>)(-?[\d.]+)$/);
+        if (as && cs && as[3] === cs[3]) {
+          var aDir = as[2][0], cDir = cs[2][0];
+          var aInc = as[2].length === 2, cInc = cs[2].length === 2;
+          if (aDir !== cDir && aInc === cInc) {
+            return 'Direction mix-up: "' + (aDir === '>' ? 'greater than' : 'less than') + '" shades to the ' + (aDir === '>' ? 'RIGHT' : 'LEFT') + ' of ' + as[3] + '. Re-read which side of the boundary the question wants.';
+          }
+          if (aDir === cDir && aInc !== cInc) {
+            return 'Boundary mix-up: everything hinges on whether ' + as[3] + ' itself counts. ' + (aInc
+              ? 'Phrases like "at least", "at most", "no more than", and "inclusive" INCLUDE the boundary — closed dot ● and ' + (aDir === '>' ? '≥' : '≤') + '.'
+              : 'Phrases like "more than", "less than", "under", and "strictly" EXCLUDE the boundary — open dot ○ and ' + aDir + '.');
+          }
+          return 'Both the direction AND the boundary are off: the solution shades ' + (aDir === '>' ? 'RIGHT' : 'LEFT') + ' of ' + as[3] + ' with ' + (aInc ? 'a closed dot ● (' + as[3] + ' counts)' : 'an open dot ○ (' + as[3] + ' does not count)') + '.';
+        }
+        return 'The answer is ' + pretty(answerRaw) + '. Compare it with your pick symbol by symbol: direction first (< vs >), then boundary (with or without the = bar).';
+      }
+
       // ── QUIZ ──
       var QUIZ_EASY = [
         { q: 'Shade: all x greater than 2', a: 'x > 2', opts: ['x > 2', 'x < 2', 'x >= 2', 'x <= 2'] },
@@ -414,7 +457,7 @@ window.StemLab = window.StemLab || {
         var op = opRaw.replace('\u2264', '<=').replace('\u2265', '>=');
         steps.push({ text: 'Start: ' + raw, highlight: false });
         var rhs1 = c - b;
-        steps.push({ text: 'Subtract ' + (b > 0 ? b : '(' + b + ')') + ' from both sides:', highlight: false });
+        steps.push({ text: (b < 0 ? 'Add ' + (-b) + ' to both sides:' : 'Subtract ' + b + ' from both sides:'), highlight: false });
         steps.push({ text: (a === 1 ? '' : a === -1 ? '-' : a) + v + ' ' + op + ' ' + rhs1, highlight: true });
         if (a !== 1) {
           var flipOp = op;
@@ -495,23 +538,61 @@ window.StemLab = window.StemLab || {
       // ════════════════════════════════
       // ═══ RENDER ═══
       // ════════════════════════════════
-      return h('div', { className: 'max-w-3xl mx-auto animate-in fade-in duration-200' },
+      var inequalityModeLabel = graphMode === '2d' ? '2D region' : 'Number line';
+      var inequalityNext = !d.expr
+        ? 'Choose or enter an inequality, then predict the boundary and shading before graphing.'
+        : testCount === 0
+          ? 'Test one value inside and one value outside the proposed solution set.'
+          : solverCount === 0
+            ? 'Solve symbolically and compare each algebra step with the graph.'
+            : 'Justify the boundary style and shading direction in words.';
+
+      return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
-        h('div', { className: 'flex items-center gap-3 mb-3' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' },
-            h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-fuchsia-800' }, '\uD83C\uDFA8 Inequality Grapher'),
-          h('span', { className: 'px-2 py-0.5 bg-fuchsia-100 text-fuchsia-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
-          d.quiz && (d.quiz.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.quiz.streak),
-          earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); },
-            className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
-            title: 'View badges (B)'
-          }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-          h('button', { onClick: askAI,
-            className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all',
-            title: 'AI Tutor (?)'
-          }, '\uD83E\uDDE0 AI')
+        h('section', { 'data-inequality-command': 'true', className: 'mb-4 overflow-hidden rounded-2xl border border-fuchsia-300/40 bg-gradient-to-br from-slate-950 via-fuchsia-950 to-purple-950 text-white shadow-xl' },
+          h('div', { className: 'p-4 sm:p-5' },
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-fuchsia-300', 'aria-label': 'Back to tools' }, h(ArrowLeft, { size: 18 })),
+                  h('span', { className: 'rounded-full bg-fuchsia-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-100 ring-1 ring-fuchsia-200/30' }, 'Solution-set studio'),
+                  earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[10px] font-bold text-amber-100' }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
+                  h('button', { onClick: askAI, className: 'rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[10px] font-bold text-violet-100' }, '\uD83E\uDDE0 AI')
+                ),
+                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '\uD83C\uDFA8 Inequality Grapher'),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-fuchsia-100' }, 'Test values, represent solution sets, and justify boundaries with algebraic and graphical evidence.'),
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, 'Recommended next move'),
+                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, inequalityNext)
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                [
+                  { label: 'View', value: inequalityModeLabel },
+                  { label: 'Tests', value: String(testCount) },
+                  { label: 'Solved', value: String(solverCount) }
+                ].map(function(metric) {
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-fuchsia-200' }, metric.label)
+                  );
+                })
+              )
+            ),
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Inequality reasoning pathway' },
+              [
+                { n: '1', title: 'Test', detail: 'Check values against the statement.' },
+                { n: '2', title: 'Represent', detail: 'Graph boundary and solution region.' },
+                { n: '3', title: 'Justify', detail: 'Explain inclusion and direction.' }
+              ].map(function(step) {
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                  h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-fuchsia-300 font-black text-slate-950' }, step.n),
+                  h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-fuchsia-200' }, step.detail))
+                );
+              })
+            )
+          )
         ),
 
         // ── Badge panel ──
@@ -565,7 +646,7 @@ window.StemLab = window.StemLab || {
             var labels = { '1d': '\uD83D\uDCCF Number Line', '2d': '\uD83D\uDCC8 2D Graph' };
             return h('button', { key: m, role: 'tab', 'aria-selected': graphMode === m,
               onClick: function() { upd('graphMode', m); trackMode(m); },
-              className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all ' +
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-fuchsia-400 ' +
                 (graphMode === m ? 'bg-fuchsia-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
               title: m === '1d' ? '1 key' : '2 key'
             }, labels[m]);
@@ -619,7 +700,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── SVG Number line (1D mode) ──
-        graphMode === '1d' && h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border-2 border-fuchsia-200 shadow-sm', role: 'img', 'aria-label': 'Number line inequality graph' },
+        graphMode === '1d' && h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full rounded-xl border-2 shadow-sm ' + (isDark ? 'bg-slate-900 border-fuchsia-800' : 'bg-white border-fuchsia-200'), role: 'img', 'aria-label': 'Number line inequality graph' },
           ineq && !ineq.compound && (function() {
             var sxVal = toSX(ineq.val);
             if (ineq.op.includes('>')) {
@@ -646,8 +727,8 @@ window.StemLab = window.StemLab || {
               var isOrigin = n === 0;
               var showLbl = isOrigin || n % lblStep === 0;
               return h('g', { key: n },
-                h('line', { x1: toSX(n), y1: isOrigin ? 38 : 43, x2: toSX(n), y2: isOrigin ? 62 : 57, stroke: isOrigin ? '#1e293b' : '#94a3b8', strokeWidth: isOrigin ? 2 : 1, opacity: showLbl ? 1 : 0.45 }),
-                showLbl && h('text', { x: toSX(n), y: 85, textAnchor: 'middle', fill: isOrigin ? '#1e293b' : '#94a3b8', style: { fontSize: isOrigin ? '11px' : '9px', fontWeight: isOrigin ? 'bold' : 'normal' } }, n));
+                h('line', { x1: toSX(n), y1: isOrigin ? 38 : 43, x2: toSX(n), y2: isOrigin ? 62 : 57, stroke: isOrigin ? (isDark ? '#e2e8f0' : '#1e293b') : '#94a3b8', strokeWidth: isOrigin ? 2 : 1, opacity: showLbl ? 1 : 0.45 }),
+                showLbl && h('text', { x: toSX(n), y: 85, textAnchor: 'middle', fill: isOrigin ? (isDark ? '#e2e8f0' : '#1e293b') : '#94a3b8', style: { fontSize: isOrigin ? '11px' : '9px', fontWeight: isOrigin ? 'bold' : 'normal' } }, n));
             });
           })(),
           ineq && !ineq.compound && (function() {
@@ -658,6 +739,7 @@ window.StemLab = window.StemLab || {
             return h('g', null,
               h('line', { x1: sxVal + (ineq.op.includes('>') ? 8 : -8), y1: 50, x2: endX, y2: 50, stroke: '#d946ef', strokeWidth: 3.5, style: { filter: 'drop-shadow(0 0 3px rgba(217,70,239,0.55))' } }),
               h('circle', { cx: sxVal, cy: 50, r: 6, fill: isClosed ? '#d946ef' : 'white', stroke: '#d946ef', strokeWidth: 2.5 }),
+              h('text', { x: sxVal, y: 18, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '10px', fontWeight: 'bold' } }, ineq.v + ' = ' + ineq.val),
               h('text', { x: sxVal, y: 26, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '9px', fontWeight: 'bold' } }, endpointLbl),
               ineq.op.includes('>') && h('polygon', { points: (W - pad) + ',50 ' + (W - pad - 10) + ',43 ' + (W - pad - 10) + ',57', fill: '#d946ef' }),
               ineq.op.includes('<') && h('polygon', { points: pad + ',50 ' + (pad + 10) + ',43 ' + (pad + 10) + ',57', fill: '#d946ef' }));
@@ -690,10 +772,10 @@ window.StemLab = window.StemLab || {
           var ineq2d = parse2D(d.expr);
           var gridLines = [];
           for (var gi = gRange.xMin; gi <= gRange.xMax; gi++) {
-            gridLines.push(h('line', { key: 'gx' + gi, x1: toGX(gi), y1: pad2, x2: toGX(gi), y2: H2 - pad2, stroke: gi === 0 ? '#475569' : '#e2e8f0', strokeWidth: gi === 0 ? 2 : 0.5 }));
+            gridLines.push(h('line', { key: 'gx' + gi, x1: toGX(gi), y1: pad2, x2: toGX(gi), y2: H2 - pad2, stroke: gi === 0 ? (isDark ? '#94a3b8' : '#475569') : (isDark ? '#1e293b' : '#e2e8f0'), strokeWidth: gi === 0 ? 2 : 0.5 }));
           }
           for (var gj = gRange.yMin; gj <= gRange.yMax; gj++) {
-            gridLines.push(h('line', { key: 'gy' + gj, x1: pad2, y1: toGY(gj), x2: W2 - pad2, y2: toGY(gj), stroke: gj === 0 ? '#475569' : '#e2e8f0', strokeWidth: gj === 0 ? 2 : 0.5 }));
+            gridLines.push(h('line', { key: 'gy' + gj, x1: pad2, y1: toGY(gj), x2: W2 - pad2, y2: toGY(gj), stroke: gj === 0 ? (isDark ? '#94a3b8' : '#475569') : (isDark ? '#1e293b' : '#e2e8f0'), strokeWidth: gj === 0 ? 2 : 0.5 }));
           }
           var axLabels = [];
           for (var al = gRange.xMin; al <= gRange.xMax; al += 2) {
@@ -716,11 +798,16 @@ window.StemLab = window.StemLab || {
             }
             boundaryEls.push(h('polygon', { key: 'shade', points: clipPts.join(' '), fill: 'rgba(217,70,239,0.12)' }));
             boundaryEls.push(h('line', { key: 'bline', x1: toGX(lx1), y1: toGY(ly1), x2: toGX(lx2), y2: toGY(ly2), stroke: '#d946ef', strokeWidth: 2.5, strokeDasharray: isDashed ? '6,4' : 'none' }));
+            // (0,0) test point — the side it lands on tells you which region to shade (at x=0 the line is y=ic)
+            var inc2d = op2d.includes('=');
+            var originSat = above ? (inc2d ? 0 >= ic : 0 > ic) : (inc2d ? 0 <= ic : 0 < ic);
+            boundaryEls.push(h('circle', { key: 'testpt', cx: toGX(0), cy: toGY(0), r: 5, fill: originSat ? '#22c55e' : '#ef4444', stroke: '#fff', strokeWidth: 1.5 }));
+            boundaryEls.push(h('text', { key: 'testlbl', x: toGX(0) + 8, y: toGY(0) - 6, fill: originSat ? '#16a34a' : '#dc2626', style: { fontSize: '9px', fontWeight: 'bold' } }, originSat ? '(0,0) ✓' : '(0,0) ✗'));
           }
-          return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, className: 'w-full bg-white rounded-xl border-2 border-fuchsia-200 shadow-sm', style: { maxWidth: 420 }, role: 'img', 'aria-label': '2D inequality graph' },
+          return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, className: 'w-full rounded-xl border-2 shadow-sm ' + (isDark ? 'bg-slate-900 border-fuchsia-800' : 'bg-white border-fuchsia-200'), style: { maxWidth: 420 }, role: 'img', 'aria-label': '2D inequality graph' },
             gridLines, axLabels, boundaryEls,
-            h('text', { x: W2 - pad2 + 5, y: toGY(0) + 4, fill: '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'),
-            h('text', { x: toGX(0) + 5, y: pad2 - 5, fill: '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'y'),
+            h('text', { x: W2 - pad2 + 5, y: toGY(0) + 4, fill: isDark ? '#94a3b8' : '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'),
+            h('text', { x: toGX(0) + 5, y: pad2 - 5, fill: isDark ? '#94a3b8' : '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'y'),
             !ineq2d && h('text', { x: W2 / 2, y: H2 / 2, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '13px' } }, 'Enter y > mx + b to plot')
           );
         })(),
@@ -791,7 +878,7 @@ window.StemLab = window.StemLab || {
               'I understand — explain in own words'),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain inequality test logic.',
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 3-state test marker; no answer reveal — by design.')
+            h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 3-state test marker; no answer reveal — by design.')
           );
         })(),
 
@@ -890,8 +977,10 @@ window.StemLab = window.StemLab || {
                     playSound(correct ? 'correct' : 'wrong');
                     if (correct && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
 
+                    var fb = correct ? '' : diagnoseQuizError(opt, d.quiz.a);
+
                     upd({
-                      quiz: Object.assign({}, d.quiz, { answered: true, chosen: opt, correct: correct, score: newScore, streak: newStreak }),
+                      quiz: Object.assign({}, d.quiz, { answered: true, chosen: opt, correct: correct, score: newScore, streak: newStreak, fb: fb }),
                       expr: d.quiz.a,
                       quizCorrectTotal: newQTotal
                     });
@@ -906,7 +995,8 @@ window.StemLab = window.StemLab || {
                       });
                       setTimeout(function() { iqStartQuiz(); }, 1500);
                     } else {
-                      addToast('\u274C Answer: ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'), 'error');
+                      if (typeof announceToSR === 'function') announceToSR('Not quite. ' + fb);
+                      addToast('\u274C Not quite \u2014 see why below', 'error');
                     }
                   },
                   className: 'px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-fuchsia-600 hover:border-fuchsia-400 hover:bg-fuchsia-50 transition-all'
@@ -914,13 +1004,15 @@ window.StemLab = window.StemLab || {
               })
             )
           ),
-          d.quiz && d.quiz.answered && h('div', { className: 'p-3 rounded-xl text-sm font-bold ' + (d.quiz.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
-            d.quiz.correct ? '\u2705 Correct!' : '\u274C Answer: ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'),
-            d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-600' }, '\uD83D\uDD25 ' + d.quiz.streak + ' in a row!'),
-            !d.quiz.correct && h('button', { 'aria-label': 'Explain',
-              onClick: askAI,
-              className: 'ml-2 text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-600 hover:bg-purple-200'
-            }, '\uD83E\uDDE0 Explain'))
+          d.quiz && d.quiz.answered && h('div', { className: 'p-3 rounded-xl ' + (d.quiz.correct ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'), role: 'status' },
+            h('p', { className: 'text-sm font-bold ' + (d.quiz.correct ? 'text-emerald-700' : 'text-red-700') },
+              d.quiz.correct ? '\u2705 Correct!' : '\u274C Not quite \u2014 the answer is ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'),
+              d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-600' }, '\uD83D\uDD25 ' + d.quiz.streak + ' in a row!'),
+              !d.quiz.correct && h('button', { 'aria-label': 'Explain',
+                onClick: askAI,
+                className: 'ml-2 text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-600 hover:bg-purple-200'
+              }, '\uD83E\uDDE0 Explain')),
+            !d.quiz.correct && d.quiz.fb && h('p', { className: 'text-xs leading-relaxed text-red-800 mt-1' }, d.quiz.fb))
         ),
 
         // ── Absolute Value Decomposition ──

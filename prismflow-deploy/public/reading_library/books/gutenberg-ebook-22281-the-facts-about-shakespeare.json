@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-22281-the-facts-about-shakespeare",
+  "title": "The Facts About Shakespeare",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Dramatists, English -- Early modern, 1500-1700 -- Biography",
+    "Shakespeare, William, 1564-1616",
+    "Shakespeare, William, 1564-1616 -- Criticism and interpretation"
+  ],
+  "authors": [
+    "Neilson, William Allan",
+    "Thorndike, Ashley Horace"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/22281"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/22281/pg22281.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Facts About Shakespeare\" by Neilson, William Allan, Thorndike, Ashley Horace. Metadata tags include: Dramatists, English -- Early modern, 1500-1700 -- Biography; Shakespeare, William, 1564-1616; Shakespeare, William, 1564-1616 -- Criticism and interpretation."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 82
+  }
+}

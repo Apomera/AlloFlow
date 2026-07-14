@@ -24,77 +24,77 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for beehive 1`] = `
 {
-  "buttons": 24,
+  "buttons": 65,
   "inputs": 4,
-  "lengthBucket": 73,
+  "lengthBucket": 330,
   "selects": 0,
-  "sha": "dc3a4e905133523a",
+  "sha": "5c55328768472919",
   "svgs": 0,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for birdLab 1`] = `
 {
-  "buttons": 125,
-  "inputs": 0,
-  "lengthBucket": 686,
+  "buttons": 127,
+  "inputs": 1,
+  "lengthBucket": 732,
   "selects": 0,
-  "sha": "16ac35b8a9116df4",
+  "sha": "2312cb70c59402fe",
   "svgs": 2,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for cephalopodLab 1`] = `
 {
-  "buttons": 87,
-  "inputs": 0,
-  "lengthBucket": 223,
+  "buttons": 17,
+  "inputs": 1,
+  "lengthBucket": 75,
   "selects": 0,
-  "sha": "c04c3fc04e8d0a69",
+  "sha": "b26732be411f56c6",
   "svgs": 0,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for learningLab 1`] = `
 {
-  "buttons": 134,
+  "buttons": 22,
   "inputs": 0,
-  "lengthBucket": 405,
+  "lengthBucket": 78,
   "selects": 0,
-  "sha": "2c4503971780bf5c",
+  "sha": "ef4f07fef818a3ca",
   "svgs": 0,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for nutritionLab 1`] = `
 {
-  "buttons": 15,
+  "buttons": 19,
   "inputs": 0,
-  "lengthBucket": 103,
+  "lengthBucket": 119,
   "selects": 0,
-  "sha": "6dfd478711625e0b",
+  "sha": "525ef2960c69a165",
   "svgs": 0,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for plateTectonics 1`] = `
 {
-  "buttons": 22,
+  "buttons": 25,
   "inputs": 5,
-  "lengthBucket": 103,
+  "lengthBucket": 136,
   "selects": 0,
-  "sha": "b874768c0980c650",
+  "sha": "34d3cd43768b4a37",
   "svgs": 0,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for printingPress 1`] = `
 {
-  "buttons": 99,
+  "buttons": 25,
   "inputs": 0,
-  "lengthBucket": 594,
+  "lengthBucket": 225,
   "selects": 0,
-  "sha": "4c6e62be3d03d161",
+  "sha": "bf9fd3493b281ee2",
   "svgs": 2,
 }
 `;
@@ -103,10 +103,10 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 48,
   "inputs": 1,
-  "lengthBucket": 103,
+  "lengthBucket": 127,
   "selects": 0,
-  "sha": "82ab300a588ae3cd",
-  "svgs": 0,
+  "sha": "2611eaee2f72befd",
+  "svgs": 1,
 }
 `;
 
@@ -116,18 +116,18 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 3,
   "lengthBucket": 202,
   "selects": 0,
-  "sha": "c514429cd5b9dab8",
+  "sha": "8480722f75089412",
   "svgs": 0,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for solarSystem 1`] = `
 {
-  "buttons": 13,
+  "buttons": 25,
   "inputs": 1,
-  "lengthBucket": 37,
+  "lengthBucket": 83,
   "selects": 0,
-  "sha": "0e68576bc1479b34",
+  "sha": "dd517f874f082502",
   "svgs": 0,
 }
 `;

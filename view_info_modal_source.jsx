@@ -21,9 +21,950 @@
  * Icons (read from window globals): a long list — see body. All accessed
  * via `window.X` so the module stays decoupled from imports.
  */
+
+// ── Open-source credits ──────────────────────────────────────────────────
+// AlloFlow itself is AGPL-3.0. It stands on a large body of open-source work;
+// several of the licenses below (GPL/LGPL/MPL, and the CC-BY sim/content) also
+// REQUIRE that we preserve attribution and point to the source. This list is
+// the attribution surface — keep it in sync when a runtime dependency is added
+// or removed. Grouped for readability; rendered collapsed by <OssCredits/> at
+// the foot of the About tab.
+const OSS_CREDITS = [
+  {
+    group: 'App framework',
+    items: [
+      { name: 'React & React DOM', use: 'user-interface framework', license: 'MIT', url: 'https://react.dev' },
+      { name: 'Lucide', use: 'icon set', license: 'ISC', url: 'https://lucide.dev' },
+      { name: 'Tailwind CSS', use: 'styling', license: 'MIT', url: 'https://tailwindcss.com' },
+      { name: 'Firebase JS SDK', use: 'sign-in & class sync', license: 'Apache-2.0', url: 'https://firebase.google.com' },
+    ],
+  },
+  {
+    group: 'Documents, PDF & accessibility',
+    items: [
+      { name: 'pdf.js', use: 'reading & rendering PDFs', license: 'Apache-2.0', url: 'https://mozilla.github.io/pdf.js/' },
+      { name: 'pdf-lib', use: 'building accessible PDFs', license: 'MIT', url: 'https://pdf-lib.js.org' },
+      { name: 'fontkit', use: 'embedding fonts in PDFs', license: 'MIT', url: 'https://github.com/foliojs/fontkit' },
+      { name: 'Tesseract.js', use: 'OCR of scanned handouts', license: 'Apache-2.0', url: 'https://tesseract.projectnaptha.com' },
+      { name: 'veraPDF', use: 'PDF/UA-1 conformance checks', license: 'GPLv3+ / MPLv2', url: 'https://verapdf.org',
+        featured: 8,
+        blurb: 'Independently validates every accessible PDF we build against the PDF/UA-1 (ISO 14289-1) standard — the same conformance engine trusted by national libraries and archives.',
+        site: 'https://verapdf.org', repo: 'https://github.com/veraPDF/veraPDF-library' },
+      { name: 'Apache PDFBox', use: 'PDF parsing inside veraPDF', license: 'Apache-2.0', url: 'https://pdfbox.apache.org' },
+      { name: 'CheerpJ', use: 'runs the veraPDF engine in the browser', license: 'free for this use (LeaningTech)', url: 'https://leaningtech.com/cheerpj/' },
+      { name: 'axe-core', use: 'accessibility rule checks', license: 'MPL-2.0', url: 'https://github.com/dequelabs/axe-core' },
+      { name: 'IBM Equal Access (accessibility-checker-engine)', use: 'second accessibility checker', license: 'Apache-2.0', url: 'https://github.com/IBMa/equal-access' },
+      { name: 'DOMPurify', use: 'HTML sanitizing (safety)', license: 'Apache-2.0 / MPL-2.0', url: 'https://github.com/cure53/DOMPurify' },
+      { name: 'Harper', use: 'grammar & spelling checks', license: 'Apache-2.0', url: 'https://writewithharper.com' },
+      { name: 'Free Dictionary API (dictionaryapi.dev)', use: 'authoritative word definitions, pronunciation & synonyms shown beside the AI in the Define popup — a non-AI second source, cached so looked-up words keep working offline', license: 'API free / no key; data CC BY-SA (Wiktionary)', url: 'https://dictionaryapi.dev',
+        featured: 6, owner: 'meetDeveloper · data from Wiktionary',
+        blurb: 'Puts a real dictionary entry — definition, pronunciation, and synonyms drawn from Wiktionary — right next to AlloFlow’s AI explanation, so a grade-leveled definition can be triangulated against an authoritative one. Words a class looks up are cached and keep working offline.',
+        site: 'https://dictionaryapi.dev', repo: 'https://github.com/meetDeveloper/freeDictionaryAPI' },
+      { name: 'liblouis', use: 'UEB Grade 2 braille (.brf) translation', license: 'GPLv3 (engine) / LGPL-2.1+ (tables)', url: 'https://liblouis.io',
+        featured: 9,
+        blurb: 'Translates text into contracted UEB Grade-2 braille for .brf export, drawing on its library of 200+ language tables.',
+        site: 'https://liblouis.io', repo: 'https://github.com/liblouis/liblouis' },
+      { name: 'Open Board Format (OBF/OBZ)', use: 'AAC board interchange with Cboard & other AAC apps (Symbol Studio import/export) — Open AAC / CoughDrop', license: 'open specification', url: 'https://www.openboardformat.org',
+        featured: 7, owner: 'Open AAC',
+        blurb: 'The open standard that lets Symbol Studio communication boards move in and out of Cboard and other AAC apps — so a board built here is never locked to one device.',
+        site: 'https://www.openboardformat.org', repo: 'https://github.com/open-aac/openboardformat' },
+      { name: 'Mulberry Symbols', use: 'validated AAC symbol set — Symbol Studio’s "Find validated symbol" (an alternative to AI-generated symbols) — Steve Lee / Open AAC', license: 'CC BY-SA', url: 'https://mulberrysymbols.org',
+        featured: 8, owner: 'Open AAC',
+        blurb: 'A hand-designed, validated library of communication symbols — searchable inside Symbol Studio as a trustworthy alternative to AI-generated ones, free to use with credit.',
+        site: 'https://mulberrysymbols.org', repo: 'https://github.com/mulberrysymbols/mulberry-symbols' },
+      { name: 'Global Symbols', use: 'open symbol-search service that serves Mulberry to Symbol Studio', license: 'platform free; symbols under their own open licenses', url: 'https://globalsymbols.com' },
+      { name: 'KaTeX', use: 'math typesetting', license: 'MIT', url: 'https://katex.org' },
+      { name: 'Temml', use: 'LaTeX → MathML', license: 'MIT', url: 'https://temml.org' },
+      { name: 'Speech Rule Engine', use: 'spoken math (read-aloud, equation alt text, export captions) — Volker Sorge / MathJax', license: 'Apache-2.0', url: 'https://github.com/Speech-Rule-Engine/speech-rule-engine',
+        featured: 6, owner: 'Volker Sorge / MathJax',
+        blurb: 'Reads mathematics aloud — turning equations into clear spoken English for read-aloud, screen-reader alt text, and export captions, in several languages.',
+        site: 'https://speechruleengine.org', repo: 'https://github.com/Speech-Rule-Engine/speech-rule-engine' },
+      { name: 'MathLive', use: 'accessible equation editor (author math with a virtual keyboard; exports MathML/LaTeX/spoken) — Arno Gourdol', license: 'MIT', url: 'https://mathlive.io',
+        featured: 6, owner: 'Arno Gourdol',
+        blurb: 'A WYSIWYG equation editor so teachers and students can type math with an on-screen keyboard — inserted as accessible MathML that the same engines read aloud and turn into braille.',
+        site: 'https://mathlive.io', repo: 'https://github.com/arnog/mathlive' },
+      { name: 'Prism', use: 'code syntax highlighting', license: 'MIT', url: 'https://prismjs.com' },
+      { name: 'mammoth.js', use: 'importing Word documents', license: 'BSD-2-Clause', url: 'https://github.com/mwilliamson/mammoth.js' },
+      { name: 'docx', use: 'Word (.docx) export', license: 'MIT', url: 'https://docx.js.org' },
+      { name: 'PptxGenJS', use: 'PowerPoint (.pptx) export', license: 'MIT', url: 'https://gitbrent.github.io/PptxGenJS/' },
+      { name: 'JSZip', use: 'packaging multi-file exports', license: 'MIT / GPLv3', url: 'https://stuk.github.io/jszip/' },
+      { name: 'pako', use: 'zlib compression', license: 'MIT', url: 'https://github.com/nodeca/pako' },
+    ],
+  },
+  {
+    group: 'Math, science & simulations',
+    items: [
+      { name: 'math.js', use: 'math engine', license: 'Apache-2.0', url: 'https://mathjs.org' },
+      { name: 'jStat', use: 'statistics library', license: 'MIT', url: 'https://github.com/jstat/jstat' },
+      { name: 'Acorn', use: 'JavaScript parser (code sandbox)', license: 'MIT', url: 'https://github.com/acornjs/acorn' },
+      { name: 'CircuitJS1', use: 'electronic-circuit simulator (Circuit Shelf) — Paul Falstad & Iain Sharp', license: 'GPLv2', url: 'https://github.com/pfalstad/circuitjs1',
+        featured: 4, owner: 'Paul Falstad & Iain Sharp',
+        blurb: 'The circuit simulator in the Circuit Shelf, where students build and test working electronic circuits against Predict–Explore–Explain challenges.',
+        site: 'https://www.falstad.com/circuit/', repo: 'https://github.com/pfalstad/circuitjs1' },
+      { name: 'Mol*', use: '3D molecular-structure viewer (Molecule Shelf) — RCSB PDB & PDBe', license: 'MIT', url: 'https://molstar.org',
+        featured: 3, owner: 'RCSB PDB & PDBe',
+        blurb: 'Renders the interactive 3-D molecules in the Molecule Shelf — from crambin to hemoglobin — paired with a Notice-and-Wonder coach.',
+        site: 'https://molstar.org', repo: 'https://github.com/molstar/molstar' },
+      { name: 'CODAP', use: 'data-science workspace (Data Lab) — Concord Consortium', license: 'MIT', url: 'https://codap.concord.org',
+        featured: 1, owner: 'Concord Consortium',
+        blurb: 'The engine behind the Data Lab. Students explore real datasets by dragging, graphing, and filtering — while a Socratic tutor asks guiding questions instead of handing over the answer.',
+        site: 'https://codap.concord.org', repo: 'https://github.com/concord-consortium/codap' },
+      { name: 'PhET Interactive Simulations', use: 'science & math sims (Sim Shelf) — Univ. of Colorado Boulder', license: 'GPLv3 (code) / CC-BY (content)', url: 'https://phet.colorado.edu',
+        featured: 2, owner: 'University of Colorado Boulder',
+        blurb: 'Powers the Sim Shelf. Students lock in a prediction, explore an interactive science or math simulation, then an AI coach debriefs what they actually observed.',
+        site: 'https://phet.colorado.edu', repo: 'https://github.com/phetsims' },
+      { name: 'iframe-phone', use: 'bridge to the CODAP window — Concord Consortium', license: 'MIT', url: 'https://github.com/concord-consortium/iframe-phone' },
+      { name: 'OpenSeadragon', use: 'deep-zoom image viewer (Zoom Gallery)', license: 'BSD-3-Clause', url: 'https://openseadragon.github.io',
+        featured: 5,
+        blurb: 'Drives the Zoom Gallery, letting students pan and magnify high-resolution NASA and Smithsonian images — including true deep-zoom on the tiled museum scans.',
+        site: 'https://openseadragon.github.io', repo: 'https://github.com/openseadragon/openseadragon' },
+      { name: 'Smithsonian Open Access', use: 'CC0 museum images in the Zoom Gallery (deep-zoom IIIF)', license: 'CC0 1.0', url: 'https://www.si.edu/openaccess' },
+      { name: 'NASA Image and Video Library', use: 'public-domain space photographs in the Zoom Gallery', license: 'Public domain (NASA media guidelines)', url: 'https://images.nasa.gov' },
+      { name: 'StoryWeaver', use: 'openly licensed picture books (Reading Library) — Pratham Books; authors & illustrators credited per book', license: 'CC BY 4.0', url: 'https://storyweaver.org.in',
+        featured: 6, owner: 'Pratham Books',
+        blurb: 'Supplies the openly licensed picture books in the Reading Library — hundreds of titles across dozens of languages — which double as oral-reading-fluency passages.',
+        site: 'https://storyweaver.org.in', repo: 'https://github.com/PrathamBooks/StoryWeaverOpen' },
+    ],
+  },
+  {
+    group: '3D, graphics, maps & media',
+    items: [
+      { name: 'three.js', use: '3D graphics (Memory Palace, STEM tools)', license: 'MIT', url: 'https://threejs.org' },
+      { name: 'Excalidraw', use: 'the Whiteboard — freehand sketch & diagram canvas with graphic-organizer templates', license: 'MIT', url: 'https://excalidraw.com' },
+      { name: 'KayKit Dungeon Remastered', use: '3D decoration models (Memory Palace collectibles) — Kay Lousberg', license: 'CC0 (credit appreciated, not required)', url: 'https://kaylousberg.itch.io/kaykit-dungeon-remastered' },
+      { name: 'globe.gl', use: 'interactive 3D globe', license: 'MIT', url: 'https://github.com/vasturiano/globe.gl' },
+      { name: 'Leaflet', use: 'interactive maps', license: 'BSD-2-Clause', url: 'https://leafletjs.com' },
+      { name: 'world-atlas', use: 'country-boundary map data (from Natural Earth, public domain)', license: 'ISC', url: 'https://github.com/topojson/world-atlas' },
+      { name: 'A-Frame', use: 'WebXR / virtual reality', license: 'MIT', url: 'https://aframe.io' },
+      { name: 'html2canvas', use: 'exporting on-screen charts as images', license: 'MIT', url: 'https://html2canvas.hertzen.com' },
+      { name: 'ffmpeg.wasm', use: 'in-browser video/audio export', license: 'MIT wrapper; FFmpeg LGPL-2.1/GPL', url: 'https://ffmpegwasm.netlify.app' },
+    ],
+  },
+  {
+    group: 'On-device speech & AI',
+    items: [
+      { name: 'Kokoro', use: 'neural text-to-speech (primary)', license: 'Apache-2.0', url: 'https://github.com/hexgrad/kokoro',
+        featured: 11,
+        blurb: 'The primary on-device neural text-to-speech voice — natural narration that runs right in the browser with no cloud round-trip, and the offline fallback in the School Box.',
+        repo: 'https://github.com/hexgrad/kokoro' },
+      { name: 'Piper', use: 'neural text-to-speech (40+ languages)', license: 'MIT (engine now GPLv3 fork)', url: 'https://github.com/OHF-Voice/piper1-gpl',
+        featured: 12,
+        blurb: 'Fast neural text-to-speech across 40+ languages, used for on-device narration in the School Box.',
+        repo: 'https://github.com/OHF-Voice/piper1-gpl' },
+      { name: 'eSpeak NG', use: 'offline grapheme→phoneme (Word Sounds phonics) — sounds a word breaks into, in IPA', license: 'GPLv3', url: 'https://github.com/espeak-ng/espeak-ng',
+        featured: 13, owner: 'Reece Dunn & contributors',
+        blurb: 'A dictionary-backed engine that breaks a word into its exact sounds (in IPA) for the phonics tools — deterministic and fully offline, in 100+ languages.',
+        repo: 'https://github.com/espeak-ng/espeak-ng' },
+      { name: 'Transformers.js', use: 'in-browser ML (Whisper transcription, on-device translation, image gen)', license: 'Apache-2.0', url: 'https://github.com/huggingface/transformers.js' },
+      { name: 'Helsinki-NLP OPUS-MT', use: 'on-device translation models for Bridge private mode (nothing sent out) — University of Helsinki', license: 'CC BY-4.0', url: 'https://github.com/Helsinki-NLP/OPUS-MT', featured: 14, owner: 'University of Helsinki / OPUS',
+        blurb: 'Neural translation models that run fully on the device, so a teacher↔family Bridge conversation can be translated with nothing ever sent to the cloud — offline-capable in the School Box.',
+        repo: 'https://github.com/Helsinki-NLP/OPUS-MT' },
+      { name: 'whisper.cpp', use: 'on-device speech-to-text for oral-reading-fluency practice (School Box) — Georgi Gerganov', license: 'MIT', url: 'https://github.com/ggml-org/whisper.cpp',
+        featured: 10, owner: 'Georgi Gerganov',
+        blurb: 'Runs speech-to-text fully on-device in the School Box desktop app, so oral-reading-fluency practice works offline with no student audio ever leaving the machine.',
+        repo: 'https://github.com/ggml-org/whisper.cpp' },
+      { name: 'ONNX Runtime Web', use: 'machine-learning inference', license: 'MIT', url: 'https://onnxruntime.ai' },
+      { name: 'Pyodide', use: 'Python in the browser', license: 'MPL-2.0', url: 'https://pyodide.org' },
+    ],
+  },
+  {
+    group: 'Utilities',
+    items: [
+      { name: 'lz-string', use: 'compressing saved work', license: 'MIT', url: 'https://github.com/pieroxy/lz-string' },
+      { name: 'idb-keyval', use: 'offline browser storage', license: 'Apache-2.0', url: 'https://github.com/jakearchibald/idb-keyval' },
+      { name: 'jsdiff', use: 'comparing text revisions', license: 'BSD-3-Clause', url: 'https://github.com/kpdecker/jsdiff' },
+      { name: 'jsonrepair', use: 'repairing AI-generated JSON', license: 'ISC', url: 'https://github.com/josdejong/jsonrepair' },
+      { name: 'lamejs', use: 'MP3 audio encoding', license: 'LGPL-3.0', url: 'https://github.com/zhuker/lamejs' },
+      { name: 'DragDropTouch', use: 'touch drag-and-drop on tablets', license: 'MIT', url: 'https://github.com/Bernardo-Castilho/dragdroptouch' },
+    ],
+  },
+  {
+    group: 'Fonts',
+    items: [
+      { name: 'OpenDyslexic', use: 'dyslexia-friendly reading font', license: 'SIL OFL-1.1', url: 'https://opendyslexic.org' },
+      { name: 'Atkinson Hyperlegible', use: 'low-vision font — Braille Institute', license: 'free (Atkinson Hyperlegible Font License)', url: 'https://brailleinstitute.org/freefont' },
+      { name: 'Inter & Lexend', use: 'interface fonts', license: 'SIL OFL-1.1', url: 'https://fonts.google.com' },
+      { name: 'Outfit', use: 'display / heading font — Rodrigo Fuenzalida', license: 'SIL OFL-1.1', url: 'https://fonts.google.com/specimen/Outfit' },
+      { name: 'Plus Jakarta Sans', use: 'interface font — Tokotype', license: 'SIL OFL-1.1', url: 'https://fonts.google.com/specimen/Plus+Jakarta+Sans' },
+      { name: 'Noto', use: 'Unicode & CJK text in PDFs — Google', license: 'SIL OFL-1.1', url: 'https://fonts.google.com/noto' },
+      { name: 'DejaVu', use: 'PDF fallback font', license: 'Bitstream Vera / public domain', url: 'https://dejavu-fonts.github.io' },
+    ],
+  },
+  {
+    group: 'Desktop app (School Box)',
+    items: [
+      { name: 'Electron', use: 'offline desktop app', license: 'MIT', url: 'https://electronjs.org' },
+      { name: 'electron-log & electron-updater', use: 'desktop logging & updates', license: 'MIT', url: 'https://github.com/electron-userland/electron-builder' },
+    ],
+  },
+];
+
+// Projects a user actually experiences as a distinct tool get a rich card at
+// the top of the Open Source tab; ordered by the `featured` number.
+const FEATURED_OSS = OSS_CREDITS
+  .flatMap((section) => section.items)
+  .filter((item) => item.featured)
+  .sort((a, b) => a.featured - b.featured);
+
+// Total bundled libraries — used in the "show all" label so it never drifts.
+const OSS_TOTAL = OSS_CREDITS.reduce((n, section) => n + section.items.length, 0);
+
+const MEDIA_SOURCE_GUIDE = [
+  {
+    name: 'Openverse',
+    license: 'Search/index for openly licensed media',
+    status: 'Preferred',
+    guidance: 'Use for discovery, then store the individual asset title, author, URL, and license in Video Studio. Openverse itself is not the media license.',
+    url: 'https://openverse.org',
+  },
+  {
+    name: 'Wikimedia Commons',
+    license: 'Public domain / free licenses per item',
+    status: 'Preferred',
+    guidance: 'Good for AGPL-friendly workflows when the file page shows public domain, CC0, CC BY, or another free license. Attribution may still be required.',
+    url: 'https://commons.wikimedia.org',
+  },
+  {
+    name: 'Freesound',
+    license: 'CC0 / CC BY / CC BY-NC per sound',
+    status: 'Filter carefully',
+    guidance: 'Prefer CC0 or CC BY sounds. Noncommercial sounds are kept for review and should not be treated as safe for general redistribution.',
+    url: 'https://freesound.org',
+  },
+  {
+    name: 'Pixabay',
+    license: 'Pixabay Content License',
+    status: 'Free stock, not open source',
+    guidance: 'Useful for finished videos, but it is a custom stock license. Do not bundle Pixabay assets as a reusable open stock library in the AGPL source.',
+    url: 'https://pixabay.com',
+  },
+];
+
+// A featured project: name, license badge, owner, a plain-language blurb, and
+// separate Website / Source links (each rendered only if it exists).
+function FeaturedCard({ item }) {
+  const noop = () => null;
+  const ExternalLink = window.ExternalLink || noop;
+  const Code = window.Code || noop;
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col shadow-sm hover:shadow-md hover:border-indigo-200 transition-all">
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <h5 className="font-bold text-slate-800 text-sm leading-tight">{item.name}</h5>
+        <span className="shrink-0 text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-nowrap">{item.license}</span>
+      </div>
+      {item.owner && <p className="text-[11px] text-slate-400 font-medium mb-2">{item.owner}</p>}
+      <p className="text-xs text-slate-600 leading-relaxed flex-1">{item.blurb}</p>
+      <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
+        {item.site && (
+          <a href={item.site} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg px-2.5 py-1 transition-colors">
+            <ExternalLink size={12} /> Website
+          </a>
+        )}
+        {item.repo && (
+          <a href={item.repo} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg px-2.5 py-1 transition-colors">
+            <Code size={12} /> Source
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// The full Open Source tab: intro, featured cards, and the complete dependency
+// list (collapsed) that is also our license-attribution surface.
+function OpenSourceTab({ t }) {
+  return (
+    <div className="space-y-5 text-slate-700">
+      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+        <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
+          <span aria-hidden="true">💛</span>
+          {t('about.oss_credits_title') || 'Built on open source'}
+        </h4>
+        <p className="text-sm leading-relaxed text-slate-700">
+          {t('about.oss_credits_intro') || 'AlloFlow is free and open source (AGPL-3.0), built on the generous work of the projects below. Thank you to their authors and communities. The projects highlighted first are ones you can explore directly inside AlloFlow.'}
+        </p>
+      </div>
+
+      <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
+        <h5 className="font-bold text-emerald-900 text-sm mb-1">
+          {t('about.media_guardrails_title') || 'Open/free media guardrails'}
+        </h5>
+        <p className="text-xs text-slate-700 leading-relaxed mb-3">
+          {t('about.media_guardrails_intro') || 'Video Studio can track stock/open media credits in each project. We do not treat every free-stock site as open source: each asset needs its own license, source URL, and attribution record before sharing.'}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {MEDIA_SOURCE_GUIDE.map((item) => (
+            <a key={item.name} href={item.url} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-emerald-100 bg-white p-3 hover:border-emerald-300">
+              <span className="flex items-start justify-between gap-2">
+                <strong className="text-xs text-slate-800">{item.name}</strong>
+                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">{item.status}</span>
+              </span>
+              <span className="block text-[11px] font-medium text-slate-500 mt-1">{item.license}</span>
+              <span className="block text-[11px] text-slate-600 leading-relaxed mt-1">{item.guidance}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h5 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-2">
+          {t('about.oss_featured_header') || 'Learning tools we integrate'}
+        </h5>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {FEATURED_OSS.map((item) => (
+            <FeaturedCard key={item.name} item={item} />
+          ))}
+        </div>
+      </div>
+
+      <details className="bg-slate-50 rounded-xl border border-slate-200 group">
+        <summary className="cursor-pointer select-none px-4 py-3 font-bold text-slate-700 text-sm flex items-center gap-2 hover:text-indigo-700">
+          <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform">▸</span>
+          {t('about.oss_full_list_header') || 'Every library we bundle'} ({OSS_TOTAL})
+        </summary>
+        <div className="px-4 pb-4 pt-1 space-y-4">
+          {OSS_CREDITS.map((section) => (
+            <div key={section.group}>
+              <h5 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-1.5">{section.group}</h5>
+              <ul className="space-y-1.5 list-none">
+                {section.items.map((item) => (
+                  <li key={item.name} className="text-xs text-slate-700 leading-snug flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                    <a
+                      href={item.site || item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0"
+                    >
+                      {item.name}
+                    </a>
+                    <span className="text-slate-600">
+                      — {item.use} <span className="text-slate-400">·</span> <span className="font-medium text-slate-500">{item.license}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </details>
+
+      <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
+        {t('about.oss_credits_footer') || 'AI features also use Google’s Gemini API, a hosted service (not bundled software). Full license texts ship with the source (THIRD_PARTY_LICENSES.md). Spot something we should credit or correct? Let us know.'}
+      </p>
+    </div>
+  );
+}
+
+// The Atlas data below is GENERATED from the real hub catalogs (STEM Lab, SEL
+// Hub, Research Hub, command palette) by dev-tools/harvest_atlas.cjs — so it
+// stays complete and current instead of being hand-typed. To refresh after
+// tools change:  node dev-tools/harvest_atlas.cjs && node _build_view_info_modal_module.js
+/* ATLAS_DATA_START — generated by dev-tools/harvest_atlas.cjs, do not edit by hand */
+const ATLAS_HUBS = [
+  {
+    "hub": "Documents & Literacy",
+    "icon": "📄",
+    "total": 8,
+    "categories": [
+      {
+        "name": "Core literacy tools",
+        "tools": [
+          "Leveled Reader",
+          "Immersive Reader",
+          "Side-by-side Translation",
+          "Smart Glossary",
+          "Word Sounds Studio",
+          "Oral Reading Fluency",
+          "Reading Library",
+          "Accessible PDF export"
+        ]
+      }
+    ]
+  },
+  {
+    "hub": "STEM Lab",
+    "icon": "🔬",
+    "total": 118,
+    "categories": [
+      {
+        "name": "Math Fundamentals",
+        "tools": [
+          "3D Volume Explorer",
+          "Number Line",
+          "Area Model",
+          "Fraction Lab",
+          "Math Manipulatives",
+          "Money Math",
+          "Coordinate Grid",
+          "Angle Explorer",
+          "Geometry Sandbox",
+          "Multiplication Table"
+        ]
+      },
+      {
+        "name": "Advanced Math",
+        "tools": [
+          "Function Grapher",
+          "Inequality Grapher",
+          "Calculus Visualizer",
+          "Algebra Solver",
+          "Graphing Calculator",
+          "Probability",
+          "Unit Converter"
+        ]
+      },
+      {
+        "name": "Life & Earth Science",
+        "tools": [
+          "Dino Lab",
+          "Cell Simulator",
+          "Solar System",
+          "Moon Mission",
+          "Galaxy Explorer",
+          "Universe Time-Lapse",
+          "Rocks & Minerals",
+          "Water Cycle",
+          "Rock Cycle",
+          "Ecosystem",
+          "Companion Planting Lab",
+          "Beehive Colony Simulator",
+          "Climate Explorer",
+          "Environmental Stewardship Campaigns",
+          "Renewables Lab",
+          "Fire Ecology & Indigenous Stewardship",
+          "Aquaculture & Ocean Lab",
+          "Science of Pets Lab",
+          "FisherLab: Boating & Fishing Sim",
+          "AquacultureLab: Mussel Farm Sim",
+          "Decomposer",
+          "Human Anatomy",
+          "Titration Lab",
+          "Baking Lab",
+          "Dissection Lab",
+          "Brain Atlas",
+          "Molecule Builder"
+        ]
+      },
+      {
+        "name": "Physics & Chemistry",
+        "tools": [
+          "Wave Simulator",
+          "Circuit Builder",
+          "Equation Balancer",
+          "Punnett Square",
+          "Semiconductor Lab",
+          "Physics Simulator",
+          "Data Plotter",
+          "Data Studio",
+          "Lumen",
+          "OpticsLab AP"
+        ]
+      },
+      {
+        "name": "Computer Science",
+        "tools": [
+          "Coding Playground",
+          "Cyber Defense Lab",
+          "Digital Accessibility Lab"
+        ]
+      },
+      {
+        "name": "Arts & Music",
+        "tools": [
+          "Music Synthesizer",
+          "Art & Design Studio",
+          "Architecture Studio"
+        ]
+      },
+      {
+        "name": "🧠 Behavioral Science",
+        "tools": [
+          "Behavior Shaping Lab",
+          "School Behavior Toolkit"
+        ]
+      },
+      {
+        "name": "💰 Social Studies & Economics",
+        "tools": [
+          "Economics Lab",
+          "WriteCraft",
+          "Life Skills Lab",
+          "Typing Practice",
+          "SkySchool",
+          "RoadReady: Driver's Ed",
+          "BikeLab: Physics & Repair",
+          "Echo Navigator",
+          "ATC Tower",
+          "ThrowLab: Sports Physics",
+          "PlayLab: Strategy on the Field",
+          "SkateLab: Skate + BMX Physics",
+          "First Response Lab",
+          "SwimLab",
+          "Auto Repair Shop",
+          "WeldLab: Welding & Metal Joining",
+          "NutritionLab: Nutrition Science",
+          "Kitchen Lab",
+          "Cephalopod Lab",
+          "EvoLab: Evolution",
+          "Statistics Lab",
+          "Learning Lab: How Learning Works",
+          "AI Literacy Lab",
+          "Assessment Literacy Lab"
+        ]
+      },
+      {
+        "name": "⚔️ Strategy Games",
+        "tools": [
+          "Arc City",
+          "Kepler Colony",
+          "Space Explorer",
+          "AlloBot: Starbound Sage",
+          "Game Studio"
+        ]
+      },
+      {
+        "name": "🧬 Biology & Life Science",
+        "tools": [
+          "DNA Lab",
+          "Epidemic Simulator",
+          "Microbiology Lab"
+        ]
+      },
+      {
+        "name": "🌍 Geography & Earth Science",
+        "tools": [
+          "Geography Quiz",
+          "Plate Tectonics",
+          "Geology Explorer",
+          "Night Sky & Astronomy"
+        ]
+      },
+      {
+        "name": "📐 Advanced Math",
+        "tools": [
+          "Geometry Prover",
+          "Geometry World",
+          "Logic Lab",
+          "Cellular Automaton Lab"
+        ]
+      },
+      {
+        "name": "🎤 Sound, Speech & Music",
+        "tools": [
+          "Echolocation Lab",
+          "Oratory & Speech Lab",
+          "Voice & Singing Lab"
+        ]
+      },
+      {
+        "name": "📜 History & Engineering",
+        "tools": [
+          "PrintingPress",
+          "Bridge Engineering Lab"
+        ]
+      },
+      {
+        "name": "🌍 Ecology & Migration",
+        "tools": [
+          "BirdLab: I-Spy Ornithology",
+          "Raptor Hunt: Predator Physics + Biology",
+          "Animal Migration Lab"
+        ]
+      },
+      {
+        "name": "📱 Technology & AI",
+        "tools": [
+          "AppLab: AI App Generator",
+          "Access Lens",
+          "Data Lab",
+          "Sim Shelf",
+          "Circuit Shelf",
+          "Molecule Shelf",
+          "Timeline Studio",
+          "Zoom Gallery"
+        ]
+      }
+    ]
+  },
+  {
+    "hub": "SEL Hub",
+    "icon": "🧠",
+    "total": 70,
+    "categories": [
+      {
+        "name": "Self-Awareness",
+        "tools": [
+          "Emotion Zones",
+          "Emotion Explorer",
+          "Strengths Finder",
+          "VIA Strengths",
+          "Wheel of Life",
+          "PERMA Wellbeing",
+          "Self-Advocacy"
+        ]
+      },
+      {
+        "name": "Self-Regulation",
+        "tools": [
+          "Coping Toolkit",
+          "Window of Tolerance",
+          "Stress Bucket",
+          "TIPP",
+          "Anxiety Toolkit",
+          "Sleep & Rest",
+          "Sensory Regulation",
+          "Big Feelings (Anger)",
+          "Substance Use",
+          "Behavioral Activation",
+          "Life Transitions",
+          "Digital Wellbeing Studio"
+        ]
+      },
+      {
+        "name": "Inner Work",
+        "tools": [
+          "Mindfulness Corner",
+          "Quiet Questions",
+          "Orientations",
+          "CBT Thought Record",
+          "Cost-Benefit Grid",
+          "Solution-Focused"
+        ]
+      },
+      {
+        "name": "Care of Self",
+        "tools": [
+          "Care Constellations",
+          "Ecomap",
+          "Circles of Support",
+          "Genogram",
+          "Grief & Loss",
+          "Understanding Trauma",
+          "Body Story",
+          "Sources of Strength",
+          "Crisis Companion",
+          "Identity Support",
+          "Disability Voices",
+          "Compassion & Self-Talk"
+        ]
+      },
+      {
+        "name": "Self-Direction",
+        "tools": [
+          "Goal Setter",
+          "HOWL Tracker",
+          "One-Page Profile",
+          "MAPS",
+          "PATH",
+          "Values & Action",
+          "Career Compass",
+          "Growth Mindset",
+          "Executive Function"
+        ]
+      },
+      {
+        "name": "Social Awareness",
+        "tools": [
+          "Perspective Lens",
+          "Community & Culture",
+          "Upstander Training",
+          "Culture Explorer",
+          "Voice Detective"
+        ]
+      },
+      {
+        "name": "Relationship Skills",
+        "tools": [
+          "Conflict Resolution",
+          "Social Skills Lab",
+          "Teamwork Builder",
+          "DEAR MAN",
+          "Motivational Interviewing",
+          "Crew Protocols",
+          "Healthy Relationships",
+          "Restorative Circle",
+          "Friendship Builder",
+          "Social Skills Roleplay",
+          "Peer Support Coach",
+          "Conflict Theater"
+        ]
+      },
+      {
+        "name": "Responsible Decision-Making",
+        "tools": [
+          "Decision Lab",
+          "Feelings Journal",
+          "Safety & Boundaries",
+          "Ethical Reasoning Lab"
+        ]
+      },
+      {
+        "name": "Stewardship",
+        "tools": [
+          "Land & Place",
+          "Civic Action & Hope"
+        ]
+      }
+    ]
+  },
+  {
+    "hub": "Research Hub",
+    "icon": "🔎",
+    "total": 3,
+    "categories": [
+      {
+        "name": "Inquiry lanes",
+        "tools": [
+          "Scientific Inquiry — Phenomenon Workbench",
+          "Engineering Design — Design Studio",
+          "Humanities & Social Research — Inquiry Studio"
+        ]
+      }
+    ]
+  },
+  {
+    "hub": "Studios & Surfaces",
+    "icon": "🎬",
+    "total": 32,
+    "categories": [
+      {
+        "name": "Open from anywhere",
+        "tools": [
+          "Accessibility Lab",
+          "AlloHaven",
+          "AlloStudio",
+          "Behavior Lens",
+          "Cinematic Studio",
+          "Community Catalog",
+          "Document Builder",
+          "Dynamic Assessment",
+          "Educator Hub",
+          "Family Bridge",
+          "Go to the dashboard",
+          "Guided Mode",
+          "Interview Mode",
+          "Learning Hub",
+          "LitLab",
+          "Lumen (data canvas)",
+          "Memory Palace",
+          "Open Groove Studio",
+          "PoetTree",
+          "Read this page to me",
+          "Reading Library",
+          "Report Writer",
+          "SEL Hub",
+          "STEM Lab",
+          "StoryForge",
+          "Symbol Studio",
+          "Throughline",
+          "Video Studio",
+          "Visual Organizer",
+          "Whiteboard",
+          "export menu",
+          "my notebook"
+        ]
+      }
+    ]
+  }
+];
+/* ATLAS_DATA_END */
+
+// One hub: icon + name + total count, with its categories and tools. The big
+// hubs (STEM, SEL) start collapsed so the tab opens scannable, not as a wall.
+function AtlasHubCard({ hub, defaultOpen }) {
+  const catCount = hub.categories ? hub.categories.length : 0;
+  return (
+    <details open={defaultOpen} className="bg-white rounded-xl border border-slate-200 shadow-sm group">
+      <summary className="cursor-pointer select-none p-4 flex items-center gap-2 hover:bg-slate-50 rounded-xl">
+        <span className="text-xl leading-none" aria-hidden="true">{hub.icon}</span>
+        <span className="font-bold text-slate-800 text-sm flex-1">{hub.hub}</span>
+        <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-nowrap">
+          {hub.total}{catCount > 1 ? ` · ${catCount} areas` : ''}
+        </span>
+        <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform text-xs">▸</span>
+      </summary>
+      <div className="px-4 pb-4 pt-0 space-y-3">
+        {(hub.categories || []).map((cat) => (
+          <div key={cat.name}>
+            <h6 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-1.5">{cat.name} <span className="text-slate-400">· {cat.tools.length}</span></h6>
+            <div className="flex flex-wrap gap-1.5">
+              {cat.tools.map((tool, i) => (
+                <span key={tool + i} className="text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
+                  {tool}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+// The Atlas tab: a browsable directory of the whole app, by domain.
+function AtlasTab({ t }) {
+  return (
+    <div className="space-y-5 text-slate-700">
+      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+        <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
+          <span aria-hidden="true">🗺️</span>
+          {t('about.atlas_title') || 'The AlloFlow Atlas'}
+        </h4>
+        <p className="text-sm leading-relaxed text-slate-700">
+          {t('about.atlas_intro') || 'A map of everything inside AlloFlow, by hub. Expand any hub to see its full set of tools — open the tool menu or a hub to launch them. This page is here to help you see the whole landscape at a glance.'}
+        </p>
+      </div>
+      <div className="space-y-2.5">
+        {ATLAS_HUBS.map((hub, idx) => (
+          <AtlasHubCard key={hub.hub} hub={hub} defaultOpen={idx < 1} />
+        ))}
+      </div>
+      <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
+        {t('about.atlas_footer') || 'This directory is generated from AlloFlow’s live tool catalogs, so counts and names stay current. New tools appear here automatically as they ship.'}
+      </p>
+    </div>
+  );
+}
+
+// Privacy & FERPA. Wording is deliberately measured: it describes how AlloFlow
+// is designed, and does NOT claim certified FERPA compliance (that is the
+// district's determination). Review before deploy.
+function PrivacyTab({ t }) {
+  const noop = () => null;
+  const ShieldCheck = window.ShieldCheck || noop;
+  const Wifi = window.Wifi || noop;
+  const Cloud = window.Cloud || noop;
+  return (
+    <div className="space-y-4 text-slate-700">
+      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+        <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
+          <ShieldCheck size={18} />
+          {t('about.privacy_title') || 'Privacy & student data'}
+        </h4>
+        <p className="text-sm leading-relaxed text-slate-700">
+          {t('about.privacy_intro') || 'AlloFlow is built to support FERPA-conscious classrooms. Here is where data goes so your school can make its own determination.'}
+        </p>
+      </div>
+
+      <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100">
+        <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
+          <Wifi size={16} className="text-emerald-600" /> Stays on your device by default
+        </h5>
+        <p className="text-xs text-slate-600 leading-relaxed">
+          Student work — documents, saved activities, and progress — is stored locally on your device (in your browser), not on an AlloFlow server. Two features are the exception, and both are opt-in: a teacher can turn on <strong>cloud sync</strong> to back up their own history to Google Firebase, and <strong>live class sessions</strong> sync session state to Firebase while a session is running. No AlloFlow account or student login is required to use the tools.
+        </p>
+      </div>
+
+      <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100">
+        <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
+          <ShieldCheck size={16} className="text-emerald-600" /> Fully on-device: the School Box
+        </h5>
+        <p className="text-xs text-slate-600 leading-relaxed">
+          The offline <strong>School Box</strong> desktop app runs text-to-speech, speech-to-text, and its AI model entirely on the machine — so nothing has to leave the building. (The models download once during setup, then work offline.)
+        </p>
+      </div>
+
+      <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-100">
+        <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
+          <Cloud size={16} className="text-amber-600" /> When you use online AI: Google&apos;s Gemini
+        </h5>
+        <p className="text-xs text-slate-600 leading-relaxed mb-3">
+          AlloFlow has no AI server of its own. When you use an online AI feature (leveling, translation, tutors, or image/audio analysis), the request goes to <strong>Google&apos;s Gemini</strong> to generate the result. AI runs only when you choose it — never silently — and what&apos;s sent is the relevant text, plus an image (e.g. a scanned page) or a short audio clip for a few features. <strong>How that data is governed depends on how you&apos;re running AlloFlow:</strong>
+        </p>
+
+        <div className="bg-white/70 rounded-lg border border-amber-100 p-3 mb-2">
+          <p className="text-xs font-bold text-slate-800 mb-1">Inside Gemini Canvas (the usual way)</p>
+          <p className="text-xs text-slate-600 leading-relaxed mb-1.5">
+            Google&apos;s Canvas environment supplies the key automatically — you never enter one — and the request runs under your signed-in Google account, so the data is governed by <strong>your account type</strong>:
+          </p>
+          <ul className="space-y-1.5 text-xs text-slate-600 list-none">
+            <li className="flex items-start gap-2"><span className="text-emerald-600 font-bold shrink-0">•</span><span>A <strong>Google Workspace for Education</strong> account whose institution has enabled Gemini as a core service (under its Google Workspace terms / DPA): the Gemini app — Canvas included — carries enterprise protections. Prompts and files <strong>aren&apos;t used to train Google&apos;s models and aren&apos;t reviewed by humans</strong>, and Google acts as a FERPA &ldquo;School Official.&rdquo; Confirm your edition and coverage with your Workspace admin.</span></li>
+            <li className="flex items-start gap-2"><span className="text-amber-600 font-bold shrink-0">•</span><span>A <strong>personal</strong> Google account: consumer Gemini terms apply and data may be retained or reviewed per those terms — <strong>not appropriate for student data</strong>.</span></li>
+          </ul>
+        </div>
+
+        <div className="bg-white/70 rounded-lg border border-amber-100 p-3">
+          <p className="text-xs font-bold text-slate-800 mb-1">Self-hosted web app or the Desktop School Box (your own key)</p>
+          <p className="text-xs text-slate-600 leading-relaxed mb-1.5">
+            The Desktop School Box runs AI on-device by default. If instead you add your own Gemini API key for cloud features (also how a self-hosted web copy works), the data is governed by the <strong>key&apos;s tier</strong>:
+          </p>
+          <ul className="space-y-1.5 text-xs text-slate-600 list-none">
+            <li className="flex items-start gap-2"><span className="text-emerald-600 font-bold shrink-0">•</span><span>A <strong>paid</strong> key (billed Google Cloud project): prompts and responses are <strong>not</strong> used to improve Google&apos;s products; enterprise protections, with optional zero-data-retention.</span></li>
+            <li className="flex items-start gap-2"><span className="text-amber-600 font-bold shrink-0">•</span><span>A <strong>free / unpaid</strong> key: Google may use the data to improve its products and human reviewers may read it; its terms say don&apos;t submit personal info — <strong>not appropriate for student data</strong>.</span></li>
+          </ul>
+          <p className="text-xs text-slate-600 leading-relaxed mt-2 pt-2 border-t border-amber-100/70">
+            For student data, a paid key alone isn&apos;t enough for FERPA — paid stops the training, but the key also has to belong to your <strong>school or district&apos;s own Google account under a Data Processing Addendum</strong> (so Google is acting as your institution&apos;s processor, its FERPA &ldquo;School Official&rdquo;), not a teacher&apos;s personal key. That can be a Workspace for Education account or the district&apos;s own Google Cloud project — it doesn&apos;t have to be an <em>Education</em> account specifically, but it does have to be the <em>institution&apos;s</em>.
+          </p>
+        </div>
+
+        <p className="text-xs text-slate-600 leading-relaxed mt-2">
+          <strong>Either way, avoid typing student names or identifying details into prompts you don&apos;t need to.</strong>
+        </p>
+      </div>
+
+      <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+        <h5 className="font-bold text-slate-800 text-sm mb-1.5 flex items-center gap-2">
+          <span aria-hidden="true">✅</span> Before using online AI with student data, check with your IT / district
+        </h5>
+        <ul className="space-y-1.5 text-xs text-slate-700 list-none mb-2.5">
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">1.</span><span>Have staff sign in with <strong>Google Workspace for Education</strong> accounts — not personal Google accounts — when using AI in Canvas.</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">2.</span><span>Confirm your district has <strong>enabled Gemini as a core service</strong> and accepted the Google Workspace terms / <strong>DPA</strong> that cover it (your Workspace admin can verify Canvas is included).</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">3.</span><span>For the self-hosted web or Desktop version, use a paid Gemini API key from the <strong>district&apos;s own Google account under your DPA</strong> — not a personal key (free <em>or</em> paid).</span></li>
+        </ul>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium">
+          <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline">Gemini API terms &amp; data use ↗</a>
+          <a href="https://cloud.google.com/security/compliance/ferpa" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline">Google Cloud &amp; FERPA ↗</a>
+          <a href="https://edu.google.com/intl/ALL_us/ai/gemini-for-education/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline">Gemini for Education ↗</a>
+        </div>
+      </div>
+
+      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <h5 className="font-bold text-slate-800 text-sm mb-1.5">Our commitments</h5>
+        <ul className="space-y-1.5 text-xs text-slate-700 list-none">
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">✓</span><span>AlloFlow itself doesn&apos;t sell data, show ads, or build advertising profiles, and adds no analytics or tracking scripts.</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">✓</span><span>No AlloFlow account or student login is required to use the tools.</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">✓</span><span>For fully in-building data handling, use the offline School Box.</span></li>
+        </ul>
+      </div>
+
+      <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
+        {t('about.privacy_footer') || 'This is a plain-language summary, not legal advice, and does not describe Google’s services on Google’s behalf. Your district remains responsible for its own FERPA determination and any agreements with Google. Questions? Get in touch.'}
+      </p>
+    </div>
+  );
+}
+
+// Accessibility statement — rendered inside the About tab (part of the UDL
+// mission story). States design intent toward WCAG, not certified conformance.
+function AccessibilityNote({ t }) {
+  return (
+    <div className="bg-teal-50/60 p-4 rounded-xl border border-teal-100 mt-4">
+      <h5 className="font-bold text-slate-800 text-sm mb-1.5 flex items-center gap-2">
+        <span aria-hidden="true">♿</span>
+        {t('about.a11y_title') || 'Accessibility'}
+      </h5>
+      <p className="text-xs text-slate-600 leading-relaxed mb-2">
+        {t('about.a11y_intro') || 'Accessibility isn’t a feature here — it’s the whole point. AlloFlow is designed toward WCAG 2.1 AA (a target, not a certification). We run automated accessibility checks with axe-core on the interface, and axe-core plus IBM Equal Access on the documents we generate, then independently validate the exported PDFs against PDF/UA-1 (ISO 14289-1) with veraPDF.'}
+      </p>
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-700 list-none">
+        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Dyslexia-friendly &amp; low-vision font options (OpenDyslexic, Atkinson Hyperlegible, Lexend)</span></li>
+        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Text-to-speech and read-aloud throughout</span></li>
+        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Keyboard navigation and screen-reader labels</span></li>
+        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Braille (.brf) export — Grade 1, with contracted UEB Grade 2 where available — plus tagged PDF/UA export</span></li>
+      </ul>
+      <p className="text-[10px] text-slate-400 leading-relaxed mt-2">
+        {t('about.a11y_footer') || 'Found a barrier? Tell us — accessibility bugs jump the queue.'}
+      </p>
+    </div>
+  );
+}
+
 function InfoModal({
   handleSetInfoModalTabToAbout,
+  handleSetInfoModalTabToAtlas,
   handleSetInfoModalTabToFeatures,
+  handleSetInfoModalTabToPrivacy,
+  handleSetInfoModalTabToOpenSource,
   handleSetShowInfoModalToFalse,
   infoModalTab,
   safeRemoveItem,
@@ -78,6 +1019,40 @@ function InfoModal({
     setSelectedFeature(null);
   }, [infoModalTab]);
 
+  const dialogRef = React.useRef(null);
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); handleSetShowInfoModalToFalse(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [handleSetShowInfoModalToFalse]);
+
+  const handleTabKeyDown = (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const tabs = Array.from(event.currentTarget.parentElement.querySelectorAll('[role="tab"]'));
+    const current = tabs.indexOf(event.currentTarget);
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    tabs[next].focus();
+    tabs[next].click();
+  };
+
   const colorMap = {
     indigo: 'bg-indigo-50 border-indigo-200 text-indigo-700',
     teal: 'bg-teal-50 border-teal-200 text-teal-700',
@@ -97,27 +1072,50 @@ function InfoModal({
   };
 
   return (
-    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowInfoModalToFalse} aria-label={t('common.close')}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+    <div role="presentation" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowInfoModalToFalse}>
+      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="info-modal-title" onClick={e => e.stopPropagation()}>
         <div className="bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0">
-          <h3 className="font-bold text-lg flex items-center gap-2"><Layers size={20}/> {t('about.title')}</h3>
+          <h3 id="info-modal-title" className="font-bold text-lg flex items-center gap-2"><Layers size={20}/> {t('about.title')}</h3>
           <button onClick={handleSetShowInfoModalToFalse} className="p-2 rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
         </div>
-        <div className="flex border-b border-slate-200 bg-slate-50 shrink-0">
+        <div className="flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto" role="tablist" aria-label={t('about.title')}>
           <button
+            id="info-tab-about" role="tab" aria-selected={infoModalTab === 'about'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'about' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToAbout}
-            className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'about' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'about' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_about')}
           </button>
           <button
+            id="info-tab-atlas" role="tab" aria-selected={infoModalTab === 'atlas'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'atlas' ? 0 : -1} onKeyDown={handleTabKeyDown}
+            onClick={handleSetInfoModalTabToAtlas}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'atlas' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+          >
+            {t('about.tab_atlas') || 'Atlas'}
+          </button>
+          <button
+            id="info-tab-features" role="tab" aria-selected={infoModalTab === 'features'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'features' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToFeatures}
-            className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_features')}
           </button>
+          <button
+            id="info-tab-privacy" role="tab" aria-selected={infoModalTab === 'privacy'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'privacy' ? 0 : -1} onKeyDown={handleTabKeyDown}
+            onClick={handleSetInfoModalTabToPrivacy}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'privacy' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+          >
+            {t('about.tab_privacy') || 'Privacy'}
+          </button>
+          <button
+            id="info-tab-opensource" role="tab" aria-selected={infoModalTab === 'opensource'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'opensource' ? 0 : -1} onKeyDown={handleTabKeyDown}
+            onClick={handleSetInfoModalTabToOpenSource}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'opensource' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+          >
+            {t('about.tab_opensource') || 'Open Source'}
+          </button>
         </div>
-        <div className="p-6 overflow-y-auto custom-scrollbar">
+        <div id="info-modal-panel" role="tabpanel" aria-labelledby={`info-tab-${infoModalTab}`} tabIndex={0} className="p-6 overflow-y-auto custom-scrollbar focus:outline-none">
           {infoModalTab === 'about' ? (
             <div className="space-y-4 text-slate-700">
               <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
@@ -312,7 +1310,14 @@ function InfoModal({
                   </button>
                 </div>
               </div>
+              <AccessibilityNote t={t} />
             </div>
+          ) : infoModalTab === 'atlas' ? (
+            <AtlasTab t={t} />
+          ) : infoModalTab === 'privacy' ? (
+            <PrivacyTab t={t} />
+          ) : infoModalTab === 'opensource' ? (
+            <OpenSourceTab t={t} />
           ) : selectedFeature ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700">
               {/* Back Button */}
@@ -655,7 +1660,7 @@ function getFeatureDetails(title) {
     "Export Suite": {
       inputs: ["Lesson pack resources"],
       engine: ["IMS Common Cartridge packaging", "QTI quiz formatting", "PowerPoint slide builder"],
-      outputs: ["PowerPoint file (.pptx)", "LMS import package (.zip)", "Canvas QTI quizzes"],
+      outputs: ["PowerPoint file (.pptx)", "LMS import package (.zip)", "Canvas QTI quizzes", "Braille (.brf) — Grade 1, with contracted UEB Grade 2 where available"],
       customizations: ["Export individual resources vs full packages", "Edit PowerPoint theme colors"],
       proTip: "Export as Canvas QTI to immediately import generated exit tickets into your Canvas or Schoology course quizzes."
     },
@@ -753,15 +1758,15 @@ function getFeatureDetails(title) {
     "Symbol Studio": {
       inputs: ["Vocabulary list / target concept", "Student communication profile", "Board layout preference"],
       engine: ["AI PCS-style symbol generation (Imagen + image-to-image)", "Board layout grid builder", "Symbol Quest 4 game modes", "Word Garden familiarity + cross-context tracking", "Carol Gray social-story formatting"],
-      outputs: ["AAC communication boards (8 Quick Board types)", "Visual schedules", "Social stories", "Word Garden growth report (clinical, parent, teacher, poster, CSV)", "Multilingual boards (14 languages)"],
+      outputs: ["AAC communication boards (8 Quick Board types)", "Visual schedules", "Social stories", "Word Garden growth report (clinical, parent, teacher, poster, CSV)", "Multilingual boards (60+ languages)"],
       customizations: ["Per-cell parent voice recording", "Up to 8 student profiles", "Partner-assisted scanning", "Wish-seed capture for unmet vocabulary"],
       proTip: "Word Garden's wish-seed button (💫) captures the moment a student reaches for a word that isn't on their board — invaluable data for next-board planning."
     },
     "STEM Lab": {
-      inputs: ["Tool selection from 95+ simulations across 9 subject areas", "Optional grade + standards filters"],
+      inputs: ["Tool selection from 115+ simulations across 16 subject areas", "Optional grade + standards filters"],
       engine: ["Dynamically lazy-loaded per-tool plugin (Cloudflare Pages CDN)", "Per-tool state persistence", "Theme-aware rendering shell"],
-      outputs: ["Interactive math labs (Fractions, Algebra CAS, 3D Geometry, Calculus, Probability)", "Life science (Cell, Anatomy, Brain Atlas, DNA Lab, Punnett, Dissection, Ecosystem)", "Earth/Space (Plate Tectonics, Solar System, Universe Timelapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration)", "CS, creative design, social studies, and applied simulation tools"],
-      customizations: ["95+ individual tool configurations", "Some tools support multi-student saved worlds", "Print/export per tool"],
+      outputs: ["Interactive math labs (Fraction Lab, Algebra Solver, Geometry Sandbox, Calculus Visualizer, Graphing Calculator)", "Life science (Cell Simulator, Human Anatomy, Brain Atlas, DNA Lab, Punnett Square, Dissection Lab, Ecosystem, Dino Lab)", "Earth/Space (Plate Tectonics, Solar System, Moon Mission, Universe Time-Lapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration Lab)", "Open-source shelves (Data Lab, Sim Shelf, Circuit Shelf, Molecule Shelf, Zoom Gallery, Timeline Studio)", "CS, life-skills/CTE, creative design, and social-studies tools"],
+      customizations: ["115+ individual tool configurations", "Some tools support multi-student saved worlds", "Print/export per tool"],
       proTip: "Open STEM Lab from the Educator Hub and search by keyword — the catalog filters to tools matching your current lesson topic in real time."
     },
     "DBQ Generator": {
@@ -791,6 +1796,83 @@ function getFeatureDetails(title) {
       outputs: ["Annotated passage with persistent overlays", "Exportable annotated PDF", "Voice-note library", "Color-coded highlight layers (theme, evidence, vocabulary, question)"],
       customizations: ["Annotation tool selection", "Color palette for layer types", "Voice-note transcription on/off", "Export with or without annotations"],
       proTip: "Use color-coded highlight layers (theme / evidence / vocabulary / question) consistently across a unit — students start recognizing the pattern and self-annotating in the same scheme."
+    },
+    "Reading Library": {
+      inputs: ["Language, reading level, and topic filters", "Optional: pin a book to the current lesson"],
+      engine: ["Openly licensed StoryWeaver catalog (CC BY)", "In-app Immersive Reader + translation", "MediaRecorder fluency capture"],
+      outputs: ["Hundreds of leveled picture books across dozens of languages", "Read-aloud with karaoke highlighting", "Oral-reading-fluency passages (WCPM + accuracy)"],
+      customizations: ["Filter by language, level, and theme", "Translate a book in-reader", "Use any book as a fluency passage"],
+      proTip: "Filter by both a home language and an English level to hand a newcomer the same story in both — a ready-made bilingual bridge."
+    },
+    "Document Hub": {
+      inputs: ["A document, upload, or generated resource"],
+      engine: ["WYSIWYG editor", "Document pipeline (build → remediate → export)", "PDF/UA tagging + veraPDF validation"],
+      outputs: ["Edited differentiated document", "Accessible PDF (tagged)", "Multi-format export (PDF, DOCX, PPTX, HTML, Braille)"],
+      customizations: ["Edit in place before export", "Choose target accessibility score", "Pick export formats"],
+      proTip: "Run the accessibility remediation before exporting — the Hub tags the PDF and independently checks it against PDF/UA so it is classroom-ready, not just printed."
+    },
+    "Memory Palace": {
+      inputs: ["Facts, terms, or a list to memorize", "A room or route to place them in"],
+      engine: ["three.js 3D scene", "Spaced-repetition scheduler", "WebXR / VR support"],
+      outputs: ["Walkable 3D memory palace", "Recall + spaced-repetition sessions", "Decorated, sharable spaces"],
+      customizations: ["Choose rooms and decorations", "Walk, recall, or sculpt modes", "Enter VR where supported"],
+      proTip: "Have students place vocabulary along a route they know well (their walk to class) — the familiar path is the scaffold that makes the recall stick."
+    },
+    "Whiteboard": {
+      inputs: ["A blank canvas or an imported image"],
+      engine: ["Excalidraw infinite canvas", "Hand-drawn-style shapes", "Export to image"],
+      outputs: ["Diagrams, sketches, and brainstorms", "Exportable board images", "Shared visual space"],
+      customizations: ["Shapes, arrows, freehand, and text", "Color and stroke styles", "Export selection or full board"],
+      proTip: "Sketch a concept map live while you teach, then export the board as an image and drop it straight into a lesson pack."
+    },
+    "Accessibility Lab": {
+      inputs: ["Any AlloFlow view or generated resource"],
+      engine: ["axe-core automated audit", "Preview-as-student rendering", "Disability simulators"],
+      outputs: ["Accessibility audit report", "Keyboard-only and screen-reader walkthrough", "Simulated low-vision / color-vision / dyslexia previews"],
+      customizations: ["Choose which simulator to run", "Audit a single view or a full resource", "Toggle keyboard-tour mode"],
+      proTip: "Run the color-vision and low-vision simulators on a finished handout before you assign it — it surfaces contrast problems a checklist misses."
+    },
+    "Research Hub": {
+      inputs: ["A research question or phenomenon", "A chosen inquiry lane"],
+      engine: ["Three lanes: Scientific Inquiry, Engineering Design (Constraint Forge), Humanities (Inquiry Studio)", "Lateral source-evaluation (SIFT) scaffolds", "Claim–evidence–warrant builder"],
+      outputs: ["Structured inquiry workspace", "Source-evaluation notes", "A public argument or informed-action product"],
+      customizations: ["Pick the lane that fits the discipline", "Scaffold depth by grade", "Standpoint + method selection"],
+      proTip: "Start in the Humanities lane's question workbench — getting students to a genuinely contestable question up front is what makes the rest of the inquiry real."
+    },
+    "Video Studio": {
+      inputs: ["A lesson, document, or script"],
+      engine: ["Screen recording", "AI narration (TTS)", "Multi-scene composition"],
+      outputs: ["Narrated instructional video", "Multi-scene walkthroughs", "Downloadable video file"],
+      customizations: ["Record screen, narrate, or both", "Choose a narration voice", "Arrange scenes and captions"],
+      proTip: "Generate a narrated walkthrough of a complex handout so students who were absent — or who need a re-teach — can replay it on their own time."
+    },
+    "AlloStudio": {
+      inputs: ["A plain-language request for what you want built"],
+      engine: ["Agentic tool-and-resource builder", "Iterative edit loop"],
+      outputs: ["Generated AlloFlow resources and tools", "Editable, refinable drafts"],
+      customizations: ["Describe the outcome in your own words", "Refine with follow-up requests", "Keep or discard drafts"],
+      proTip: "Describe the finished artifact you want (\"a 3-station rotation on the water cycle for grade 4\") rather than the steps — the studio plans the steps for you."
+    },
+    "Guided Mode": {
+      inputs: ["A topic or goal for a lesson"],
+      engine: ["Step-by-step co-authoring flow", "Type-matched next-step suggestions", "Resume from where you left off"],
+      outputs: ["A complete differentiated lesson pack, built step by step", "Saved progress you can return to"],
+      customizations: ["Follow every step or jump ahead", "Accept or revise each suggestion", "Resume a partially built lesson"],
+      proTip: "New to AlloFlow? Start here — Guided Mode makes the tool decisions for you the first few times, so you learn the workflow by doing it."
+    },
+    "Community Catalog": {
+      inputs: ["A search, or a resource of your own to share"],
+      engine: ["Shared catalog of teacher-made packs and tools", "Import into your workspace"],
+      outputs: ["Browsable community resources", "One-click import", "Optional publish-your-own"],
+      customizations: ["Search and filter by subject/grade", "Import and then adapt", "Share your own packs"],
+      proTip: "Import a community pack as a starting point, then re-level and translate it for your class — you inherit someone's structure and keep your own differentiation."
+    },
+    "Professional Development": {
+      inputs: ["Choose a learning module"],
+      engine: ["Short in-app PD modules", "UDL + differentiation grounding"],
+      outputs: ["Self-paced professional learning", "Practical how-tos tied to AlloFlow tools"],
+      customizations: ["Pick modules by topic", "Go at your own pace"],
+      proTip: "Pair a PD module with the tool it covers open in the next tab — read a step, then try it immediately on a real lesson."
     }
   };
 

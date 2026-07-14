@@ -217,10 +217,32 @@ const storageDB = {
     } catch (e) { warnLog("storageDB Clear Error:", e); }
   }
 };
-const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5) => {
+const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, perRequestTimeoutMs = 120000) => {
+  // Per-request timeout (2026-06-16). The retry cap below only fires when a request FAILS.
+  // A request the server accepts but never answers (no response, no error) would otherwise
+  // hang this await FOREVER — which silently wedged whole remediation sections ("stuck
+  // Fixing…", spinner never clears, no error toast) whenever one AI call never settled. Bound
+  // every attempt with an AbortController so a dead request rejects → retries → and ultimately
+  // throws, letting callers fail-soft (e.g. the per-section deterministic-only fallback) instead
+  // of hanging. The timeout is generous (no legitimate call takes this long) — it only breaks
+  // true hangs. We compose with the caller's signal so an explicit Stop still cancels instantly
+  // and is NOT retried (a caller abort is final; our own timeout is transient).
+  const callerSignal = options.signal || null;
+  const _safeUrl = String(url).split('?')[0]; // redact ?key=… from error messages (own-key/self-hosted users land in error reports)
   for (let i = 0; i < maxRetries; i++) {
+    const _timeoutCtrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    let _timedOut = false;
+    let _timer = null;
+    const _onCallerAbort = () => { if (_timeoutCtrl) { try { _timeoutCtrl.abort(); } catch (_) {} } };
+    if (_timeoutCtrl) {
+      _timer = setTimeout(() => { _timedOut = true; try { _timeoutCtrl.abort(); } catch (_) {} }, perRequestTimeoutMs);
+      if (callerSignal) {
+        if (callerSignal.aborted) { try { _timeoutCtrl.abort(); } catch (_) {} }
+        else { try { callerSignal.addEventListener('abort', _onCallerAbort); } catch (_) {} }
+      }
+    }
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url, _timeoutCtrl ? { ...options, signal: _timeoutCtrl.signal } : options);
       if (response.ok) {
         return response;
       }
@@ -244,14 +266,35 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5) =>
       if (response.status === 429 || response.status === 503) {
         warnLog(`⚠️ Transient API error ${response.status}, retrying (${i+1}/${maxRetries})...`);
         if (i === maxRetries - 1) {
-          throw new Error(`HTTP ${response.status} — Failed to fetch ${url} after ${maxRetries} retries.`);
+          throw new Error(`HTTP ${response.status} — Failed to fetch ${_safeUrl} after ${maxRetries} retries.`);
         }
       }
     } catch (error) {
-      if (error.isFatal) throw error;
-      if (i === maxRetries - 1) {
-        throw error;
+      // Caller-initiated abort (e.g. the user pressed Stop): propagate immediately and NEVER
+      // retry — re-issuing a request the caller explicitly cancelled is wrong (and would burn
+      // another quota slice). Surfaced as a named AbortError so callGemini stops cleanly.
+      if (callerSignal && callerSignal.aborted) {
+        const _abErr = new Error('Request aborted by caller');
+        _abErr.name = 'AbortError';
+        _abErr.isFatal = true;
+        throw _abErr;
       }
+      // Our own per-request timeout: the request hung. Treat as transient (a retry may settle);
+      // on the final attempt, surface an honest timeout error instead of hanging forever.
+      if (_timedOut || (error && error.name === 'AbortError')) {
+        warnLog(`⚠️ Request timed out after ~${Math.round(perRequestTimeoutMs/1000)}s, retrying (${i+1}/${maxRetries})...`);
+        if (i === maxRetries - 1) {
+          throw new Error(`Timed out after ${maxRetries} attempt(s) (~${Math.round(perRequestTimeoutMs/1000)}s each) — ${_safeUrl}`);
+        }
+      } else {
+        if (error.isFatal) throw error;
+        if (i === maxRetries - 1) {
+          throw error;
+        }
+      }
+    } finally {
+      if (_timer) clearTimeout(_timer);
+      if (callerSignal) { try { callerSignal.removeEventListener('abort', _onCallerAbort); } catch (_) {} }
     }
     // Exponential backoff with jitter to prevent thundering herd on parallel requests
     const baseDelay = Math.pow(2, i) * 1000;
@@ -260,7 +303,7 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5) =>
     warnLog(`[API] Backing off ${Math.round(delay)}ms before retry ${i + 1}...`);
     await new Promise(resolve => setTimeout(resolve, delay));
   }
-  throw new Error(`Failed to fetch ${url} after ${maxRetries} retries.`);
+  throw new Error(`Failed to fetch ${_safeUrl} after ${maxRetries} retries.`);
 };
 
 const isGoogleRedirect = (url) => {
@@ -583,6 +626,120 @@ const optimizeImage = (base64Str, maxWidth = 800, quality = 0.9) => {
     });
 };
 
+// ─── Inline parametric diagram renderer (shared by MathView + QuizView; roadmap step 2/3) ──
+// Pure: {tool,state} → ACCESSIBLE SVG string (role=img + <title>/<desc>, escaped labels) for the
+// common quantitative manipulative types. ONE canonical copy here so math + quiz + future surfaces
+// never drift. Returns null for unsupported tools / missing state (caller falls back).
+function _renderDiagramSvg(tool, state, titleText) {
+  if (!tool || !state) return null;
+  var esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+  var num = function (v, d) { var n = Number(v); return isFinite(n) ? n : d; };
+  if (tool === 'numberline') {
+    var range = state.range || {};
+    var min = num(range.min, 0), max = num(range.max, 10);
+    if (max <= min) max = min + 10;
+    var W = 380, padX = 24, axisY = 46;
+    var sx = function (v) { return padX + ((num(v, min) - min) / (max - min)) * (W - 2 * padX); };
+    var span = max - min;
+    var step = span <= 10 ? 1 : span <= 20 ? 2 : span <= 50 ? 5 : Math.ceil(span / 10);
+    var ticks = '';
+    for (var tv = Math.ceil(min); tv <= max; tv += step) {
+      var tx = sx(tv);
+      ticks += '<line x1="' + tx + '" y1="' + (axisY - 5) + '" x2="' + tx + '" y2="' + (axisY + 5) + '" stroke="#475569" stroke-width="1.5"/>'
+        + '<text x="' + tx + '" y="' + (axisY + 20) + '" font-size="11" fill="#475569" text-anchor="middle">' + esc(tv) + '</text>';
+    }
+    var markers = '', descParts = [];
+    (Array.isArray(state.markers) ? state.markers : []).forEach(function (m) {
+      var mv = num(m && m.value, null);
+      if (mv == null) return;
+      var mx = sx(mv);
+      var lbl = (m && m.label) ? String(m.label) : String(mv);
+      markers += '<circle cx="' + mx + '" cy="' + axisY + '" r="6" fill="#4f46e5"/>'
+        + '<text x="' + mx + '" y="' + (axisY - 12) + '" font-size="11" font-weight="bold" fill="#4f46e5" text-anchor="middle">' + esc(lbl) + '</text>';
+      descParts.push(lbl + ' at ' + mv);
+    });
+    var nlTitle = esc(titleText || 'Number line');
+    var nlDesc = esc('Number line from ' + min + ' to ' + max + (descParts.length ? '. Marked: ' + descParts.join(', ') + '.' : '.'));
+    return '<svg viewBox="0 0 ' + W + ' 84" role="img" aria-label="' + nlTitle + ': ' + nlDesc + '" width="100%" style="max-width:420px"><title>' + nlTitle + '</title><desc>' + nlDesc + '</desc>'
+      + '<line x1="' + padX + '" y1="' + axisY + '" x2="' + (W - padX) + '" y2="' + axisY + '" stroke="#475569" stroke-width="2"/>'
+      + ticks + markers + '</svg>';
+  }
+  if (tool === 'coordinate') {
+    var pts = Array.isArray(state.points) ? state.points.filter(function (p) { return p && isFinite(Number(p.x)) && isFinite(Number(p.y)); }) : [];
+    var coords = pts.map(function (p) { return Math.abs(Number(p.x)); }).concat(pts.map(function (p) { return Math.abs(Number(p.y)); }));
+    var R = coords.length ? Math.max(5, Math.ceil(Math.max.apply(null, coords))) : 10;
+    if (R > 20) R = 20;
+    var S = 240, pad = 16, origin = S / 2, unit = (S / 2 - pad) / R;
+    var cx = function (x) { return origin + num(x, 0) * unit; };
+    var cy = function (y) { return origin - num(y, 0) * unit; };
+    var grid = '';
+    for (var g = -R; g <= R; g++) {
+      grid += '<line x1="' + cx(g) + '" y1="' + pad + '" x2="' + cx(g) + '" y2="' + (S - pad) + '" stroke="#e2e8f0" stroke-width="1"/>'
+        + '<line x1="' + pad + '" y1="' + cy(g) + '" x2="' + (S - pad) + '" y2="' + cy(g) + '" stroke="#e2e8f0" stroke-width="1"/>';
+    }
+    var axes = '<line x1="' + pad + '" y1="' + origin + '" x2="' + (S - pad) + '" y2="' + origin + '" stroke="#475569" stroke-width="1.5"/>'
+      + '<line x1="' + origin + '" y1="' + pad + '" x2="' + origin + '" y2="' + (S - pad) + '" stroke="#475569" stroke-width="1.5"/>';
+    var plotted = '', cDesc = [];
+    pts.forEach(function (p) {
+      var px = cx(p.x), py = cy(p.y);
+      var plbl = (p.label ? String(p.label) + ' ' : '') + '(' + Number(p.x) + ', ' + Number(p.y) + ')';
+      plotted += '<circle cx="' + px + '" cy="' + py + '" r="5" fill="#4f46e5"/>'
+        + '<text x="' + (px + 7) + '" y="' + (py - 7) + '" font-size="10" font-weight="bold" fill="#4f46e5">' + esc(plbl) + '</text>';
+      cDesc.push(plbl);
+    });
+    var cTitle = esc(titleText || 'Coordinate grid');
+    var cDescStr = esc('Coordinate plane, axes from -' + R + ' to ' + R + (cDesc.length ? '. Points: ' + cDesc.join('; ') + '.' : '.'));
+    return '<svg viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="' + cTitle + ': ' + cDescStr + '" width="100%" style="max-width:300px"><title>' + cTitle + '</title><desc>' + cDescStr + '</desc>'
+      + grid + axes + plotted + '</svg>';
+  }
+  if (tool === 'fractions') {
+    var fDen = Math.max(1, Math.round(num(state.denominator, 1)));
+    var fNum = Math.max(0, Math.min(fDen, Math.round(num(state.numerator, 0))));
+    var fW = 320, fBarY = 12, fBarH = 38, fPadX = 10, fBarW = fW - 2 * fPadX, fpw = fBarW / fDen;
+    var fCells = '';
+    for (var fi = 0; fi < fDen; fi++) {
+      fCells += '<rect x="' + (fPadX + fi * fpw) + '" y="' + fBarY + '" width="' + fpw + '" height="' + fBarH + '" fill="' + (fi < fNum ? '#4f46e5' : '#ffffff') + '" stroke="#475569" stroke-width="1.5"/>';
+    }
+    var frTitle = esc(titleText || ('Fraction ' + fNum + '/' + fDen));
+    var frDesc = esc(fNum + ' of ' + fDen + ' equal parts shaded (' + fNum + '/' + fDen + ').');
+    return '<svg viewBox="0 0 ' + fW + ' 78" role="img" aria-label="' + frTitle + ': ' + frDesc + '" width="100%" style="max-width:360px"><title>' + frTitle + '</title><desc>' + frDesc + '</desc>'
+      + fCells + '<text x="' + (fW / 2) + '" y="' + (fBarY + fBarH + 22) + '" font-size="14" font-weight="bold" fill="#4f46e5" text-anchor="middle">' + esc(fNum + '/' + fDen) + '</text></svg>';
+  }
+  if (tool === 'base10') {
+    var bH = Math.max(0, Math.round(num(state.hundreds, 0))), bT = Math.max(0, Math.round(num(state.tens, 0))), bO = Math.max(0, Math.round(num(state.ones, 0)));
+    var bu = 5, bx = 8, by0 = 8, bParts = '';
+    for (var bhi = 0; bhi < Math.min(bH, 9); bhi++) {
+      bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + (bu * 10) + '" height="' + (bu * 10) + '" fill="#c7d2fe" stroke="#4f46e5" stroke-width="1.5"/>';
+      for (var bk = 1; bk < 10; bk++) bParts += '<line x1="' + (bx + bk * bu) + '" y1="' + by0 + '" x2="' + (bx + bk * bu) + '" y2="' + (by0 + bu * 10) + '" stroke="#4f46e5" stroke-width="0.4"/><line x1="' + bx + '" y1="' + (by0 + bk * bu) + '" x2="' + (bx + bu * 10) + '" y2="' + (by0 + bk * bu) + '" stroke="#4f46e5" stroke-width="0.4"/>';
+      bx += bu * 10 + 10;
+    }
+    for (var bti = 0; bti < Math.min(bT, 9); bti++) {
+      bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + bu + '" height="' + (bu * 10) + '" fill="#a5b4fc" stroke="#4f46e5" stroke-width="1"/>';
+      for (var bk2 = 1; bk2 < 10; bk2++) bParts += '<line x1="' + bx + '" y1="' + (by0 + bk2 * bu) + '" x2="' + (bx + bu) + '" y2="' + (by0 + bk2 * bu) + '" stroke="#4f46e5" stroke-width="0.4"/>';
+      bx += bu + 4;
+    }
+    bx += 8;
+    for (var boi = 0; boi < Math.min(bO, 9); boi++) { bParts += '<rect x="' + bx + '" y="' + by0 + '" width="' + bu + '" height="' + bu + '" fill="#818cf8" stroke="#4f46e5" stroke-width="1"/>'; bx += bu + 3; }
+    var bTotal = bH * 100 + bT * 10 + bO, bVW = Math.max(bx + 8, 80);
+    var bTitle = esc(titleText || ('Base-ten blocks showing ' + bTotal));
+    var bDesc = esc(bH + ' hundreds, ' + bT + ' tens, ' + bO + ' ones = ' + bTotal + '.');
+    return '<svg viewBox="0 0 ' + bVW + ' 70" role="img" aria-label="' + bTitle + ': ' + bDesc + '" width="100%" style="max-width:' + Math.min(bVW, 460) + 'px"><title>' + bTitle + '</title><desc>' + bDesc + '</desc>' + bParts + '</svg>';
+  }
+  if (tool === 'protractor') {
+    var pAng = Math.max(0, Math.min(180, num(state.angle, 45)));
+    var pRad = pAng * Math.PI / 180, pvx = 100, pvy = 112, pLen = 84;
+    var pex = (pvx + pLen * Math.cos(pRad)).toFixed(1), pey = (pvy - pLen * Math.sin(pRad)).toFixed(1);
+    var prTitle = esc(titleText || (pAng + ' degree angle'));
+    var prDesc = esc('An angle of ' + pAng + ' degrees between a horizontal ray and a second ray.');
+    return '<svg viewBox="0 0 220 140" role="img" aria-label="' + prTitle + ': ' + prDesc + '" width="100%" style="max-width:240px"><title>' + prTitle + '</title><desc>' + prDesc + '</desc>'
+      + '<line x1="' + pvx + '" y1="' + pvy + '" x2="' + (pvx + pLen) + '" y2="' + pvy + '" stroke="#475569" stroke-width="2"/>'
+      + '<line x1="' + pvx + '" y1="' + pvy + '" x2="' + pex + '" y2="' + pey + '" stroke="#4f46e5" stroke-width="2"/>'
+      + '<circle cx="' + pvx + '" cy="' + pvy + '" r="3" fill="#475569"/>'
+      + '<text x="' + (pvx + 30) + '" y="' + (pvy - 14) + '" font-size="14" font-weight="bold" fill="#4f46e5">' + esc(pAng + '°') + '</text></svg>';
+  }
+  return null;
+}
+
 // ─── Registration ───────────────────────────────────────────────────────────
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.UtilsPure = {
@@ -600,6 +757,7 @@ window.AlloModules.UtilsPure = {
   isYouTubeUrl,
   fetchAndCleanUrl,
   optimizeImage,
+  _renderDiagramSvg,
 };
 if (typeof window._upgradeUtilsPure === 'function') {
   window._upgradeUtilsPure();

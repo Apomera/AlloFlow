@@ -1,6 +1,10 @@
 # AlloFlow "School Box" — Local AI Stack
 
-Run AlloFlow entirely on local hardware with no cloud dependencies. All student data stays on-premise. All AI runs locally via Ollama.
+This is the optional Docker-based School Box server stack. It is useful for school-owned boxes, district/server experiments, air-gapped deployments, and heavier local infrastructure tests.
+
+For the normal AlloFlow Desktop package, use `desktop/README.md` instead. Desktop already serves the bundled app, manages local keys, can run the built-in AI engine, and supports Desktop LAN classroom sessions without Docker. Docker Desktop is needed only when you intentionally want this separate server stack.
+
+When you do use this stack, it runs AlloFlow entirely on local hardware with no cloud dependencies. All student data stays on-premise. All AI runs locally via Ollama.
 
 ## Quick Start
 

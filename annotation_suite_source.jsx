@@ -256,6 +256,46 @@ function makeDragHandler(s, hostFinder, onMove, wasDraggedRef) {
   };
 }
 
+function announceAnnotationMove(message) {
+  let live = document.getElementById('allo-annotation-move-status');
+  if (!live) {
+    live = document.createElement('div');
+    live.id = 'allo-annotation-move-status';
+    live.className = 'sr-only';
+    live.setAttribute('role', 'status');
+    live.setAttribute('aria-live', 'polite');
+    live.setAttribute('aria-atomic', 'true');
+    document.body.appendChild(live);
+  }
+  live.textContent = '';
+  window.setTimeout(function () { live.textContent = message; }, 0);
+}
+
+function makeKeyboardMoveHandler(annotation, hostFinder, onMove, onActivate) {
+  return function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && onActivate) {
+      e.preventDefault();
+      onActivate();
+      return;
+    }
+    const movement = {
+      ArrowLeft: { x: -1, y: 0, label: 'left' },
+      ArrowRight: { x: 1, y: 0, label: 'right' },
+      ArrowUp: { x: 0, y: -1, label: 'up' },
+      ArrowDown: { x: 0, y: 1, label: 'down' }
+    }[e.key];
+    if (!movement || !onMove) return;
+    const host = hostFinder ? hostFinder(e.currentTarget) : null;
+    if (!host) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const step = e.shiftKey ? 40 : 10;
+    const nextX = Math.max(0, Math.min(host.clientWidth - 14, annotation.x + movement.x * step));
+    const nextY = Math.max(0, Math.min(host.clientHeight - 14, annotation.y + movement.y * step));
+    onMove(annotation.id, nextX, nextY, true);
+    announceAnnotationMove(`Annotation moved ${movement.label}${e.shiftKey ? ' by a larger step' : ''}.`);
+  };
+}
 // Find the absolute-positioning host of an annotation element. Walks up
 // looking for `data-allo-anno-host` (set by the caller) or falls back to
 // the nearest positioned ancestor. Used by drag math to convert client
@@ -290,8 +330,11 @@ function StickerNode({ s, draggable, onMove }) {
       className={'absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] select-none z-50 hover:scale-110 transition-transform' + pointerClass + dragClass + ringClass}
       style={{ top: s.y - 15, left: s.x - 15, touchAction: isDraggable ? 'none' : undefined }}
       title={title || icon}
-      aria-label={title ? (icon + ' — ' + title) : icon}
+      aria-label={(title ? (icon + ' — ' + title) : icon) + (isDraggable ? '. Use arrow keys to move; hold Shift for a larger step.' : '')}
       onPointerDown={isDraggable ? makeDragHandler(s, findAnnoHost, onMove) : undefined}
+      onKeyDown={isDraggable ? makeKeyboardMoveHandler(s, findAnnoHost, onMove) : undefined}
+      tabIndex={isDraggable ? 0 : undefined}
+      role={isDraggable ? 'button' : undefined}
     >
       {icon}
     </div>
@@ -342,10 +385,10 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
         className={'absolute z-50 select-none transition-transform ' + (isDraggable ? 'cursor-grab active:cursor-grabbing hover:scale-110' : 'cursor-pointer hover:scale-110')}
         style={{ top: a.y - 14, left: a.x - 14, width: 28, height: 28, touchAction: isDraggable ? 'none' : undefined }}
         title={(a.content ? a.content + ' — ' : '') + title}
-        aria-label={'Sticky note from ' + title + (a.content ? ': ' + a.content : '')}
+        aria-label={'Sticky note from ' + title + (a.content ? ': ' + a.content : '') + (isDraggable ? '. Use arrow keys to move; hold Shift for a larger step.' : '')}
         onPointerDown={handleDown}
         onClick={handleClick}
-        onKeyDown={function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(true); } }}
+        onKeyDown={makeKeyboardMoveHandler(a, findAnnoHost, isDraggable ? onMove : null, function () { setExpanded(true); })}
         tabIndex={0}
         role="button"
       >
@@ -445,10 +488,10 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
         className={'absolute z-50 select-none transition-transform ' + (isDraggable ? 'cursor-grab active:cursor-grabbing hover:scale-110' : 'cursor-pointer hover:scale-110')}
         style={{ top: a.y - 14, left: a.x - 14, width: 28, height: 28, touchAction: isDraggable ? 'none' : undefined }}
         title={title + (dur != null ? ' • ' + dur + 's' : '')}
-        aria-label={'Voice note from ' + title + (dur != null ? ', ' + dur + ' seconds' : '')}
+        aria-label={'Voice note from ' + title + (dur != null ? ', ' + dur + ' seconds' : '') + (isDraggable ? '. Use arrow keys to move; hold Shift for a larger step.' : '')}
         onPointerDown={handleDown}
         onClick={handleClick}
-        onKeyDown={function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(true); } }}
+        onKeyDown={makeKeyboardMoveHandler(a, findAnnoHost, isDraggable ? onMove : null, function () { setExpanded(true); })}
         tabIndex={0}
         role="button"
       >
@@ -604,11 +647,11 @@ function HighlightOverlay({ a, onDelete }) {
           background: 'transparent',
         }}
         onMouseEnter={function (e) {
-          const btn = e.currentTarget.querySelector('button[aria-label={t("a11y.delete_highlight")}]');
+          const btn = e.currentTarget.querySelector('button'); // the wrapper's only button is the delete (✕) control; was a broken JSX-in-selector string
           if (btn) btn.style.opacity = '1';
         }}
         onMouseLeave={function (e) {
-          const btn = e.currentTarget.querySelector('button[aria-label={t("a11y.delete_highlight")}]');
+          const btn = e.currentTarget.querySelector('button'); // the wrapper's only button is the delete (✕) control; was a broken JSX-in-selector string
           if (btn) btn.style.opacity = '0';
         }}
       >
@@ -618,12 +661,12 @@ function HighlightOverlay({ a, onDelete }) {
             onClick={function (e) { e.stopPropagation(); onDelete(a.id); }}
             className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
             style={{
-              top: -10, right: -10,
-              width: 18, height: 18,
+              top: -12, right: -12,
+              width: 24, height: 24,
               borderRadius: '50%',
               background: 'white',
               border: '1px solid ' + palette.border,
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
@@ -752,11 +795,11 @@ function DrawingOverlay({ a, onDelete }) {
           className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
           style={{
             top: 0, right: 0,
-            width: 18, height: 18,
+            width: 24, height: 24,
             borderRadius: '50%',
             background: 'white',
             border: '1px solid ' + stroke,
-            fontSize: 11, fontWeight: 700,
+            fontSize: 12, fontWeight: 700,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#475569', lineHeight: 1,
@@ -1192,7 +1235,7 @@ function Toolbar(props) {
           <div className="w-px h-4 bg-slate-200 mx-1"></div>
           <button
             onClick={onClear}
-            className="p-1 text-slate-600 hover:text-red-500 rounded-full"
+            className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title={tt('toolbar.clear_stickers')}
             aria-label={tt('toolbar.clear_stickers')}
           >
@@ -1210,7 +1253,7 @@ function Toolbar(props) {
                 key={key}
                 aria-label={'Note color ' + key}
                 onClick={function () { onPickNoteColor(key); }}
-                className={'w-5 h-5 rounded transition-transform hover:scale-125 ' + (noteColor === key ? 'ring-2 ring-amber-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                className={'w-6 h-6 rounded transition-transform hover:scale-125 ' + (noteColor === key ? 'ring-2 ring-amber-500 scale-110' : 'opacity-70 hover:opacity-100')}
                 style={{ background: palette.fill, border: '2px solid ' + palette.border }}
                 title={key}
               />
@@ -1226,7 +1269,7 @@ function Toolbar(props) {
             className="text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 max-w-[150px]"
             aria-label={t("a11y.note_template")}
             title={noteTemplate ? 'Template active: next note auto-fills' : 'Pick a template to auto-fill the next note'}
-            style={{ height: 22 }}
+            style={{ minHeight: 24 }}
           >
             <option value="">Custom (type)</option>
             {templateSet.map(function (tmpl) {
@@ -1236,7 +1279,7 @@ function Toolbar(props) {
           <div className="w-px h-4 bg-slate-200 mx-1"></div>
           <button
             onClick={onClear}
-            className="p-1 text-slate-600 hover:text-red-500 rounded-full"
+            className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title="Clear all annotations"
             aria-label={t("a11y.clear_all_annotations")}
           >
@@ -1254,7 +1297,7 @@ function Toolbar(props) {
                 key={key}
                 aria-label={'Highlight color ' + key}
                 onClick={function () { onPickHighlightColor(key); }}
-                className={'w-5 h-5 rounded transition-transform hover:scale-125 ' + (highlightColor === key ? 'ring-2 ring-yellow-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                className={'w-6 h-6 rounded transition-transform hover:scale-125 ' + (highlightColor === key ? 'ring-2 ring-yellow-500 scale-110' : 'opacity-70 hover:opacity-100')}
                 style={{ background: palette.fill, border: '2px solid ' + palette.border }}
                 title={key}
               />
@@ -1263,7 +1306,7 @@ function Toolbar(props) {
           <div className="w-px h-4 bg-slate-200 mx-1"></div>
           <button
             onClick={onClear}
-            className="p-1 text-slate-600 hover:text-red-500 rounded-full"
+            className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title="Clear all annotations"
             aria-label={t("a11y.clear_all_annotations")}
           >
@@ -1302,7 +1345,7 @@ function Toolbar(props) {
                     key={key}
                     aria-label={'Draw color ' + key}
                     onClick={function () { onPickDrawColor(key); }}
-                    className={'w-5 h-5 rounded-full transition-transform hover:scale-125 ' + (drawColor === key ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                    className={'w-6 h-6 rounded-full transition-transform hover:scale-125 ' + (drawColor === key ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
                     style={{ background: c, border: '2px solid ' + c }}
                     title={key}
                   />
@@ -1316,7 +1359,7 @@ function Toolbar(props) {
                 const currentHex = DRAW_COLORS[drawColor] || drawColor || '#dc2626';
                 return (
                   <label
-                    className={'relative w-5 h-5 rounded-full overflow-hidden transition-transform hover:scale-125 cursor-pointer ' + (isCustom ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                    className={'relative w-6 h-6 rounded-full overflow-hidden transition-transform hover:scale-125 cursor-pointer ' + (isCustom ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
                     style={{
                       // Rainbow gradient hint that this swatch picks any color
                       background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)',
@@ -1355,7 +1398,7 @@ function Toolbar(props) {
                     aria-label={'Line width ' + w + 'px'}
                     onClick={function () { onPickDrawWidth(w); }}
                     className={'flex items-center justify-center rounded transition-transform hover:scale-125 ' + (drawWidth === w ? 'ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50' : 'opacity-70 hover:opacity-100')}
-                    style={{ width: 22, height: 22 }}
+                    style={{ width: 24, height: 24 }}
                     title={w + 'px'}
                   >
                     <span style={{ display: 'inline-block', width: 12, height: w, borderRadius: w / 2, background: '#374151' }} />
@@ -1367,7 +1410,7 @@ function Toolbar(props) {
           <div className="w-px h-4 bg-slate-200 mx-1"></div>
           <button
             onClick={onClear}
-            className="p-1 text-slate-600 hover:text-red-500 rounded-full"
+            className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title="Clear all annotations"
             aria-label={t("a11y.clear_all_annotations")}
           >

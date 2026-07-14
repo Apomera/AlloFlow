@@ -190,7 +190,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, broadcastInteractiveOrganizer } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer } = deps;
   // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {});
   // Branded loading state for lazily-registered organizer games — shown only in the brief
@@ -1669,6 +1669,70 @@ const renderOutlineContent = (deps) => {
             );
         }
 
+        if (type === 'Memory Palace' && !isEditingOutline) {
+            // Edit-text mode falls through to the generic branch grid (full inline
+            // editing of rooms/items; mnemonics ride along untouched).
+            return (
+                <div className="max-w-6xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    <ErrorBoundary fallbackMessage="Memory Palace encountered an error.">
+                        <MemoryPalaceView
+                            data={generatedContent?.data}
+                            title={main}
+                            t={t}
+                            addToast={deps.addToast}
+                            onPersist={deps.handleConceptSpacePersist}
+                            callImagen={deps.callImagen}
+                            playSound={playSound}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                            isTeacherMode={isTeacherMode}
+                            armed={!!isInteractivePalaceRecall}
+                            onRecallArm={() => {
+                                if (setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(true);
+                                _broadcastInteractiveOrganizer('palacerecall');
+                            }}
+                            onRecallClose={() => {
+                                if (!isTeacherMode && setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(false);
+                            }}
+                        />
+                    </ErrorBoundary>
+                </div>
+            );
+        }
+
+        if (type === '3D Concept Space' && !isEditingOutline) {
+            // Edit-text mode falls through to the generic branch grid below, which
+            // already provides full inline editing for {main, branches}.
+            return (
+                <div className="max-w-6xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    <ErrorBoundary fallbackMessage="3D Concept Space encountered an error.">
+                        <ConceptSpace3DView
+                            data={generatedContent?.data}
+                            title={main}
+                            t={t}
+                            addToast={deps.addToast}
+                            callImagen={deps.callImagen}
+                            onPersist={deps.handleConceptSpacePersist}
+                            playSound={playSound}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                            isTeacherMode={isTeacherMode}
+                            armed={!!isInteractiveStrandChallenge}
+                            onChallengeArm={() => {
+                                if (setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(true);
+                                _broadcastInteractiveOrganizer('strandchallenge3d');
+                            }}
+                            onChallengeClose={() => {
+                                if (!isTeacherMode && setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(false);
+                            }}
+                        />
+                    </ErrorBoundary>
+                </div>
+            );
+        }
+
         if (type === 'Structured Outline') {
             const toRoman = (num) => {
                 const lookup = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
@@ -1792,6 +1856,2084 @@ const renderOutlineContent = (deps) => {
                 </div>
             </div>
         );
+};
+
+// ── "View in 3D" for the Visual Organizer concept map ──────────────
+// Self-contained: builds an acg graph from the current map and opens an imperative
+// overlay via the shared ConceptGraph3D renderer (lazy-loaded from this module's own
+// CDN path), so no host state / AlloFlowANTI.txt wiring is needed. Falls back to the
+// reading-order outline if WebGL or the modules are unavailable.
+var _VO_CG3D_CDN_FALLBACK = 'https://alloflow-cdn.pages.dev/';
+function _voCg3dSelfBase() {
+  try {
+    var scripts = document.getElementsByTagName('script');
+    for (var i = 0; i < scripts.length; i++) {
+      var src = scripts[i].src || '';
+      var idx = src.indexOf('view_renderers_module.js');
+      if (idx >= 0) return { base: src.slice(0, idx), query: src.slice(idx + 'view_renderers_module.js'.length) };
+    }
+  } catch (e) {}
+  return { base: _VO_CG3D_CDN_FALLBACK, query: '' };
+}
+function _voCg3dLoadScript(url) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var ex = document.querySelector('script[data-cg-src="' + url + '"]');
+      if (ex) { if (ex.getAttribute('data-cg-loaded') === '1') return resolve(); ex.addEventListener('load', function () { resolve(); }); ex.addEventListener('error', function () { reject(new Error('load failed')); }); return; }
+      var s = document.createElement('script'); s.src = url; s.async = true; s.setAttribute('data-cg-src', url);
+      s.onload = function () { s.setAttribute('data-cg-loaded', '1'); resolve(); };
+      s.onerror = function () { reject(new Error('load failed: ' + url)); };
+      document.head.appendChild(s);
+    } catch (e) { reject(e); }
+  });
+}
+function _voPalaceEnsure() {
+  if (window.AlloModules && window.AlloModules.MemoryPalace) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'memory_palace_module.js' + loc.query)
+    .then(function () { return !!(window.AlloModules && window.AlloModules.MemoryPalace); })
+    .catch(function () { return false; });
+}
+function _voPrim3dEnsure() {
+  if (window.AlloModules && window.AlloModules.Prim3D) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'prim3d_module.js' + loc.query)
+    .then(function () { return !!(window.AlloModules && window.AlloModules.Prim3D); })
+    .catch(function () { return false; });
+}
+function _voVoiceEnsure() {
+  if (window.AlloFlowVoice || (window.AlloModules && window.AlloModules.Voice)) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'voice_module.js' + loc.query)
+    .then(function () { return !!(window.AlloFlowVoice || (window.AlloModules && window.AlloModules.Voice)); })
+    .catch(function () { return false; });
+}
+function _voGlbEnsure() {
+  if (window.AlloModules && window.AlloModules.GlbLibrary) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'glb_library_module.js' + loc.query)
+    .then(function () { return !!(window.AlloModules && window.AlloModules.GlbLibrary); })
+    .catch(function () { return false; });
+}
+function _voCg3dEnsure() {
+  if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'concept_graph_engine_module.js' + loc.query)
+    .then(function () { return _voCg3dLoadScript(loc.base + 'concept_graph_3d_module.js' + loc.query); })
+    .then(function () { return !!(window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine); })
+    .catch(function () { return false; });
+}
+function openConceptMap3D(opts) {
+  opts = opts || {};
+  var t = opts.t || function (k) { return k; };
+  var addToast = opts.addToast || function () {};
+  var nodes = Array.isArray(opts.nodes) ? opts.nodes : [];
+  // Static-view path (no interactive canvas needed): opts.generated is the raw
+  // {main, branches, structureType} payload; the engine's adaptGenerated() turns it
+  // into a graph directly, so 3D works from ANY organizer without entering
+  // interactive mode first.
+  var generated = (opts.generated && Array.isArray(opts.generated.branches) && opts.generated.branches.length) ? opts.generated : null;
+  if (!nodes.length && !generated) { addToast(t('concept_map.view_3d_empty') || 'Add some concepts first.', 'info'); return function () {}; }
+  var overlay = document.createElement('div');
+  overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', t('concept_map.view_3d') || 'View concept map in 3D');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;';
+  var header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b1020;border-bottom:1px solid #1e293b;color:#e2e8f0;';
+  var titleWrap = document.createElement('div'); titleWrap.style.cssText = 'flex:1;min-width:0;';
+  var title = document.createElement('div'); title.style.cssText = 'font-weight:800;font-size:14px;'; title.textContent = '\u{1F9CA} ' + (t('concept_map.view_3d') || '3D concept map');
+  var hint = document.createElement('div'); hint.style.cssText = 'font-size:11px;color:#94a3b8;'; hint.textContent = t('concept_map.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand';
+  titleWrap.appendChild(title); titleWrap.appendChild(hint);
+  var closeBtn = document.createElement('button');
+  closeBtn.setAttribute('aria-label', t('common.close') || 'Close'); closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;';
+  header.appendChild(titleWrap); header.appendChild(closeBtn);
+  var body = document.createElement('div'); body.style.cssText = 'flex:1;position:relative;min-height:0;';
+  var status = document.createElement('div'); status.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;';
+  status.textContent = '\u{1F9ED} ' + (t('concept_map.view_3d_loading') || 'Loading the 3D view…');
+  body.appendChild(status);
+  overlay.appendChild(header); overlay.appendChild(body);
+  document.body.appendChild(overlay);
+  var handle = null, aiBtn = null;
+  function destroy() {
+    try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
+    try { document.removeEventListener('keydown', onKey, true); } catch (e) {}
+    try { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+  }
+  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); destroy(); } }
+  document.addEventListener('keydown', onKey, true);
+  closeBtn.onclick = destroy;
+  _voCg3dEnsure().then(function (ok) {
+    if (!overlay.parentNode) return;
+    var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+    var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+    if (!ok || !E || !CG3D) { status.textContent = '⚠️ ' + (t('concept_map.view_3d_failed') || 'The 3D view could not load here. Open the latest Canvas link and try again — the outline still works.'); return; }
+    var graph = nodes.length
+      ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null)
+      : E.adaptGenerated(generated);
+    // Deterministic default placement (reading order × tree depth × strand) for
+    // graphs with no geometry, then any saved arrangement wins on top of it.
+    if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+    if (opts.arrangement && E.applyArrangement) graph = E.applyArrangement(graph, opts.arrangement);
+    var canPersist = typeof opts.onArrangementChange === 'function';
+    var renderOpts = { t: t };
+    if (canPersist) {
+      renderOpts.editable = true;
+      renderOpts.onArrangementChange = function (arr) {
+        try { if (E.applyArrangement) graph = E.applyArrangement(graph, arr); } catch (e) {}   // keep closure graph fresh for a later AI arrange
+        try { opts.onArrangementChange(arr); } catch (e) {}
+      };
+      hint.textContent = t('concept_map.view_3d_controls_edit') || 'Drag a node to place it · drag space to orbit · scroll to zoom · depth = strand';
+    }
+    if (status.parentNode) status.parentNode.removeChild(status);
+    if (canPersist) {
+      // Parity with the embedded view: clear the saved arrangement and glide back
+      // to the deterministic default layout.
+      var resetArrBtn = document.createElement('button');
+      resetArrBtn.textContent = '↺ ' + (t('concept_space.reset') || 'Reset arrangement');
+      resetArrBtn.style.cssText = 'font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #334155;white-space:nowrap;background:transparent;color:#cbd5e1;cursor:pointer;';
+      header.insertBefore(resetArrBtn, closeBtn);
+      resetArrBtn.onclick = function () {
+        try { opts.onArrangementChange(null); } catch (e) {}
+        graph = nodes.length
+          ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null)
+          : E.adaptGenerated(generated);
+        if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+        try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
+        handle = CG3D.render(body, graph, renderOpts);
+      };
+    }
+    if (typeof window.callGemini === 'function') {
+      aiBtn = document.createElement('button');
+      aiBtn.textContent = '✨ ' + (t('concept_map.view_3d_arrange') || 'Arrange by meaning');
+      aiBtn.style.cssText = 'font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;';
+      header.insertBefore(aiBtn, closeBtn);
+      aiBtn.onclick = function () {
+        aiBtn.disabled = true; var prev = aiBtn.textContent; aiBtn.textContent = '… ' + (t('concept_map.view_3d_arranging') || 'Arranging');
+        E.layoutWithGemini(graph, window.callGemini, { topic: opts.title || '' }).then(function (merged) {
+          if (!overlay.parentNode) return;
+          graph = merged;
+          if (canPersist && E.extractArrangement) { try { opts.onArrangementChange(E.extractArrangement(graph)); } catch (e) {} }
+          try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
+          handle = CG3D.render(body, graph, renderOpts);
+        }).catch(function () { addToast(t('concept_map.view_3d_arrange_failed') || 'AI arrange failed', 'error'); })
+          .then(function () { if (aiBtn) { aiBtn.disabled = false; aiBtn.textContent = prev; } });
+      };
+    }
+    handle = CG3D.render(body, graph, renderOpts);
+  });
+  return destroy;
+}
+
+// ── Embedded 3D host for the '3D Concept Space' organizer type ──────
+// For this structureType the 3D scene IS the primary surface (not an overlay): the
+// engine builds a graph straight from {main, branches}, the saved arrangement
+// (data.conceptSpace) re-applies on top, and constrained edits persist back through
+// onPersist. ConceptGraph3D owns the a11y spine (sr-only reading-order outline that
+// becomes visible on any load/WebGL failure), and this component adds its own
+// static-outline fallback for the case where the modules themselves never load.
+const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onChallengeArm, onChallengeClose }) => {
+    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
+    const hostRef = React.useRef(null);
+    const handleRef = React.useRef(null);
+    const graphRef = React.useRef(null);
+    const [ready, setReady] = React.useState(false);
+    const [failed, setFailed] = React.useState(false);
+    const [arranging, setArranging] = React.useState(false);
+    const [nonce, setNonce] = React.useState(0);   // bump to rebuild the scene from persisted data
+    const persist = typeof onPersist === 'function' ? onPersist : null;
+    // ── Per-node art (AI image / Prim3D sculpture), same engine the Memory
+    //    Palace + Geometry Sandbox use. Hung off the click-a-node selection:
+    //    the module fires onSelectNode, we render controls, it renders the art
+    //    above the node. Persists to data.conceptArt (NOT conceptSpace, so it
+    //    never touches the arrangement) via onPersist. ──
+    const canImagen = typeof callImagen === 'function';
+    // ── Constellation mode (docs §4.5): student-weighted concept links rendered as
+    //    line brightness. Weights persist under data.constellation (own store — never
+    //    touches the arrangement); each entry { w, why, ai, aiWhy } keyed by the
+    //    unordered pair. Honest framing: brightness = the STUDENT's judgment; the AI
+    //    comparison shows where mental maps differ (spreading-activation-style
+    //    semantic relatedness — not literally "how neural networks work"). ──
+    const constelWeights = data?.constellation || {};
+    const constelRef = React.useRef({}); constelRef.current = constelWeights;
+    const [constelOpen, setConstelOpen] = React.useState(false);
+    const [constelMode, setConstelMode] = React.useState('off');   // off | mine | ai | diff
+    const [constelA, setConstelA] = React.useState('');
+    const [constelB, setConstelB] = React.useState('');
+    const [constelW, setConstelW] = React.useState(0.5);
+    const [constelWhy, setConstelWhy] = React.useState('');
+    const [constelBusy, setConstelBusy] = React.useState(false);
+    const [selectedNode, setSelectedNode] = React.useState(null);   // {id,label,category,summary,artType} | null
+    const selectedNodeRef = React.useRef(null);
+    const artRef = React.useRef({});                 // freshest data.conceptArt for merge-persist
+    artRef.current = data?.conceptArt || {};
+    const artAliveRef = React.useRef(true);
+    React.useEffect(() => () => { artAliveRef.current = false; }, []);
+    const [artType, setArtType] = React.useState('sculpture');   // 'sculpture' | 'image'
+    const [directPrompt, setDirectPrompt] = React.useState('');
+    const [directEval, setDirectEval] = React.useState(null);    // {verdict, reason, enhancedPrompt} | null
+    const [directBusy, setDirectBusy] = React.useState(null);    // 'evaluating' | 'generating' | null
+    const [refinePrompt, setRefinePrompt] = React.useState('');
+    const [refineBusy, setRefineBusy] = React.useState(false);
+    // ── Strand Challenge (the 3D-native sort game) ──
+    // challenge = {graph, answerKey, targets, strands} from engine.buildStrandChallenge.
+    // Placements arrive through the SAME edit pipeline students already use
+    // (strand chips / [ ] keys) — the game IS the editing mechanics, scored.
+    const [challenge, setChallenge] = React.useState(null);
+    const [placedCount, setPlacedCount] = React.useState(0);
+    const placedRef = React.useRef({});
+    const attemptsRef = React.useRef(0);
+    const startedByArmRef = React.useRef(false);   // true when a teacher broadcast started this run
+    // Gentle count-UP stopwatch (never a countdown — time pressure is a UDL
+    // anti-pattern); the elapsed time rides along in the completion payload.
+    const [elapsed, setElapsed] = React.useState(0);
+    const elapsedRef = React.useRef(0);
+    const [won, setWon] = React.useState(false);
+    const [lastScore, setLastScore] = React.useState(null);
+    const [hint, setHint] = React.useState(null);
+    const [hintLoading, setHintLoading] = React.useState(false);
+    const fmtTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    const challengeEligible = React.useMemo(() => {
+        const branches = Array.isArray(data?.branches) ? data.branches : [];
+        const items = branches.reduce((s, b) => s + ((b.items || []).filter((it) => (typeof it === 'object' ? it.text : it)).length), 0);
+        return branches.length >= 2 && items >= 4;   // same bar as the 2D sort games
+    }, [data]);
+    // Scene identity = the CONTENT (not the arrangement): edits update
+    // data.conceptSpace continuously and must NOT remount the GL scene.
+    const dataKey = JSON.stringify({ m: data?.main, b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items })) });
+
+    React.useEffect(() => {
+        let alive = true;
+        _voCg3dEnsure().then((ok) => {
+            if (!alive) return;
+            if (!ok) { setFailed(true); return; }
+            // Prim3D is a best-effort sidecar (sculptures need it; images don't).
+            _voPrim3dEnsure().then(() => { if (alive) setReady(true); });
+        });
+        return () => { alive = false; };
+    }, []);
+
+    React.useEffect(() => {
+        if (!ready || failed || !hostRef.current || !hasContent) return undefined;
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+        if (!E || !CG3D) { setFailed(true); return undefined; }
+        let graph;
+        if (challenge) {
+            graph = challenge.graph;   // items stripped of strands, answer-leaking edges removed
+        } else {
+            graph = E.adaptGenerated(data || {});
+            if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+            if (data?.conceptSpace && E.applyArrangement) graph = E.applyArrangement(graph, data.conceptSpace);
+            graphRef.current = graph;
+        }
+        handleRef.current = CG3D.render(hostRef.current, graph, {
+            t,
+            autoRotate: false,
+            editable: challenge ? true : !!persist,
+            // Restore saved art on mount; skipped during a challenge (different graph).
+            initialNodeArt: challenge ? {} : (data?.conceptArt || {}),
+            // Selection bridge → React art panel. Clears the in-flight prompt/eval
+            // when moving to a different node so stale suggestions don't linger.
+            onSelectNode: (id, meta) => {
+                selectedNodeRef.current = meta;
+                setSelectedNode(meta);
+                setDirectEval(null); setDirectPrompt(''); setRefinePrompt('');
+            },
+            onArrangementChange: challenge
+                ? ((arr) => {
+                    // Collect placements; NEVER persist during a challenge.
+                    const placed = {};
+                    challenge.targets.forEach((id) => { if (arr && arr.categories && arr.categories[id]) placed[id] = arr.categories[id]; });
+                    placedRef.current = placed;
+                    setPlacedCount(Object.keys(placed).length);
+                })
+                : (persist ? ((arr) => persist(arr, 'conceptSpace')) : undefined),
+        });
+        return () => {
+            try { if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy(); } catch (e) {}
+            handleRef.current = null;
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ready, failed, dataKey, nonce, challenge]);
+
+    const _resetRunState = () => {
+        placedRef.current = {}; setPlacedCount(0);
+        elapsedRef.current = 0; setElapsed(0); setWon(false);
+        setLastScore(null); setHint(null);
+    };
+    const startChallenge = (viaArm) => {
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        if (!E || !E.buildStrandChallenge || !graphRef.current) return;
+        const ch = E.buildStrandChallenge(graphRef.current);
+        if (!ch.targets.length) { if (addToast) addToast(t('concept_space.challenge_empty') || 'No concepts to sort yet.', 'info'); return; }
+        _resetRunState(); attemptsRef.current = 0;
+        startedByArmRef.current = viaArm === true;
+        setChallenge(ch);
+        if (addToast) addToast(t('concept_space.challenge_start') || '🎯 Every concept fell off its strand! Click one, then pick its strand.', 'info');
+        // Teacher start arms every student in the live session (same contract as
+        // the 2D sort games' Play buttons).
+        if (isTeacherMode && viaArm !== true && typeof onChallengeArm === 'function') { try { onChallengeArm(); } catch (e) {} }
+    };
+    const exitChallenge = () => {
+        setChallenge(null); _resetRunState(); attemptsRef.current = 0;
+        startedByArmRef.current = false;
+        if (typeof onChallengeClose === 'function') { try { onChallengeClose(); } catch (e) {} }
+    };
+    const retryChallenge = () => { _resetRunState(); setChallenge((c) => (c ? { ...c } : c)); };   // new identity ⇒ scene remounts fresh
+
+    // Stopwatch: ticks while a run is live, freezes on a win.
+    React.useEffect(() => {
+        if (!challenge || won) return undefined;
+        const iv = setInterval(() => { elapsedRef.current += 1; setElapsed(elapsedRef.current); }, 1000);
+        return () => clearInterval(iv);
+    }, [challenge, won]);
+
+    // Live-session arming: a teacher broadcast starts the challenge for students;
+    // clearing the arm (teacher moved on) closes an arm-started run.
+    React.useEffect(() => {
+        if (armed && !isTeacherMode && !challenge && ready && !failed && hasContent) startChallenge(true);
+        else if (!armed && !isTeacherMode && challenge && startedByArmRef.current) { startedByArmRef.current = false; exitChallenge(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [armed, isTeacherMode, ready, failed, challenge]);
+    const checkChallenge = () => {
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        if (!E || !challenge || !handleRef.current) return;
+        attemptsRef.current += 1;
+        const score = E.scoreStrandChallenge(challenge.answerKey, placedRef.current);
+        setLastScore(score);
+        const summary = (t('concept_space.challenge_result') || 'Placed {correct} of {total} correctly.')
+            .replace('{correct}', String(score.correct)).replace('{total}', String(score.total));
+        if (handleRef.current.flagNodes) handleRef.current.flagNodes(score.results, summary);
+        const points = score.correct * 10;
+        const labelOf = (id) => { const n = (challenge.graph.nodes || []).find((x) => x.id === id); return (n && n.label) || id; };
+        if (score.complete) {
+            setWon(true);
+            if (playSound) playSound('correct');
+            if (addToast) addToast(t('concept_space.challenge_win') || '🎉 Every concept is on the right strand!', 'success');
+            if (onScoreUpdate) onScoreUpdate(points, 'Strand Challenge Complete');
+            if (onGameComplete) onGameComplete('strandChallenge3d', { score: points, correctPlacements: score.correct, totalItems: score.total, isPerfect: true, attempts: attemptsRef.current, bestScore: points, timeSeconds: elapsedRef.current, incorrectPlacements: [] });
+        } else {
+            if (playSound) playSound('reveal');
+            if (addToast) addToast(summary, 'info');
+            // Partial attempts still reach the teacher dashboard (misconception data),
+            // mirroring the 2D sort games' contract.
+            if (onGameComplete) onGameComplete('strandChallenge3dAttempt', {
+                score: points, correctPlacements: score.correct, totalItems: score.total, isPerfect: false,
+                attempts: attemptsRef.current, bestScore: points, timeSeconds: elapsedRef.current,
+                incorrectPlacements: Object.keys(score.results).filter((id) => score.results[id] !== 'correct').map((id) => ({
+                    itemId: id, itemText: labelOf(id),
+                    placedCategoryLabel: placedRef.current[id] || 'unplaced',
+                    correctCategoryId: challenge.answerKey[id], correctCategoryLabel: challenge.answerKey[id],
+                })),
+            });
+        }
+    };
+
+    // One-shot AI hint about a misplaced concept — engine builds a prompt that
+    // NEVER reveals the correct strand; gated on window.callGemini like every
+    // other AI affordance.
+    const requestHint = () => {
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        if (!E || !E.buildStrandHintPrompt || !challenge || !lastScore || typeof window.callGemini !== 'function') return;
+        const badId = Object.keys(lastScore.results).find((id) => lastScore.results[id] !== 'correct');
+        if (!badId) return;
+        const n = (challenge.graph.nodes || []).find((x) => x.id === badId);
+        const prompt = E.buildStrandHintPrompt({
+            itemLabel: (n && n.label) || badId,
+            placedStrand: placedRef.current[badId] || null,
+            strands: challenge.strands,
+            topic: data?.main || title || '',
+        });
+        setHintLoading(true);
+        Promise.resolve(window.callGemini(prompt)).then((res) => {
+            const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+            const clean = String(text).trim().slice(0, 400);
+            if (clean) setHint({ label: (n && n.label) || badId, text: clean });
+        }).catch(() => { if (addToast) addToast(t('concept_space.hint_failed') || 'Could not fetch a hint right now.', 'error'); })
+          .then(() => setHintLoading(false));
+    };
+
+    const handleArrange = () => {
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+        if (!E || !graphRef.current || typeof window.callGemini !== 'function') return;
+        setArranging(true);
+        E.layoutWithGemini(graphRef.current, window.callGemini, { topic: data?.main || title || '' })
+            .then((merged) => {
+                graphRef.current = merged;
+                if (persist && E.extractArrangement) {
+                    persist(E.extractArrangement(merged), 'conceptSpace');
+                    setNonce((n) => n + 1);
+                } else if (hostRef.current && CG3D) {
+                    try { if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy(); } catch (e) {}
+                    handleRef.current = CG3D.render(hostRef.current, merged, { t, autoRotate: false });
+                }
+            })
+            .catch(() => { if (addToast) addToast(t('concept_map.view_3d_arrange_failed') || 'AI arrange failed', 'error'); })
+            .then(() => setArranging(false));
+    };
+
+    const handleFullscreen = () => {
+        openConceptMap3D({
+            generated: data,
+            arrangement: data?.conceptSpace,
+            onArrangementChange: persist ? ((arr) => { persist(arr, 'conceptSpace'); setNonce((n) => n + 1); }) : undefined,
+            title: data?.main || title || '',
+            t, addToast,
+        });
+    };
+
+    // ── Constellation handlers ──
+    const constelNodes = React.useMemo(() => {
+        try {
+            const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+            if (!CG3D || !hasContent) return [];
+            return (CG3D.buildScene(data || {}).nodes || []).map((n) => ({ id: n.id, label: n.label }));
+        } catch (e) { return []; }
+    }, [data, hasContent]);
+    // apply mode/weight changes to the live scene (also runs after remounts via nonce)
+    React.useEffect(() => {
+        const H = handleRef.current;
+        if (H && H.setConstellation) { try { H.setConstellation({ weights: constelRef.current, mode: constelMode }); } catch (e) {} }
+    }, [constelMode, constelWeights, nonce, ready]);
+    const _constelApply = (weights, mode) => {
+        const H = handleRef.current;
+        if (H && H.setConstellation) { try { H.setConstellation({ weights, mode }); } catch (e) {} }
+    };
+    const saveConstelLink = () => {
+        const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+        if (!CG3D || !persist || !constelA || !constelB || constelA === constelB) return;
+        const k = CG3D.pairKey(constelA, constelB);
+        const prev = constelRef.current[k] || {};
+        const next = { ...constelRef.current, [k]: { ...prev, w: constelW, why: constelWhy || prev.why || '' } };
+        persist(next, 'constellation');
+        const mode = constelMode === 'off' ? 'mine' : constelMode;
+        if (constelMode === 'off') setConstelMode('mine');
+        _constelApply(next, mode);
+        setConstelWhy('');
+        if (addToast) addToast(t('cg3d.constel_saved') || '✨ Link weighted — your constellation updated.', 'success');
+    };
+    const aiRateConstelLink = () => {
+        const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+        if (!CG3D || !persist || !constelA || !constelB || constelA === constelB || typeof window.callGemini !== 'function' || constelBusy) return;
+        const la = (constelNodes.find((n) => n.id === constelA) || {}).label || constelA;
+        const lb = (constelNodes.find((n) => n.id === constelB) || {}).label || constelB;
+        setConstelBusy(true);
+        Promise.resolve(window.callGemini(CG3D.buildRelatednessPrompt(la, lb, data?.main || title || ''), true))
+            .then((res) => {
+                if (!artAliveRef.current) return;
+                const parsed = CG3D.parseRelatedness(_gemText(res));
+                if (!parsed) { if (addToast) addToast(t('cg3d.constel_ai_failed') || 'Could not get an AI rating — try again.', 'error'); return; }
+                const k = CG3D.pairKey(constelA, constelB);
+                const prev = constelRef.current[k] || {};
+                const next = { ...constelRef.current, [k]: { ...prev, ai: parsed.score, aiWhy: parsed.why } };
+                persist(next, 'constellation');
+                const mode = constelMode === 'off' ? 'diff' : constelMode;
+                if (constelMode === 'off') setConstelMode('diff');
+                _constelApply(next, mode);
+                if (addToast) addToast(((t('cg3d.constel_ai_rated') || 'AI rating: {s}. {why}')).replace('{s}', String(Math.round(parsed.score * 100) / 100)).replace('{why}', parsed.why || ''), 'info');
+            })
+            .catch(() => { if (addToast) addToast(t('cg3d.constel_ai_failed') || 'Could not get an AI rating — try again.', 'error'); })
+            .then(() => { if (artAliveRef.current) setConstelBusy(false); });
+    };
+
+    // ── Per-node art handlers (mirror the Memory Palace's Sculpt/Direct/Refine,
+    //    scoped to the clicked node instead of the walk's current locus) ──
+    const _gemText = (res) => (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+    const _asDataUrl = (s) => (typeof s === 'string' && s) ? (/^data:/i.test(s) ? s : ('data:image/png;base64,' + s)) : null;
+    // Reflect art into the live scene AND persist it under data.conceptArt, merging
+    // into the freshest store (artRef) so sequential gens never clobber each other.
+    const _persistNodeArt = (id, art) => {
+        const H = handleRef.current;
+        if (H) {
+            if (art && art.type === 'image' && H.setNodeImage) H.setNodeImage(id, art.dataUrl);
+            else if (art && art.type === 'sculpture' && H.setNodeObject) H.setNodeObject(id, art.recipe);
+            else if (!art && H.clearNodeArt) H.clearNodeArt(id);
+        }
+        if (persist) {
+            const next = { ...(artRef.current || {}) };
+            if (art) next[id] = art; else delete next[id];
+            persist(next, 'conceptArt');
+        }
+        // Switch the panel between "create" and "refine" without waiting for a re-render.
+        if (selectedNodeRef.current && selectedNodeRef.current.id === id) {
+            const meta = { ...selectedNodeRef.current, artType: art ? art.type : null };
+            selectedNodeRef.current = meta; setSelectedNode(meta);
+        }
+    };
+    const doSculptFromLabel = () => {
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = selectedNodeRef.current;
+        if (!P3D || !cur || !persist || directBusy || typeof window.callGemini !== 'function') return;
+        setDirectBusy('generating');
+        Promise.resolve(window.callGemini(P3D.buildRecipePrompt(cur.label), true))
+            .then((res) => {
+                if (!artAliveRef.current) return;
+                const recipe = P3D.parseRecipe(_gemText(res));
+                if (recipe) { recipe.name = cur.label; _persistNodeArt(cur.id, { type: 'sculpture', recipe }); if (addToast) addToast(t('concept_space.art_placed') || '✨ Placed! Refine it, or click another concept.', 'success'); }
+                else if (addToast) addToast(t('concept_space.art_failed') || 'Could not create that — try again.', 'error');
+            })
+            .catch(() => { if (addToast && artAliveRef.current) addToast(t('concept_space.art_failed') || 'Could not create that — try again.', 'error'); })
+            .then(() => { if (artAliveRef.current) setDirectBusy(null); });
+    };
+    const handleArtGenerate = (finalPrompt) => {
+        const cur = selectedNodeRef.current;
+        if (!cur || !persist) return;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        setDirectBusy('generating'); setDirectEval(null);
+        const finish = (art) => {
+            if (!artAliveRef.current) return;
+            if (art) { _persistNodeArt(cur.id, art); if (addToast) addToast(t('concept_space.art_placed') || '✨ Placed! Refine it, or click another concept.', 'success'); setDirectPrompt(''); }
+            else if (addToast) addToast(t('concept_space.art_failed') || 'Could not create that — try again.', 'error');
+            setDirectBusy(null);
+        };
+        if (artType === 'sculpture') {
+            if (!P3D || typeof window.callGemini !== 'function') { setDirectBusy(null); return; }
+            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(finalPrompt), true))
+                .then((res) => { const r = P3D.parseRecipe(_gemText(res)); finish(r ? { type: 'sculpture', recipe: r } : null); })
+                .catch(() => finish(null));
+        } else {
+            if (!canImagen) { setDirectBusy(null); if (addToast) addToast(t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.', 'info'); return; }
+            callImagen('A vivid, memorable, slightly surreal illustration: ' + finalPrompt + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400)
+                .then((base64) => finish(_asDataUrl(base64) ? { type: 'image', dataUrl: _asDataUrl(base64) } : null))
+                .catch(() => finish(null));
+        }
+    };
+    const handleArtSubmit = () => {
+        const cur = selectedNodeRef.current;
+        if (!cur || directBusy || typeof window.callGemini !== 'function') return;
+        const userPrompt = directPrompt.trim();
+        if (!userPrompt) return;
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        // Opportunistic prompt-eval gate (reject / enhance / approve) — reuses the
+        // Palace's generic helper when it's loaded; otherwise generate directly.
+        if (!MP || !MP.buildPromptEvalPrompt || !MP.parsePromptEval) { handleArtGenerate(userPrompt); return; }
+        setDirectBusy('evaluating'); setDirectEval(null);
+        const prompt = MP.buildPromptEvalPrompt({ userPrompt, itemLabel: cur.label, mnemonic: '', topic: data?.main || title || '', mode: artType });
+        Promise.resolve(window.callGemini(prompt, true))
+            .then((res) => {
+                if (!artAliveRef.current) return;
+                const ev = MP.parsePromptEval(_gemText(res)) || { verdict: 'ok', reason: '', enhancedPrompt: userPrompt };
+                if (ev.verdict === 'ok') handleArtGenerate(ev.enhancedPrompt || userPrompt);
+                else { setDirectEval(ev); setDirectBusy(null); }
+            })
+            .catch(() => { if (artAliveRef.current) { setDirectBusy(null); handleArtGenerate(userPrompt); } });
+    };
+    const handleArtManualTweak = (kind) => {
+        const cur = selectedNodeRef.current;
+        if (!cur || !persist) return;
+        const art = artRef.current && artRef.current[cur.id];
+        if (!art || art.type !== 'sculpture' || !art.recipe) return;
+        const TINTS = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', null];
+        const rec = art.recipe; const next = { ...rec };
+        if (kind === 'bigger') next.scale = Math.min(5, (rec.scale || 1) * 1.25);
+        else if (kind === 'smaller') next.scale = Math.max(0.25, (rec.scale || 1) * 0.8);
+        else if (kind === 'rotate') next.rotY = (((rec.rotY || 0) + 45) % 360);
+        else if (kind === 'recolor') { const i = TINTS.indexOf(rec.tint || null); next.tint = TINTS[(i + 1) % TINTS.length]; }
+        _persistNodeArt(cur.id, { type: 'sculpture', recipe: next });
+    };
+    const handleArtRefine = () => {
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = selectedNodeRef.current;
+        if (!P3D || !cur || !persist || refineBusy || typeof window.callGemini !== 'function') return;
+        const art = artRef.current && artRef.current[cur.id];
+        const instr = refinePrompt.trim();
+        if (!art || art.type !== 'sculpture' || !art.recipe || !instr) return;
+        const rec = art.recipe;
+        setRefineBusy(true);
+        Promise.resolve(window.callGemini(P3D.buildRefinePrompt(rec, instr), true))
+            .then((res) => {
+                if (!artAliveRef.current) return;
+                const newRec = P3D.parseRecipe(_gemText(res));
+                if (newRec) { _persistNodeArt(cur.id, { type: 'sculpture', recipe: { ...newRec, scale: rec.scale, rotY: rec.rotY, tint: rec.tint } }); setRefinePrompt(''); if (addToast) addToast(t('concept_space.refine_done') || '✨ Refined!', 'success'); }
+                else if (addToast) addToast(t('concept_space.refine_failed') || 'Could not refine — try rephrasing.', 'error');
+            })
+            .catch(() => { if (addToast && artAliveRef.current) addToast(t('concept_space.refine_failed') || 'Could not refine — try rephrasing.', 'error'); })
+            .then(() => { if (artAliveRef.current) setRefineBusy(false); });
+    };
+    const handleArtClear = () => {
+        const cur = selectedNodeRef.current;
+        if (!cur || !persist) return;
+        _persistNodeArt(cur.id, null);
+        if (addToast) addToast(t('concept_space.art_removed') || 'Removed.', 'info');
+    };
+    const nodeArtType = (selectedNode && selectedNode.artType) || (selectedNode && artRef.current[selectedNode.id] && artRef.current[selectedNode.id].type) || null;
+
+    return (
+        <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                <div className="text-xs text-slate-500">
+                    {challenge
+                        ? (t('concept_space.challenge_hint') || '🎯 Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready.')
+                        : (t('concept_space.hint') || 'Position carries meaning: left → right = sequence · higher = more abstract · depth = strand.')}
+                </div>
+                <div className="flex items-center gap-2">
+                    {challenge ? (
+                        <>
+                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" role="status">
+                                ⏱ {fmtTime(elapsed)} · {(t('concept_space.challenge_progress') || '{placed}/{total} placed')
+                                    .replace('{placed}', String(placedCount)).replace('{total}', String(challenge.targets.length))}
+                            </span>
+                            <button
+                                onClick={checkChallenge}
+                                disabled={placedCount === 0}
+                                className="flex items-center gap-1 bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                ✔ {t('concept_space.challenge_check') || 'Check placements'}
+                            </button>
+                            {lastScore && !lastScore.complete && typeof window.callGemini === 'function' && (
+                                <button
+                                    onClick={requestHint}
+                                    disabled={hintLoading}
+                                    className="flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('concept_space.hint_tooltip') || 'Get a nudge about one misplaced concept — the answer is never given away'}
+                                >
+                                    💡 {hintLoading ? (t('common.loading') || 'Loading…') : (t('concept_space.hint_button') || 'Hint')}
+                                </button>
+                            )}
+                            <button
+                                onClick={retryChallenge}
+                                className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                            >
+                                ↺ {t('concept_space.challenge_retry') || 'Retry'}
+                            </button>
+                            <button
+                                onClick={exitChallenge}
+                                className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                            >
+                                {t('concept_space.challenge_exit') || 'Exit challenge'}
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            {hasContent && challengeEligible && !failed && (
+                                <button
+                                    onClick={() => startChallenge(false)}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                    title={t('concept_space.challenge_tooltip') || 'Practice: every concept falls off its strand — put each one back where it belongs'}
+                                >
+                                    🎯 {t('concept_space.challenge_play') || 'Strand Challenge'}
+                                </button>
+                            )}
+                            {hasContent && typeof window.callGemini === 'function' && !failed && (
+                                <button
+                                    onClick={handleArrange}
+                                    disabled={arranging}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('concept_space.arrange_tooltip') || 'Ask the AI to score every concept on the sequence, abstraction, and strand axes, then re-project the space'}
+                                >
+                                    ✨ {arranging ? (t('concept_map.view_3d_arranging') || 'Arranging…') : (t('concept_map.view_3d_arrange') || 'Arrange by meaning')}
+                                </button>
+                            )}
+                            {hasContent && persist && data?.conceptSpace && !failed && (
+                                <button
+                                    onClick={() => { persist(null, 'conceptSpace'); setNonce((n) => n + 1); }}
+                                    className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                                    title={t('concept_space.reset_tooltip') || 'Discard the saved arrangement and return to the default layout'}
+                                >
+                                    ↺ {t('concept_space.reset') || 'Reset arrangement'}
+                                </button>
+                            )}
+                            {hasContent && persist && !failed && (
+                                <button
+                                    onClick={() => setConstelOpen((o) => !o)}
+                                    aria-pressed={constelOpen ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${constelOpen ? 'bg-slate-800 text-indigo-200 border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                                    title={t('cg3d.constel_tooltip') || 'Constellation: rate how strongly YOU think two concepts connect — your weights light up the links'}
+                                >
+                                    🌌 {t('cg3d.constel_toggle') || 'Constellation'}
+                                </button>
+                            )}
+                            {hasContent && !failed && (
+                                <button
+                                    onClick={handleFullscreen}
+                                    className="flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors"
+                                    title={t('concept_space.fullscreen_tooltip') || 'Open this concept space full screen'}
+                                >
+                                    ⛶ {t('concept_space.fullscreen') || 'Fullscreen'}
+                                </button>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+            {constelOpen && hasContent && persist && !failed && (
+                <div className="mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200">
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <span className="text-xs font-bold text-indigo-300">🌌 {t('cg3d.constel_heading') || 'Constellation — weight the connections yourself'}</span>
+                        <div className="flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto" role="group" aria-label={t('cg3d.constel_mode_label') || 'Constellation view mode'}>
+                            {['off', 'mine', 'ai', 'diff'].map((m) => (
+                                <button key={m} onClick={() => setConstelMode(m)} aria-pressed={constelMode === m ? 'true' : 'false'}
+                                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${constelMode === m ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-700'}`}>
+                                    {m === 'off' ? (t('cg3d.constel_mode_off') || 'Off') : m === 'mine' ? (t('cg3d.constel_mode_mine') || 'My weights') : m === 'ai' ? (t('cg3d.constel_mode_ai') || 'AI weights') : (t('cg3d.constel_mode_diff') || 'Compare')}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <select value={constelA} onChange={(e) => setConstelA(e.target.value)} aria-label={t('cg3d.constel_pick_a') || 'First concept'}
+                            className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-200 max-w-[180px]">
+                            <option value="">{t('cg3d.constel_pick_a') || 'First concept'}…</option>
+                            {constelNodes.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
+                        </select>
+                        <span className="text-slate-500 text-xs">🔗</span>
+                        <select value={constelB} onChange={(e) => setConstelB(e.target.value)} aria-label={t('cg3d.constel_pick_b') || 'Second concept'}
+                            className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-200 max-w-[180px]">
+                            <option value="">{t('cg3d.constel_pick_b') || 'Second concept'}…</option>
+                            {constelNodes.filter((n) => n.id !== constelA).map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
+                        </select>
+                        <label className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                            {t('cg3d.constel_weight') || 'How related?'}
+                            <input type="range" min="0" max="1" step="0.05" value={constelW} onChange={(e) => setConstelW(parseFloat(e.target.value))}
+                                aria-label={t('cg3d.constel_weight_aria') || 'Relatedness weight, 0 to 1'} aria-valuetext={`${Math.round(constelW * 100)}%`} className="w-24 accent-indigo-500" />
+                            <span className="tabular-nums font-bold text-indigo-300 w-9">{Math.round(constelW * 100)}%</span>
+                        </label>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap mt-2">
+                        <input value={constelWhy} onChange={(e) => setConstelWhy(e.target.value)} maxLength={160}
+                            placeholder={t('cg3d.constel_why_ph') || 'Why? One sentence you could defend from the source…'}
+                            aria-label={t('cg3d.constel_why_aria') || 'Justify your weight'}
+                            className="flex-1 min-w-[220px] bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500" />
+                        <button onClick={saveConstelLink} disabled={!constelA || !constelB || constelA === constelB}
+                            className="px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                            ⭐ {t('cg3d.constel_save') || 'Set my weight'}
+                        </button>
+                        {typeof window.callGemini === 'function' && (
+                            <button onClick={aiRateConstelLink} disabled={!constelA || !constelB || constelA === constelB || constelBusy}
+                                className="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-indigo-200 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title={t('cg3d.constel_ai_tooltip') || 'Ask the AI to rate the same link, then Compare shows where you differ'}>
+                                ⚖ {constelBusy ? (t('cg3d.constel_ai_busy') || 'Rating…') : (t('cg3d.constel_ai') || 'AI rating')}
+                            </button>
+                        )}
+                    </div>
+                    {constelMode === 'diff' && (
+                        <div className="text-[11px] text-slate-400 mt-2">
+                            <span className="text-indigo-300 font-bold">■</span> {t('cg3d.constel_diff_mine') || 'you rated it stronger'} · <span className="text-amber-400 font-bold">■</span> {t('cg3d.constel_diff_ai') || 'the AI rated it stronger'} · <span className="text-slate-200 font-bold">■</span> {t('cg3d.constel_diff_agree') || 'you roughly agree'}
+                        </div>
+                    )}
+                    <p className="text-[11px] text-slate-500 italic mt-2">
+                        {t('cg3d.constel_framing') || 'Brightness shows how strongly YOU rated each link. Comparing with the AI shows where your mental maps differ — a window into weighted connections and semantic similarity (closest to spreading-activation models of memory), not literally “how neural networks work.”'}
+                    </p>
+                </div>
+            )}
+            {hint && (
+                <div className="flex items-start gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-900" role="status" aria-live="polite">
+                    <span aria-hidden="true">💡</span>
+                    <div className="flex-1">
+                        <span className="font-bold">{(t('concept_space.hint_for') || 'Thinking about “{label}”:').replace('{label}', hint.label)}</span>{' '}
+                        {hint.text}
+                    </div>
+                    <button
+                        onClick={() => setHint(null)}
+                        aria-label={t('common.close') || 'Close'}
+                        className="text-amber-700 hover:text-amber-900 font-bold px-1"
+                    >✕</button>
+                </div>
+            )}
+            <div className="relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl" style={{ background: '#0b1020', height: 'min(64vh, 560px)', minHeight: '380px' }}>
+                {!hasContent ? (
+                    <div className="h-full flex flex-col items-center justify-center gap-2 text-center p-8" role="status">
+                        <div className="text-3xl" aria-hidden="true">🧊</div>
+                        <p className="text-sm font-bold text-slate-200">{t('concept_space.empty_title') || 'Nothing to map yet'}</p>
+                        <p className="text-xs text-slate-400 max-w-sm">{t('concept_space.empty_body') || 'Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.'}</p>
+                    </div>
+                ) : failed ? (
+                    <div className="p-6 text-slate-200 text-sm overflow-auto h-full" role="status">
+                        <p className="mb-3 text-amber-300">{t('cg3d.load_error') || 'The 3D library could not load. Showing the reading-order outline instead.'}</p>
+                        <ol className="list-decimal pl-6 space-y-2">
+                            {(Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => (
+                                <li key={bi}>
+                                    <span className="font-bold">{b.title}</span>
+                                    {Array.isArray(b.items) && b.items.length > 0 && (
+                                        <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                                            {b.items.map((it, ii) => <li key={ii}>{typeof it === 'object' ? it.text : it}</li>)}
+                                        </ul>
+                                    )}
+                                </li>
+                            ))}
+                        </ol>
+                    </div>
+                ) : (
+                    <div ref={hostRef} className="absolute inset-0" />
+                )}
+                {!challenge && persist && selectedNode && !failed && (
+                    <div className="absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800" role="group" aria-label={t('concept_space.art_panel_aria') || 'Concept art'}>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <div className="text-xs font-extrabold text-fuchsia-700 truncate pr-2">🎨 {selectedNode.label}</div>
+                            <button onClick={() => { setSelectedNode(null); selectedNodeRef.current = null; }} aria-label={t('common.close') || 'Close'} className="text-slate-400 hover:text-slate-700 font-bold text-sm leading-none">✕</button>
+                        </div>
+                        {nodeArtType ? (
+                            <div className="space-y-2">
+                                <div className="text-[11px] text-slate-500">{nodeArtType === 'sculpture' ? (t('concept_space.art_has_sculpture') || 'A sculpture floats above this concept.') : (t('concept_space.art_has_image') || 'An image floats above this concept.')}</div>
+                                {nodeArtType === 'sculpture' && (
+                                    <>
+                                        <div className="flex flex-wrap gap-1">
+                                            <button onClick={() => handleArtManualTweak('bigger')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
+                                            <button onClick={() => handleArtManualTweak('smaller')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
+                                            <button onClick={() => handleArtManualTweak('rotate')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
+                                            <button onClick={() => handleArtManualTweak('recolor')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
+                                        </div>
+                                        <form onSubmit={(e) => { e.preventDefault(); handleArtRefine(); }} className="flex gap-1">
+                                            <input value={refinePrompt} onChange={(e) => setRefinePrompt(e.target.value)} disabled={refineBusy} placeholder={t('concept_space.refine_placeholder') || 'Tell the AI what to change…'} aria-label={t('concept_space.refine_placeholder') || 'Tell the AI what to change'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 outline-none" />
+                                            <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨</button>
+                                        </form>
+                                    </>
+                                )}
+                                <button onClick={handleArtClear} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50">🗑 {t('concept_space.art_remove') || 'Remove art'}</button>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {directBusy ? (
+                                    <div className="text-xs text-fuchsia-700 font-bold py-2 text-center" role="status">{directBusy === 'evaluating' ? (t('concept_space.art_checking') || '… Checking your idea') : (t('concept_space.art_creating') || '… Creating')}</div>
+                                ) : (
+                                    <>
+                                        <button onClick={doSculptFromLabel} disabled={typeof window.callGemini !== 'function'} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">🧊 {t('concept_space.art_sculpt_auto') || 'Sculpt from this concept'}</button>
+                                        <div className="text-[11px] text-slate-500 text-center">{t('concept_space.art_or_direct') || 'or describe your own:'}</div>
+                                        <div className="flex gap-1">
+                                            <button onClick={() => setArtType('sculpture')} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🧊 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
+                                            <button onClick={() => setArtType('image')} disabled={!canImagen} title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
+                                        </div>
+                                        {directEval && directEval.verdict === 'reject' && (
+                                            <div className="text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900"><span className="font-bold">{t('memory_palace.direct_rejected') || 'Let’s adjust:'}</span> {directEval.reason}</div>
+                                        )}
+                                        {directEval && directEval.verdict === 'enhance' && (
+                                            <div className="text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5">
+                                                {directEval.reason && <div className="mb-1 text-fuchsia-900">{directEval.reason}</div>}
+                                                {directEval.enhancedPrompt && <div className="italic text-fuchsia-800 mb-1">“{directEval.enhancedPrompt}”</div>}
+                                                <div className="flex gap-1">
+                                                    <button onClick={() => handleArtGenerate(directEval.enhancedPrompt || directPrompt)} className="flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
+                                                    <button onClick={() => handleArtGenerate(directPrompt)} className="px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50">{t('memory_palace.direct_use_mine') || 'Use mine'}</button>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {(!directEval || directEval.verdict === 'reject') && (
+                                            <form onSubmit={(e) => { e.preventDefault(); handleArtSubmit(); }} className="flex gap-1">
+                                                <input value={directPrompt} onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }} placeholder={t('concept_space.art_prompt_placeholder') || 'e.g. a glowing brain with gears'} aria-label={t('concept_space.art_prompt_placeholder') || 'Describe the art'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 outline-none" />
+                                                <button type="submit" disabled={!directPrompt.trim()} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨</button>
+                                            </form>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+            <p className="text-xs text-slate-500 italic text-center mt-3">
+                {t('concept_space.caption') || 'Drag to orbit · scroll to zoom · click a concept for details. Drag a concept to place it on its strand plane — position is saved with the resource.'}
+            </p>
+        </div>
+    );
+};
+
+// ── Memory Palace (method of loci) — embedded 3D walk host ──────────
+// Rooms = branches, loci = items, mnemonics from generation ride on
+// branch.mnemonics[]. The palace module owns the walk + a11y route; this
+// wrapper owns the toolbar (Furnish with Imagen, per the Art Studio depth
+// trick's sibling pattern) and the visible mnemonic strip. Images persist
+// in data.memoryPalace.images (Frayer-image precedent) via onPersist.
+
+// Preset frame stamps for the 🎁 Decorate panel: the app's own emoji icon
+// language rendered onto a small card texture — zero AI, zero network, a few
+// KB each, and they ride the exact same images store/live-reveal path as
+// Imagen art. Labels are EN fallbacks; t() keys memory_palace.stamp_<id>.
+const _MP_STAMPS = [
+    { id: 'star', e: '⭐', label: 'Star' },
+    { id: 'heart', e: '❤️', label: 'Heart' },
+    { id: 'bolt', e: '⚡', label: 'Lightning bolt' },
+    { id: 'flame', e: '🔥', label: 'Flame' },
+    { id: 'rainbow', e: '🌈', label: 'Rainbow' },
+    { id: 'dragon', e: '🐉', label: 'Dragon' },
+    { id: 'trex', e: '🦖', label: 'T-rex' },
+    { id: 'rocket', e: '🚀', label: 'Rocket' },
+    { id: 'crown', e: '👑', label: 'Crown' },
+    { id: 'music', e: '🎵', label: 'Music note' },
+    { id: 'ice', e: '🧊', label: 'Ice cube' },
+    { id: 'volcano', e: '🌋', label: 'Volcano' },
+];
+// Per-theme stamp card palette so an emoji stamp reads against the room it hangs
+// in — the dark-indigo card vanished on the pasture sky and the space void.
+const _MP_STAMP_THEMES = {
+    gallery: { top: '#1e1b4b', bottom: '#0f172a', border: 'rgba(129,140,248,0.55)' },
+    pasture: { top: '#f0fdf4', bottom: '#dcfce7', border: 'rgba(22,163,74,0.55)' },
+    space: { top: '#0b1026', bottom: '#020617', border: 'rgba(148,163,184,0.6)' },
+};
+// Emoji → small PNG data-URL (themed card + big centered glyph). Returns null when
+// a 2D canvas isn't available (the caller toasts instead of crashing).
+const _mpStampImage = (emoji, theme) => {
+    try {
+        const c = document.createElement('canvas');
+        c.width = 320; c.height = 240;
+        const g = c.getContext('2d');
+        if (!g) return null;
+        const pal = _MP_STAMP_THEMES[theme] || _MP_STAMP_THEMES.gallery;
+        const grad = g.createLinearGradient(0, 0, 0, 240);
+        grad.addColorStop(0, pal.top); grad.addColorStop(1, pal.bottom);
+        g.fillStyle = grad; g.fillRect(0, 0, 320, 240);
+        g.strokeStyle = pal.border; g.lineWidth = 10; g.strokeRect(5, 5, 310, 230);
+        g.font = '150px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText(String(emoji || '⭐'), 160, 128);
+        return c.toDataURL('image/png');
+    } catch (e) { return null; }
+};
+
+// HTML-escape for the printable study sheet (labels/mnemonics are user/AI text).
+const _mpEsc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (ch) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+));
+
+const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {
+    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
+    const hostRef = React.useRef(null);
+    const handleRef = React.useRef(null);
+    const palaceRef = React.useRef(null);
+    const [ready, setReady] = React.useState(false);
+    const [failed, setFailed] = React.useState(false);
+    const [glbReady, setGlbReady] = React.useState(false);      // CC0 collectibles library loaded (declared early: the decor-label memo depends on it)
+    const [furnishing, setFurnishing] = React.useState(null);   // {done, total} | null
+    const [nonce, setNonce] = React.useState(0);
+    const [current, setCurrent] = React.useState(null);         // {id, label, mnemonic, idx, total}
+    const currentRef = React.useRef(null);
+    // Freshest memoryPalace store — sequential async gens (furnish/sculpt) and the
+    // recall finish read THIS at persist time, so a late write merges into the CURRENT
+    // data, never a stale render snapshot (which would clobber other art or mastery).
+    const mpRef = React.useRef(null);
+    mpRef.current = data?.memoryPalace || {};
+    const aliveRef = React.useRef(true);           // false after unmount → skip late persists
+    const finishedRef = React.useRef(false);       // synchronous double-finish guard for recall
+    const recallTimersRef = React.useRef([]);      // pending auto-advance timers, cleared on exit/unmount
+    const genCancelRef = React.useRef(false);      // Stop button → halt an in-progress furnish/sculpt
+    React.useEffect(() => () => {
+        aliveRef.current = false;
+        recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
+        recallTimersRef.current = [];
+    }, []);
+    const _laterRecall = (fn) => {
+        const id = setTimeout(() => { recallTimersRef.current = recallTimersRef.current.filter((x) => x !== id); fn(); }, 700);
+        recallTimersRef.current.push(id);
+        return id;
+    };
+    const persist = typeof onPersist === 'function' ? onPersist : null;
+    const canImagen = typeof callImagen === 'function';
+    const images = data?.memoryPalace?.images || {};
+    const depths = data?.memoryPalace?.depths || {};                 // depth maps for relief statues (P4a)
+    const [reliefOn, setReliefOn] = React.useState(false);           // 🗿 also generate a depth map per locus → 3D bas-relief
+    const imageCount = Object.keys(images).length;
+    // ── Recall walk (P2): the walk becomes the game board. ──
+    const [recall, setRecall] = React.useState(null);           // {mode:'bank'|'type', seed, startAt}
+    const recallResultsRef = React.useRef({});                  // {locusId: {attempts, correct, revealed}}
+    const attemptsTotalRef = React.useRef(0);
+    const startedByArmRef = React.useRef(false);
+    const [recallBank, setRecallBank] = React.useState([]);
+    const bankRef = React.useRef([]);                                 // live bank for the in-VR answer chips (stale-closure safe)
+    bankRef.current = recallBank;
+    const [answered, setAnswered] = React.useState(0);
+    const [recallHint, setRecallHint] = React.useState(null);
+    const [canReveal, setCanReveal] = React.useState(false);
+    const [typedAnswer, setTypedAnswer] = React.useState('');
+    const [wrongFlash, setWrongFlash] = React.useState(false);
+    const [finished, setFinished] = React.useState(null);       // scoreRecall() result
+    const [elapsed, setElapsed] = React.useState(0);
+    const elapsedRef = React.useRef(0);
+    const fmtTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    const totalItems = React.useMemo(() => (Array.isArray(data?.branches) ? data.branches : []).reduce((s, b) => s + ((b.items || []).filter((it) => (typeof it === 'object' ? it.text : it)).length), 0), [data]);
+    const recallEligible = totalItems >= 4;
+    const dataKey = JSON.stringify({
+        m: data?.main,
+        b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items, mn: b.mnemonics })),
+        img: data?.memoryPalace?.generatedAt || 0,
+    });
+    // Spaced review: which loci are due (dueAt <= now) vs never-walked. Stable
+    // mount-time `now` so the banner doesn't flicker across renders.
+    const nowISO = React.useMemo(() => new Date().toISOString(), []);
+    // masteryKey in the deps so the banner refreshes after a review walk updates
+    // mastery (which does NOT change dataKey) — otherwise it keeps counting the loci
+    // the student just reviewed as still-due.
+    const masteryKey = JSON.stringify(data?.memoryPalace?.mastery || {});
+    const dueInfo = React.useMemo(() => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !MP.dueLoci || !hasContent) return null;
+        try { return MP.dueLoci(MP.buildPalace(data || {}), data?.memoryPalace?.mastery || {}, nowISO); } catch (e) { return null; }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataKey, nowISO, masteryKey]);
+
+    // ── Decoration → screen-reader name map (accessibility parity) ──
+    // A sighted student SEES a torch / trophy / star at a frame; this gives the
+    // same cue to screen-reader users, fed to the palace as opts.decor so it rides
+    // the live-region announcement and the accessible route list. Localized where
+    // possible: collectibles + presets + stamps by id, AI sculptures by recipe name.
+    const decorKey = JSON.stringify({ o: data?.memoryPalace?.objects || {}, s: data?.memoryPalace?.stamps || {} });
+    const decorLabels = React.useMemo(() => {
+        const out = {};
+        const objs = data?.memoryPalace?.objects || {};
+        const stamps = data?.memoryPalace?.stamps || {};
+        const GLB = window.AlloModules && window.AlloModules.GlbLibrary;
+        let catalog = [];
+        try { catalog = (GLB && GLB.listCatalog) ? GLB.listCatalog() : []; } catch (e) {}
+        Object.keys(objs).forEach((id) => {
+            const rec = objs[id]; if (!rec) return;
+            if (rec.glbItem) {
+                const item = catalog.filter((c) => c.id === rec.glbItem)[0];
+                out[id] = t('memory_palace.collect_' + rec.glbItem) || (item && item.label) || rec.glbItem;
+            } else if (rec.presetId) {
+                out[id] = t('memory_palace.preset_' + rec.presetId) || rec.name || (t('memory_palace.decor_sculpture') || '3D decoration');
+            } else {
+                out[id] = rec.name || (t('memory_palace.decor_sculpture') || '3D decoration');
+            }
+        });
+        Object.keys(stamps).forEach((id) => {
+            const lbl = t('memory_palace.stamp_' + stamps[id]) || stamps[id];
+            out[id] = out[id] ? (out[id] + ', ' + lbl) : lbl;
+        });
+        return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [decorKey, glbReady]);
+
+    React.useEffect(() => {
+        let alive = true;
+        // Prim3D is a best-effort sidecar (sculptures render only if it loads).
+        _voPalaceEnsure().then((ok) => {
+            if (!alive) return;
+            if (!ok) { setFailed(true); return; }
+            _voPrim3dEnsure().then(() => { if (alive) setReady(true); });
+            // CC0 collectibles library (Tier D) — best-effort sidecar like Prim3D;
+            // the Decorate panel's Collectibles row appears only if it loads.
+            _voGlbEnsure().then((g) => { if (alive) setGlbReady(!!g); });
+        });
+        return () => { alive = false; };
+    }, []);
+
+    React.useEffect(() => {
+        if (!ready || failed || !hostRef.current || !hasContent) return undefined;
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP) { setFailed(true); return undefined; }
+        palaceRef.current = MP.buildPalace(data || {});
+        handleRef.current = MP.render(hostRef.current, data, {
+            t,
+            theme: data?.memoryPalace?.theme || 'gallery',
+            images: data?.memoryPalace?.images || {},
+            depths: data?.memoryPalace?.depths || {},
+            objects: data?.memoryPalace?.objects || {},
+            decor: decorLabels,   // screen-reader names for placed decorations (a11y parity)
+            mastery: recall ? undefined : (data?.memoryPalace?.mastery || {}),   // recall-driven dimming (study mode only)
+            recall: !!recall,
+            // In-VR recall bank: the palace spawns the remaining answers as ray-
+            // selectable chips; a pick routes through the SAME submitRecallAnswer
+            // as a 2D chip click (refs-based, so the once-mounted closure stays live).
+            vrRecall: recall ? {
+                getBank: () => (bankRef.current || []).map((c) => ({ id: c.id, label: c.label })),
+                onPick: (locusId, chip) => { if (chip) submitRecallAnswer(chip.label, chip.id); },
+            } : undefined,
+            startAt: recall ? recall.startAt : undefined,
+            onLocusChange: (locus, idx, total) => {
+                if (!locus) return;
+                currentRef.current = locus;
+                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1, entry: locus.id === '__entry' });
+                // Re-surface earned hints when revisiting a struggled locus.
+                const r = recallResultsRef.current[locus.id];
+                setRecallHint(r && r.attempts >= 2 && locus.mnemonic && !r.correct && !r.revealed ? locus.mnemonic : null);
+                setCanReveal(!!(r && r.attempts >= 3 && !r.correct && !r.revealed));
+                setTypedAnswer('');
+            },
+        });
+        return () => {
+            try { if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy(); } catch (e) {}
+            handleRef.current = null;
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ready, failed, dataKey, nonce, recall, (data?.memoryPalace?.theme || 'gallery')]);
+
+    // Push decoration SR-name changes to the LIVE walk without a remount — placing
+    // a decoration persists without bumping generatedAt (so the scene is not
+    // rebuilt), and this keeps the announcements/route list in step.
+    React.useEffect(() => {
+        try { if (handleRef.current && handleRef.current.setDecor) handleRef.current.setDecor(decorLabels); } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [decorKey, glbReady, ready]);
+
+    // Environment theme (gallery / pasture / space) — persists in data.memoryPalace
+    // and remounts the scene (theme rebuilds the whole environment).
+    const paletteTheme = data?.memoryPalace?.theme || 'gallery';
+    const handleSetTheme = (thm) => {
+        if (!persist || thm === paletteTheme) return;
+        persist({ ...(mpRef.current || {}), theme: thm }, 'memoryPalace');
+    };
+
+    // Stopwatch (count-up; freezes when the walk is scored).
+    React.useEffect(() => {
+        if (!recall || finished) return undefined;
+        const iv = setInterval(() => { elapsedRef.current += 1; setElapsed(elapsedRef.current); }, 1000);
+        return () => clearInterval(iv);
+    }, [recall, finished]);
+
+    const _resetRecallRun = () => {
+        recallResultsRef.current = {}; attemptsTotalRef.current = 0;
+        finishedRef.current = false;
+        recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
+        recallTimersRef.current = [];
+        elapsedRef.current = 0; setElapsed(0);
+        setAnswered(0); setFinished(null); setRecallHint(null); setCanReveal(false); setTypedAnswer(''); setWrongFlash(false);
+    };
+
+    const startRecall = (mode, viaArm) => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || recall) return;
+        const palace = MP.buildPalace(data || {});
+        const targets = palace.route.filter((id) => id !== '__entry');
+        if (targets.length < 2) { if (addToast) addToast(t('memory_palace.recall_empty') || 'Not enough loci to play yet.', 'info'); return; }
+        _resetRecallRun();
+        const seed = (Date.now() % 2147483647) || 7;
+        setRecallBank(MP.buildRecallBank(palace, seed));
+        startedByArmRef.current = viaArm === true;
+        setRecall({ mode: mode === 'type' ? 'type' : 'bank', seed, startAt: targets[0] });
+        if (addToast) addToast(t('memory_palace.recall_start') || '🧠 The labels are covered. Walk the palace and recall what lives at each locus!', 'info');
+        // Teacher start arms every student in the live session (2D sort-game contract).
+        if (isTeacherMode && viaArm !== true && typeof onRecallArm === 'function') { try { onRecallArm(); } catch (e) {} }
+    };
+    const exitRecall = () => {
+        recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });   // no advance fires into study mode
+        recallTimersRef.current = [];
+        setRecall(null); _resetRecallRun(); setRecallBank([]);
+        startedByArmRef.current = false;
+        if (typeof onRecallClose === 'function') { try { onRecallClose(); } catch (e) {} }
+    };
+    const retryRecall = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !recall || !palaceRef.current) return;
+        const mode = recall.mode;
+        const palace = palaceRef.current;
+        const targets = palace.route.filter((id) => id !== '__entry');
+        _resetRecallRun();
+        const seed = (Date.now() % 2147483647) || 11;
+        setRecallBank(MP.buildRecallBank(palace, seed));
+        setRecall({ mode, seed, startAt: targets[0] });   // new identity ⇒ scene remounts covered
+    };
+
+    // Live-session arming (mirrors the Strand Challenge contract).
+    React.useEffect(() => {
+        if (armed && !isTeacherMode && !recall && ready && !failed && hasContent) startRecall('bank', true);
+        else if (!armed && !isTeacherMode && recall && startedByArmRef.current) { startedByArmRef.current = false; exitRecall(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [armed, isTeacherMode, ready, failed, recall, hasContent]);
+
+    const advanceRecall = () => {
+        if (!palaceRef.current || !handleRef.current) return;
+        const route = palaceRef.current.route;
+        const res = recallResultsRef.current;
+        const curId = currentRef.current ? currentRef.current.id : route[0];
+        const curIdx = Math.max(0, route.indexOf(curId));
+        let nextIdx = -1;
+        // Start at s=0 so the CURRENT locus is re-checked first: if the user manually
+        // walked to a still-unanswered locus while an advance was pending, we stay on
+        // it rather than skipping past it.
+        for (let s = 0; s <= route.length; s++) {
+            const i = (curIdx + s) % route.length;
+            const id = route[i];
+            if (id === '__entry') continue;
+            const r = res[id];
+            if (!r || (!r.correct && !r.revealed)) { nextIdx = i; break; }
+        }
+        if (nextIdx < 0) { finishRecall(); return; }
+        handleRef.current.goTo(nextIdx);
+    };
+
+    const finishRecall = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        // Synchronous ref guard: two auto-advance timers scheduled while finished===null
+        // could both reach here and double-award points/telemetry. The `finished` STATE
+        // is captured per-render and can't dedupe them; finishedRef can.
+        if (!MP || !palaceRef.current || finishedRef.current) return;
+        finishedRef.current = true;
+        const targets = palaceRef.current.route.filter((id) => id !== '__entry');
+        const res = recallResultsRef.current;
+        targets.forEach((id) => { if (!res[id]) res[id] = { attempts: 0, correct: false, revealed: true }; });
+        const score = MP.scoreRecall(res);
+        setFinished(score);
+        const labelOf = (id) => { const l = (palaceRef.current.loci || []).find((x) => x.id === id); return (l && l.label) || id; };
+        const misses = targets.filter((id) => !(res[id].correct && res[id].attempts <= 1)).map((id) => ({
+            itemId: id, itemText: labelOf(id), attempts: res[id].attempts, revealed: !!res[id].revealed,
+            placedCategoryLabel: res[id].revealed ? 'revealed' : 'eventual', correctCategoryLabel: labelOf(id),
+        }));
+        if (score.perfect) {
+            if (playSound) playSound('correct');
+            if (addToast) addToast(t('memory_palace.recall_perfect') || '🏛✨ Perfect walk! Every locus recalled on the first try.', 'success');
+            if (onScoreUpdate) onScoreUpdate(score.points, 'Memory Palace Recall');
+        } else {
+            if (playSound) playSound('reveal');
+            if (addToast) addToast((t('memory_palace.recall_summary') || 'Recalled {ok} of {total} ({first} on the first try).')
+                .replace('{ok}', String(score.firstTry + score.eventual)).replace('{total}', String(score.total)).replace('{first}', String(score.firstTry)), 'info');
+        }
+        if (onGameComplete) onGameComplete(score.perfect ? 'palaceRecall' : 'palaceRecallAttempt', {
+            score: score.points, correctPlacements: score.firstTry + score.eventual, totalItems: score.total,
+            isPerfect: score.perfect, attempts: attemptsTotalRef.current, bestScore: score.points,
+            timeSeconds: elapsedRef.current, incorrectPlacements: misses,
+        });
+        // Fold this walk's per-locus results into the spaced-repetition schedule.
+        // Merge into the LIVE store (mpRef) so mastery can't clobber freshly-generated
+        // images/objects; no generatedAt bump → no remount over the finished summary.
+        if (persist && MP.updateMastery && aliveRef.current) {
+            try { persist({ ...(mpRef.current || {}), mastery: MP.updateMastery((mpRef.current && mpRef.current.mastery) || {}, res, new Date().toISOString()) }, 'memoryPalace'); } catch (e) {}
+        }
+    };
+
+    const submitRecallAnswer = (given, chipId) => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const cur = currentRef.current;
+        if (!MP || !recall || !cur || cur.id === '__entry' || finished) return;
+        const res = recallResultsRef.current;
+        const r = res[cur.id] || (res[cur.id] = { attempts: 0, correct: false, revealed: false });
+        if (r.correct || r.revealed) return;
+        r.attempts += 1; attemptsTotalRef.current += 1;
+        const ok = chipId ? (chipId === cur.id || MP.matchAnswer(cur.label, given)) : MP.matchAnswer(cur.label, given);
+        if (ok) {
+            r.correct = true;
+            if (playSound) playSound('correct');
+            if (handleRef.current) { handleRef.current.revealLocus(cur.id); handleRef.current.setLocusStatus(cur.id, 'correct'); }
+            setRecallBank((bank) => {
+                const i = bank.findIndex((c) => c.id === cur.id);
+                const j = i >= 0 ? i : bank.findIndex((c) => MP.matchAnswer(cur.label, c.label));
+                if (j < 0) return bank;
+                const nb = bank.slice(); nb.splice(j, 1); return nb;
+            });
+            setRecallHint(null); setCanReveal(false); setTypedAnswer('');
+            setAnswered((n) => n + 1);
+            _laterRecall(() => advanceRecall());
+        } else {
+            if (playSound) playSound('reveal');
+            if (handleRef.current) handleRef.current.setLocusStatus(cur.id, 'incorrect');
+            setWrongFlash(true);
+            setTimeout(() => {
+                setWrongFlash(false);
+                const rr = recallResultsRef.current[cur.id];
+                if (handleRef.current && rr && !rr.correct && !rr.revealed) handleRef.current.setLocusStatus(cur.id, null);
+            }, 700);
+            if (r.attempts >= 2 && cur.mnemonic) setRecallHint(cur.mnemonic);   // the mnemonic IS the hint
+            if (r.attempts >= 3) setCanReveal(true);
+        }
+    };
+
+    const revealCurrent = () => {
+        const cur = currentRef.current;
+        if (!cur || !recall || finished || cur.id === '__entry') return;
+        const res = recallResultsRef.current;
+        const r = res[cur.id] || (res[cur.id] = { attempts: 0, correct: false, revealed: false });
+        if (r.correct || r.revealed) return;
+        r.revealed = true;
+        if (handleRef.current) { handleRef.current.revealLocus(cur.id); handleRef.current.setLocusStatus(cur.id, 'incorrect'); }
+        setRecallBank((bank) => { const i = bank.findIndex((c) => c.id === cur.id); if (i < 0) return bank; const nb = bank.slice(); nb.splice(i, 1); return nb; });
+        setRecallHint(null); setCanReveal(false); setTypedAnswer('');
+        setAnswered((n) => n + 1);
+        setTimeout(() => advanceRecall(), 700);
+    };
+
+    // Furnish: one Imagen illustration per locus, driven by the MNEMONIC (the
+    // vivid image is the mnemonic made visible). Sequential to respect quota;
+    // per-item failures skipped; results persisted once at the end.
+    // 🗿 Sculpt: one Prim3D recipe per locus — Gemini designs a primitive-
+    // assembly figure from the mnemonic, the palace renders it on a pedestal
+    // beside the frame. Recipes are tiny JSON (cache-friendly, remixable) and
+    // persist alongside the images in data.memoryPalace.
+    const objects3d = data?.memoryPalace?.objects || {};
+    const objectCount = Object.keys(objects3d).length;
+    const [sculpting, setSculpting] = React.useState(null);   // {done, total} | null
+    // ── 🎁 Decorate mode: preset decorations from assets ALREADY IN THE APP —
+    //    hand-authored Prim3D recipes + emoji frame stamps. No AI, no credits,
+    //    works offline; the walk is the locus picker (same contract as Direct).
+    //    Choosing your own cue is itself encoding work (choice + generation effect).
+    const [decorMode, setDecorMode] = React.useState(false);
+    const [customizeOpen, setCustomizeOpen] = React.useState(false);   // collapse the "make it look good" actions behind one disclosure
+    // Printable study sheet: the palace route as a one-page handout (rooms → loci →
+    // mnemonics in walking order) — study off-screen / on paper, a UDL + offline win.
+    const handlePrintStudySheet = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !hasContent) return;
+        let palace;
+        try { palace = MP.buildPalace(data || {}); } catch (e) { return; }
+        const loci = palace.loci || [];
+        const byRoom = {};
+        (palace.route || []).forEach((id) => {
+            const l = loci.find((x) => x.id === id);
+            if (!l || l.id === '__entry') return;
+            (byRoom[l.roomIdx] = byRoom[l.roomIdx] || []).push(l);
+        });
+        let n = 0;
+        const roomsHtml = (palace.rooms || []).map((room, ri) => {
+            const items = byRoom[ri] || [];
+            if (ri === 0 || !items.length) return '';
+            const rows = items.map((l) => {
+                n += 1;
+                const dl = decorLabels[l.id];
+                return `<li><span class="num">${n}</span><div class="body">`
+                    + `<div class="fact">${_mpEsc(l.label)}</div>`
+                    + (l.mnemonic ? `<div class="mnem"><b>${_mpEsc(t('memory_palace.picture_this') || 'Picture this:')}</b> ${_mpEsc(l.mnemonic)}</div>` : '')
+                    + (dl ? `<div class="decor">${_mpEsc(t('memory_palace.sr_decoration') || 'Decoration')}: ${_mpEsc(dl)}</div>` : '')
+                    + `</div></li>`;
+            }).join('');
+            return `<section class="room"><h2 style="border-color:${_mpEsc(room.color)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
+        }).join('');
+        const sheetTitle = _mpEsc(palace.title || data?.main || title || (t('memory_palace') || 'Memory Palace'));
+        const html = `<!doctype html><html><head><meta charset="utf-8"><title>${sheetTitle}</title><style>`
+            + `body{font-family:system-ui,-apple-system,sans-serif;color:#1e293b;max-width:760px;margin:0 auto;padding:32px 24px;line-height:1.5;}`
+            + `h1{font-size:24px;margin:0 0 4px;}.sub{color:#64748b;font-size:13px;margin:0 0 22px;}`
+            + `.room{page-break-inside:avoid;margin-bottom:20px;}.room h2{font-size:16px;border-left:5px solid #6366f1;padding-left:10px;margin:0 0 8px;}`
+            + `ol{list-style:none;padding:0;margin:0;}li{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #eef2f7;page-break-inside:avoid;}`
+            + `.num{flex:0 0 28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;}`
+            + `.fact{font-weight:700;}.mnem{font-size:13px;color:#4338ca;margin-top:2px;}.decor{font-size:12px;color:#475569;margin-top:2px;}`
+            + `.method{margin-top:24px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#475569;}`
+            + `.no-print{text-align:center;margin-bottom:22px;}button{background:#4f46e5;color:#fff;border:none;padding:10px 20px;font-size:15px;font-weight:700;border-radius:6px;cursor:pointer;}`
+            + `@media print{.no-print{display:none;}}</style></head><body>`
+            + `<div class="no-print"><button onclick="window.print()">${_mpEsc(t('common.print') || 'Print')}</button></div>`
+            + `<h1>${sheetTitle}</h1><p class="sub">${_mpEsc(t('memory_palace.sheet_subtitle') || 'Memory palace study sheet — walk the route in order and picture each image vividly.')}</p>`
+            + roomsHtml
+            + `<div class="method">${_mpEsc(t('memory_palace.caption') || '')}</div></body></html>`;
+        const win = window.open('', '_blank');
+        if (win) { win.document.write(html); win.document.close(); }
+        else if (addToast) addToast(t('memory_palace.sheet_popup') || 'Allow pop-ups to open the printable study sheet.', 'error');
+    };
+    // Place a CC0-library collectible: persist a tiny { glbItem } REFERENCE (not
+    // the mesh) — the palace resolves it via GlbLibrary.loadModel, which uses the
+    // real .glb when the catalog has one and the item's Prim3D fallback otherwise.
+    const handlePlaceCollectible = (item) => {
+        const cur = currentRef.current;
+        if (!item || !cur || cur.id === '__entry' || !persist) return;
+        _persistObject(cur.id, { glbItem: item.id });
+        if (addToast) addToast(t('memory_palace.decorate_placed') || '🎁 Placed! Saved with this palace.', 'success');
+    };
+    const handlePlacePreset = (presetId) => {
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = currentRef.current;
+        if (!P3D || typeof P3D.getPreset !== 'function' || !cur || cur.id === '__entry' || !persist) return;
+        const recipe = P3D.getPreset(presetId);
+        if (!recipe) { if (addToast) addToast(t('memory_palace.decorate_failed') || 'Could not place that here — try another.', 'error'); return; }
+        recipe.presetId = presetId;   // survives storage (normalize ignores it) → localized SR label
+        _persistObject(cur.id, recipe);
+        if (addToast) addToast(t('memory_palace.decorate_placed') || '🎁 Placed! Saved with this palace.', 'success');
+    };
+    const handlePlaceStamp = (stamp) => {
+        const cur = currentRef.current;
+        if (!cur || cur.id === '__entry' || !persist) return;
+        const img = _mpStampImage(stamp.e, paletteTheme);   // themed card so it reads in every setting
+        if (!img) { if (addToast) addToast(t('memory_palace.decorate_failed') || 'Could not place that here — try another.', 'error'); return; }
+        if (handleRef.current && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, img);
+        const nx = { ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [cur.id]: img } };
+        // a flat stamp replaces any relief pair — drop the stale depth map with it
+        if (nx.depths && nx.depths[cur.id]) { const d = { ...nx.depths }; delete d[cur.id]; nx.depths = d; }
+        // record the stamp id so screen readers can name it (the data-URL alone is opaque)
+        nx.stamps = { ...((mpRef.current && mpRef.current.stamps) || {}), [cur.id]: stamp.id };
+        persist(nx, 'memoryPalace');
+        if (addToast) addToast(t('memory_palace.decorate_placed') || '🎁 Placed! Saved with this palace.', 'success');
+    };
+    const handleDecorRemove = () => {
+        const cur = currentRef.current;
+        if (!cur || cur.id === '__entry' || !persist) return;
+        const keep = { ...(mpRef.current || {}) };
+        ['images', 'depths', 'objects', 'stamps'].forEach((k) => {
+            if (keep[k] && keep[k][cur.id] !== undefined) { const o = { ...keep[k] }; delete o[cur.id]; keep[k] = o; }
+        });
+        persist(keep, 'memoryPalace');
+        if (handleRef.current && handleRef.current.clearLocus) handleRef.current.clearLocus(cur.id);
+        if (addToast) addToast(t('memory_palace.decorate_removed') || 'Removed — the locus is back to its numbered card.', 'info');
+    };
+    // ── Direct-the-AI mode: the student writes the prompt; an AI stage rejects /
+    //    enhances / approves it before generating (generation effect + prompt craft). ──
+    const [directMode, setDirectMode] = React.useState(false);
+    const [directType, setDirectType] = React.useState('image');   // 'image' | 'sculpture'
+    const [directPrompt, setDirectPrompt] = React.useState('');
+    const [directEval, setDirectEval] = React.useState(null);      // {verdict, reason, enhancedPrompt} | null
+    const [directBusy, setDirectBusy] = React.useState(null);      // 'evaluating' | 'generating' | null
+    const [refinePrompt, setRefinePrompt] = React.useState('');    // "tell the AI what to change" for the current sculpture
+    const [refineBusy, setRefineBusy] = React.useState(false);
+    // ── Voice input for Direct-the-AI (hands-free / accessible making): walk to a
+    //    locus and SPEAK what belongs there; the spoken prompt runs through the
+    //    same eval → generate flow as typing. Feature-detected on Web Speech, so
+    //    the mic only shows where dictation exists. Speech via AlloFlowVoice. ──
+    const [voiceSupported, setVoiceSupported] = React.useState(false);
+    const [voiceListening, setVoiceListening] = React.useState(false);
+    const [voiceHeard, setVoiceHeard] = React.useState('');
+    const voiceCtlRef = React.useRef(null);
+    React.useEffect(() => {
+        try { if (window.SpeechRecognition || window.webkitSpeechRecognition) setVoiceSupported(true); } catch (e) {}
+        return () => { try { if (voiceCtlRef.current) { voiceCtlRef.current.stop(); voiceCtlRef.current = null; } } catch (e) {} };
+    }, []);
+    const handleVoiceDirect = (transcript) => {
+        const text = (transcript || '').trim();
+        if (!text) return;
+        setDirectPrompt(text);          // show what was heard in the prompt box
+        handleDirectSubmit(text);       // eval → generate at the current locus
+    };
+    const toggleVoiceDirect = () => {
+        if (voiceListening) { try { if (voiceCtlRef.current) voiceCtlRef.current.stop(); } catch (e) {} setVoiceListening(false); return; }
+        _voVoiceEnsure().then((ok) => {
+            const V = window.AlloFlowVoice || (window.AlloModules && window.AlloModules.Voice);
+            if (!ok || !V || !V.initWebSpeechCapture) { if (addToast) addToast(t('memory_palace.voice_unavailable') || 'Voice input is unavailable in this browser.', 'info'); return; }
+            try {
+                voiceCtlRef.current = V.initWebSpeechCapture({
+                    lang: 'en-US', interimResults: true, continuous: false,
+                    onTranscript: (txt, isFinal) => { setVoiceHeard(txt); if (isFinal) { setVoiceListening(false); handleVoiceDirect(txt); } },
+                    onEnd: () => setVoiceListening(false)
+                });
+                if (voiceCtlRef.current && voiceCtlRef.current.start() !== false) { setVoiceListening(true); setVoiceHeard(''); }
+            } catch (e) { setVoiceListening(false); }
+        });
+    };
+    // Both generators process EVERY un-arted locus (no fixed cap), reveal each result
+    // LIVE the moment it lands (handleRef.current.setLocus*), and persist it
+    // incrementally WITHOUT bumping generatedAt — so items pop in one-by-one while you
+    // walk, the scene never remounts (your position is kept), and a mid-run close keeps
+    // whatever was already made. The Stop button flips genCancelRef.
+    const handleSculpt = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        if (!MP || !P3D || !persist || sculpting || furnishing || typeof window.callGemini !== 'function') return;
+        const palace = MP.buildPalace(data || {});
+        const targets = palace.loci.filter((l) => l.id !== '__entry' && !objects3d[l.id]);
+        if (!targets.length) { if (addToast) addToast(t('memory_palace.sculpt_done_already') || 'Every locus already has a sculpture.', 'info'); return; }
+        genCancelRef.current = false;
+        setSculpting({ done: 0, total: targets.length });
+        let done = 0, failures = 0;
+        const step = (i) => {
+            if (i >= targets.length || genCancelRef.current || !aliveRef.current) {
+                setSculpting(null);
+                if (addToast && aliveRef.current) {
+                    if (genCancelRef.current) addToast((t('memory_palace.gen_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
+                    else if (failures) addToast((t('memory_palace.sculpt_partial') || 'Sculpted {ok} loci; {fail} could not be designed.').replace('{ok}', String(done)).replace('{fail}', String(failures)), 'info');
+                    else addToast(t('memory_palace.sculpt_done') || '🗿 Sculptures placed! Walk the route to meet them.', 'success');
+                }
+                return;
+            }
+            const l = targets[i];
+            const subject = l.mnemonic || l.label;
+            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(subject), true))
+                .then((res) => {
+                    if (!aliveRef.current) return;
+                    const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+                    const recipe = P3D.parseRecipe(text);
+                    if (recipe) {
+                        done += 1;
+                        if (handleRef.current && handleRef.current.setLocusObject) handleRef.current.setLocusObject(l.id, recipe);
+                        persist({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), [l.id]: recipe } }, 'memoryPalace');
+                    } else failures += 1;
+                })
+                .catch(() => { failures += 1; })
+                .then(() => { if (aliveRef.current) { setSculpting({ done: i + 1, total: targets.length }); step(i + 1); } });
+        };
+        step(0);
+    };
+
+    // Directed generation for the CURRENT locus (the walk is the locus picker).
+    // Reset the eval whenever the student edits their prompt or moves to a new locus.
+    const handleDirectSubmit = (promptOverride) => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const cur = currentRef.current;
+        if (!MP || !MP.buildPromptEvalPrompt || !cur || cur.id === '__entry' || directBusy || typeof window.callGemini !== 'function') return;
+        const userPrompt = (typeof promptOverride === 'string' && promptOverride.trim()) ? promptOverride.trim() : directPrompt.trim();
+        if (!userPrompt) return;
+        setDirectBusy('evaluating'); setDirectEval(null);
+        const prompt = MP.buildPromptEvalPrompt({ userPrompt, itemLabel: cur.label, mnemonic: cur.mnemonic, topic: data?.main || title || '', mode: directType });
+        Promise.resolve(window.callGemini(prompt, true))
+            .then((res) => {
+                if (!aliveRef.current) return;
+                const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+                const ev = MP.parsePromptEval(text) || { verdict: 'ok', reason: '', enhancedPrompt: userPrompt };
+                if (ev.verdict === 'ok') { handleDirectGenerate(ev.enhancedPrompt || userPrompt); }
+                else { setDirectEval(ev); setDirectBusy(null); }   // reject → retry; enhance → let them choose
+            })
+            .catch(() => { if (aliveRef.current) { setDirectBusy(null); if (addToast) addToast(t('memory_palace.direct_eval_failed') || 'Could not check the prompt — try again.', 'error'); } });
+    };
+    const handleDirectGenerate = (finalPrompt) => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = currentRef.current;
+        if (!MP || !cur || cur.id === '__entry' || !persist) return;
+        setDirectBusy('generating'); setDirectEval(null);
+        const done = (store, key, val, depthVal) => {
+            if (!aliveRef.current) return;
+            if (val) {
+                if (handleRef.current) {
+                    if (key === 'images' && depthVal && handleRef.current.setLocusRelief) handleRef.current.setLocusRelief(cur.id, val, depthVal);
+                    else if (key === 'images' && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, val);
+                    else if (key !== 'images' && handleRef.current.setLocusObject) handleRef.current.setLocusObject(cur.id, val);
+                }
+                const nx = { ...(mpRef.current || {}), [store]: { ...((mpRef.current && mpRef.current[store]) || {}), [cur.id]: val } };
+                if (key === 'images' && depthVal) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [cur.id]: depthVal };
+                // an AI image supersedes any stamp here → drop its stale SR name
+                if (key === 'images' && nx.stamps && nx.stamps[cur.id]) { const s = { ...nx.stamps }; delete s[cur.id]; nx.stamps = s; }
+                persist(nx, 'memoryPalace');
+                if (addToast) addToast(t('memory_palace.direct_placed') || '✨ Placed at this locus! Walk on and direct the next.', 'success');
+                setDirectPrompt('');
+            } else if (addToast) addToast(t('memory_palace.direct_gen_failed') || 'Generation failed — try a different prompt.', 'error');
+            setDirectBusy(null);
+        };
+        if (directType === 'sculpture') {
+            if (!P3D || typeof window.callGemini !== 'function') { setDirectBusy(null); return; }
+            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(finalPrompt), true))
+                .then((res) => { const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || ''); done('objects', 'objects', P3D.parseRecipe(text)); })
+                .catch(() => done('objects', 'objects', null));
+        } else {
+            if (!canImagen) { setDirectBusy(null); return; }
+            callImagen('A vivid, memorable, slightly surreal illustration: ' + finalPrompt + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400)
+                .then((base64) => {
+                    if (base64 && reliefOn && typeof MP.buildDepthPrompt === 'function') {
+                        return callImagen(MP.buildDepthPrompt(finalPrompt), 400).catch(() => null)
+                            .then((d64) => done('images', 'images', base64, d64 || null));
+                    }
+                    done('images', 'images', base64);
+                })
+                .catch(() => done('images', 'images', null));
+        }
+    };
+
+    // Refine the CURRENT locus's sculpture. Manual tweaks mutate whole-object
+    // transforms (scale/rotY/tint — no AI, instant); AI refine asks Gemini to edit
+    // the recipe's parts. Both replace the sculpture live and persist.
+    const _persistObject = (id, recipe) => {
+        if (handleRef.current && handleRef.current.replaceLocusObject) handleRef.current.replaceLocusObject(id, recipe);
+        persist({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), [id]: recipe } }, 'memoryPalace');
+    };
+    const handleManualTweak = (kind) => {
+        const cur = currentRef.current;
+        if (!cur || cur.id === '__entry' || !persist) return;
+        const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
+        if (!rec) return;
+        const TINTS = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', null];
+        const next = { ...rec };
+        if (kind === 'bigger') next.scale = Math.min(5, (rec.scale || 1) * 1.25);
+        else if (kind === 'smaller') next.scale = Math.max(0.25, (rec.scale || 1) * 0.8);
+        else if (kind === 'rotate') next.rotY = (((rec.rotY || 0) + 45) % 360);
+        else if (kind === 'recolor') { const i = TINTS.indexOf(rec.tint || null); next.tint = TINTS[(i + 1) % TINTS.length]; }
+        _persistObject(cur.id, next);
+    };
+    const handleAiRefine = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = currentRef.current;
+        if (!MP || !P3D || !cur || cur.id === '__entry' || !persist || refineBusy || typeof window.callGemini !== 'function') return;
+        const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
+        const instr = refinePrompt.trim();
+        if (!rec || !instr || rec.glbItem) return;   // library items have no editable parts
+        setRefineBusy(true);
+        Promise.resolve(window.callGemini(MP.buildRefinePrompt(rec, instr), true))
+            .then((res) => {
+                if (!aliveRef.current) return;
+                const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+                const newRec = P3D.parseRecipe(text);
+                if (newRec) {
+                    // keep the student's manual scale/spin/tint on top of the AI's new parts
+                    _persistObject(cur.id, { ...newRec, scale: rec.scale, rotY: rec.rotY, tint: rec.tint });
+                    setRefinePrompt('');
+                    if (addToast) addToast(t('memory_palace.refine_done') || '✨ Refined!', 'success');
+                } else if (addToast) addToast(t('memory_palace.refine_failed') || 'Could not refine — try rephrasing.', 'error');
+            })
+            .catch(() => { if (addToast) addToast(t('memory_palace.refine_failed') || 'Could not refine — try rephrasing.', 'error'); })
+            .then(() => { if (aliveRef.current) setRefineBusy(false); });
+    };
+
+    const handleFurnish = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !canImagen || !persist || furnishing || sculpting) return;
+        const palace = MP.buildPalace(data || {});
+        // Relief mode also targets loci that HAVE a flat image but no depth map yet
+        // (upgrade-in-place: only the depth map is generated for those).
+        const wantRelief = reliefOn && typeof MP.buildDepthPrompt === 'function';
+        const targets = palace.loci.filter((l) => l.id !== '__entry' && (!images[l.id] || (wantRelief && !depths[l.id])));
+        if (!targets.length) { if (addToast) addToast(t('memory_palace.furnish_done_already') || 'Every locus already has an image.', 'info'); return; }
+        genCancelRef.current = false;
+        setFurnishing({ done: 0, total: targets.length });
+        let done = 0, failures = 0;
+        const step = (i) => {
+            if (i >= targets.length || genCancelRef.current || !aliveRef.current) {
+                setFurnishing(null);
+                if (addToast && aliveRef.current) {
+                    if (genCancelRef.current) addToast((t('memory_palace.gen_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
+                    else if (failures) addToast((t('memory_palace.furnish_partial') || 'Furnished {ok} loci; {fail} could not be generated.').replace('{ok}', String(done)).replace('{fail}', String(failures)), 'info');
+                    else addToast(t('memory_palace.furnish_done') || '🖼 Palace furnished! Walk the route to lock the images in.', 'success');
+                }
+                return;
+            }
+            const l = targets[i];
+            const subject = l.mnemonic || l.label;
+            const haveImg = (mpRef.current && mpRef.current.images && mpRef.current.images[l.id]) || null;
+            const finishWith = (base64, depthB64) => {
+                // depth-upgrade-only target that got no depth = a failure; a fresh image
+                // without depth still counts (flat frame, exactly as before relief mode).
+                if (haveImg && !depthB64) { failures += 1; return; }
+                done += 1;
+                if (handleRef.current) {
+                    if (depthB64 && handleRef.current.setLocusRelief) handleRef.current.setLocusRelief(l.id, base64, depthB64);
+                    else if (!haveImg && handleRef.current.setLocusImage) handleRef.current.setLocusImage(l.id, base64);
+                }
+                const nx = { ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [l.id]: base64 } };
+                if (depthB64) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [l.id]: depthB64 };
+                if (nx.stamps && nx.stamps[l.id]) { const s = { ...nx.stamps }; delete s[l.id]; nx.stamps = s; }   // AI image supersedes a stamp's SR name
+
+                persist(nx, 'memoryPalace');
+            };
+            const colorP = haveImg ? Promise.resolve(haveImg)
+                : callImagen('A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400);
+            colorP
+                .then((base64) => {
+                    if (!aliveRef.current || !base64) { if (!base64) failures += 1; return; }
+                    if (wantRelief) {
+                        // returning the promise keeps generation sequential (depth lands before the next locus starts)
+                        return callImagen(MP.buildDepthPrompt(subject), 400).catch(() => null)
+                            .then((d64) => { if (aliveRef.current) finishWith(base64, d64 || null); });
+                    }
+                    finishWith(base64, null);
+                })
+                .catch(() => { failures += 1; })
+                .then(() => { if (aliveRef.current) { setFurnishing({ done: i + 1, total: targets.length }); step(i + 1); } });
+        };
+        step(0);
+    };
+
+    return (
+        <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                <div className="text-xs text-slate-500">
+                    {recall
+                        ? (t('memory_palace.recall_hint') || '🧠 The labels are covered — the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears.')
+                        : (t('memory_palace.hint') || 'A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory.')}
+                </div>
+                <div className="flex items-center gap-2">
+                    {recall ? (
+                        <>
+                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" role="status">
+                                ⏱ {fmtTime(elapsed)} · {(t('memory_palace.recall_progress') || '{done}/{total} recalled')
+                                    .replace('{done}', String(answered)).replace('{total}', String((palaceRef.current?.route?.length || 1) - 1))}
+                            </span>
+                            {finished && (
+                                <button
+                                    onClick={retryRecall}
+                                    className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                                >
+                                    ↺ {t('memory_palace.recall_retry') || 'Walk it again'}
+                                </button>
+                            )}
+                            <button
+                                onClick={exitRecall}
+                                className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                            >
+                                {t('memory_palace.recall_exit') || 'Exit recall'}
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            {hasContent && !failed && recallEligible && (
+                                <button
+                                    onClick={() => startRecall('bank', false)}
+                                    disabled={!!furnishing || !!sculpting}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                    title={t('memory_palace.recall_tooltip') || 'Practice: the labels are covered — walk the palace and recall what lives at each locus'}
+                                >
+                                    🧠 {t('memory_palace.recall_play') || 'Recall walk'}
+                                </button>
+                            )}
+                            {hasContent && !failed && recallEligible && isTeacherMode && (
+                                <button
+                                    onClick={() => startRecall('type', false)}
+                                    disabled={!!furnishing || !!sculpting}
+                                    className="flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('memory_palace.recall_expert_tooltip') || 'Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)'}
+                                >
+                                    ⌨ {t('memory_palace.recall_expert') || 'Expert recall'}
+                                </button>
+                            )}
+                            {hasContent && !failed && (
+                                <button
+                                    onClick={handlePrintStudySheet}
+                                    className="flex items-center gap-1 bg-white text-slate-700 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                                    title={t('memory_palace.sheet_tooltip') || 'Open a printable study sheet: the route, loci and mnemonics in walking order'}
+                                >
+                                    📄 {t('memory_palace.sheet') || 'Study sheet'}
+                                </button>
+                            )}
+                            {hasContent && !failed && persist && (
+                                <button
+                                    onClick={() => setCustomizeOpen((o) => !o)}
+                                    aria-expanded={customizeOpen ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${customizeOpen ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'}`}
+                                    title={t('memory_palace.customize_tooltip') || 'Decorate the palace: AI images, sculptures, built-in decorations and relief'}
+                                >
+                                    🎨 {t('memory_palace.customize') || 'Customize'} <span aria-hidden="true">{customizeOpen ? '▲' : '▼'}</span>
+                                </button>
+                            )}
+                            {/* The "make it look good" family, collapsed behind Customize (kept open while a
+                                generation runs so its progress + Stop stay visible). */}
+                            {(customizeOpen || furnishing || sculpting) && (
+                                <>
+                            {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
+                                <button
+                                    onClick={() => { setDirectMode((d) => !d); setDirectEval(null); }}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${directMode ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300 hover:bg-fuchsia-50'}`}
+                                    title={t('memory_palace.direct_tooltip') || 'Direct the AI yourself: write the prompt for each locus and the AI checks it before creating'}
+                                >
+                                    ✍️ {t('memory_palace.direct_toggle') || 'Direct the AI'}
+                                </button>
+                            )}
+                            {hasContent && !failed && persist && (
+                                <button
+                                    onClick={() => setDecorMode((d) => !d)}
+                                    aria-pressed={decorMode ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${decorMode ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'}`}
+                                    title={t('memory_palace.decorate_tooltip') || 'Decorate loci yourself with built-in 3D objects and stamps — instant, no AI credits needed'}
+                                >
+                                    🎁 {t('memory_palace.decorate_toggle') || 'Decorate'}
+                                </button>
+                            )}
+                            {hasContent && !failed && canImagen && persist && (
+                                <button
+                                    onClick={() => setReliefOn((r) => !r)}
+                                    aria-pressed={reliefOn ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${reliefOn ? 'bg-stone-700 text-white border-stone-700' : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'}`}
+                                    title={t('memory_palace.relief_tooltip') || 'Relief mode: also generate a depth map per locus so furnished images become 3D bas-reliefs (two images per locus — uses more image credits and save space)'}
+                                >
+                                    🗿 {t('memory_palace.relief_toggle') || 'Relief'}
+                                </button>
+                            )}
+                            {hasContent && !failed && canImagen && persist && (
+                                <button
+                                    onClick={handleFurnish}
+                                    disabled={!!furnishing || !!sculpting}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('memory_palace.furnish_tooltip') || 'Generate one AI illustration per locus from its mnemonic (uses image credits; saved with the resource)'}
+                                >
+                                    🖼 {furnishing
+                                        ? (t('memory_palace.furnishing') || 'Furnishing {done}/{total}…').replace('{done}', String(furnishing.done)).replace('{total}', String(furnishing.total))
+                                        : (t('memory_palace.furnish') || 'Furnish with AI images')}
+                                </button>
+                            )}
+                            {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
+                                <button
+                                    onClick={handleSculpt}
+                                    disabled={!!sculpting || !!furnishing}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('memory_palace.sculpt_tooltip') || 'AI designs a small primitive-block sculpture of each mnemonic and places it beside the frame (saved with the resource)'}
+                                >
+                                    🗿 {sculpting
+                                        ? (t('memory_palace.sculpting') || 'Sculpting {done}/{total}…').replace('{done}', String(sculpting.done)).replace('{total}', String(sculpting.total))
+                                        : (t('memory_palace.sculpt') || 'Sculpt 3D objects')}
+                                </button>
+                            )}
+                                </>
+                            )}
+                            {hasContent && !failed && persist && (
+                                <div className="flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200" role="group" aria-label={t('memory_palace.theme_label') || 'Palace setting'}>
+                                    {((window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS) || ['gallery', 'pasture', 'space']).map((thm) => {
+                                        const on = paletteTheme === thm;
+                                        const icon = thm === 'gallery' ? '🏛' : thm === 'pasture' ? '🌿' : '🪐';
+                                        const label = thm === 'gallery' ? (t('memory_palace.theme_gallery') || 'Gallery') : thm === 'pasture' ? (t('memory_palace.theme_pasture') || 'Pasture') : (t('memory_palace.theme_space') || 'Space');
+                                        return (
+                                            <button key={thm} onClick={() => handleSetTheme(thm)} aria-pressed={on ? 'true' : 'false'} title={label}
+                                                className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${on ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}>
+                                                {icon} {label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            {(furnishing || sculpting) && (
+                                <button
+                                    onClick={() => { genCancelRef.current = true; }}
+                                    className="flex items-center gap-1 bg-white text-red-600 border border-red-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-50 transition-colors"
+                                    title={t('memory_palace.gen_stop_tooltip') || 'Stop generating — keep what has been made so far'}
+                                >
+                                    ⏹ {t('memory_palace.gen_stop') || 'Stop'}
+                                </button>
+                            )}
+                            {hasContent && !failed && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && (
+                                <button
+                                    onClick={() => {
+                                        // Drop ONLY the generated art — keep the spaced-repetition mastery
+                                        // (which also lives in this store), so clearing images doesn't wipe review progress.
+                                        const keep = { ...(mpRef.current || {}) };
+                                        delete keep.images; delete keep.objects; delete keep.depths; delete keep.stamps; delete keep.generatedAt;
+                                        persist(Object.keys(keep).length ? keep : null, 'memoryPalace');
+                                        setNonce((n) => n + 1);
+                                    }}
+                                    className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                                    title={t('memory_palace.clear_generated_tooltip') || 'Remove the generated images and sculptures from this palace'}
+                                >
+                                    ↺ {t('memory_palace.clear_generated') || 'Clear generated art'}
+                                </button>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+            {!recall && dueInfo && dueInfo.dueCount > 0 && (
+                <div className="mb-3 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5" role="status">
+                    <div className="text-sm text-amber-900">
+                        <span className="font-bold">🔁 {(t('memory_palace.review_due') || '{count} loci are ready for review').replace('{count}', String(dueInfo.dueCount))}</span>
+                        {' '}<span className="text-amber-800">{t('memory_palace.review_due_why') || '— walk the palace again to strengthen the ones fading from memory.'}</span>
+                    </div>
+                    {recallEligible && (
+                        <button
+                            onClick={() => startRecall('bank', false)}
+                            className="flex-shrink-0 flex items-center gap-1 bg-amber-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors"
+                        >
+                            🔁 {t('memory_palace.review_now') || 'Review now'}
+                        </button>
+                    )}
+                </div>
+            )}
+            <div className="relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl" style={{ background: '#0b1020', height: 'min(64vh, 560px)', minHeight: '380px' }}>
+                {!hasContent ? (
+                    <div className="h-full flex flex-col items-center justify-center gap-2 text-center p-8" role="status">
+                        <div className="text-3xl" aria-hidden="true">🏛</div>
+                        <p className="text-sm font-bold text-slate-200">{t('memory_palace.empty_title') || 'No palace to walk yet'}</p>
+                        <p className="text-xs text-slate-400 max-w-sm">{t('memory_palace.empty_body') || 'Generate this organizer from a source text and the facts will become rooms and loci you can walk through.'}</p>
+                    </div>
+                ) : (
+                    <div ref={hostRef} className="absolute inset-0" />
+                )}
+            </div>
+            {!recall && !directMode && current && !current.entry && (
+                <div className="mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
+                    <div className="text-xs font-bold text-indigo-700 mb-0.5">
+                        {(t('memory_palace.locus_of') || 'Locus {idx} of {total}').replace('{idx}', String(current.idx)).replace('{total}', String(current.total))} — {current.label}
+                    </div>
+                    {current.mnemonic && (
+                        <div className="text-sm text-indigo-900">
+                            <span className="font-bold">{t('memory_palace.picture_this') || 'Picture this:'}</span> {current.mnemonic}
+                        </div>
+                    )}
+                </div>
+            )}
+            {directMode && !recall && hasContent && !failed && (
+                <div className="mt-3 bg-fuchsia-50 border border-fuchsia-200 rounded-xl px-4 py-3">
+                    {(!current || current.entry) ? (
+                        <div className="text-sm text-fuchsia-900">{t('memory_palace.direct_at_entry') || '✍️ Walk to a locus (▶ or WASD), then direct the AI to create its image or sculpture.'}</div>
+                    ) : (
+                        <>
+                            <div className="text-xs font-bold text-fuchsia-800 mb-1">
+                                {(t('memory_palace.direct_for') || 'Direct the AI for: {label}').replace('{label}', current.label)}
+                            </div>
+                            {current.mnemonic && <div className="text-xs text-fuchsia-700 italic mb-2">{t('memory_palace.picture_this') || 'Picture this:'} {current.mnemonic}</div>}
+                            {objects3d[current.id] && (
+                                <div className="mb-3 pb-3 border-b border-fuchsia-200">
+                                    <div className="text-xs font-bold text-fuchsia-800 mb-1.5">{t('memory_palace.refine_title') || 'Refine this sculpture'}</div>
+                                    <div className="flex flex-wrap gap-1.5 mb-2">
+                                        <button onClick={() => handleManualTweak('bigger')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
+                                        <button onClick={() => handleManualTweak('smaller')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
+                                        <button onClick={() => handleManualTweak('rotate')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
+                                        <button onClick={() => handleManualTweak('recolor')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
+                                    </div>
+                                    {!objects3d[current.id].glbItem && (
+                                        <form onSubmit={(e) => { e.preventDefault(); handleAiRefine(); }} className="flex gap-2">
+                                            <input
+                                                value={refinePrompt}
+                                                onChange={(e) => setRefinePrompt(e.target.value)}
+                                                placeholder={t('memory_palace.refine_placeholder') || 'Tell the AI what to change… (e.g. add a red hat)'}
+                                                aria-label={t('memory_palace.refine_placeholder') || 'Tell the AI what to change'}
+                                                className="flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
+                                            />
+                                            <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                {refineBusy ? (t('memory_palace.direct_creating') || 'Creating…') : ('✨ ' + (t('memory_palace.refine_apply') || 'Refine'))}
+                                            </button>
+                                        </form>
+                                    )}
+                                </div>
+                            )}
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-bold text-fuchsia-800">{t('memory_palace.direct_make') || 'Make:'}</span>
+                                <button onClick={() => setDirectType('image')} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
+                                <button onClick={() => setDirectType('sculpture')} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🗿 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
+                            </div>
+                            {directEval && directEval.verdict === 'reject' && (
+                                <div className="mb-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="status" aria-live="polite">
+                                    <span className="font-bold">{t('memory_palace.direct_rejected') || 'Let’s adjust:'}</span> {directEval.reason}
+                                </div>
+                            )}
+                            {directEval && directEval.verdict === 'enhance' && (
+                                <div className="mb-2 text-sm text-fuchsia-900 bg-white border border-fuchsia-200 rounded-lg px-3 py-2" role="status" aria-live="polite">
+                                    {directEval.reason && <div className="mb-1">{directEval.reason}</div>}
+                                    {directEval.enhancedPrompt && <div className="italic text-fuchsia-800 mb-2">“{directEval.enhancedPrompt}”</div>}
+                                    <div className="flex gap-2 flex-wrap">
+                                        <button onClick={() => handleDirectGenerate(directEval.enhancedPrompt || directPrompt)} disabled={!!directBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
+                                        <button onClick={() => handleDirectGenerate(directPrompt)} disabled={!!directBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50 disabled:opacity-50">{t('memory_palace.direct_use_mine') || 'Use mine as-is'}</button>
+                                    </div>
+                                </div>
+                            )}
+                            {(!directEval || directEval.verdict === 'reject') && (
+                                <form onSubmit={(e) => { e.preventDefault(); handleDirectSubmit(); }}>
+                                    <textarea
+                                        value={directPrompt}
+                                        onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }}
+                                        placeholder={t('memory_palace.direct_placeholder') || 'Describe what the AI should create here…'}
+                                        aria-label={t('memory_palace.direct_placeholder') || 'Describe what the AI should create here'}
+                                        rows={2}
+                                        className="w-full text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
+                                    />
+                                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                        <button type="submit" disabled={!directPrompt.trim() || !!directBusy} className="px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            {directBusy === 'evaluating' ? (t('memory_palace.direct_checking') || 'Checking…') : directBusy === 'generating' ? (t('memory_palace.direct_creating') || 'Creating…') : (t('memory_palace.direct_submit') || 'Check & create')}
+                                        </button>
+                                        {voiceSupported && (
+                                            <button type="button" onClick={toggleVoiceDirect} disabled={!!directBusy}
+                                                aria-pressed={voiceListening ? 'true' : 'false'}
+                                                title={t('memory_palace.voice_direct_title') || 'Speak your prompt for this locus, hands-free'}
+                                                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${voiceListening ? 'bg-rose-600 text-white animate-pulse' : 'bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50'}`}>
+                                                {voiceListening ? ('🔴 ' + (t('memory_palace.voice_listening') || 'Listening…')) : ('🎤 ' + (t('memory_palace.voice_direct') || 'Speak'))}
+                                            </button>
+                                        )}
+                                        <span className="text-xs text-fuchsia-600">{t('memory_palace.direct_note') || 'The AI checks your prompt fits the fact and is school-appropriate before creating.'}</span>
+                                        {voiceHeard && <span className="w-full text-xs text-fuchsia-500 italic">“{voiceHeard}”</span>}
+                                    </div>
+                                </form>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+            {decorMode && !recall && hasContent && !failed && (
+                <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+                    {(!current || current.entry) ? (
+                        <div className="text-sm text-emerald-900">{t('memory_palace.decorate_at_entry') || '🎁 Walk to a locus (▶ or WASD), then pick a decoration for it.'}</div>
+                    ) : (
+                        <>
+                            <div className="text-xs font-bold text-emerald-800 mb-0.5">
+                                {(t('memory_palace.decorate_for') || 'Decorate: {label}').replace('{label}', current.label)}
+                            </div>
+                            <div className="text-xs text-emerald-700 mb-2">{t('memory_palace.decorate_note') || 'Built-in decorations — instant and free. Pick something that helps YOU picture this fact.'}</div>
+                            {!!(window.AlloModules && window.AlloModules.Prim3D && window.AlloModules.Prim3D.PRESETS) && (
+                                <div className="mb-2">
+                                    <div className="text-xs font-bold text-emerald-800 mb-1.5">{t('memory_palace.decorate_objects') || '3D decorations (stand beside the frame)'}</div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {window.AlloModules.Prim3D.PRESETS.map((p) => {
+                                            const label = t('memory_palace.preset_' + p.id) || p.label;
+                                            return (
+                                                <button key={p.id} onClick={() => handlePlacePreset(p.id)} title={label}
+                                                    className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100 transition-colors">
+                                                    {p.emoji} {label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                            {glbReady && !!(window.AlloModules && window.AlloModules.GlbLibrary) && (
+                                <div className="mb-2">
+                                    <div className="text-xs font-bold text-emerald-800 mb-1.5">{t('memory_palace.decorate_collectibles') || 'Collectibles (open 3D library)'}</div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {window.AlloModules.GlbLibrary.listCatalog().filter((it) => it.id !== 'trophy').map((it) => {
+                                            const emoji = { sprout: '🌱', boulder: '🪨', lantern: '🏮', companion: '🐾', torch: '🔥', chest_gold: '🧰', coin_stack: '🪙', candles: '🕯️', key: '🗝️', banner: '🚩', crates: '📦', barrel: '🛢️', pillar: '🏛️', table: '🪑', potion: '🧪' }[it.id] || '📦';
+                                            const label = t('memory_palace.collect_' + it.id) || it.label;
+                                            return (
+                                                <button key={it.id} onClick={() => handlePlaceCollectible(it)} title={label}
+                                                    className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100 transition-colors">
+                                                    {emoji} {label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <div className="text-[10px] text-emerald-600 mt-1">{t('memory_palace.decorate_credit') || '3D models: KayKit by Kay Lousberg (CC0)'}</div>
+                                </div>
+                            )}
+                            <div>
+                                <div className="text-xs font-bold text-emerald-800 mb-1.5">{t('memory_palace.decorate_stamps') || 'Frame stamps (fill the picture frame)'}</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {_MP_STAMPS.map((s) => {
+                                        const label = t('memory_palace.stamp_' + s.id) || s.label;
+                                        return (
+                                            <button key={s.id} onClick={() => handlePlaceStamp(s)} title={label} aria-label={label}
+                                                className="w-9 h-9 flex items-center justify-center rounded-lg text-xl bg-white border border-emerald-300 hover:bg-emerald-100 transition-colors">
+                                                {s.e}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            {(images[current.id] || objects3d[current.id]) && (
+                                <div className="mt-2 pt-2 border-t border-emerald-200">
+                                    <button onClick={handleDecorRemove}
+                                        title={t('memory_palace.decorate_remove_tooltip') || 'Clear the image and 3D object at this locus'}
+                                        className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 transition-colors">
+                                        ✖ {t('memory_palace.decorate_remove') || 'Remove art at this locus'}
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+            {recall && finished && (
+                <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900" role="status">
+                    <span className="font-bold">
+                        {finished.perfect
+                            ? (t('memory_palace.recall_perfect') || '🏛✨ Perfect walk! Every locus recalled on the first try.')
+                            : (t('memory_palace.recall_summary') || 'Recalled {ok} of {total} ({first} on the first try).')
+                                .replace('{ok}', String(finished.firstTry + finished.eventual)).replace('{total}', String(finished.total)).replace('{first}', String(finished.firstTry))}
+                    </span>
+                    {' '}· ⏱ {fmtTime(elapsed)} · {(t('memory_palace.recall_points') || '{points} points').replace('{points}', String(finished.points))}
+                </div>
+            )}
+            {recall && !finished && current && (
+                current.entry ? (
+                    <div className="mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600">
+                        {t('memory_palace.recall_at_entry') || 'Walk forward (▶ or →) to the first locus to begin recalling.'}
+                    </div>
+                ) : (
+                    <div className={`mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? 'bg-red-50 border-red-300' : 'bg-amber-50 border-amber-200'}`}>
+                        <div className="text-xs font-bold text-amber-800 mb-2">
+                            {(t('memory_palace.locus_of') || 'Locus {idx} of {total}').replace('{idx}', String(current.idx)).replace('{total}', String(current.total))} — {t('memory_palace.recall_q') || 'What belongs at this locus?'}
+                        </div>
+                        {recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? (
+                            <div className="text-sm text-amber-900">
+                                {t('memory_palace.recall_answered') || 'Answered — walk on (▶) or pick another frame.'}
+                            </div>
+                        ) : recall.mode === 'bank' ? (
+                            <div className="flex flex-wrap gap-2">
+                                {recallBank.map((chip) => (
+                                    <button
+                                        key={chip.id}
+                                        onClick={() => submitRecallAnswer(chip.label, chip.id)}
+                                        className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-amber-900 border border-amber-300 hover:bg-amber-100 hover:scale-105 transition-all"
+                                    >
+                                        {chip.label}
+                                    </button>
+                                ))}
+                            </div>
+                        ) : (
+                            <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (typedAnswer.trim()) submitRecallAnswer(typedAnswer, null); }}>
+                                <input
+                                    type="text"
+                                    value={typedAnswer}
+                                    onChange={(e) => setTypedAnswer(e.target.value)}
+                                    placeholder={t('memory_palace.recall_type_placeholder') || 'Type what belongs here…'}
+                                    aria-label={t('memory_palace.recall_q') || 'What belongs at this locus?'}
+                                    className="flex-1 text-sm p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 outline-none bg-white"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={!typedAnswer.trim()}
+                                    className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50"
+                                >
+                                    {t('memory_palace.recall_submit') || 'Check'}
+                                </button>
+                            </form>
+                        )}
+                        {recallHint && (
+                            <div className="mt-2 text-sm text-amber-900" role="status" aria-live="polite">
+                                💡 <span className="font-bold">{t('memory_palace.picture_this') || 'Picture this:'}</span> {recallHint}
+                            </div>
+                        )}
+                        {canReveal && (
+                            <button
+                                onClick={revealCurrent}
+                                className="mt-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-red-700 border border-red-300 hover:bg-red-50 transition-colors"
+                            >
+                                {t('memory_palace.recall_reveal') || 'Reveal answer (no points)'}
+                            </button>
+                        )}
+                    </div>
+                )
+            )}
+            <p className="text-xs text-slate-500 italic text-center mt-3">
+                {t('memory_palace.caption') || 'Method of loci: a practice strategy with strong evidence for remembering ordered material — the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself.'}
+            </p>
+        </div>
+    );
 };
 
 const renderInteractiveMap = (deps) => {
@@ -1935,6 +4077,21 @@ const renderInteractiveMap = (deps) => {
                             >
                                 {isMapLocked ? <Lock size={14} /> : <Unlock size={14} />}
                                 {isMapLocked ? t('concept_map.toolbar.locked_label') : t('concept_map.toolbar.unlocked_label')}
+                            </button>
+                            <button
+                                onClick={() => openConceptMap3D({
+                                    nodes: conceptMapNodes, edges: conceptMapEdges,
+                                    structureType: generatedContent?.data?.structureType,
+                                    title: generatedContent?.data?.main || generatedContent?.title || '',
+                                    arrangement: generatedContent?.data?.conceptSpaceLive,
+                                    onArrangementChange: typeof deps.handleConceptSpacePersist === 'function' ? ((arr) => deps.handleConceptSpacePersist(arr, 'conceptSpaceLive')) : undefined,
+                                    t, addToast
+                                })}
+                                className="flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-full text-xs font-bold transition-colors shadow-sm"
+                                title={t('concept_map.toolbar.view_3d_tooltip') || 'See this concept map as an orbitable 3D view (depth = strand)'}
+                                aria-label={t('concept_map.toolbar.view_3d_tooltip') || 'View in 3D'}
+                            >
+                                🧊 <span className="hidden sm:inline">{t('concept_map.toolbar.view_3d') || 'View in 3D'}</span>
                             </button>
                           </div>
                           <div className="flex items-center gap-2 border-l border-slate-300 pl-2">
@@ -2313,4 +4470,5 @@ window.AlloModules.ViewRenderers = {
   renderFormattedText,
   renderOutlineContent,
   renderInteractiveMap,
+  openConceptMap3D,   // exported so the static organizer view (view_outline) can open 3D without entering interactive mode
 };

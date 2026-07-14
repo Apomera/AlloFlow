@@ -33,9 +33,9 @@ window.StemLab = window.StemLab || {
   if (window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('molecule')) return;
 
   window.StemLab.registerTool('molecule', {
-    icon: 'ðŸ”¬',
-    label: 'molecule',
-    desc: '',
+    icon: "⚛️",
+    label: "Molecule Lab",
+    desc: "Explore chemistry with a 3D molecule viewer, compound creator, bond builder, 118-element periodic table, reaction simulator, and orbital clouds.",
     color: 'slate',
     category: 'science',
     render: function(ctx) {

@@ -1,7 +1,8 @@
 /**
  * AlloFlow — Learning Hub Modal Module
  *
- * Tool launcher modal: STEM Lab, StoryForge, LitLab, PoetTree, SEL Hub, AlloHaven.
+ * Tool launcher modal: STEM Lab, Open Groove Studio, StoryForge, LitLab,
+ * PoetTree, SEL Hub, AlloHaven.
  * Each button closes this modal and opens the chosen tool.
  *
  * Extracted from AlloFlowANTI.txt lines 23409-23465 (May 2026).
@@ -9,13 +10,53 @@
  */
 function LearningHubModal(props) {
   const {
-    setIsAlloHavenOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
+    setIsAlloHavenOpen, setIsLinguaPracticeOpen, setIsOpenGrooveOpen, setIsTestPrepHubOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
     setShowMindMap, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
-    setStemLabTab, showLearningHub, t,
+    setStemLabTab, showLearningHub,
+    // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
+    // default so a host that hasn't wired the setter still renders the hub.
+    // BridgeSendModal is teacher-gated, so the card is only shown in teacher mode
+    // (default false) to avoid a dead button for student/family entry points.
+    setBridgeSendOpen = (() => {}),
+    isTeacherMode = false,
+    // Reading Library (2026-07-05): StoryWeaver open picture books. Optional —
+    // card only renders when the host wires the setter.
+    setIsReadingLibraryOpen,
+    t,
   } = props;
+  const dialogRef = React.useRef(null);
+  React.useEffect(function () {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = function (event) {
+      if (event.key === 'Escape') { event.preventDefault(); setShowLearningHub(false); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return function () { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
+  }, [setShowLearningHub]);
+  const tr = (key, fallback) => {
+    try { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; }
+    catch (_) { return fallback; }
+  };
   return (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('learning_hub.title') || 'Learning Tools'} onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} onClick={() => setShowLearningHub(false)}>
+          {/* allo-docsuite: this modal is a portal rendered OUTSIDE the main .allo-docsuite
+              content wrapper, so the theme-dark gradient/text remaps (which are scoped to
+              .allo-docsuite) never reached the pastel tool cards — they stayed light-pastel in
+              dark mode. Adding the scope class opts the modal into the existing, tested dark
+              remap (from-*-50 gradients -> dark tints, text-*-800/600 -> light). No-op in light
+              mode: every .allo-docsuite rule is prefixed .theme-dark / .theme-contrast. */}
+          <div ref={dialogRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 focus:outline-none" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-label={t('learning_hub.title') || 'Learning Tools'} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">{'\uD83E\uDDE9'} {t('learning_hub.title') || 'Learning Tools'}</h2>
@@ -24,13 +65,34 @@ function LearningHubModal(props) {
               <button onClick={() => setShowLearningHub(false)} className="p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('learning_hub.close_aria') || 'Close learning hub'}>{'\u2715'}</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Bridge card removed 2026-07-02 (Aaron): the header Bridge button is the
+                  single entry point now. setBridgeSendOpen prop stays accepted (unused)
+                  so hosts that still pass it render unchanged. */}
               <button onClick={() => { setShowLearningHub(false); setShowStemLab(true); setStemLabTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">{'\uD83D\uDD2C'}</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('learning_hub.stem_title') || 'STEM Lab'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('learning_hub.stem_desc') || '40+ interactive math & science explorations'}</p>
+                  <p className="text-xs text-indigo-600 mt-1">{t('learning_hub.stem_desc') || '100+ interactive math & science explorations'}</p>
                 </div>
               </button>
+              {typeof setIsOpenGrooveOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsOpenGrooveOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-cyan-50 to-emerald-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl">{'\uD83C\uDF9B\uFE0F'}</span>
+                  <div>
+                    <h3 className="font-bold text-cyan-900">{t('learning_hub.open_groove_title') || 'Open Groove Studio'}</h3>
+                    <p className="text-xs text-cyan-700 mt-1">{t('learning_hub.open_groove_desc') || 'Make beats, shape synths, and connect patterns to real composition and notation.'}</p>
+                  </div>
+                </button>
+              )}
+              {typeof setIsTimelineStudioOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsTimelineStudioOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl">{'\uD83D\uDD70\uFE0F'}</span>
+                  <div>
+                    <h3 className="font-bold text-rose-800">{t('learning_hub.timeline_studio_title') || 'Timeline Studio'}</h3>
+                    <p className="text-xs text-rose-700 mt-1">{t('learning_hub.timeline_studio_desc') || 'Turn readings into interactive timelines, or build one by hand.'}</p>
+                  </div>
+                </button>
+              )}
               <button onClick={() => { setShowLearningHub(false); setShowStoryForge(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">{'\uD83D\uDCD6'}</span>
                 <div>
@@ -38,6 +100,33 @@ function LearningHubModal(props) {
                   <p className="text-xs text-rose-600 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
                 </div>
               </button>
+              {typeof setIsReadingLibraryOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsReadingLibraryOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-blue-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl">{'📚'}</span>
+                  <div>
+                    <h3 className="font-bold text-sky-800">{t('learning_hub.reading_library_title') || 'Reading Library'}</h3>
+                    <p className="text-xs text-sky-700 mt-1">{t('learning_hub.reading_library_desc') || 'Real picture books in 10 languages — read along, listen, and practice'}</p>
+                  </div>
+                </button>
+              )}
+              {typeof setIsLinguaPracticeOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsLinguaPracticeOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="w-12 h-12 rounded-lg bg-emerald-700 text-white flex items-center justify-center text-sm font-black" aria-hidden="true">A/文</span>
+                  <div>
+                    <h3 className="font-bold text-emerald-900">{tr('learning_hub.lingua_title', 'Lingua Practice')}</h3>
+                    <p className="text-xs text-emerald-800 mt-1">{tr('learning_hub.lingua_desc', 'Build vocabulary, practice speaking, and rehearse real conversations')}</p>
+                  </div>
+                </button>
+              )}
+              {typeof setIsTestPrepHubOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsTestPrepHubOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl" aria-hidden="true">{'\uD83E\uDDED'}</span>
+                  <div>
+                    <h3 className="font-bold text-indigo-900">{tr('learning_hub.test_prep_title', 'Test Prep Hub')}</h3>
+                    <p className="text-xs text-indigo-800 mt-1">{tr('learning_hub.test_prep_desc', 'Accessible practice packs for licensure, vocational, and professional exams')}</p>
+                  </div>
+                </button>
+              )}
               <button onClick={() => { setShowLearningHub(false); setShowLitLab(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">🎭</span>
                 <div>
@@ -47,10 +136,10 @@ function LearningHubModal(props) {
               </button>
               {setShowMindMap && (
                 <button onClick={() => { setShowLearningHub(false); setShowMindMap(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
-                  <span className="text-4xl">🧩</span>
+                  <span className="text-4xl">🧭</span>
                   <div>
-                    <h3 className="font-bold text-amber-800">{t('learning_hub.mindmap_title') || 'Mind Map'}</h3>
-                    <p className="text-xs text-amber-700 mt-1">{t('learning_hub.mindmap_desc') || 'Build a knowledge graph that grows with you — concepts, connections, mnemonics'}</p>
+                    <h3 className="font-bold text-amber-800">{t('learning_hub.throughline_title') || 'Throughline'}</h3>
+                    <p className="text-xs text-amber-700 mt-1">{t('learning_hub.throughline_desc') || 'Arrange your lessons into a spatial unit: teaching sequence, prerequisites, one exportable file'}</p>
                   </div>
                 </button>
               )}

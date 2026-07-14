@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow Molecule Shelf</title>
+<!--
+  AlloFlow Molecule Shelf — Mol* viewer + Notice-Wonder coach (companion window).
+
+  Opened by stem_lab/stem_tool_moleculeshelf.js with window.open (the escape-
+  hatch pattern: a TOP-LEVEL browsing context, unaffected by Gemini Canvas's
+  sandboxed iframe).
+
+  The viewer is Mol* (molstar.org) — free and open source under the MIT
+  license — the WebGL molecular-structure viewer used by the RCSB Protein
+  Data Bank and PDBe. Credit and thanks to the Mol* / RCSB / PDBe teams. The
+  Mol* library loads from a CDN and structures are fetched from the PDB by ID
+  (internet required).
+
+  The AlloFlow layer is a NOTICE → WONDER observation coach (Data Lab's
+  observing-tutor spirit, not Predict-Explore-Explain — a static structure
+  isn't something you experiment on). The student records what they notice and
+  what they wonder; only when the teacher has AI hints on does the opener
+  AlloFlow window relay a Socratic response that builds on their own
+  observation. With AI off or standalone, built-in observation prompts stand
+  in. Nothing here is persisted; notes live in this window only.
+
+  NOTE: the Mol* CDN version below and the Viewer.create / loadPdb API path
+  need a browser smoke test to confirm before shipping.
+-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.css">
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
+    --text: #e2e8f0; --dim: #94a3b8; --accent: #818cf8; --accent2: #6366f1; --ok: #4ade80; --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; font-weight: 700; }
+  header .sub { color: var(--dim); font-size: 11.5px; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; max-width: 46vw; }
+  .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
+  .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
+  .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: #c7d2fe; text-transform: uppercase; letter-spacing: 0.06em; }
+  .ai-state { padding: 0 12px 6px; font-size: 11.5px; color: var(--dim); }
+  .ai-state .on { color: var(--ok); font-weight: 700; }
+  .ai-state .off { color: var(--warn); font-weight: 700; }
+  .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
+  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+  .steps button[aria-selected="true"] { background: #312e81; color: #e0e7ff; border-color: var(--accent); }
+  .steps button.done { color: var(--ok); }
+  .body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; }
+  textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; }
+  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  button.go:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
+  .locked { background: rgba(129, 140, 248, 0.10); border: 1px solid rgba(129, 140, 248, 0.35); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; white-space: pre-wrap; }
+  .locked b { color: var(--accent); }
+  ul.hints { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--dim); line-height: 1.6; }
+  .feedback { background: var(--panel2); border: 1px solid #4c1d95; border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; line-height: 1.45; margin-top: auto; }
+  .stage { flex: 1 1 auto; min-width: 0; background: #000; position: relative; }
+  #molstar { position: absolute; inset: 0; }
+  .picker { position: absolute; inset: 0; overflow-y: auto; background: var(--bg); padding: 16px; z-index: 4; }
+  .picker h2 { font-size: 14px; margin: 0 0 10px; color: var(--dim); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .simcard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; cursor: pointer; text-align: left; color: var(--text); font: inherit; }
+  .simcard:hover { border-color: var(--accent); }
+  .simcard .emoji { font-size: 26px; }
+  .simcard .name { font-weight: 700; font-size: 13px; margin: 6px 0 3px; }
+  .simcard .meta { font-size: 11px; color: var(--dim); line-height: 1.4; }
+  .backbar { position: absolute; top: 8px; left: 8px; z-index: 6; }
+  .backbar button { background: rgba(15,23,42,0.85); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 13px; z-index: 3; text-align: center; padding: 20px; }
+  @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧬 Molecule Shelf</h1>
+  <span class="sub">Mol* viewer (molstar.org, MIT) · structures from the RCSB Protein Data Bank + AlloFlow Notice-Wonder coach</span>
+  <select id="molSelect" aria-label="Choose a structure"><option value="">Choose a structure…</option></select>
+</header>
+<div class="wrap">
+  <aside class="coach" aria-label="Notice and Wonder coach">
+    <h2>Observation coach</h2>
+    <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
+    <div class="steps" role="tablist" aria-label="Observation steps">
+      <button id="tabNotice" role="tab" aria-selected="true">1 · Notice</button>
+      <button id="tabWonder" role="tab" aria-selected="false">2 · Wonder</button>
+      <button id="tabCoach" role="tab" aria-selected="false">3 · Coach</button>
+    </div>
+    <div class="body" id="coachBody">
+      <div class="qcard">Pick a structure to start. Rotate it with your mouse, then write down what you <b>notice</b> — shapes, patterns, repeats, symmetry.</div>
+    </div>
+    <div class="privacy">Your notes live in this window only — nothing is saved or graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.</div>
+  </aside>
+  <main class="stage" aria-label="Molecular structure viewer">
+    <div class="backbar" id="backbar" style="display:none"><button id="backBtn" type="button">← Structures</button></div>
+    <div id="molstar"></div>
+    <div class="loadmsg" id="loadmsg" style="display:none"></div>
+    <div class="picker" id="picker">
+      <h2>Pick a structure — each is a real molecule solved by scientists. Rotate it, then notice and wonder.</h2>
+      <div class="grid" id="pickerGrid"></div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ── Curated PDB structures (all real, stable RCSB entries) ───────────
+  var STRUCTURES = [
+    { pdb: '1CRN', emoji: '🌱', name: 'Crambin', meta: 'a tiny plant protein · the “hello world” of protein structure',
+      notice: 'Rotate crambin. What overall shape does the chain fold into? Can you spot coils (helices) or flat arrows (sheets)?',
+      wonder: 'What might decide how a chain of building blocks folds into this exact 3D shape?' },
+    { pdb: '1BNA', emoji: '🧬', name: 'B-DNA Double Helix', meta: 'the Drew–Dickerson dodecamer · classic DNA',
+      notice: 'Look down the length of the DNA. How many strands are there, and how do they wind around each other?',
+      wonder: 'Why might a twisted double strand be a good way to store and copy information?' },
+    { pdb: '4HHB', emoji: '🩸', name: 'Hemoglobin', meta: 'carries oxygen in your blood · four subunits + heme',
+      notice: 'This molecule has repeated parts. How many similar-looking subunits can you count? Can you find the small flat “heme” groups?',
+      wonder: 'Why might your body use four joined subunits instead of one big one to carry oxygen?' },
+    { pdb: '2LYZ', emoji: '🥚', name: 'Lysozyme', meta: 'an enzyme in tears & egg white · one of the first enzymes ever solved',
+      notice: 'Look for a cleft or groove on the surface. Where is the deepest pocket in this molecule?',
+      wonder: 'If an enzyme grabs and cuts other molecules, why might a pocket or groove be useful?' },
+    { pdb: '1UBQ', emoji: '🏷️', name: 'Ubiquitin', meta: 'the cell’s “label for recycling” · small and famous',
+      notice: 'Ubiquitin is a compact little bundle. What mix of coils and sheets can you see packed together?',
+      wonder: 'What might it mean for a cell to “tag” another protein with a small molecule like this?' },
+    { pdb: '1IGY', emoji: '🛡️', name: 'Antibody (Immunoglobulin)', meta: 'your immune system’s Y-shaped defender',
+      notice: 'Switch to a cartoon view and rotate. Can you see the overall Y (or T) shape? How many arms does it have?',
+      wonder: 'Why might a Y-shape with two identical arms be handy for grabbing invaders?' },
+    { pdb: '6VXX', emoji: '👑', name: 'SARS-CoV-2 Spike', meta: 'the “crown” protein of the COVID virus (closed state)',
+      notice: 'This is one spike from the virus surface. It has three similar lobes — can you find the 3-fold symmetry?',
+      wonder: 'Why might a virus put a three-part spike on its surface, and why is it a target for vaccines?' }
+  ];
+
+  var params = new URLSearchParams(window.location.search);
+
+  // ── State (in-memory only) ──────────────────────────────────────────
+  var current = null;
+  var perStruct = {};           // pdb → {notice, wonder, feedback}
+  var step = 'notice';
+  var aiAvailable = false, openerOk = false, busy = false;
+  var viewer = null, viewerPromise = null;
+
+  var picker = document.getElementById('picker');
+  var pickerGrid = document.getElementById('pickerGrid');
+  var molSelect = document.getElementById('molSelect');
+  var coachBody = document.getElementById('coachBody');
+  var aiStateEl = document.getElementById('aiState');
+  var backbar = document.getElementById('backbar');
+  var backBtn = document.getElementById('backBtn');
+  var loadmsg = document.getElementById('loadmsg');
+  var tabs = { notice: document.getElementById('tabNotice'), wonder: document.getElementById('tabWonder'), coach: document.getElementById('tabCoach') };
+
+  // ── Opener AI bridge ─────────────────────────────────────────────────
+  var pending = {};
+  function toOpener(payload) {
+    try { if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, '*'); return true; } } catch (_) {}
+    return false;
+  }
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (!data || typeof data.type !== 'string') return;
+    if (data.type === 'allocmol-ready') { openerOk = true; aiAvailable = Boolean(data.ai); renderAiState(); return; }
+    if (data.type === 'allocmol-ai-response' && data.id && pending[data.id]) {
+      var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
+    }
+  });
+  function askAi(structureName, notice, wonder) {
+    var id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    return new Promise(function (resolve) {
+      pending[id] = { resolve: resolve, timer: setTimeout(function () { delete pending[id]; resolve(null); }, 25000) };
+      var sent = toOpener({ type: 'allocmol-ai-request', id: id, structure: structureName, notice: notice, wonder: wonder });
+      if (!sent) { var e = pending[id]; delete pending[id]; if (e) clearTimeout(e.timer); resolve(null); }
+    });
+  }
+
+  var REFLECT_BANK = [
+    'Describe ONE shape you can see without naming what the molecule “is” — a coil, a sheet, a knot, a groove. Where does it sit?',
+    'Spin the structure slowly. Does it look the same from several angles (symmetry), or all different? What does that tell you?',
+    'If you had to sketch this molecule in 10 seconds for a friend, what is the ONE feature you would draw first?',
+    'Switch the representation (surface vs. cartoon vs. ball-and-stick). Which view showed you something the others hid?',
+    'What is one question about this molecule that looking harder at the 3D shape might actually answer?'
+  ];
+  var reflectIndex = Math.floor(Math.random() * REFLECT_BANK.length);
+  function nextReflect() { reflectIndex = (reflectIndex + 1) % REFLECT_BANK.length; return REFLECT_BANK[reflectIndex]; }
+
+  function renderAiState() {
+    aiStateEl.innerHTML = openerOk
+      ? (aiAvailable ? 'AlloFlow connected · AI coach <span class="on">on</span>' : 'AlloFlow connected · AI hints <span class="off">off</span> — using built-in observation prompts')
+      : 'Standalone — built-in observation prompts (open from AlloFlow for the AI coach)';
+  }
+
+  // ── Coach panel rendering ───────────────────────────────────────────
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    if (text != null) node.textContent = text;
+    return node;
+  }
+  function setStep(next) {
+    step = next;
+    Object.keys(tabs).forEach(function (k) { tabs[k].setAttribute('aria-selected', String(k === next)); });
+    renderCoach();
+  }
+  function renderCoach() {
+    coachBody.innerHTML = '';
+    if (!current) {
+      coachBody.appendChild(el('div', { class: 'qcard' }, 'Pick a structure to start. Rotate it with your mouse, then write down what you notice.'));
+      return;
+    }
+    var mem = perStruct[current.pdb] = perStruct[current.pdb] || { notice: '', wonder: '', feedback: '' };
+    if (mem.notice.trim()) tabs.notice.classList.add('done'); else tabs.notice.classList.remove('done');
+
+    if (step === 'notice') {
+      coachBody.appendChild(el('div', { class: 'qcard' }, '🔍 ' + current.notice));
+      var ta = el('textarea', { id: 'noticeText', 'aria-label': 'What you notice', placeholder: 'I notice…' });
+      ta.value = mem.notice;
+      ta.addEventListener('input', function () { mem.notice = ta.value; });
+      coachBody.appendChild(ta);
+      var toWonder = el('button', { class: 'go' }, 'On to Wonder →');
+      toWonder.addEventListener('click', function () {
+        if (mem.notice.trim()) toOpener({ type: 'allocmol-noticed' });
+        setStep('wonder');
+      });
+      coachBody.appendChild(toWonder);
+    } else if (step === 'wonder') {
+      coachBody.appendChild(el('div', { class: 'qcard' }, '💭 ' + current.wonder));
+      var ta2 = el('textarea', { id: 'wonderText', 'aria-label': 'What you wonder', placeholder: 'I wonder…' });
+      ta2.value = mem.wonder;
+      ta2.addEventListener('input', function () { mem.wonder = ta2.value; });
+      coachBody.appendChild(ta2);
+      if (mem.notice.trim()) {
+        var remind = el('div', { class: 'locked' });
+        remind.innerHTML = '<b>You noticed:</b>\n';
+        remind.appendChild(document.createTextNode(mem.notice));
+        coachBody.appendChild(remind);
+      }
+      var toCoach = el('button', { class: 'go' }, 'Take it to the coach →');
+      toCoach.addEventListener('click', function () { setStep('coach'); });
+      coachBody.appendChild(toCoach);
+    } else {
+      var askBtn = el('button', { class: 'go', id: 'coachBtn' }, aiAvailable && openerOk ? '✨ What does the coach think?' : '🤔 Give me an observation prompt');
+      askBtn.addEventListener('click', function () {
+        if (busy) return;
+        if (!(aiAvailable && openerOk)) { mem.feedback = nextReflect(); renderCoach(); return; }
+        if (!mem.notice.trim()) { setStep('notice'); return; }
+        busy = true; askBtn.disabled = true; askBtn.textContent = 'thinking…';
+        askAi(current.name, mem.notice, mem.wonder).then(function (res) {
+          var text = res && !res.error && res.text ? String(res.text).trim() : '';
+          mem.feedback = text || ('The AI coach didn’t answer' + (res && res.error ? ' (' + res.error + ')' : '') + '. Meanwhile: ' + nextReflect());
+          busy = false;
+          renderCoach();
+        });
+      });
+      coachBody.appendChild(askBtn);
+      if (mem.notice.trim()) {
+        var rem2 = el('div', { class: 'locked' });
+        rem2.innerHTML = '<b>You noticed:</b>\n';
+        rem2.appendChild(document.createTextNode(mem.notice + (mem.wonder.trim() ? '\n\nYou wondered:\n' + mem.wonder : '')));
+        coachBody.appendChild(rem2);
+      }
+      if (mem.feedback) coachBody.appendChild(el('div', { class: 'feedback' }, mem.feedback));
+    }
+  }
+  Object.keys(tabs).forEach(function (k) {
+    tabs[k].addEventListener('click', function () { if (current) setStep(k); });
+  });
+
+  // ── Mol* viewer ──────────────────────────────────────────────────────
+  function ensureViewer() {
+    if (viewerPromise) return viewerPromise;
+    if (typeof window.molstar === 'undefined' || !window.molstar.Viewer) {
+      viewerPromise = Promise.reject(new Error('Mol* library did not load'));
+      return viewerPromise;
+    }
+    viewerPromise = window.molstar.Viewer.create('molstar', {
+      layoutIsExpanded: false,
+      layoutShowControls: true,
+      layoutShowRemoteState: false,
+      layoutShowSequence: true,
+      layoutShowLog: false,
+      viewportShowExpand: true,
+      viewportShowSelectionMode: false,
+      pdbProvider: 'rcsb',
+      emdbProvider: 'rcsb'
+    }).then(function (v) { viewer = v; return v; });
+    return viewerPromise;
+  }
+  function loadStructure(pdb) {
+    current = STRUCTURES.find(function (s) { return s.pdb === pdb; }) || null;
+    if (!current) return;
+    picker.style.display = 'none';
+    backbar.style.display = 'block';
+    molSelect.value = current.pdb;
+    document.title = 'AlloFlow Molecule Shelf — ' + current.name;
+    loadmsg.textContent = 'Loading ' + current.name + ' (' + current.pdb + ') from the Protein Data Bank…';
+    loadmsg.style.display = 'flex';
+    ensureViewer().then(function (v) {
+      return v.loadPdb(current.pdb);
+    }).then(function () {
+      loadmsg.style.display = 'none';
+    }).catch(function (e) {
+      loadmsg.textContent = 'Could not load ' + current.pdb + '. Check your internet connection and try again. (' + String((e && e.message) || e).slice(0, 80) + ')';
+      loadmsg.style.display = 'flex';
+    });
+    toOpener({ type: 'allocmol-structopened', structure: current.pdb });
+    setStep('notice');
+  }
+  function showPicker() { picker.style.display = 'block'; backbar.style.display = 'none'; }
+
+  STRUCTURES.forEach(function (s) {
+    var opt = el('option', { value: s.pdb }, s.emoji + ' ' + s.name);
+    molSelect.appendChild(opt);
+    var card = el('button', { class: 'simcard', type: 'button' });
+    card.appendChild(el('div', { class: 'emoji' }, s.emoji));
+    card.appendChild(el('div', { class: 'name' }, s.name));
+    card.appendChild(el('div', { class: 'meta' }, s.meta + ' · PDB ' + s.pdb));
+    card.addEventListener('click', function () { loadStructure(s.pdb); });
+    pickerGrid.appendChild(card);
+  });
+  molSelect.addEventListener('change', function () { if (molSelect.value) loadStructure(molSelect.value); });
+  backBtn.addEventListener('click', showPicker);
+
+  // ── Boot ────────────────────────────────────────────────────────────
+  var requested = (params.get('pdb') || '').toUpperCase();
+  if (requested && STRUCTURES.some(function (s) { return s.pdb === requested; })) loadStructure(requested);
+  var hello = function () { toOpener({ type: 'allocmol-hello' }); };
+  hello();
+  setTimeout(hello, 900);
+  setTimeout(renderAiState, 2600);
+  window.addEventListener('beforeunload', function () { toOpener({ type: 'allocmol-closed' }); });
+})();
+</script>
+</body>
+</html>

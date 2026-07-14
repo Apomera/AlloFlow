@@ -1,12 +1,20 @@
-(function() {
+(function initResearchLaneHumanities(retriesLeft) {
   "use strict";
+  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules.ResearchLaneHumanities) window.AlloModules.ResearchLaneHumanities = { __pending: true };
   if (window.ResearchHub && window.ResearchHub._lanes && window.ResearchHub._lanes.humanities && window.ResearchHub._lanes.humanities.__tier >= 2) {
     console.log("[CDN] ResearchLaneHumanities already registered, skipping");
     return;
   }
   if (!window.ResearchHub || typeof window.ResearchHub.registerLane !== "function") {
+    if (retriesLeft === void 0) retriesLeft = 50;
+    if (retriesLeft <= 0) {
+      console.error("[ResearchLaneHumanities] window.ResearchHub never became available \u2014 giving up");
+      return;
+    }
     console.warn("[ResearchLaneHumanities] window.ResearchHub not yet available \u2014 deferring");
-    setTimeout(arguments.callee || function() {
+    setTimeout(function() {
+      initResearchLaneHumanities(retriesLeft - 1);
     }, 200);
     return;
   }
@@ -5150,5 +5158,6 @@
     },
     __tier: 2
   });
+  window.AlloModules.ResearchLaneHumanities = { __tier: 2, lane: "humanities" };
   console.log("[CDN] ResearchLaneHumanities registered (Tier 2)");
 })();

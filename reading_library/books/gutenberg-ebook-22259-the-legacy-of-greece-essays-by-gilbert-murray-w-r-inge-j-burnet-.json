@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-22259-the-legacy-of-greece-essays-by-gilbert-murray-w-r-inge-j-burnet-",
+  "title": "The Legacy of Greece: Essays By: Gilbert Murray, W. R. Inge, J. Burnet, Sir T. L. Heath, D'arcy W. Thompson, Charles Singer, R. W. Livingston, A. Toynbee, A. E. Zimmern, Percy Gardner, Sir Reginald Blomfield",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Greece -- Civilization"
+  ],
+  "authors": [
+    "Project Gutenberg"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/22259"
+  },
+  "cover": "https://www.gutenberg.org/cache/epub/22259/pg22259.cover.medium.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Legacy of Greece: Essays By: Gilbert Murray, W. R. Inge, J. Burnet, Sir T. L. Heath, D'arcy W. Thompson, Charles Singer, R. W. Livingston, A. Toynbee, A. E. Zimmern, Percy Gardner, Sir Reginald Blomfield\". Metadata tags include: Greece -- Civilization."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 91
+  }
+}

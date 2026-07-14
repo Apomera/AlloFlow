@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════
 // stem_tool_punnett.js - Punnett Square Lab v3.0
-// 8 sub-tools: Punnett Cross, Pedigree Builder,
+// 9 sub-tools: Punnett Cross, Pedigree Builder,
 // Population Genetics, Trait Explorer, DNA→Protein,
-// Challenge Mode, Gene Defense Battle, Learn Tab
+// Challenge Mode, Gene Defense Battle, Learn, Allele Discovery
 // ═══════════════════════════════════════════
 
 window.StemLab = window.StemLab || {
@@ -20,6 +20,39 @@ window.StemLab = window.StemLab || {
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Punnett-specific interface layer ──
+  (function() {
+    if (document.getElementById('allo-punnett-interface-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-punnett-interface-css';
+    st.textContent = [
+      '[data-punnett-root] { --punnett-violet:#6d28d9; --punnett-ink:#172033; --punnett-muted:#526174; color:var(--punnett-ink); }',
+      '[data-punnett-root] button:focus-visible,[data-punnett-root] select:focus-visible,[data-punnett-root] input:focus-visible,[data-punnett-root] summary:focus-visible { outline:3px solid #22d3ee !important; outline-offset:2px; }',
+      '[data-punnett-root] .punnett-topbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px; margin-bottom:10px; border:1px solid #ddd6fe; border-radius:14px; background:linear-gradient(135deg,#faf5ff 0%,#fff 52%,#ecfeff 100%); box-shadow:0 8px 24px rgba(76,29,149,.08); }',
+      '[data-punnett-root] .punnett-topbar-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-left:auto; }',
+      '[data-punnett-root] .punnett-control { min-height:40px; padding:7px 10px; border-radius:10px; font-size:12px; font-weight:800; }',
+      '[data-punnett-root] .punnett-activity-rail { display:flex; gap:7px; overflow-x:auto; overscroll-behavior-inline:contain; scrollbar-width:thin; padding:2px 2px 8px; margin-bottom:10px; scroll-snap-type:x proximity; }',
+      '[data-punnett-root] .punnett-activity-tab { flex:0 0 auto; min-height:44px; padding:8px 12px; border-radius:11px; scroll-snap-align:start; white-space:nowrap; font-size:12px; font-weight:850; }',
+      '[data-punnett-root] .punnett-step-heading { display:flex; align-items:center; gap:10px; margin-bottom:10px; }',
+      '[data-punnett-root] .punnett-step-number { display:inline-grid; place-items:center; width:30px; height:30px; flex:0 0 30px; border-radius:999px; background:#6d28d9; color:white; font-size:13px; font-weight:900; box-shadow:0 5px 14px rgba(109,40,217,.22); }',
+      '[data-punnett-root] .punnett-touch-choice { min-height:44px; }',
+      '[data-punnett-root] .punnett-grid-shell { width:100%; overflow-x:auto; padding:12px; border:1px solid #ddd6fe; border-radius:14px; background:#fff; }',
+      '[data-punnett-root] .punnett-grid-shell table { margin-inline:auto; }',
+      '[data-punnett-root] .punnett-result-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }',
+      '[data-punnett-root] .punnett-disclosure summary { min-height:44px; display:flex; align-items:center; cursor:pointer; font-weight:850; color:#4c1d95; }',
+      '[data-punnett-root] .punnett-disclosure summary::marker { color:#7c3aed; }',
+      '@media (max-width:640px) {',
+      '  [data-punnett-root] .punnett-topbar-actions { width:100%; margin-left:0; }',
+      '  [data-punnett-root] .punnett-topbar-actions .punnett-control { flex:1 1 auto; }',
+      '  [data-punnett-root] .punnett-result-cards { grid-template-columns:1fr; }',
+      '  [data-punnett-root] .punnett-grid-shell { padding:8px; }',
+      '  [data-punnett-root] .punnett-grid-shell th,[data-punnett-root] .punnett-grid-shell td { min-width:64px; }',
+      '}',
+      '@media (prefers-contrast:more) { [data-punnett-root] button,[data-punnett-root] select { border-width:2px !important; } }'
+    ].join('');
     document.head.appendChild(st);
   })();
 
@@ -56,13 +89,13 @@ window.StemLab = window.StemLab || {
 
   // ── Vocabulary dictionary ──
   var PUNNETT_VOCAB = {
-    genotype: { term: 'Genotype', def: 'The genetic makeup of an organism, represented by letters (like BB, Bb, or bb) that code for traits.' },
-    phenotype: { term: 'Phenotype', def: 'The physical or observable characteristics of an organism (like brown eyes or height) resulting from its genotype.' },
-    allele: { term: 'Allele', def: 'A different or alternative version of a gene (like a dominant "B" vs recessive "b" version).' },
-    heterozygous: { term: 'Heterozygous', def: 'Having two different alleles for a specific gene (like Bb or XhY).' },
-    homozygous: { term: 'Homozygous', def: 'Having two identical alleles for a specific gene (like BB or bb).' },
-    codominance: { term: 'Codominance', def: 'An inheritance pattern where both alleles in a heterozygote are fully and equally expressed (like AB blood type).' },
-    incompleteDominance: { term: 'Incomplete Dominance', def: 'An inheritance pattern where the heterozygote shows a blended, intermediate phenotype (like red and white crossing to make pink flowers).' },
+    genotype: { term: 'Genotype', def: 'The allele combination or DNA sequence an organism has at one or more genomic locations, often modeled with symbols such as BB, Bb, or bb.' },
+    phenotype: { term: 'Phenotype', def: 'The observable traits of an organism, shaped by its genotype, its environment, and interactions between them.' },
+    allele: { term: 'Allele', def: 'One of two or more versions of a gene or genomic sequence at the same locus. Dominance describes a relationship between alleles, not an allele being inherently stronger.' },
+    heterozygous: { term: 'Heterozygous', def: 'In a diploid organism, having two different alleles at a locus, such as Bb. An XY individual with one X-linked copy is hemizygous, not heterozygous.' },
+    homozygous: { term: 'Homozygous', def: 'In a diploid organism, having two identical alleles at a locus, such as BB or bb.' },
+    codominance: { term: 'Codominance', def: 'An inheritance pattern where both alleles in a heterozygote make distinguishable contributions to the phenotype, as with A and B antigens in type AB blood.' },
+    incompleteDominance: { term: 'Incomplete Dominance', def: 'An inheritance pattern where the heterozygote has an intermediate phenotype. The alleles remain distinct; they do not physically blend.' },
     pedigree: { term: 'Pedigree', def: 'A family tree showing inheritance patterns of traits across generations.' },
     geneticDrift: { term: 'Genetic Drift', def: 'A change in allele frequencies in a population due to random chance events, rather than natural selection.' }
   };
@@ -81,7 +114,7 @@ window.StemLab = window.StemLab || {
     { id: 'cross', icon: '\uD83E\uDDEC', label: 'Punnett Cross', desc: 'Predict offspring with 4 inheritance modes' },
     { id: 'pedigree', icon: '\uD83D\uDC6A', label: 'Pedigree', desc: 'Build family trees & trace inheritance' },
     { id: 'population', icon: '\uD83D\uDCCA', label: 'Population', desc: 'Hardy-Weinberg equilibrium simulator' },
-    { id: 'traits', icon: '\uD83D\uDD2C', label: 'Trait Explorer', desc: 'Real genetic traits catalog' },
+    { id: 'traits', icon: '\uD83D\uDD2C', label: 'Trait Explorer', desc: 'Compare simple and complex inheritance' },
     { id: 'dna2protein', icon: '\uD83E\uDDEA', label: 'DNA\u2192Protein', desc: 'Codon table & translation' },
     { id: 'challenge', icon: '\uD83C\uDFC6', label: 'Challenge', desc: 'Test your genetics knowledge' },
     { id: 'battle', icon: '\u2694\uFE0F', label: 'Gene Defense', desc: 'Battle with genetics questions' },
@@ -89,7 +122,7 @@ window.StemLab = window.StemLab || {
     { id: 'freqDyn', icon: '\uD83D\uDCCA', label: 'Allele Discovery', desc: 'Discover allele frequency dynamics via open inquiry' }
   ];
 
-  // ── Badge definitions (14 total) ──
+  // ── Badge definitions (16 total) ──
   var BADGES = [
     { id: 'firstCross', icon: '\uD83E\uDDEC', name: 'First Cross', desc: 'Complete your first Punnett cross', check: function(u) { return u.crossCount >= 1; } },
     { id: 'allModes', icon: '\uD83C\uDF08', name: 'All Modes', desc: 'Try all 4 inheritance modes', check: function(u) { return Object.keys(u.modesUsed).length >= 4; } },
@@ -104,25 +137,25 @@ window.StemLab = window.StemLab || {
     { id: 'translator', icon: '\uD83E\uDDEA', name: 'Translator', desc: 'Translate a DNA sequence to protein', check: function(u) { return u.dnaDone; } },
     { id: 'challengeChamp', icon: '\uD83E\uDD47', name: 'Challenge Champ', desc: 'Score 18+ in Challenge mode', check: function(u) { return u.challengeTotal >= 18; } },
     { id: 'geneDefender', icon: '\u2694\uFE0F', name: 'Gene Defender', desc: 'Win a Gene Defense battle', check: function(u) { return u.battleWon; } },
-    { id: 'allSubtools', icon: '\u2B50', name: 'Explorer', desc: 'Visit all 8 sub-tools', check: function(u) { return Object.keys(u.visited || {}).length >= 8; } },
+    { id: 'allSubtools', icon: '\u2B50', name: 'Explorer', desc: 'Visit all 9 sub-tools', check: function(u) { return Object.keys(u.visited || {}).length >= 9; } },
     { id: 'dihybridPro', icon: '\uD83E\uDDEE', name: 'Dihybrid Pro', desc: 'Complete a dihybrid cross (4\u00D74 grid)', check: function(u) { return u.diCrossCount >= 1; } },
     { id: 'mutationHunter', icon: '\u2622\uFE0F', name: 'Mutation Hunter', desc: 'Try all 3 mutation types in the simulator', check: function(u) { return u.mutTypesUsed >= 3; } }
   ];
 
   // ── Inheritance mode info ──
   var MODE_INFO = {
-    complete: { icon: '\uD83E\uDDEC', label: 'Complete Dominance', desc: 'One allele fully masks the other. Heterozygotes look like the dominant homozygote.' },
-    incomplete: { icon: '\uD83C\uDF38', label: 'Incomplete Dominance', desc: 'Neither allele fully dominates. Heterozygotes show a blended intermediate phenotype.' },
-    codominant: { icon: '\uD83E\uDE78', label: 'Codominance', desc: 'Both alleles are fully expressed. Heterozygotes show both traits simultaneously.' },
-    sexLinked: { icon: '\u2640\u2642', label: 'Sex-Linked (X-Linked)', desc: 'Trait is carried on the X chromosome. Males (XY) need only one copy to express.' }
+    complete: { icon: '\uD83E\uDDEC', label: 'Complete Dominance', desc: 'In this model, one allele is sufficient for the phenotype, so heterozygotes match the homozygous-dominant phenotype.' },
+    incomplete: { icon: '\uD83C\uDF38', label: 'Incomplete Dominance', desc: 'Neither allele is completely dominant. Heterozygotes show an intermediate phenotype without the alleles blending.' },
+    codominant: { icon: '\uD83E\uDE78', label: 'Codominance', desc: 'Both alleles make distinguishable contributions, so the heterozygote shows products or effects from each.' },
+    sexLinked: { icon: '\u2640\u2642', label: 'X-Linked Recessive', desc: 'This simplified XX/XY model tracks a recessive allele on the X chromosome. An XY offspring is hemizygous and can express the trait with one copy; an XX offspring usually needs two copies.' }
   };
 
   // ── Trait presets by mode ──
   var PRESETS_BY_MODE = {
     complete: [
       { label: '\uD83C\uDF31 Peas (Tt \u00D7 Tt)', p1: ['T', 't'], p2: ['T', 't'], trait: 'Tall vs Short', domEmoji: '\uD83C\uDF31', recEmoji: '\uD83C\uDF3F', domLabel: 'Tall', recLabel: 'Short', tip: 'Mendel\'s classic 3:1 ratio of tall to short pea plants' },
-      { label: '\uD83C\uDF38 Flower (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Red vs White', domEmoji: '\uD83C\uDF39', recEmoji: '\uD83E\uDEB7', domLabel: 'Red', recLabel: 'White', tip: 'Red flower color is dominant over white' },
-      { label: '\uD83D\uDFE4 Eyes (Bb \u00D7 Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Brown vs Blue', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Brown', recLabel: 'Blue', tip: 'Brown eye color is dominant over blue (simplified)' },
+      { label: '\uD83C\uDF38 Model Flower (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Model flower color', domEmoji: '\uD83C\uDF39', recEmoji: '\uD83E\uDEB7', domLabel: 'Red', recLabel: 'White', tip: 'A classroom one-gene model; dominance relationships depend on the species and alleles being studied' },
+      { label: '\uD83D\uDFE4 Eye Pigment Model (Bb \u00D7 Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Simplified eye-pigment model', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'More pigment', recLabel: 'Less pigment', tip: 'A one-gene classroom model only; human eye color is polygenic and cannot be predicted by this square' },
       { label: '\uD83D\uDCA0 Test Cross (Bb \u00D7 bb)', p1: ['B', 'b'], p2: ['b', 'b'], trait: 'Test cross', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'Test cross reveals heterozygosity - 1:1 ratio' },
       { label: '\uD83E\uDD47 BB \u00D7 bb (All Hetero)', p1: ['B', 'B'], p2: ['b', 'b'], trait: 'Pure cross', domEmoji: '\uD83D\uDFE2', recEmoji: '\uD83D\uDD34', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'F1 generation: 100% heterozygous, all dominant' }
     ],
@@ -133,7 +166,7 @@ window.StemLab = window.StemLab || {
     ],
     codominant: [
       { label: '\uD83E\uDE78 Blood Type (AB \u00D7 AB)', p1: ['A', 'B'], p2: ['A', 'B'], trait: 'ABO blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'A and B alleles are codominant - both expressed in AB blood type' },
-      { label: '\uD83E\uDE78 Blood (Ai \u00D7 Bi)', p1: ['A', 'i'], p2: ['B', 'i'], trait: 'Blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'Carrier cross: possible A, B, AB, or O children' },
+      { label: '\uD83E\uDE78 Blood (AB \u00D7 Ai)', p1: ['A', 'B'], p2: ['A', 'i'], trait: 'ABO blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'Type AB parent \u00D7 Type A carrier (A i): children are Type A, B, or AB \u2014 never O here' },
       { label: '\uD83D\uDC04 Roan Cattle (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Coat pattern', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83D\uDD35', domLabel: 'Red', recLabel: 'White', blendLabel: 'Roan (mixed)', tip: 'Roan cattle show both red and white hairs together' }
     ],
     sexLinked: [
@@ -156,7 +189,7 @@ window.StemLab = window.StemLab || {
       id: 'ad', label: 'Autosomal Dominant',
       example: 'Huntington\'s Disease',
       answer: 'autosomal_dominant',
-      explanation: 'Affected individuals appear in every generation. Affected father can pass trait to sons AND daughters equally. Unaffected parents never have affected children.',
+      explanation: 'In this simplified, fully penetrant autosomal-dominant example, the trait appears in each generation and can pass to offspring of any sex. Real pedigrees can differ because of reduced penetrance, new variants, or limited family size.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: true, carrier: false, genotype: 'Aa', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: false, genotype: 'aa', label: 'I-2' },
@@ -177,7 +210,7 @@ window.StemLab = window.StemLab || {
       id: 'ar', label: 'Autosomal Recessive',
       example: 'Cystic Fibrosis',
       answer: 'autosomal_recessive',
-      explanation: 'Trait skips generations. Both parents of an affected child are carriers (unaffected). Males and females are affected equally.',
+      explanation: 'In this example, two unaffected carriers have an affected child and the trait can skip generations. Autosomal-recessive traits can affect any sex; an affected child may also have an affected parent in other families.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: false, carrier: true, genotype: 'Cc', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: true, genotype: 'Cc', label: 'I-2' },
@@ -197,7 +230,7 @@ window.StemLab = window.StemLab || {
       id: 'xr', label: 'X-Linked Recessive',
       example: 'Hemophilia',
       answer: 'x_linked_recessive',
-      explanation: 'More males are affected than females. Affected males get the allele from their carrier mothers. Carrier females pass the trait to ~50% of sons.',
+      explanation: 'In this simplified X-linked-recessive example, more XY individuals are affected because one altered X-linked copy can be expressed. There is no father-to-son X transmission; each pregnancy is an independent event.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: false, carrier: false, genotype: 'X\u1D34Y', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: true, genotype: 'X\u1D34X\u02B0', label: 'I-2' },
@@ -215,10 +248,10 @@ window.StemLab = window.StemLab || {
       ]
     },
     {
-      id: 'sc', label: 'Codominant / Carrier Visible',
+      id: 'sc', label: 'Codominant Protein Expression',
       example: 'Sickle Cell Trait',
       answer: 'codominant',
-      explanation: 'Carriers show a distinct intermediate phenotype (sickle cell trait). Both alleles are partially expressed in heterozygotes. Three distinct phenotypes are visible: normal, trait (carrier), and disease.',
+      explanation: 'HbA and HbS are both produced in an AS heterozygote, demonstrating codominance at the protein level. People with sickle cell trait usually do not have sickle cell disease symptoms, while SS is one cause of sickle cell anemia.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: false, carrier: true, genotype: 'AS', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: true, genotype: 'AS', label: 'I-2' },
@@ -235,7 +268,7 @@ window.StemLab = window.StemLab || {
       id: 'mt', label: 'Mitochondrial Inheritance',
       example: 'Leber Optic Neuropathy',
       answer: 'mitochondrial',
-      explanation: 'Mitochondrial DNA is inherited exclusively from the mother. ALL children of an affected mother are affected. An affected father NEVER passes the trait to children. No male-to-child transmission.',
+      explanation: 'Mitochondrial DNA variants are inherited through egg cells, not sperm. A mother can pass a variant to children of any sex, while fathers do not transmit mtDNA; heteroplasmy can make inheritance and symptom severity vary among siblings.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: false, carrier: false, genotype: 'Normal', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: true, carrier: false, genotype: 'mt-mut', label: 'I-2' },
@@ -256,9 +289,9 @@ window.StemLab = window.StemLab || {
     },
     {
       id: 'yl', label: 'Y-Linked Inheritance',
-      example: 'Hairy Ear Rims (Hypertrichosis pinnae)',
+      example: 'Hypothetical Y-linked marker',
       answer: 'y_linked',
-      explanation: 'Y-linked traits pass exclusively from father to ALL sons. No daughters are ever affected. Every affected male has an affected father. The trait appears in every generation through the male line.',
+      explanation: 'In this simplified, fully penetrant model, a Y-linked marker passes from a father to each son and not to daughters. Real Y-linked conditions are rare, and penetrance or new variants can complicate a pedigree.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: true, carrier: false, genotype: 'X Y*', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: false, genotype: 'XX', label: 'I-2' },
@@ -279,26 +312,26 @@ window.StemLab = window.StemLab || {
 
   // ── Trait catalog ──
   var TRAIT_CATALOG = [
-    { name: 'Tongue Rolling', mode: 'complete', dom: 'Can roll', rec: 'Cannot roll', icon: '\uD83D\uDC45', freq: '~65-81% can roll', desc: 'Ability to curl the tongue into a tube shape. Once thought to be simple Mendelian, now known to be influenced by environment too.' },
-    { name: 'Widow\'s Peak', mode: 'complete', dom: 'Widow\'s peak', rec: 'Straight hairline', icon: '\uD83D\uDC71', freq: '~35% have peak', desc: 'A V-shaped point in the hairline at the center of the forehead. Dominant over straight hairline.' },
-    { name: 'Hitchhiker\'s Thumb', mode: 'complete', dom: 'Straight thumb', rec: 'Hitchhiker (>50\u00B0 bend)', icon: '\uD83D\uDC4D', freq: '~25% hitchhiker', desc: 'Ability to bend the thumb backwards more than 50 degrees. Often taught as straight-dominant, but — like earlobes — this is a classic teaching example actually influenced by multiple genes.' },
+    { name: 'Tongue Rolling', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDC45', freq: 'Varies by population and study', desc: 'Tongue rolling is influenced by genetics and environment, but family and twin studies do not support a single dominant allele.', pattern: 'Complex trait; do not infer a genotype from whether someone can roll their tongue.' },
+    { name: 'Widow\'s Peak', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDC71', freq: 'Varies by population and measurement', desc: 'Hairline shape varies continuously. No scientific evidence supports the common classroom claim that a widow\'s peak is controlled by one dominant allele.', pattern: 'Complex variation; a one-gene Punnett square is not appropriate.' },
+    { name: 'Hitchhiker\'s Thumb', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDC4D', freq: 'A continuous range of joint angles', desc: 'Thumb-joint angle varies continuously rather than forming two clean categories. It is not established as a single-gene dominant/recessive trait.', pattern: 'Complex variation; measured angle is more informative than a binary label.' },
     { name: 'Polydactyly', mode: 'complete', dom: 'Extra digits', rec: 'Normal (5)', icon: '\u270B', freq: '~1 in 500-1000', desc: 'Having extra fingers or toes. Autosomal dominant with variable expressivity and reduced penetrance.' },
     { name: 'Huntington\'s Disease', mode: 'complete', dom: 'Affected', rec: 'Normal', icon: '\uD83E\uDDE0', freq: '~1 in 10,000', desc: 'Progressive neurological disorder caused by CAG repeat expansion on chromosome 4. Autosomal dominant with late onset.' },
     { name: 'Cystic Fibrosis', mode: 'recessive', dom: 'Normal/Carrier', rec: 'Affected', icon: '\uD83E\uDEC1', freq: '~1 in 3,500 (Caucasian)', desc: 'Thick mucus production affecting lungs and pancreas. Caused by mutations in the CFTR gene on chromosome 7.' },
-    { name: 'Sickle Cell Anemia', mode: 'codominant', dom: 'Normal RBC', rec: 'Sickle-shaped RBC', icon: '\uD83E\uDE78', freq: '~1 in 365 (African American)', desc: 'Hemoglobin S mutation causes red blood cells to sickle. Carriers (AS) have sickle cell trait - partial protection from malaria.' },
+    { name: 'Sickle Cell Trait and Disease', mode: 'codominant', dom: 'HbA protein', rec: 'HbS protein', icon: '\uD83E\uDE78', freq: 'Varies by ancestry and region', desc: 'HbA and HbS are both produced in people with AS sickle cell trait. Trait is not a mild form of sickle cell disease; people with trait usually have no disease symptoms.', pattern: 'Codominant at the hemoglobin-protein level; clinical outcomes depend on the full hemoglobin genotype and conditions.' },
     { name: 'ABO Blood Type', mode: 'codominant', dom: 'A or B antigen', rec: 'No antigen (O)', icon: '\uD83C\uDD8E', freq: 'O: 44%, A: 42%, B: 10%, AB: 4%', desc: 'Three alleles (I\u1D2C, I\u1D2E, i) control blood type. I\u1D2C and I\u1D2E are codominant; both dominant over i.' },
     { name: 'Snapdragon Flower Color', mode: 'incomplete', dom: 'Red', rec: 'White', icon: '\uD83C\uDF3A', freq: 'n/a (plant)', desc: 'Classic incomplete dominance. Red (RR) \u00D7 White (rr) = Pink (Rr). The 1:2:1 ratio produces red, pink, and white flowers.' },
-    { name: 'Color Blindness', mode: 'x_linked', dom: 'Normal vision', rec: 'Color blind', icon: '\uD83D\uDC41', freq: '~8% males, ~0.5% females', desc: 'Red-green color blindness is X-linked recessive. Males need only one copy; females need two. Carrier females have normal vision.' },
+    { name: 'Color Blindness', mode: 'x_linked', dom: 'Normal vision', rec: 'Color blind', icon: '\uD83D\uDC41', freq: '~8% males, ~0.5% females', desc: 'Red-green color blindness is X-linked recessive. Males need only one copy; females need two. Heterozygous XX individuals are usually unaffected, although expression can vary because of X-inactivation.' },
     { name: 'Hemophilia A', mode: 'x_linked', dom: 'Normal clotting', rec: 'Hemophilia', icon: '\uD83E\uDE79', freq: '~1 in 5,000 males', desc: 'Blood clotting factor VIII deficiency. X-linked recessive. Famous in European royal families descended from Queen Victoria.' },
     { name: 'Duchenne Muscular Dystrophy', mode: 'x_linked', dom: 'Normal', rec: 'Affected', icon: '\uD83E\uDDBE', freq: '~1 in 3,500 males', desc: 'Progressive muscle degeneration caused by dystrophin gene mutations on the X chromosome. Primarily affects boys.' },
-    { name: 'Skin Color', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83C\uDF0D', freq: 'Continuous range', desc: 'Determined by multiple genes (at least 15) that additively affect melanin production. Classic example of polygenic inheritance.' },
+    { name: 'Skin Pigmentation', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83C\uDF0D', freq: 'Continuous variation', desc: 'Many genetic variants influence melanin amount and type, and environmental exposure such as ultraviolet light also changes pigmentation.', pattern: 'Polygenic and environmentally influenced; there is no single dominant skin-color allele.' },
     { name: 'Height', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDCCF', freq: 'Bell curve distribution', desc: 'Influenced by hundreds of genes plus environmental factors (nutrition, health). Shows continuous variation in populations.' },
     { name: 'Albinism', mode: 'recessive', dom: 'Normal pigment', rec: 'No pigment', icon: '\uD83E\uDDD1', freq: '~1 in 20,000', desc: 'Lack of melanin production due to mutations in genes controlling melanin synthesis pathway. Multiple types exist.' },
     { name: 'PKU (Phenylketonuria)', mode: 'recessive', dom: 'Normal', rec: 'PKU', icon: '\uD83E\uDDEA', freq: '~1 in 10,000', desc: 'Cannot metabolize phenylalanine. Treatable with diet. Newborn screening catches it early. Autosomal recessive on chromosome 12.' },
     { name: 'Tay-Sachs Disease', mode: 'recessive', dom: 'Normal', rec: 'Tay-Sachs', icon: '\uD83E\uDDE0', freq: '~1 in 3,600 (Ashkenazi Jewish)', desc: 'Fatal lysosomal storage disorder. Missing hexosaminidase A enzyme causes lipid buildup in neurons. Autosomal recessive on chromosome 15.' },
     { name: 'Marfan Syndrome', mode: 'complete', dom: 'Affected', rec: 'Normal', icon: '\uD83E\uDDBF', freq: '~1 in 5,000', desc: 'Connective tissue disorder caused by mutations in the fibrillin-1 gene (FBN1). Autosomal dominant with variable expressivity. Affects heart, eyes, skeleton.' },
     { name: 'Rh Blood Factor', mode: 'complete', dom: 'Rh+ (D antigen)', rec: 'Rh\u2212 (no D)', icon: '\uD83E\uDE78', freq: 'Rh+: ~85%, Rh\u2212: ~15%', desc: 'Rh factor is determined by the RHD gene. Rh+ is dominant. Important in pregnancy: Rh\u2212 mother with Rh+ fetus can develop antibodies (erythroblastosis fetalis).' },
-    { name: 'Ear Lobe Shape', mode: 'complete', dom: 'Free (detached)', rec: 'Attached', icon: '\uD83D\uDC42', freq: '~64% free lobes', desc: 'Free (detached) earlobes are dominant over attached earlobes. A classic example used in introductory genetics, though actually influenced by multiple genes.' }
+    { name: 'Earlobe Attachment', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDC42', freq: 'A continuous range of attachment', desc: 'Earlobe attachment ranges from attached to detached with many intermediate forms. Genomic studies support contributions from multiple loci.', pattern: 'Complex variation; detached earlobes are not explained by one dominant allele.' }
   ];
 
   // ── Codon table ──
@@ -353,7 +386,7 @@ window.StemLab = window.StemLab || {
           'Incorrect. Having identical alleles is homozygous.',
           '',
           'Incorrect. Organisms inherit at least one allele per gene from each parent.',
-          'Incorrect. Normal diploid organisms have two alleles per gene.'
+          'Incorrect. This diploid autosomal model tracks two alleles at the locus, one inherited through each parent.'
         ]
       },
       {
@@ -599,15 +632,15 @@ window.StemLab = window.StemLab || {
         ]
       },
       {
-        q: 'Which parent determines the sex of offspring?',
-        a: ['Mother (XX)', 'Father (XY)', 'Both equally', 'Neither'],
+        q: 'In the simplified human XX/XY model, which gamete determines whether an embryo receives X or Y?',
+        a: ['Egg cell', 'Sperm cell', 'Both gametes can carry Y', 'Neither gamete'],
         correct: 1,
         concept: 'heterozygous',
         wrongFeedback: [
-          'Incorrect. Mothers can only pass on an X chromosome.',
+          'Incorrect. In the simplified XX/XY model, an egg contributes X.',
           '',
-          'Incorrect. The father\'s sperm carries either X or Y, which determines sex.',
-          'Incorrect. The father\'s genetic contribution determines sex.'
+          'Incorrect. In this model, the sperm contributes either X or Y.',
+          'Incorrect. In this model, an X-bearing or Y-bearing sperm sets the chromosome combination.'
         ]
       },
       {
@@ -1036,13 +1069,13 @@ window.StemLab = window.StemLab || {
       title: 'Genes & Alleles', icon: '\uD83C\uDFAF',
       k2: 'Genes are small sections of DNA that tell your body to make specific things, like blue eyes or curly hair. You get one copy from your mom and one from your dad! Different versions of a gene are called alleles.',
       g35: 'A gene is a segment of DNA that codes for a specific protein or trait. You inherit two copies (alleles) of each gene - one from each parent. If both alleles are the same, you\'re homozygous (BB or bb). If they\'re different, you\'re heterozygous (Bb). The allele combination is your genotype; what you actually look like is your phenotype.',
-      g68: 'Genes occupy specific positions (loci) on chromosomes. Humans have ~20,000 protein-coding genes across 23 chromosome pairs. Alleles arise from mutations creating different DNA sequences at the same locus. Dominant alleles produce their phenotype with just one copy; recessive alleles need two copies. Some genes show incomplete dominance, codominance, or multiple alleles (like ABO blood type with three alleles: I\u1D2C, I\u1D2E, i).',
+      g68: 'Genes occupy specific positions (loci) on chromosomes. Humans have about 20,000 protein-coding genes across 23 chromosome pairs. Alleles are sequence variants at the same locus. In complete-dominance models one copy can be sufficient for a phenotype, but many traits instead involve incomplete dominance, codominance, multiple alleles, many genes, or environmental effects.',
       g912: 'Gene expression involves transcription (DNA \u2192 mRNA by RNA polymerase) and translation (mRNA \u2192 protein by ribosomes). Regulatory elements (promoters, enhancers, silencers) control when and where genes are expressed. Epigenetic modifications (DNA methylation, histone acetylation) alter gene expression without changing the DNA sequence. Pleiotropy (one gene, many effects) and polygenic inheritance (many genes, one trait) add complexity beyond simple Mendelian genetics.'
     },
     {
       title: 'Inheritance Patterns', icon: '\uD83D\uDCCA',
-      k2: 'Some traits are "stronger" than others! If you get a "strong" (dominant) gene from one parent and a "weak" (recessive) gene from the other, you\'ll show the strong trait. That\'s why brown eyes are more common than blue eyes!',
-      g35: 'Mendel discovered three laws: (1) Law of Dominance - one allele can mask another. (2) Law of Segregation - allele pairs separate during gamete formation. (3) Law of Independent Assortment - genes on different chromosomes sort independently. A Punnett square predicts offspring ratios: Bb \u00D7 Bb gives a 3:1 dominant:recessive ratio.',
+      k2: 'Each parent gives you one gene for a trait. When your two genes are different, the dominant one is the trait you SEE. But dominant does NOT mean stronger, better, or more common - it just means "the one that shows." The hidden (recessive) gene is still there and can show up in your own kids someday!',
+      g35: 'Mendel showed that allele pairs separate when gametes form. Genes on different chromosomes usually assort independently, while linked genes can travel together. A Punnett square predicts probabilities for a stated inheritance model: Bb \u00D7 Bb gives a 3:1 phenotype ratio only under complete dominance.',
       g68: 'Beyond simple dominance, inheritance patterns include: Incomplete dominance (red \u00D7 white = pink snapdragons), Codominance (AB blood type), Sex-linked (hemophilia on X chromosome), and Polygenic (height, skin color). Linked genes on the same chromosome violate independent assortment but recombination during crossing over creates new combinations. Pedigree charts trace traits through generations.',
       g912: 'Complex inheritance includes epistasis (gene interaction where one gene modifies another\'s expression), penetrance (% showing phenotype), and expressivity (degree of expression). Quantitative trait loci (QTL) analysis maps polygenic traits. Mitochondrial inheritance is maternal. Genomic imprinting means some genes are expressed only from the maternal or paternal copy. Genetic linkage and recombination frequencies are used to map gene positions on chromosomes.'
     },
@@ -1081,6 +1114,7 @@ window.StemLab = window.StemLab || {
       { id: 'use_2_presets', label: 'Try 2 genetics presets', icon: '🔬', check: function(d) { return (d._presetsUsed || 0) >= 2; }, progress: function(d) { return (d._presetsUsed || 0) + '/2'; } }
     ],
     render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
 
@@ -1291,6 +1325,7 @@ window.StemLab = window.StemLab || {
 
           var askAI = function() {
             if (!aiQuestion.trim()) return;
+            if (typeof ctx.callGemini !== 'function') { updMulti({ _aiResponse: 'AI tutor is not available right now.', _aiLoading: false }); return; }
             updMulti({ _aiLoading: true, _aiResponse: '' });
             var prompt = 'You are a friendly genetics tutor helping a student learn about genetics and Punnett squares. ' +
               'They are in the "' + subtool + '" section of the Punnett Square Lab. ' +
@@ -1304,6 +1339,17 @@ window.StemLab = window.StemLab || {
           };
 
           var showBadgePanel = d._showBadgePanel || false;
+          var showLabGuide = d._showLabGuide || false;
+          var showQuestProgress = d._showQuestProgress || false;
+
+          React.useEffect(function() {
+            if (!d._studyConcept) return undefined;
+            var closeOnEscape = function(event) {
+              if (event.key === 'Escape') upd('_studyConcept', null);
+            };
+            document.addEventListener('keydown', closeOnEscape);
+            return function() { document.removeEventListener('keydown', closeOnEscape); };
+          }, [d._studyConcept]);
 
           // ═══════════════════════════════════════
           // CROSS SUB-TOOL (existing logic)
@@ -1314,6 +1360,30 @@ window.StemLab = window.StemLab || {
           var parent2 = d.parent2 || ['A', 'a'];
           var grid, activePreset = d._activePreset || null;
 
+          // Keep custom parent controls on one biological locus. Presets may supply
+          // two or three valid alleles (for example A/B/i in the ABO model).
+          var sourceAlleles = (activePreset ? activePreset.p1.concat(activePreset.p2) : parent1.concat(parent2))
+            .filter(function(a) { return a && a !== 'Y'; });
+          var crossAlleles;
+          if (inheritMode === 'codominant') {
+            crossAlleles = sourceAlleles.filter(function(a, i) { return sourceAlleles.indexOf(a) === i; });
+          } else {
+            var locusSeed = sourceAlleles[0] || 'A';
+            var locusUpper = locusSeed.toUpperCase();
+            crossAlleles = [locusUpper, locusUpper.toLowerCase()];
+          }
+          if (crossAlleles.length < 2) crossAlleles.push(crossAlleles[0].toLowerCase());
+          var genotypeChoices = [];
+          crossAlleles.forEach(function(first, firstIndex) {
+            crossAlleles.slice(firstIndex).forEach(function(second) {
+              genotypeChoices.push(first + second);
+            });
+          });
+          var genotypeChoicesFor = function(currentAlleles) {
+            var current = currentAlleles.join('');
+            return genotypeChoices.indexOf(current) === -1 ? [current].concat(genotypeChoices) : genotypeChoices;
+          };
+
           if (isSexLinked) {
             var momAlleles = [parent1[0], parent1[1]];
             var dadXAllele = parent2[0];
@@ -1322,9 +1392,15 @@ window.StemLab = window.StemLab || {
               ['X' + momAlleles[1] + 'X' + dadXAllele, 'X' + momAlleles[1] + 'Y']
             ];
           } else {
+            // Normalize each heterozygote to dominant-allele-first (uppercase-first) so
+            // 'tT' and 'Tt' count as ONE genotype. Without this, Tt × Tt renders a wrong
+            // 1:1:1:1 genotype ratio instead of the correct 1:2:1 (the dihybrid grid below
+            // already normalizes). Sex-linked genotypes are multi-char (XCXC / XCY) and are
+            // handled in the branch above, so this only touches 2-char autosomal genotypes.
+            var normGeno = function(g) { return (g.length === 2 && g[0] > g[1]) ? g[1] + g[0] : g; };
             grid = [
-              [parent1[0] + parent2[0], parent1[0] + parent2[1]],
-              [parent1[1] + parent2[0], parent1[1] + parent2[1]]
+              [normGeno(parent1[0] + parent2[0]), normGeno(parent1[0] + parent2[1])],
+              [normGeno(parent1[1] + parent2[0]), normGeno(parent1[1] + parent2[1])]
             ];
           }
 
@@ -1339,8 +1415,29 @@ window.StemLab = window.StemLab || {
               return 'Blended';
             };
           } else if (inheritMode === 'codominant') {
+            // Two-codominant-allele systems (ABO's A/B, MN) need to be classified by allele
+            // IDENTITY, not by letter case: with both A and B uppercase, the old case-only test
+            // collapsed AA and BB into one "Dominant" class, so AB × AB wrongly read 2 Dominant
+            // instead of the true 1 Type-A : 2 Type-AB : 1 Type-B. We map the dominant-labelled
+            // allele and the recessive-labelled allele explicitly. Single-codominant-allele systems
+            // (Roan R/r, where the heterozygote is the blend) fall back to the case-based test.
+            var _coAll = [parent1[0], parent1[1], parent2[0], parent2[1]];
+            var _coUp = _coAll.filter(function(a) { return a === a.toUpperCase() && a !== 'Y'; });
+            var _coDistinct = _coUp.filter(function(a, i) { return _coUp.indexOf(a) === i; }).sort();
+            var coDomAllele = _coDistinct[0], coRecAllele = _coDistinct[1];
             phenotype = function(g) {
               if (isSexLinked) return 'Dominant';
+              if (_coDistinct.length >= 2) {
+                // true codominance between two expressed alleles (A/B, M/N); lowercase (incl. i) is null
+                var up0 = g[0] === g[0].toUpperCase(), up1 = g[1] === g[1].toUpperCase();
+                var hasD = (up0 && g[0] === coDomAllele) || (up1 && g[1] === coDomAllele);
+                var hasR = (up0 && g[0] === coRecAllele) || (up1 && g[1] === coRecAllele);
+                if (hasD && hasR) return 'Codominant';
+                if (hasD) return 'Dominant';
+                if (hasR) return 'Recessive';
+                return 'Recessive'; // neither codominant allele expressed (e.g. ii) → recessive class
+              }
+              // single codominant allele over a recessive one (Roan): heterozygote = the blend
               var upper = g[0].toUpperCase();
               if (g[0] === g[1] && g[0] === upper) return 'Dominant';
               if (g[0] === g[1]) return 'Recessive';
@@ -1380,30 +1477,61 @@ window.StemLab = window.StemLab || {
             return { bg: 'bg-purple-50', text: 'text-purple-700', sub: 'text-purple-400', border: 'border-purple-300' };
           };
 
-          function pieSlice(cx, cy, r, startAngle, endAngle) {
-            var x1 = cx + r * Math.cos(startAngle);
-            var y1 = cy + r * Math.sin(startAngle);
-            var x2 = cx + r * Math.cos(endAngle);
-            var y2 = cy + r * Math.sin(endAngle);
-            var largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
-            return 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z';
-          }
-
-          var trackCross = function() {
+          var trackCross = function(nextMode, nextParent1, nextParent2) {
+            var trackedMode = nextMode || inheritMode;
+            var trackedParent1 = nextParent1 || parent1;
+            var trackedParent2 = nextParent2 || parent2;
             var newCount = crossCount + 1;
             upd('_crossCount', newCount);
             var newModes = Object.assign({}, modesUsed);
-            newModes[inheritMode] = true;
+            newModes[trackedMode] = true;
             upd('_modesUsed', newModes);
-            var isTestCross = (parent1[0] !== parent1[1]) && (parent2[0] === parent2[1]) && (parent2[0] === parent2[0].toLowerCase());
+            var isTestCross = (trackedParent1[0] !== trackedParent1[1]) && (trackedParent2[0] === trackedParent2[1]) && (trackedParent2[0] === trackedParent2[0].toLowerCase());
             if (isTestCross) upd('_testCrossDone', true);
-            if (isSexLinked) upd('_sexLinkedDone', true);
+            if (trackedMode === 'sexLinked') upd('_sexLinkedDone', true);
           };
 
           var countKeys = Object.keys(counts);
           var countEntries = countKeys.map(function(k) { return k + ': ' + counts[k] + '/4'; });
           var genotypeRatioStr = 'Genotype Ratios: ' + countEntries.join(' | ');
           var modeInfo = MODE_INFO[inheritMode];
+          var displayDomLabel = activePreset && activePreset.domLabel ? activePreset.domLabel : (isSexLinked ? 'Unaffected in model' : 'Dominant');
+          var displayRecLabel = activePreset && activePreset.recLabel ? activePreset.recLabel : (isSexLinked ? 'Affected in model' : 'Recessive');
+          var displayBlendLabel = activePreset && activePreset.blendLabel ? activePreset.blendLabel : (inheritMode === 'incomplete' ? 'Intermediate' : 'Codominant');
+          var parent1Gametes = isSexLinked ? ['X' + parent1[0], 'X' + parent1[1]] : parent1.slice();
+          var parent2Gametes = isSexLinked ? ['X' + parent2[0], 'Y'] : parent2.slice();
+          var phenotypeMix = [
+            { id: 'dom', label: displayDomLabel, count: domCount, color: '#16a34a', soft: '#ecfdf5', border: '#86efac' },
+            { id: 'blend', label: displayBlendLabel, count: blendCount, color: inheritMode === 'incomplete' ? '#db2777' : '#7c3aed', soft: inheritMode === 'incomplete' ? '#fdf2f8' : '#f5f3ff', border: inheritMode === 'incomplete' ? '#f9a8d4' : '#c4b5fd' },
+            { id: 'rec', label: displayRecLabel, count: recCount, color: '#b45309', soft: '#fffbeb', border: '#fcd34d' }
+          ].filter(function(item) { return item.count > 0 || item.id !== 'blend'; });
+          var maximumPhenotypeCount = phenotypeMix.reduce(function(maximum, item) {
+            return Math.max(maximum, item.count);
+          }, 0);
+          var leadingPhenotypes = phenotypeMix.filter(function(item) {
+            return item.count === maximumPhenotypeCount;
+          });
+          var outcomeHeadline = maximumPhenotypeCount <= 0
+            ? 'Under this model, each square is one equally likely offspring outcome.'
+            : leadingPhenotypes.length > 1
+              ? leadingPhenotypes.map(function(item) { return item.label; }).join(' and ') + ' are equally likely at ' + (maximumPhenotypeCount * 25) + '% each.'
+              : leadingPhenotypes[0].label + ' is most likely at ' + (maximumPhenotypeCount * 25) + '%.';
+          var sons = flatGrid.filter(function(g) { return g.indexOf('Y') !== -1; });
+          var daughters = flatGrid.filter(function(g) { return g.indexOf('Y') === -1; });
+          var affectedSons = sons.filter(function(g) { return phenotype(g) === 'Recessive'; }).length;
+          var affectedDaughters = daughters.filter(function(g) { return phenotype(g) === 'Recessive'; }).length;
+          var carrierDaughters = daughters.filter(function(g) {
+            var alleles = g.split('X').filter(Boolean);
+            return alleles.length === 2 && alleles[0] !== alleles[1] && phenotype(g) !== 'Recessive';
+          }).length;
+          var crossReadout = (function() {
+            if (isSexLinked) return 'Read rows as egg choices and columns as sperm choices. Sons inherit Y from the father, so one recessive X can express the trait.';
+            if (inheritMode === 'incomplete') return 'Heterozygous offspring are their own visible middle category, so the genotype and phenotype ratios often match.';
+            if (inheritMode === 'codominant') return 'Heterozygous offspring show both expressed alleles side by side instead of blending them together.';
+            if (domCount === 3 && recCount === 1) return 'This is the classic heterozygote cross: three offspring choices show the dominant trait and one shows the recessive trait.';
+            if (domCount === 2 && recCount === 2) return 'This reads like a test cross: each offspring has an equal chance of the dominant or recessive phenotype.';
+            return 'Assuming equal gamete frequencies, each square is equally likely. The color mix turns the four squares into phenotype probabilities.';
+          })();
 
           // ═══════════════════════════════════════
           // DIHYBRID CROSS LOGIC
@@ -1495,6 +1623,7 @@ window.StemLab = window.StemLab || {
           var popMutation = d.popMutation || 0;
           var popRunning = d.popRunning || false;
           var popHistory = d.popHistory || null;
+          var displayedPopFreqA = popHistory && popHistory.length ? popHistory[popHistory.length - 1] : popFreqA;
 
           React.useEffect(function() {
             if (!popRunning || !popHistory) return;
@@ -1677,70 +1806,192 @@ window.StemLab = window.StemLab || {
           // ════════════════════════════════════════
           // RENDER
           // ════════════════════════════════════════
-          return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200' },
-
-            // ── Header ──
-            h('div', { className: 'flex items-center gap-3 mb-3' },
-              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' },
-                h(ArrowLeft, { size: 18, className: 'text-slate-600' })
-              ),
-              h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDDEC Punnett Square Lab'),
-              h('span', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] font-bold rounded-full' }, 'GENETICS v3'),
-              h('span', { className: 'px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full' }, '⭐ ' + (d.researchPoints || 0) + ' RP'),
-              h('button', {
-                onClick: function() { upd('_showBadgePanel', !showBadgePanel); },
-                className: 'ml-auto px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showBadgePanel ? 'bg-amber-100 text-amber-700 border-amber-600' : 'bg-slate-50 text-slate-600 border-slate-200'),
-                'aria-label': 'Toggle badges'
-              }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGES.length),
-              h('button', {
-                onClick: function() { upd('_showAI', !showAI); },
-                className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showAI ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200'),
-                'aria-label': 'Toggle AI tutor'
-              }, '\uD83E\uDD16 AI')
-            ),
-
-            // ── Sub-tool Navigation ──
-            h('div', { className: 'flex flex-wrap gap-1 mb-4' },
-              SUBTOOLS.map(function(st) {
-                var isActive = subtool === st.id;
-                return h('button', { key: st.id,
-                  onClick: function() { upd('subtool', st.id); announceToSR('Switched to ' + st.label); },
-                  className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' +
-                    (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600 hover:bg-violet-50'),
-                  title: st.desc
-                }, st.icon + ' ' + st.label);
-              })
-            ),
-
-            // ── Challenges Progress checklist card ──
-            h('div', { className: 'bg-white rounded-xl border border-violet-200 p-3 mb-3 shadow-sm' },
-              h('div', { className: 'flex justify-between items-center mb-2' },
-                h('h4', { className: 'text-xs font-bold text-violet-800 uppercase tracking-wider flex items-center gap-1.5' },
-                  h('span', null, '🏆'), h('span', null, 'Quest Progress')
+          var currentSub = SUBTOOLS.filter(function(st) { return st.id === subtool; })[0] || SUBTOOLS[0];
+          var completedQuestCount = PUNNETT_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length;
+          var earnedBadgeCount = Object.keys(badges).length;
+          var readyStats = [
+            { label: 'Crosses', value: String(crossCount), hint: 'Punnett runs' },
+            { label: 'Presets', value: String(presetsUsed), hint: 'examples tried' },
+            { label: 'Quest', value: completedQuestCount + '/' + PUNNETT_CHALLENGES.length, hint: 'challenge path' },
+            { label: 'Badges', value: earnedBadgeCount + '/' + BADGES.length, hint: 'mastery trail' }
+          ];
+          var routeCards = [
+            { id: 'cross', title: 'Predict Traits', icon: '\uD83E\uDDEC', note: 'Build a cross and compare genotype to phenotype ratios.', color: '#7c3aed' },
+            { id: 'pedigree', title: 'Trace Families', icon: '\uD83D\uDC6A', note: 'Read inheritance patterns across generations.', color: '#0891b2' },
+            { id: 'population', title: 'Model Populations', icon: '\uD83D\uDCCA', note: 'Watch allele frequencies change over time.', color: '#15803d' },
+            { id: 'dna2protein', title: 'Translate DNA', icon: '\uD83E\uDDEA', note: 'Connect DNA letters to codons and proteins.', color: '#b45309' }
+          ];
+          var goSubtool = function(id) {
+            upd('subtool', id);
+            var target = SUBTOOLS.filter(function(st) { return st.id === id; })[0];
+            if (target && announceToSR) announceToSR('Switched to ' + target.label);
+          };
+          var onActivityKeyDown = function(event, index) {
+            var nextIndex = index;
+            if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % SUBTOOLS.length;
+            else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + SUBTOOLS.length) % SUBTOOLS.length;
+            else if (event.key === 'Home') nextIndex = 0;
+            else if (event.key === 'End') nextIndex = SUBTOOLS.length - 1;
+            else return;
+            event.preventDefault();
+            goSubtool(SUBTOOLS[nextIndex].id);
+            setTimeout(function() {
+              var nextButton = document.getElementById('punnett-activity-' + SUBTOOLS[nextIndex].id);
+              if (nextButton) nextButton.focus();
+            }, 0);
+          };
+          var renderGeneticsCommand = function() {
+            return h('section', {
+              'data-punnett-command': 'true',
+              'aria-labelledby': 'punnett-command-title',
+              className: 'mb-3 rounded-xl border border-violet-200 bg-white p-3 shadow-sm'
+            },
+              h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-3' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-1' }, 'Lab guide'),
+                  h('h2', { id: 'punnett-command-title', className: 'text-lg font-black text-slate-800 m-0' }, 'Predict inheritance in three moves'),
+                  h('p', { className: 'text-xs text-slate-600 mt-1 max-w-2xl' }, 'Choose an inheritance pattern, set two parent genotypes, then compare offspring probabilities under the model assumptions.')
                 ),
-                h('span', { className: 'text-[11px] font-bold text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full' },
-                  PUNNETT_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length + '/' + PUNNETT_CHALLENGES.length
-                )
+                h('button', {
+                  onClick: function() { upd('_showLabGuide', false); },
+                  className: 'punnett-control border border-slate-300 bg-slate-50 text-slate-700',
+                  'aria-label': 'Close lab guide'
+                }, 'Close')
+              ),
+              h('ol', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3 list-none p-0 m-0' },
+                [
+                  ['1', 'Choose a pattern', 'Complete, incomplete, codominant, or X-linked'],
+                  ['2', 'Set the parents', 'Pick a trait example or valid genotypes'],
+                  ['3', 'Read the outcomes', 'Compare genotype with visible phenotype']
+                ].map(function(step) {
+                  return h('li', { key: step[0], className: 'rounded-lg border border-violet-100 bg-violet-50 p-2 flex gap-2 items-start' },
+                    h('span', { className: 'punnett-step-number', 'aria-hidden': 'true' }, step[0]),
+                    h('span', null,
+                      h('span', { className: 'block text-xs font-bold text-violet-900' }, step[1]),
+                      h('span', { className: 'block text-[11px] text-slate-600 mt-0.5 leading-snug' }, step[2])
+                    )
+                  );
+                })
+              ),
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3' },
+                readyStats.map(function(stat) {
+                  return h('div', { key: stat.label, className: 'rounded-lg border border-slate-200 bg-slate-50 px-2 py-2' },
+                    h('div', { className: 'text-base font-black text-violet-700' }, stat.value),
+                    h('div', { className: 'text-[11px] font-bold text-slate-700' }, stat.label),
+                    h('div', { className: 'text-[10px] text-slate-500' }, stat.hint)
+                  );
+                })
+              ),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                routeCards.map(function(route) {
+                  var active = subtool === route.id;
+                  return h('button', {
+                    key: route.id,
+                    onClick: function() { goSubtool(route.id); },
+                    className: 'punnett-touch-choice text-left rounded-lg border px-3 py-2 transition-all',
+                    style: { borderColor: active ? route.color : '#e2e8f0', background: active ? '#f5f3ff' : '#fff' },
+                    'aria-current': active ? 'page' : undefined
+                  },
+                    h('span', { className: 'block text-xs font-black', style: { color: active ? route.color : '#334155' } }, route.icon + ' ' + route.title),
+                    h('span', { className: 'block text-[11px] text-slate-500 mt-0.5' }, route.note)
+                  );
+                })
+              )
+            );
+          };
+          return h('div', {
+            'data-punnett-root': 'true',
+            className: 'punnett-lab-shell max-w-4xl mx-auto animate-in fade-in duration-200'
+          },
+
+            // ── Compact lab header ──
+            h('header', { className: 'punnett-topbar', 'data-punnett-command': 'true' },
+              h('button', {
+                onClick: function() { setStemLabTool(null); },
+                className: 'punnett-control border border-slate-200 bg-white text-slate-700',
+                'aria-label': 'Back to STEM tools'
+              }, h(ArrowLeft, { size: 18, 'aria-hidden': 'true' })),
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                  h('h2', { className: 'text-base sm:text-lg font-black text-slate-800 m-0' }, '🧬 Punnett Square Lab'),
+                  h('span', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full' }, 'GENETICS v3')
+                ),
+                h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, currentSub.label + ' · ' + currentSub.desc)
+              ),
+              h('div', { className: 'punnett-topbar-actions' },
+                h('span', { className: 'px-2 py-1 bg-sky-50 text-sky-700 text-[11px] font-bold rounded-lg border border-sky-100' }, '⭐ ' + (d.researchPoints || 0) + ' RP'),
+                h('button', {
+                  onClick: function() { upd('_showLabGuide', !showLabGuide); },
+                  className: 'punnett-control border ' + (showLabGuide ? 'bg-violet-100 text-violet-800 border-violet-400' : 'bg-white text-slate-700 border-slate-200'),
+                  'aria-pressed': showLabGuide,
+                  'aria-controls': 'punnett-command-title'
+                }, '🧭 Guide'),
+                h('button', {
+                  onClick: function() { upd('_showQuestProgress', !showQuestProgress); },
+                  className: 'punnett-control border ' + (showQuestProgress ? 'bg-emerald-100 text-emerald-800 border-emerald-400' : 'bg-white text-slate-700 border-slate-200'),
+                  'aria-pressed': showQuestProgress,
+                  'aria-controls': 'punnett-quest-progress'
+                }, '🏆 ' + completedQuestCount + '/' + PUNNETT_CHALLENGES.length),
+                h('button', {
+                  onClick: function() { upd('_showBadgePanel', !showBadgePanel); },
+                  className: 'punnett-control border ' + (showBadgePanel ? 'bg-amber-100 text-amber-800 border-amber-400' : 'bg-white text-slate-700 border-slate-200'),
+                  'aria-pressed': showBadgePanel,
+                  'aria-controls': 'punnett-badge-panel',
+                  'aria-label': 'Toggle badges'
+                }, '🏅 ' + Object.keys(badges).length + '/' + BADGES.length),
+                h('button', {
+                  onClick: function() { upd('_showAI', !showAI); },
+                  className: 'punnett-control border ' + (showAI ? 'bg-sky-100 text-sky-800 border-sky-400' : 'bg-white text-slate-700 border-slate-200'),
+                  'aria-pressed': showAI,
+                  'aria-controls': 'punnett-ai-panel',
+                  'aria-label': 'Toggle AI genetics tutor'
+                }, '🤖 Tutor')
+              )
+            ),
+
+            showLabGuide && renderGeneticsCommand(),
+
+            // ── Activity rail ──
+            h('nav', { 'aria-label': 'Genetics lab activities' },
+              h('div', { className: 'punnett-activity-rail' },
+                SUBTOOLS.map(function(st, index) {
+                  var isActive = subtool === st.id;
+                  return h('button', {
+                    key: st.id,
+                    id: 'punnett-activity-' + st.id,
+                    onClick: function() { goSubtool(st.id); },
+                    onKeyDown: function(event) { onActivityKeyDown(event, index); },
+                    className: 'punnett-activity-tab border transition-all ' +
+                      (isActive ? 'bg-violet-700 text-white border-violet-700 shadow-md' : 'bg-white text-slate-700 border-slate-200 hover:border-violet-400 hover:bg-violet-50'),
+                    title: st.desc,
+                    'aria-current': isActive ? 'page' : undefined
+                  }, st.icon + ' ' + st.label);
+                })
+              )
+            ),
+
+            // ── Quest progress (on demand) ──
+            showQuestProgress && h('section', { id: 'punnett-quest-progress', className: 'bg-white rounded-xl border border-emerald-200 p-3 mb-3 shadow-sm', 'aria-label': 'Quest progress' },
+              h('div', { className: 'flex justify-between items-center mb-2 gap-2' },
+                h('h3', { className: 'text-xs font-bold text-emerald-800 uppercase tracking-wider' }, '🏆 Quest Progress'),
+                h('span', { className: 'text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full' }, completedQuestCount + '/' + PUNNETT_CHALLENGES.length)
               ),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
                 PUNNETT_CHALLENGES.map(function(chal) {
                   var isDone = d._completedChallenges && d._completedChallenges[chal.id];
                   return h('div', {
                     key: chal.id,
-                    className: 'p-2 rounded-lg border flex flex-col items-center justify-between text-center transition-all ' +
-                      (isDone ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-400'),
+                    className: 'p-2 rounded-lg border flex flex-col items-center justify-between text-center ' +
+                      (isDone ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-500'),
                     title: chal.desc
                   },
-                    h('span', { className: 'text-lg mb-1' }, chal.icon),
+                    h('span', { className: 'text-lg mb-1', 'aria-hidden': 'true' }, chal.icon),
                     h('span', { className: 'text-[10px] font-bold leading-tight' }, chal.label),
-                    h('span', { className: 'text-[9px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-500') },
-                      isDone ? 'Done' : 'Locked'
-                    )
+                    h('span', { className: 'text-[10px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600') }, isDone ? 'Done' : 'Not yet')
                   );
                 })
               )
             ),
-
             // ── Topic-accent hero band per sub-tool ──
             (function() {
               var TAB_META = {
@@ -1751,7 +2002,8 @@ window.StemLab = window.StemLab || {
                 dna2protein: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDEA', title: 'DNA \u2192 Protein - codon table + translation',    hint: 'Triplet code: 64 codons \u2192 20 amino acids + stop. AUG starts; UAA/UAG/UGA stop. Wobble at the third position lets one tRNA read multiple codons - evolution\'s redundancy buffer.' },
                 challenge:   { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83C\uDFC6', title: 'Challenge - graded genetics quiz',                  hint: 'Punnett ratios, pedigree analysis, Hardy-Weinberg algebra, dihybrid 9:3:3:1, sex-linked traps. AP Bio Big Idea 3.A.1-3. NGSS HS-LS3-1, HS-LS3-2.' },
                 battle:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: 'Gene Defense - retrieval as combat',                hint: 'Speed builds automaticity. Once codon-table lookups + Punnett ratios are automatic, your working memory is free for higher-order reasoning like predicting the consequences of a frameshift mutation.' },
-                learn:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCD6', title: 'Learn - genetics concepts by grade',                hint: 'K-2: families pass on traits. 3-5: dominant/recessive. MS: Punnett squares + DNA basics. HS: full Mendelian + transcription/translation + epigenetics. AP Bio adds population genetics + evolutionary inference.' }
+                learn:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCD6', title: 'Learn - genetics concepts by grade',                hint: 'K-2: families pass on traits. 3-5: dominant/recessive. MS: Punnett squares + DNA basics. HS: full Mendelian + transcription/translation + epigenetics. AP Bio adds population genetics + evolutionary inference.' },
+                freqDyn:     { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '📊', title: 'Allele Discovery - investigate frequency change', hint: 'Adjust starting frequency, selection, and mutation. Record observations, compare them with your hypothesis, and use the model to explain how a population changes over time.' }
               };
               var meta = TAB_META[subtool] || TAB_META.cross;
               return h('div', {
@@ -1774,9 +2026,9 @@ window.StemLab = window.StemLab || {
             })(),
 
             // ── Badge Panel ──
-            showBadgePanel && h('div', { className: 'mb-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border border-amber-200' },
+            showBadgePanel && h('div', { id: 'punnett-badge-panel', className: 'mb-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border border-amber-200' },
               h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges'),
-              h('div', { className: 'grid grid-cols-7 gap-1.5' },
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5' },
                 BADGES.map(function(b) {
                   var earned = !!badges[b.id];
                   return h('div', { key: b.id, className: 'text-center p-1.5 rounded-lg border ' + (earned ? 'bg-white border-amber-300' : 'bg-slate-50 border-slate-200 opacity-50'), title: b.desc },
@@ -1788,9 +2040,9 @@ window.StemLab = window.StemLab || {
             ),
 
             // ── AI Tutor Panel ──
-            showAI && h('div', { className: 'mb-4 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-3 border border-sky-200' },
+            showAI && h('div', { id: 'punnett-ai-panel', className: 'mb-4 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-3 border border-sky-200' },
               h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 AI Genetics Tutor'),
-              h('div', { className: 'flex gap-2 mb-2' },
+              h('div', { className: 'flex flex-col sm:flex-row gap-2 mb-2' },
                 h('input', {
                   type: 'text', value: aiQuestion,
                   onChange: function(e) { upd('_aiQuestion', e.target.value); },
@@ -1811,80 +2063,214 @@ window.StemLab = window.StemLab || {
             // CROSS SUB-TOOL
             // ════════════════════════════════════════
             subtool === 'cross' && h('div', null,
-              // Inheritance Mode Selector
-              h('div', { className: 'mb-4 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200' },
-                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEC Inheritance Mode'),
-                h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
+              // Step 1: inheritance pattern and trait example
+              h('section', { className: 'mb-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200', 'aria-labelledby': 'punnett-step-pattern' },
+                h('div', { className: 'punnett-step-heading' },
+                  h('span', { className: 'punnett-step-number', 'aria-hidden': 'true' }, '1'),
+                  h('div', null,
+                    h('h3', { id: 'punnett-step-pattern', className: 'text-sm font-black text-slate-800 m-0' }, 'Choose an inheritance pattern'),
+                    h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'Start with a real trait example or keep building a custom cross.')
+                  )
+                ),
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2' },
                   ['complete', 'incomplete', 'codominant', 'sexLinked'].map(function(mode) {
                     var info = MODE_INFO[mode];
                     var isActive = inheritMode === mode;
-                    return h('button', { key: mode,
+                    return h('button', {
+                      key: mode,
                       onClick: function() {
+                        var firstPreset = (PRESETS_BY_MODE[mode] || [])[0];
                         punnettSound('mode');
-                        upd('inheritMode', mode);
-                        upd('_activePreset', null);
-                        trackCross();
+                        if (firstPreset) {
+                          updMulti({
+                            inheritMode: mode,
+                            parent1: firstPreset.p1.slice(),
+                            parent2: firstPreset.p2.slice(),
+                            _activePreset: firstPreset
+                          });
+                          trackCross(mode, firstPreset.p1, firstPreset.p2);
+                        } else {
+                          updMulti({ inheritMode: mode, _activePreset: null });
+                          trackCross(mode);
+                        }
+                        if (announceToSR) announceToSR('Inheritance pattern: ' + info.label);
                       },
-                      className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border-2 ' + (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600')
-                    }, info.icon + ' ' + info.label);
+                      className: 'punnett-touch-choice px-3 py-2 rounded-lg text-left text-xs font-bold transition-all border-2 ' +
+                        (isActive ? 'bg-violet-700 text-white border-violet-700 shadow-md' : 'bg-white text-slate-700 border-slate-200 hover:border-violet-500'),
+                      'aria-pressed': isActive
+                    },
+                      h('span', { className: 'block' }, info.icon + ' ' + info.label),
+                      h('span', { className: 'block mt-0.5 text-[10px] font-medium ' + (isActive ? 'text-violet-100' : 'text-slate-500') }, info.desc)
+                    );
                   })
                 ),
-                h('p', { className: 'text-[11px] text-slate-600 italic leading-relaxed' }, modeInfo.desc)
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mt-3 mb-2' }, 'Try a trait example'),
+                h('div', { className: 'flex gap-2 overflow-x-auto pb-1' },
+                  (PRESETS_BY_MODE[inheritMode] || []).map(function(preset) {
+                    var selected = !!(activePreset && activePreset.label === preset.label);
+                    return h('button', {
+                      key: preset.label,
+                      onClick: function() {
+                        punnettSound('preset');
+                        updMulti({ parent1: preset.p1.slice(), parent2: preset.p2.slice(), _activePreset: preset });
+                        upd('_presetsUsed', presetsUsed + 1);
+                        trackCross(inheritMode, preset.p1, preset.p2);
+                        addToast('🧬 ' + preset.tip, 'success');
+                        if (announceToSR) announceToSR('Loaded ' + preset.label);
+                      },
+                      className: 'punnett-touch-choice flex-none px-3 py-2 rounded-lg text-[11px] font-bold border transition-all ' +
+                        (selected ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-violet-700 border-violet-300 hover:bg-violet-100'),
+                      'aria-pressed': selected
+                    }, preset.label);
+                  })
+                )
               ),
 
-              // Parent allele selectors
-              h('div', { className: 'flex gap-6 mb-4 justify-center' },
-                [[isSexLinked ? 'Mother (XX)' : 'Parent 1', 'parent1', 'violet'], [isSexLinked ? 'Father (XY)' : 'Parent 2', 'parent2', 'blue']].map(function(_ref) {
-                  var label = _ref[0], key = _ref[1], color = _ref[2];
-                  var selectorCount = isSexLinked && key === 'parent2' ? 1 : 2;
-                  return h('div', { key: key, className: 'text-center' },
-                    h('label', { className: 'text-sm font-bold text-' + color + '-700 mb-2 block' }, label),
-                    h('div', { className: 'flex gap-2 items-center justify-center' },
-                      Array.from({ length: selectorCount }).map(function(_, i) {
-                        return h('select', {
-                          key: i,
-                          value: (d[key] && d[key][i]) || 'A',
-                          onChange: function(e) {
-                            punnettSound('allele');
-                            var na = (d[key] || ['A', 'a']).slice();
-                            na[i] = e.target.value;
-                            upd(key, na);
-                            trackCross();
-                          },
-                          className: 'px-3 py-2 border-2 border-' + color + '-200 rounded-lg font-bold text-lg text-center',
-                          'aria-label': label + ' allele ' + (i + 1)
+              // Step 2: locus-safe parent genotype selectors
+              h('section', { className: 'mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3', 'aria-labelledby': 'punnett-step-parents' },
+                h('div', { className: 'punnett-step-heading' },
+                  h('span', { className: 'punnett-step-number', 'aria-hidden': 'true' }, '2'),
+                  h('div', null,
+                    h('h3', { id: 'punnett-step-parents', className: 'text-sm font-black text-slate-800 m-0' }, 'Set the parent genotypes'),
+                    h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'Each menu stays on one gene locus so the comparison remains biologically coherent.')
+                  )
+                ),
+                h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' } },
+                  [[isSexLinked ? 'Mother (XX)' : 'Parent 1', 'parent1', 'violet'], [isSexLinked ? 'Father (XY)' : 'Parent 2', 'parent2', 'blue']].map(function(_ref) {
+                    var label = _ref[0], key = _ref[1], color = _ref[2];
+                    var currentAlleles = key === 'parent1' ? parent1 : parent2;
+                    var isFather = isSexLinked && key === 'parent2';
+                    var selectId = 'punnett-' + key + '-genotype';
+                    return h('div', { key: key, className: 'bg-white rounded-xl border border-' + color + '-200 p-3 shadow-sm' },
+                      h('label', { htmlFor: selectId, className: 'text-sm font-bold text-' + color + '-700 mb-2 block' }, label),
+                      h('select', {
+                        id: selectId,
+                        value: isFather ? currentAlleles[0] : currentAlleles.join(''),
+                        onChange: function(event) {
+                          punnettSound('allele');
+                          var nextAlleles = isFather ? [event.target.value, 'Y'] : event.target.value.split('');
+                          var patch = { _activePreset: null };
+                          patch[key] = nextAlleles;
+                          updMulti(patch);
+                          trackCross(
+                            inheritMode,
+                            key === 'parent1' ? nextAlleles : parent1,
+                            key === 'parent2' ? nextAlleles : parent2
+                          );
+                          if (announceToSR) announceToSR(label + ' genotype ' + (isFather ? 'X' + nextAlleles[0] + 'Y' : nextAlleles.join('')));
                         },
-                          ['A', 'a', 'B', 'b', 'C', 'c', 'R', 'r', 'T', 't', 'H', 'h', 'i'].map(function(a) { return h('option', { key: a, value: a }, a); })
-                        );
-                      }),
-                      isSexLinked && key === 'parent2' && h('span', { className: 'px-3 py-2 bg-slate-200 rounded-lg font-bold text-lg text-slate-600' }, 'Y')
-                    )
-                  );
-                })
+                        className: 'punnett-touch-choice w-full px-3 py-2 border-2 border-' + color + '-300 rounded-lg font-bold text-base bg-white',
+                        'aria-describedby': selectId + '-hint'
+                      },
+                        (isFather ? crossAlleles : genotypeChoicesFor(currentAlleles)).map(function(choice) {
+                          var visible = isFather ? 'X' + choice + 'Y' : choice;
+                          return h('option', { key: choice, value: choice }, visible);
+                        })
+                      ),
+                      h('p', { id: selectId + '-hint', className: 'text-[10px] text-slate-500 mt-2' },
+                        isFather ? 'The father contributes either this X chromosome or a Y chromosome.' : 'A genotype contains the two alleles this parent carries.'
+                      )
+                    );
+                  })
+                ),
+                h('div', { className: 'mt-3 flex flex-wrap items-center gap-2 text-[11px] text-slate-600' },
+                  h('span', { className: 'font-bold text-slate-700' }, activePreset ? activePreset.trait : 'Custom cross'),
+                  h('span', { className: 'px-2 py-1 rounded-full bg-white border border-slate-200' }, (isSexLinked ? parent1Gametes.join('') : parent1.join('')) + ' × ' + (isSexLinked ? parent2Gametes.join('') : parent2.join(''))),
+                  h('span', null, 'Results update automatically.')
+                )
+              ),
+
+              h('div', { className: 'punnett-step-heading mt-1' },
+                h('span', { className: 'punnett-step-number', 'aria-hidden': 'true' }, '3'),
+                h('div', null,
+                  h('h3', { className: 'text-sm font-black text-slate-800 m-0' }, 'Read the offspring probabilities'),
+                  h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'Rows and columns are parent gametes; squares are equally likely when each modeled gamete is equally frequent.')
+                )
+              ),
+
+              h('section', {
+                'data-punnett-cross-focus': 'true',
+                'aria-labelledby': 'punnett-cross-focus-title',
+                className: 'mb-4 rounded-xl border border-indigo-200 bg-white p-3 shadow-sm',
+                style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 12 }
+              },
+                h('div', { style: { minWidth: 0 } },
+                  h('p', { id: 'punnett-cross-focus-title', className: 'text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2' }, 'Cross focus'),
+                  h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))' } },
+                    [
+                      { label: isSexLinked ? 'Egg gametes' : 'Parent 1 gametes', color: '#7c3aed', chips: parent1Gametes },
+                      { label: isSexLinked ? 'Sperm gametes' : 'Parent 2 gametes', color: '#2563eb', chips: parent2Gametes }
+                    ].map(function(parentBlock) {
+                      return h('div', { key: parentBlock.label, style: { border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, background: '#f8fafc' } },
+                        h('div', { style: { color: parentBlock.color, fontSize: 11, fontWeight: 900, marginBottom: 6 } }, parentBlock.label),
+                        h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                          parentBlock.chips.map(function(chip, idx) {
+                            return h('span', { key: chip + idx, style: { textAlign: 'center', padding: '6px 9px', borderRadius: 16, background: '#fff', border: '1px solid ' + parentBlock.color, color: parentBlock.color, fontSize: 14, fontWeight: 900 } }, chip);
+                          })
+                        )
+                      );
+                    })
+                  )
+                ),
+                h('div', { style: { minWidth: 0 } },
+                  h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, 'Outcome mix'),
+                  h('div', { style: { display: 'grid', gap: 7 } },
+                    phenotypeMix.map(function(item) {
+                      return h('div', { key: item.id, style: { border: '1px solid ' + item.border, borderRadius: 10, padding: '8px 10px', background: item.soft } },
+                        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 5 } },
+                          h('span', { style: { color: item.color, fontSize: 12, fontWeight: 900 } }, item.label),
+                          h('span', { style: { color: item.color, fontSize: 12, fontWeight: 900 } }, item.count + '/4 - ' + (item.count * 25) + '%')
+                        ),
+                        h('div', { style: { height: 7, borderRadius: 12, background: 'rgba(255,255,255,0.78)', overflow: 'hidden' } },
+                          h('div', { style: { width: (item.count * 25) + '%', height: '100%', background: item.color, borderRadius: 12 } })
+                        )
+                      );
+                    })
+                  )
+                ),
+                h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { minWidth: 0, borderRadius: 12, padding: 12, background: '#eef2ff', border: '1px solid #c7d2fe' } },
+                  h('p', { className: 'text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-1' }, 'Read this result'),
+                  h('p', { style: { margin: 0, color: '#1e293b', fontSize: 13, lineHeight: 1.45, fontWeight: 800 } }, outcomeHeadline),
+                  h('p', { style: { margin: '7px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5 } }, crossReadout)
+                )
               ),
 
               // Punnett Grid
-              h('div', { className: 'bg-white rounded-xl border border-violet-200 p-4 inline-block mx-auto', style: { display: 'flex', justifyContent: 'center' } },
+              h('div', { className: 'punnett-grid-shell', role: 'region', tabIndex: 0, 'aria-label': 'Punnett square results; scroll horizontally on small screens' },
                 h('table', { className: 'border-collapse' },
-                  h('caption', { className: 'sr-only' }, 'punnett data table'), h('thead', null, h('tr', null,
-                    h('th', { scope: 'col', className: 'w-16 h-16' }),
+                  h('caption', { className: 'sr-only' },
+                    (isSexLinked ? 'X-linked' : modeInfo.label) + ' Punnett square for ' +
+                    (isSexLinked ? 'mother X' + parent1.join(' X') + ' and father X' + parent2[0] + 'Y' : parent1.join('') + ' by ' + parent2.join('')) +
+                    '. Parent 1 gametes label rows and Parent 2 gametes label columns.'
+                  ), h('thead', null, h('tr', null,
+                    h('th', { scope: 'col', className: 'w-16 h-16' }, h('span', { className: 'sr-only' }, 'Parent 1 gametes down rows; Parent 2 gametes across columns')),
                     isSexLinked
-                      ? [h('th', { scope: 'col', key: 0, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, 'X' + parent2[0]), h('th', { key: 1, className: 'w-16 h-16 text-center text-lg font-bold text-slate-600 bg-slate-100 border border-slate-400' }, 'Y')]
+                      ? [h('th', { scope: 'col', key: 0, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, 'X' + parent2[0]), h('th', { scope: 'col', key: 1, className: 'w-16 h-16 text-center text-lg font-bold text-slate-600 bg-slate-100 border border-slate-400' }, 'Y')]
                       : parent2.map(function(a, i) { return h('th', { scope: 'col', key: i, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, a); })
                   )),
                   h('tbody', null, parent1.map(function(a, r) {
                     var rowLabel = isSexLinked ? 'X' + a : a;
                     return h('tr', { key: r },
-                      h('td', { className: 'w-16 h-16 text-center text-lg font-bold text-violet-600 bg-violet-50 border border-violet-200' }, rowLabel),
+                      h('th', { scope: 'row', className: 'w-16 h-16 text-center text-lg font-bold text-violet-600 bg-violet-50 border border-violet-200' }, rowLabel),
                       grid[r].map(function(g, c) {
                         var p = phenotype(g);
                         var pc = phenoColor(p);
-                        var cellLabel = isSexLinked ? (g.indexOf('Y') !== -1 ? '\u2642 Male' : '\u2640 Female') : (p === 'Blended' ? 'Blended' : p === 'Codominant' ? 'Both' : (g[0] === g[1] ? (p === 'Dominant' ? 'Homo D' : 'Homo R') : 'Hetero'));
+                        var femaleAlleles = isSexLinked && g.indexOf('Y') === -1 ? g.split('X').filter(Boolean) : [];
+                        var isCarrierDaughter = femaleAlleles.length === 2 && femaleAlleles[0] !== femaleAlleles[1] && p !== 'Recessive';
+                        var cellLabel = isSexLinked
+                          ? (g.indexOf('Y') !== -1 ? 'Son' : 'Daughter') + ' - ' + (p === 'Recessive' ? 'affected' : isCarrierDaughter ? 'carrier' : 'unaffected')
+                          : p === 'Blended' ? 'Intermediate phenotype'
+                            : p === 'Codominant' ? 'Codominant phenotype'
+                              : g[0] === g[1] ? (p === 'Dominant' ? 'Homozygous dominant' : 'Homozygous recessive') : 'Heterozygous';
                         var cellEmoji = activePreset ? (p === 'Blended' || p === 'Codominant' ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji)) : null;
-                        return h('td', { key: c, className: 'w-16 h-16 text-center border border-slate-400 relative transition-colors duration-300 ' + pc.bg },
+                        return h('td', {
+                          key: c,
+                          className: 'w-16 h-16 text-center border border-slate-400 relative transition-colors duration-300 ' + pc.bg,
+                          'aria-label': parent1Gametes[r] + ' with ' + parent2Gametes[c] + ': genotype ' + g + ', ' + cellLabel
+                        },
                           h('span', { className: 'text-lg font-bold ' + pc.text }, g),
-                          h('span', { className: 'block text-[11px] ' + pc.sub }, cellLabel),
-                          cellEmoji && h('span', { className: 'text-[11px] absolute top-0.5 right-0.5' }, cellEmoji)
+                          h('span', { className: 'block text-[10px] leading-tight mt-1 ' + pc.sub }, cellLabel),
+                          cellEmoji && h('span', { className: 'text-[11px] absolute top-0.5 right-0.5', 'aria-hidden': 'true' }, cellEmoji)
                         );
                       })
                     );
@@ -1896,100 +2282,87 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'mt-4 bg-slate-50 rounded-lg p-3 text-center' },
                 h('p', { className: 'text-sm font-bold text-slate-600' }, genotypeRatioStr),
                 h('p', { className: 'text-xs text-slate-600 mt-1' },
-                  blendCount > 0
-                    ? 'Phenotype: ' + domCount + '/4 Dominant, ' + blendCount + '/4 ' + (inheritMode === 'incomplete' ? 'Blended' : 'Codominant') + ', ' + recCount + '/4 Recessive'
-                    : 'Phenotype: ' + domCount + '/4 Dominant, ' + recCount + '/4 Recessive'
+                  (function() {
+                    return blendCount > 0
+                      ? 'Phenotype: ' + domCount + '/4 ' + displayDomLabel + ', ' + blendCount + '/4 ' + displayBlendLabel + ', ' + recCount + '/4 ' + displayRecLabel
+                      : 'Phenotype: ' + domCount + '/4 ' + displayDomLabel + ', ' + recCount + '/4 ' + displayRecLabel;
+                  })()
                 )
               ),
 
-              // Pie Chart + Bar Chart
-              h('div', { className: 'mt-3 grid grid-cols-2 gap-3' },
-                h('div', { className: 'bg-white rounded-xl border p-3 text-center' },
-                  h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDD67 Phenotype Pie'),
-                  h('svg', { viewBox: '0 0 120 120', className: 'w-24 h-24 mx-auto' },
-                    (function() {
-                      var slices = [];
-                      var total = domCount + blendCount + recCount;
-                      if (total === 0) return h('circle', { cx: 60, cy: 60, r: 50, fill: '#94a3b8', stroke: '#ffffff', strokeWidth: 2 });
-                      var angle = -Math.PI / 2;
-                      if (domCount > 0 && domCount < total) {
-                        var a2 = angle + (domCount / total) * Math.PI * 2;
-                        slices.push(h('path', { key: 'dom', d: pieSlice(60, 60, 50, angle, a2), fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }));
-                        angle = a2;
-                      }
-                      if (blendCount > 0 && blendCount < total) {
-                        var a3 = angle + (blendCount / total) * Math.PI * 2;
-                        slices.push(h('path', { key: 'blend', d: pieSlice(60, 60, 50, angle, a3), fill: inheritMode === 'incomplete' ? '#ec4899' : '#a855f7', stroke: '#fff', strokeWidth: 2 }));
-                        angle = a3;
-                      }
-                      if (recCount > 0 && recCount < total) {
-                        var a4 = angle + (recCount / total) * Math.PI * 2;
-                        slices.push(h('path', { key: 'rec', d: pieSlice(60, 60, 50, angle, a4), fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }));
-                      }
-                      if (slices.length === 0) {
-                        var col = domCount === total ? '#22c55e' : blendCount === total ? (inheritMode === 'incomplete' ? '#ec4899' : '#a855f7') : '#f59e0b';
-                        slices.push(h('circle', { key: 'full', cx: 60, cy: 60, r: 50, fill: col, stroke: '#fff', strokeWidth: 2 }));
-                      }
-                      slices.push(h('text', { key: 't1', x: 60, y: 56, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#1e293b' }, (domCount * 25) + '% D'));
-                      if (blendCount > 0) slices.push(h('text', { key: 't2', x: 60, y: 68, textAnchor: 'middle', style: { fontSize: '8px', fontWeight: 'bold' }, fill: '#1e293b' }, (blendCount * 25) + '% ' + (inheritMode === 'incomplete' ? 'B' : 'Co')));
-                      slices.push(h('text', { key: 't3', x: 60, y: blendCount > 0 ? 80 : 72, textAnchor: 'middle', style: { fontSize: '11px' }, fill: '#94a3b8' }, (recCount * 25) + '% R'));
-                      return slices;
-                    })()
-                  )
-                ),
-                h('div', { className: 'bg-white rounded-xl border p-3' },
-                  h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEC Genotype Breakdown'),
-                  h('div', { className: 'space-y-1.5' },
-                    h('div', { className: 'flex items-center gap-2' },
-                      h('div', { className: 'w-full bg-slate-100 rounded-full h-3 overflow-hidden flex' },
-                        homoD > 0 && h('div', { className: 'bg-emerald-500 h-full transition-all', style: { width: (homoD * 25) + '%' } }),
-                        hetero > 0 && h('div', { className: 'bg-sky-400 h-full transition-all', style: { width: (hetero * 25) + '%' } }),
-                        homoR > 0 && h('div', { className: 'bg-amber-400 h-full transition-all', style: { width: (homoR * 25) + '%' } })
-                      )
-                    ),
-                    h('div', { className: 'flex justify-between text-[11px] font-bold' },
-                      h('span', { className: 'text-emerald-600' }, 'Homo D: ' + (homoD * 25) + '%'),
-                      h('span', { className: 'text-sky-600' }, 'Hetero: ' + (hetero * 25) + '%'),
-                      h('span', { className: 'text-amber-600' }, 'Homo R: ' + (homoR * 25) + '%')
+              // Secondary genotype analysis stays available without competing with the matrix.
+              h('details', { className: 'punnett-disclosure mt-3 rounded-xl border border-violet-200 bg-violet-50 px-3' },
+                h('summary', null, '🔎 Analyze genotype detail'),
+                h('div', { className: 'punnett-result-cards pb-3' },
+                  h('div', { className: 'rounded-xl border border-slate-200 bg-white p-3' },
+                    h('h4', { className: 'text-xs font-black text-slate-800 mb-2' }, 'Genotype combinations'),
+                    h('div', { className: 'space-y-2' },
+                      countKeys.map(function(genotype) {
+                        var genotypeCount = counts[genotype];
+                        return h('div', { key: genotype },
+                          h('div', { className: 'flex justify-between gap-2 text-[11px] mb-1' },
+                            h('span', { className: 'font-bold text-slate-700' }, genotype),
+                            h('span', { className: 'font-bold text-violet-700' }, genotypeCount + '/4 · ' + (genotypeCount * 25) + '%')
+                          ),
+                          h('div', { className: 'h-2 rounded-full bg-slate-100 overflow-hidden' },
+                            h('div', { className: 'h-full rounded-full bg-violet-500', style: { width: (genotypeCount * 25) + '%' } })
+                          )
+                        );
+                      })
                     )
                   ),
-                  h('div', { className: 'mt-2 text-[11px] text-slate-600 space-y-0.5' },
-                    h('p', null, '\uD83D\uDFE2 Homozygous Dominant (e.g. BB)'),
-                    h('p', null, '\uD83D\uDD35 Heterozygous (e.g. Bb)'),
-                    h('p', null, '\uD83D\uDFE1 Homozygous Recessive (e.g. bb)')
-                  )
+                  isSexLinked
+                    ? h('div', { className: 'rounded-xl border border-sky-200 bg-white p-3' },
+                        h('h4', { className: 'text-xs font-black text-slate-800 mb-1' }, 'Outcomes by sex'),
+                        h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Each row is measured within the two son or two daughter outcomes.'),
+                        [
+                          { label: 'Affected sons', count: affectedSons, total: sons.length, color: '#dc2626' },
+                          { label: 'Unaffected sons', count: sons.length - affectedSons, total: sons.length, color: '#0284c7' },
+                          { label: 'Carrier daughters', count: carrierDaughters, total: daughters.length, color: '#7c3aed' },
+                          { label: 'Affected daughters', count: affectedDaughters, total: daughters.length, color: '#dc2626' },
+                          { label: 'Unaffected, non-carrier daughters', count: daughters.length - carrierDaughters - affectedDaughters, total: daughters.length, color: '#059669' }
+                        ].map(function(item) {
+                          var percent = item.total ? Math.round(item.count / item.total * 100) : 0;
+                          return h('div', { key: item.label, className: 'mb-2 last:mb-0' },
+                            h('div', { className: 'flex justify-between gap-2 text-[11px] mb-1' },
+                              h('span', { className: 'font-bold text-slate-700' }, item.label),
+                              h('span', { className: 'font-bold', style: { color: item.color } }, item.count + '/' + item.total + ' · ' + percent + '%')
+                            ),
+                            h('div', { className: 'h-2 rounded-full bg-slate-100 overflow-hidden' },
+                              h('div', { className: 'h-full rounded-full', style: { width: percent + '%', background: item.color } })
+                            )
+                          );
+                        })
+                      )
+                    : h('div', { className: 'rounded-xl border border-sky-200 bg-white p-3' },
+                        h('h4', { className: 'text-xs font-black text-slate-800 mb-2' }, 'Genotype structure'),
+                        [
+                          { label: 'Homozygous dominant', count: homoD, color: '#16a34a' },
+                          { label: 'Heterozygous', count: hetero, color: '#0284c7' },
+                          { label: 'Homozygous recessive', count: homoR, color: '#d97706' }
+                        ].map(function(item) {
+                          return h('div', { key: item.label, className: 'mb-2 last:mb-0' },
+                            h('div', { className: 'flex justify-between gap-2 text-[11px] mb-1' },
+                              h('span', { className: 'font-bold text-slate-700' }, item.label),
+                              h('span', { className: 'font-bold', style: { color: item.color } }, item.count + '/4 · ' + (item.count * 25) + '%')
+                            ),
+                            h('div', { className: 'h-2 rounded-full bg-slate-100 overflow-hidden' },
+                              h('div', { className: 'h-full rounded-full', style: { width: (item.count * 25) + '%', background: item.color } })
+                            )
+                          );
+                        })
+                      )
                 )
               ),
-
-              // Quick Crosses
-              h('div', { className: 'mt-3 border-t border-slate-200 pt-3' },
-                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEC Quick Crosses'),
-                h('div', { className: 'flex flex-wrap gap-1.5' },
-                  (PRESETS_BY_MODE[inheritMode] || []).map(function(preset) {
-                    return h('button', { key: preset.label,
-                      onClick: function() {
-                        punnettSound('preset');
-                        updMulti({ parent1: preset.p1, parent2: preset.p2, _activePreset: preset });
-                        var newPresets = presetsUsed + 1;
-                        upd('_presetsUsed', newPresets);
-                        trackCross();
-                        addToast('\uD83E\uDDEC ' + preset.tip, 'success');
-                      },
-                      className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100 transition-all'
-                    }, preset.label);
-                  })
-                )
-              ),
-
               // Phenotype Visual
               activePreset && h('div', { className: 'mt-3 bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl border border-violet-200 p-3' },
                 h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-2' }, '\uD83D\uDC40 Offspring Phenotypes - ' + activePreset.trait),
-                h('div', { className: 'flex justify-center gap-2' },
+                h('div', { className: 'flex flex-wrap justify-center gap-2' },
                   flatGrid.map(function(g, i) {
                     var p = phenotype(g);
                     var pc = phenoColor(p);
                     var emoji = (p === 'Blended' || p === 'Codominant') ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji);
-                    var label = (p === 'Blended' || p === 'Codominant') ? (activePreset.blendLabel || 'Mixed') : (p === 'Dominant' ? activePreset.domLabel : activePreset.recLabel);
+                    var label = (p === 'Blended' || p === 'Codominant') ? (activePreset.blendLabel || (inheritMode === 'incomplete' ? 'Intermediate' : 'Both expressed')) : (p === 'Dominant' ? activePreset.domLabel : activePreset.recLabel);
                     return h('div', { key: i, className: 'text-center p-2 rounded-lg border-2 transition-all ' + pc.bg + ' ' + pc.border, style: { minWidth: '60px' } },
                       h('span', { className: 'text-2xl block mb-1' }, emoji),
                       h('span', { className: 'text-[11px] font-bold block ' + pc.text }, g),
@@ -2003,9 +2376,9 @@ window.StemLab = window.StemLab || {
               !isDihybrid && h('p', { className: 'mt-3 text-xs text-slate-600 italic' },
                 (function() {
                   if (inheritMode === 'incomplete') {
-                    if (blendCount === 4) return '\uD83D\uDCA1 100% blended phenotype! Both parents are heterozygous - classic incomplete dominance 1:2:1 ratio.';
-                    if (blendCount === 2) return '\uD83D\uDCA1 50% blended. Some offspring express intermediate traits!';
-                    return '\uD83D\uDCA1 Incomplete dominance: heterozygotes show a blend of both parental traits.';
+                    if (blendCount === 4) return '\uD83D\uDCA1 100% intermediate phenotype. Every modeled offspring is heterozygous; this can occur when the parents contribute different homozygous alleles.';
+                    if (blendCount === 2) return '\uD83D\uDCA1 50% intermediate phenotype. Half of the modeled offspring are heterozygous.';
+                    return '\uD83D\uDCA1 Incomplete dominance: heterozygotes show an intermediate phenotype, while the alleles remain distinct.';
                   }
                   if (inheritMode === 'codominant') {
                     if (blendCount > 0) return '\uD83D\uDCA1 ' + (blendCount * 25) + '% of offspring express both alleles simultaneously - that\u2019s codominance!';
@@ -2024,6 +2397,18 @@ window.StemLab = window.StemLab || {
                 })()
               ),
 
+              // Misconception-buster card (cross is the default sub-tool, so this is gate-rendered)
+              !isDihybrid && h('details', { className: 'punnett-disclosure mt-3 bg-amber-50 rounded-xl border border-amber-200 px-3' },
+                h('summary', null, '⚠️ Common genetics mix-ups'),
+
+                h('ul', { className: 'space-y-1.5 text-xs text-amber-900 list-disc list-inside marker:text-amber-500' },
+                  h('li', null, h('b', null, 'Dominant \u2260 stronger or more common. '), 'Dominance describes the phenotype of a heterozygote under a particular model. It does not mean an allele is stronger, better, or more common, and dominance alone does not make an allele spread.'),
+                  h('li', null, h('b', null, 'A 3:1 ratio is a probability, not a promise. '), 'Each child is an independent 75% / 25% outcome. A family of four can easily come out all-dominant or two-and-two \u2014 the same way four coin flips are not always exactly two heads.'),
+                  h('li', null, h('b', null, 'Codominance \u2260 blending. '), 'In codominance both alleles are expressed (type AB blood has A and B antigens). In incomplete dominance the heterozygote has an intermediate phenotype; the alleles themselves do not blend.'),
+                  h('li', null, h('b', null, 'The square is a model. '), 'Equal boxes assume equal gamete frequencies; a 9:3:3:1 dihybrid ratio also assumes independent assortment. Linkage, penetrance, gene interactions, and environment can change observed outcomes.')
+                )
+              ),
+
               // ═══════════════════════════════════════
               // DIHYBRID CROSS SECTION
               // ═══════════════════════════════════════
@@ -2037,8 +2422,9 @@ window.StemLab = window.StemLab || {
                         awardXP('dihybridFirst', 15, 'Dihybrid Cross');
                       }
                     },
-                    className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all ' +
-                      (isDihybrid ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600')
+                    'aria-pressed': isDihybrid,
+                    className: 'punnett-touch-choice px-3 py-2 text-[11px] font-bold rounded-lg border-2 transition-all ' +
+                      (isDihybrid ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-600')
                   }, isDihybrid ? '\uD83E\uDDEC Dihybrid ON (4\u00D74)' : '\uD83E\uDDEC Dihybrid Cross (4\u00D74)'),
                   isDihybrid && h('span', { className: 'text-[11px] text-slate-600' }, 'Two genes, 16 offspring combinations')
                 ),
@@ -2055,7 +2441,7 @@ window.StemLab = window.StemLab || {
                   ),
 
                   // Parent allele selectors (2 genes per parent)
-                  h('div', { className: 'grid grid-cols-2 gap-4 mb-3' },
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3' },
                     // Parent 1
                     h('div', { className: 'bg-violet-50 rounded-xl p-2 border border-violet-200' },
                       h('p', { className: 'text-[11px] font-bold text-violet-600 mb-2 text-center' }, 'Parent 1'),
@@ -2072,7 +2458,7 @@ window.StemLab = window.StemLab || {
                               punnettSound('allele');
                             },
                             'aria-label': 'Parent 1 Gene 1 allele ' + (i + 1),
-                            className: 'px-2 py-1 border border-violet-600 rounded font-bold text-sm text-center'
+                            className: 'punnett-touch-choice px-2 py-2 border border-violet-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
@@ -2091,7 +2477,7 @@ window.StemLab = window.StemLab || {
                               punnettSound('allele');
                             },
                             'aria-label': 'Parent 1 Gene 2 allele ' + (i + 1),
-                            className: 'px-2 py-1 border border-violet-600 rounded font-bold text-sm text-center'
+                            className: 'punnett-touch-choice px-2 py-2 border border-violet-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
@@ -2113,7 +2499,8 @@ window.StemLab = window.StemLab || {
                               upd('_diP2G1', na);
                               punnettSound('allele');
                             },
-                            className: 'px-2 py-1 border border-blue-600 rounded font-bold text-sm text-center'
+                            'aria-label': 'Parent 2 Gene 1 allele ' + (i + 1),
+                            className: 'punnett-touch-choice px-2 py-2 border border-blue-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
@@ -2131,7 +2518,8 @@ window.StemLab = window.StemLab || {
                               upd('_diP2G2', na);
                               punnettSound('allele');
                             },
-                            className: 'px-2 py-1 border border-blue-600 rounded font-bold text-sm text-center'
+                            'aria-label': 'Parent 2 Gene 2 allele ' + (i + 1),
+                            className: 'punnett-touch-choice px-2 py-2 border border-blue-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
@@ -2141,21 +2529,28 @@ window.StemLab = window.StemLab || {
                   ),
 
                   // 4x4 Punnett Grid
-                  h('div', { className: 'bg-white rounded-xl border border-indigo-200 p-3 overflow-x-auto', style: { display: 'flex', justifyContent: 'center' } },
+                  h('div', { className: 'punnett-grid-shell', role: 'region', tabIndex: 0, 'aria-label': 'Four by four dihybrid Punnett square; scroll horizontally on small screens' },
                     h('table', { className: 'border-collapse' },
-                      h('caption', { className: 'sr-only' }, 'punnett data table'), h('thead', null, h('tr', null,
-                        h('th', { scope: 'col', className: 'w-14 h-10' }),
+                      h('caption', { className: 'sr-only' },
+                        'Dihybrid Punnett square. Parent 1 gametes ' + diGametes1.join(', ') +
+                        ' label rows; Parent 2 gametes ' + diGametes2.join(', ') + ' label columns.'
+                      ), h('thead', null, h('tr', null,
+                        h('th', { scope: 'col', className: 'w-14 h-10' }, h('span', { className: 'sr-only' }, 'Parent 1 gametes down rows; Parent 2 gametes across columns')),
                         diGametes2.map(function(gam, ci) {
                           return h('th', { scope: 'col', key: ci, className: 'w-14 h-10 text-center text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200' }, gam);
                         })
                       )),
                       h('tbody', null, diGametes1.map(function(gam, ri) {
                         return h('tr', { key: ri },
-                          h('td', { className: 'w-14 h-14 text-center text-xs font-bold text-violet-600 bg-violet-50 border border-violet-200' }, gam),
+                          h('th', { scope: 'row', className: 'w-14 h-14 text-center text-xs font-bold text-violet-600 bg-violet-50 border border-violet-200' }, gam),
                           diGrid[ri].map(function(geno, ci) {
                             var dp = diPhenotype(geno);
                             var dpc = diPhenoColor(dp);
-                            return h('td', { key: ci, className: 'w-14 h-14 text-center border border-slate-400 ' + dpc.bg },
+                            return h('td', {
+                              key: ci,
+                              className: 'w-14 h-14 text-center border border-slate-400 ' + dpc.bg,
+                              'aria-label': diGametes1[ri] + ' with ' + diGametes2[ci] + ': genotype ' + geno + ', phenotype ' + diPhenoLabel(dp)
+                            },
                               h('span', { className: 'text-[11px] font-bold block ' + dpc.text }, geno.substring(0, 2)),
                               h('span', { className: 'text-[11px] font-bold block ' + dpc.text }, geno.substring(2)),
                               h('span', { className: 'text-[11px] block ' + dpc.sub }, diPhenoLabel(dp).split(' + ')[0])
@@ -2169,7 +2564,7 @@ window.StemLab = window.StemLab || {
                   // Phenotype ratios
                   h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-3' },
                     h('p', { className: 'text-sm font-bold text-slate-600 text-center mb-2' }, 'Phenotype Ratios (out of 16)'),
-                    h('div', { className: 'grid grid-cols-4 gap-2' },
+                    h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
                       [
                         { key: 'DomDom', color: 'emerald', icon: '\uD83D\uDFE2' },
                         { key: 'DomRec', color: 'sky', icon: '\uD83D\uDD35' },
@@ -2215,7 +2610,7 @@ window.StemLab = window.StemLab || {
                             var newPresets = presetsUsed + 1;
                             upd('_presetsUsed', newPresets);
                           },
-                          className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-600 hover:bg-indigo-100 transition-all'
+                          className: 'punnett-touch-choice px-3 py-2 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-600 hover:bg-indigo-100 transition-all'
                         }, dp.label);
                       })
                     )
@@ -2224,8 +2619,8 @@ window.StemLab = window.StemLab || {
                   // Dihybrid educational callout
                   h('p', { className: 'mt-3 text-xs text-slate-600 italic' },
                     diPreset
-                      ? '\uD83D\uDCA1 ' + diPreset.t1name + ' (' + diPreset.domLabel1 + '/' + diPreset.recLabel1 + ') and ' + diPreset.t2name + ' (' + diPreset.domLabel2 + '/' + diPreset.recLabel2 + ') are inherited independently.'
-                      : '\uD83D\uDCA1 In dihybrid crosses, each parent forms 4 gamete types. The 4\u00D74 grid shows all 16 possible offspring combinations.'
+                      ? '\uD83D\uDCA1 This model assumes independent assortment for ' + diPreset.t1name + ' (' + diPreset.domLabel1 + '/' + diPreset.recLabel1 + ') and ' + diPreset.t2name + ' (' + diPreset.domLabel2 + '/' + diPreset.recLabel2 + ').'
+                      : '\uD83D\uDCA1 In this dihybrid model, each parent forms four equally frequent gamete types and the genes assort independently, producing 16 equally weighted combinations.'
                   )
                 )
               )
@@ -2250,8 +2645,9 @@ window.StemLab = window.StemLab || {
                   var isActive = pedPreset === idx;
                   return h('button', { key: ped.id,
                     onClick: function() { updMulti({ _pedPreset: idx, _pedSolveAnswer: '', _pedSolveFeedback: null }); punnettSound('preset'); },
-                    className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
-                      (isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600')
+                    className: 'punnett-touch-choice px-3 py-2 rounded-lg text-[11px] font-bold transition-all border ' +
+                      (isActive ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-slate-700 border-slate-200 hover:border-violet-600'),
+                    'aria-pressed': isActive
                   }, ped.label);
                 })
               ),
@@ -2259,11 +2655,13 @@ window.StemLab = window.StemLab || {
               // Controls
               h('div', { className: 'flex gap-2 mb-3' },
                 h('button', { onClick: function() { upd('_pedShowGeno', !pedShowGeno); },
-                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200')
+                  className: 'punnett-touch-choice px-3 py-2 text-[11px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-800 border-emerald-600' : 'bg-slate-50 text-slate-700 border-slate-200'),
+                  'aria-pressed': pedShowGeno
                 }, pedShowGeno ? '\uD83D\uDC41 Hide Genotypes' : '\uD83D\uDC41 Show Genotypes'),
                 h('button', { 'aria-label': 'Toggle pedigree solve mode',
                   onClick: function() { updMulti({ _pedSolveMode: !pedSolveMode, _pedSolveAnswer: '', _pedSolveFeedback: null, _pedShowGeno: pedSolveMode }); },
-                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-600' : 'bg-slate-50 text-slate-600 border-slate-200')
+                  className: 'punnett-touch-choice px-3 py-2 text-[11px] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-600' : 'bg-slate-50 text-slate-700 border-slate-200'),
+                  'aria-pressed': pedSolveMode
                 }, pedSolveMode ? '\uD83E\uDDE9 Solve Mode ON' : '\uD83E\uDDE9 Solve Mode')
               ),
 
@@ -2272,7 +2670,15 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' },
                   pedSolveMode ? '\uD83E\uDDE9 What inheritance pattern is this?' : currentPed.label + ' (' + currentPed.example + ')'
                 ),
-                h('svg', { viewBox: '0 0 380 280', className: 'w-full max-w-md mx-auto', style: { background: '#fafafa', borderRadius: '8px' } },
+                h('svg', {
+                  viewBox: '0 0 380 280',
+                  className: 'w-full max-w-md mx-auto',
+                  style: { background: '#fafafa', borderRadius: '8px' },
+                  role: 'img',
+                  'aria-labelledby': 'punnett-pedigree-title punnett-pedigree-desc'
+                },
+                  h('title', { id: 'punnett-pedigree-title' }, pedSolveMode ? 'Pedigree pattern to identify' : currentPed.label + ' pedigree'),
+                  h('desc', { id: 'punnett-pedigree-desc' }, 'Family pedigree with ' + currentPed.members.length + ' people across generations. Squares are males, circles are females, filled shapes are affected, and half-filled shapes are carriers. A text description follows the chart.'),
                   // Legend
                   h('rect', { x: 5, y: 5, width: 12, height: 12, fill: 'white', stroke: '#1e293b', strokeWidth: 1.5 }),
                   h('text', { x: 22, y: 14, style: { fontSize: '8px', fill: '#94a3b8' } }, 'Unaffected'),
@@ -2355,6 +2761,31 @@ window.StemLab = window.StemLab || {
                 )
               ),
 
+              h('details', { className: 'punnett-disclosure mt-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3' },
+                h('summary', null, 'Text description of this pedigree'),
+                h('div', { className: 'pb-3 grid grid-cols-1 sm:grid-cols-2 gap-3' },
+                  h('div', null,
+                    h('h4', { className: 'text-[11px] font-black text-slate-700 uppercase tracking-wider mb-1' }, 'Family members'),
+                    h('ul', { className: 'text-[11px] text-slate-700 space-y-1 list-disc pl-4' },
+                      currentPed.members.map(function(member) {
+                        var status = member.affected ? 'affected' : member.carrier ? 'carrier' : 'unaffected';
+                        var genotypeText = pedShowGeno && !pedSolveMode ? ', genotype ' + member.genotype : '';
+                        return h('li', { key: member.id }, member.label + ': ' + (member.sex === 'M' ? 'male' : 'female') + ', ' + status + genotypeText);
+                      })
+                    )
+                  ),
+                  h('div', null,
+                    h('h4', { className: 'text-[11px] font-black text-slate-700 uppercase tracking-wider mb-1' }, 'Parent-child groups'),
+                    h('ul', { className: 'text-[11px] text-slate-700 space-y-1 list-disc pl-4' },
+                      currentPed.sibGroups.map(function(group, index) {
+                        var parentLabels = group.parents.map(function(id) { var member = findMem(id); return member ? member.label : String(id); }).join(' and ');
+                        var childLabels = group.children.map(function(id) { var member = findMem(id); return member ? member.label : String(id); }).join(', ');
+                        return h('li', { key: index }, parentLabels + ' have children ' + childLabels + '.');
+                      })
+                    )
+                  )
+                )
+              ),
               // Solve mode interface
               pedSolveMode && h('div', { className: 'mt-3 bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
                 h('p', { className: 'text-xs font-bold text-fuchsia-700 mb-2' }, 'What inheritance pattern does this pedigree show?'),
@@ -2382,12 +2813,13 @@ window.StemLab = window.StemLab || {
                           upd('_pedSolveFeedback', '\u274C Not quite. Look at: affected in every generation? More males? Carriers visible? Try again!');
                         }
                       },
-                      className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border transition-all ' +
-                        (isSelected ? (pedSolveFeedback && pedSolveFeedback.indexOf('\u2705') !== -1 ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-red-100 text-red-700 border-red-600') : 'bg-white text-slate-600 border-slate-200 hover:border-fuchsia-600')
+                      className: 'punnett-touch-choice px-3 py-2 text-[11px] font-bold rounded-lg border transition-all ' +
+                        (isSelected ? (pedSolveFeedback && pedSolveFeedback.indexOf('\u2705') !== -1 ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-red-100 text-red-700 border-red-600') : 'bg-white text-slate-600 border-slate-200 hover:border-fuchsia-600'),
+                      'aria-pressed': isSelected
                     }, opt.label);
                   })
                 ),
-                pedSolveFeedback && h('p', { className: 'mt-2 text-xs font-bold ' + (pedSolveFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, pedSolveFeedback)
+                pedSolveFeedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-2 text-xs font-bold ' + (pedSolveFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, pedSolveFeedback)
               ),
 
               // Explanation (non-solve mode)
@@ -2416,9 +2848,9 @@ window.StemLab = window.StemLab || {
 
                 // Allele frequency
                 h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Allele Frequency (p = ' + popFreqA.toFixed(2) + ', q = ' + (1 - popFreqA).toFixed(2) + ')'),
+                  h('label', { htmlFor: 'punnett-pop-frequency', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Starting Allele Frequency (p = ' + popFreqA.toFixed(2) + ', q = ' + (1 - popFreqA).toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
+                    id: 'punnett-pop-frequency', type: 'range', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
                     onChange: function(e) { upd('popFreqA', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2426,9 +2858,9 @@ window.StemLab = window.StemLab || {
 
                 // Population size
                 h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Population Size: ' + popSize),
+                  h('label', { htmlFor: 'punnett-pop-size', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Population Size: ' + popSize),
                   h('input', {
-                    type: 'range', min: '10', max: '1000', step: '10', value: popSize,
+                    id: 'punnett-pop-size', type: 'range', min: '10', max: '1000', step: '10', value: popSize,
                     onChange: function(e) { upd('popSize', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2436,9 +2868,9 @@ window.StemLab = window.StemLab || {
 
                 // Generations
                 h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Generations: ' + popGens),
+                  h('label', { htmlFor: 'punnett-pop-generations', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Generations: ' + popGens),
                   h('input', {
-                    type: 'range', min: '10', max: '100', step: '5', value: popGens,
+                    id: 'punnett-pop-generations', type: 'range', min: '10', max: '100', step: '5', value: popGens,
                     onChange: function(e) { upd('popGens', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2446,9 +2878,9 @@ window.StemLab = window.StemLab || {
 
                 // Selection coefficient
                 (band === 'g68' || band === 'g912') && h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Selection Against Recessive (s = ' + popSelection.toFixed(2) + ')'),
+                  h('label', { htmlFor: 'punnett-pop-selection', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Selection Against aa Genotype (s = ' + popSelection.toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', min: '0', max: '1', step: '0.05', value: popSelection,
+                    id: 'punnett-pop-selection', type: 'range', min: '0', max: '1', step: '0.05', value: popSelection,
                     onChange: function(e) { upd('popSelection', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2456,9 +2888,9 @@ window.StemLab = window.StemLab || {
 
                 // Mutation rate
                 band === 'g912' && h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Mutation Rate (\u03BC = ' + popMutation.toFixed(4) + ')'),
+                  h('label', { htmlFor: 'punnett-pop-mutation', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Symmetric Mutation Rate (\u03BC = ' + popMutation.toFixed(4) + ')'),
                   h('input', {
-                    type: 'range',  min: '0', max: '0.01', step: '0.0005', value: popMutation,
+                    id: 'punnett-pop-mutation', type: 'range', min: '0', max: '0.01', step: '0.0005', value: popMutation,
                     onChange: function(e) { upd('popMutation', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2466,7 +2898,7 @@ window.StemLab = window.StemLab || {
 
                 // Drift toggle
                 h('div', { className: 'flex items-center gap-2 mb-2' },
-                  h('button', { 'aria-label': 'Random genetic drift (stronger in small populations)',
+                  h('button', { type: 'button', 'aria-label': 'Random genetic drift (stronger in small populations)', 'aria-pressed': popDrift ? 'true' : 'false',
                     onClick: function() { upd('popDrift', !popDrift); },
                     className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200')
                   }, popDrift ? '\uD83C\uDFB2 Drift ON' : '\uD83C\uDFB2 Drift OFF'),
@@ -2475,7 +2907,7 @@ window.StemLab = window.StemLab || {
 
                 // Run / Reset buttons
                 h('div', { className: 'flex gap-2' },
-                  h('button', { onClick: function() {
+                  h('button', { type: 'button', onClick: function() {
                       if (popRunning) {
                         upd('popRunning', false);
                       } else {
@@ -2486,7 +2918,7 @@ window.StemLab = window.StemLab || {
                     },
                     className: 'px-4 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' + (popRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-700 hover:bg-emerald-800')
                   }, popRunning ? '\u23F8 Pause' : '\u25B6 Simulate'),
-                  h('button', { 'aria-label': 'Reset',
+                  h('button', { type: 'button', 'aria-label': 'Reset population simulation',
                     onClick: function() { updMulti({ popHistory: null, popRunning: false }); },
                     className: 'px-4 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200'
                   }, '\u21BA Reset')
@@ -2494,28 +2926,28 @@ window.StemLab = window.StemLab || {
               ),
 
               // HW Equilibrium display
-              h('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+              h('div', { className: 'grid grid-cols-3 gap-2 mb-3', role: 'group', 'aria-label': 'Current modeled genotype frequencies at p ' + displayedPopFreqA.toFixed(2) },
                 h('div', { className: 'bg-emerald-50 rounded-xl p-2 text-center border border-emerald-200' },
                   h('p', { className: 'text-[11px] font-bold text-emerald-600' }, 'AA (p\u00B2)'),
-                  h('p', { className: 'text-lg font-bold text-emerald-700' }, (popFreqA * popFreqA * 100).toFixed(1) + '%'),
-                  h('p', { className: 'text-[11px] text-emerald-500' }, 'Homozygous Dom')
+                  h('p', { className: 'text-lg font-bold text-emerald-700' }, (displayedPopFreqA * displayedPopFreqA * 100).toFixed(1) + '%'),
+                  h('p', { className: 'text-[11px] text-emerald-500' }, 'AA genotype')
                 ),
                 h('div', { className: 'bg-sky-50 rounded-xl p-2 text-center border border-sky-200' },
                   h('p', { className: 'text-[11px] font-bold text-sky-600' }, 'Aa (2pq)'),
-                  h('p', { className: 'text-lg font-bold text-sky-700' }, (2 * popFreqA * (1 - popFreqA) * 100).toFixed(1) + '%'),
+                  h('p', { className: 'text-lg font-bold text-sky-700' }, (2 * displayedPopFreqA * (1 - displayedPopFreqA) * 100).toFixed(1) + '%'),
                   h('p', { className: 'text-[11px] text-sky-500' }, 'Heterozygous')
                 ),
                 h('div', { className: 'bg-amber-50 rounded-xl p-2 text-center border border-amber-200' },
                   h('p', { className: 'text-[11px] font-bold text-amber-600' }, 'aa (q\u00B2)'),
-                  h('p', { className: 'text-lg font-bold text-amber-700' }, ((1 - popFreqA) * (1 - popFreqA) * 100).toFixed(1) + '%'),
-                  h('p', { className: 'text-[11px] text-amber-500' }, 'Homozygous Rec')
+                  h('p', { className: 'text-lg font-bold text-amber-700' }, ((1 - displayedPopFreqA) * (1 - displayedPopFreqA) * 100).toFixed(1) + '%'),
+                  h('p', { className: 'text-[11px] text-amber-500' }, 'aa genotype')
                 )
               ),
 
               // Population visualization (dot field)
               h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDC65 Population Sample (n=' + Math.min(popSize, 100) + ')'),
-                h('svg', { viewBox: '0 0 300 60', className: 'w-full' },
+                h('svg', { viewBox: '0 0 300 60', className: 'w-full', role: 'img', 'aria-label': 'Illustrative sample of ' + Math.min(popSize, 100) + ' individuals at allele frequency p ' + displayedPopFreqA.toFixed(2) },
                   (function() {
                     var dots = [];
                     var p = popHistory && popHistory.length > 0 ? popHistory[popHistory.length - 1] : popFreqA;
@@ -2523,7 +2955,7 @@ window.StemLab = window.StemLab || {
                     var n = Math.min(popSize, 100);
                     var cols = 20;
                     for (var i = 0; i < n; i++) {
-                      var rand = Math.random();
+                      var rand = (0.5 + i * 0.61803398875) % 1;
                       var color = rand < p * p ? '#22c55e' : rand < p * p + 2 * p * q ? '#38bdf8' : '#f59e0b';
                       var cx = 10 + (i % cols) * 14.5;
                       var cy = 8 + Math.floor(i / cols) * 12;
@@ -2542,7 +2974,7 @@ window.StemLab = window.StemLab || {
               // Allele frequency graph
               popHistory && popHistory.length > 1 && h('div', { className: 'bg-white rounded-xl border p-3' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Allele Frequency Over Generations'),
-                h('svg', { viewBox: '0 0 340 160', className: 'w-full' },
+                h('svg', { viewBox: '0 0 340 160', className: 'w-full', role: 'img', 'aria-label': 'Allele frequencies p and q across ' + (popHistory.length - 1) + ' simulated generations; current p is ' + displayedPopFreqA.toFixed(2) + ' and q is ' + (1 - displayedPopFreqA).toFixed(2) },
                   // Grid
                   h('line', { x1: 30, y1: 10, x2: 30, y2: 140, stroke: '#e2e8f0', strokeWidth: 1 }),
                   h('line', { x1: 30, y1: 140, x2: 330, y2: 140, stroke: '#e2e8f0', strokeWidth: 1 }),
@@ -2572,8 +3004,8 @@ window.StemLab = window.StemLab || {
                     }).join(' ')
                   }),
                   // Labels
-                  h('text', { x: 335, y: 140 - popHistory[popHistory.length - 1] * 130, style: { fontSize: '11px', fontWeight: 'bold', fill: '#22c55e' } }, 'p'),
-                  h('text', { x: 335, y: 140 - (1 - popHistory[popHistory.length - 1]) * 130, style: { fontSize: '11px', fontWeight: 'bold', fill: '#f59e0b' } }, 'q')
+                  h('text', { x: 328, textAnchor: 'end', y: Math.max(12, 136 - popHistory[popHistory.length - 1] * 124), style: { fontSize: '11px', fontWeight: 'bold', fill: '#22c55e' } }, 'p'),
+                  h('text', { x: 328, textAnchor: 'end', y: Math.max(20, 144 - (1 - popHistory[popHistory.length - 1]) * 124), style: { fontSize: '11px', fontWeight: 'bold', fill: '#f59e0b' } }, 'q')
                 ),
                 h('p', { className: 'text-[11px] text-slate-600 mt-1 text-center' },
                   'Gen ' + (popHistory.length - 1) + ': p = ' + popHistory[popHistory.length - 1].toFixed(4) + ', q = ' + (1 - popHistory[popHistory.length - 1]).toFixed(4)
@@ -2588,14 +3020,14 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-600 italic mb-3' },
                 gradeText(
                   'Look at all these cool traits that get passed down in families!',
-                  'Explore real genetic traits and how they are inherited. Click on a trait to learn more!',
-                  'Browse a catalog of genetic traits organized by inheritance pattern. Understand how each follows specific Mendelian or non-Mendelian rules.',
-                  'Analyze inheritance patterns of real genetic conditions including autosomal, sex-linked, codominant, and polygenic traits.'
+                  'Compare traits that fit simple inheritance models with traits that require more complex explanations. Select one to inspect the evidence.',
+                  'Compare Mendelian models with complex traits, and notice when a one-gene Punnett square is or is not appropriate.',
+                  'Analyze where simplified autosomal, X-linked, codominant, and polygenic models are useful, and where penetrance, multiple genes, or environment limit them.'
                 )(band)
               ),
 
               // Filter buttons
-              h('div', { className: 'flex flex-wrap gap-1 mb-3' },
+              h('div', { className: 'flex flex-wrap gap-1 mb-3', role: 'group', 'aria-label': 'Filter traits by inheritance model' },
                 [
                   { val: 'all', label: 'All Traits' },
                   { val: 'complete', label: 'Dominant/Rec' },
@@ -2605,16 +3037,17 @@ window.StemLab = window.StemLab || {
                   { val: 'x_linked', label: 'X-Linked' },
                   { val: 'polygenic', label: 'Polygenic' }
                 ].map(function(f) {
-                  return h('button', { key: f.val,
+                  return h('button', { type: 'button', key: f.val,
                     onClick: function() { upd('_traitFilter', f.val); },
-                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' +
-                      (traitFilter === f.val ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600')
+                    className: 'punnett-touch-choice px-3 py-2 text-[11px] font-bold rounded-lg border ' +
+                      (traitFilter === f.val ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-slate-700 border-slate-200 hover:border-violet-600'),
+                    'aria-pressed': traitFilter === f.val
                   }, f.label);
                 })
               ),
 
               // Trait cards
-              h('div', { className: 'grid grid-cols-2 gap-2' },
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 TRAIT_CATALOG.filter(function(t) {
                   return traitFilter === 'all' || t.mode === traitFilter;
                 }).map(function(t, idx) {
@@ -2625,23 +3058,35 @@ window.StemLab = window.StemLab || {
                     incomplete: 'pink', x_linked: 'blue', polygenic: 'teal'
                   };
                   var mc = modeColors[t.mode] || 'slate';
-                  return h('div', { 
+                  var detailId = 'punnett-trait-detail-' + globalIdx;
+                  return h('article', {
                     key: idx,
-                    onClick: function() { upd('_traitSelected', isSelected ? -1 : globalIdx); punnettSound('preset'); },
-                    className: 'p-2.5 rounded-xl border cursor-pointer transition-all ' +
+                    className: 'rounded-xl border overflow-hidden transition-all ' +
                       (isSelected ? 'bg-' + mc + '-50 border-' + mc + '-300 shadow-md' : 'bg-white border-slate-200 hover:border-' + mc + '-200')
                   },
-                    h('div', { className: 'flex items-center gap-2 mb-1' },
-                      h('span', { className: 'text-xl' }, t.icon),
-                      h('span', { className: 'text-xs font-bold text-slate-700' }, t.name)
+                    h('button', {
+                      type: 'button',
+                      id: 'punnett-trait-button-' + globalIdx,
+                      onClick: function() { upd('_traitSelected', isSelected ? -1 : globalIdx); punnettSound('preset'); },
+                      className: 'punnett-touch-choice w-full p-3 text-left',
+                      'aria-expanded': isSelected,
+                      'aria-controls': detailId
+                    },
+                      h('span', { className: 'flex items-center gap-2 mb-1' },
+                        h('span', { className: 'text-xl', 'aria-hidden': 'true' }, t.icon),
+                        h('span', { className: 'text-xs font-bold text-slate-700 flex-1' }, t.name),
+                        h('span', { className: 'text-[10px] text-slate-500', 'aria-hidden': 'true' }, isSelected ? '▲' : '▼')
+                      ),
+                      h('span', { className: 'inline-block px-1.5 py-0.5 text-[11px] font-bold rounded-full bg-' + mc + '-100 text-' + mc + '-700' },
+                        t.mode === 'complete' ? 'Dominant' : t.mode === 'recessive' ? 'Recessive' : t.mode === 'codominant' ? 'Codominant' : t.mode === 'incomplete' ? 'Incomplete' : t.mode === 'x_linked' ? 'X-Linked' : 'Polygenic'
+                      )
                     ),
-                    h('span', { className: 'px-1.5 py-0.5 text-[11px] font-bold rounded-full bg-' + mc + '-100 text-' + mc + '-700' },
-                      t.mode === 'complete' ? 'Dominant' : t.mode === 'recessive' ? 'Recessive' : t.mode === 'codominant' ? 'Codominant' : t.mode === 'incomplete' ? 'Incomplete' : t.mode === 'x_linked' ? 'X-Linked' : 'Polygenic'
-                    ),
-                    isSelected && h('div', { className: 'mt-2 pt-2 border-t border-' + mc + '-200' },
+                    isSelected && h('div', { id: detailId, className: 'mx-3 mb-3 pt-2 border-t border-' + mc + '-200', role: 'region', 'aria-labelledby': 'punnett-trait-button-' + globalIdx },
                       h('p', { className: 'text-[11px] text-slate-600 mb-1' }, t.desc),
-                      h('p', { className: 'text-[11px] text-slate-600' }, '\uD83D\uDFE2 Dominant: ' + t.dom + ' | \uD83D\uDFE1 Recessive: ' + t.rec),
-                      h('p', { className: 'text-[11px] text-slate-600' }, '\uD83D\uDCCA Frequency: ' + t.freq)
+                      t.pattern
+                        ? h('p', { className: 'text-[11px] font-semibold text-slate-700 mb-1' }, 'Inheritance evidence: ' + t.pattern)
+                        : h('p', { className: 'text-[11px] text-slate-600' }, 'Simplified model labels: ' + t.dom + ' / ' + t.rec),
+                      h('p', { className: 'text-[11px] text-slate-600' }, 'Frequency: ' + t.freq)
                     )
                   );
                 })
@@ -3159,14 +3604,18 @@ window.StemLab = window.StemLab || {
                   var isOpen = learnTopic === idx;
                   var content = topic[band] || topic.g35;
                   return h('div', { key: idx, className: 'bg-white rounded-xl border ' + (isOpen ? 'border-violet-300 shadow-md' : 'border-slate-200') },
-                    h('button', { onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); },
-                      className: 'w-full flex items-center gap-2 p-3 text-left'
+                    h('button', {
+                      id: 'punnett-learn-topic-' + idx,
+                      onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); },
+                      className: 'punnett-touch-choice w-full flex items-center gap-2 p-3 text-left',
+                      'aria-expanded': isOpen,
+                      'aria-controls': 'punnett-learn-panel-' + idx
                     },
-                      h('span', { className: 'text-xl' }, topic.icon),
+                      h('span', { className: 'text-xl', 'aria-hidden': 'true' }, topic.icon),
                       h('span', { className: 'text-sm font-bold text-slate-700 flex-1' }, topic.title),
-                      h('span', { className: 'text-xs text-slate-600' }, isOpen ? '\u25B2' : '\u25BC')
+                      h('span', { className: 'text-xs text-slate-600', 'aria-hidden': 'true' }, isOpen ? '\u25B2' : '\u25BC')
                     ),
-                    isOpen && h('div', { className: 'px-3 pb-3' },
+                    isOpen && h('div', { id: 'punnett-learn-panel-' + idx, className: 'px-3 pb-3', role: 'region', 'aria-labelledby': 'punnett-learn-topic-' + idx },
                       h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
                         h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, band.toUpperCase() + ' Level'),
                         h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, content)
@@ -3203,7 +3652,7 @@ window.StemLab = window.StemLab || {
                     }
                   },
                   disabled: learnTopic < 0,
-                  className: 'px-3 py-1.5 text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100 disabled:opacity-40'
+                  className: 'punnett-touch-choice px-3 py-2 text-[11px] font-bold text-violet-700 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100 disabled:opacity-40'
                 }, '\uD83D\uDD0A Read Aloud')
               )
             ),
@@ -3241,7 +3690,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'text-base font-black', style: { color: stateMeta.color } }, stateMeta.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1 font-mono' }, 'p = ' + iq.p + '%, q = ' + (100 - iq.p) + '%, Δp ≈ ' + (deltaP * 100).toFixed(2) + '%')
                 ),
-                h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3' },
                   [
                     { key: 'p',         label: 'allele freq p (%)',  val: iq.p,         min: 1,  max: 99, step: 1 },
                     { key: 'selection', label: 'selection s (%)',    val: iq.selection, min: -50, max: 50, step: 1 },
@@ -3311,22 +3760,29 @@ window.StemLab = window.StemLab || {
               return h('div', {
                 style: {
                   position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                  backgroundColor: 'rgba(15, 23, 42, 0.65)',
+                  backgroundColor: 'var(--allo-stem-deeper, rgba(15, 23, 42, 0.65))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   zIndex: 9999, padding: 16, backdropFilter: 'blur(4px)',
                   animation: 'fadeIn 0.2s ease-out'
                 }
               },
-                h('div', { className: 'bg-white rounded-2xl border border-violet-100 p-6 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200' },
+                h('div', {
+                  className: 'bg-white rounded-2xl border border-violet-100 p-6 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200',
+                  role: 'dialog',
+                  'aria-modal': 'true',
+                  'aria-labelledby': 'punnett-vocab-title',
+                  'aria-describedby': 'punnett-vocab-definition'
+                },
                   h('button', {
                     onClick: function() { upd('_studyConcept', null); },
-                    className: 'absolute top-3 right-3 text-slate-400 hover:text-slate-600 font-bold p-1 rounded-lg hover:bg-slate-100',
+                    autoFocus: true,
+                    className: 'punnett-touch-choice absolute top-3 right-3 text-slate-500 hover:text-slate-700 font-bold p-2 rounded-lg hover:bg-slate-100',
                     'aria-label': 'Close flashcard'
                   }, '✕'),
                   h('div', { className: 'text-center' },
                     h('span', { className: 'text-4xl mb-3 inline-block' }, '📇'),
-                    h('h4', { className: 'text-lg font-bold text-violet-800 mb-2' }, vocabInfo.term),
-                    h('div', { className: 'bg-violet-50 rounded-xl p-4 border border-violet-100 text-xs text-slate-700 leading-relaxed mb-4 text-left' },
+                    h('h4', { id: 'punnett-vocab-title', className: 'text-lg font-bold text-violet-800 mb-2' }, vocabInfo.term),
+                    h('div', { id: 'punnett-vocab-definition', className: 'bg-violet-50 rounded-xl p-4 border border-violet-100 text-xs text-slate-700 leading-relaxed mb-4 text-left' },
                       vocabInfo.def
                     ),
                     !isStudied ? h('button', {

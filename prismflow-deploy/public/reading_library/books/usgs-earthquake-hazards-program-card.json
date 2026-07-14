@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-earthquake-hazards-program-card",
+  "title": "USGS Earthquake Hazards Program",
+  "description": "A USGS source card for earthquake monitoring, maps, preparedness, and seismic science.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Earthquakes",
+    "Geology",
+    "Hazards",
+    "Data literacy"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/programs/earthquake-hazards"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS earthquake resources explain real-time monitoring, earthquake maps, fault systems, seismic waves, aftershocks, and how scientists estimate risk from geologic evidence."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for older students reading maps, comparing data displays, tracing cause and effect, and connecting Earth science with community preparedness."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS materials are generally public domain as U.S. government work, but some linked maps, photographs, or partner media may have separate credit or rights requirements."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 68
+  }
+}

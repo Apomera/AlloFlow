@@ -1,5 +1,7 @@
 # Research Hub educator-dashboard spec (v1)
 
+> **Spec snapshot note (2026-07-09):** This defines a proposed educator dashboard interpretation layer for Research Hub journal fields. Verify the current Research Hub journal schema, lane versions, and dashboard implementation status before using the field list below as current QA or build guidance.
+
 **Audience:** Whoever builds the educator-facing assessment UI for the Investigation & Research Hub (or a future Claude session asked to build it). Companion to the Tier 1/2/3/4 design docs in this folder.
 
 **Premise:** The Hub does not need its own dashboard component. Every load-bearing assessment artifact already lives in `journal` as a structurally-typed field. The host (or a thin dashboard plugin) reads `localStorage['alloflow_research_hub_v1']`, parses, and renders. What this spec defines is **which fields encode trajectories** and **how to render them so teachers don't misread**.

@@ -1,5 +1,7 @@
 # Document Remediation Pipeline — Decoupling Plan
 
+> **Historical plan snapshot (2026-07-09):** This May 2026 plan records the pipeline decoupling strategy and early test state from that period. Verify current `doc_pipeline_source.jsx`, tests, and `PIPELINE_ARCHITECTURE.md` before treating phase status, line counts, or remaining tasks below as current.
+
 **Status:** Plan only (not started). Authored 2026-05-28.
 **Target:** `doc_pipeline_source.jsx` (~18.6k lines) → build → `doc_pipeline_module.js`.
 **Goal:** Make the pipeline instantiable and testable outside the live browser app, so its pure core can be regression-tested against the *real* code (not a mirror), a second maintainer can work safely, and a headless/batch entry point becomes possible later.

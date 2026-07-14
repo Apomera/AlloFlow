@@ -1,0 +1,27 @@
+<!DOCTYPE html><html><head><meta charset="utf-8" />
+<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
+</head><body><pre id="out">starting…</pre><script>
+  const out = document.getElementById('out');
+  function log(m){ out.textContent += '\n' + m; console.log('[pdfbox] ' + m); }
+  (async () => {
+    window.__done = null;
+    try {
+      await cheerpjInit(); log('cheerpjInit done');
+      const lib = await cheerpjRunLibrary('/app/pdfbox-app.jar'); log('PDFBox library loaded');
+      const Loader = await lib.org.apache.pdfbox.Loader;
+      const File = await lib.java.io.File;
+      const t0 = performance.now();
+      const doc = await Loader.loadPDF(await new File('/app/sample.pdf'));
+      log('loaded PDF in ' + Math.round(performance.now() - t0) + 'ms');
+      const n = await doc.getNumberOfPages(); log('pages = ' + n);
+      // REPAIR capability test: read + modify document metadata, then SAVE.
+      const info = await doc.getDocumentInformation();
+      await info.setTitle('CheerpJ + PDFBox repair test');
+      const t1 = performance.now();
+      await doc.save('/files/pdfbox_out.pdf');
+      log('modified + saved in ' + Math.round(performance.now() - t1) + 'ms');
+      await doc.close();
+      window.__done = { ok: true, pages: n };
+    } catch (e) { log('ERROR: ' + (e && (e.stack || e.message) || e)); window.__done = { ok: false, err: String(e && (e.message || e)) }; }
+  })();
+</script></body></html>

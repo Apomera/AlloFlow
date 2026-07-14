@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-immigration-challenges-primary-source-set-card",
+  "title": "Library of Congress Immigration Challenges Primary Sources",
+  "description": "A LOC source card for primary sources about immigration and new Americans.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Immigration",
+    "Primary sources",
+    "U.S. history",
+    "Identity"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/primary-source-sets/immigration-challenges-for-new-americans/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Library of Congress immigration challenges source set uses historical materials to explore arrival, adaptation, work, community, discrimination, and belonging."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students practicing empathy and evidence-based historical interpretation from documents, images, and personal accounts."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Library of Congress source sets include public-domain and rights-unknown primary sources. Use the item pages to confirm rights before mirroring individual documents."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}
