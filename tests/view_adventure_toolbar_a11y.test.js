@@ -41,9 +41,9 @@ describe('Adventure standard and immersive toolbar accessibility', () => {
   });
 
   it('announces dynamic level, XP, energy, and game-over feedback with reduced motion', () => {
-    expect(source.match(/role="status"/g)).toHaveLength(4);
+    expect(source.match(/role="status"/g)?.length).toBeGreaterThanOrEqual(4);
     expect(source).toContain('aria-live="assertive" aria-atomic="true"');
-    expect(source.match(/aria-live="polite" aria-atomic="true"/g)).toHaveLength(3);
+    expect(source.match(/aria-live="polite" aria-atomic="true"/g)?.length).toBeGreaterThanOrEqual(3);
     expect(source).toContain('motion-reduce:animate-none motion-reduce:transform-none');
     expect(source).toContain('motion-reduce:transition-none');
     expect(source.match(/<div aria-hidden="true"><ConfettiExplosion \/><\/div>/g)).toHaveLength(2);

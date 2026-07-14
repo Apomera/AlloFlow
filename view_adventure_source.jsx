@@ -181,7 +181,7 @@ function AdventureView(props) {
                       {showLedger && (
                         <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetShowLedgerToFalse}>
                             <div ref={ledgerDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-ledger-title" onClick={e => e.stopPropagation()}>
-                                <button onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
+                                <button type="button" onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center mb-4">
                                     <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-2">
                                         <BookOpen size={24} />
@@ -727,7 +727,7 @@ function AdventureView(props) {
                                 </div>
                             ))}
                             {adventureState.pendingChoice && adventureState.isLoading && (
-                                <div className="flex justify-start animate-in slide-in-from-bottom-2 duration-300">
+                                <div role="status" aria-live="polite" aria-atomic="true" className="flex justify-start animate-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
                                     <div className="max-w-[85%] bg-amber-50 p-4 rounded-2xl rounded-bl-none border border-amber-200 shadow-sm">
                                         <div className="flex items-center gap-2 mb-1.5">
                                             <span className="text-amber-600 font-bold text-xs uppercase tracking-wider">⚔️ {t('adventure.your_choice') || 'Your Choice'}</span>
@@ -737,10 +737,10 @@ function AdventureView(props) {
                                     </div>
                                 </div>
                             )}
-                            {adventureState.isLoading && (
-                                <div className="flex justify-start animate-pulse">
+                            {adventureState.isLoading && !adventureState.pendingChoice && (
+                                <div role="status" aria-live="polite" aria-atomic="true" className="flex justify-start animate-pulse motion-reduce:animate-none">
                                     <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-slate-400 flex items-center gap-2 text-slate-600 text-sm">
-                                        <RefreshCw size={14} className="animate-spin"/> {t('adventure.status.loading_story')}
+                                        <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> {t('adventure.status.loading_story')}
                                     </div>
                                 </div>
                             )}
@@ -1052,30 +1052,32 @@ function AdventureView(props) {
                                     <div className="bg-black/70 backdrop-blur-md border-t-2 border-white/20 p-6 rounded-2xl shadow-lg relative min-h-[200px] flex flex-col justify-center">
                                         <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-40">
                                              <button
-                                                 aria-label={t('common.read')}
+                                                 type="button"
+                                                 aria-pressed={immersiveShowChoices}
+                                                 aria-label={immersiveShowChoices ? t('adventure.return_to_story') : t('adventure.make_a_choice')}
                                                 data-help-key="adventure_choice_toggle" onClick={handleToggleImmersiveShowChoices}
-                                                className="bg-indigo-600 text-white text-xs font-bold px-6 py-2 rounded-full border-2 border-white/20 shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-2"
+                                                className="min-h-11 bg-indigo-600 text-white text-xs font-bold px-6 py-2 rounded-full border-2 border-white/20 shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all motion-reduce:transform-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                                              >
-                                                {immersiveShowChoices ? <BookOpen size={14}/> : <MousePointerClick size={14}/>}
+                                                {immersiveShowChoices ? <BookOpen size={14} aria-hidden="true"/> : <MousePointerClick size={14} aria-hidden="true"/>}
                                                 {immersiveShowChoices ? t('adventure.return_to_story') : t('adventure.make_a_choice')}
                                              </button>
                                         </div>
                                         {immersiveShowChoices ? (
                                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                                                 {failedAdventureAction ? (
-                                                    <div className="w-full bg-red-900/90 border-2 border-red-500 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 backdrop-blur-sm">
+                                                    <div role="alert" aria-atomic="true" className="w-full bg-red-900/90 border-2 border-red-500 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none backdrop-blur-sm">
                                                         <div className="bg-red-500 p-3 rounded-full mb-3 text-white">
-                                                            <WifiOff size={24} />
+                                                            <WifiOff size={24} aria-hidden="true" />
                                                         </div>
                                                         <h3 className="font-bold text-white mb-1">{t('adventure.interrupted_title')}</h3>
                                                         <p className="text-red-200 text-sm mb-4 max-w-xs">
                                                             {t('adventure.interrupted_desc')}
                                                         </p>
-                                                        <button aria-label={t('common.retry_adventure_turn')}
+                                                        <button type="button" aria-label={t('common.retry_adventure_turn')}
                                                             onClick={handleRetryAdventureTurn}
-                                                            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 border border-red-400"
+                                                            className="min-h-11 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 motion-reduce:transform-none border border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-900"
                                                         >
-                                                            <RefreshCw size={18} /> {t('adventure.retry_action')}
+                                                            <RefreshCw size={18} aria-hidden="true" /> {t('adventure.retry_action')}
                                                         </button>
                                                     </div>
                                                 ) : (
@@ -1087,7 +1089,7 @@ function AdventureView(props) {
                                                                     data-help-key="adventure_input_field" value={adventureTextInput}
                                                                     onChange={(e) => setAdventureTextInput(e.target.value)}
                                                                     onKeyDown={(e) => {
-                                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                                        if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
                                                                             e.preventDefault();
                                                                             handleAdventureTextSubmit();
                                                                         }
@@ -1097,11 +1099,11 @@ function AdventureView(props) {
                                                                     autoFocus
                                                                 />
                                                                 <button
-                                                                    data-help-key="adventure_input_send" onClick={() => handleAdventureTextSubmit()}
-                                                                    disabled={!adventureTextInput.trim()}
-                                                                    className="w-full bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white text-white p-3 rounded-xl font-bold transition-all active:scale-95 backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    type="button" data-help-key="adventure_input_send" onClick={() => handleAdventureTextSubmit()}
+                                                                    disabled={!adventureTextInput.trim() || adventureState.isLoading}
+                                                                    className="min-h-11 w-full bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white text-white p-3 rounded-xl font-bold transition-all active:scale-95 motion-reduce:transform-none backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                                                                 >
-                                                                    <Send size={16} /> {t('adventure.send_action')}
+                                                                    <Send size={16} aria-hidden="true" /> {t('adventure.send_action')}
                                                                 </button>
                                                             </div>
                                                         ) : (
@@ -1152,7 +1154,7 @@ function AdventureView(props) {
                                                                                             </button>
                                                                                         )}
                                                                                         {isDemocracy && (
-                                                                                            <span className={`text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${voteCount > 0 ? 'bg-indigo-500 text-white shadow-sm' : 'opacity-40'}`}>
+                                                                                            <span aria-live="polite" aria-atomic="true" className={`text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${voteCount > 0 ? 'bg-indigo-500 text-white shadow-sm' : 'opacity-40'}`}>
                                                                                                 {t('adventure.vote_status', { count: voteCount, percent: percent })}
                                                                                             </span>
                                                                                         )}
@@ -1170,14 +1172,14 @@ function AdventureView(props) {
                                         ) : (
                                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                                                 {adventureState.pendingChoice && adventureState.isLoading && (
-                                                    <div className="mb-4 animate-in slide-in-from-bottom-2 duration-500">
+                                                    <div role="status" aria-live="polite" aria-atomic="true" className="mb-4 animate-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
                                                         <div className="bg-amber-900/80 backdrop-blur-sm border border-amber-500/50 rounded-xl p-4 shadow-lg">
                                                             <div className="flex items-center gap-2 mb-2">
                                                                 <span className="text-amber-700 font-bold text-xs uppercase tracking-wider">⚔️ {t('adventure.your_choice') || 'Your Choice'}</span>
                                                             </div>
                                                             <p className="text-amber-100 text-sm font-medium italic leading-relaxed">"{adventureState.pendingChoice}"</p>
                                                             <div className="flex items-center gap-2 mt-3">
-                                                                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                                                                <div aria-hidden="true" className="w-2 h-2 bg-amber-400 rounded-full animate-pulse motion-reduce:animate-none"></div>
                                                                 <p className="text-amber-400/80 text-xs animate-pulse">{t('adventure.story_unfolds') || '✨ The story unfolds...'}</p>
                                                             </div>
                                                         </div>
@@ -1258,19 +1260,19 @@ function AdventureView(props) {
                                         </div>
                                     )}
                                     {failedAdventureAction ? (
-                                        <div className="w-full bg-red-50 border-2 border-red-200 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2">
+                                        <div role="alert" aria-atomic="true" className="w-full bg-red-50 border-2 border-red-200 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none">
                                             <div className="bg-red-100 p-3 rounded-full mb-3 text-red-500">
-                                                <WifiOff size={24} />
+                                                <WifiOff size={24} aria-hidden="true" />
                                             </div>
                                             <h3 className="font-bold text-red-900 mb-1">{t('adventure.interrupted_title')}</h3>
                                             <p className="text-red-700/80 text-sm mb-4 max-w-xs">
                                                 {t('adventure.interrupted_desc')}
                                             </p>
-                                            <button aria-label={t('common.retry_adventure_turn')}
+                                            <button type="button" aria-label={t('common.retry_adventure_turn')}
                                                 onClick={handleRetryAdventureTurn}
-                                                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95"
+                                                className="min-h-11 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
                                             >
-                                                <RefreshCw size={18} /> {t('adventure.retry_action')}
+                                                <RefreshCw size={18} aria-hidden="true" /> {t('adventure.retry_action')}
                                             </button>
                                         </div>
                                     ) : isEditingOptions ? (
@@ -1282,7 +1284,7 @@ function AdventureView(props) {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 {editingOptionsBuffer.map((opt, idx) => (
                                                     <div key={idx} className="flex gap-2">
-                                                        <input aria-label={t('common.enter_opt')}
+                                                        <input aria-label={t('adventure.option_placeholder', { n: idx + 1 })}
                                                             type="text"
                                                             value={opt}
                                                             onChange={(e) => handleOptionBufferChange(idx, e.target.value)}
@@ -1290,33 +1292,32 @@ function AdventureView(props) {
                                                             placeholder={t('adventure.option_placeholder', { n: idx + 1 })}
                                                         />
                                                         <button
-                                                            aria-label={t('common.close')}
+                                                            type="button" aria-label={(t('adventure.tooltips.remove_option') || 'Remove option') + ' ' + (idx + 1)}
                                                             onClick={() => handleRemoveOptionSlot(idx)}
-                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                                            className="min-w-11 min-h-11 p-2 text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
                                                             title={t('adventure.tooltips.remove_option')}
                                                         >
-                                                            <X size={16} />
+                                                            <X size={16} aria-hidden="true" />
                                                         </button>
                                                     </div>
                                                 ))}
-                                                <button aria-label={t('common.add')}
+                                                <button type="button"
                                                     onClick={handleAddOptionSlot}
-                                                    className="p-3 rounded-xl border-2 border-dashed border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                                    className="min-h-11 p-3 rounded-xl border-2 border-dashed border-indigo-400 text-indigo-700 hover:bg-indigo-50 font-bold text-sm transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
                                                 >
-                                                    <Plus size={16} /> {t('adventure.add_option')}
+                                                    <Plus size={16} aria-hidden="true" /> {t('adventure.add_option')}
                                                 </button>
                                             </div>
                                             <div className="flex gap-2 mt-4 pt-3 border-t border-indigo-100">
-                                                <button
-                                                    aria-label={t('common.connect')}
+                                                <button type="button"
                                                     onClick={handleBroadcastOptions}
-                                                    className="flex-grow bg-green-700 text-white font-bold py-3 rounded-xl shadow-md hover:bg-green-700 transition-all flex items-center justify-center gap-2 active:scale-95"
+                                                    className="min-h-11 flex-grow bg-green-700 text-white font-bold py-3 rounded-xl shadow-md hover:bg-green-800 transition-all flex items-center justify-center gap-2 active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-800 focus-visible:ring-offset-2"
                                                 >
-                                                    <Wifi size={18} /> {t('adventure.broadcast')}
+                                                    <Wifi size={18} aria-hidden="true" /> {t('adventure.broadcast')}
                                                 </button>
-                                                <button
+                                                <button type="button"
                                                     onClick={handleSetIsEditingOptionsToFalse}
-                                                    className="px-6 py-3 bg-white text-slate-600 font-bold rounded-xl border border-slate-400 hover:bg-slate-50 transition-all"
+                                                    className="min-h-11 px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-500 hover:bg-slate-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
                                                 >
                                                     {t('common.cancel')}
                                                 </button>
@@ -1336,8 +1337,8 @@ function AdventureView(props) {
                                                     return (
                                                         <button
                                                             key={idx}
-                                                            data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)}
-                                                            className={`p-3 rounded-xl border-2 font-bold text-sm transition-all text-left flex items-center gap-3 group shadow-sm hover:shadow-md relative overflow-hidden
+                                                            type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading}
+                                                            className={`min-h-11 p-3 rounded-xl border-2 font-bold text-sm transition-all text-left flex items-center gap-3 group shadow-sm hover:shadow-md relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed motion-reduce:transform-none
                                                                 ${isDebateSetup
                                                                     ? 'border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-600 hover:text-white hover:border-teal-600'
                                                                     : 'border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600'}
@@ -1349,10 +1350,10 @@ function AdventureView(props) {
                                                                 isDebateSetup
                                                                     ? 'bg-white text-teal-700 border-teal-200 group-hover:border-transparent'
                                                                     : 'bg-white text-indigo-600 border-indigo-200 group-hover:border-transparent'}`}>
-                                                                {isDebateSetup ? <Scale size={12}/> : (idx + 1)}
+                                                                {isDebateSetup ? <Scale size={12} aria-hidden="true"/> : (idx + 1)}
                                                             </span>
                                                             <span className="z-10">{typeof opt === 'object' && opt?.action ? opt.action : opt}</span>
-                                                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                                                            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 motion-reduce:transition-none motion-reduce:transform-none"></div>
                                                         </button>
                                                     );
                                                 });
@@ -1361,7 +1362,7 @@ function AdventureView(props) {
                                     ) : (
                                         <div className="flex gap-2 animate-in fade-in slide-in-from-bottom-2">
                                             <button
-                                                aria-label={t('common.voice_input')}
+                                                aria-label={isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start')} aria-pressed={isDictationMode}
                                                 type="button"
                                                 onClick={() => {
                                                     const newState = !isDictationMode;
@@ -1370,10 +1371,10 @@ function AdventureView(props) {
                                                         setTimeout(() => adventureInputRef.current.focus(), 100);
                                                     }
                                                 }}
-                                                className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 min-w-[50px] ${isDictationMode ? 'bg-red-50 border-red-400 text-red-500 animate-pulse' : 'bg-white border-indigo-100 text-slate-600 hover:text-indigo-500 hover:border-indigo-300'}`}
+                                                className={`min-w-11 min-h-11 p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 ${isDictationMode ? 'bg-red-50 border-red-500 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-white border-indigo-300 text-slate-700 hover:text-indigo-700 hover:border-indigo-500'}`}
                                                 title={isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start')}
                                             >
-                                                {isDictationMode ? <Mic size={20} /> : <MicOff size={20} />}
+                                                {isDictationMode ? <Mic size={20} aria-hidden="true" /> : <MicOff size={20} aria-hidden="true" />}
                                             </button>
                                             <textarea
                                                 ref={adventureInputRef}
@@ -1383,18 +1384,18 @@ function AdventureView(props) {
                                                 aria-label={adventureInputMode === 'debate' ? t('adventure.aria_debate') : t('adventure.aria_action')}
                                                 className="flex-grow p-3 text-sm border border-purple-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none resize-none h-20 bg-purple-50 text-purple-900 placeholder:text-purple-300 transition-shadow duration-300"
                                                 onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                                    if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
                                                         e.preventDefault();
                                                         handleAdventureTextSubmit();
                                                     }
                                                 }}
                                             />
                                             <button
-                                                data-help-key="adventure_input_send" onClick={() => handleAdventureTextSubmit()}
-                                                disabled={!adventureTextInput.trim()}
-                                                className="bg-indigo-600 text-white px-4 rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex flex-col items-center justify-center gap-1 min-w-[80px]"
+                                                type="button" data-help-key="adventure_input_send" onClick={() => handleAdventureTextSubmit()}
+                                                disabled={!adventureTextInput.trim() || adventureState.isLoading}
+                                                className="min-w-[80px] min-h-11 bg-indigo-600 text-white px-4 rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
                                             >
-                                                <Send size={18} />
+                                                <Send size={18} aria-hidden="true" />
                                                 <span className="text-[11px]">{t('adventure.act_button')}</span>
                                             </button>
                                         </div>
@@ -1426,7 +1427,7 @@ function AdventureView(props) {
                     {selectedInventoryItem && (
                         <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetSelectedInventoryItemToNull}>
                             <div ref={inventoryDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-inventory-item-title" onClick={e => e.stopPropagation()}>
-                                <button onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
+                                <button type="button" onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center">
                                     <div className="w-24 h-24 bg-indigo-50 rounded-xl border-2 border-indigo-100 flex items-center justify-center mb-4 shadow-inner relative overflow-hidden group">
                                         {selectedInventoryItem.image ? (

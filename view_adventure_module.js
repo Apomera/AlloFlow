@@ -269,6 +269,7 @@ function AdventureView(props) {
     "aria-labelledby": "adventure-ledger-title",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleSetShowLedgerToFalse,
     className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500",
     "aria-label": t('common.close')
@@ -862,7 +863,10 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 10
   }), " ", t('adventure.analysis_label')), renderFormattedText(entry.text, true, entry.type === 'choice')))), adventureState.pendingChoice && adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-start animate-in slide-in-from-bottom-2 duration-300"
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "flex justify-start animate-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "max-w-[85%] bg-amber-50 p-4 rounded-2xl rounded-bl-none border border-amber-200 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
@@ -873,13 +877,17 @@ function AdventureView(props) {
     className: "text-amber-800 text-sm font-medium italic leading-relaxed"
   }, "\"", adventureState.pendingChoice, "\""), /*#__PURE__*/React.createElement("p", {
     className: "text-amber-700 text-xs mt-2 animate-pulse"
-  }, t('adventure.story_unfolds') || '✨ The story unfolds...'))), adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-start animate-pulse"
+  }, t('adventure.story_unfolds') || '✨ The story unfolds...'))), adventureState.isLoading && !adventureState.pendingChoice && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "flex justify-start animate-pulse motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-2xl rounded-bl-none border border-slate-400 flex items-center gap-2 text-slate-600 text-sm"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none",
+    "aria-hidden": "true"
   }), " ", t('adventure.status.loading_story'))), adventureState.currentScene && /*#__PURE__*/React.createElement("div", {
     className: "flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-700"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1220,32 +1228,41 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute -top-5 left-1/2 -translate-x-1/2 z-40"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.read'),
+    type: "button",
+    "aria-pressed": immersiveShowChoices,
+    "aria-label": immersiveShowChoices ? t('adventure.return_to_story') : t('adventure.make_a_choice'),
     "data-help-key": "adventure_choice_toggle",
     onClick: handleToggleImmersiveShowChoices,
-    className: "bg-indigo-600 text-white text-xs font-bold px-6 py-2 rounded-full border-2 border-white/20 shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-2"
+    className: "min-h-11 bg-indigo-600 text-white text-xs font-bold px-6 py-2 rounded-full border-2 border-white/20 shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all motion-reduce:transform-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
   }, immersiveShowChoices ? /*#__PURE__*/React.createElement(BookOpen, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(MousePointerClick, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), immersiveShowChoices ? t('adventure.return_to_story') : t('adventure.make_a_choice'))), immersiveShowChoices ? /*#__PURE__*/React.createElement("div", {
     className: "animate-in fade-in slide-in-from-bottom-4 duration-300"
   }, failedAdventureAction ? /*#__PURE__*/React.createElement("div", {
-    className: "w-full bg-red-900/90 border-2 border-red-500 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 backdrop-blur-sm"
+    role: "alert",
+    "aria-atomic": "true",
+    className: "w-full bg-red-900/90 border-2 border-red-500 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none backdrop-blur-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-red-500 p-3 rounded-full mb-3 text-white"
   }, /*#__PURE__*/React.createElement(WifiOff, {
-    size: 24
+    size: 24,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h3", {
     className: "font-bold text-white mb-1"
   }, t('adventure.interrupted_title')), /*#__PURE__*/React.createElement("p", {
     className: "text-red-200 text-sm mb-4 max-w-xs"
   }, t('adventure.interrupted_desc')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.retry_adventure_turn'),
     onClick: handleRetryAdventureTurn,
-    className: "flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 border border-red-400"
+    className: "min-h-11 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 motion-reduce:transform-none border border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-900"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 18
+    size: 18,
+    "aria-hidden": "true"
   }), " ", t('adventure.retry_action'))) : adventureState.currentScene && (adventureFreeResponseEnabled ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
   }, /*#__PURE__*/React.createElement("textarea", {
@@ -1254,7 +1271,7 @@ function AdventureView(props) {
     value: adventureTextInput,
     onChange: e => setAdventureTextInput(e.target.value),
     onKeyDown: e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
+      if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
         e.preventDefault();
         handleAdventureTextSubmit();
       }
@@ -1263,12 +1280,14 @@ function AdventureView(props) {
     className: "w-full bg-black/50 text-white border border-white/30 rounded-xl p-3 focus:border-white focus:ring-2 focus:ring-white/20 outline-none resize-none h-24 text-sm font-medium placeholder:text-white/50 backdrop-blur-sm",
     autoFocus: true
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "data-help-key": "adventure_input_send",
     onClick: () => handleAdventureTextSubmit(),
-    disabled: !adventureTextInput.trim(),
-    className: "w-full bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white text-white p-3 rounded-xl font-bold transition-all active:scale-95 backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    disabled: !adventureTextInput.trim() || adventureState.isLoading,
+    className: "min-h-11 w-full bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white text-white p-3 rounded-xl font-bold transition-all active:scale-95 motion-reduce:transform-none backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
   }, /*#__PURE__*/React.createElement(Send, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }), " ", t('adventure.send_action'))) : /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-3"
   }, (() => {
@@ -1320,6 +1339,8 @@ function AdventureView(props) {
         size: 16,
         "aria-hidden": "true"
       })), isDemocracy && /*#__PURE__*/React.createElement("span", {
+        "aria-live": "polite",
+        "aria-atomic": "true",
         className: `text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${voteCount > 0 ? 'bg-indigo-500 text-white shadow-sm' : 'opacity-40'}`
       }, t('adventure.vote_status', {
         count: voteCount,
@@ -1329,7 +1350,10 @@ function AdventureView(props) {
   })()))) : /*#__PURE__*/React.createElement("div", {
     className: "animate-in fade-in slide-in-from-bottom-4 duration-300"
   }, adventureState.pendingChoice && adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
-    className: "mb-4 animate-in slide-in-from-bottom-2 duration-500"
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "mb-4 animate-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-amber-900/80 backdrop-blur-sm border border-amber-500/50 rounded-xl p-4 shadow-lg"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1341,7 +1365,8 @@ function AdventureView(props) {
   }, "\"", adventureState.pendingChoice, "\""), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mt-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-2 h-2 bg-amber-400 rounded-full animate-pulse"
+    "aria-hidden": "true",
+    className: "w-2 h-2 bg-amber-400 rounded-full animate-pulse motion-reduce:animate-none"
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-amber-400/80 text-xs animate-pulse"
   }, t('adventure.story_unfolds') || '✨ The story unfolds...')))), (() => {
@@ -1395,21 +1420,26 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement(Scale, {
     size: 12
   }), " ", t('adventure.debate_stance'))), failedAdventureAction ? /*#__PURE__*/React.createElement("div", {
-    className: "w-full bg-red-50 border-2 border-red-200 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2"
+    role: "alert",
+    "aria-atomic": "true",
+    className: "w-full bg-red-50 border-2 border-red-200 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-red-100 p-3 rounded-full mb-3 text-red-500"
   }, /*#__PURE__*/React.createElement(WifiOff, {
-    size: 24
+    size: 24,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h3", {
     className: "font-bold text-red-900 mb-1"
   }, t('adventure.interrupted_title')), /*#__PURE__*/React.createElement("p", {
     className: "text-red-700/80 text-sm mb-4 max-w-xs"
   }, t('adventure.interrupted_desc')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.retry_adventure_turn'),
     onClick: handleRetryAdventureTurn,
-    className: "flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95"
+    className: "min-h-11 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 18
+    size: 18,
+    "aria-hidden": "true"
   }), " ", t('adventure.retry_action'))) : isEditingOptions ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 mb-4 animate-in fade-in"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1424,7 +1454,9 @@ function AdventureView(props) {
     key: idx,
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('common.enter_opt'),
+    "aria-label": t('adventure.option_placeholder', {
+      n: idx + 1
+    }),
     type: "text",
     value: opt,
     onChange: e => handleOptionBufferChange(idx, e.target.value),
@@ -1433,29 +1465,34 @@ function AdventureView(props) {
       n: idx + 1
     })
   }), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.close'),
+    type: "button",
+    "aria-label": (t('adventure.tooltips.remove_option') || 'Remove option') + ' ' + (idx + 1),
     onClick: () => handleRemoveOptionSlot(idx),
-    className: "p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100",
+    className: "min-w-11 min-h-11 p-2 text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2",
     title: t('adventure.tooltips.remove_option')
   }, /*#__PURE__*/React.createElement(X, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   })))), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.add'),
+    type: "button",
     onClick: handleAddOptionSlot,
-    className: "p-3 rounded-xl border-2 border-dashed border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold text-sm transition-all flex items-center justify-center gap-2"
+    className: "min-h-11 p-3 rounded-xl border-2 border-dashed border-indigo-400 text-indigo-700 hover:bg-indigo-50 font-bold text-sm transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Plus, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }), " ", t('adventure.add_option'))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mt-4 pt-3 border-t border-indigo-100"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.connect'),
+    type: "button",
     onClick: handleBroadcastOptions,
-    className: "flex-grow bg-green-700 text-white font-bold py-3 rounded-xl shadow-md hover:bg-green-700 transition-all flex items-center justify-center gap-2 active:scale-95"
+    className: "min-h-11 flex-grow bg-green-700 text-white font-bold py-3 rounded-xl shadow-md hover:bg-green-800 transition-all flex items-center justify-center gap-2 active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-800 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Wifi, {
-    size: 18
+    size: 18,
+    "aria-hidden": "true"
   }), " ", t('adventure.broadcast')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleSetIsEditingOptionsToFalse,
-    className: "px-6 py-3 bg-white text-slate-600 font-bold rounded-xl border border-slate-400 hover:bg-slate-50 transition-all"
+    className: "min-h-11 px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-500 hover:bg-slate-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
   }, t('common.cancel')))) : !adventureFreeResponseEnabled || adventureInputMode === 'debate' && adventureState.debatePhase === 'setup' ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
   }, (() => {
@@ -1467,9 +1504,11 @@ function AdventureView(props) {
       const isReadingThisOption = isPlaying && playingContentId === 'adventure-active' && playbackState.currentIdx === textSentenceCount + idx;
       return /*#__PURE__*/React.createElement("button", {
         key: idx,
+        type: "button",
         "data-help-key": "adventure_choice_btn",
         onClick: () => handleAdventureChoice(opt),
-        className: `p-3 rounded-xl border-2 font-bold text-sm transition-all text-left flex items-center gap-3 group shadow-sm hover:shadow-md relative overflow-hidden
+        disabled: adventureState.isLoading,
+        className: `min-h-11 p-3 rounded-xl border-2 font-bold text-sm transition-all text-left flex items-center gap-3 group shadow-sm hover:shadow-md relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed motion-reduce:transform-none
                                                                 ${isDebateSetup ? 'border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-600 hover:text-white hover:border-teal-600' : 'border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600'}
                                                                 ${isReadingThisOption ? 'ring-4 ring-yellow-400 bg-yellow-100 border-yellow-400 text-indigo-900 scale-[1.02] z-10' : ''}
                                                             `
@@ -1477,17 +1516,20 @@ function AdventureView(props) {
         className: `w-6 h-6 rounded-full flex items-center justify-center text-xs border shrink-0 transition-colors z-10
                                                                 ${isReadingThisOption ? 'bg-yellow-400 text-indigo-900 border-yellow-600' : isDebateSetup ? 'bg-white text-teal-700 border-teal-200 group-hover:border-transparent' : 'bg-white text-indigo-600 border-indigo-200 group-hover:border-transparent'}`
       }, isDebateSetup ? /*#__PURE__*/React.createElement(Scale, {
-        size: 12
+        size: 12,
+        "aria-hidden": "true"
       }) : idx + 1), /*#__PURE__*/React.createElement("span", {
         className: "z-10"
       }, typeof opt === 'object' && opt?.action ? opt.action : opt), /*#__PURE__*/React.createElement("div", {
-        className: "absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"
+        "aria-hidden": "true",
+        className: "absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 motion-reduce:transition-none motion-reduce:transform-none"
       }));
     });
   })()) : /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 animate-in fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.voice_input'),
+    "aria-label": isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start'),
+    "aria-pressed": isDictationMode,
     type: "button",
     onClick: () => {
       const newState = !isDictationMode;
@@ -1496,12 +1538,14 @@ function AdventureView(props) {
         setTimeout(() => adventureInputRef.current.focus(), 100);
       }
     },
-    className: `p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 min-w-[50px] ${isDictationMode ? 'bg-red-50 border-red-400 text-red-500 animate-pulse' : 'bg-white border-indigo-100 text-slate-600 hover:text-indigo-500 hover:border-indigo-300'}`,
+    className: `min-w-11 min-h-11 p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 ${isDictationMode ? 'bg-red-50 border-red-500 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-white border-indigo-300 text-slate-700 hover:text-indigo-700 hover:border-indigo-500'}`,
     title: isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start')
   }, isDictationMode ? /*#__PURE__*/React.createElement(Mic, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(MicOff, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("textarea", {
     ref: adventureInputRef,
     "data-help-key": "adventure_input_field",
@@ -1511,18 +1555,20 @@ function AdventureView(props) {
     "aria-label": adventureInputMode === 'debate' ? t('adventure.aria_debate') : t('adventure.aria_action'),
     className: "flex-grow p-3 text-sm border border-purple-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none resize-none h-20 bg-purple-50 text-purple-900 placeholder:text-purple-300 transition-shadow duration-300",
     onKeyDown: e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
+      if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
         e.preventDefault();
         handleAdventureTextSubmit();
       }
     }
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "data-help-key": "adventure_input_send",
     onClick: () => handleAdventureTextSubmit(),
-    disabled: !adventureTextInput.trim(),
-    className: "bg-indigo-600 text-white px-4 rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex flex-col items-center justify-center gap-1 min-w-[80px]"
+    disabled: !adventureTextInput.trim() || adventureState.isLoading,
+    className: "min-w-[80px] min-h-11 bg-indigo-600 text-white px-4 rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Send, {
-    size: 18
+    size: 18,
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px]"
   }, t('adventure.act_button')))), adventureState.canStartSequel && /*#__PURE__*/React.createElement("div", {
@@ -1551,6 +1597,7 @@ function AdventureView(props) {
     "aria-labelledby": "adventure-inventory-item-title",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleSetSelectedInventoryItemToNull,
     className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500",
     "aria-label": t('common.close')
