@@ -187,6 +187,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Verified Timeline Studio's AI topic-research path with a rendered integration test covering synchronous popup launch, two independent grounded AI calls, source attachment, accuracy verification, accessible status progression, and the final companion-window payload. Refined the modal to derive its name and description from visible heading text, gave its mode, close, generation, manual, and reading-level controls explicit semantics, 44 CSS-pixel minimum targets, and strong focus indicators, and kept asynchronous generation focusable with accurate busy/disabled state. Visible button text now supplies each action's accessible name, while detailed instructions remain advisory titles; generation and summary changes are separately identified as atomic polite status regions and are programmatically associated with the generation control (WCAG 1.3.1, 1.3.5, 2.1.1, 2.4.3, 2.4.6, 2.4.7, 2.5.3, 2.5.8, 3.3.2, 4.1.2, 4.1.3).
 
+- Remediated saved-resource interactions in the History panel: resources are now exposed as a named semantic list with position and count, each item supports an Alt+Arrow keyboard reorder alternative to pointer dragging, synchronized sessions block both reorder paths, and every resource has a native 44 CSS-pixel Open action instead of relying on a mouse-only card. Invalid simulated-button wrappers around nested form controls were removed, while teacher move controls now have accurate item-specific names, filtered-list bounds, 44 CSS-pixel targets, and strong visible focus (WCAG 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.3, 2.5.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

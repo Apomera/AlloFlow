@@ -346,23 +346,30 @@ function HistoryPanel(props) {
         /* @__PURE__ */ React.createElement(X, { size: 12 })
       )
     ))));
-  })(), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 overflow-y-auto pr-1 custom-scrollbar flex-grow pb-10" }, getFilteredHistory().length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center p-4 text-indigo-200 text-xs italic" }, history.length === 0 ? t("history.empty_general") : t("history.empty_unit")), getFilteredHistory().map((item, idx) => /* @__PURE__ */ React.createElement(
+  })(), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 overflow-y-auto pr-1 custom-scrollbar flex-grow pb-10", role: "list", "aria-label": t("sidebar.resource_pack_history") || "Saved resources" }, getFilteredHistory().length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center p-4 text-indigo-200 text-xs italic" }, history.length === 0 ? t("history.empty_general") : t("history.empty_unit")), getFilteredHistory().map((item, idx) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: item.id,
-      draggable: editingId === null,
+      role: "listitem",
+      tabIndex: editingId === null ? 0 : -1,
+      "aria-keyshortcuts": "Alt+ArrowUp Alt+ArrowDown",
+      "aria-label": `${isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type))}. ${t("history.position") || "Position"} ${idx + 1} ${t("common.of") || "of"} ${getFilteredHistory().length}. ${t("history.keyboard_reorder") || "Use Alt plus Up or Down Arrow to reorder."}`,
+      draggable: editingId === null && !isSyncMode,
       onDragStart: (e) => handleDragStart(e, idx),
       onDragEnter: (e) => handleDragEnter(e, idx),
       onDragOver: (e) => e.preventDefault(),
       onDragEnd: handleDragEnd,
-      onClick: () => {
-        if (isSyncMode) {
-          addToast(t("session.teacher_control_warning"), "info");
-          return;
+      onKeyDown: (e) => {
+        if (e.target !== e.currentTarget || !e.altKey || isSyncMode) return;
+        if (e.key === "ArrowUp" && idx > 0) {
+          e.preventDefault();
+          moveItem(e, idx, "up");
+        } else if (e.key === "ArrowDown" && idx < getFilteredHistory().length - 1) {
+          e.preventDefault();
+          moveItem(e, idx, "down");
         }
-        handleRestoreView(item);
       },
-      className: `group flex flex-col p-2 rounded-lg transition-all border ${generatedContent && generatedContent.id === item.id ? "bg-white text-indigo-900 border-white" : "bg-indigo-800/50 border-indigo-700 hover:bg-indigo-800 text-indigo-100"} ${isSyncMode ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`
+      className: `group flex flex-col p-2 rounded-lg transition-all border ${generatedContent && generatedContent.id === item.id ? "bg-white text-indigo-900 border-white" : "bg-indigo-800/50 border-indigo-700 hover:bg-indigo-800 text-indigo-100"} ${isSyncMode ? "cursor-not-allowed opacity-60" : "cursor-default"}`
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 w-full" }, /* @__PURE__ */ React.createElement(
       "div",
@@ -371,13 +378,8 @@ function HistoryPanel(props) {
         "data-help-key": "history_item_drag",
         title: t("common.drag_to_reorder")
       },
-      /* @__PURE__ */ React.createElement(GripVertical, { size: 14 })
-    ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold opacity-50 w-3.5 text-center group-hover:hidden" }, idx + 1), /* @__PURE__ */ React.createElement("div", { className: `p-1.5 rounded-md shrink-0 ${generatedContent && generatedContent.id === item.id ? "bg-indigo-100 text-indigo-700" : "bg-indigo-900 text-indigo-300"}` }, getIconForType(item.type)), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, editingId === item.id ? /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        e.currentTarget.click();
-      }
-    }, className: "flex items-center gap-1", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement(GripVertical, { size: 14, "aria-hidden": "true" })
+    ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold opacity-50 w-3.5 text-center group-hover:hidden" }, idx + 1), /* @__PURE__ */ React.createElement("div", { className: `p-1.5 rounded-md shrink-0 ${generatedContent && generatedContent.id === item.id ? "bg-indigo-100 text-indigo-700" : "bg-indigo-900 text-indigo-300"}` }, getIconForType(item.type)), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, editingId === item.id ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_edit_title"),
@@ -413,30 +415,46 @@ function HistoryPanel(props) {
       },
       /* @__PURE__ */ React.createElement(Pencil, { size: 10 })
     )))),
-    isTeacherMode && /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        e.currentTarget.click();
-      }
-    }, className: "flex items-center justify-between mt-2 pt-2 border-t border-indigo-800/30", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 relative" }, /* @__PURE__ */ React.createElement(
+    editingId !== item.id && /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": t("common.collapse"),
+        type: "button",
+        onClick: (e) => {
+          e.stopPropagation();
+          if (isSyncMode) {
+            addToast(t("session.teacher_control_warning"), "info");
+            return;
+          }
+          handleRestoreView(item);
+        },
+        className: "mt-2 min-h-11 w-full rounded-lg border border-indigo-600 bg-indigo-800/70 px-3 py-2 text-left text-xs font-bold text-indigo-100 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 aria-disabled:opacity-60",
+        "aria-disabled": isSyncMode
+      },
+      t("common.open") || "Open",
+      ": ",
+      isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type))
+    ),
+    isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mt-2 pt-2 border-t border-indigo-800/30", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 relative" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-label": `${t("actions.move_up") || "Move up"}: ${isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type))}`,
         "data-help-key": "history_move_up_btn",
         onClick: (e) => moveItem(e, idx, "up"),
         disabled: idx === 0,
-        className: "p-1 rounded hover:bg-indigo-700 disabled:opacity-30 transition-colors text-indigo-300 focus:ring-2 focus:ring-indigo-400 outline-none",
+        className: "min-h-11 min-w-11 p-2 rounded hover:bg-indigo-700 disabled:opacity-30 transition-colors text-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 outline-none",
         title: t("actions.move_up")
       },
       /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 })
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": t("common.expand"),
+        type: "button",
+        "aria-label": `${t("actions.move_down") || "Move down"}: ${isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type))}`,
         "data-help-key": "history_move_down_btn",
         onClick: (e) => moveItem(e, idx, "down"),
-        disabled: idx === history.length - 1,
-        className: "p-1 rounded hover:bg-indigo-700 disabled:opacity-30 transition-colors text-indigo-300 focus:ring-2 focus:ring-indigo-400 outline-none",
+        disabled: idx === getFilteredHistory().length - 1,
+        className: "min-h-11 min-w-11 p-2 rounded hover:bg-indigo-700 disabled:opacity-30 transition-colors text-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 outline-none",
         title: t("actions.move_down")
       },
       /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
@@ -464,9 +482,7 @@ function HistoryPanel(props) {
         className: `text-[11px] text-left px-2 py-1.5 rounded hover:bg-indigo-50 text-slate-700 w-full truncate ${item.unitId === u.id ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
       },
       u.name
-    )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 px-2 py-1 italic" }, t("history.no_units")))), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
-      if (e.key === "Escape") e.currentTarget.click();
-    }, className: "fixed inset-0 z-[90]", onClick: handleSetMovingItemIdToNull }))), item.type === "word-sounds" && /* @__PURE__ */ React.createElement(
+    )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 px-2 py-1 italic" }, t("history.no_units")))), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetMovingItemIdToNull }))), item.type === "word-sounds" && /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: (e) => {
