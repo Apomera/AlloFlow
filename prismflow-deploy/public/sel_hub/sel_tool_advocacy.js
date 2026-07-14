@@ -17016,6 +17016,101 @@ window.SelHub = window.SelHub || {
 
       var activeTab     = d.activeTab || 'mykit';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
+      var advConfirmAction = d.advConfirmAction || null;
+
+      function focusAdvocacyControl(id) {
+        setTimeout(function() {
+          var target = document.getElementById(id);
+          if (target && target.focus) target.focus();
+        }, 50);
+      }
+      function openAdvocacyConfirm(action) {
+        upd('advConfirmAction', action);
+        focusAdvocacyControl('adv-confirm-cancel');
+      }
+      function closeAdvocacyConfirm() {
+        var triggerId = advConfirmAction && advConfirmAction.triggerId;
+        upd('advConfirmAction', null);
+        if (triggerId) focusAdvocacyControl(triggerId);
+      }
+      function commitAdvocacyAction() {
+        if (!advConfirmAction) return;
+        var patch = { advConfirmAction: null };
+        var focusId;
+        var message;
+        if (advConfirmAction.type === 'reset-strengths') {
+          patch.strengthsRatings = {};
+          patch.strengthsStep = 0;
+          focusId = 'adv-strengths-heading';
+          message = 'All strengths ratings reset.';
+        } else if (advConfirmAction.type === 'delete-journal') {
+          patch.journalEntries = (d.journalEntries || []).filter(function(entry) { return entry.id !== advConfirmAction.entryId; });
+          focusId = 'adv-journal-heading';
+          message = 'Journal entry deleted.';
+        } else if (advConfirmAction.type === 'new-bingo-card') {
+          var shuffled = BINGO_CHALLENGES.slice().sort(function() { return Math.random() - 0.5; });
+          patch.bingoCard = { cells: shuffled.slice(0, 25), generatedOn: new Date().toISOString().slice(0, 10) };
+          focusId = 'adv-bingo-heading';
+          message = 'New bingo card generated. Past completions were kept.';
+        } else {
+          closeAdvocacyConfirm();
+          return;
+        }
+        upd(patch);
+        if (announceToSR) announceToSR(message);
+        focusAdvocacyControl(focusId);
+      }
+      function handleAdvocacyConfirmKeyDown(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeAdvocacyConfirm();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var buttons = event.currentTarget.querySelectorAll('button:not([disabled])');
+        if (!buttons.length) return;
+        var first = buttons[0];
+        var last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      function renderAdvocacyConfirm() {
+        if (!advConfirmAction) return null;
+        var copy = {
+          'reset-strengths': ['Reset all strengths ratings?', 'This permanently clears every rating in your Self-Advocacy Strengths Profile and returns it to the first page. This cannot be undone.', 'Reset ratings'],
+          'delete-journal': ['Delete journal entry?', 'This permanently deletes this advocacy journal entry. This cannot be undone.', 'Delete entry'],
+          'new-bingo-card': ['Generate a new bingo card?', 'This replaces the current bingo card layout. Your past completion records are kept.', 'Generate new card']
+        }[advConfirmAction.type];
+        if (!copy) return null;
+        return h('div', {
+          id: 'adv-destructive-confirm',
+          className: 'fixed inset-0 z-[10003] flex items-center justify-center bg-slate-950/80 p-4',
+          role: 'alertdialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'adv-confirm-title',
+          'aria-describedby': 'adv-confirm-description',
+          onKeyDown: handleAdvocacyConfirmKeyDown
+        }, h('div', { style: { width: '100%', maxWidth: 500, padding: 22, borderRadius: 14, border: '2px solid #f87171', background: _advBg('#0f172a'), color: _advFg('#f1f5f9'), boxShadow: '0 20px 60px rgba(0,0,0,0.45)' } },
+          h('h2', { id: 'adv-confirm-title', style: { margin: '0 0 8px', fontSize: 19, fontWeight: 900, color: _advFg('#fca5a5') } }, copy[0]),
+          h('p', { id: 'adv-confirm-description', style: { margin: '0 0 18px', fontSize: 13, lineHeight: 1.6, color: _advFg('#cbd5e1') } }, copy[1]),
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
+            h('button', {
+              id: 'adv-confirm-cancel',
+              onClick: closeAdvocacyConfirm,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #94a3b8', background: _advBg('#334155'), color: _advFg('#f1f5f9'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            }, 'Cancel'),
+            h('button', {
+              onClick: commitAdvocacyAction,
+              style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #f87171', background: '#b91c1c', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+            }, copy[2])
+          )
+        ));
+      }
 
       // Scenarios state
       var scIdx          = d.scIdx || 0;
@@ -17384,7 +17479,7 @@ window.SelHub = window.SelHub || {
         }
         function nextPage() { upd('strengthsStep', pageIdx + 1); }
         function prevPage() { upd('strengthsStep', Math.max(0, pageIdx - 1)); }
-        function resetAssessment() { if (confirm('Reset all ratings?')) { upd('strengthsRatings', {}); upd('strengthsStep', 0); } }
+        function resetAssessment() { openAdvocacyConfirm({ type: 'reset-strengths', triggerId: 'adv-reset-strengths' }); }
         // Compute strand averages
         var strandAvgs = {};
         SELF_ADVOCACY_STRANDS.forEach(function(s) {
@@ -17402,7 +17497,7 @@ window.SelHub = window.SelHub || {
         var pageRated = pageItems.filter(function(it, i) { return ratings[pageIdx * STEPS_PER_PAGE + i] != null; }).length;
 
         strengthsContent = h('div', { style: { padding: 20, maxWidth: 800, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🧭 Self-Advocacy Strengths Profile'),
+          h('h3', { id: 'adv-strengths-heading', tabIndex: -1, style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🧭 Self-Advocacy Strengths Profile'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, '60 items across 6 strands. Rate each 0 (not me at all) to 3 (sounds exactly like me). Honest is better than aspirational.'),
           allDone && h('div', null,
             // Radar
@@ -17459,7 +17554,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-              h('button', { onClick: resetAssessment, style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid #a5b4fc', background: 'rgba(165,180,252,0.15)', color: _advFg('#a5b4fc'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↺ Reset assessment')
+              h('button', { id: 'adv-reset-strengths', onClick: resetAssessment, style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid #a5b4fc', background: 'rgba(165,180,252,0.15)', color: _advFg('#a5b4fc'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↺ Reset assessment')
             )
           ),
 
@@ -17767,7 +17862,7 @@ window.SelHub = window.SelHub || {
         function updateDraft(field, value) {
           var nd = Object.assign({}, jDraft); nd[field] = value; upd('journalDraft', nd);
         }
-        function removeEntry(id) { if (confirm('Delete this entry?')) upd('journalEntries', entries.filter(function(e) { return e.id !== id; })); }
+        function removeEntry(id) { openAdvocacyConfirm({ type: 'delete-journal', entryId: id, triggerId: 'adv-delete-journal-' + id }); }
         var entryTypes = [
           { id: 'win', label: '⭐ Win', color: _advFg('#22c55e'), prompt: 'What did you advocate for that worked? Be specific.' },
           { id: 'tough', label: '🌊 Tough one', color: _advFg('#f59e0b'), prompt: 'A situation that didn\'t go well. What happened? What would you do differently?' },
@@ -17777,7 +17872,7 @@ window.SelHub = window.SelHub || {
         ];
         var currentType = entryTypes.find(function(t) { return t.id === jDraft.type; }) || entryTypes[0];
         journalContent = h('div', { style: { padding: 20, maxWidth: 800, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '📓 Advocacy Journal'),
+          h('h3', { id: 'adv-journal-heading', tabIndex: -1, style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '📓 Advocacy Journal'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, 'Date-stamped reflections on your advocacy journey. ' + entries.length + ' entries.'),
           // Entry composer
           h('div', { style: { padding: 16, background: _advBg('#0f172a'), borderRadius: 12, borderLeft: '4px solid ' + currentType.color, marginBottom: 14 } },
@@ -17833,7 +17928,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: 11, color: t.color, fontWeight: 800 } }, t.label),
                   h('span', { style: { fontSize: 11, color: _advFg('#94a3b8'), fontFamily: 'ui-monospace, Menlo, monospace' } }, when.toLocaleString()),
                   e.situation && h('span', { style: { fontSize: 11, color: _advFg('#cbd5e1'), fontStyle: 'italic' } }, '· ' + e.situation),
-                  h('button', { onClick: function() { removeEntry(e.id); }, 'aria-label': 'Delete entry', style: { marginLeft: 'auto', background: 'transparent', border: 'none', color: _advFg('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
+                  h('button', { id: 'adv-delete-journal-' + e.id, onClick: function() { removeEntry(e.id); }, 'aria-label': 'Delete entry', style: { marginLeft: 'auto', background: 'transparent', border: 'none', color: _advFg('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
                 ),
                 h('p', { style: { fontSize: 13, color: _advFg('#e2e8f0'), lineHeight: 1.65, margin: '0 0 6px' } }, e.text),
                 e.felt && h('div', { style: { fontSize: 11, color: _advFg('#94a3b8'), fontStyle: 'italic' } }, '↪ Felt: ' + e.felt)
@@ -17974,15 +18069,12 @@ window.SelHub = window.SelHub || {
           upd('bingoCompleted', nc);
         }
         function newCard() {
-          if (confirm('Generate a new bingo card? Past completions are kept.')) {
-            var shuffled = BINGO_CHALLENGES.slice().sort(function() { return Math.random() - 0.5; });
-            upd('bingoCard', { cells: shuffled.slice(0, 25), generatedOn: new Date().toISOString().slice(0, 10) });
-          }
+          openAdvocacyConfirm({ type: 'new-bingo-card', triggerId: 'adv-new-bingo-card' });
         }
         var completedCount = bingoCard.cells.filter(function(c) { return bingoCompleted[c.id]; }).length;
 
         bingoContent = h('div', { style: { padding: 20, maxWidth: 700, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🎲 Daily Advocacy Bingo'),
+          h('h3', { id: 'adv-bingo-heading', tabIndex: -1, style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🎲 Daily Advocacy Bingo'),
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, 'Practice cards. Tap a cell when you do it. ' + completedCount + ' / 25 completed on this card.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4, marginBottom: 14 } },
             bingoCard.cells.map(function(cell) {
@@ -18000,7 +18092,7 @@ window.SelHub = window.SelHub || {
             })
           ),
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-            h('button', { onClick: newCard,
+            h('button', { id: 'adv-new-bingo-card', onClick: newCard,
               style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid #fbbf24', background: 'rgba(251,191,36,0.10)', color: _advFg('#fcd34d'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '🎲 New card')
           ),
           completedCount >= 5 && h('div', { style: { marginTop: 14, padding: 12, background: 'rgba(34,197,94,0.10)', borderRadius: 10, borderLeft: '3px solid #22c55e', textAlign: 'center', fontSize: 13, color: _advFg('#86efac'), fontWeight: 700 } },
@@ -20084,6 +20176,7 @@ window.SelHub = window.SelHub || {
         tabBar,
         heroBand,
         badgePopup,
+        renderAdvocacyConfirm(),
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
