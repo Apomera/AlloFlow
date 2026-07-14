@@ -144,3 +144,36 @@ describe('adventure cast lobby modal accessibility', () => {
     expect(rootModule).toContain('"aria-labelledby": "adventure-cast-lobby-title"');
   });
 });
+describe('adventure cast lobby secondary controls accessibility', () => {
+  const castSource = source.slice(source.indexOf('const CastLobby = React.memo('));
+
+  it('uses native button behavior and larger targets for secondary actions', () => {
+    expect(castSource).not.toContain('<button onClick');
+    expect(castSource).toContain('min-w-11 min-h-11 px-2 font-bold text-slate-800');
+    expect(castSource).toContain('min-w-11 min-h-11 px-2 text-xs text-violet-700');
+    expect(castSource.match(/min-h-11 px-3 py-2/g)?.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it('names glyph-only portrait refinement controls', () => {
+    expect(castSource).toContain("aria-label={t('common.confirm') || 'Apply portrait refinement'}");
+    expect(castSource).toContain("aria-label={t('common.cancel') || 'Cancel portrait refinement'}");
+    expect(castSource).toContain("aria-label={(t('adventure.edit_nanobanana') || 'Refine portrait') + ': ' + char.name}");
+  });
+
+  it('strengthens secondary-action focus and small-text contrast', () => {
+    expect(castSource).toContain('text-sky-700');
+    expect(castSource).toContain('border border-sky-600');
+    expect(castSource).toContain('text-emerald-700');
+    expect(castSource).toContain('border border-emerald-600');
+    expect(castSource.match(/focus-visible:outline-none focus-visible:ring-2/g)?.length).toBeGreaterThanOrEqual(14);
+    expect(castSource).toContain('<span className="text-3xl" aria-hidden="true">');
+  });
+
+  it('keeps the second Cast Lobby pass synchronized to deployment artifacts', () => {
+    const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
+    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(rootModule).toContain('Apply portrait refinement');
+    expect(rootModule).toContain('min-h-11 px-3 py-2 bg-sky-50 text-sky-700');
+  });
+});

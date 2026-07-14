@@ -858,62 +858,62 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     {characters.map((char, i) => (
                         <div key={i} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card">
-                            <button onClick={() => onRemoveCharacter(i)} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
+                            <button type="button" onClick={() => onRemoveCharacter(i)} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
                             <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner" aria-busy={!!char.isGenerating} aria-label={char.isGenerating ? (t('adventure.generating_portrait_aria') || ('Generating portrait for ' + (char.name || 'character'))) : undefined}>
                                 {char.isGenerating ? (
                                     <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" aria-hidden="true"></div>
                                 ) : char.portrait ? (
                                     <img src={char.portrait} alt={char.name} className="w-full h-full object-cover rounded-full"/>
                                 ) : (
-                                    <span className="text-3xl">🎭</span>
+                                    <span className="text-3xl" aria-hidden="true">🎭</span>
                                 )}
                             </div>
                             {editingField?.idx === i && editingField?.field === 'name' ? (
                                 <input type="text" aria-label={t('adventure.edit_name') || 'Edit character name'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="font-bold text-slate-800 text-sm text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white"/>
                             ) : (
-                                <h3><button type="button" onClick={() => startFieldEdit(i, 'name')} className="font-bold text-slate-800 text-sm cursor-pointer hover:text-violet-600 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-violet-500" title={t('adventure.edit_name')} aria-label={(t('adventure.edit_name') || 'Edit character name') + ': ' + char.name}>{char.name}</button></h3>
+                                <h3><button type="button" onClick={() => startFieldEdit(i, 'name')} className="min-w-11 min-h-11 px-2 font-bold text-slate-800 text-sm cursor-pointer hover:text-violet-700 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_name')} aria-label={(t('adventure.edit_name') || 'Edit character name') + ': ' + char.name}>{char.name}</button></h3>
                             )}
                             {editingField?.idx === i && editingField?.field === 'role' ? (
                                 <input type="text" aria-label={t('adventure.edit_role') || 'Edit character role'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="text-xs text-violet-600 font-medium text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white mt-0.5"/>
                             ) : (
-                                <button type="button" onClick={() => startFieldEdit(i, 'role')} className="text-xs text-violet-600 font-medium cursor-pointer hover:text-violet-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-violet-500" title={t('adventure.edit_role')} aria-label={(t('adventure.edit_role') || 'Edit character role') + ': ' + char.role}>{char.role}</button>
+                                <button type="button" onClick={() => startFieldEdit(i, 'role')} className="min-w-11 min-h-11 px-2 text-xs text-violet-700 font-medium cursor-pointer hover:text-violet-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_role')} aria-label={(t('adventure.edit_role') || 'Edit character role') + ': ' + char.role}>{char.role}</button>
                             )}
                             {editingField?.idx === i && editingField?.field === 'appearance' ? (
                                 <textarea aria-label={t('adventure.edit_appearance') || 'Edit character appearance'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveFieldEdit(); } if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus rows={3} className="text-[11px] text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white resize-none"/>
                             ) : (
-                                <button type="button" onClick={() => startFieldEdit(i, 'appearance')} className="text-[11px] text-slate-600 mt-1 leading-relaxed cursor-pointer hover:text-slate-700 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus:outline-none focus:ring-2 focus:ring-violet-500" title={t('adventure.edit_appearance')} aria-label={(t('adventure.edit_appearance') || 'Edit character appearance') + ': ' + char.appearance}>{char.appearance}</button>
+                                <button type="button" onClick={() => startFieldEdit(i, 'appearance')} className="min-w-11 min-h-11 px-2 text-[11px] text-slate-700 mt-1 leading-relaxed cursor-pointer hover:text-slate-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_appearance')} aria-label={(t('adventure.edit_appearance') || 'Edit character appearance') + ': ' + char.appearance}>{char.appearance}</button>
                             )}
                             {char.portrait && !char.isGenerating && (
                                 <div className="mt-2 flex flex-wrap gap-1.5 justify-center">
                                     {char.isUserUploaded && (
-                                        <span className="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-200 font-medium">📷 User Photo</span>
+                                        <span className="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-600 font-medium">📷 User Photo</span>
                                     )}
-                                    <button onClick={() => onGeneratePortrait(i)} className="text-xs px-3 py-1 bg-violet-600 text-white rounded-full hover:bg-violet-700 transition-all font-bold" title={t('adventure.regen_portrait')}>
+                                    <button type="button" onClick={() => onGeneratePortrait(i)} className="min-h-11 px-3 py-2 bg-violet-700 text-white rounded-full hover:bg-violet-800 transition-all font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.regen_portrait')}>
                                         🔄 {char.isUserUploaded ? 'AI Generate' : 'Regenerate'}
                                     </button>
                                     <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} accept="image/*" ref={el => portraitFileRefs.current[i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
-                                    <button onClick={() => portraitFileRefs.current[i]?.click()} className="text-xs px-3 py-1 bg-sky-50 text-sky-600 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-200" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
+                                    <button type="button" onClick={() => portraitFileRefs.current[i]?.click()} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload
                                     </button>
                                     {editIdx === i ? (
                                         <div className="w-full flex gap-1 mt-1">
                                             <input type="text" aria-label={t('adventure.portrait_refine_aria') || 'Describe how to refine portrait'} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} placeholder={t('adventure.portrait_refine_placeholder') || 'e.g. Add green glasses'} className="flex-1 text-xs px-2 py-1 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none" onKeyDown={(e) => { if (e.key === 'Enter' && editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}}/>
-                                            <button onClick={() => { if (editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}} className="text-xs px-2 py-1 bg-violet-500 text-white rounded-lg font-bold hover:bg-violet-600">✓</button>
-                                            <button onClick={() => { setEditIdx(null); setEditPrompt(''); }} className="text-xs px-2 py-1 bg-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-300">✗</button>
+                                            <button type="button" aria-label={t('common.confirm') || 'Apply portrait refinement'} onClick={() => { if (editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}} className="min-w-11 min-h-11 px-2 py-2 bg-violet-700 text-white rounded-lg font-bold hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">✓</button>
+                                            <button type="button" aria-label={t('common.cancel') || 'Cancel portrait refinement'} onClick={() => { setEditIdx(null); setEditPrompt(''); }} className="min-w-11 min-h-11 px-2 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2">✗</button>
                                         </div>
                                     ) : (
                                         <>
-                                            <button onClick={() => setEditIdx(i)} className="text-xs px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-400" title={t('adventure.edit_nanobanana')}>
+                                            <button type="button" aria-label={(t('adventure.edit_nanobanana') || 'Refine portrait') + ': ' + char.name} onClick={() => setEditIdx(i)} className="min-h-11 px-3 py-2 bg-slate-100 text-slate-700 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" title={t('adventure.edit_nanobanana')}>
                                                 ✏️ Refine
                                             </button>
-                                            <button onClick={() => {
+                                            <button type="button" onClick={() => {
                                                 const link = document.createElement('a');
                                                 link.href = char.portrait;
                                                 link.download = `${(char.name || 'character').replace(/\s+/g, '_')}_portrait.png`;
                                                 document.body.appendChild(link);
                                                 link.click();
                                                 document.body.removeChild(link);
-                                            }} className="text-xs px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full hover:bg-emerald-100 transition-all font-medium border border-emerald-200">
+                                            }} className="min-h-11 px-3 py-2 bg-emerald-50 text-emerald-700 rounded-full hover:bg-emerald-100 transition-all font-medium border border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
                                                 💾 Save
                                             </button>
                                         </>
@@ -922,11 +922,11 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                             )}
                             {!char.portrait && !char.isGenerating && (
                                 <div className="mt-2 flex flex-wrap gap-1.5 justify-center">
-                                    <button onClick={() => onGeneratePortrait(i)} className="text-xs px-3 py-1 bg-violet-600 text-white rounded-full hover:bg-violet-700 transition-all font-bold">
+                                    <button type="button" onClick={() => onGeneratePortrait(i)} className="min-h-11 px-3 py-2 bg-violet-700 text-white rounded-full hover:bg-violet-800 transition-all font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                                         🎨 Generate Portrait
                                     </button>
                                     <input type="file" aria-label={t('adventure.upload_portrait') || 'Upload portrait image'} accept="image/*" ref={el => portraitFileRefs.current['new-' + i] = el} onChange={(e) => handlePortraitFileChange(i, e)} className="hidden" />
-                                    <button onClick={() => portraitFileRefs.current['new-' + i]?.click()} className="text-xs px-3 py-1 bg-sky-50 text-sky-600 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-200" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
+                                    <button type="button" onClick={() => portraitFileRefs.current['new-' + i]?.click()} className="min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2" title={t('adventure.upload_portrait') || 'Upload your own portrait image'}>
                                         📷 Upload Photo
                                     </button>
                                 </div>
@@ -943,12 +943,12 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                             <input type="text" aria-label={t('adventure.role_placeholder') || 'Character role'} value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder={t('adventure.role_placeholder')} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center"/>
                             <input type="text" aria-label={t('adventure.appearance_placeholder') || 'Character appearance'} value={newAppearance} onChange={(e) => setNewAppearance(e.target.value)} placeholder={t('adventure.appearance_placeholder') || 'Appearance (e.g. tall, silver hair, blue robe)'} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center" onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}}/>
                             <div className="flex gap-1.5 mt-1">
-                                <button onClick={() => { if (newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}} className="text-xs px-3 py-1.5 bg-violet-600 text-white rounded-lg font-bold hover:bg-violet-700">Add</button>
-                                <button onClick={() => { setIsAdding(false); setNewName(''); setNewRole(''); setNewAppearance(''); }} className="text-xs px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-300">Cancel</button>
+                                <button type="button" onClick={() => { if (newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}} className="min-h-11 px-3 py-2 bg-violet-700 text-white rounded-lg font-bold hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">Add</button>
+                                <button type="button" onClick={() => { setIsAdding(false); setNewName(''); setNewRole(''); setNewAppearance(''); }} className="min-h-11 px-3 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2">Cancel</button>
                             </div>
                         </div>
                     ) : (
-                        <button onClick={() => setIsAdding(true)} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-600 p-4 flex flex-col items-center justify-center text-center transition-all hover:shadow-lg hover:border-violet-400 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group">
+                        <button type="button" onClick={() => setIsAdding(true)} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-600 p-4 flex flex-col items-center justify-center text-center transition-all hover:shadow-lg hover:border-violet-700 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                             <span className="text-4xl mb-2 group-hover:scale-110 transition-transform" aria-hidden="true">➕</span>
                             <span className="font-bold text-sm text-violet-600">{t('adventure.add_character')}</span>
                             <span className="text-[11px] text-slate-600 mt-0.5">{t('adventure.create_cast_member')}</span>
@@ -956,10 +956,10 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                     )}
                 </div>
                 <div className="flex flex-wrap justify-center gap-3">
-                    <button onClick={() => { characters.forEach((_, i) => { if (!characters[i].portrait && !characters[i].isGenerating && !characters[i].isUserUploaded) { onGeneratePortrait(i); }}); }} className="min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700 font-bold rounded-xl hover:bg-violet-200 transition-all text-sm border border-violet-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
+                    <button type="button" onClick={() => { characters.forEach((_, i) => { if (!characters[i].portrait && !characters[i].isGenerating && !characters[i].isUserUploaded) { onGeneratePortrait(i); }}); }} className="min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700 font-bold rounded-xl hover:bg-violet-200 transition-all text-sm border border-violet-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                         <span aria-hidden="true">🎨</span> {t('adventure.generate_all') || 'Generate All Portraits'}
                     </button>
-                    <button onClick={onConfirm} className="min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
+                    <button type="button" onClick={onConfirm} className="min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                         <span aria-hidden="true">⚔️</span> {t('adventure.begin_adventure') || 'Begin Adventure'}
                     </button>
                 </div>
