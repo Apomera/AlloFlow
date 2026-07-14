@@ -30,6 +30,32 @@ describe('Live session modal accessibility', () => {
     expect(source).toContain('Selectable student join link');
   });
 
+  it('exposes accurate QR readiness and connection updates', () => {
+    expect(source).toContain("const qrStatusText = liveQrSvg ? 'QR validated' : liveQrError ? 'QR unavailable' : 'QR loading';");
+    expect(source).toContain('<ul className="mb-3 grid');
+    expect(source).toContain('aria-label="Live session readiness"');
+    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true">{qrStatusText}');
+    expect(source).toContain('connectedStudentCount > 0');
+    expect(source).toContain('role="img" aria-label="AlloFlow student join QR"');
+  });
+
+  it('preserves visible names and exposes pacing as a switch', () => {
+    expect(source).toContain("aria-label={`${activeSessionCode}. ${t('session.click_to_copy')}`}");
+    expect(source).not.toContain("aria-label={t('common.groups')}");
+    expect(source).toContain("aria-label={`${t('common.copy')} ${lanJoinUrl}`}");
+    expect(source).toContain("aria-label={`${t('common.copy')} ${appId}`}");
+    expect(source).toContain('role="switch"');
+    expect(source).toContain("aria-checked={sessionData.mode === 'sync'}");
+  });
+
+  it('preserves fallback focus, contrast, and reduced motion', () => {
+    expect(source).not.toContain('duration-200 focus:outline-none ${isProjectionMode');
+    expect(source).toContain('animate-pulse motion-reduce:animate-none');
+    expect(source).toContain('slide-in-from-bottom-2 motion-reduce:animate-none');
+    expect(source).toContain('duration-300 motion-reduce:transition-none');
+    expect(source).toContain('text-red-700');
+  });
+
   it('synchronizes the deployable module', () => {
     expect(fs.readFileSync('prismflow-deploy/public/view_session_modal_module.js', 'utf8')).toBe(fs.readFileSync('view_session_modal_module.js', 'utf8'));
   });
