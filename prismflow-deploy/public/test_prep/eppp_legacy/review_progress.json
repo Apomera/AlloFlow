@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T01:54:31.169Z",
+  "status": "legacy-review-progress-all-unreleased-candidates-quarantined",
+  "summary": {
+    "legacyUniverse": 2933,
+    "nativeEditorialLegacyItems": 1443,
+    "highTouchAdjudicatedQuarantined": 70,
+    "assistedEditorialReviewedQuarantined": 500,
+    "uniqueLegacyItemsWithEditorialReview": 2013,
+    "remainingWithoutEditorialReview": 920,
+    "quarantinedLegacyItems": 1490,
+    "quarantinedItemsWithEditorialReview": 570,
+    "independentExpertValidated": 0
+  },
+  "highTouchIndex": "adjudication_index.json",
+  "assistedReviewWaves": [
+    "bulk_review_wave_01.json"
+  ]
+}
