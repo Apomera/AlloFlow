@@ -452,6 +452,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: initializeGame,
       className: `min-h-11 text-xs flex items-center gap-1 px-3 py-1.5 rounded-full font-bold transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? "text-white hover:bg-white/10" : "text-indigo-600 hover:bg-indigo-50"}`,
       "aria-label": t("memory.reset"),
@@ -463,6 +464,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setIsFullscreen((prev) => !prev),
       className: `min-w-11 min-h-11 p-1.5 rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? "text-white hover:bg-white/10" : "text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"}`,
       title: isFullscreen ? t("memory.exit_fullscreen") : t("memory.fullscreen"),
@@ -783,6 +785,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   return /* @__PURE__ */ React.createElement("div", { ref: matchingDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "matching-game-title", className: `fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? "" : " animate-in fade-in duration-300"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "matching-game-title", className: "font-bold text-lg flex items-center gap-2 text-indigo-900" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 20, className: "text-orange-500" }), " ", t("matching.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("matching.instructions")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-400 px-2 py-0.5 rounded-full" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 10, className: "text-slate-600" }), " ", t("matching.pairs") || "Pairs", ": ", connections.length, "/", items.length), isChecked && /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-indigo-100 text-indigo-700 border-indigo-200"} ${!useReducedMotion() ? "animate-in zoom-in duration-300" : ""}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500" }), " ", t("matching.score_display"), ": ", score, " pts"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: reset,
       className: "flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors",
       title: t("matching.reset_aria"),
@@ -969,6 +972,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   )), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider text-slate-600 tabular-nums" }, connections.length, "/", items.length))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.check_answers"),
       onClick: checkAnswers,
       disabled: isChecked || connections.length === 0,
@@ -1731,6 +1735,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       isChecked && item.currentContainer !== "deck" && item.currentContainer !== item.categoryId && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-red-700 text-white rounded-full p-0.5" }, /* @__PURE__ */ React.createElement(X, { size: 12 })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-red-600 text-center leading-tight" }, "\u2717 \u2192 ", buckets.find((b) => b.id === item.categoryId)?.label), onExplainIncorrect && /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: (e) => {
             e.stopPropagation();
             handleExplainClick(item);
@@ -1790,6 +1795,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       keyboardSelectedItemId && /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-move-here": "true",
           onClick: () => handleKeyboardMove(bucket.id),
           className: "w-full mt-2 py-2 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg border-2 border-indigo-200 hover:bg-indigo-200 hover:border-indigo-300 animate-pulse motion-reduce:animate-none"
@@ -1834,6 +1840,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-mono text-indigo-700 min-w-[2.5em] text-end" }, _imgScale.toFixed(2), "\xD7")), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         "data-help-key": "concept_sort_reset",
         onClick: reset,
         className: "px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-400 transition-colors",
@@ -1843,6 +1850,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         "aria-label": t("common.check_answers"),
         "data-help-key": "concept_sort_check_answers",
         onClick: checkAnswers,
@@ -1865,6 +1873,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         "aria-label": t("common.add"),
         onClick: handleAddItem,
         disabled: !newItemText.trim(),
@@ -1875,6 +1884,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     ))), deckItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "shrink-0 w-[160px]" }, renderCard(item))), deckItems.length === 0 && !isWon && /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic font-bold text-sm mt-4 text-center w-full" }, t("concept_sort.word_bank_empty"))), deckCanScrollLeft && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => {
           const el = deckScrollRef.current;
           if (el) el.scrollBy({ left: -300, behavior: "smooth" });
@@ -1886,6 +1896,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     ), deckCanScrollRight && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => {
           const el = deckScrollRef.current;
           if (el) el.scrollBy({ left: 300, behavior: "smooth" });
@@ -3874,6 +3885,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   })))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-t-2 border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-bold" }, t("games.pipeline.instruction") || "Click a step's", " ", /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-0.5 text-indigo-600" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 12 }), " output"), " ", t("games.pipeline.then") || "then click another step to connect them")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleReset,
       className: "flex items-center gap-1 px-4 py-2 rounded-full text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors border border-slate-300"
     },
@@ -3882,6 +3894,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   ), !isComplete && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleCheck,
       disabled: connections.length === 0 || checked,
       className: "flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
@@ -4381,6 +4394,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
   return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: `fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4${useReducedMotion() ? "" : " animate-in zoom-in-95"}` }, /* @__PURE__ */ React.createElement("div", { ref: syntaxDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "syntax-game-title", className: "bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-600 p-4 text-white flex justify-between items-center" }, /* @__PURE__ */ React.createElement("h3", { id: "syntax-game-title", className: "font-bold text-xl flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layout, { size: 24, "aria-hidden": "true" }), " ", t("games.syntax.title")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow-300 border border-indigo-500" }, t("memory.score"), ": ", score), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: syntaxCloseRef, type: "button", "data-help-key": "syntax_close", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full focus:ring-2 focus:ring-white", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement("div", { className: "p-8 flex-grow flex flex-col items-center justify-center bg-slate-50 gap-8 overflow-y-auto" }, gameStatus === "complete" ? /* @__PURE__ */ React.createElement("div", { role: "status", "aria-labelledby": "syntax-complete-title", className: `text-center${useReducedMotion() ? "" : " animate-in zoom-in"}` }, !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(Trophy, { size: 64, className: "text-yellow-500 mx-auto mb-4", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { id: "syntax-complete-title", className: "text-3xl font-black text-slate-800 mb-2" }, t("games.syntax.complete")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6" }, t("games.syntax.summary", { count: sentences.length })), /* @__PURE__ */ React.createElement("button", { ref: syntaxFinishRef, type: "button", "data-help-key": "syntax_finish", onClick: onClose, className: "bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform focus:ring-2 focus:ring-indigo-300" }, t("games.syntax.finish"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "w-full flex justify-between text-xs font-bold text-slate-600 uppercase tracking-wider" }, /* @__PURE__ */ React.createElement("span", null, t("games.syntax.progress", { current: currentSentenceIndex + 1, total: sentences.length })), /* @__PURE__ */ React.createElement("span", null, t("games.syntax.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: `w-full min-h-[80px] p-4 rounded-xl border-2 border-dashed flex flex-wrap gap-2 items-center justify-center transition-colors ${gameStatus === "correct" ? "bg-green-50 border-green-400" : "bg-white border-slate-300"}` }, userOrder.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 italic pointer-events-none select-none" }, t("games.syntax.empty_zone")), userOrder.map((word) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.continue"),
       key: `placed-${word.id}`,
       "data-help-key": "syntax_dropped_word",
@@ -4391,6 +4405,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
   ))), /* @__PURE__ */ React.createElement("div", { className: "h-12" }, gameStatus === "correct" ? /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.next"),
       "data-help-key": "syntax_next",
       onClick: nextRound,
@@ -4403,6 +4418,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
   ) : /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.check_answer"),
       id: "check-btn",
       "data-help-key": "syntax_check",
@@ -4414,6 +4430,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
   )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3 justify-center p-4 bg-slate-200/50 rounded-xl w-full border border-slate-400 min-h-[100px]" }, shuffledWords.map((word) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: word.id,
       "data-help-key": "syntax_pool_word",
       onClick: () => handleWordClick(word, true),
@@ -4580,6 +4597,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14, className: "text-rose-700", "aria-hidden": "true" }), " ", t("bingo.include_pictures"))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onGenerate,
       className: "flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm motion-safe:active:scale-95",
       "data-help-key": "bingo_regenerate_btn",
@@ -4591,6 +4609,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-6 bg-slate-300 mx-2" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         if (alloBotRef && alloBotRef.current) {
           alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
@@ -4607,6 +4626,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-6 bg-slate-300 mx-2" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: startCaller,
       className: "bg-teal-700 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-800 transition-colors flex items-center gap-2 motion-safe:active:scale-95",
       "data-help-key": "bingo_launch_caller_btn",
@@ -4618,6 +4638,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   )) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 w-full justify-between" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setIsCallerMode(false),
       className: "min-h-11 px-3 flex items-center gap-2 text-slate-600 hover:text-slate-700 font-bold text-xs rounded-lg focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2",
       "data-help-key": "bingo_exit_caller_btn",
@@ -4644,6 +4665,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono w-8 text-end" }, callDelay, "s")), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setIsHistoryVisible((prev) => !prev),
       className: `min-w-11 min-h-11 p-2 rounded-full transition-colors focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${isHistoryVisible ? "bg-slate-200 text-slate-600 hover:bg-slate-300" : "bg-slate-700 text-slate-200 hover:bg-slate-600"}`,
       title: isHistoryVisible ? t("bingo.hide_list") : t("bingo.show_list"),
@@ -4656,6 +4678,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: prevCall,
       disabled: currentCallIndex <= 0,
       className: "min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2",
@@ -4667,6 +4690,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: toggleAutoPlay,
       className: `flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all ${isAutoPlaying ? "bg-red-700 text-white hover:bg-red-600" : "bg-teal-700 text-white hover:bg-teal-800"}`,
       "data-help-key": "bingo_toggle_autoplay",
@@ -4677,6 +4701,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setIsAutoPlaying(false);
         nextCall();
@@ -5241,9 +5266,10 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       disabled: feedback === "correct",
       "aria-label": t("games.scramble.input_placeholder")
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 w-full" }, /* @__PURE__ */ React.createElement("button", { onClick: useHint, className: "flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2", "aria-label": t("games.scramble.get_hint_aria") || "Get a hint" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 14, "aria-hidden": "true" }), " ", t("games.scramble.hint_button") || "Hint"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 w-full" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: useHint, className: "flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2", "aria-label": t("games.scramble.get_hint_aria") || "Get a hint" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 14, "aria-hidden": "true" }), " ", t("games.scramble.hint_button") || "Hint"), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "data-help-ignore": "true",
       "aria-label": t("common.skip"),
       "data-help-key": "wizard_skip_btn",
@@ -5254,6 +5280,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.check"),
       onClick: handleCheck,
       className: "flex-[2] py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition-all motion-safe:active:scale-95 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"

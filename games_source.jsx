@@ -422,7 +422,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
             <option value="image-def">{t('memory.modes.image_def')}</option>
             <option value="mixed">{t('memory.modes.mixed')}</option>
           </select>
-          <button
+          <button type="button"
             onClick={initializeGame}
             className={`min-h-11 text-xs flex items-center gap-1 px-3 py-1.5 rounded-full font-bold transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-indigo-600 hover:bg-indigo-50'}`}
             aria-label={t('memory.reset')}
@@ -430,7 +430,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           >
             <RefreshCw size={14} aria-hidden="true"/> {t('memory.reset')}
           </button>
-          <button
+          <button type="button"
             onClick={() => setIsFullscreen(prev => !prev)}
             className={`min-w-11 min-h-11 p-1.5 rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}
             title={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
@@ -816,7 +816,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                  </div>
             </div>
             <div className="flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto">
-                <button
+                <button type="button"
                     onClick={reset}
                     className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
                     title={t('matching.reset_aria')}
@@ -1042,7 +1042,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                      </div>
                  )}
              </div>
-             <button
+             <button type="button"
                  aria-label={t('common.check_answers')}
                 onClick={checkAnswers}
                 disabled={isChecked || connections.length === 0}
@@ -1958,7 +1958,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                  ✗ → {buckets.find(b => b.id === item.categoryId)?.label}
                </div>
                {onExplainIncorrect && (
-                 <button
+                 <button type="button"
                    onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
                    className="mt-1 w-full text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
                    aria-label={t('games.explain_incorrect_aria') || 'Explain why this was incorrect'}
@@ -2055,7 +2055,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                )}
                            </div>
                            {keyboardSelectedItemId && (
-                               <button
+                               <button type="button"
                                     data-move-here="true"
                                     onClick={() => handleKeyboardMove(bucket.id)}
                                     className="w-full mt-2 py-2 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg border-2 border-indigo-200 hover:bg-indigo-200 hover:border-indigo-300 animate-pulse motion-reduce:animate-none"
@@ -2135,7 +2135,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                    <span className="text-[10px] font-mono text-indigo-700 min-w-[2.5em] text-end">{_imgScale.toFixed(2)}×</span>
                                </div>
                            )}
-                           <button
+                           <button type="button"
                                 data-help-key="concept_sort_reset"
                                 onClick={reset}
                                 className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-400 transition-colors"
@@ -2143,7 +2143,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            >
                                {t('concept_sort.reset_board')}
                            </button>
-                           <button
+                           <button type="button"
                                aria-label={t('common.check_answers')}
                                 data-help-key="concept_sort_check_answers"
                                 onClick={checkAnswers}
@@ -2170,7 +2170,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                        className="w-full text-xs text-center p-1 bg-transparent border-b border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 mb-2"
                                        aria-label={t('concept_sort.add_item_placeholder')}
                                    />
-                                    <button aria-label={t('common.add')}
+                                    <button type="button" aria-label={t('common.add')}
                                         onClick={handleAddItem}
                                         disabled={!newItemText.trim()}
                                         className="bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-full p-1.5 shadow-sm disabled:opacity-50"
@@ -2193,7 +2193,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                        )}
                    </div>
                    {deckCanScrollLeft && (
-                       <button
+                       <button type="button"
                            onClick={() => {
                                const el = deckScrollRef.current;
                                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
@@ -2205,7 +2205,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                        </button>
                    )}
                    {deckCanScrollRight && (
-                       <button
+                       <button type="button"
                            onClick={() => {
                                const el = deckScrollRef.current;
                                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
@@ -4444,14 +4444,14 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={handleReset}
               className="flex items-center gap-1 px-4 py-2 rounded-full text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors border border-slate-300"
             >
               <RefreshCw size={12}/> Reset
             </button>
             {!isComplete && (
-              <button
+              <button type="button"
                 onClick={handleCheck}
                 disabled={connections.length === 0 || checked}
                 className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
@@ -5040,7 +5040,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                 <div className={`w-full min-h-[80px] p-4 rounded-xl border-2 border-dashed flex flex-wrap gap-2 items-center justify-center transition-colors ${gameStatus === 'correct' ? 'bg-green-50 border-green-400' : 'bg-white border-slate-300'}`}>
                     {userOrder.length === 0 && <span className="text-slate-600 italic pointer-events-none select-none">{t('games.syntax.empty_zone')}</span>}
                     {userOrder.map((word) => (
-                        <button
+                        <button type="button"
                             aria-label={t('common.continue')}
                             key={`placed-${word.id}`}
                             data-help-key="syntax_dropped_word" onClick={() => handleWordClick(word, false)}
@@ -5052,7 +5052,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                 </div>
                 <div className="h-12">
                     {gameStatus === 'correct' ? (
-                        <button aria-label={t('common.next')}
+                        <button type="button" aria-label={t('common.next')}
                             data-help-key="syntax_next" onClick={nextRound}
                             autoFocus
                             className="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in motion-reduce:animate-none bounce-in"
@@ -5060,7 +5060,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                             {t('games.syntax.next')} <ArrowRight size={18}/>
                         </button>
                     ) : (
-                        <button
+                        <button type="button"
                             aria-label={t('common.check_answer')}
                             id="check-btn" data-help-key="syntax_check"
                             onClick={checkAnswer}
@@ -5073,7 +5073,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                 </div>
                 <div className="flex flex-wrap gap-3 justify-center p-4 bg-slate-200/50 rounded-xl w-full border border-slate-400 min-h-[100px]">
                     {shuffledWords.map((word) => (
-                        <button
+                        <button type="button"
                             key={word.id}
                             data-help-key="syntax_pool_word" onClick={() => handleWordClick(word, true)}
                             className="bg-white text-slate-700 border-b-4 border-slate-300 px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-indigo-50 hover:border-indigo-300 hover:-translate-y-1 active:border-b-0 active:translate-y-0 transition-all"
@@ -5254,7 +5254,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 <ImageIcon size={14} className="text-rose-700" aria-hidden="true"/> {t('bingo.include_pictures')}
                             </div>
                         </label>
-                        <button
+                        <button type="button"
                             onClick={onGenerate}
                             className="flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm motion-safe:active:scale-95"
                             data-help-key="bingo_regenerate_btn" aria-label={t('bingo.regenerate')}
@@ -5262,7 +5262,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             <RefreshCw size={14} aria-hidden="true"/> {t('bingo.regenerate')}
                         </button>
                         <div className="w-px h-6 bg-slate-300 mx-2"></div>
-                        <button
+                        <button type="button"
                             onClick={() => {
                                 if (alloBotRef && alloBotRef.current) {
                                     alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
@@ -5275,7 +5275,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             <Printer size={16} aria-hidden="true"/> {t('bingo.print_cards')}
                         </button>
                         <div className="w-px h-6 bg-slate-300 mx-2"></div>
-                        <button
+                        <button type="button"
                             onClick={startCaller}
                             className="bg-teal-700 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-800 transition-colors flex items-center gap-2 motion-safe:active:scale-95"
                             data-help-key="bingo_launch_caller_btn" aria-label={t('bingo.launch_caller_aria')}
@@ -5285,7 +5285,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                     </>
                 ) : (
                     <div className="flex items-center gap-4 w-full justify-between">
-                         <button
+                         <button type="button"
                             onClick={() => setIsCallerMode(false)}
                             className="min-h-11 px-3 flex items-center gap-2 text-slate-600 hover:text-slate-700 font-bold text-xs rounded-lg focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                             data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
@@ -5307,7 +5307,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 />
                                 <span className="text-xs font-mono w-8 text-end">{callDelay}s</span>
                             </div>
-                            <button
+                            <button type="button"
                                 onClick={() => setIsHistoryVisible(prev => !prev)}
                                 className={`min-w-11 min-h-11 p-2 rounded-full transition-colors focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}
                                 title={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
@@ -5315,7 +5315,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             >
                                 {isHistoryVisible ? <Eye size={20} aria-hidden="true"/> : <EyeOff size={20} aria-hidden="true"/>}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={prevCall}
                                 disabled={currentCallIndex <= 0}
                                 className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
@@ -5324,14 +5324,14 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             >
                                 <ArrowDown className="rotate-90" size={20} aria-hidden="true"/>
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={toggleAutoPlay}
                                 className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all ${isAutoPlaying ? 'bg-red-700 text-white hover:bg-red-600' : 'bg-teal-700 text-white hover:bg-teal-800'}`}
                                 data-help-key="bingo_toggle_autoplay" aria-pressed={isAutoPlaying} aria-label={isAutoPlaying ? t('bingo.stop_auto') : t('bingo.start_auto')}
                             >
                                 {isAutoPlaying ? <span className="flex items-center gap-2"><StopCircle size={16} aria-hidden="true"/> {t('bingo.stop_auto')}</span> : <span className="flex items-center gap-2"><MonitorPlay size={16} aria-hidden="true"/> {t('bingo.start_auto')}</span>}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => { setIsAutoPlaying(false); nextCall(); }} data-help-key="bingo_next_clue"
                                 disabled={currentCallIndex >= callerQueue.length - 1}
                                 className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
@@ -6085,10 +6085,10 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                                 aria-label={t('games.scramble.input_placeholder')}
                             />
                             <div className="flex gap-2 w-full">
-                                <button onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
+                                <button type="button" onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
                                     <HelpCircle size={14} aria-hidden="true"/> {t('games.scramble.hint_button') || 'Hint'}
                                 </button>
-                                <button data-help-ignore="true"
+                                <button type="button" data-help-ignore="true"
                                     aria-label={t('common.skip')}
                                     data-help-key="wizard_skip_btn"
                     onClick={handleSkip}
@@ -6096,7 +6096,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                                 >
                                     {t('games.scramble.skip')}
                                 </button>
-                                <button
+                                <button type="button"
                                     aria-label={t('common.check')}
                                     onClick={handleCheck}
                                     className="flex-[2] py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition-all motion-safe:active:scale-95 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
