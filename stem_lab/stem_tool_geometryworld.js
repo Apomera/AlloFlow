@@ -297,7 +297,125 @@
     return vol.toFixed(2);
   }
 
+  // A bounding box only equals a structure's volume when every unit of the box is filled.
+  // Keep this reasoning shared so every surface reports composite structures accurately.
+  function measuredVolume(m) {
+    return m && typeof m.totalVolume === 'number' ? m.totalVolume : (m ? m.boundingVolume : 0);
+  }
+
+  function enrichMeasurement(m) {
+    if (!m) return m;
+    var occupied = measuredVolume(m);
+    var bounding = m.boundingVolume || 0;
+    m.occupiedVolume = occupied;
+    m.missingVolume = Math.max(0, bounding - occupied);
+    m.fillPercent = bounding > 0 ? Math.round((occupied / bounding) * 100) : 0;
+    var hasPartialShapes = Object.keys(m.shapeCounts || {}).some(function(shapeId) { return shapeId !== 'cube'; });
+    if (hasPartialShapes) m.hasFractions = true;
+    m.isSolidPrism = !m.hasFractions && m.missingVolume === 0 && m.count === bounding;
+    m.formattedOccupiedVolume = formatVolume(occupied);
+    if (Array.isArray(m.blocks)) {
+      var exposedFaces = countExposedCubeFaces(m.blocks);
+      m.surfaceAreaExact = !m.hasFractions;
+      m.exposedSurfaceArea = m.surfaceAreaExact ? exposedFaces.surfaceArea : null;
+      m.exposedFaces = m.surfaceAreaExact ? exposedFaces : null;
+    }
+    return m;
+  }
+
+  function parseVolumePrediction(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text) return null;
+    var mixed = text.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+    var number;
+    if (mixed && Number(mixed[3]) !== 0) {
+      number = Number(mixed[1]) + Number(mixed[2]) / Number(mixed[3]);
+    } else if (/^\d+\/\d+$/.test(text)) {
+      var fraction = text.split('/').map(Number);
+      number = fraction[1] ? fraction[0] / fraction[1] : NaN;
+    } else {
+      number = Number(text);
+    }
+    return Number.isFinite(number) && number > 0 ? number : null;
+  }
+
+  function compareVolumePrediction(value, actualVolume) {
+    var predicted = parseVolumePrediction(value);
+    if (predicted === null || !Number.isFinite(actualVolume) || actualVolume <= 0) return null;
+    var difference = predicted - actualVolume;
+    var absoluteDifference = Math.abs(difference);
+    var percentError = Math.round((absoluteDifference / actualVolume) * 100);
+    var relation = difference === 0 ? 'exact' : (difference > 0 ? 'over' : 'under');
+    var accuracyLabel;
+    if (relation === 'exact') accuracyLabel = 'Exact match!';
+    else if (percentError <= 10) accuracyLabel = 'Very close ? within 10%';
+    else if (percentError <= 25) accuracyLabel = 'Close ? within 25%';
+    else accuracyLabel = 'Use the dimensions to revise your estimate';
+    return {
+      prediction: predicted,
+      actual: actualVolume,
+      difference: difference,
+      absoluteDifference: absoluteDifference,
+      percentError: percentError,
+      relation: relation,
+      accuracyLabel: accuracyLabel
+    };
+  }
+
   // ── Achievement Badges ──
+
+  // Counts exposed unit faces for a connected structure made entirely from full cubes.
+  function countExposedCubeFaces(blocks) {
+    var occupied = {};
+    (blocks || []).forEach(function(block) {
+      occupied[block.x + ',' + block.y + ',' + block.z] = true;
+    });
+    var directions = [{ x: 1, y: 0, z: 0, axis: 'x' }, { x: -1, y: 0, z: 0, axis: 'x' }, { x: 0, y: 1, z: 0, axis: 'y' }, { x: 0, y: -1, z: 0, axis: 'y' }, { x: 0, y: 0, z: 1, axis: 'z' }, { x: 0, y: 0, z: -1, axis: 'z' }];
+    var byAxis = { x: 0, y: 0, z: 0 };
+    (blocks || []).forEach(function(block) {
+      directions.forEach(function(direction) {
+        var neighbor = (block.x + direction.x) + ',' + (block.y + direction.y) + ',' + (block.z + direction.z);
+        if (!occupied[neighbor]) byAxis[direction.axis] += 1;
+      });
+    });
+    return {
+      xFaces: byAxis.x, yFaces: byAxis.y, zFaces: byAxis.z,
+      surfaceArea: byAxis.x + byAxis.y + byAxis.z
+    };
+  }
+
+  function compareMeasurementRecords(previous, latest) {
+    if (!previous || !latest) return null;
+    var previousVolume = typeof previous.occupiedVolume === 'number' ? previous.occupiedVolume : parseVolumePrediction(previous.vol);
+    var latestVolume = typeof latest.occupiedVolume === 'number' ? latest.occupiedVolume : parseVolumePrediction(latest.vol);
+    if (previousVolume === null || latestVolume === null) return null;
+    var previousSurface = typeof previous.surfaceArea === 'number' ? previous.surfaceArea : null;
+    var latestSurface = typeof latest.surfaceArea === 'number' ? latest.surfaceArea : null;
+    var surfaceComparable = previousSurface !== null && latestSurface !== null;
+    var sameVolume = Math.abs(latestVolume - previousVolume) < 0.000001;
+    var surfaceDifference = surfaceComparable ? latestSurface - previousSurface : null;
+    var moreEfficient = sameVolume && surfaceComparable && surfaceDifference !== 0
+      ? (surfaceDifference < 0 ? 'latest' : 'previous') : null;
+    return {
+      previousVolume: previousVolume,
+      latestVolume: latestVolume,
+      volumeDifference: latestVolume - previousVolume,
+      sameVolume: sameVolume,
+      previousSurfaceArea: previousSurface,
+      latestSurfaceArea: latestSurface,
+      surfaceAreaDifference: surfaceDifference,
+      moreSurfaceEfficient: moreEfficient
+    };
+  }
+
+  function measurementLayerFor(blockData) {
+    if (blockData && blockData._measurementLayer) return blockData._measurementLayer;
+    return blockData && blockData._lessonBlock ? 'lesson' : 'student';
+  }
+
+  function belongsToMeasuredComponent(seedData, candidateData, blockType) {
+    return !!candidateData && candidateData.blockType === blockType && measurementLayerFor(candidateData) === measurementLayerFor(seedData);
+  }
   var ACHIEVEMENTS = [
     { id: 'first_measure', name: 'First Measurement', icon: '\uD83D\uDCCF', desc: 'Measured your first structure', check: function(log) { return log.some(function(e) { return e.type === 'measurement'; }); } },
     { id: 'first_correct', name: 'Right Answer!', icon: '\u2705', desc: 'Answered your first NPC question correctly', check: function(log) { return log.some(function(e) { return e.type === 'answer_correct'; }); } },
@@ -1157,7 +1275,8 @@
   // ── Physical Manipulative Bridge Card ──
   // Generates a printable "Build This in Your Classroom" card from a measurement
   function generateManipulativeCard(measurement, lessonTitle) {
-    var m = measurement;
+    var m = enrichMeasurement(measurement);
+    var physicalPieces = m.hasFractions ? m.formattedOccupiedVolume + ' cubic units of pieces' : m.count + ' unit cubes';
     var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Build This! \u2014 Physical Manipulative Card</title>'
       + '<style>'
       + 'body{font-family:Arial,sans-serif;max-width:500px;margin:24px auto;color:#1a1a1a}'
@@ -1190,20 +1309,28 @@
     h += '</div></div>';
 
     h += '<div class="steps"><strong>\uD83D\uDCD0 Build Steps:</strong><ol>';
-    h += '<li>Get <strong>' + m.boundingVolume + ' unit cubes</strong> (or snap cubes)</li>';
-    h += '<li>Build the <strong>bottom layer</strong>: ' + m.L + ' blocks long \u00d7 ' + m.W + ' blocks wide = <strong>' + (m.L * m.W) + ' cubes</strong></li>';
-    h += '<li>Stack <strong>' + m.H + ' layers</strong> on top of each other</li>';
+    h += '<li>Get <strong>' + physicalPieces + '</strong> (or snap cubes)</li>';
+    if (m.isSolidPrism) {
+      h += '<li>Build the <strong>bottom layer</strong>: ' + m.L + ' blocks long \u00d7 ' + m.W + ' blocks wide = <strong>' + (m.L * m.W) + ' cubes</strong></li>';
+      h += '<li>Stack <strong>' + m.H + ' complete layers</strong> on top of each other</li>';
+    } else {
+      h += '<li>Recreate the structure <strong>one layer at a time</strong>, leaving its gaps or cut-away parts empty</li>';
+      h += '<li>Compare its <strong>' + m.formattedOccupiedVolume + ' occupied cubic units</strong> with its ' + m.boundingVolume + '-unit bounding box</li>';
+    }
     h += '<li><strong>Count all the cubes</strong> in your finished structure</li>';
     h += '</ol></div>';
 
     h += '<div class="answer-box">';
     h += '<div class="prompt">How many cubes did you use? <span class="line"></span></div>';
-    h += '<div style="margin-top:8px;font-size:12px;color:#6b7280">Does this match ' + m.L + ' \u00d7 ' + m.W + ' \u00d7 ' + m.H + ' = <span class="line" style="width:60px"></span> ?</div>';
+    h += '<div style="margin-top:8px;font-size:12px;color:#6b7280">' + (m.isSolidPrism
+      ? 'Does this match ' + m.L + ' \u00d7 ' + m.W + ' \u00d7 ' + m.H + ' = <span class="line" style="width:60px"></span> ?'
+      : 'Bounding box: ' + m.boundingVolume + ' \u2212 empty space: ' + formatVolume(m.missingVolume) + ' = <span class="line" style="width:60px"></span>')
+      + '</div>';
     h += '</div>';
 
     h += '<div class="check">';
     h += '\u2705 <strong>Check:</strong> Your physical structure should have the same volume as the digital one. ';
-    h += 'The digital measurement showed <strong>' + m.boundingVolume + ' cubic units</strong>. ';
+    h += 'The digital measurement showed <strong>' + m.formattedOccupiedVolume + ' cubic units</strong>. ';
     h += 'Did your count match?';
     h += '</div>';
 
@@ -1364,7 +1491,9 @@
       var aiRefinePrompt = d.aiRefinePrompt || '';
       var lastGeneratedLesson = d.lastGeneratedLesson || null;
       var activeLesson = d.activeLesson || 'volumeExplorer';
-      var measureResult = d.measureResult || null;
+      var measureResult = d.measureResult ? enrichMeasurement(d.measureResult) : null;
+      var volumePrediction = d.volumePrediction || '';
+      var predictionResult = d.predictionResult || null;
       var npcChatInput = d.npcChatInput || '';
       var npcChatHistory = d.npcChatHistory || {};
       var npcChatLoading = d.npcChatLoading || false;
@@ -1381,6 +1510,7 @@
       var selectedShape = d.selectedShape || 0; // index into BLOCK_SHAPES
       var blockRotation = d.blockRotation || 0; // 0-3 = 0°, 90°, 180°, 270° around Y axis
       var measureHistory = d.measureHistory || []; // past measurements
+      var measurementComparison = measureHistory.length >= 2 ? compareMeasurementRecords(measureHistory[measureHistory.length - 2], measureHistory[measureHistory.length - 1]) : null;
       var actionFeedback = d.actionFeedback || ''; // brief key action text
       var homeLang = d.homeLang || 'en';
       var npcTranslations = d.npcTranslations || {};
@@ -2080,7 +2210,7 @@
           mesh.castShadow = true; mesh.receiveShadow = true;
           addBlockEdges(mesh, shapeId);
           var shapeDef = BLOCK_SHAPES.find(function(s) { return s.id === shapeId; }) || BLOCK_SHAPES[0];
-          mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot, _lessonBlock: !!engine._placingLessonBlocks };
+          mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot, _lessonBlock: !!engine._placingLessonBlocks, _measurementLayer: engine._measurementLayer || (engine._placingLessonBlocks ? 'lesson' : 'student') };
           engine.scene.add(mesh);
           engine.blocks[key] = mesh;
           engine._blocksDirty = true; // invalidate cached blocks array so raycasters rebuild
@@ -2287,14 +2417,17 @@
           if (engine.congratsSprite) { engine.scene.remove(engine.congratsSprite); engine.congratsSprite = null; engine.congratsCreated = false; }
           // Place ground and structures as indestructible lesson blocks
           engine._placingLessonBlocks = true;
+          engine._measurementLayer = 'ground';
           if (lesson.ground) {
             var g = lesson.ground;
             engine.fillBlocks(g.xMin, g.y, g.zMin, g.xMax, g.y, g.zMax, g.type || 'grass');
           }
+          engine._measurementLayer = 'lesson';
           if (lesson.structures) lesson.structures.forEach(function(s) {
             if (s.type === 'fill') engine.fillBlocks(s.x1, s.y1, s.z1, s.x2, s.y2, s.z2, s.block);
           });
           engine._placingLessonBlocks = false;
+          engine._measurementLayer = null;
           if (lesson.npcs) lesson.npcs.forEach(function(n) { engine.createNPC(n); });
           // Smooth camera entry — start high above spawn, swoop down
           if (lesson.spawnPoint) {
@@ -2317,16 +2450,20 @@
           // engine.blocksPlaced was reset to 0 at the top of loadLesson — mirror to React state
           // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
           if (savedProgress && savedProgress.score > 0) {
-            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0 });
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null });
             if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
           } else {
-            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0 });
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null });
           }
           engine._progressKey = progressKey;
         };
 
         // Measure connected blocks
         engine.measureStructure = function(startX, startY, startZ, blockType) {
+          var seedMesh = engine.blocks[startX + ',' + startY + ',' + startZ];
+          if (!seedMesh || !seedMesh.userData) return null;
+          var seedData = seedMesh.userData;
+          blockType = blockType || seedData.blockType;
           var visited = {}; var result = []; var queue = [{ x: startX, y: startY, z: startZ }];
           var totalVolume = 0;
           var shapeCounts = {};
@@ -2334,7 +2471,7 @@
             var pos = queue.shift(); var key = pos.x + ',' + pos.y + ',' + pos.z;
             if (visited[key]) continue; visited[key] = true;
             var mesh = engine.blocks[key];
-            if (!mesh || mesh.userData.blockType !== blockType) continue;
+            if (!mesh || !belongsToMeasuredComponent(seedData, mesh.userData, blockType)) continue;
             result.push(pos);
             var vol = mesh.userData.volume || 1;
             totalVolume += vol;
@@ -2348,17 +2485,22 @@
           if (result.length === 0) return null;
           var mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity,mnZ=Infinity,mxZ=-Infinity;
           result.forEach(function(b) { mnX=Math.min(mnX,b.x);mxX=Math.max(mxX,b.x);mnY=Math.min(mnY,b.y);mxY=Math.max(mxY,b.y);mnZ=Math.min(mnZ,b.z);mxZ=Math.max(mxZ,b.z); });
-          return {
+          var hasPartialShapes = Object.keys(shapeCounts).some(function(shapeId) { return shapeId !== 'cube'; });
+          var exposedFaces = countExposedCubeFaces(result);
+          return enrichMeasurement({
             count: result.length,
             L: mxX-mnX+1, W: mxZ-mnZ+1, H: mxY-mnY+1,
             minX: mnX, minY: mnY, minZ: mnZ,
             boundingVolume: (mxX-mnX+1)*(mxZ-mnZ+1)*(mxY-mnY+1),
             totalVolume: totalVolume,
-            hasFractions: totalVolume !== Math.floor(totalVolume),
+            hasFractions: hasPartialShapes,
             shapeCounts: shapeCounts,
             formattedVolume: formatVolume(totalVolume),
+            surfaceAreaExact: !hasPartialShapes,
+            exposedSurfaceArea: hasPartialShapes ? null : exposedFaces.surfaceArea,
+            exposedFaces: hasPartialShapes ? null : exposedFaces,
             blocks: result // list of {x,y,z} for selection glow
-          };
+          });
         };
 
         // ── 3D Dimension Lines — show L/W/H around measured structure ──
@@ -2628,10 +2770,16 @@
                 if (m) {
                   sfxMeasure();
                   // Save to measurement history (last 10)
-                  var mh = (d.measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.hasFractions ? m.formattedVolume : m.boundingVolume, blocks: m.count, t: Date.now() }]);
+                  var predictionComparison = compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
+                  var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, isSolidPrism: m.isSolidPrism, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, t: Date.now() }]);
                   if (mh.length > 10) mh = mh.slice(-10);
-                  upd({ measureResult: m, measureHistory: mh, actionFeedback: '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + (m.hasFractions ? m.formattedVolume : m.boundingVolume) });
-                  announceToSR('Measured: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + (m.hasFractions ? m.formattedVolume : m.boundingVolume) + ' cubic units');
+                  var measurementFeedback = m.isSolidPrism
+                    ? m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
+                    : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
+                  upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, actionFeedback: '\uD83D\uDCCF Measured: ' + measurementFeedback + (predictionComparison ? ' \u2022 ' + predictionComparison.accuracyLabel : '') });
+                  announceToSR((m.isSolidPrism
+                    ? 'Measured solid rectangular prism: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + m.formattedOccupiedVolume + ' cubic units'
+                    : 'Measured composite structure: ' + m.formattedOccupiedVolume + ' cubic units occupied, ' + formatVolume(m.missingVolume) + ' cubic units empty inside a ' + m.boundingVolume + ' cubic unit bounding box') + (predictionComparison ? '. Your prediction was ' + formatVolume(predictionComparison.prediction) + '. ' + predictionComparison.accuracyLabel : ''));
                   setTimeout(function() { upd('actionFeedback', ''); }, 2500);
                   // Show 3D dimension lines + selection glow around the measured structure
                   if (engine._dimTimer) clearTimeout(engine._dimTimer);
@@ -2640,7 +2788,7 @@
                   // Measurement sparkle particles at structure center
                   var mcx = m.minX + m.L / 2, mcy = m.minY + m.H / 2 + 0.5, mcz = m.minZ + m.W / 2;
                   for (var sp = 0; sp < 8; sp++) spawnPlaceParticles(engine, mcx + (Math.random() - 0.5) * m.L, mcy + (Math.random() - 0.5) * m.H, mcz + (Math.random() - 0.5) * m.W);
-                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.boundingVolume, blocks: m.count });
+                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, isSolidPrism: m.isSolidPrism, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, blocks: m.count });
                   var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement'; }).length;
                   if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
                   var ts2 = engine._tutorialState || {}; if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);
@@ -2791,13 +2939,27 @@
                 setTimeout(function() { upd('actionFeedback', ''); }, 1200);
               }
               break;
-            case 'KeyN': // Net unfolding: show the 6 faces of the targeted structure's bounding box flat
+            case 'KeyN': // Net unfolding for prisms; exposed-face analysis for composite structures
               engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
               var nHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
               if (nHits.length > 0 && nHits[0].object.userData.gridPos) {
                 var ngp = nHits[0].object.userData.gridPos;
                 var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z, nHits[0].object.userData.blockType);
                 if (nm) {
+                  if (!nm.isSolidPrism) {
+                    if (engine._netHelpers) {
+                      engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      engine._netHelpers = [];
+                    }
+                    var compositeSurfaceMessage = nm.surfaceAreaExact
+                      ? 'Composite shape: no six-rectangle net. Count exposed unit faces for surface area = ' + nm.exposedSurfaceArea + ' square units.'
+                      : 'Partial blocks do not use the six-rectangle prism net. Surface area depends on each partial face shape.';
+                    upd('actionFeedback', '\uD83D\uDCCB ' + compositeSurfaceMessage);
+                    announceToSR(compositeSurfaceMessage);
+                    if (engine.logEvent) engine.logEvent('surface_analysis', { shape: nm.surfaceAreaExact ? 'composite_cubes' : 'partial_blocks', surfaceArea: nm.exposedSurfaceArea, blocks: nm.count });
+                    setTimeout(function() { upd('actionFeedback', ''); }, 5500);
+                    break;
+                  }
                   // Clear any prior net helpers.
                   if (engine._netHelpers) {
                     engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
@@ -4489,6 +4651,7 @@
         // (attached once in initEngine) so they can't see number-key block switches,
         // shape cycling (Q), rotation (R), or collab-mode toggling.
         engine._placeState = { selectedBlock: selectedBlock, selectedShape: selectedShape, blockRotation: blockRotation, collabMode: collabMode };
+        engine._predictionState = { input: volumePrediction, history: measureHistory };
         // Badges bridge — runAchievementCheck called via setTimeout from stale closures
         // needs to read the LATEST earned-badges object to avoid re-awarding duplicates.
         engine._badgesRef = earnedBadges;
@@ -4561,21 +4724,44 @@
             )
           ),
           // Measure result
-          measureResult && el('div', { style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#22d3ee', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
-            el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF Measurement'),
+          el('div', { role: 'group', 'aria-label': 'Predict volume before measuring', style: { display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 6px' } },
+            el('label', { htmlFor: 'gw-volume-prediction', style: { color: '#fde68a', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap' } }, 'Predict V'),
+            el('input', {
+              id: 'gw-volume-prediction',
+              type: 'text', inputMode: 'decimal', value: volumePrediction,
+              onChange: function(ev) { upd({ volumePrediction: ev.target.value, predictionResult: null }); },
+              placeholder: 'e.g. 24',
+              'aria-label': 'Predicted volume in cubic units',
+              title: 'Enter a prediction before measuring. Decimals and fractions such as 3/4 are supported.',
+              style: { width: '58px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '11px', fontFamily: 'monospace' }
+            }),
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } }, 'cu')
+          ),
+          measureResult && el('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
+            el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF ' + (measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
             el('div', null, 'L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H),
-            el('div', { style: { fontFamily: 'monospace', color: measureResult.hasFractions ? '#fbbf24' : '#4ade80' } },
-              measureResult.hasFractions
-                ? 'Volume = ' + measureResult.formattedVolume + ' cubic units'
-                : 'V = ' + measureResult.L + ' \u00d7 ' + measureResult.W + ' \u00d7 ' + measureResult.H + ' = ' + measureResult.boundingVolume
+            el('div', { style: { fontFamily: 'monospace', color: measureResult.isSolidPrism ? '#4ade80' : '#fbbf24' } },
+              measureResult.isSolidPrism
+                ? 'V = ' + measureResult.L + ' \u00d7 ' + measureResult.W + ' \u00d7 ' + measureResult.H + ' = ' + measureResult.formattedOccupiedVolume
+                : 'Occupied volume = ' + measureResult.formattedOccupiedVolume + ' cubic units'
             ),
+            !measureResult.isSolidPrism && el('div', { style: { fontSize: '10px', color: '#fde68a' } },
+              'Bounding box ' + measureResult.boundingVolume + ' \u2212 empty ' + formatVolume(measureResult.missingVolume) + ' = ' + measureResult.formattedOccupiedVolume + ' (' + measureResult.fillPercent + '% filled)'
+            ),
+            el('div', { 'data-geometry-surface-area': measureResult.surfaceAreaExact ? 'exact' : 'partial', style: { fontSize: '10px', color: measureResult.surfaceAreaExact ? '#86efac' : '#cbd5e1' } },
+              measureResult.surfaceAreaExact ? 'Exposed surface area = ' + measureResult.exposedSurfaceArea + ' square units' : 'Surface area needs partial-face analysis (press N)'),
+            predictionResult && el('div', { 'data-geometry-prediction-result': 'true', style: { marginTop: '2px', padding: '3px 5px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
+              el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px' } }, 'Prediction ' + formatVolume(predictionResult.prediction) + ' \u2192 Actual ' + formatVolume(predictionResult.actual)),
+              el('div', { style: { color: predictionResult.percentError <= 10 ? '#86efac' : '#fde68a', fontSize: '10px', fontWeight: 700 } }, predictionResult.accuracyLabel + (predictionResult.relation === 'exact' ? '' : ' (' + predictionResult.percentError + '% ' + predictionResult.relation + 'estimate)'))
+            ),
+
             el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
               measureResult.count + ' blocks' + (measureResult.hasFractions
                 ? ' (' + Object.keys(measureResult.shapeCounts).map(function(s) {
                     var sd = BLOCK_SHAPES.find(function(bs) { return bs.id === s; });
                     return measureResult.shapeCounts[s] + '\u00d7' + (sd ? sd.fraction : '1');
                   }).join(' + ') + ')'
-                : measureResult.count !== measureResult.boundingVolume ? ' (non-rectangular)' : ' \u2713')
+                : measureResult.isSolidPrism ? ' \u2713' : ' (count the occupied cubes)')
             ),
             el('button', {
               onClick: function() {
@@ -4584,7 +4770,7 @@
                 if (win) { win.document.write(card); win.document.close(); win.print(); }
                 if (addToast) addToast('\uD83E\uDDF1 Build card ready to print!', 'success');
                 var eng = window[engineKey];
-                if (eng && eng.logEvent) eng.logEvent('manipulative_card', { L: measureResult.L, W: measureResult.W, H: measureResult.H, V: measureResult.boundingVolume });
+                if (eng && eng.logEvent) eng.logEvent('manipulative_card', { L: measureResult.L, W: measureResult.W, H: measureResult.H, V: measuredVolume(measureResult), boundingVolume: measureResult.boundingVolume });
               },
               title: __alloT('stem.geometryworld.print_a_card_to_build_this_structure_w', 'Print a card to build this structure with physical cubes'),
               style: { background: '#7c3aed', border: 'none', borderRadius: '4px', padding: '2px 8px', color: '#fff', fontSize: '10px', cursor: 'pointer', fontWeight: 700, marginTop: '2px' }
@@ -5478,7 +5664,7 @@
             onClick: function() {
               var eng = window[engineKey];
               if (eng) eng.loadLesson(currentLesson);
-              upd({ score: 0, answeredNpcs: {}, measureResult: null });
+              upd({ score: 0, answeredNpcs: {}, measureResult: null, volumePrediction: '', predictionResult: null });
             },
             style: { marginTop: '8px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', transition: 'all 0.15s' }
           }, '\u21BB Reset World')
@@ -5814,7 +6000,19 @@
                 if (h2.length > 0 && h2[0].object.userData.gridPos) {
                   var gp = h2[0].object.userData.gridPos;
                   var m = engine.measureStructure(gp.x, gp.y, gp.z, h2[0].object.userData.blockType);
-                  if (m) { sfxMeasure(); upd('measureResult', m); }
+                  if (m) {
+                    sfxMeasure();
+                    var mobilePrediction = compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
+                    var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, isSolidPrism: m.isSolidPrism, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, t: Date.now() }]);
+                    if (mobileHistory.length > 10) mobileHistory = mobileHistory.slice(-10);
+                    upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, actionFeedback: (m.isSolidPrism
+                      ? '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
+                      : '\uD83D\uDCCF Occupied volume: ' + m.formattedOccupiedVolume + ' (' + m.fillPercent + '% filled)') + (mobilePrediction ? ' \u2022 ' + mobilePrediction.accuracyLabel : '') });
+                    announceToSR('Measured ' + m.formattedOccupiedVolume + ' cubic units' + (m.isSolidPrism ? ' in a solid rectangular prism' : ' in a composite structure') + (mobilePrediction ? '. Your prediction was ' + formatVolume(mobilePrediction.prediction) + '. ' + mobilePrediction.accuracyLabel : ''));
+                    if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, isSolidPrism: m.isSolidPrism, prediction: mobilePrediction ? mobilePrediction.prediction : null, predictionPercentError: mobilePrediction ? mobilePrediction.percentError : null, blocks: m.count, input: 'touch' });
+                    setTimeout(function() { upd('actionFeedback', ''); }, 2500);
+                    setTimeout(runAchievementCheck, 100);
+                  }
                 }
               },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(251,191,36,0.4)', border: '2px solid rgba(251,191,36,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
@@ -5878,9 +6076,17 @@
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
             return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#94a3b8', fontWeight: mi === 0 ? 600 : 400 } },
               el('span', null, mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
-              el('span', { style: { color: mi === 0 ? '#fbbf24' : '#94a3b8' } }, '=' + mh.vol)
+              el('span', { style: { color: mi === 0 ? '#fbbf24' : '#94a3b8' } }, '=' + mh.vol),
+              mh.prediction != null && el('span', { title: 'Predicted ' + formatVolume(mh.prediction) + '; ' + mh.percentError + '% off', style: { color: mh.percentError <= 10 ? '#86efac' : '#cbd5e1', fontSize: '8px' } }, 'P:' + formatVolume(mh.prediction) + ' (' + mh.percentError + '%)')
             );
-          })
+          }),
+          measurementComparison && el('div', { role: 'status', 'data-geometry-measurement-comparison': 'true', style: { marginTop: '5px', paddingTop: '5px', borderTop: '1px solid rgba(167,139,250,0.35)', lineHeight: 1.35 } },
+            el('div', { style: { color: '#c4b5fd', fontWeight: 800, fontSize: '8px', letterSpacing: '0.4px' } }, 'COMPARE LATEST TWO'),
+            el('div', { style: { color: '#e2e8f0' } }, 'Volume: ' + formatVolume(measurementComparison.previousVolume) + ' \u2192 ' + formatVolume(measurementComparison.latestVolume) + (measurementComparison.sameVolume ? ' (same)' : ' (change ' + formatVolume(Math.abs(measurementComparison.volumeDifference)) + ')')),
+            measurementComparison.surfaceAreaDifference !== null && el('div', { style: { color: '#86efac' } }, 'Surface area: ' + measurementComparison.previousSurfaceArea + ' \u2192 ' + measurementComparison.latestSurfaceArea + ' square units'),
+            measurementComparison.moreSurfaceEfficient && el('div', { style: { color: '#fde68a', fontWeight: 700 } }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' shape uses ' + Math.abs(measurementComparison.surfaceAreaDifference) + ' fewer square units for the same volume.'),
+            measurementComparison.surfaceAreaDifference === null && el('div', { style: { color: '#94a3b8' } }, 'Surface comparison unavailable for partial blocks.')
+          )
         ),
         // ── Block inventory widget (top-right, shows counts per type) ──
         engine && (engine.blocksPlaced || 0) > 0 && el('div', {
@@ -6395,7 +6601,7 @@
                       var npcPrompt = 'You are ' + data.name + ', a friendly geometry teacher NPC in a 3D block world. '
                         + 'You are standing near structures made of blocks. Each block is 1 cubic unit. '
                         + 'Your specialty: ' + data.dialogue + '\n'
-                        + (measureResult ? 'The student recently measured a structure: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' Volume=' + measureResult.boundingVolume + '\n' : '')
+                        + (measureResult ? 'The student recently measured a structure: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' Occupied volume=' + measuredVolume(measureResult) + ' Bounding-box volume=' + measureResult.boundingVolume + '\n' : '')
                         + 'The student asks: "' + userMsg + '"\n\n'
                         + 'Respond in 2-3 sentences. Be warm, encouraging, and age-appropriate. '
                         + 'Use concrete examples with blocks. If they ask about volume, reference L\u00d7W\u00d7H. '
@@ -6429,7 +6635,7 @@
                     upd({ npcChatHistory: newHist, npcChatInput: '', npcChatLoading: true });
                     var npcPrompt = 'You are ' + data.name + ', a friendly geometry teacher in a 3D block world. Each block = 1 cubic unit. '
                       + 'Context: ' + data.dialogue + ' '
-                      + (measureResult ? 'Student measured: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' V=' + measureResult.boundingVolume + '. ' : '')
+                      + (measureResult ? 'Student measured: L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H + ' occupied V=' + measuredVolume(measureResult) + ', bounding-box V=' + measureResult.boundingVolume + '. ' : '')
                       + 'Student asks: "' + userMsg + '". Respond in 2-3 warm, concrete sentences.';
                     callGemini(npcPrompt, true).then(function(r) {
                       var uh = Object.assign({}, npcChatHistory); uh[dialogNpcIdx] = history.concat([{ role: 'npc', text: r }]);

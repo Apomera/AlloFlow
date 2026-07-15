@@ -57,10 +57,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for astro
   "buttons": 18,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 68,
+  "lengthBucket": 76,
   "paths": 0,
   "selects": 0,
-  "sha": "88bf46852aaacadb",
+  "sha": "070fd4fd0b77fe5a",
   "svgs": 0,
 }
 `;

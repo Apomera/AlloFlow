@@ -56,6 +56,8 @@ function EducatorHubModal(props) {
     }),
     setStemLabTool = (() => {
     }),
+    setLabToolData = (() => {
+    }),
     // Lesson-builder card (2026-06-13): opens the AlloBot guided lesson flow. The host
     // passes a closure mirroring startLessonFlow({}) (show bot + trigger Auto-Fill).
     // Optional default so legacy hosts that don't pass it still render the hub.
@@ -319,9 +321,10 @@ function EducatorHubModal(props) {
     startLessonFlow();
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1FA84}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("educator_hub.lesson_builder_title") || "Help me build a lesson"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("educator_hub.lesson_builder_desc") || "I'll ask you a few questions and build a differentiated lesson with you, step by step."))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_lumen_card", onClick: () => {
     setShowEducatorHub(false);
+    setLabToolData((prev) => ({ ...prev, lumen: { ...prev && prev.lumen || {}, mode: "home" } }));
     setStemLabTool("lumen");
     setShowStemLab(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("educator_hub.lumen_title") || "Lumen"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-600 mt-1" }, t("educator_hub.lumen_desc") || "Turn any dataset \u2014 research, classroom, or your own \u2014 into a defensible, honestly-marked finding: the chart and the claim are one object, uncertainty is kept, and any AI involvement is labeled. The honest way to present and argue from data."))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_document_hub_card", onClick: () => {
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("educator_hub.lumen_title") || "Lumen"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-600 mt-1" }, t("educator_hub.lumen_desc") || "Study sources or analyze data in one evidence workspace. Grounded answers cite exact passages; data findings keep uncertainty and provenance visible."))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_document_hub_card", onClick: () => {
     setShowEducatorHub(false);
     openExportPreview("print");
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-emerald-800" }, t("educator_hub.document_hub_title") || "Document Hub"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-600 mt-1" }, t("educator_hub.document_hub_desc") || "Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_pdf_accessibility_card", onClick: () => {

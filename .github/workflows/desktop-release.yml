@@ -52,6 +52,9 @@ jobs:
       - name: Install desktop dependencies (electron, electron-builder)
         working-directory: desktop
         run: npm ci --no-audit --no-fund
+      - name: Audit desktop dependencies
+        working-directory: desktop
+        run: npm audit --audit-level=high
       - name: Use prerelease version for beta channel
         if: github.event_name == 'workflow_dispatch' && inputs.channel == 'beta'
         working-directory: desktop
@@ -62,15 +65,38 @@ jobs:
       - name: Verify desktop sources and runtime
         working-directory: desktop
         run: npm run verify:release
+      - name: Require Windows signing credentials for tagged releases
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:CSC_LINK) -or [string]::IsNullOrWhiteSpace($env:CSC_KEY_PASSWORD)) {
+            throw 'Tagged desktop releases require WINDOWS_CSC_LINK and WINDOWS_CSC_KEY_PASSWORD.'
+          }
       - name: Build Windows x64 and ARM64 installers
         working-directory: desktop
         shell: pwsh
         run: |
           if (-not $env:CSC_LINK) { Remove-Item Env:CSC_LINK,Env:CSC_KEY_PASSWORD -ErrorAction SilentlyContinue }
           npm run package:win:ci
+      - name: Drill packaged Windows app layouts
+        working-directory: desktop
+        run: npm run verify:package-layout:win
       - name: Verify desktop artifacts
         working-directory: desktop
         run: npm run verify:artifacts:win
+      - name: Verify Windows Authenticode signatures
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        working-directory: desktop
+        shell: pwsh
+        run: |
+          $installers = @(Get-ChildItem -Path dist -Filter 'AlloFlow-Desktop-*.exe' -File)
+          if ($installers.Count -eq 0) { throw 'No Windows executables were produced.' }
+          foreach ($installer in $installers) {
+            $signature = Get-AuthenticodeSignature -LiteralPath $installer.FullName
+            if ($signature.Status -ne 'Valid') {
+              throw "$($installer.Name) is not validly signed: $($signature.Status) $($signature.StatusMessage)"
+            }
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: alloflow-desktop-windows
@@ -107,6 +133,9 @@ jobs:
       - name: Install desktop dependencies (electron, electron-builder)
         working-directory: desktop
         run: npm ci --no-audit --no-fund
+      - name: Audit desktop dependencies
+        working-directory: desktop
+        run: npm audit --audit-level=high
       - name: Use prerelease version for beta channel
         if: github.event_name == 'workflow_dispatch' && inputs.channel == 'beta'
         working-directory: desktop
@@ -116,19 +145,51 @@ jobs:
       - name: Verify desktop sources and runtime
         working-directory: desktop
         run: npm run verify:release
+      - name: Require macOS signing and notarization credentials for tagged releases
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        shell: bash
+        run: |
+          for name in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Tagged desktop releases require $name."
+              exit 1
+            fi
+          done
       - name: Build macOS x64 and ARM64 packages
         working-directory: desktop
         env:
           # No signing identity on unsigned CI builds — don't hunt the keychain.
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ startsWith(github.ref, 'refs/tags/desktop-v') && 'true' || 'false' }}
         run: |
           # Missing secrets arrive as EMPTY env vars; electron-builder treats an
           # empty CSC_LINK as a real path and dies with "<projectDir> not a file".
           if [ -z "$CSC_LINK" ]; then unset CSC_LINK CSC_KEY_PASSWORD; fi
           npm run package:mac:ci
+      - name: Drill packaged macOS app layouts
+        working-directory: desktop
+        run: npm run verify:package-layout:mac
       - name: Verify desktop artifacts
         working-directory: desktop
         run: npm run verify:artifacts:mac
+      - name: Verify macOS signatures and notarization staples
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        working-directory: desktop
+        shell: bash
+        run: |
+          shopt -s nullglob
+          apps=(dist/mac*/AlloFlow\ Desktop.app)
+          dmgs=(dist/AlloFlow-Desktop-*.dmg)
+          if [ ${#apps[@]} -eq 0 ] || [ ${#dmgs[@]} -eq 0 ]; then
+            echo "::error::Signed app bundles or DMGs are missing."
+            exit 1
+          fi
+          for app in "${apps[@]}"; do
+            codesign --verify --deep --strict --verbose=2 "$app"
+            spctl --assess --type execute --verbose=2 "$app"
+          done
+          for dmg in "${dmgs[@]}"; do
+            xcrun stapler validate "$dmg"
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: alloflow-desktop-macos

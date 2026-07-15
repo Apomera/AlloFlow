@@ -2241,7 +2241,7 @@
     window.StemLab.registerTool('lumen', {
       icon: '💡', // 💡
       label: 'Lumen',
-      desc: 'Turn any dataset into an honest, provenance-bound finding you can defend — chart and claim as one object.',
+      desc: 'Study sources or analyze data in one evidence workspace where every claim stays connected to what supports it.',
       color: 'amber',
       category: 'data',
       // LIVE + fully usable. ready:false keeps it OUT of the STEM Lab tile grid ON PURPOSE — Lumen is
@@ -2263,6 +2263,46 @@
             try { var el = document.getElementById('allo-live-lumen'); if (el) el.textContent = msg; } catch (e2) { }
             try { if (ctx.announceToSR) ctx.announceToSR(msg); } catch (e3) { }
           };
+          var mode = d.mode || 'home';
+          var modeButton = function (target, title, description, accent, icon) {
+            return h('button', {
+              key: target,
+              type: 'button',
+              onClick: function () { upd('mode', target); announce(title + ' opened.'); },
+              className: 'p-4 rounded-2xl border-2 text-left transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2',
+              style: { borderColor: accent, background: '#ffffff', minHeight: '142px' },
+              'aria-label': title + '. ' + description
+            },
+              h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, icon),
+              h('span', { className: 'block mt-2 font-extrabold text-base text-slate-900' }, title),
+              h('span', { className: 'block mt-1 text-sm leading-5 text-slate-600' }, description));
+          };
+          if (mode === 'home') {
+            var hasCurrentSource = !!String(ctx.sourceText || ctx.inputText || '').trim();
+            return h('div', { className: 'p-5 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' },
+              h('div', { className: 'flex items-start gap-3 flex-wrap' },
+                h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '💡'),
+                h('div', { className: 'flex-1 min-w-[220px]' },
+                  h('h1', { className: 'font-extrabold text-xl text-slate-900 m-0' }, 'Lumen'),
+                  h('p', { className: 'mt-1 mb-0 text-sm text-slate-600' }, 'Study, analyze and communicate what the evidence supports.')),
+                hasCurrentSource ? h('span', { className: 'px-3 py-1 rounded-full bg-blue-100 text-blue-900 text-xs font-bold' }, 'Current AlloFlow source available') : null),
+              h('div', { className: 'mt-5 grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))' } },
+                modeButton('study', 'Study Sources', 'Ask questions, inspect exact supporting passages and save grounded notes.', '#2563eb', '📖'),
+                modeButton('data', 'Analyze Data', 'Build defensible charts and claims with uncertainty and provenance kept visible.', '#d97706', '📊'),
+                h('div', { className: 'p-4 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50', 'aria-label': 'Conduct Inquiry. Available through Research Hub.' },
+                  h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '🔎'),
+                  h('span', { className: 'block mt-2 font-extrabold text-base text-slate-700' }, 'Conduct Inquiry'),
+                  h('span', { className: 'block mt-1 text-sm leading-5 text-slate-500' }, 'Research Hub remains the inquiry workspace while its evidence model is connected to Lumen.'))),
+              h('p', { className: 'mt-4 mb-0 text-xs text-slate-500' }, 'Your sources and study notes stay on this device. Only passages selected for a question are sent to your configured AI provider.'));
+          }
+          if (mode === 'study') {
+            var study = (typeof window !== 'undefined') && window.LumenStudy;
+            if (study && typeof study.render === 'function' && window.LumenEvidence) return study.render(ctx);
+            return h('div', { role: 'status', className: 'p-5 rounded-xl border border-amber-300 bg-amber-50 text-slate-800' },
+              h('button', { type: 'button', onClick: function () { upd('mode', 'home'); }, className: 'mb-3 text-sm font-bold underline' }, '← Lumen home'),
+              h('p', { className: 'font-bold m-0' }, 'Study Sources is still loading.'),
+              h('p', { className: 'text-sm mt-1 mb-0' }, 'The evidence module loads separately from the data workspace.'));
+          }
           var obs = Array.isArray(d.observations) ? d.observations : [];
           var ceiling = d.ceiling || 'L1';
           var audience = d.audience || 'working';
@@ -2418,6 +2458,10 @@
             announce('Exported presentation ' + out.filename + '.');
           };
           var kids = [];
+          kids.push(h('nav', { key: 'workspaceNav', className: 'flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200', 'aria-label': 'Lumen workspace modes' },
+            h('button', { type: 'button', onClick: function () { upd('mode', 'home'); }, className: 'px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50' }, '← Lumen home'),
+            h('span', { className: 'text-xs font-bold text-amber-900' }, 'Analyze Data'),
+            h('button', { type: 'button', onClick: function () { upd('mode', 'study'); }, className: 'ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200' }, 'Switch to Study Sources')));
           // Load a curated EXAMPLE dataset — stamped synthetic so it self-declares +
           // is export-guarded exactly like generated data (an example is not real data).
           // Optional meta sets the measure/unit/x-axis labels so the example is

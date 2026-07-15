@@ -67,6 +67,7 @@ test.describe('accessible PowerPoint export — golden', () => {
           tableInXml: all.indexOf('<a:tbl>') !== -1,
           bulletInXml: all.indexOf('<a:buChar') !== -1 || all.indexOf('<a:buAutoNum') !== -1,
           bodyText: all.indexOf('Plants convert light energy') !== -1,
+          invalidTableVert: all.indexOf('vert="mid"') !== -1,
         };
       } catch (e: any) { return { error: String((e && e.stack) || e) }; }
     }, { helpers: HELPERS, html: FIXTURE_HTML });
@@ -89,6 +90,7 @@ test.describe('accessible PowerPoint export — golden', () => {
     expect(deckSummary.tableInXml, 'table must be a real <a:tbl>, not text').toBe(true);
     expect(deckSummary.bulletInXml, 'bullets must be real list formatting').toBe(true);
     expect(deckSummary.bodyText).toBe(true);
+    expect(deckSummary.invalidTableVert, 'table cells must use PowerPoint-compatible vertical alignment').toBe(false);
   });
 
   test('media preservation: a PPTX with an embedded image round-trips through the deterministic extractor with bytes + alt', async ({ page }) => {

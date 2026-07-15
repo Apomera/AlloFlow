@@ -115,6 +115,7 @@
         [7,11],[7,15],[8,12],[8,13]] }
   };
   var PATTERN_ORDER = ['block','beehive','loaf','boat','blinker','toad','beacon','pulsar','glider','lwss','mwss','hwss','rpentomino','acorn','diehard','pihept','gosperGun'];
+  var PATTERN_JOURNEY_CACHE = {};
 
   // Famous elementary rules with Wolfram-class commentary.
   var FAMOUS_RULES = [
@@ -279,6 +280,7 @@
 
     // ── transient state ──
     var sTab = useState('life'); var tab = sTab[0], setTab = sTab[1];
+    var sPatternFocus = useState('glider'); var patternFocusKey = sPatternFocus[0], setPatternFocusKey = sPatternFocus[1];
 
     // Life â€” the canonical 2-D engine shared by science and creative exploration.
     var sLifeSize = useState(40); var lifeSize = sLifeSize[0], setLifeSize = sLifeSize[1];
@@ -328,6 +330,7 @@
     var caSensitivity = caRuleSensitivityProfile(bits, caAnalysis.neighborhoodCounts);
     var caCause = caCellCause(caRows, caInspectRow, caInspectCol, caWrap);
     var caInfluence = caCounterfactualInfluence(bits, caCause);
+    var caSensitivityRow = analyzeCaSensitivityRow(caRows, caInspectRow, bits, caWrap);
     var caCone = caCausalCone(caRows, caInspectRow, caInspectCol, caWrap, 6);
     var caTemporalChange = caTemporalChangeCells(caRows, caInspectRow);
     var caSelectedTransition = caCellTransition(caRows, caInspectRow, caInspectCol);
@@ -846,7 +849,7 @@
     function renderCaDiagram() {
       var W = CA_COLS * CA_PX, H = CA_ROWS * CA_PX, selectedX = (caInspectCol + 0.5) * CA_PX, selectedY = (caInspectRow + 0.5) * CA_PX;
       var sensitivityText = caInfluence.parents.length ? ' Counterfactual test: ' + caInfluence.decisiveCount + ' of 3 parents are decisive; flipping a decisive parent changes the result.' : ' No parent counterfactual exists on the seed row.';
-      var causeText = (caCause && caCause.pattern ? 'Generation ' + caInspectRow + ', column ' + (caInspectCol + 1) + ': parents ' + caCause.pattern + ' produced ' + caCause.output + '.' : 'Generation zero seed cell at column ' + (caInspectCol + 1) + ' has no parent neighborhood.') + sensitivityText + ' The ancestry cone traces ' + caCone.upstreamCount + ' upstream cells across ' + caCone.depth + ' generations.' + (caInspectRow > 0 ? ' ' + caTemporalChange.count + ' of ' + CA_COLS + ' cells changed from the prior generation.' : ' This is the seed row, so no prior-generation comparison exists.') + ' Selected cell transition: ' + caSelectedTransition.label + '.';
+      var causeText = (caCause && caCause.pattern ? 'Generation ' + caInspectRow + ', column ' + (caInspectCol + 1) + ': parents ' + caCause.pattern + ' produced ' + caCause.output + '.' : 'Generation zero seed cell at column ' + (caInspectCol + 1) + ' has no parent neighborhood.') + sensitivityText + ' The ancestry cone traces ' + caCone.upstreamCount + ' upstream cells across ' + caCone.depth + ' generations.' + (caInspectRow > 0 ? ' ' + caTemporalChange.count + ' of ' + CA_COLS + ' cells changed from the prior generation. Counterfactual row scan: ' + caSensitivityRow.decisiveCells + ' of ' + CA_COLS + ' cells have at least one decisive parent, averaging ' + caSensitivityRow.mean.toFixed(2) + ' decisive parents per cell.' : ' This is the seed row, so no prior-generation comparison exists.') + ' Selected cell transition: ' + caSelectedTransition.label + '.';
       var rects = [h('desc', { key: 'desc', id: 'ca-diagram-desc' }, causeText + ' Use arrow keys to inspect adjacent cells, Page Up and Page Down to jump ten generations, and Home or End to move through time.'), h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: C.dead })];
       for (var r = 0; r < caRows.length; r++) {
         if (r > 0 && r % 10 === 0) rects.push(h('line', { key: 'guide' + r, x1: 0, x2: W, y1: r * CA_PX, y2: r * CA_PX, stroke: dark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.2)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }));
@@ -859,6 +862,16 @@
       if (caInspectRow > 0 && caTemporalChange.count) {
         rects.push(h('rect', { key: 'temporalChangeBand', 'data-ca-temporal-change-band': String(caTemporalChange.count), x: 0, y: caInspectRow * CA_PX, width: W, height: CA_PX, fill: 'rgba(251,113,133,' + (0.035 + caTemporalChange.rate * 0.11).toFixed(3) + ')', stroke: '#fb7185', strokeWidth: 0.65, vectorEffect: 'non-scaling-stroke', opacity: 0.82, style: { pointerEvents: 'none' } }));
         caTemporalChange.cells.forEach(function (col) { rects.push(h('rect', { key: 'temporalChange' + col, 'data-ca-temporal-change-cell': String(col), x: col * CA_PX + 0.55, y: caInspectRow * CA_PX + 0.55, width: CA_PX - 1.1, height: CA_PX - 1.1, rx: 1, fill: 'none', stroke: '#fb7185', strokeWidth: 1.05, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 2px rgba(251,113,133,0.8))', pointerEvents: 'none' } })); });
+      }
+      if (caInspectRow > 0 && caSensitivityRow.cells.length) {
+        rects.push(h('g', { key:'sensitivityBand', 'data-ca-sensitivity-band':String(caInspectRow), 'data-responsive-cells':String(caSensitivityRow.decisiveCells), 'data-mean-decisive':caSensitivityRow.mean.toFixed(6), 'aria-hidden':'true', style:{pointerEvents:'none'} },
+          caSensitivityRow.cells.map(function (count,col) {
+            if (!count) return null;
+            var gx=(col+0.5)*CA_PX, gy=(caInspectRow+0.5)*CA_PX;
+            if (count === 1) return h('circle', { key:'sensitivity'+col, 'data-ca-sensitivity-cell':String(col), 'data-decisive-count':'1', cx:gx, cy:gy, r:0.85, fill:'#a78bfa', style:{filter:'drop-shadow(0 0 2px rgba(167,139,250,0.9))'} });
+            if (count === 2) return h('path', { key:'sensitivity'+col, 'data-ca-sensitivity-cell':String(col), 'data-decisive-count':'2', d:'M'+(gx-1.55)+' '+gy+'H'+(gx+1.55), stroke:'#67e8f9', strokeWidth:1.25, strokeLinecap:'round', vectorEffect:'non-scaling-stroke', style:{filter:'drop-shadow(0 0 2px rgba(103,232,249,0.9))'} });
+            return h('rect', { key:'sensitivity'+col, 'data-ca-sensitivity-cell':String(col), 'data-decisive-count':'3', x:gx-1.25, y:gy-1.25, width:2.5, height:2.5, transform:'rotate(45 '+gx+' '+gy+')', fill:'#4ade80', stroke:'#dcfce7', strokeWidth:0.45, vectorEffect:'non-scaling-stroke', style:{filter:'drop-shadow(0 0 3px rgba(74,222,128,0.95))'} });
+          })));
       }
       if (caCone.depth > 1) {
         var topLayer = caCone.layers[caCone.layers.length - 1], topCols = topLayer.nodes.map(function (node) { return node.col; });
@@ -906,7 +919,7 @@
       var points = function (values) { return values.map(function (v, i) { return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' '); };
       var selectedDensity = caAnalysis.densities[caInspectRow] || 0, selectedEntropy = caAnalysis.entropies[caInspectRow] || 0, selectedActivity = caAnalysis.activities[caInspectRow] || 0, selectedTemporalChange = caAnalysis.temporalChanges[caInspectRow] || 0, selectedLive = Math.round(selectedDensity * CA_COLS);
       var legend = [{ key:'density', label:'Density', value:Math.round(selectedDensity * 100) + '%', color:'#22d3ee' }, { key:'entropy', label:'Entropy', value:selectedEntropy.toFixed(2) + ' bits', color:'#a78bfa' }, { key:'activity', label:'Edge rate', value:Math.round(selectedActivity * 100) + '%', color:'#fbbf24' }, { key:'temporal', label:'Row change', value:Math.round(selectedTemporalChange * 100) + '% (' + caTemporalChange.count + ' cells)', color:'#fb7185' }];
-      var causeSummary = (caCause && caCause.pattern ? 'Cell ' + (caInspectCol + 1) + ': ' + caCause.pattern + ' -> ' + caCause.output + ' via rule mapping ' + caCause.index : 'Cell ' + (caInspectCol + 1) + ': seed value ' + (caCause ? caCause.output : 0) + ' (no parents)') + ' | decisive ' + caInfluence.decisiveCount + '/3 | ' + caCone.depth + '-gen cone: ' + caCone.upstreamCount + ' upstream cells | transition ' + caSelectedTransition.label;
+      var causeSummary = (caCause && caCause.pattern ? 'Cell ' + (caInspectCol + 1) + ': ' + caCause.pattern + ' -> ' + caCause.output + ' via rule mapping ' + caCause.index : 'Cell ' + (caInspectCol + 1) + ': seed value ' + (caCause ? caCause.output : 0) + ' (no parents)') + ' | decisive ' + caInfluence.decisiveCount + '/3 | row responsive ' + caSensitivityRow.decisiveCells + '/' + CA_COLS + ', mean ' + caSensitivityRow.mean.toFixed(2) + ' | ' + caCone.depth + '-gen cone: ' + caCone.upstreamCount + ' upstream cells | transition ' + caSelectedTransition.label;
       function inspectSignalFromEvent(e) {
         var bounds = e.currentTarget && e.currentTarget.getBoundingClientRect ? e.currentTarget.getBoundingClientRect() : null;
         if (!bounds || !bounds.width) return;
@@ -953,7 +966,7 @@
         renderCaDiagram(),
         renderCaAnalysis(),
         h('div', { style: { fontSize: '11px', color: C.sub, marginTop: '-4px', textAlign: 'center' } },
-          'Rule ' + rule + ' · ' + CA_ROWS + ' generations · ' + (caWrap ? 'wrapped ring' : 'fixed edges') + ' · solid lime = decisive | dashed cyan = contextual | violet = ancestry | arrows move'),
+          'Rule ' + rule + ' · ' + CA_ROWS + ' generations · ' + (caWrap ? 'wrapped ring' : 'fixed edges') + ' · row scan: violet dot = 1, cyan dash = 2, lime diamond = 3 decisive parents | arrows move'),
         h('div', null,
           h('div', { style: { fontSize: '12px', color: C.sub, fontWeight: 700, marginBottom: '6px' } }, 'Try a famous rule:'),
           h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
@@ -1020,17 +1033,83 @@
           h('span', { 'data-pattern-dynamics': key, style: { color: journey.kind === 'evolving' ? C.sub : C.accent } }, journey.shortLabel)),
         h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: 30, role: 'img', 'data-pattern-pulse': key, 'data-pattern-status': journey.kind, 'data-pattern-period': journey.period == null ? '' : String(journey.period), 'aria-label': journey.summary, style: { display: 'block', overflow: 'visible' } }, marks));
     }
+    function patternTemporalRibbon(key, journey) {
+      var W=520, H=74, gap=7, frames=journey.frames || [], frameW=(W-gap*Math.max(0,frames.length-1))/Math.max(1,frames.length), bounds=journey.frameBounds;
+      var scale=Math.min((frameW-12)/Math.max(1,bounds.width),(H-18)/Math.max(1,bounds.height)), cellSize=Math.max(1,Math.min(6,scale*0.72)), marks=[];
+      frames.forEach(function (frame,index) {
+        var x0=index*(frameW+gap), finalFrame=index===frames.length-1, color=finalFrame?'#fde047':'#22d3ee';
+        marks.push(h('g', { key:'frame'+frame.step, 'data-pattern-ribbon-frame':String(frame.step), 'data-population':String(frame.population), transform:'translate('+x0+' 0)' },
+          h('rect', { x:0, y:0, width:frameW, height:H-2, rx:6, fill:C.dead, stroke:finalFrame?'rgba(253,224,71,0.44)':'rgba(34,211,238,0.18)', strokeWidth:0.8 }),
+          frame.cells.map(function (cell,cellIndex) {
+            var cx=6+(cell[1]-bounds.minC+0.5)*scale-cellSize/2, cy=5+(cell[0]-bounds.minR+0.5)*scale-cellSize/2;
+            return h('rect', { key:'cell'+cellIndex, x:cx, y:cy, width:cellSize, height:cellSize, rx:Math.min(1.2,cellSize/4), fill:color, opacity:0.72+index/Math.max(1,frames.length-1)*0.24, style:{filter:'drop-shadow(0 0 '+(finalFrame?3:2)+'px '+color+')'} });
+          }),
+          h('text', { x:frameW/2, y:H-7, textAnchor:'middle', fill:finalFrame?'#fef08a':C.sub, style:{fontSize:'8px',fontWeight:900} }, 'G'+frame.step+' · P'+frame.population)));
+      });
+      var populations=frames.map(function (frame) { return 'generation '+frame.step+' population '+frame.population; }).join(', ');
+      return h('svg', { viewBox:'0 0 '+W+' '+H, width:'100%', role:'img', 'data-pattern-temporal-ribbon':key, 'data-frame-count':String(frames.length), 'data-union-width':String(bounds.width), 'data-union-height':String(bounds.height), 'aria-label':LIFE_PATTERNS[key].name+' temporal ribbon on one shared spatial frame: '+populations+'.', style:{display:'block',width:'100%',height:'auto',maxHeight:'92px',marginBottom:'5px'} }, marks);
+    }
+    function patternBehaviorAtlas(entries, activeKey) {
+      var W = 520, H = 196, left = 48, right = 16, top = 16, bottom = 34, plotW = W - left - right, plotH = H - top - bottom;
+      var maxPopulation = 1, maxTurnover = 1;
+      entries.forEach(function (entry) {
+        entry.totalTurnover = entry.journey.points.reduce(function (sum, point) { return sum + point.turnover; }, 0);
+        maxPopulation = Math.max(maxPopulation, entry.journey.maxPopulation);
+        maxTurnover = Math.max(maxTurnover, entry.totalTurnover);
+      });
+      function x(value) { return left + Math.sqrt(value / maxPopulation) * plotW; }
+      function y(value) { return top + plotH - Math.sqrt(value / maxTurnover) * plotH; }
+      var activeEntry = entries[0];
+      entries.forEach(function (entry) { if (entry.key === activeKey) activeEntry = entry; });
+      var colors = { still:'#94a3b8', oscillator:'#a78bfa', spaceship:'#22d3ee', extinct:'#fb7185', evolving:'#fde047' };
+      var labels = { block:'Bk', beehive:'Bh', loaf:'Lf', boat:'Bt', blinker:'Bl', toad:'Td', beacon:'Bc', pulsar:'Pu', glider:'Gl', lwss:'LW', mwss:'MW', hwss:'HW', rpentomino:'R', acorn:'Ac', diehard:'Di', pihept:'Pi', gosperGun:'GG' };
+      var marks = [];
+      [0,0.25,0.5,0.75,1].forEach(function (fraction, index) {
+        var gx = left + fraction * plotW, gy = top + fraction * plotH;
+        marks.push(h('line', { key:'vx'+index, x1:gx, y1:top, x2:gx, y2:top+plotH, stroke:'rgba(148,163,184,0.14)', strokeWidth:0.7 }));
+        marks.push(h('line', { key:'hy'+index, x1:left, y1:gy, x2:left+plotW, y2:gy, stroke:'rgba(148,163,184,0.14)', strokeWidth:0.7 }));
+      });
+      marks.push(h('line', { key:'xaxis', x1:left, y1:top+plotH, x2:left+plotW, y2:top+plotH, stroke:C.border, strokeWidth:1 }));
+      marks.push(h('line', { key:'yaxis', x1:left, y1:top, x2:left, y2:top+plotH, stroke:C.border, strokeWidth:1 }));
+      marks.push(h('text', { key:'x0', x:left, y:H-18, fill:C.sub, textAnchor:'middle', style:{fontSize:'8px'} }, '0'));
+      marks.push(h('text', { key:'xm', x:x(maxPopulation/4), y:H-18, fill:C.sub, textAnchor:'middle', style:{fontSize:'8px'} }, String(Math.round(maxPopulation/4))));
+      marks.push(h('text', { key:'xx', x:left+plotW, y:H-18, fill:C.sub, textAnchor:'middle', style:{fontSize:'8px'} }, String(maxPopulation)));
+      marks.push(h('text', { key:'xl', x:left+plotW/2, y:H-5, fill:C.sub, textAnchor:'middle', style:{fontSize:'9px',fontWeight:800} }, 'Peak population in 16 generations'));
+      marks.push(h('text', { key:'yl', x:10, y:top+plotH/2, fill:C.sub, textAnchor:'middle', transform:'rotate(-90 10 '+(top+plotH/2)+')', style:{fontSize:'9px',fontWeight:800} }, 'Total turnover'));
+      var activeX=x(activeEntry.journey.maxPopulation), activeY=y(activeEntry.totalTurnover), activeColor=colors[activeEntry.journey.kind] || C.accent;
+      marks.push(h('line', { key:'activeVertical', 'data-pattern-atlas-crosshair':'vertical', x1:activeX, y1:activeY, x2:activeX, y2:top+plotH, stroke:activeColor, strokeWidth:1, strokeDasharray:'3 3', opacity:0.72, vectorEffect:'non-scaling-stroke', style:{transition:'all 220ms ease'} }));
+      marks.push(h('line', { key:'activeHorizontal', 'data-pattern-atlas-crosshair':'horizontal', x1:left, y1:activeY, x2:activeX, y2:activeY, stroke:activeColor, strokeWidth:1, strokeDasharray:'3 3', opacity:0.72, vectorEffect:'non-scaling-stroke', style:{transition:'all 220ms ease'} }));
+      entries.forEach(function (entry, index) {
+        var cx=x(entry.journey.maxPopulation), cy=y(entry.totalTurnover), color=colors[entry.journey.kind] || C.accent, selected=entry.key===activeEntry.key;
+        var title=entry.pattern.name+': peak population '+entry.journey.maxPopulation+', total turnover '+entry.totalTurnover+', '+entry.journey.shortLabel+'.';
+        marks.push(h('circle', { key:'halo'+entry.key, cx:cx, cy:cy, r:selected?13:8, fill:color, opacity:selected?0.2:0.09, style:{filter:'drop-shadow(0 0 '+(selected?9:5)+'px '+color+')',transition:'all 220ms ease'} }));
+        marks.push(h('circle', { key:'point'+entry.key, 'data-pattern-atlas-point':entry.key, 'data-peak-population':String(entry.journey.maxPopulation), 'data-total-turnover':String(entry.totalTurnover), 'data-dynamics':entry.journey.kind, 'data-selected':selected?'true':'false', cx:cx, cy:cy, r:selected?6.2:4.1, fill:color, stroke:'#f8fafc', strokeWidth:selected?1.4:0.75, style:{transition:'all 220ms ease'} }, h('title', null, title)));
+        marks.push(h('text', { key:'label'+entry.key, x:cx+(index%2?6:-6), y:cy-6-(index%3)*4, fill:selected?color:C.text, textAnchor:index%2?'start':'end', style:{fontSize:selected?'9px':'7.5px',fontWeight:900,pointerEvents:'none',filter:'drop-shadow(0 1px 2px '+C.bg+')',transition:'all 220ms ease'} }, labels[entry.key] || entry.pattern.name.slice(0,2)));
+      });
+      var legendKinds = ['still','oscillator','spaceship','evolving'];
+      return h('div', { style:{margin:'2px 0 14px'} },
+        h('div', { style:{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap',marginBottom:'4px'} },
+          h('span', { style:{fontSize:'10px',color:C.text,fontWeight:900,textTransform:'uppercase',letterSpacing:'0.06em'} }, 'Behavior atlas · shared scale'),
+          legendKinds.map(function (kind) { return h('span', { key:kind, style:{display:'inline-flex',alignItems:'center',gap:'4px',fontSize:'9px',color:C.sub,fontWeight:800} }, h('span', { 'aria-hidden':'true', style:{width:'7px',height:'7px',borderRadius:'50%',background:colors[kind],boxShadow:'0 0 5px '+colors[kind]} }), kind); })),
+        h('div', { role:'status', 'aria-live':'polite', 'data-pattern-atlas-selection':activeEntry.key, style:{fontSize:'10px',color:C.text,fontWeight:800,marginBottom:'2px'} },
+          activeEntry.pattern.name+' · peak '+activeEntry.journey.maxPopulation+' · turnover '+activeEntry.totalTurnover+' · '+activeEntry.journey.shortLabel),
+        patternTemporalRibbon(activeEntry.key, activeEntry.journey),
+        h('svg', { viewBox:'0 0 '+W+' '+H, width:'100%', role:'img', 'data-pattern-behavior-atlas':'true', 'data-pattern-atlas-count':String(entries.length), 'data-pattern-atlas-active':activeEntry.key, 'aria-label':'Behavior atlas comparing all '+entries.length+' patterns on a shared scale. Horizontal position is peak population across 16 generations; vertical position is total births plus deaths. Currently inspecting '+activeEntry.pattern.name+', peak population '+activeEntry.journey.maxPopulation+', total turnover '+activeEntry.totalTurnover+', '+activeEntry.journey.shortLabel+'. Still lifes remain along the zero-turnover baseline, while oscillators, spaceships, and evolving seeds rise with activity.', style:{display:'block',width:'100%',height:'auto',maxHeight:'220px',overflow:'visible'} }, marks));
+    }
     function renderPatternsTab() {
+      var entries = PATTERN_ORDER.map(function (key) { return { key:key, pattern:LIFE_PATTERNS[key], journey:cachedPatternJourney(key, 16) }; });
       return h('div', null,
         h('p', { style: { margin: '0 0 12px', fontSize: '12px', color: C.sub, lineHeight: 1.5 } },
-          'Classic Life forms shown as a four-generation double exposure. Tap one to load it into Life.'),
+          'Classic Life forms shown as a four-generation double exposure. The shared-scale atlas compares how large and active each pattern becomes; tap a card to load it into Life.'),
+        patternBehaviorAtlas(entries, patternFocusKey),
         h('div', { 'aria-label': 'Thumbnail legend: cyan is the starting pattern, gold is generation four, and white cells overlap.', style: { display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', margin: '0 0 10px', color: C.sub, fontSize: '10px', fontWeight: 800 } }, [{ label:'Now', color:'#22d3ee' },{ label:'+4', color:'#fde047' },{ label:'Overlap', color:'#f8fafc' }].map(function (item) { return h('span', { key: item.label, style: { display: 'inline-flex', alignItems: 'center', gap: '5px' } }, h('span', { 'aria-hidden': 'true', style: { width: '9px', height: '9px', borderRadius: '2px', background: item.color, boxShadow: '0 0 5px ' + item.color } }), item.label); })),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px' } },
-          PATTERN_ORDER.map(function (key) {
-            var pat = LIFE_PATTERNS[key], evolution = analyzePatternEvolution(pat, 4), journey = analyzePatternJourney(pat, 16);
-            return h('button', Object.assign({ key: key, type: 'button', 'data-pattern-key': key, 'aria-label': pat.name + ', ' + pat.kind + '. ' + evolution.initialCells.length + ' cells now, ' + evolution.futureCells.length + ' at generation four; ' + evolution.comparison.appeared + ' appear and ' + evolution.comparison.gone + ' disappear. ' + journey.summary + ' Load pattern.', onClick: function () { loadPattern(key); } }, {
+          entries.map(function (entry) {
+            var key = entry.key, pat = entry.pattern, evolution = analyzePatternEvolution(pat, 4), journey = entry.journey;
+            var active = patternFocusKey === key;
+            return h('button', Object.assign({ key: key, type: 'button', 'data-pattern-key': key, 'data-pattern-atlas-active': active ? 'true' : 'false', 'aria-label': pat.name + ', ' + pat.kind + '. ' + evolution.initialCells.length + ' cells now, ' + evolution.futureCells.length + ' at generation four; ' + evolution.comparison.appeared + ' appear and ' + evolution.comparison.gone + ' disappear. ' + journey.summary + ' Load pattern.', onMouseEnter: function () { setPatternFocusKey(key); }, onFocus: function () { setPatternFocusKey(key); }, onClick: function () { loadPattern(key); } }, {
               style: { display: 'flex', gap: '10px', alignItems: 'center', textAlign: 'left', cursor: 'pointer',
-                flexWrap: 'wrap', alignContent: 'flex-start', background: C.panel, border: '1px solid ' + C.border, borderRadius: '12px', padding: '10px' }
+                flexWrap: 'wrap', alignContent: 'flex-start', background: C.panel, border: '1px solid ' + (active ? C.accent : C.border), borderRadius: '12px', padding: '10px', boxShadow: active ? '0 0 0 1px ' + C.accent + ', 0 10px 28px rgba(16,185,129,0.16)' : 'none', transition: 'border-color 180ms ease, box-shadow 180ms ease' }
             }),
               patternThumb(key, evolution),
               h('div', { style: { minWidth: 0, flex: '1 1 64px' } },
@@ -1196,6 +1275,17 @@
     }
     return { baseOutput: baseOutput, parents: parents, decisiveCount: decisiveCount };
   }
+  function analyzeCaSensitivityRow(rows, rowIndex, bits, wrap) {
+    rows = rows || [];
+    if (!rows.length || rowIndex < 0 || rowIndex >= rows.length || !rows[rowIndex]) return { cells:[], histogram:[0,0,0,0], decisiveCells:0, mean:0, max:0 };
+    var cells=[], histogram=[0,0,0,0], total=0, decisiveCells=0, max=0;
+    for (var col=0; col<rows[rowIndex].length; col++) {
+      var count=0;
+      if (rowIndex > 0) count=caCounterfactualInfluence(bits,caCellCause(rows,rowIndex,col,wrap)).decisiveCount;
+      cells.push(count); histogram[count]++; total+=count; if (count) decisiveCells++; max=Math.max(max,count);
+    }
+    return { cells:cells, histogram:histogram, decisiveCells:decisiveCells, mean:cells.length?total/cells.length:0, max:max };
+  }
   function caRuleSensitivityProfile(bits, neighborhoodCounts) {
     var counts = neighborhoodCounts || [0,0,0,0,0,0,0,0];
     var total = counts.reduce(function (sum, count) { return sum + (count || 0); }, 0);
@@ -1290,6 +1380,16 @@
     var grid = emptyGrid(rows, cols);
     (pattern && pattern.cells || []).forEach(function (cell) { var r = cell[0] + pad, c = cell[1] + pad; if (r >= 0 && r < rows && c >= 0 && c < cols) grid[r][c] = 1; });
     var startBounds = populationBounds(grid), startShape = shapeFingerprint(grid), seenExact = {}, seenShape = {}, points = [{ step: 0, population: countPop(grid), turnover: 0, births: 0, deaths: 0 }], classification = null;
+    var frameSteps = {}, frames = [], frameMinR = rows, frameMinC = cols, frameMaxR = -1, frameMaxC = -1;
+    for (var sample = 0; sample <= 4; sample++) frameSteps[Math.round(limit * sample / 4)] = true;
+    function captureFrame(source, frameStep) {
+      var cells = [];
+      for (var rr = 0; rr < source.length; rr++) for (var cc = 0; cc < source[rr].length; cc++) if (source[rr][cc]) {
+        cells.push([rr,cc]); frameMinR = Math.min(frameMinR,rr); frameMinC = Math.min(frameMinC,cc); frameMaxR = Math.max(frameMaxR,rr); frameMaxC = Math.max(frameMaxC,cc);
+      }
+      frames.push({ step:frameStep, population:cells.length, cells:cells });
+    }
+    captureFrame(grid,0);
     seenExact[gridSignature(grid)] = { step: 0, bounds: startBounds };
     seenShape[startShape.signature] = { step: 0, bounds: startBounds };
     for (var step = 1; step <= limit; step++) {
@@ -1304,13 +1404,19 @@
       if (seenExact[exact] == null) seenExact[exact] = { step: step, bounds: bounds };
       if (shape.signature && seenShape[shape.signature] == null) seenShape[shape.signature] = { step: step, bounds: bounds };
       grid = next.grid;
+      if (frameSteps[step]) captureFrame(grid,step);
     }
+    if (frameMaxR < 0) { frameMinR = frameMinC = 0; frameMaxR = frameMaxC = 0; }
     classification = classification || { kind: 'evolving' };
     var shortLabel = classification.kind === 'still' ? 'Still · P1' : classification.kind === 'oscillator' ? 'Oscillator · P' + classification.period : classification.kind === 'spaceship' ? 'Moves · P' + classification.period : classification.kind === 'extinct' ? 'Extinct · G' + classification.step : 'Still evolving';
     var summary = classification.kind === 'still' ? 'Evolution pulse for 16 generations: population remains ' + points[0].population + '; detected still life with period 1.' : classification.kind === 'oscillator' ? 'Evolution pulse for 16 generations: detected oscillator with period ' + classification.period + '.' : classification.kind === 'spaceship' ? 'Evolution pulse for 16 generations: detected spaceship moving ' + classification.dr + ' rows and ' + classification.dc + ' columns every ' + classification.period + ' generations.' : classification.kind === 'extinct' ? 'Evolution pulse for 16 generations: population reaches zero at generation ' + classification.step + '.' : 'Evolution pulse for 16 generations: no repeated state or translated shape detected; population changes from ' + points[0].population + ' to ' + points[points.length - 1].population + '.';
     var maxPopulation = 1, maxTurnover = 1;
     points.forEach(function (point) { maxPopulation = Math.max(maxPopulation, point.population); maxTurnover = Math.max(maxTurnover, point.turnover); });
-    return { points: points, kind: classification.kind, period: classification.period == null ? null : classification.period, dr: classification.dr == null ? null : classification.dr, dc: classification.dc == null ? null : classification.dc, detectedAt: classification.step == null ? null : classification.step, maxPopulation: maxPopulation, maxTurnover: maxTurnover, shortLabel: shortLabel, summary: summary };
+    return { points: points, frames:frames, frameBounds:{ minR:frameMinR, minC:frameMinC, maxR:frameMaxR, maxC:frameMaxC, width:frameMaxC-frameMinC+1, height:frameMaxR-frameMinR+1 }, kind: classification.kind, period: classification.period == null ? null : classification.period, dr: classification.dr == null ? null : classification.dr, dc: classification.dc == null ? null : classification.dc, detectedAt: classification.step == null ? null : classification.step, maxPopulation: maxPopulation, maxTurnover: maxTurnover, shortLabel: shortLabel, summary: summary };
+  }  function cachedPatternJourney(key, steps) {
+    var count = Math.max(1, steps || 16), cacheKey = key + '_' + count;
+    if (!PATTERN_JOURNEY_CACHE[cacheKey]) PATTERN_JOURNEY_CACHE[cacheKey] = analyzePatternJourney(LIFE_PATTERNS[key], count);
+    return PATTERN_JOURNEY_CACHE[cacheKey];
   }
   function analyzeLifeForecastMotion(currentGrid, series, horizon, wrap) {
     var limit = Math.max(0, Math.min((series || []).length, horizon || 0)), points = [], origin = currentGrid && currentGrid.length && currentGrid[0] ? populationBounds(currentGrid) : null;
@@ -1354,7 +1460,7 @@
     }
     return out;
   }
-  window.__alloCellularPure = { emptyGrid: emptyGrid, randomGrid: randomGrid, countPop: countPop, populationBounds: populationBounds, shapeFingerprint: shapeFingerprint, detectDynamics: detectDynamics, neighborCount: neighborCount, stepLife: stepLife, stepLifeDetailed: stepLifeDetailed, parseLifeRule: parseLifeRule, gridSignature: gridSignature, stampPattern: stampPattern, ruleToBits: ruleToBits, bitsToRule: bitsToRule, stepRuleRow: stepRuleRow, buildCaRows: buildCaRows, caCellCause: caCellCause, caCounterfactualInfluence: caCounterfactualInfluence, caRuleSensitivityProfile: caRuleSensitivityProfile, caCausalCone: caCausalCone, caCellTransition: caCellTransition, caTemporalChangeCells: caTemporalChangeCells, analyzeCaRows: analyzeCaRows, analyzeLifePhase: analyzeLifePhase, analyzePatternEvolution: analyzePatternEvolution, analyzePatternJourney: analyzePatternJourney, analyzeLifeForecastMotion: analyzeLifeForecastMotion, analyzeLifeForecastResidency: analyzeLifeForecastResidency, compareLifeStates: compareLifeStates, projectLifeFuture: projectLifeFuture, patterns: LIFE_PATTERNS };
+  window.__alloCellularPure = { emptyGrid: emptyGrid, randomGrid: randomGrid, countPop: countPop, populationBounds: populationBounds, shapeFingerprint: shapeFingerprint, detectDynamics: detectDynamics, neighborCount: neighborCount, stepLife: stepLife, stepLifeDetailed: stepLifeDetailed, parseLifeRule: parseLifeRule, gridSignature: gridSignature, stampPattern: stampPattern, ruleToBits: ruleToBits, bitsToRule: bitsToRule, stepRuleRow: stepRuleRow, buildCaRows: buildCaRows, caCellCause: caCellCause, caCounterfactualInfluence: caCounterfactualInfluence, analyzeCaSensitivityRow: analyzeCaSensitivityRow, caRuleSensitivityProfile: caRuleSensitivityProfile, caCausalCone: caCausalCone, caCellTransition: caCellTransition, caTemporalChangeCells: caTemporalChangeCells, analyzeCaRows: analyzeCaRows, analyzeLifePhase: analyzeLifePhase, analyzePatternEvolution: analyzePatternEvolution, analyzePatternJourney: analyzePatternJourney, analyzeLifeForecastMotion: analyzeLifeForecastMotion, analyzeLifeForecastResidency: analyzeLifeForecastResidency, compareLifeStates: compareLifeStates, projectLifeFuture: projectLifeFuture, patterns: LIFE_PATTERNS };
 
   window.StemLab.registerTool('cellularLab', {
     icon: '🧫',

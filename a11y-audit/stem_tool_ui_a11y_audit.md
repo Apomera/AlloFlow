@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-14T12:56:22.830Z
+Generated: 2026-07-14T14:17:16.311Z
 
 ## Scope
 
@@ -69,7 +69,7 @@ Generated: 2026-07-14T12:56:22.830Z
 | `brainAtlas` Brain Atlas Explorer | science | standard | 46 | 1 | 1 | 0 | 0 | 0 |  |
 | `bridgeLab` Bridge Engineering Lab | science | standard | 24 | 8 | 0 | 0 | 0 | 0 |  |
 | `calculus` Calculus | math | standard | 29 | 9 | 0 | 0 | 1 | 0 | tiny-text x1 |
-| `cell` Cell Simulator | science | standard | 39 | 3 | 1 | 0 | 0 | 0 |  |
+| `cell` Cell Simulator | science | standard | 40 | 3 | 1 | 0 | 0 | 0 |  |
 | `cellularLab` Cellular Automaton Lab | math | standard | 52 | 3 | 0 | 0 | 0 | 0 |  |
 | `cephalopodLab` Cephalopod Lab | science | standard | 17 | 1 | 0 | 0 | 0 | 0 |  |
 | `chemBalance` Chemistry Lab | science | standard | 12 | 1 | 1 | 0 | 0 | 0 |  |

@@ -195,18 +195,102 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Visual key/);
     expect(html).toMatch(/Pause spin/);
     expect(html).toMatch(/Anchor label/);
+    expect(html).toMatch(/Logged anchor/);
+    expect(html).toMatch(/Scan focus/);
+    expect(html).toMatch(/Target: Skull anchor/);
+    expect(html).toMatch(/Next scan target/);
+    expect(html).toMatch(/Evidence log 0\/3/);
+    expect(html).toMatch(/Logged 0\/3/);
+    expect(html).toMatch(/Next open: Skull/);
+    expect(html).toMatch(/Log observation/);
+    expect(html).toMatch(/Field claim builder/);
+    expect(html).toMatch(/Scan more for a stronger claim/);
+    expect(html).toMatch(/Claim/);
+    expect(html).toMatch(/Evidence/);
+    expect(html).toMatch(/Reasoning/);
     expect(html).toMatch(/Length guide/);
     expect(html).toMatch(/Evidence/);
     expect(html).toMatch(/Inference/);
     expect(html).toMatch(/Uncertainty/);
   });
 
+  it('the 3D field station identifies the next open scan anchor', () => {
+    const data = baseData('field3d');
+    data.field3dScanLogged = { skull: true };
+    data.field3dScanSpecies = 'tyrannosaurus';
+    const html = renderTab(data);
+    expect(html).toMatch(/Evidence log 1\/3/);
+    expect(html).toMatch(/Logged 1\/3/);
+    expect(html).toMatch(/Next open: Shoulder/);
+  });
+  it('the 3D field station tracks completed scan observations', () => {
+    const data = baseData('field3d');
+    data.field3dScanLogged = { skull: true, shoulder: true, hip: true };
+    data.field3dScanSpecies = 'tyrannosaurus';
+    const html = renderTab(data);
+    expect(html).toMatch(/Evidence log 3\/3/);
+    expect(html).toMatch(/Logged 3\/3/);
+    expect(html).toMatch(/Field scan complete/);
+    expect(html).toMatch(/Ready for CER/);
+    expect(html).toMatch(/Observation logged/);
+  });
+  it('the 3D field station ignores stale scan observations from another species', () => {
+    const data = baseData('field3d');
+    data.field3dSelected = 'tyrannosaurus';
+    data.field3dScanLogged = { skull: true, shoulder: true, hip: true };
+    data.field3dScanSpecies = 'triceratops';
+    const html = renderTab(data);
+    expect(html).toMatch(/Evidence log 0\/3/);
+    expect(html).toMatch(/Logged 0\/3/);
+    expect(html).toMatch(/Next open: Skull/);
+    expect(html).toMatch(/Log observation/);
+    expect(html).toMatch(/Field claim builder/);
+    expect(html).toMatch(/Scan more for a stronger claim/);
+    expect(html).toMatch(/Claim/);
+    expect(html).toMatch(/Evidence/);
+    expect(html).toMatch(/Reasoning/);
+    expect(html).not.toMatch(/Field scan complete/);
+  });
+  it('the 3D field station reveals when scan markers are hidden', () => {
+    const data = baseData('field3d');
+    data.field3dShowEvidence = false;
+    const html = renderTab(data);
+    expect(html).toMatch(/Scan markers hidden/);
+    expect(html).toMatch(/Show scan markers/);
+  });
+  it('the 3D field station can focus another evidence anchor', () => {
+    const data = baseData('field3d');
+    data.field3dScanTargetIdx = 1;
+    const html = renderTab(data);
+    expect(html).toMatch(/Target: Shoulder anchor/);
+    expect(html).toMatch(/Compare shoulder position/);
+  });
   it('the 3D field station can render with auto spin paused', () => {
     const data = baseData('field3d');
     data.field3dAutoRotate = false;
     const html = renderTab(data);
     expect(html).toMatch(/Auto spin/);
     expect(html).toMatch(/Anchor label/);
+    expect(html).toMatch(/Logged anchor/);
+    expect(html).toMatch(/Scan focus/);
+    expect(html).toMatch(/Target: Skull anchor/);
+    expect(html).toMatch(/Next scan target/);
+    expect(html).toMatch(/Evidence log 0\/3/);
+    expect(html).toMatch(/Logged 0\/3/);
+    expect(html).toMatch(/Next open: Skull/);
+    expect(html).toMatch(/Log observation/);
+    expect(html).toMatch(/Field claim builder/);
+    expect(html).toMatch(/Scan more for a stronger claim/);
+    expect(html).toMatch(/Claim/);
+    expect(html).toMatch(/Evidence/);
+    expect(html).toMatch(/Reasoning/);
+  });
+  it('the 3D field station can switch claim-builder focus', () => {
+    const data = baseData('field3d');
+    data.field3dClaimFocus = 'uncertainty';
+    const html = renderTab(data);
+    expect(html).toMatch(/One part of the reconstruction should stay tentative/);
+    expect(html).toMatch(/Good science separates observed fossils/);
   });
   it('the 3D reconstruction challenge shows answer feedback', () => {
     const data = baseData('field3d');

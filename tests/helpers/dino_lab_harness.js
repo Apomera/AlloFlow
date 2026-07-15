@@ -89,7 +89,7 @@ export function setupDinoLab() {
 export function baseData(tab) {
   const d = {
     selected: 'tyrannosaurus',
-    field3dSelected: 'tyrannosaurus', field3dShowSkeleton: true, field3dShowBody: true, field3dShowHuman: true, field3dShowEvidence: true, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true,
+    field3dSelected: 'tyrannosaurus', field3dShowSkeleton: true, field3dShowBody: true, field3dShowHuman: true, field3dShowEvidence: true, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: 'tyrannosaurus', field3dClaimFocus: 'scale',
     compareA: 'spinosaurus', compareB: 'argentinosaurus',
     digSeed: 3, digRevealed: [0, 1, 2, 5, 8, 9, 12], digGuess: 'allosaurus', digSolvedFor: null, digsSolved: 0,
     quizIdx: 2, quizPicked: 1, quizAnswered: true, quizCorrect: 3, quizDone: 5,

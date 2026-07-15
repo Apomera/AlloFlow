@@ -5692,6 +5692,12 @@ window.StemLab = window.StemLab || {
             var bodyMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.32, shininess: 25, side: THREE.DoubleSide });
             var headMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.44, shininess: 30 });
             var markerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+            var loggedMarkerMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
+            var loggedRingMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
+            var scanPulse = null;
+            var loggedRings = [];
+            var scanTargetId = props.scanTarget || 'skull';
+            var loggedAnchors = props.loggedAnchors || {};
 
             function vec(x, y, z) { return new THREE.Vector3(x, y, z); }
             function addBone(a, b, radius) {
@@ -5835,18 +5841,43 @@ window.StemLab = window.StemLab || {
 
             if (props.showEvidence) {
               [
-                { label: 'Skull', point: head },
-                { label: 'Shoulder', point: shoulder },
-                { label: 'Hip', point: hip }
+                { id: 'skull', label: 'Skull', point: head },
+                { id: 'shoulder', label: 'Shoulder', point: shoulder },
+                { id: 'hip', label: 'Hip', point: hip }
               ].forEach(function (anchor) {
-                var mark = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.09, ht * 0.026), 16, 10), markerMat);
+                var anchorLogged = !!loggedAnchors[anchor.id];
+                var mark = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.09, ht * 0.026), 16, 10), anchorLogged ? loggedMarkerMat : markerMat);
                 mark.position.copy(anchor.point);
                 mark.position.y += Math.max(0.12, ht * 0.050);
+                mark.renderOrder = anchorLogged ? 23 : 10;
                 model.add(mark);
                 var labelPos = anchor.point.clone();
                 labelPos.y += Math.max(0.46, ht * 0.15);
                 labelPos.z += Math.max(0.18, bodyDepth * 0.48);
-                addTextLabel(anchor.label, labelPos, '#38bdf8');
+                addTextLabel(anchor.label + (anchorLogged ? ' done' : ''), labelPos, anchorLogged ? '#22c55e' : '#38bdf8');
+                if (anchorLogged) {
+                  var loggedHalo = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.18, ht * 0.060), Math.max(0.012, ht * 0.005), 10, 42), loggedRingMat);
+                  loggedHalo.position.copy(mark.position);
+                  loggedHalo.rotation.x = Math.PI / 2;
+                  loggedHalo.renderOrder = 22;
+                  model.add(loggedHalo);
+                  loggedRings.push(loggedHalo);
+                }
+                if (anchor.id === scanTargetId) {
+                  var haloMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
+                  var halo = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.22, ht * 0.075), Math.max(0.014, ht * 0.006), 10, 48), haloMat);
+                  halo.position.copy(mark.position);
+                  halo.rotation.x = Math.PI / 2;
+                  halo.renderOrder = 25;
+                  model.add(halo);
+                  scanPulse = halo;
+                  var beamMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.28, depthWrite: false, depthTest: false });
+                  var beam = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.008, ht * 0.003), Math.max(0.008, ht * 0.003), Math.max(0.9, ht * 0.34), 10), beamMat);
+                  beam.position.copy(mark.position);
+                  beam.position.y += Math.max(0.46, ht * 0.17);
+                  beam.renderOrder = 24;
+                  model.add(beam);
+                }
               });
             }
 
@@ -5907,6 +5938,15 @@ window.StemLab = window.StemLab || {
               if (model) {
                 if (!dragging && !reducedMotion && props.autoRotate !== false) yaw += 0.0035;
                 model.rotation.y = yaw;
+                if (scanPulse) {
+                  var pulse = 1 + Math.sin(performance.now() * 0.006) * 0.10;
+                  scanPulse.scale.set(pulse, pulse, pulse);
+                  if (scanPulse.material) scanPulse.material.opacity = 0.30 + Math.sin(performance.now() * 0.006) * 0.08;
+                }
+                loggedRings.forEach(function (ring, idx) {
+                  var glow = 1 + Math.sin(performance.now() * 0.003 + idx) * 0.035;
+                  ring.scale.set(glow, glow, glow);
+                });
               }
               renderer.render(scene, camera);
             }
@@ -5921,7 +5961,7 @@ window.StemLab = window.StemLab || {
             disposeObject(scene);
             if (renderer && renderer.dispose) renderer.dispose();
           };
-        }, [props.species.id, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.autoRotate]);
+        }, [props.species.id, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.autoRotate, props.scanTarget, props.loggedAnchorKey]);
 
         function readoutChip(text, color) {
           return el('span', { key: text, style: { padding: '5px 8px', borderRadius: 999, background: 'rgba(15,23,42,0.82)', border: '1px solid ' + color, color: '#e2e8f0', fontSize: 11, fontWeight: 800, boxShadow: '0 2px 8px rgba(0,0,0,0.22)' } }, text);
@@ -5932,6 +5972,8 @@ window.StemLab = window.StemLab || {
           el('div', { style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM), 'rgba(56,189,248,0.55)'),
             readoutChip('Height ' + fmtLength(props.species.heightM), 'rgba(250,204,21,0.55)'),
+            props.scanLabel ? readoutChip('Focus ' + props.scanLabel, 'rgba(245,158,11,0.65)') : null,
+            props.loggedCount != null ? readoutChip('Logged ' + props.loggedCount + '/' + (props.scanTotal || 3), 'rgba(34,197,94,0.65)') : null,
             readoutChip('Mass ' + fmtWeight(props.species.weightKg), 'rgba(167,139,250,0.55)')
           ),
           el('div', { ref: statusRef, 'aria-live': 'polite', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
@@ -5946,6 +5988,46 @@ window.StemLab = window.StemLab || {
         var showHuman = d.field3dShowHuman !== false;
         var showEvidence = d.field3dShowEvidence !== false;
         var autoRotate = d.field3dAutoRotate !== false;
+        var scanTargets = [
+          { id: 'skull', label: 'Skull', prompt: 'Check how skull evidence constrains head size, bite posture, and sensory placement.' },
+          { id: 'shoulder', label: 'Shoulder', prompt: 'Compare shoulder position to the rib cage, forelimbs, and body balance.' },
+          { id: 'hip', label: 'Hip', prompt: 'Use the hip anchor to reason about tail counterbalance, stance, and locomotion.' }
+        ];
+        var scanTargetIdx = modIndex(d.field3dScanTargetIdx, scanTargets.length);
+        var scanTarget = scanTargets[scanTargetIdx];
+        var rawScanLogged = (d.field3dScanLogged && typeof d.field3dScanLogged === 'object') ? d.field3dScanLogged : {};
+        var scanLogSpecies = d.field3dScanSpecies || null;
+        var scanLogged = scanLogSpecies === dn.id ? rawScanLogged : {};
+        var scanLoggedCount = scanTargets.reduce(function (n, target) { return n + (scanLogged[target.id] ? 1 : 0); }, 0);
+        var scanLoggedKey = scanTargets.map(function (target) { return scanLogged[target.id] ? target.id : ''; }).join('|');
+        var scanComplete = scanLoggedCount >= scanTargets.length;
+        var nextOpenTarget = scanTargets.filter(function (target) { return !scanLogged[target.id]; })[0] || null;
+        function findNextOpenIdx(loggedMap, startIdx) {
+          for (var offset = 1; offset <= scanTargets.length; offset++) {
+            var idx = modIndex(startIdx + offset, scanTargets.length);
+            if (!loggedMap[scanTargets[idx].id]) return idx;
+          }
+          return startIdx;
+        }
+        function setScanTarget(idx) {
+          var nextIdx = modIndex(idx, scanTargets.length);
+          upd({ field3dScanTargetIdx: nextIdx, field3dShowEvidence: true });
+          announceToSR('3D scan focus: ' + scanTargets[nextIdx].label);
+        }
+        function nextScanTarget() { setScanTarget(scanTargetIdx + 1); }
+        function showScanMarkers() {
+          upd({ field3dShowEvidence: true, field3dScanTargetIdx: scanTargetIdx });
+          announceToSR('3D scan markers shown');
+        }
+        function logScanTarget() {
+          var nextLog = {};
+          for (var key in scanLogged) { if (Object.prototype.hasOwnProperty.call(scanLogged, key)) nextLog[key] = !!scanLogged[key]; }
+          nextLog[scanTarget.id] = true;
+          var nextIdx = findNextOpenIdx(nextLog, scanTargetIdx);
+          var nextTarget = scanTargets[nextIdx];
+          upd({ field3dScanLogged: nextLog, field3dScanSpecies: dn.id, field3dShowEvidence: true, field3dScanTargetIdx: nextIdx });
+          announceToSR(scanTarget.label + ' observation logged' + (nextTarget && !nextLog[nextTarget.id] ? '. Next focus: ' + nextTarget.label : '. Field scan complete'));
+        }
         var options = DINOS.slice().sort(function (a, b) { return a.common < b.common ? -1 : 1; }).map(function (sp) {
           return el('option', { key: sp.id, value: sp.id }, sp.common);
         });
@@ -6011,6 +6093,83 @@ window.StemLab = window.StemLab || {
         ].map(function (card) {
           return panel([el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 4 } }, card.title), el('div', { key: 'b', style: { fontSize: 12, color: T.soft, lineHeight: 1.48 } }, card.body)], { key: card.title });
         });
+        var scanCoachPanel = panel([
+          el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Scan focus'),
+          el('div', { key: 'progress', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Evidence log ' + scanLoggedCount + '/' + scanTargets.length + (scanComplete ? ' | Field scan complete' : (nextOpenTarget ? ' | Next open: ' + nextOpenTarget.label : ''))),
+          el('div', { key: 'chips', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))', gap: 6, marginBottom: 8 } }, scanTargets.map(function (target, idx) {
+            var active = idx === scanTargetIdx;
+            var logged = !!scanLogged[target.id];
+            return el('button', {
+              key: target.id,
+              onClick: function () { setScanTarget(idx); },
+              'aria-pressed': active ? 'true' : 'false',
+              style: {
+                textAlign: 'left',
+                padding: '7px 8px',
+                borderRadius: 8,
+                border: '1px solid ' + (active ? 'rgba(245,158,11,0.72)' : T.border),
+                background: active ? 'rgba(245,158,11,0.18)' : (logged ? 'rgba(34,197,94,0.12)' : T.deeper),
+                color: T.text,
+                cursor: 'pointer',
+                fontSize: 11.5,
+                fontWeight: 900
+              }
+            }, (logged ? 'Logged ' : '') + target.label);
+          })),
+          showEvidence ? null : el('div', { key: 'hidden', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 7, padding: 8, borderRadius: 8, border: '1px solid rgba(245,158,11,0.38)', background: 'rgba(15,23,42,0.26)', marginBottom: 8 } }, [ el('span', { key: 't', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.35 } }, 'Scan markers hidden'), el('button', { key: 'b', onClick: showScanMarkers, style: { fontSize: 11.5, fontWeight: 900, padding: '5px 9px', borderRadius: 7, border: '1px solid rgba(245,158,11,0.55)', background: 'rgba(245,158,11,0.16)', color: T.text, cursor: 'pointer' } }, 'Show scan markers') ]),
+          el('div', { key: 'target', style: { fontSize: 12.5, color: T.text, lineHeight: 1.5, marginBottom: 6 } }, 'Target: ' + scanTarget.label + ' anchor'),
+          el('div', { key: 'prompt', style: { fontSize: 12, color: T.soft, lineHeight: 1.48, marginBottom: 8 } }, scanTarget.prompt),
+          el('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [
+            el('button', { key: 'log', onClick: logScanTarget, disabled: !!scanLogged[scanTarget.id], style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(34,197,94,0.50)', background: scanLogged[scanTarget.id] ? 'rgba(34,197,94,0.10)' : 'rgba(34,197,94,0.18)', color: T.text, cursor: scanLogged[scanTarget.id] ? 'default' : 'pointer', opacity: scanLogged[scanTarget.id] ? 0.72 : 1 } }, scanLogged[scanTarget.id] ? 'Observation logged' : 'Log observation'),
+            el('button', { key: 'next', onClick: nextScanTarget, style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.55)', background: 'rgba(245,158,11,0.16)', color: T.text, cursor: 'pointer' } }, 'Next scan target')
+          ]),
+          scanComplete ? el('div', { key: 'done', style: { marginTop: 8, fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, 'Field scan complete: use the logged anchors to support a claim below.') : null
+        ], { marginBottom: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.28)' });
+        var claimOptions = [
+          {
+            id: 'scale',
+            label: 'Scale',
+            claim: dn.common + ' was a large animal at about ' + fmtLength(dn.lengthM) + ' long.',
+            evidence: 'Use the length guide, human scale figure, and logged skull-to-hip anchors to support the size estimate.',
+            reasoning: 'Size claims are strongest when measurements are connected to fossil anchors instead of just a number.'
+          },
+          {
+            id: 'posture',
+            label: 'Posture',
+            claim: dn.common + ' posture is reconstructed from how the skull, shoulder, hip, and tail balance.',
+            evidence: 'Compare the shoulder and hip anchors with the translucent body outline before deciding how the animal carried its weight.',
+            reasoning: 'Posture is an inference: bones constrain it, but soft tissue and motion are reconstructed.'
+          },
+          {
+            id: 'uncertainty',
+            label: 'Uncertainty',
+            claim: 'One part of the reconstruction should stay tentative: ' + dn.uncertain,
+            evidence: 'Pair the fossil evidence note with the visible scan anchors and name what is not preserved directly.',
+            reasoning: 'Good science separates observed fossils from model-based interpretation.'
+          }
+        ];
+        var claimFocusId = d.field3dClaimFocus || 'scale';
+        var claimFocus = claimOptions.filter(function (option) { return option.id === claimFocusId; })[0] || claimOptions[0];
+        function setClaimFocus(id) {
+          upd('field3dClaimFocus', id);
+          announceToSR('3D claim builder: ' + id);
+        }
+        var claimBuilderPanel = panel([
+          el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Field claim builder'),
+          el('div', { key: 'status', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Using ' + scanLoggedCount + '/' + scanTargets.length + ' logged anchors' + (scanComplete ? ' | Ready for CER' : ' | Scan more for a stronger claim')),
+          el('div', { key: 'modes', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))', gap: 6, marginBottom: 8 } }, claimOptions.map(function (option) {
+            var active = option.id === claimFocus.id;
+            return el('button', {
+              key: option.id,
+              onClick: function () { setClaimFocus(option.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              style: { textAlign: 'left', padding: '7px 8px', borderRadius: 8, border: '1px solid ' + (active ? 'rgba(20,184,166,0.65)' : T.border), background: active ? 'rgba(20,184,166,0.15)' : T.deeper, color: T.text, cursor: 'pointer', fontSize: 11.5, fontWeight: 900 }
+            }, option.label);
+          })),
+          el('div', { key: 'claim', style: { padding: '8px 0', borderTop: '1px solid ' + T.border } }, el('div', { style: { fontSize: 11, color: T.soft, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0 } }, 'Claim'), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.48 } }, claimFocus.claim)),
+          el('div', { key: 'evidence', style: { padding: '8px 0', borderTop: '1px solid ' + T.border } }, el('div', { style: { fontSize: 11, color: T.soft, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0 } }, 'Evidence'), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.48 } }, claimFocus.evidence)),
+          el('div', { key: 'reasoning', style: { paddingTop: 8, borderTop: '1px solid ' + T.border } }, el('div', { style: { fontSize: 11, color: T.soft, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0 } }, 'Reasoning'), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.48 } }, claimFocus.reasoning))
+        ], { marginBottom: 12, background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.25)' });
         var challengeSteps = [
           {
             kind: 'evidence',
@@ -6059,6 +6218,8 @@ window.StemLab = window.StemLab || {
           keyItem('#f8fafc', 'Skeleton proxy', 'White rods and joints show the inferred bone layout.'),
           keyItem(dColor(dn.diet), 'Body inference', 'Translucent color shows estimated soft tissue volume.'),
           keyItem('#38bdf8', 'Evidence marker', 'Blue points mark fossil anchor locations.'),
+          keyItem('#22c55e', 'Logged anchor', 'Green rings show evidence points already recorded in the observation log.'),
+          keyItem('#f59e0b', 'Scan focus', 'Amber ring pulses around the current evidence target.'),
           keyItem('#0f172a', 'Anchor label', 'Floating labels identify skull, shoulder, and hip evidence points.'),
           keyItem('#94a3b8', 'Human scale', 'Gray figure keeps size estimates concrete.'),
           keyItem('#38bdf8', 'Length guide', 'Cyan floor line spans snout to tail for scale.')
@@ -6103,12 +6264,12 @@ window.StemLab = window.StemLab || {
           el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14, alignItems: 'start' } },
             el('div', { key: 'viewer' },
               el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' } },
-                el('select', { value: dn.id, 'aria-label': 'Choose species for 3D field station', onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
+                el('select', { value: dn.id, 'aria-label': 'Choose species for 3D field station', onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
                 el('button', { onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + T.border, background: 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, 'Open species file'),
                 el('button', { onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin')
               ),
               presetStrip,
-              el(DinoFieldStation3D, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, dietColor: dColor(dn.diet) }),
+              el(DinoFieldStation3D, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, dietColor: dColor(dn.diet) }),
               el('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } }, taskCards)
             ),
             el('div', { key: 'side' },
@@ -6118,6 +6279,8 @@ window.StemLab = window.StemLab || {
                 el('div', { key: 'b', style: { marginBottom: 8 } }, badge(periodName(dn.period) + ' · ' + fmtMya(dn), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet)), badge(GROUP_LABEL[dn.group] || cap(dn.group), '#38bdf8')),
                 el('div', { key: 'rows' }, evidenceRows)
               ], { marginBottom: 12 }),
+              scanCoachPanel,
+              claimBuilderPanel,
               challengePanel,
               visualKeyPanel,
               panel([
@@ -6416,7 +6579,7 @@ window.StemLab = window.StemLab || {
         content = el('div', { style: { padding: 20, color: T.text } },
           el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 6 } }, '⚠️ This section could not open'),
           el('div', { key: 'b', style: { fontSize: 13, color: T.soft, lineHeight: 1.55, marginBottom: 14, maxWidth: 520 } }, 'The "' + tab + '" view ran into an error, but the rest of Dino Lab still works — pick another section from the tabs above. If Dino Lab keeps opening to this message, reset the saved view to clear it.'),
-          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
+          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: null, field3dClaimFocus: 'scale', compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
         );
       }
 

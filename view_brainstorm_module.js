@@ -36,11 +36,13 @@
   var isTeacherMode = props.isTeacherMode;
   var isEditingBrainstorm = props.isEditingBrainstorm;
   var isGeneratingGuide = props.isGeneratingGuide;
+  var isGeneratingBrainstormRubric = props.isGeneratingBrainstormRubric || {};
   var isGeneratingWorksheet = props.isGeneratingWorksheet;
   var isGeneratingWorksheetCover = props.isGeneratingWorksheetCover;
   var handleToggleIsEditingBrainstorm = props.handleToggleIsEditingBrainstorm;
   var handleBrainstormChange = props.handleBrainstormChange;
   var handleGenerateGuide = props.handleGenerateGuide;
+  var handleGenerateBrainstormRubric = props.handleGenerateBrainstormRubric;
   var handleGenerateWorksheet = props.handleGenerateWorksheet;
   var handleGenerateWorksheetCover = props.handleGenerateWorksheetCover;
   var getRows = props.getRows;
@@ -199,7 +201,73 @@
   }) : /*#__PURE__*/React.createElement(FileText, {
     size: 14,
     "aria-hidden": "true"
-  }), isGeneratingWorksheet[idx] ? t('brainstorm.creating_worksheet') || 'Creating worksheet…' : t('brainstorm.generate_worksheet') || 'Generate Student Worksheet')))))));
+  }), isGeneratingWorksheet[idx] ? t('brainstorm.creating_worksheet') || 'Creating worksheet…' : t('brainstorm.generate_worksheet') || 'Generate Student Worksheet')), idea.rubric && Array.isArray(idea.rubric.criteria) && idea.rubric.criteria.length ? /*#__PURE__*/React.createElement("details", {
+    className: "mt-3 group"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "inline-flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200 cursor-pointer list-none transition-colors"
+  }, /*#__PURE__*/React.createElement(ListChecks, {
+    size: 14
+  }), idea.rubric.title || 'Activity Rubric', /*#__PURE__*/React.createElement("span", {
+    className: "text-violet-700/70 ml-0.5 group-open:rotate-180 transition-transform"
+  }, "▾")), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 overflow-x-auto rounded-lg border border-violet-200",
+    "data-help-key": "brainstorm_rubric"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "min-w-[760px] w-full text-xs text-left text-slate-700"
+  }, /*#__PURE__*/React.createElement("caption", {
+    className: "sr-only"
+  }, idea.rubric.title || 'Activity rubric with four performance levels'), /*#__PURE__*/React.createElement("thead", {
+    className: "bg-violet-50 text-violet-950"
+  }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+    scope: "col",
+    className: "p-2"
+  }, "Criterion"), /*#__PURE__*/React.createElement("th", {
+    scope: "col",
+    className: "p-2 w-16"
+  }, "Weight"), /*#__PURE__*/React.createElement("th", {
+    scope: "col",
+    className: "p-2"
+  }, "4 - Exceeds"), /*#__PURE__*/React.createElement("th", {
+    scope: "col",
+    className: "p-2"
+  }, "3 - Meets"), /*#__PURE__*/React.createElement("th", {
+    scope: "col",
+    className: "p-2"
+  }, "2 - Developing"), /*#__PURE__*/React.createElement("th", {
+    scope: "col",
+    className: "p-2"
+  }, "1 - Beginning"))), /*#__PURE__*/React.createElement("tbody", {
+    className: "divide-y divide-violet-100 bg-white"
+  }, idea.rubric.criteria.map((criterion, criterionIndex) => /*#__PURE__*/React.createElement("tr", {
+    key: criterionIndex,
+    className: "align-top"
+  }, /*#__PURE__*/React.createElement("th", {
+    scope: "row",
+    className: "p-2 font-semibold text-slate-900"
+  }, criterion.criterion), /*#__PURE__*/React.createElement("td", {
+    className: "p-2"
+  }, Number.isFinite(Number(criterion.weight)) ? `${criterion.weight}%` : '--'), /*#__PURE__*/React.createElement("td", {
+    className: "p-2"
+  }, criterion.levels && criterion.levels['4']), /*#__PURE__*/React.createElement("td", {
+    className: "p-2"
+  }, criterion.levels && criterion.levels['3']), /*#__PURE__*/React.createElement("td", {
+    className: "p-2"
+  }, criterion.levels && criterion.levels['2']), /*#__PURE__*/React.createElement("td", {
+    className: "p-2"
+  }, criterion.levels && criterion.levels['1']))))))) : isTeacherMode ? /*#__PURE__*/React.createElement("button", {
+    "aria-label": "Generate activity rubric",
+    onClick: () => handleGenerateBrainstormRubric(idx),
+    disabled: isGeneratingBrainstormRubric[idx],
+    "aria-busy": !!isGeneratingBrainstormRubric[idx],
+    className: "mt-3 flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full transition-colors border border-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
+  }, isGeneratingBrainstormRubric[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 12,
+    className: "animate-spin",
+    "aria-hidden": "true"
+  }) : /*#__PURE__*/React.createElement(ListChecks, {
+    size: 14,
+    "aria-hidden": "true"
+  }), isGeneratingBrainstormRubric[idx] ? 'Creating rubric...' : 'Generate Activity Rubric') : null)))));
 }
 
   window.AlloModules = window.AlloModules || {};

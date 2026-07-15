@@ -74,6 +74,20 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('Color + label for every status');
     expect(html).toContain('Ready to harvest');
     expect(html).toContain('Needs care or conflict');
+    expect(html).toContain('data-community-garden-passport="true"');
+    expect(html).toContain('Garden Passport');
+    expect(html).toContain('aria-label="Garden passport progress"');
+    expect(html).toContain('Show all 12');
+    expect(html).toContain('Next passport stamp');
+    expect(html).toContain('data-achievement-status="locked"');
+    expect(html).toContain('data-community-stewardship-dashboard="true"');
+    expect(html).toContain('Stewardship Dashboard');
+    expect(html).toContain('Balance soil, spending, and living pest control as one connected system.');
+    expect(html).toContain('aria-label="Nitrogen level"');
+    expect(html).toContain('aria-label="Phosphorus level"');
+    expect(html).toContain('aria-label="Potassium level"');
+    expect(html).toContain('aria-label="Pest pressure level"');
+    expect(html).toContain('aria-label="Beneficial insect level"');
     expect(html).toContain('data-community-plan-readiness="true"');
     expect(html).toContain('Garden Blueprint Check');
     expect(html).toContain('Use these signals as guidance, not requirements.');
@@ -106,6 +120,18 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('Choose any open plot below to plant it.');
     expect(html).toContain('aria-label="Cancel selected plant"');
     expect(html).toContain('Tomato (selected)');
+  });
+
+  it('celebrates earned Garden Passport stamps without hiding locked goals', () => {
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { totalHarvested: 1 } },
+    });
+
+    expect(html).toContain('1/12');
+    expect(html).toContain('data-achievement-status="earned"');
+    expect(html).toContain('data-achievement-status="locked"');
+    expect(html).toContain('First Harvest');
+    expect(html).toContain('Earned');
   });
 
   it('renders state-aware Community Garden care controls without the stale multi-day shortcut', () => {

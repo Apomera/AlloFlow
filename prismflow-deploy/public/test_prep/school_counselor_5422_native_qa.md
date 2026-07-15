@@ -1,6 +1,6 @@
 # Praxis School Counselor (5422) QA report
 
-Generated: 2026-07-14T16:15:39.444Z
+Generated: 2026-07-15T01:09:37.876Z
 
 ## Result
 

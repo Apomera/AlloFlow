@@ -12,7 +12,7 @@ function LearningHubModal(props) {
   const {
     setIsAlloHavenOpen, setIsLinguaPracticeOpen, setIsOpenGrooveOpen, setIsTestPrepHubOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
     setShowMindMap, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
-    setStemLabTab, showLearningHub,
+    setStemLabTab, setStemLabTool, setLabToolData, showLearningHub,
     // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
     // default so a host that hasn't wired the setter still renders the hub.
     // BridgeSendModal is teacher-gated, so the card is only shown in teacher mode
@@ -75,6 +75,20 @@ function LearningHubModal(props) {
                   <p className="text-xs text-indigo-600 mt-1">{t('learning_hub.stem_desc') || '100+ interactive math & science explorations'}</p>
                 </div>
               </button>
+              {typeof setStemLabTool === 'function' && typeof setLabToolData === 'function' && (
+                <button data-help-key="learning_hub_lumen_card" onClick={() => {
+                  setShowLearningHub(false);
+                  setLabToolData(prev => ({ ...prev, lumen: { ...((prev && prev.lumen) || {}), mode: 'study' } }));
+                  setStemLabTool('lumen');
+                  setShowStemLab(true);
+                }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-blue-50 border border-amber-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl" aria-hidden="true">💡</span>
+                  <div>
+                    <h3 className="font-bold text-amber-900">{tr('learning_hub.lumen_title', 'Lumen Study')}</h3>
+                    <p className="text-xs text-amber-800 mt-1">{tr('learning_hub.lumen_desc', 'Ask questions, inspect exact supporting passages, and save source-grounded notes.')}</p>
+                  </div>
+                </button>
+              )}
               {typeof setIsOpenGrooveOpen === 'function' && (
                 <button onClick={() => { setShowLearningHub(false); setIsOpenGrooveOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-cyan-50 to-emerald-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                   <span className="text-4xl">{'\uD83C\uDF9B\uFE0F'}</span>

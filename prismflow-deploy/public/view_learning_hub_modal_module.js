@@ -28,6 +28,8 @@ function LearningHubModal(props) {
     setShowStemLab,
     setShowStoryForge,
     setStemLabTab,
+    setStemLabTool,
+    setLabToolData,
     showLearningHub,
     // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
     // default so a host that hasn't wired the setter still renders the hub.
@@ -91,7 +93,12 @@ function LearningHubModal(props) {
     setShowLearningHub(false);
     setShowStemLab(true);
     setStemLabTab("explore");
-  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("learning_hub.stem_title") || "STEM Lab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("learning_hub.stem_desc") || "100+ interactive math & science explorations"))), typeof setIsOpenGrooveOpen === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("learning_hub.stem_title") || "STEM Lab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("learning_hub.stem_desc") || "100+ interactive math & science explorations"))), typeof setStemLabTool === "function" && typeof setLabToolData === "function" && /* @__PURE__ */ React.createElement("button", { "data-help-key": "learning_hub_lumen_card", onClick: () => {
+    setShowLearningHub(false);
+    setLabToolData((prev) => ({ ...prev, lumen: { ...prev && prev.lumen || {}, mode: "study" } }));
+    setStemLabTool("lumen");
+    setShowStemLab(true);
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-blue-50 border border-amber-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-900" }, tr("learning_hub.lumen_title", "Lumen Study")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-800 mt-1" }, tr("learning_hub.lumen_desc", "Ask questions, inspect exact supporting passages, and save source-grounded notes.")))), typeof setIsOpenGrooveOpen === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setShowLearningHub(false);
     setIsOpenGrooveOpen(true);
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-cyan-50 to-emerald-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F39B}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-cyan-900" }, t("learning_hub.open_groove_title") || "Open Groove Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-cyan-700 mt-1" }, t("learning_hub.open_groove_desc") || "Make beats, shape synths, and connect patterns to real composition and notation."))), typeof setIsTimelineStudioOpen === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => {

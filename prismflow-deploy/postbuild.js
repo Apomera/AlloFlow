@@ -32,13 +32,17 @@ console.log('✓ Split shell HTML:', (htmlBytes / 1024).toFixed(1) + ' KB');
 console.log('✓ Preserved hashed assets:', assetPaths.join(', '));
 
 if (!fs.existsSync(swPath)) throw new Error('build/sw.js is missing');
+const desktopBridgePath = path.join(buildDir, 'alloflow_desktop_bridge.js');
+if (!fs.existsSync(desktopBridgePath)) {
+    throw new Error('build/alloflow_desktop_bridge.js is missing');
+}
 const buildTs = Date.now();
 let swContent = fs.readFileSync(swPath, 'utf8');
 if (!swContent.includes('__BUILD_TS__')) throw new Error('Service-worker build timestamp placeholder is missing');
 if (!swContent.includes('__PRECACHE_PATHS__')) throw new Error('Service-worker precache placeholder is missing');
 swContent = swContent
     .replace(/__BUILD_TS__/g, String(buildTs))
-    .replace('__PRECACHE_PATHS__', JSON.stringify(['./index.html', ...assetPaths]));
+    .replace('__PRECACHE_PATHS__', JSON.stringify(['./index.html', './alloflow_desktop_bridge.js', ...assetPaths]));
 fs.writeFileSync(swPath, swContent, 'utf8');
 console.log('✓ SW stamped: CACHE_NAME = alloflow-v' + buildTs);
 console.log('✓ Post-build complete: split shell assets are precached for offline/repeat launch');

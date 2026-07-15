@@ -457,6 +457,12 @@
         setLabToolData,
         gradeLevel,
         sourceTopic,
+        inputText,
+        storageDB,
+        ai,
+        sourceProvenance,
+        sourceLocator,
+        sourceType,
         callGemini,
         callTTS,
         callImagen,
@@ -1722,7 +1728,7 @@
         try {
           var _toSave = {};
           // @tool waterCycle
-          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', '_tutorialSeen'].forEach(function (k) {
+          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', '_tutorialSeen'].forEach(function (k) {
             if (labToolData[k]) _toSave[k] = labToolData[k];
           });
           // flightSim progression (badges, visited airports, flight time,
@@ -5566,6 +5572,11 @@
             // _deferSafe wrap: stemCelebrate sets parent confetti/celebration state.
             celebrate: typeof stemCelebrate === 'function' ? _deferSafe(stemCelebrate) : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
+            ai: ai || null,
+            generateText: (ai && typeof ai.generateText === 'function')
+              ? function(prompt, options) { return ai.generateText(prompt, options || {}); }
+              : (typeof callGemini === 'function' ? function(prompt, options) { return callGemini(prompt, !!(options && options.jsonMode)); } : null),
+            storageDB: storageDB || null,
             // Guarded AI-hint entry point + its enabled flag. getHint self-gates
             // (off → zero traffic), enforces try-again/cap/reveal-check, and shows
             // a labeled hint. aiHintsEnabled lets a tool show/hide its hint button.
@@ -5585,7 +5596,12 @@
             sourceText: typeof inputText === 'string' ? inputText : (typeof sourceText === 'string' ? sourceText : ''),
             inputText: typeof inputText === 'string' ? inputText : '',
             sourceTopic: typeof sourceTopic === 'string' ? sourceTopic : '',
+            sourceProvenance: sourceProvenance && typeof sourceProvenance === 'object' ? sourceProvenance : null,
+            sourceLocator: typeof sourceLocator === 'string' ? sourceLocator : '',
+            sourceType: typeof sourceType === 'string' ? sourceType : '',
             gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
+            studentNickname: typeof studentNickname === 'string' ? studentNickname : '',
+            isTeacherMode: isTeacherMode !== false,
             // Coarse-grained grade banding for tools that target tiers rather than
             // single grades (firstresponse, swimlab, etc. expect 'k2'|'g35'|'g68'|'g912').
             gradeBand: (function() {

@@ -133,6 +133,19 @@ const createExport = (deps) => {
         const body = String(raw || idx || Date.now()).replace(/[^A-Za-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || String(idx || '0');
         return `${prefix}-${body}`;
     };
+    const _exportLanguage = () => {
+        const root = typeof document !== 'undefined' ? document.documentElement : null;
+        const value = root && root.lang ? String(root.lang).trim() : '';
+        return /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(value) ? value : 'en';
+    };
+    const _exportDirection = () => {
+        const root = typeof document !== 'undefined' ? document.documentElement : null;
+        return root && String(root.dir).toLowerCase() === 'rtl' ? 'rtl' : 'ltr';
+    };
+    const _escapeExportText = (value) => escapeXml(Array.from(String(value == null ? '' : value)).filter((char) => {
+        const cp = char.codePointAt(0);
+        return cp === 0x9 || cp === 0xA || cp === 0xD || (cp >= 0x20 && cp <= 0xD7FF) || (cp >= 0xE000 && cp <= 0xFFFD) || (cp >= 0x10000 && cp <= 0x10FFFF);
+    }).join(''));
 
     // exportLanguagePack NOT extracted — it stays inside useTranslation hook
     // because it closes over languagePack + targetLanguage state that aren't
@@ -181,8 +194,10 @@ const createExport = (deps) => {
     };
 
     // ─── handleExportQTI ───────────────────────────────────────────────
-    const handleExportQTI = async () => {
-        const { generatedContent, sourceTopic, addToast, t } = liveRef.current;
+    const handleExportQTI = async (options = {}) => {
+        const live = liveRef.current;
+        const generatedContent = options.generatedContent || live.generatedContent;
+        const { sourceTopic, addToast, t } = live;
         if (!window.JSZip) {
             addToast(t('export_status.lib_loading'), "error");
             return;
@@ -196,20 +211,21 @@ const createExport = (deps) => {
         const manifestId = `MANIFEST-${generateUUID()}`;
         const resourceId = `RES-${generateUUID()}`;
         const assessmentId = `QU-${generateUUID()}`;
-        const title = escapeXml(generatedContent.title || t('export.qti_default_title'));
-        const description = escapeXml(sourceTopic || t('export.qti_default_desc'));
+        const exportLang = _exportLanguage();
+        const title = _escapeExportText(generatedContent.title || t('export.qti_default_title'));
+        const description = _escapeExportText(sourceTopic || t('export.qti_default_desc'));
         const manifestXml = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="${manifestId}" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:lom="http://www.imsglobal.org/xsd/imsmd_v1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p1.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 http://www.imsglobal.org/xsd/imsmd_v1p2.xsd">
   <metadata>
-    <schema>${t('common.ims_content') || 'IMS Content'}</schema>
+    <schema>${_escapeExportText(t('common.ims_content') || 'IMS Content')}</schema>
     <schemaversion>1.1.3</schemaversion>
     <lom:lom>
       <lom:general>
         <lom:title>
-          <lom:string language="en">${title}</lom:string>
+          <lom:string language="${_escapeExportText(exportLang)}">${title}</lom:string>
         </lom:title>
         <lom:description>
-          <lom:string language="en">${description}</lom:string>
+          <lom:string language="${_escapeExportText(exportLang)}">${description}</lom:string>
         </lom:description>
       </lom:general>
     </lom:lom>
@@ -227,26 +243,39 @@ const createExport = (deps) => {
   <assessment ident="${assessmentId}" title="${title}">
     <section ident="root_section">`;
         let itemsXml = "";
-        const questions = generatedContent?.data.questions || [];
+        const rawQuestions = Array.isArray(generatedContent && generatedContent.data && generatedContent.data.questions)
+            ? generatedContent.data.questions
+            : [];
+        const questions = rawQuestions.filter((q) => {
+            if (!q || !String(q.question == null ? '' : q.question).trim() || !Array.isArray(q.options) || q.options.length < 2) return false;
+            return q.options.some((option) => String(option) === String(q.correctAnswer));
+        });
+        if (!questions.length) {
+            addToast('No valid multiple-choice questions are ready for QTI export.', "error");
+            return;
+        }
+        if (questions.length < rawQuestions.length) {
+            addToast(`${rawQuestions.length - questions.length} malformed quiz question(s) were omitted from the QTI package.`, "warning");
+        }
         questions.forEach((q, i) => {
             const itemId = `Q_${i}_${generateUUID().slice(0,8)}`;
             const responseId = `RESPONSE_${i}`;
-            const correctIndex = q.options.findIndex(opt => opt === q.correctAnswer);
-            const correctIdent = correctIndex !== -1 ? `OPT_${correctIndex}` : "OPT_0";
+            const correctIndex = q.options.findIndex((option) => String(option) === String(q.correctAnswer));
+            const correctIdent = `OPT_${correctIndex}`;
             let choicesXml = "";
             q.options.forEach((opt, optIdx) => {
                 choicesXml += `
         <response_label ident="OPT_${optIdx}">
           <material>
-            <mattext texttype="text/plain">${escapeXml(opt)}</mattext>
+            <mattext texttype="text/plain">${_escapeExportText(opt)}</mattext>
           </material>
         </response_label>`;
             });
             itemsXml += `
-    <item ident="${itemId}" title="${t('common.question_i_1') || 'Question'}">
+    <item ident="${itemId}" title="${_escapeExportText(t('common.question_i_1') || 'Question')}">
       <presentation>
         <material>
-          <mattext texttype="text/plain">${escapeXml(q.question)}</mattext>
+          <mattext texttype="text/plain">${_escapeExportText(q.question)}</mattext>
         </material>
         <response_lid ident="${responseId}" rcardinality="Single">
           <render_choice>
@@ -258,7 +287,7 @@ const createExport = (deps) => {
         <outcomes>
           <decvar varname="SCORE" vartype="Integer" defaultval="0"/>
         </outcomes>
-        <respcondition title="${t('common.correct') || 'Correct'}">
+        <respcondition title="${_escapeExportText(t('common.correct') || 'Correct')}">
           <conditionvar>
             <varequal respident="${responseId}">${correctIdent}</varequal>
           </conditionvar>
@@ -267,13 +296,15 @@ const createExport = (deps) => {
       </resprocessing>
     </item>`;
         });
-        const reflections = generatedContent?.data.reflections || [];
+        const reflections = Array.isArray(generatedContent && generatedContent.data && generatedContent.data.reflections)
+            ? generatedContent.data.reflections.filter((ref) => ref != null)
+            : [];
         reflections.forEach((ref, i) => {
             const text = typeof ref === 'string' ? ref : ref.text;
             const itemId = `REF_${i}_${generateUUID().slice(0,8)}`;
             const responseId = `REF_RESP_${i}`;
             itemsXml += `
-    <item ident="${itemId}" title="${t('common.reflection_i_1') || 'Reflection'}">
+    <item ident="${itemId}" title="${_escapeExportText(t('common.reflection_i_1') || 'Reflection')}">
       <itemmetadata>
         <qtimetadata>
           <qtimetadatafield>
@@ -284,7 +315,7 @@ const createExport = (deps) => {
       </itemmetadata>
       <presentation>
         <material>
-          <mattext texttype="text/plain">${escapeXml(text)}</mattext>
+          <mattext texttype="text/plain">${_escapeExportText(text)}</mattext>
         </material>
         <response_str ident="${responseId}" rcardinality="Single">
           <render_fib rows="5">
@@ -309,16 +340,276 @@ const createExport = (deps) => {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            window.setTimeout(() => URL.revokeObjectURL(url), 1000);
             addToast(t('export_status.qti_success'), "success");
         } catch (err) {
             warnLog("QTI Package generation failed", err);
             addToast(t('export_status.package_error'), "error");
         }
     };
+    // --- handleExportH5P ------------------------------------------------
+    // Produces content-only H5P archives that reference official H5P
+    // libraries. The destination H5P installation must provide that library.
+    const handleExportH5P = async (options = {}) => {
+        const live = liveRef.current;
+        const generatedContent = options.generatedContent || live.generatedContent;
+        const { sourceTopic, addToast, t } = live;
+        if (!window.JSZip) {
+            addToast(t('export_status.lib_loading'), "error");
+            return false;
+        }
+        const type = String(generatedContent && generatedContent.type || '').toLowerCase();
+        if (!['quiz', 'glossary', 'flashcards'].includes(type)) {
+            addToast('H5P export supports quizzes, glossaries, and flashcards.', "error");
+            return false;
+        }
+
+        const plain = (value) => String(value == null ? '' : value).trim();
+        const richText = (value) => `<p>${_escapeExportText(plain(value))}</p>`;
+        const language = String(_exportLanguage() || 'und').toLowerCase().split(/[-_]/)[0];
+        const h5pLanguage = /^[a-z]{2}$/.test(language) ? language : 'und';
+        const rawTitle = plain(generatedContent.title || sourceTopic || 'AlloFlow activity');
+        const title = rawTitle || 'AlloFlow activity';
+        const tx = (key, fallback) => {
+            try {
+                const translated = typeof t === 'function' ? t(key) : '';
+                return translated && translated !== key ? String(translated) : fallback;
+            } catch (_) {
+                return fallback;
+            }
+        };
+        const packagedAssets = [];
+        const assetExtensions = {
+            'image/png': 'png',
+            'image/jpeg': 'jpg',
+            'image/gif': 'gif',
+            'audio/mpeg': 'mp3',
+            'audio/mp4': 'm4a',
+            'audio/ogg': 'ogg',
+            'audio/wav': 'wav',
+            'audio/x-wav': 'wav',
+            'audio/webm': 'webm',
+        };
+        let mediaOmitted = 0;
+        const addEmbeddedAsset = (rawValue, kind, index) => {
+            const source = Array.isArray(rawValue)
+                ? rawValue.find((value) => typeof value === 'string' && value.trim())
+                : rawValue;
+            if (!source) return null;
+            if (typeof source !== 'string') {
+                mediaOmitted += 1;
+                return null;
+            }
+            const match = source.trim().match(/^data:([^;,]+)(?:;[^,]*)?;base64,([a-z0-9+/=\s]+)$/i);
+            const mime = match ? String(match[1]).toLowerCase() : '';
+            const extension = assetExtensions[mime];
+            const expectedKind = kind === 'image' ? mime.startsWith('image/') : mime.startsWith('audio/');
+            const payload = match ? match[2].replace(/\s+/g, '') : '';
+            if (!match || !extension || !expectedKind || !payload || payload.length > 20 * 1024 * 1024) {
+                mediaOmitted += 1;
+                return null;
+            }
+            const path = `${kind === 'image' ? 'images' : 'audios'}/card-${index + 1}.${extension}`;
+            packagedAssets.push({ path, mime, base64: payload });
+            return { path, mime, copyright: { license: 'U' } };
+        };
+        let h5pJson;
+        let contentJson;
+        let omitted = 0;
+        let libraryLabel = '';
+        let fileSuffix = 'activity';
+
+        if (type === 'quiz') {
+            const rawQuestions = Array.isArray(generatedContent?.data?.questions) ? generatedContent.data.questions : [];
+            const choices = rawQuestions.map((question) => {
+                const prompt = plain(question && question.question);
+                const optionsList = Array.isArray(question && question.options) ? question.options.map(plain) : [];
+                let correctIndex = Number.isInteger(question && question.correctIndex) ? question.correctIndex : -1;
+                if (correctIndex < 0) correctIndex = optionsList.findIndex((option) => option === plain(question && question.correctAnswer));
+                if (!prompt || optionsList.length < 2 || optionsList.length > 4 || optionsList.some((option) => !option) || correctIndex < 0 || correctIndex >= optionsList.length) {
+                    omitted += 1;
+                    return null;
+                }
+                const orderedAnswers = [optionsList[correctIndex], ...optionsList.filter((_, index) => index !== correctIndex)];
+                return {
+                    subContentId: generateUUID(),
+                    question: richText(prompt),
+                    answers: orderedAnswers.map(richText),
+                };
+            }).filter(Boolean);
+            if (!choices.length) {
+                addToast('No H5P-compatible quiz questions are ready. Questions need 2–4 options and one identified correct answer.', "error");
+                return false;
+            }
+            h5pJson = {
+                title,
+                language: h5pLanguage,
+                mainLibrary: 'H5P.SingleChoiceSet',
+                embedTypes: ['iframe'],
+                license: 'U',
+                authorComments: 'Generated by AlloFlow. Requires H5P.SingleChoiceSet 1.11 on the destination.',
+                preloadedDependencies: [{ machineName: 'H5P.SingleChoiceSet', majorVersion: 1, minorVersion: 11 }],
+            };
+            contentJson = {
+                choices,
+                overallFeedback: [{ from: 0, to: 100, feedback: '' }],
+                behaviour: {
+                    autoContinue: false,
+                    timeoutCorrect: 2000,
+                    timeoutWrong: 3000,
+                    soundEffectsEnabled: false,
+                    enableRetry: true,
+                    enableSolutionsButton: true,
+                    passPercentage: 70,
+                },
+                l10n: {
+                    nextButtonLabel: tx('common.next', 'Next'),
+                    nextButton: tx('common.next', 'Next'),
+                    showResultsButtonLabel: tx('quiz.results', 'Show results'),
+                    retryButtonLabel: tx('common.retry', 'Retry'),
+                    solutionViewTitle: tx('quiz.solution_list', 'Solution list'),
+                    correctText: `${tx('common.correct', 'Correct')}!`,
+                    incorrectText: `${tx('common.incorrect', 'Incorrect')}!`,
+                    shouldSelect: tx('quiz.should_select', 'Should have been selected'),
+                    shouldNotSelect: tx('quiz.should_not_select', 'Should not have been selected'),
+                    muteButtonLabel: tx('a11y.mute_all_audio', 'Mute feedback sound'),
+                    closeButtonLabel: tx('common.close', 'Close'),
+                    slideOfTotal: tx('quiz.slide_of_total', 'Slide :num of :total'),
+                    scoreBarLabel: tx('quiz.score_bar_label', 'You got :num out of :total points'),
+                    solutionListQuestionNumber: `${tx('common.question_i_1', 'Question')} :num`,
+                    a11yShowSolution: tx('quiz.a11y_show_solution', 'Show the solution. The task will be marked with its correct solution.'),
+                    a11yRetry: tx('quiz.a11y_retry', 'Retry the task. Reset all responses and start the task over again.'),
+                    resultHeader: tx('quiz.your_result', 'Your result:'),
+                    totalScore: tx('quiz.total_score', ':score of :maxScore correct'),
+                    resultTableHeader: tx('common.question_i_1', 'Question'),
+                    resultScoreTableHeader: tx('common.score', 'Score'),
+                    correctAnswerIntroduction: tx('quiz.correct_answer', 'Correct answer'),
+                },
+            };
+            libraryLabel = 'H5P.SingleChoiceSet 1.11';
+            fileSuffix = 'quiz';
+        } else {
+            const rawData = generatedContent && generatedContent.data;
+            const rawCards = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.cards) ? rawData.cards : (Array.isArray(rawData?.items) ? rawData.items : []));
+            const dialogs = rawCards.map((card, index) => {
+                const front = plain(type === 'glossary' ? (card?.term ?? card?.word ?? card?.phrase) : (card?.front ?? card?.term ?? card?.question));
+                const back = plain(type === 'glossary' ? (card?.def ?? card?.definition ?? card?.meaning) : (card?.back ?? card?.definition ?? card?.answer));
+                if (!front || !back) {
+                    omitted += 1;
+                    return null;
+                }
+                const dialog = { text: richText(front), answer: richText(back), tips: { front: '', back: '' } };
+                const imageValue = card?.image ?? card?.imageUrl ?? card?.png;
+                const image = addEmbeddedAsset(imageValue, 'image', index);
+                if (image) {
+                    dialog.image = image;
+                    dialog.imageAltText = plain(card?.imageAltText ?? card?.imageAlt ?? card?.alt) || front;
+                }
+                const audioValue = card?.audio ?? card?.audioUrl ?? card?.pronunciationAudio;
+                const audio = addEmbeddedAsset(audioValue, 'audio', index);
+                if (audio) dialog.audio = [audio];
+                return dialog;
+            }).filter(Boolean);
+            if (!dialogs.length) {
+                addToast('No complete term/definition or front/back pairs are ready for H5P export.', "error");
+                return false;
+            }
+            h5pJson = {
+                title,
+                language: h5pLanguage,
+                mainLibrary: 'H5P.Dialogcards',
+                embedTypes: ['iframe'],
+                license: 'U',
+                authorComments: 'Generated by AlloFlow. Requires H5P.Dialogcards 1.9 on the destination.',
+                preloadedDependencies: [{ machineName: 'H5P.Dialogcards', majorVersion: 1, minorVersion: 9 }],
+            };
+            contentJson = {
+                title: richText(title),
+                mode: 'normal',
+                description: richText(tx('glossary.flashcards.study_instructions', 'Study each card, reveal the answer, and mark your progress.')),
+                dialogs,
+                behaviour: {
+                    enableRetry: true,
+                    disableBackwardsNavigation: false,
+                    scaleTextNotCard: false,
+                    randomCards: false,
+                    quickProgression: false,
+                },
+                answer: tx('glossary.flashcards.turn', 'Turn'),
+                next: tx('common.next', 'Next'),
+                prev: tx('common.previous', 'Previous'),
+                retry: tx('common.retry', 'Retry'),
+                correctAnswer: tx('glossary.flashcards.got_it_right', 'I got it right!'),
+                incorrectAnswer: tx('glossary.flashcards.got_it_wrong', 'I got it wrong'),
+                round: tx('glossary.flashcards.round', 'Round @round'),
+                cardsLeft: tx('glossary.flashcards.cards_left', 'Cards left: @number'),
+                nextRound: tx('glossary.flashcards.next_round', 'Proceed to round @round'),
+                startOver: tx('glossary.flashcards.start_over', 'Start over'),
+                showSummary: tx('common.next', 'Next'),
+                summary: tx('glossary.flashcards.summary', 'Summary'),
+                summaryCardsRight: `${tx('common.correct', 'Correct')}:`,
+                summaryCardsWrong: `${tx('common.incorrect', 'Incorrect')}:`,
+                summaryCardsNotShown: tx('glossary.flashcards.not_shown', 'Cards in pool not shown:'),
+                summaryOverallScore: tx('common.score', 'Score'),
+                summaryCardsCompleted: tx('glossary.flashcards.completed', 'Cards you have completed learning:'),
+                summaryCompletedRounds: tx('glossary.flashcards.completed_rounds', 'Completed rounds:'),
+                summaryAllDone: tx('glossary.flashcards.all_done', 'Well done! You have mastered all @cards cards by getting them correct @max times!'),
+                progressText: tx('glossary.flashcards.progress', 'Card @card of @total'),
+                cardFrontLabel: tx('glossary.flashcards.front', 'Card front'),
+                cardBackLabel: tx('glossary.flashcards.back', 'Card back'),
+                tipButtonLabel: tx('glossary.flashcards.show_tip', 'Show tip'),
+                audioNotSupported: tx('a11y.audio_not_supported', 'Your browser does not support this audio'),
+                confirmStartingOver: {
+                    header: tx('glossary.flashcards.start_over_question', 'Start over?'),
+                    body: tx('glossary.flashcards.start_over_warning', 'All progress will be lost. Are you sure you want to start over?'),
+                    cancelLabel: tx('common.cancel', 'Cancel'),
+                    confirmLabel: tx('glossary.flashcards.start_over', 'Start over'),
+                },
+            };
+            libraryLabel = 'H5P.Dialogcards 1.9';
+            fileSuffix = 'study-cards';
+        }
+
+        const packageIssues = [];
+        if (!h5pJson.title) packageIssues.push('title');
+        if (!h5pJson.mainLibrary) packageIssues.push('mainLibrary');
+        if (!Array.isArray(h5pJson.embedTypes) || !h5pJson.embedTypes.length) packageIssues.push('embedTypes');
+        if (!Array.isArray(h5pJson.preloadedDependencies) || !h5pJson.preloadedDependencies.length) packageIssues.push('preloadedDependencies');
+        if (!contentJson || typeof contentJson !== 'object') packageIssues.push('content/content.json');
+        if (packageIssues.length) {
+            addToast(`H5P package validation failed: ${packageIssues.join(', ')}.`, "error");
+            return false;
+        }
+        if (omitted) addToast(`${omitted} incompatible or incomplete item(s) were omitted from the H5P package.`, "warning");
+        if (mediaOmitted) addToast(`${mediaOmitted} external, unsupported, or oversized media asset(s) were omitted from the H5P package.`, "warning");
+
+        try {
+            const zip = new window.JSZip();
+            zip.file('h5p.json', JSON.stringify(h5pJson, null, 2));
+            zip.file('content/content.json', JSON.stringify(contentJson, null, 2));
+            packagedAssets.forEach((asset) => zip.file(`content/${asset.path}`, asset.base64, { base64: true }));
+            const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+            const safeTitle = title.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').substring(0, 60) || 'alloflow';
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${safeTitle}-${fileSuffix}.h5p`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+            const mediaSummary = packagedAssets.length ? ` ${packagedAssets.length} embedded media asset(s) included.` : '';
+            addToast(`H5P package ready.${mediaSummary} The destination must have ${libraryLabel} installed.`, "success");
+            return true;
+        } catch (error) {
+            warnLog('H5P package generation failed', error);
+            addToast('H5P package generation failed.', "error");
+            return false;
+        }
+    };
 
     // ─── handleExportIMS ───────────────────────────────────────────────
-    const handleExportIMS = async () => {
+    const handleExportIMS = async (options = {}) => {
         const {
             history, sourceTopic, studentResponses,
             generateResourceHTML, addToast, t,
@@ -327,7 +618,10 @@ const createExport = (deps) => {
             addToast(t('export_status.lib_loading'), "error");
             return;
         }
-        if (history.length === 0) {
+        const sourceHistory = Array.isArray(history) ? history : [];
+        const liveHtml = typeof options.liveHtml === 'string' ? options.liveHtml.trim() : '';
+        const liveTitle = String(options.liveTitle || sourceTopic || t('export.ims_resource_pack') || 'AlloFlow Document').trim();
+        if (sourceHistory.length === 0 && !liveHtml) {
             addToast(t('export_status.no_content'), "error");
             return;
         }
@@ -336,24 +630,63 @@ const createExport = (deps) => {
         const manifestId = `MANIFEST-${Date.now()}`;
         const orgId = `ORG-${Date.now()}`;
         const defaultTitle = t('export.ims_resource_pack');
+        const exportLang = _exportLanguage();
+        const exportDir = _exportDirection();
         const packagedEntries = [];
         const skippedEntries = [];
-        history.forEach((item, originalIndex) => {
-            const profile = getInteractiveObjectProfileFor(item);
-            if (!profile.canExportIms) {
-                skippedEntries.push(getInteractiveObjectManifestItem(item, {
-                    originalIndex,
-                    reason: 'no-ims-adapter',
-                }));
-                return;
+        const safeManifestItem = (item, extra) => {
+            try {
+                return getInteractiveObjectManifestItem(item, extra);
+            } catch (err) {
+                warnLog('IMS manifest metadata fallback', err);
+                return Object.assign({
+                    id: item && item.id ? String(item.id) : '',
+                    type: item && item.type ? String(item.type) : '',
+                    title: item && item.title ? String(item.title) : getDefaultTitle(item && item.type),
+                    status: 'partial',
+                    canExportHtml: false,
+                    canExportIms: false,
+                    notes: 'Manifest metadata fallback used after an adapter error.',
+                }, extra || {});
             }
-            const html = generateResourceHTML(item, false, studentResponses);
-            if (html && String(html).trim() !== '') {
-                packagedEntries.push({ item, html, profile, originalIndex });
-            } else {
-                skippedEntries.push(getInteractiveObjectManifestItem(item, {
+        };
+        if (liveHtml) {
+            packagedEntries.push({
+                item: { id: 'builder-live-document', type: 'builder-document', title: liveTitle },
+                html: liveHtml,
+                profile: {
+                    type: 'builder-document', label: 'Builder document', status: 'ready', html: 'static',
+                    canExportHtml: true, canExportIms: true, interactiveHtml: false, qti: false,
+                    tracking: 'none', fallback: 'static-html', notes: 'Includes the current editable Builder preview.',
+                },
+                originalIndex: 0,
+                completeDocument: true,
+            });
+        } else sourceHistory.forEach((item, originalIndex) => {
+            try {
+                const profile = getInteractiveObjectProfileFor(item);
+                if (!profile.canExportIms) {
+                    skippedEntries.push(safeManifestItem(item, {
+                        originalIndex,
+                        reason: 'no-ims-adapter',
+                    }));
+                    return;
+                }
+                const html = generateResourceHTML(item, false, studentResponses);
+                if (html && String(html).trim() !== '') {
+                    packagedEntries.push({ item, html, profile, originalIndex });
+                } else {
+                    skippedEntries.push(safeManifestItem(item, {
+                        originalIndex,
+                        reason: 'empty-render',
+                    }));
+                }
+            } catch (err) {
+                warnLog('IMS resource render failed', err);
+                skippedEntries.push(safeManifestItem(item, {
                     originalIndex,
-                    reason: 'empty-render',
+                    reason: 'render-error',
+                    error: String(err && err.message ? err.message : err).slice(0, 300),
                 }));
             }
         });
@@ -361,12 +694,31 @@ const createExport = (deps) => {
             addToast('No IMS-compatible resources are ready to package yet.', 'error');
             return;
         }
+        let profileSummary;
+        try {
+            profileSummary = liveHtml ? {
+                profileVersion: 'builder-live-document', total: 1, imsReady: 1, adapterNeeded: 0,
+            } : getInteractiveObjectProfileSummary(sourceHistory);
+        } catch (err) {
+            warnLog('IMS profile summary fallback', err);
+            profileSummary = {
+                profileVersion: 'export-fallback',
+                total: sourceHistory.length,
+                imsReady: packagedEntries.length,
+                adapterNeeded: skippedEntries.length,
+            };
+        }
+        const manifestItemForEntry = (entry, extra) => entry.completeDocument
+            ? Object.assign({}, entry.profile, {
+                id: entry.item.id, type: entry.item.type, title: entry.item.title,
+            }, extra || {})
+            : safeManifestItem(entry.item, extra);
         const packageProfile = {
             kind: 'alloflow.ims-object-profile',
             generatedAt: new Date().toISOString(),
             topic: sourceTopic || defaultTitle,
-            summary: getInteractiveObjectProfileSummary(history),
-            packaged: packagedEntries.map((entry, idx) => getInteractiveObjectManifestItem(entry.item, {
+            summary: profileSummary,
+            packaged: packagedEntries.map((entry, idx) => manifestItemForEntry(entry, {
                 originalIndex: entry.originalIndex,
                 packageIndex: idx,
                 filename: `resource_${idx}.html`,
@@ -379,20 +731,21 @@ const createExport = (deps) => {
         let itemsXml = '';
         packagedEntries.forEach((entry, idx) => {
             const item = entry.item;
-            const itemId = _safeXmlIdentifier('ITEM', item && item.id, idx);
-            const resId = _safeXmlIdentifier('RES', item && item.id, idx);
+            const idSeed = `${item && item.id ? item.id : 'item'}-${entry.originalIndex}-${idx}`;
+            const itemId = _safeXmlIdentifier('ITEM', idSeed, idx);
+            const resId = _safeXmlIdentifier('RES', idSeed, idx);
             const filename = `resource_${idx}.html`;
-            const title = item.title || getDefaultTitle(item.type);
-            const titleXml = escapeXml(title);
-            const resourceProfile = getInteractiveObjectManifestItem(item, {
+            const title = item.title || (entry.completeDocument ? liveTitle : getDefaultTitle(item.type));
+            const titleXml = _escapeExportText(title);
+            const resourceProfile = manifestItemForEntry(entry, {
                 originalIndex: entry.originalIndex,
                 packageIndex: idx,
                 filename,
                 renderedInIms: true,
             });
-            const contentHtml = `
+            const contentHtml = entry.completeDocument ? entry.html : `
                 <!DOCTYPE html>
-                <html lang="en">
+                <html lang="${_escapeExportText(exportLang)}" dir="${exportDir}">
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -413,23 +766,23 @@ const createExport = (deps) => {
                 </html>
             `;
             zip.file(filename, contentHtml);
-            itemsXml += `<item identifier="${escapeXml(itemId)}" identifierref="${escapeXml(resId)}"><title>${titleXml}</title></item>`;
-            resourcesXml += `<resource identifier="${resId}" type="webcontent" href="${filename}"><file href="${filename}"/></resource>`;
+            itemsXml += `<item identifier="${_escapeExportText(itemId)}" identifierref="${_escapeExportText(resId)}"><title>${titleXml}</title></item>`;
+            resourcesXml += `<resource identifier="${_escapeExportText(resId)}" type="webcontent" href="${filename}"><file href="${filename}"/></resource>`;
         });
-        const manifestTitle = escapeXml(sourceTopic || defaultTitle);
-        const manifestDescription = escapeXml(`AlloFlow resource package: ${packagedEntries.length} packaged, ${skippedEntries.length} skipped. See alloflow-object-profile.json for static/interactive/LMS compatibility details.`);
+        const manifestTitle = _escapeExportText(sourceTopic || defaultTitle);
+        const manifestDescription = _escapeExportText(`AlloFlow resource package: ${packagedEntries.length} packaged, ${skippedEntries.length} skipped. See alloflow-object-profile.json for static/interactive/LMS compatibility details.`);
         const manifest = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="${manifestId}" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:lom="http://www.imsglobal.org/xsd/imsmd_v1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p1.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 http://www.imsglobal.org/xsd/imsmd_v1p2.xsd">
   <metadata>
-    <schema>${escapeXml(t('common.ims_content') || 'IMS Content')}</schema>
+    <schema>${_escapeExportText(t('common.ims_content') || 'IMS Content')}</schema>
     <schemaversion>1.1</schemaversion>
     <lom:lom>
       <lom:general>
         <lom:title>
-          <lom:string language="en">${manifestTitle}</lom:string>
+          <lom:string language="${_escapeExportText(exportLang)}">${manifestTitle}</lom:string>
         </lom:title>
         <lom:description>
-          <lom:string language="en">${manifestDescription}</lom:string>
+          <lom:string language="${_escapeExportText(exportLang)}">${manifestDescription}</lom:string>
         </lom:description>
       </lom:general>
     </lom:lom>
@@ -454,8 +807,12 @@ const createExport = (deps) => {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            addToast(t('export_status.ims_success'), "success");
+            window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+            if (skippedEntries.length) {
+                addToast(`IMS package created with ${skippedEntries.length} skipped resource(s). See alloflow-object-profile.json for details.`, "warning");
+            } else {
+                addToast(t('export_status.ims_success'), "success");
+            }
         } catch (err) {
             warnLog("Package generation failed", err);
             addToast(t('export_status.package_error'), "error");
@@ -463,15 +820,15 @@ const createExport = (deps) => {
     };
 
     // ─── handleExportSlides ───────────────────────────────────────────
-    const handleExportSlides = () => {
+    const handleExportSlides = async () => {
         const { history, sourceTopic, gradeLevel, addToast, t } = liveRef.current;
         if (!window.PptxGenJS) {
             addToast(t('export_status.ppt_lib_loading'), "error");
-            return;
+            return false;
         }
         if (history.length === 0) {
             addToast(t('export_status.no_content'), "error");
-            return;
+            return false;
         }
         addToast(t('export_status.ppt_generating'), "info");
         try {
@@ -625,7 +982,7 @@ const createExport = (deps) => {
                             color: darkText,
                             autoPage: false,
                             margin: 0.04,
-                            valign: 'mid',
+                            valign: 'middle',
                         });
                     });
                 } else if (type === 'quiz') {
@@ -798,11 +1155,13 @@ const createExport = (deps) => {
                 }
             });
             const safeTopic = sourceTopic ? sourceTopic.replace(/[^a-z0-9]/gi, '_').substring(0, 20) : 'Lesson';
-            pptx.writeFile({ fileName: `${t('export.filenames.slides_prefix')}-${safeTopic}.pptx` });
+            await pptx.writeFile({ fileName: `${t('export.filenames.slides_prefix')}-${safeTopic}.pptx` });
             addToast(t('export_status.ppt_success'), "success");
+            return true;
         } catch (e) {
             warnLog("PPTX Export Error", e);
             addToast(t('export_status.ppt_error'), "error");
+            return false;
         }
     };
 
@@ -915,18 +1274,27 @@ const createExport = (deps) => {
                 }
                 addToast('Saved new student-controlled Adventure Mode storybook to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.', "success");
             } catch (_) {}
+            const exportLang = _exportLanguage();
+            const exportDir = _exportDirection();
+            const safeTitle = _escapeExportText(title);
+            const safePageTitle = _escapeExportText(strPageTitle);
+            const safeEpilogue = _escapeExportText(strEpilogue);
+            const safeUser = _escapeExportText(strUser);
+            const safeSeparator = _escapeExportText(strSeparator);
             let storyHtml = `
               <!DOCTYPE html>
-              <html>
+              <html lang="${_escapeExportText(exportLang)}" dir="${exportDir}">
               <head>
-                  <title>${strPageTitle}</title>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>${safePageTitle}</title>
                   <style>
                       body { font-family: 'Georgia', serif; line-height: 1.8; color: #2c3e50; max-width: 800px; margin: 0 auto; padding: 40px; background: #fffdf5; }
                       .cover { text-align: center; padding: 60px 0; border-bottom: 4px double #d4af37; margin-bottom: 40px; }
                       h1 { font-size: 3em; margin-bottom: 10px; color: #2c3e50; font-family: sans-serif; }
                       .meta { font-style: italic; color: #7f8c8d; }
                       .summary-box { background: white; padding: 40px; border: 1px solid #e0e0e0; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 50px; position: relative; }
-                      .summary-box::before { content: "${strEpilogue}"; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #fffdf5; padding: 0 15px; color: #d4af37; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8em; }
+                      .epilogue-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #fffdf5; padding: 0 15px; color: #d4af37; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8em; }
                       .log-section { margin-top: 40px; }
                       .chapter { margin-bottom: 30px; page-break-inside: avoid; }
                       .scene { margin-bottom: 10px; text-align: justify; }
@@ -943,16 +1311,17 @@ const createExport = (deps) => {
                   </style>
               </head>
               <body>
-                  <button class="print-btn" onclick="window.print()">${strPrint}</button>
+                  <button class="print-btn" onclick="window.print()">${_escapeExportText(strPrint)}</button>
                   <div class="cover">
-                      <h1>${title}</h1>
-                      <p class="meta">${strSubtitle}</p>
-                      <p class="meta">${strMeta}</p>
+                      <h1>${safeTitle}</h1>
+                      <p class="meta">${_escapeExportText(strSubtitle)}</p>
+                      <p class="meta">${_escapeExportText(strMeta)}</p>
                   </div>
                   <div class="summary-box">
+                      <div class="epilogue-badge">${safeEpilogue}</div>
                       ${parseMarkdownToHTML(summary)}
                   </div>
-                  <h3 style="text-align: center; text-transform: uppercase; letter-spacing: 2px; color: #bdc3c7; margin-bottom: 40px;">${strLogHeader}</h3>
+                  <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 2px; color: #bdc3c7; margin-bottom: 40px;">${_escapeExportText(strLogHeader)}</h2>
                   <div class="log-section">
             `;
             let currentBlock = { scene: null, image: null, choice: null, feedback: null };
@@ -961,12 +1330,12 @@ const createExport = (deps) => {
                     if (currentBlock.scene) {
                         storyHtml += `
                           <div class="chapter">
-                              ${includeImages && currentBlock.image ? `<img loading="lazy" src="${currentBlock.image}" class="scene-img" alt="Scene Visualization" />` : ''}
+                              ${includeImages && currentBlock.image ? `<img loading="lazy" src="${_escapeExportText(currentBlock.image)}" class="scene-img" alt="Scene visualization" />` : ''}
                               <div class="scene">${parseMarkdownToHTML(currentBlock.scene)}</div>
-                              ${currentBlock.choice ? `<div class="choice">${strUser}: ${currentBlock.choice}</div>` : ''}
-                              ${currentBlock.feedback ? `<div class="feedback">${currentBlock.feedback.replace(/\([+-]?\d+ XP\)/, '')}</div>` : ''}
+                              ${currentBlock.choice ? `<div class="choice">${safeUser}: ${_escapeExportText(currentBlock.choice)}</div>` : ''}
+                              ${currentBlock.feedback ? `<div class="feedback">${_escapeExportText(currentBlock.feedback.replace(/\([+-]?\d+ XP\)/, ''))}</div>` : ''}
                           </div>
-                          <div style="text-align: center; color: #ecf0f1; margin: 20px 0;">${strSeparator}</div>
+                          <div style="text-align: center; color: #ecf0f1; margin: 20px 0;">${safeSeparator}</div>
                         `;
                     }
                     currentBlock = { scene: item.text, image: item.image || null, choice: null, feedback: null };
@@ -979,16 +1348,16 @@ const createExport = (deps) => {
             if (currentBlock.scene) {
                 storyHtml += `
                   <div class="chapter">
-                      ${includeImages && currentBlock.image ? `<img loading="lazy" src="${currentBlock.image}" class="scene-img" alt="Scene Visualization" />` : ''}
+                      ${includeImages && currentBlock.image ? `<img loading="lazy" src="${_escapeExportText(currentBlock.image)}" class="scene-img" alt="Scene visualization" />` : ''}
                       <div class="scene">${parseMarkdownToHTML(currentBlock.scene)}</div>
-                      ${currentBlock.choice ? `<div class="choice">${strUser}: ${currentBlock.choice}</div>` : ''}
-                      ${currentBlock.feedback ? `<div class="feedback">${currentBlock.feedback}</div>` : ''}
+                      ${currentBlock.choice ? `<div class="choice">${safeUser}: ${_escapeExportText(currentBlock.choice)}</div>` : ''}
+                      ${currentBlock.feedback ? `<div class="feedback">${_escapeExportText(currentBlock.feedback)}</div>` : ''}
                   </div>
                 `;
             }
             storyHtml += `
                   </div>
-                  <div style="text-align: center; margin-top: 50px; color: #95a5a6; font-size: 0.8em;">${strFooter}</div>
+                  <div style="text-align: center; margin-top: 50px; color: #95a5a6; font-size: 0.8em;">${_escapeExportText(strFooter)}</div>
               </body>
               </html>
             `;
@@ -1011,7 +1380,7 @@ const createExport = (deps) => {
     const handleExportFlashcards = (mode = 'standard') => {
         const { generatedContent, t } = liveRef.current;
         if (!generatedContent || generatedContent.type !== 'glossary') return;
-        const cleanText = (text) => text ? text.replace(/\*\*/g, '').replace(/\*/g, '') : '';
+        const cleanText = (text) => _escapeExportText(text ? String(text).replace(/\*\*/g, '').replace(/\*/g, '') : '');
         const cards = generatedContent?.data;
         const isLanguageMode = mode === 'language';
         const cardStyle = `
@@ -1070,9 +1439,9 @@ const createExport = (deps) => {
         const titleKey = isLanguageMode ? 'flashcards.print_title_language' : 'flashcards.print_title_standard';
         let htmlBody = `
             <div class="no-print" style="background: #eef2ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; border: 1px solid #c7d2fe;">
-                <h2 style="margin-top:0; color: #3730a3; font-family: sans-serif;">${t(titleKey)}</h2>
-                <p style="color: #4338ca; font-family: sans-serif;">${t('flashcards.print_instructions')}</p>
-                <button onclick="window.print()" style="background: #4f46e5; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; font-family: sans-serif;">${t('common.print')}</button>
+                <h1 style="margin-top:0; color: #3730a3; font-family: sans-serif;">${_escapeExportText(t(titleKey))}</h1>
+                <p style="color: #4338ca; font-family: sans-serif;">${_escapeExportText(t('flashcards.print_instructions'))}</p>
+                <button onclick="window.print()" style="background: #4f46e5; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; font-family: sans-serif;">${_escapeExportText(t('common.print'))}</button>
             </div>
         `;
         const allLanguages = new Set();
@@ -1090,7 +1459,7 @@ const createExport = (deps) => {
             const header = lang
                 ? (isLanguageMode ? `${t('languages.english')} ⟷ ${lang}` : lang)
                 : t('languages.english');
-            htmlBody += `<div class="set-header">${header} ${t('flashcards.set_header')}</div>`;
+            htmlBody += `<h2 class="set-header">${_escapeExportText(header)} ${_escapeExportText(t('flashcards.set_header'))}</h2>`;
             cards.forEach(item => {
                 let transTerm = "";
                 let transDef = "";
@@ -1108,27 +1477,27 @@ const createExport = (deps) => {
                 let backContent = "";
                 if (isLanguageMode) {
                     frontContent = `
-                        <div class="lang-label">${t('languages.english')}</div>
+                        <div class="lang-label">${_escapeExportText(t('languages.english'))}</div>
                         <div class="primary-text">${cleanText(item.term)}</div>
                         <div class="def-text">${cleanText(item.def)}</div>
                     `;
                     backContent = `
-                        <div class="lang-label">${lang}</div>
+                        <div class="lang-label">${_escapeExportText(lang)}</div>
                         <div class="primary-text">${cleanText(transTerm)}</div>
                         <div class="def-text">${cleanText(transDef)}</div>
                     `;
                 } else {
                     frontContent = `
-                        <div class="cut-guide">${t('flashcards.fold_guide')}</div>
-                        <div class="lang-label">${t('languages.english')}</div>
+                        <div class="cut-guide">${_escapeExportText(t('flashcards.fold_guide'))}</div>
+                        <div class="lang-label">${_escapeExportText(t('languages.english'))}</div>
                         <div class="primary-text">${cleanText(item.term)}</div>
-                        ${transTerm ? `<div class="secondary-text">${cleanText(transTerm)}</div><div class="lang-label" style="margin-top:2px;">${lang}</div>` : ''}
+                        ${transTerm ? `<div class="secondary-text">${cleanText(transTerm)}</div><div class="lang-label" style="margin-top:2px;">${_escapeExportText(lang)}</div>` : ''}
                     `;
                     backContent = `
-                        <div class="def-text"><strong>${t('languages.english')}:</strong> ${cleanText(item.def)}</div>
-                        ${transDef ? `<div class="def-trans"><strong>${lang}:</strong> ${cleanText(transDef)}</div>` : ''}
-                        ${item.etymology ? `<div class="etym-text">📜 <strong>${t('glossary.etymology_label') || 'Roots'}:</strong> ${cleanText(item.etymology)}</div>` : ''}
-                        ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => `<span class="root-chip"><b>${cleanText(r.root || '')}</b>${r.lang ? ` <i>(${cleanText(r.lang)})</i>` : ''}${r.meaning ? ` = ${cleanText(r.meaning)}` : ''}</span>`).join(' ')}</div>${(() => { const seen = new Set(); const allRel = []; item.roots.forEach(r => { if (Array.isArray(r.related)) r.related.forEach(w => { const k = String(w || '').trim(); if (k && !seen.has(k.toLowerCase())) { seen.add(k.toLowerCase()); allRel.push(k); } }); }); return allRel.length > 0 ? `<div class="etym-related"><strong>${t('export.related_words_label') || 'Related words:'}</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : ''; })()}` : ''}
+                        <div class="def-text"><strong>${_escapeExportText(t('languages.english'))}:</strong> ${cleanText(item.def)}</div>
+                        ${transDef ? `<div class="def-trans"><strong>${_escapeExportText(lang)}:</strong> ${cleanText(transDef)}</div>` : ''}
+                        ${item.etymology ? `<div class="etym-text">📜 <strong>${_escapeExportText(t('glossary.etymology_label') || 'Roots')}:</strong> ${cleanText(item.etymology)}</div>` : ''}
+                        ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => `<span class="root-chip"><b>${cleanText(r.root || '')}</b>${r.lang ? ` <i>(${cleanText(r.lang)})</i>` : ''}${r.meaning ? ` = ${cleanText(r.meaning)}` : ''}</span>`).join(' ')}</div>${(() => { const seen = new Set(); const allRel = []; item.roots.forEach(r => { if (Array.isArray(r.related)) r.related.forEach(w => { const k = String(w || '').trim(); if (k && !seen.has(k.toLowerCase())) { seen.add(k.toLowerCase()); allRel.push(k); } }); }); return allRel.length > 0 ? `<div class="etym-related"><strong>${_escapeExportText(t('export.related_words_label') || 'Related words:')}</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : ''; })()}` : ''}
                     `;
                 }
                 htmlBody += `
@@ -1149,8 +1518,10 @@ const createExport = (deps) => {
         }
         const fullHtml = `
             <!DOCTYPE html>
-            <html>
+            <html lang="${_escapeExportText(_exportLanguage())}" dir="${_exportDirection()}">
             <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Flashcards - ${new Date().toLocaleDateString()}</title>
                 <style>
                     body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #1e293b; }
@@ -1183,6 +1554,7 @@ const createExport = (deps) => {
         handleExportProfiles,
         handleExportQTI,
         handleExportIMS,
+        handleExportH5P,
         handleExportSlides,
         handleExportStorybook,
         handleExportFlashcards,

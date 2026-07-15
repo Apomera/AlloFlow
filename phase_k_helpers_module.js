@@ -2197,46 +2197,78 @@ const toggleFluencyRecording = async (deps) => {
           sourceText
         );
         if (analysis && analysis.wordData) {
-          const { accuracy, wcpm } = calculateLocalFluencyMetrics(
+          const recordId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+          const recordedAt = (/* @__PURE__ */ new Date()).toISOString();
+          const passageMetadata = typeof window.createFluencyPassageMetadata === "function" ? window.createFluencyPassageMetadata(sourceText, {
+            sourceResourceId: generatedContent?.id,
+            title: generatedContent?.title,
+            grade: gradeLevel,
+            language: leveledTextLanguage || currentUiLanguage
+          }) : {
+            passageId: generatedContent?.id || recordId,
+            sourceResourceId: generatedContent?.id || null,
+            title: generatedContent?.title || null,
+            grade: gradeLevel || null,
+            language: leveledTextLanguage || currentUiLanguage || null,
+            wordCount: totalReferenceWordCount,
+            calibrated: false,
+            passageSetId: null,
+            formId: null
+          };
+          const { accuracy, wcpm, correctWords } = calculateLocalFluencyMetrics(
             analysis.wordData,
             durationSeconds,
-            totalReferenceWordCount
+            totalReferenceWordCount,
+            analysis.insertions || []
           );
           const finalResult = {
             ...analysis,
+            recordId,
+            timestamp: recordedAt,
+            durationSeconds,
+            totalReferenceWordCount,
+            passageMetadata,
             accuracy,
-            wcpm
+            wcpm,
+            correctWords,
+            metrics: {
+              accuracy,
+              wcpm,
+              correctWords,
+              durationSeconds,
+              totalWords: totalReferenceWordCount
+            },
+            review: { status: "unreviewed" }
           };
           const fluencyRecordItem = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            id: recordId,
             type: "fluency-record",
             title: `Oral Fluency Check (${accuracy}%)`,
-            timestamp: /* @__PURE__ */ new Date(),
-            meta: `${wcpm} WCPM - ${Math.round(durationSeconds)}s`,
+            timestamp: recordedAt,
+            meta: `${wcpm} WCPM - ${Math.round(durationSeconds)}s - unreviewed`,
             data: {
               audioRecording: audioData.base64,
               mimeType: audioData.mimeType || "audio/webm",
               fullAnalysis: analysis,
               wordData: finalResult.wordData,
+              insertions: finalResult.insertions || [],
               feedback: finalResult.feedback,
               sourceText,
-              metrics: {
-                accuracy,
-                wcpm,
-                durationSeconds,
-                totalWords: totalReferenceWordCount
-              }
+              passageMetadata,
+              review: finalResult.review,
+              metrics: finalResult.metrics
             },
             config: {}
           };
+          setFluencyAssessments((prev) => [...Array.isArray(prev) ? prev : [], finalResult]);
           setHistory((prev) => [...prev, fluencyRecordItem]);
           setFluencyResult(finalResult);
           setFluencyFeedback(finalResult.feedback);
           setFluencyStatus("complete");
           let earnedXP = 0;
-          if (finalResult.accuracyScore > 80) {
+          if (finalResult.accuracy > 80) {
             earnedXP = 50;
-            if (finalResult.accuracyScore > 90) {
+            if (finalResult.accuracy > 90) {
               earnedXP += 50;
               setShowFluencyConfetti(true);
             }

@@ -90,6 +90,8 @@ describe('interactive object export profile', () => {
     expect(exportModule).toContain('no-ims-adapter');
     expect(exportModule).toContain('lom:description');
     expect(exportModule).toContain('_safeXmlIdentifier');
-    expect(exportModule).toContain('escapeXml(title)');
+    expect(exportModule).toContain('_escapeExportText(title)');
+    expect(exportModule).toContain("reason: 'render-error'");
+    expect(exportModule).toContain("const idSeed = `${item && item.id ? item.id : 'item'}-${entry.originalIndex}-${idx}`");
   });
 });

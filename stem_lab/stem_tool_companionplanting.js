@@ -3866,6 +3866,11 @@ var d = (labToolData.companionPlanting) || {};
             var h = React.createElement;
             var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
             var stats = cgComputeStats();
+            var achievementCards = CG_ACHIEVEMENTS.map(function(achievement) { return { achievement: achievement, earned: !!achievement.check(stats) }; }).sort(function(left, right) { return Number(right.earned) - Number(left.earned); });
+            var earnedAchievementCount = achievementCards.filter(function(card) { return card.earned; }).length;
+            var achievementProgress = Math.round(earnedAchievementCount / CG_ACHIEVEMENTS.length * 100);
+            var nextAchievementCard = achievementCards.filter(function(card) { return !card.earned; })[0] || null;
+            var visibleAchievementCards = cg.showAllAchievements ? achievementCards : achievementCards.slice(0, 6);
             var plantKeys = Object.keys(CG_PLANTS);
             var plantedCells = cgGrid.filter(function(cell) { return !!cell.plantId; }).length;
             var readyCells = cgGrid.filter(function(cell) { var plant = cell.plantId && CG_PLANTS[cell.plantId]; return plant && cell.growthDay >= plant.days && cell.health > 20; }).length;
@@ -6422,10 +6427,11 @@ var d = (labToolData.companionPlanting) || {};
               ),
 
               // ── Soil Chemistry + Economics + Pest HUD ──
-              h('div', { className: 'grid grid-cols-2 gap-2' },
+              h('section', { className: 'grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-emerald-50 p-3 shadow-sm lg:grid-cols-2 sm:p-4', 'data-community-stewardship-dashboard': true, 'aria-labelledby': 'community-stewardship-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-2 lg:col-span-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-slate-500' }, 'Whole-garden systems'), h('h3', { id: 'community-stewardship-title', className: 'text-base font-black text-slate-900' }, 'Stewardship Dashboard'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Balance soil, spending, and living pest control as one connected system.')), h('span', { className: 'rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-slate-600 shadow-sm' }, 'Live conditions')),
                 // Soil Chemistry Panel
-                h('div', { className: 'bg-gradient-to-b from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-2.5' },
-                  h('div', { className: 'text-[11px] font-bold text-amber-800 mb-1.5' }, __alloT('stem.companionplanting.soil_chemistry_2', '\uD83E\uDDEA Soil Chemistry')),
+                h('div', { className: 'rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 p-3 shadow-sm' },
+                  h('div', { className: 'mb-2 text-xs font-black text-amber-900' }, __alloT('stem.companionplanting.soil_chemistry_2', '\uD83E\uDDEA Soil Chemistry')),
                   h('div', { className: 'space-y-1' },
                     [
                       { label: 'N', val: cgNitrogen, color: '#22c55e', tip: __alloT('stem.companionplanting.nitrogen_2', 'Nitrogen') },
@@ -6434,7 +6440,7 @@ var d = (labToolData.companionPlanting) || {};
                     ].map(function(r) {
                       return h('div', { key: r.label, className: 'flex items-center gap-1.5', title: r.tip + ': ' + Math.round(r.val) + '/100' },
                         h('span', { className: 'text-[11px] font-bold w-3', style: { color: r.color } }, r.label),
-                        h('div', { className: 'flex-1 h-2 bg-slate-200 rounded-full overflow-hidden' },
+                        h('div', { className: 'h-2.5 flex-1 overflow-hidden rounded-full bg-white shadow-inner', role: 'progressbar', 'aria-label': r.tip + ' level', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(r.val) },
                           h('div', { style: { width: Math.round(r.val) + '%', backgroundColor: r.val < 15 ? '#ef4444' : r.color }, className: 'h-full rounded-full transition-all' })
                         ),
                         h('span', { className: 'text-[11px] text-slate-600 w-6 text-right' }, Math.round(r.val))
@@ -6446,16 +6452,16 @@ var d = (labToolData.companionPlanting) || {};
                     h('span', { className: 'text-amber-600', title: __alloT('stem.companionplanting.organic_matter_higher_better_water_ret', 'Organic matter % (higher = better water retention)') }, 'OM: ' + cgOrganicMatter.toFixed(1) + '%')
                   ),
                   // Soil actions
-                  h('div', { className: 'flex gap-1 mt-1.5' },
-                    h('button', { onClick: cgAddLime, title: __alloT('stem.companionplanting.add_lime_to_raise_ph_0_50', 'Add lime to raise pH (+$0.50)'), className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-amber-100 text-amber-700 hover:bg-amber-200' }, __alloT('stem.companionplanting.lime', '\u2B06 Lime')),
-                    h('button', { onClick: cgAddSulfur, title: __alloT('stem.companionplanting.add_sulfur_to_lower_ph_0_50', 'Add sulfur to lower pH (+$0.50)'), className: 'transition-colors flex-1 px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, __alloT('stem.companionplanting.sulfur', '\u2B07 Sulfur'))
+                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                    h('button', { onClick: cgAddLime, title: __alloT('stem.companionplanting.add_lime_to_raise_ph_0_50', 'Add lime to raise pH (+$0.50)'), className: 'min-h-[40px] rounded-lg bg-amber-100 px-2 py-2 text-[10px] font-black text-amber-800 transition-colors hover:bg-amber-200' }, __alloT('stem.companionplanting.lime', '\u2B06 Lime')),
+                    h('button', { onClick: cgAddSulfur, title: __alloT('stem.companionplanting.add_sulfur_to_lower_ph_0_50', 'Add sulfur to lower pH (+$0.50)'), className: 'min-h-[40px] rounded-lg bg-yellow-100 px-2 py-2 text-[10px] font-black text-yellow-800 transition-colors hover:bg-yellow-200' }, __alloT('stem.companionplanting.sulfur', '\u2B07 Sulfur'))
                   )
                 ),
                 // Economics + Pest Panel
-                h('div', { className: 'space-y-2' },
+                h('div', { className: 'grid gap-3 sm:grid-cols-2 lg:grid-cols-1' },
                   // Budget
-                  h('div', { className: 'bg-gradient-to-b from-green-50 to-emerald-50 rounded-xl border border-green-200 p-2.5' },
-                    h('div', { className: 'text-[11px] font-bold text-green-800 mb-1' }, __alloT('stem.companionplanting.farm_budget', '\uD83D\uDCB0 Farm Budget')),
+                  h('div', { className: 'rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-3 shadow-sm' },
+                    h('div', { className: 'mb-1 text-xs font-black text-green-900' }, __alloT('stem.companionplanting.farm_budget', '\uD83D\uDCB0 Farm Budget')),
                     h('div', { className: 'text-lg font-black ' + (cgBudget > 20 ? 'text-green-600' : cgBudget > 5 ? 'text-amber-600' : 'text-red-600') }, '$' + cgBudget.toFixed(2)),
                     h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-0.5' },
                       h('span', null, 'Spent: $' + cgExpenses.toFixed(2)),
@@ -6465,18 +6471,22 @@ var d = (labToolData.companionPlanting) || {};
                       (cgRevenue - cgExpenses) >= 0 ? '\u2B06 Profit: $' + (cgRevenue - cgExpenses).toFixed(2) : '\u2B07 Loss: $' + Math.abs(cgRevenue - cgExpenses).toFixed(2))
                   ),
                   // Pest ecosystem
-                  h('div', { className: 'bg-gradient-to-b from-red-50 to-orange-50 rounded-xl border border-red-200 p-2.5' },
-                    h('div', { className: 'text-[11px] font-bold text-red-800 mb-1' }, __alloT('stem.companionplanting.pest_ecosystem', '\uD83D\uDC1B Pest Ecosystem')),
+                  h('div', { className: 'rounded-xl border border-red-200 bg-gradient-to-br from-red-50 to-orange-50 p-3 shadow-sm' },
+                    h('div', { className: 'mb-2 text-xs font-black text-red-900' }, __alloT('stem.companionplanting.pest_ecosystem', '\uD83D\uDC1B Pest Ecosystem')),
                     h('div', { className: 'flex justify-between text-[11px]' },
                       h('span', { className: 'text-red-600' }, '\uD83D\uDC1B Pests: ' + Math.round(cgPestPop)),
                       h('span', { className: 'text-green-600' }, '\uD83D\uDC1E Beneficials: ' + Math.round(cgBeneficialPop))
                     ),
+                    h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                      h('div', { className: 'h-2 overflow-hidden rounded-full bg-white shadow-inner', role: 'progressbar', 'aria-label': 'Pest pressure level', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.min(100, Math.round(cgPestPop)) }, h('div', { className: 'h-full rounded-full bg-red-500 transition-all', style: { width: Math.min(100, cgPestPop) + '%' } })),
+                      h('div', { className: 'h-2 overflow-hidden rounded-full bg-white shadow-inner', role: 'progressbar', 'aria-label': 'Beneficial insect level', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.min(100, Math.round(cgBeneficialPop)) }, h('div', { className: 'h-full rounded-full bg-emerald-500 transition-all', style: { width: Math.min(100, cgBeneficialPop) + '%' } }))
+                    ),
                     // IPM action buttons
-                    h('div', { className: 'grid grid-cols-2 gap-1 mt-1.5' },
-                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: __alloT('stem.companionplanting.release_ladybugs_1_50', 'Release ladybugs ($1.50)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-red-100 text-red-700 hover:bg-red-200' }, __alloT('stem.companionplanting.ladybugs', '\uD83D\uDC1E Ladybugs')),
-                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: __alloT('stem.companionplanting.neem_spray_1_00', 'Neem spray ($1.00)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-orange-100 text-orange-700 hover:bg-orange-200' }, __alloT('stem.companionplanting.neem', '\uD83C\uDF3F Neem')),
-                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: __alloT('stem.companionplanting.hand_pick_pests_free', 'Hand-pick pests (free)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }, __alloT('stem.companionplanting.pick', '\u270B Pick')),
-                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: __alloT('stem.companionplanting.row_covers_2_00', 'Row covers ($2.00)'), className: 'transition-colors px-1 py-1 text-[11px] font-bold rounded bg-blue-100 text-blue-700 hover:bg-blue-200' }, __alloT('stem.companionplanting.covers', '\uD83E\uDDF5 Covers'))
+                    h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: __alloT('stem.companionplanting.release_ladybugs_1_50', 'Release ladybugs ($1.50)'), className: 'min-h-[40px] rounded-lg bg-red-100 px-2 py-2 text-[10px] font-black text-red-700 transition-colors hover:bg-red-200' }, __alloT('stem.companionplanting.ladybugs', '\uD83D\uDC1E Ladybugs')),
+                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: __alloT('stem.companionplanting.neem_spray_1_00', 'Neem spray ($1.00)'), className: 'min-h-[40px] rounded-lg bg-orange-100 px-2 py-2 text-[10px] font-black text-orange-700 transition-colors hover:bg-orange-200' }, __alloT('stem.companionplanting.neem', '\uD83C\uDF3F Neem')),
+                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: __alloT('stem.companionplanting.hand_pick_pests_free', 'Hand-pick pests (free)'), className: 'min-h-[40px] rounded-lg bg-yellow-100 px-2 py-2 text-[10px] font-black text-yellow-700 transition-colors hover:bg-yellow-200' }, __alloT('stem.companionplanting.pick', '\u270B Pick')),
+                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: __alloT('stem.companionplanting.row_covers_2_00', 'Row covers ($2.00)'), className: 'min-h-[40px] rounded-lg bg-blue-100 px-2 py-2 text-[10px] font-black text-blue-700 transition-colors hover:bg-blue-200' }, __alloT('stem.companionplanting.covers', '\uD83E\uDDF5 Covers'))
                     )
                   )
                 )
@@ -6503,17 +6513,20 @@ var d = (labToolData.companionPlanting) || {};
               ),
 
               // ── Achievements ──
-              h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3' },
-                h('div', { className: 'text-xs font-bold text-amber-800 mb-2' }, __alloT('stem.companionplanting.achievements', '🏆 Achievements')),
-                h('div', { className: 'flex flex-wrap gap-1.5' },
-                  CG_ACHIEVEMENTS.map(function(ach) {
-                    var earned = ach.check(stats);
-                    return h('div', {
-                      key: ach.id,
-                      title: ach.desc + (earned ? ' ✅ Earned!' : ''),
-                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold ' + (earned ? 'bg-amber-200 text-amber-900 ring-1 ring-amber-400' : 'bg-white text-slate-200 opacity-60')
-                    }, h('span', null, ach.emoji), ach.label);
-                  }))),
+              h('section', { className: 'overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 shadow-sm', 'data-community-garden-passport': true, 'aria-labelledby': 'community-passport-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-amber-100 p-3 sm:p-4' },
+                  h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-amber-700' }, 'Long-term progress'), h('h3', { id: 'community-passport-title', className: 'text-base font-black text-slate-900' }, 'Garden Passport'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Collect stamps by growing, observing, and caring across seasons.')),
+                  h('div', { className: 'flex items-center gap-2' }, h('div', { className: 'rounded-xl bg-white px-3 py-2 text-center shadow-sm' }, h('div', { className: 'text-lg font-black text-amber-800' }, earnedAchievementCount + '/' + CG_ACHIEVEMENTS.length), h('div', { className: 'text-[9px] font-bold uppercase text-slate-500' }, 'stamps earned')), h('button', { onClick: function() { cgUpd({ showAllAchievements: !cg.showAllAchievements }); }, 'aria-expanded': !!cg.showAllAchievements, className: 'min-h-[40px] rounded-xl border border-amber-200 bg-white px-3 py-2 text-[10px] font-black text-amber-800 shadow-sm hover:bg-amber-50' }, cg.showAllAchievements ? 'Show fewer' : 'Show all ' + CG_ACHIEVEMENTS.length))
+                ),
+                h('div', { className: 'px-3 pt-3 sm:px-4' }, h('div', { className: 'mb-1 flex justify-between text-[9px] font-bold uppercase tracking-wide text-slate-500' }, h('span', null, 'Passport progress'), h('span', null, achievementProgress + '%')), h('div', { className: 'h-2 overflow-hidden rounded-full bg-amber-100', role: 'progressbar', 'aria-label': 'Garden passport progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': achievementProgress }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-amber-500 to-yellow-300 transition-all', style: { width: achievementProgress + '%' } }))),
+                h('div', { className: 'grid grid-cols-2 gap-2 p-3 sm:grid-cols-3 sm:p-4 lg:grid-cols-6' }, visibleAchievementCards.map(function(card) { var ach = card.achievement; return h('article', { key: ach.id, 'data-achievement-status': card.earned ? 'earned' : 'locked', className: 'relative flex min-h-[132px] flex-col rounded-xl border p-3 text-center transition-all ' + (card.earned ? 'border-amber-300 bg-gradient-to-br from-yellow-100 to-amber-100 shadow-md' : 'border-slate-200 bg-white') },
+                  h('span', { className: 'absolute right-2 top-2 rounded-full px-1.5 py-0.5 text-[8px] font-black ' + (card.earned ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500') }, card.earned ? 'Earned' : 'Locked'),
+                  h('span', { className: 'mx-auto flex h-11 w-11 items-center justify-center rounded-full text-2xl ' + (card.earned ? 'bg-white shadow-sm' : 'bg-slate-100 grayscale opacity-45'), 'aria-hidden': true }, ach.emoji),
+                  h('div', { className: 'mt-2 text-[11px] font-black leading-snug ' + (card.earned ? 'text-amber-950' : 'text-slate-700') }, ach.label),
+                  h('div', { className: 'mt-1 text-[9px] leading-relaxed ' + (card.earned ? 'text-amber-800' : 'text-slate-500') }, ach.desc)
+                ); })),
+                h('div', { className: 'mx-3 mb-3 flex items-start gap-2 rounded-xl border p-3 sm:mx-4 sm:mb-4 ' + (nextAchievementCard ? 'border-amber-200 bg-white' : 'border-emerald-300 bg-emerald-50') }, h('span', { className: 'text-lg', 'aria-hidden': true }, nextAchievementCard ? '\uD83C\uDFAF' : '\uD83C\uDFC6'), h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-wide ' + (nextAchievementCard ? 'text-amber-700' : 'text-emerald-700') }, nextAchievementCard ? 'Next passport stamp' : 'Passport complete'), h('div', { className: 'mt-0.5 text-[11px] font-black text-slate-800' }, nextAchievementCard ? nextAchievementCard.achievement.label : 'Master Garden Steward'), h('div', { className: 'mt-0.5 text-[10px] leading-relaxed text-slate-600' }, nextAchievementCard ? nextAchievementCard.achievement.desc : 'Every garden achievement has been earned.')))
+              ),
 
               // ── Garden Journal (SEL reflections) ──
               cgJournal && cgJournal.length > 0 && h('div', { className: 'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-3' },

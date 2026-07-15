@@ -13,8 +13,8 @@ const start = src.indexOf('function _htmlToDocxSpec(html) {');
 const end = src.indexOf('\n// _buildDocxBlobFromSpec:', start);
 if (start === -1 || end === -1) throw new Error('extraction markers for the ODT/DAISY slice missing');
 const slice = src.slice(start, end);
-const { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _htmlToDaisySmil, _DAISY_OPF_XML, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes } =
-  new Function(slice + '; return { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _htmlToDaisySmil, _DAISY_OPF_XML, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes };')();
+const { _htmlToOdtContentXml, _htmlToOdtPackageParts, _buildOdtManifestXml, _dataImageInfo, _imageDisplayPx, _htmlToDtbookXml, _htmlToDaisyNcx, _htmlToDaisySmil, _DAISY_OPF_XML, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes } =
+  new Function(slice + '; return { _htmlToOdtContentXml, _htmlToOdtPackageParts, _buildOdtManifestXml, _dataImageInfo, _imageDisplayPx, _htmlToDtbookXml, _htmlToDaisyNcx, _htmlToDaisySmil, _DAISY_OPF_XML, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes };')();
 
 const wrap = (body, attrs) => `<!DOCTYPE html><html ${attrs || 'lang="en"'}><head><title>Test Doc</title></head><body>${body}</body></html>`;
 const parseXml = (xml) => {
@@ -48,6 +48,10 @@ describe('ODT export — _htmlToOdtContentXml', () => {
     expect(xml).toContain('<text:list text:style-name="L_Bullet">');
     expect(xml).toContain('<table:table');
     expect(xml).toContain('<table:table-cell');
+    expect(xml).toContain('table:style-name="TableHeaderCell"');
+    expect(xml).toContain('text:style-name="P_TableHeader"');
+    expect(xml).toContain('fo:background-color="#E2E8F0"');
+    expect(xml).toContain('fo:border="0.75pt solid #94A3B8"');
   });
   it('escapes XML-significant characters in content', () => {
     const xml = _htmlToOdtContentXml(wrap('<p>a &lt; b &amp; c "q"</p>'));
@@ -56,6 +60,70 @@ describe('ODT export — _htmlToOdtContentXml', () => {
     expect(xml).toContain('a &lt; b &amp; c');
   });
 });
+
+describe('ODT package images and table identity', () => {
+  const png2x1 = 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAADklEQVR4nGP4z8AAQv8BD/kD/YURmXYAAAAASUVORK5CYII=';
+  const src2x1 = 'data:image/png;base64,' + png2x1;
+
+  it('parses intrinsic PNG dimensions and preserves their aspect ratio', () => {
+    const info = _dataImageInfo(src2x1);
+    expect(info).toMatchObject({ mime: 'image/png', ext: 'png', width: 2, height: 1 });
+    expect(_imageDisplayPx(info)).toEqual({ width: 480, height: 240 });
+    expect(_imageDisplayPx(info, '320', '')).toEqual({ width: 320, height: 160 });
+  });
+
+  it('packages embedded images, manifests them, and emits accessible draw frames', () => {
+    const parts = _htmlToOdtPackageParts(wrap('<p>Before</p><img src="' + src2x1 + '" alt="Two-color teaching diagram"><p>After</p>'));
+    expect(parts.images).toHaveLength(1);
+    expect(parts.images[0]).toMatchObject({ path: 'Pictures/image-1.png', mime: 'image/png', base64: png2x1 });
+    expect(parseXml(parts.contentXml).wellFormed).toBe(true);
+    expect(parts.contentXml).toContain('draw:name="Image1"');
+    expect(parts.contentXml).toContain('xlink:href="Pictures/image-1.png"');
+    expect(parts.contentXml).toContain('svg:width="5.000in"');
+    expect(parts.contentXml).toContain('svg:height="2.500in"');
+    expect(parts.contentXml).toContain('<svg:title>Two-color teaching diagram</svg:title>');
+    expect(parts.contentXml).toContain('<svg:desc>Two-color teaching diagram</svg:desc>');
+
+    const manifest = _buildOdtManifestXml(parts.images);
+    expect(parseXml(manifest).wellFormed).toBe(true);
+    expect(manifest).toContain('manifest:full-path="Pictures/image-1.png"');
+    expect(manifest).toContain('manifest:media-type="image/png"');
+  });
+
+  it('deduplicates image bytes but gives repeated frames unique names', () => {
+    const parts = _htmlToOdtPackageParts(wrap(
+      '<img src="' + src2x1 + '" alt="First use"><img src="' + src2x1 + '" alt="Second use">'
+    ));
+    expect(parts.images).toHaveLength(1);
+    expect(parts.contentXml).toContain('draw:name="Image1"');
+    expect(parts.contentXml).toContain('draw:name="Image2"');
+  });
+
+  it('keeps an explicit labelled fallback for unsupported remote images', () => {
+    const parts = _htmlToOdtPackageParts(wrap('<img src="https://example.org/chart.png" alt="Remote chart">'));
+    expect(parts.images).toHaveLength(0);
+    expect(parts.contentXml).toContain('[Image: Remote chart]');
+  });
+
+  it('assigns a unique internal name to every table', () => {
+    const xml = _htmlToOdtContentXml(wrap(
+      '<table><tr><th>A</th></tr></table><table><tr><th>B</th></tr></table>'
+    ));
+    expect(xml).toContain('table:name="Table1"');
+    expect(xml).toContain('table:name="Table2"');
+  });
+});
+
+describe('DOCX table and image rendering hardening', () => {
+  it('uses TableGrid, non-splitting rows, bold headers, and shared aspect-safe image sizing', () => {
+    expect(src).toContain("style: 'TableGrid'");
+    expect(src).toContain('cantSplit: true');
+    expect(src).toContain("c.runs.map((run) => ({ ...run, bold: true }))");
+    expect(src).toContain('const info = _dataImageInfo(b.src);');
+    expect(src).toContain('transformation: size');
+  });
+});
+
 
 describe('DAISY export — _htmlToDtbookXml', () => {
   it('produces well-formed DTBook XML', () => {

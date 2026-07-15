@@ -68,4 +68,36 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain('disposeGeoObject3D(window._geoScene.constructionGroup)');
     expect(source).toContain('disposeGeoObject3D(window._geoScene.sculptGroup)');
   });
+  it('keeps the 3D canvas and supporting graphics keyboard and screen-reader accessible', () => {
+    const source = read(SOURCE_FILE);
+
+    expect(source).toContain("role: 'application'");
+    expect(source).toContain("'aria-describedby': 'geo-sandbox-canvas-description'");
+    expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight + - [ ] Delete'");
+    expect(source).toContain("new window.THREE.Spherical().setFromVector3(offset)");
+    expect(source).toContain("role: 'alertdialog'");
+    expect(source).not.toContain('window.confirm(');
+    expect(source).not.toContain('window.prompt(');
+    expect(source).toContain("id: 'geo-save-name'");
+    expect(source).toContain("key === '[' || key === ']'" );
+    expect(source).toContain("key === 'Delete' || key === 'Backspace'");
+    expect(source).toContain('var next = (g.history || []).concat([snap]);');
+    expect((source.match(/role: 'img'/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect(source).toContain("@media (max-width: 760px)");
+    expect(source).toContain("id: 'geo-control-sidebar'");
+    expect(source).toContain("id: 'geo-viewport-shell'");
+    expect(source).toContain("pc.kind === 'annularSector'");
+    expect(source).toContain("mode === 'single' && h('button', { 'aria-label': t('stem.geosandbox.export_stl', 'Export current shape as STL')");
+    expect(source).toContain("'aria-label': t('stem.geosandbox.ai_tutor', 'AI Tutor')");
+    expect(source).toContain("if (!exportSTL(shape, addToast))");
+    expect(source).toContain("if (typeof mesh.updateMatrixWorld === 'function') mesh.updateMatrixWorld(true)");
+    expect(source).toContain("window.setTimeout(function() { URL.revokeObjectURL(url); }, 0)");
+    expect(source).toContain("steps.vol.formula");
+    expect(source).toContain("steps.sa.formula");
+    expect(source).toContain("['box','pyramid','prism'].indexOf(shape) >= 0");
+    expect(source).toContain("geometry.rotateY(Math.PI / 4)");
+    expect(source).toContain("label: 'Rectangular Prism'");
+    expect(source).toContain("label: 'Base Half-Side'");
+    expect(source).toContain("title: 'Frustum'");
+  });
 });

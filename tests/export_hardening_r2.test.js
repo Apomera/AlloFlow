@@ -246,5 +246,7 @@ describe('PowerPoint formatting hardening (R3)', () => {
     expect(exportSource).toContain('for (let start = 0; start < categories.length; start += 4)');
     expect(exportSource).toContain("addSlideTitle(slide, itemTitle + (pageIndex ? ' (Cont.)' : ''))");
     expect(exportModule).toContain('const chunkText = (value, limit) =>');
+    expect(viewAudit).toContain("valign: 'middle'");
+    expect(exportSource).toMatch(/margin: 0\.04,[\s\S]{0,80}valign: 'middle'/);
   });
 });

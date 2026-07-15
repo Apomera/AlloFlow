@@ -5,11 +5,13 @@ function BrainstormView(props) {
   var isTeacherMode = props.isTeacherMode;
   var isEditingBrainstorm = props.isEditingBrainstorm;
   var isGeneratingGuide = props.isGeneratingGuide;
+  var isGeneratingBrainstormRubric = props.isGeneratingBrainstormRubric || {};
   var isGeneratingWorksheet = props.isGeneratingWorksheet;
   var isGeneratingWorksheetCover = props.isGeneratingWorksheetCover;
   var handleToggleIsEditingBrainstorm = props.handleToggleIsEditingBrainstorm;
   var handleBrainstormChange = props.handleBrainstormChange;
   var handleGenerateGuide = props.handleGenerateGuide;
+  var handleGenerateBrainstormRubric = props.handleGenerateBrainstormRubric;
   var handleGenerateWorksheet = props.handleGenerateWorksheet;
   var handleGenerateWorksheetCover = props.handleGenerateWorksheetCover;
   var getRows = props.getRows;
@@ -174,6 +176,53 @@ function BrainstormView(props) {
                                              </button>
                                          )
                                      )}
+                                     {idea.rubric && Array.isArray(idea.rubric.criteria) && idea.rubric.criteria.length ? (
+                                         <details className="mt-3 group">
+                                             <summary className="inline-flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200 cursor-pointer list-none transition-colors">
+                                                 <ListChecks size={14} />
+                                                 {idea.rubric.title || 'Activity Rubric'}
+                                                 <span className="text-violet-700/70 ml-0.5 group-open:rotate-180 transition-transform">&#9662;</span>
+                                             </summary>
+                                             <div className="mt-2 overflow-x-auto rounded-lg border border-violet-200" data-help-key="brainstorm_rubric">
+                                                 <table className="min-w-[760px] w-full text-xs text-left text-slate-700">
+                                                     <caption className="sr-only">{idea.rubric.title || 'Activity rubric with four performance levels'}</caption>
+                                                     <thead className="bg-violet-50 text-violet-950">
+                                                         <tr>
+                                                             <th scope="col" className="p-2">Criterion</th>
+                                                             <th scope="col" className="p-2 w-16">Weight</th>
+                                                             <th scope="col" className="p-2">4 - Exceeds</th>
+                                                             <th scope="col" className="p-2">3 - Meets</th>
+                                                             <th scope="col" className="p-2">2 - Developing</th>
+                                                             <th scope="col" className="p-2">1 - Beginning</th>
+                                                         </tr>
+                                                     </thead>
+                                                     <tbody className="divide-y divide-violet-100 bg-white">
+                                                         {idea.rubric.criteria.map((criterion, criterionIndex) => (
+                                                             <tr key={criterionIndex} className="align-top">
+                                                                 <th scope="row" className="p-2 font-semibold text-slate-900">{criterion.criterion}</th>
+                                                                 <td className="p-2">{Number.isFinite(Number(criterion.weight)) ? `${criterion.weight}%` : '--'}</td>
+                                                                 <td className="p-2">{criterion.levels && criterion.levels['4']}</td>
+                                                                 <td className="p-2">{criterion.levels && criterion.levels['3']}</td>
+                                                                 <td className="p-2">{criterion.levels && criterion.levels['2']}</td>
+                                                                 <td className="p-2">{criterion.levels && criterion.levels['1']}</td>
+                                                             </tr>
+                                                         ))}
+                                                     </tbody>
+                                                 </table>
+                                             </div>
+                                         </details>
+                                     ) : isTeacherMode ? (
+                                         <button
+                                             aria-label="Generate activity rubric"
+                                             onClick={() => handleGenerateBrainstormRubric(idx)}
+                                             disabled={isGeneratingBrainstormRubric[idx]}
+                                             aria-busy={!!isGeneratingBrainstormRubric[idx]}
+                                             className="mt-3 flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full transition-colors border border-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                         >
+                                             {isGeneratingBrainstormRubric[idx] ? <RefreshCw size={12} className="animate-spin" aria-hidden="true"/> : <ListChecks size={14} aria-hidden="true"/>}
+                                             {isGeneratingBrainstormRubric[idx] ? 'Creating rubric...' : 'Generate Activity Rubric'}
+                                         </button>
+                                     ) : null}
                                  </div>
                              </div>
                           ))}

@@ -2,6 +2,11 @@
 
 exports[`Lumen — present mode + presentation export > present-mode overlay is structurally byte-stable (snapshot) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -295,6 +300,11 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 
 exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded, uncertainty preserved 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -475,6 +485,11 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 
 exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working face) — the default opening state 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -655,6 +670,11 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 
 exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypothesis set + IEP-team sign-off 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -863,6 +883,11 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 
 exports[`Lumen — render golden master (SSR, §15) > a verified benchmark renders the teal reference line + citation chip 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -1053,6 +1078,11 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 
 exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect bars + axes + phase line, no trend line 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -1209,6 +1239,11 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 
 exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase five-number boxes 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -1338,6 +1373,11 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 
 exports[`Lumen — render golden master (SSR, §15) > data table shown — the screen-reader peer 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -1593,6 +1633,11 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 
 exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — points only (no line, no bars) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -1739,6 +1784,11 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 
 exports[`Lumen — render golden master (SSR, §15) > empty state — no observations (entry + sample, no chart) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -1836,6 +1886,11 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 
 exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — bars per phase × series mean, legend, raw-data table 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -2122,6 +2177,11 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 
 exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark renders the VERTICAL teal reference line at the benchmark value 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -2262,6 +2322,11 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 
 exports[`Lumen — render golden master (SSR, §15) > histogram pathway — value-range count bars (distribution, not time-series) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -2392,6 +2457,11 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 
 exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a coloured line + points per series, one sentence each 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -2567,6 +2637,11 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 
 exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few points draws no line, shows a refusal sentence 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -2651,6 +2726,11 @@ exports[`Lumen — render golden master (SSR, §15) > registration metadata 1`] 
 
 exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 paired points (primary y vs y2) + L1 fit line, association sentence 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -2774,6 +2854,11 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 
 exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs refuses (no chart), naming the paired n 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -2851,6 +2936,11 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 
 exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phase fitted segments + observed dots 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -3003,6 +3093,11 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 
 exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic practice data — persistent banner + in-SVG watermark + SYN marks (snapshot) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
@@ -3166,6 +3261,11 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 
 exports[`Lumen — render invariants (no snapshot, just contracts) > the import-mapper preview is structurally byte-stable (snapshot) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
+<nav class="flex items-center gap-2 flex-wrap pb-3 mb-3 border-b border-amber-200" aria-label="Lumen workspace modes">
+<button type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">← Lumen home</button>
+<span class="text-xs font-bold text-amber-900">Analyze Data</span>
+<button type="button" class="ml-auto px-3 py-1.5 rounded-lg bg-blue-100 text-blue-900 text-xs font-bold hover:bg-blue-200">Switch to Study Sources</button>
+</nav>
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
 <span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>

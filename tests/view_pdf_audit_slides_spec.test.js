@@ -49,7 +49,7 @@ describe('view_pdf_audit · _docxSpecToSlides (accessible PowerPoint export)', (
     expect(items.filter(i => i.kind === 'bullet').map(i => i.level)).toEqual([0, 1]);
     const tbl = items.find(i => i.kind === 'table');
     expect(tbl.rows[0].header).toBe(true);
-    expect(tbl.rows[1].cells[0]).toEqual({ text: 'd', colSpan: 1, rowSpan: 1 });
+    expect(tbl.rows[1].cells[0]).toEqual({ text: 'd', header: false, scope: '', colSpan: 1, rowSpan: 1 });
     expect(deck.counts.bullets).toBe(2);
     expect(deck.counts.tables).toBe(1);
   });

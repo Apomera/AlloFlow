@@ -50,8 +50,11 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).toContain('.theme-dark .brainatlas-tool-shell');
     expect(src).toContain('.theme-contrast .brainatlas-tool-shell');
     expect(src).toContain('.brainatlas-tool-shell .bg-white');
-    expect(src).toContain('.brainatlas-detail-panel{border-radius:8px!important;background:var(--ba-surface)!important');
+    expect(src).toContain('.brainatlas-detail-panel{border-radius:14px!important;background:var(--ba-surface)!important');
     expect(src).toContain('.brainatlas-detail-takeaways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}');
+    expect(src).toContain('.brainatlas-view-panel{border:1px solid var(--ba-border);border-radius:14px;');
+    expect(src).toContain('.brainatlas-view-button{display:inline-flex;');
+    expect(src).toContain('.brainatlas-detail-focus-header{display:grid;');
   });
 
   it('gives every Brain Atlas canvas a visible text equivalent and teacher prompt', () => {
@@ -66,6 +69,11 @@ describe('brainAtlas refinement contracts', () => {
       expect(html).toContain('data-brainatlas-teacher-prompt="true"');
       expect(html).toMatch(/Canvas summary/);
       expect(html).toMatch(/Teacher move/);
+      const canvasSize = html.match(/<canvas[^>]*width="(\d+)"[^>]*height="(\d+)"/);
+      expect(canvasSize).toBeTruthy();
+      expect(Number(canvasSize[1])).toBeGreaterThanOrEqual(840);
+      expect(Number(canvasSize[2])).toBeGreaterThanOrEqual(640);
+      expect(html).not.toContain('max-w-6xl');
     });
   });
 
@@ -74,14 +82,14 @@ describe('brainAtlas refinement contracts', () => {
     const src = readFileSync(FILE, 'utf8');
 
     const neuron = render({ view: 'neuron' });
-    expect(neuron).toContain('width="820"');
-    expect(neuron).toContain('height="760"');
+    expect(neuron).toContain('width="1040"');
+    expect(neuron).toContain('height="880"');
     expect(neuron).toMatch(/7 targets/);
     expect(neuron).toMatch(/spike-cycle decoder/i);
 
     const synapses = render({ view: 'synapses' });
-    expect(synapses).toContain('width="780"');
-    expect(synapses).toContain('height="620"');
+    expect(synapses).toContain('width="1040"');
+    expect(synapses).toContain('height="780"');
     expect(synapses).toMatch(/Synapse &amp; development - lifespan map/);
     expect(synapses).toMatch(/uncluttered development map/);
 
@@ -97,6 +105,130 @@ describe('brainAtlas refinement contracts', () => {
     expect(spike).toMatch(/all-or-nothing/i);
     expect(spike).toMatch(/refractory/i);
   });
+
+  it('provides a large responsive canvas with native and fallback fullscreen paths', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'lateral' });
+
+    expect(html).toContain('id="brainatlas-canvas-fullscreen"');
+    expect(html).toContain('data-brainatlas-fullscreen="true"');
+    expect(html).toMatch(/Toggle full screen for the brain atlas diagram/);
+    expect(html).toMatch(/Full screen/);
+
+    expect(src).toContain('.brainatlas-canvas-shell:fullscreen');
+    expect(src).toContain('.brainatlas-canvas-shell.brainatlas-fullscreen-fallback');
+    expect(src).toContain('max-width:1440px!important');
+    expect(src).toContain('el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen');
+    expect(src).toContain('function setBrainAtlasFallbackFullscreen(el, enabled)');
+    expect(src).toContain('var fontScale = Math.min(1.3');
+    expect(html).toContain('width="840"');
+    expect(html).toContain('data-brainatlas-canvas-status="true"');
+    expect(html).toContain('data-brainatlas-learning-footer="true"');
+    expect(html).toContain('data-brainatlas-has-selection="false"');
+    expect(src).toContain('.brainatlas-region-item-copy{font-size:11px;line-height:1.4');
+    expect(src).not.toContain('line-clamp-1');
+
+    const selected = render({ view: 'lateral', selectedRegion: 'frontal' });
+    expect(selected).toContain('data-brainatlas-has-selection="true"');
+    expect(selected).toContain('data-brainatlas-detail-focus="true"');
+    expect(selected).toMatch(/Selected region/);
+    expect(selected).toMatch(/stem\.synth_ui\.lateral.*Atlas/);
+    expect(selected).toMatch(/Focus:/);
+    expect(selected).toMatch(/Executive function/);
+  });
+
+  it('presents search, quiz, and region browsing as clear responsive controls', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+
+    const filtered = render({ view: 'lateral', search: 'front' });
+    expect(filtered).toContain('data-brainatlas-controls="true"');
+    expect(filtered).toContain('for="brainatlas-region-search"');
+    expect(filtered).toContain('data-brainatlas-clear-search="true"');
+    expect(filtered).toContain('data-brainatlas-region-count="true"');
+    expect(filtered).toContain('data-brainatlas-region-list="true"');
+    expect(filtered).toContain('aria-labelledby="brainatlas-region-directory-title"');
+    expect(filtered).toContain('data-brainatlas-region-button="true"');
+    expect(filtered).toContain('data-brainatlas-region-index="true"');
+    expect(filtered).toMatch(/Explore the diagram/);
+
+    const empty = render({ view: 'lateral', search: 'no-such-region' });
+    expect(empty).toContain('data-brainatlas-empty-results="true"');
+    expect(empty).toContain('data-brainatlas-empty-clear="true"');
+    expect(empty).toMatch(/No regions match your search/);
+    expect(empty).toMatch(/Clear search/);
+
+    const quiz = render({ view: 'lateral', quizMode: true });
+    expect(quiz).toMatch(/aria-pressed="true" data-brainatlas-quiz-toggle="true"/);
+    expect(src).toContain('.brainatlas-controls{display:grid;grid-template-columns:minmax(260px,1fr) auto;');
+    expect(src).toContain('.brainatlas-region-item{position:relative;display:grid;');
+  });
+
+  it('keeps every guided route discoverable in a compact horizontal explorer', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'lateral' });
+
+    expect(html).toContain('data-brainatlas-route-library="true"');
+    expect(html).toContain('aria-labelledby="brainatlas-route-library-title"');
+    expect(html).toContain('data-brainatlas-route-grid="true"');
+    expect(html).toContain('data-brainatlas-route-card="true"');
+    expect((html.match(/data-brainatlas-route-card="true"/g) || [])).toHaveLength(15);
+    expect(html).toContain('data-brainatlas-route-active="true"');
+    expect(html).toMatch(/Guided exploration/);
+    expect(html).toMatch(/15 paths/);
+    expect(html).toMatch(/Open diagram/);
+    expect(html).toMatch(/Map the lobes/);
+    expect(html).toMatch(/Trace left vs right/);
+    expect(src).toContain('.brainatlas-route-grid{display:flex;');
+    expect(src).toContain('scroll-snap-type:x proximity');
+    expect(src).toContain('.brainatlas-mission{position:relative;overflow:hidden;border:1px solid var(--ba-border);border-radius:16px;');
+  });
+
+  it('provides a polished header with direct navigation to the large diagram', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'lateral' });
+
+    expect(html).toContain('data-brainatlas-topbar="true"');
+    expect(html).toMatch(/STEM learning lab/);
+    expect(html).toContain('data-brainatlas-jump-to-diagram="true"');
+    expect(html).toMatch(/View the large Brain Atlas diagram/);
+    expect(html).toMatch(/View diagram/);
+    expect(html).toContain('data-brainatlas-canvas-heading="true"');
+    expect(html).toMatch(/Interactive diagram/);
+    expect(html).toContain('data-brainatlas-view-position="true"');
+    expect(html).toMatch(/View 1 \/ \d+/);
+    expect(src).toContain('function scrollToBrainAtlasDiagram()');
+    expect(src).toContain("el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });");
+    expect(src).toContain('scroll-margin-top:16px');
+    expect(src).toContain('.brainatlas-topbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;');
+    expect(src).toContain('.brainatlas-canvas-eyebrow{');
+  });
+
+  it('lets learners compact the mission overview while keeping the atlas available', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const expanded = render({ view: 'lateral' });
+    const collapsed = render({ view: 'lateral', overviewCollapsed: true });
+
+    expect(expanded).toContain('data-brainatlas-overview-collapsed="false"');
+    expect(expanded).toContain('data-brainatlas-overview-toggle="true"');
+    expect(expanded).toContain('aria-expanded="true"');
+    expect(expanded).toMatch(/Collapse overview/);
+    expect(collapsed).toContain('data-brainatlas-overview-collapsed="true"');
+    expect(collapsed).toContain('aria-expanded="false"');
+    expect(collapsed).toMatch(/Expand overview/);
+    expect(collapsed).toContain('data-brainatlas-route-library="true"');
+    expect(src).toContain('.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-mission-copy');
+    expect(src).toContain('.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-mission-inner{grid-template-columns:minmax(0,1fr);');
+    expect(src).toContain('.brainatlas-overview-toggle{display:inline-flex;');
+  });
+
+
+
+
 
   it('keeps EEG activity modes accessible outside the canvas drawing', () => {
     loadTool(FILE, 'brainAtlas');
@@ -132,8 +264,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'homunculus' });
 
     expect(html).toContain('Motor/Sensory Homunculus');
-    expect(html).toContain('width="720"');
-    expect(html).toContain('height="560"');
+    expect(html).toContain('width="960"');
+    expect(html).toContain('height="720"');
     expect(html).toMatch(/primary motor cortex/i);
     expect(html).toMatch(/primary somatosensory cortex/i);
     expect(html).toMatch(/central sulcus/i);
@@ -153,8 +285,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'visualPathway' });
 
     expect(html).toContain('Visual Pathway');
-    expect(html).toContain('width="780"');
-    expect(html).toContain('height="620"');
+    expect(html).toContain('width="1040"');
+    expect(html).toContain('height="780"');
     expect(html).toMatch(/optic chiasm/i);
     expect(html).toMatch(/LGN/);
     expect(html).toMatch(/bitemporal hemianopia/i);
@@ -183,8 +315,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'languageNetwork' });
 
     expect(html).toContain('Language Network');
-    expect(html).toContain('width="780"');
-    expect(html).toContain('height="620"');
+    expect(html).toContain('width="1040"');
+    expect(html).toContain('height="780"');
     expect(html).toMatch(/Broca/i);
     expect(html).toMatch(/Wernicke/i);
     expect(html).toMatch(/Arcuate/i);
@@ -206,8 +338,8 @@ describe('brainAtlas refinement contracts', () => {
 
     const stroke = render({ view: 'strokeTerritories', viewGroup: 'clinical' });
     expect(stroke).toContain('Stroke Territories');
-    expect(stroke).toContain('width="780"');
-    expect(stroke).toContain('height="620"');
+    expect(stroke).toContain('width="1040"');
+    expect(stroke).toContain('height="780"');
     expect(stroke).toMatch(/8 targets/);
     expect(stroke).toMatch(/Clinical/);
     expect(stroke).toMatch(/Stroke territories - clinical map/);
@@ -220,8 +352,8 @@ describe('brainAtlas refinement contracts', () => {
 
     const cerebellum = render({ view: 'cerebellumClinic', viewGroup: 'clinical' });
     expect(cerebellum).toContain('Cerebellum Clinic');
-    expect(cerebellum).toContain('width="780"');
-    expect(cerebellum).toContain('height="620"');
+    expect(cerebellum).toContain('width="1040"');
+    expect(cerebellum).toContain('height="780"');
     expect(cerebellum).toMatch(/8 targets/);
     expect(cerebellum).toMatch(/Cerebellum clinic - ataxia map/);
     expect(cerebellum).toMatch(/PICA Territory/);
@@ -233,8 +365,8 @@ describe('brainAtlas refinement contracts', () => {
 
     const brainstem = render({ view: 'brainstemCrossSection', viewGroup: 'clinical' });
     expect(brainstem).toContain('Brainstem Cross-Section');
-    expect(brainstem).toContain('width="780"');
-    expect(brainstem).toContain('height="620"');
+    expect(brainstem).toContain('width="1040"');
+    expect(brainstem).toContain('height="780"');
     expect(brainstem).toMatch(/8 targets/);
     expect(brainstem).toMatch(/Brainstem - crossed findings/);
     expect(brainstem).toMatch(/Crossed Findings Decoder/);
@@ -258,8 +390,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'csfHydrocephalus', viewGroup: 'clinical' });
 
     expect(html).toContain('CSF Flow &amp; Hydrocephalus');
-    expect(html).toContain('width="780"');
-    expect(html).toContain('height="620"');
+    expect(html).toContain('width="1040"');
+    expect(html).toContain('height="780"');
     expect(html).toMatch(/8 targets/);
     expect(html).toMatch(/CSF flow - hydrocephalus map/);
     expect(html).toMatch(/Choroid Plexus/);
@@ -284,8 +416,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'cranialNervesWillis' });
 
     expect(html).toContain('Cranial Nerves &amp; Willis');
-    expect(html).toContain('width="780"');
-    expect(html).toContain('height="620"');
+    expect(html).toContain('width="1040"');
+    expect(html).toContain('height="780"');
     expect(html).toMatch(/Circle of Willis/i);
     expect(html).toMatch(/CN III/i);
     expect(html).toMatch(/PComm/i);
@@ -315,8 +447,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'basalGangliaLoop' });
 
     expect(html).toContain('Basal Ganglia Loop');
-    expect(html).toContain('width="780"');
-    expect(html).toContain('height="620"');
+    expect(html).toContain('width="1040"');
+    expect(html).toContain('height="780"');
     expect(html).toMatch(/direct/i);
     expect(html).toMatch(/indirect/i);
     expect(html).toMatch(/dopamine/i);
@@ -344,8 +476,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'limbicPapezLoop' });
 
     expect(html).toContain('Limbic / Papez Loop');
-    expect(html).toContain('width="780"');
-    expect(html).toContain('height="620"');
+    expect(html).toContain('width="1040"');
+    expect(html).toContain('height="780"');
     expect(html).toMatch(/Papez/i);
     expect(html).toMatch(/Hippocampus/i);
     expect(html).toMatch(/Amygdala/i);
@@ -376,8 +508,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'crossLateral' });
 
     expect(html).toContain('Cross-Lateralization');
-    expect(html).toContain('width="780"');
-    expect(html).toContain('height="620"');
+    expect(html).toContain('width="1040"');
+    expect(html).toContain('height="780"');
     expect(html).toMatch(/Corpus Callosum/i);
     expect(html).toMatch(/Split-Brain Phenomenon/i);
     expect(html).toMatch(/8 targets/);
@@ -410,8 +542,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'sleepStages' });
 
     expect(html).toContain('Sleep Stages');
-    expect(html).toContain('width="600"');
-    expect(html).toContain('height="500"');
+    expect(html).toContain('width="900"');
+    expect(html).toContain('height="680"');
     expect(html).toMatch(/6 targets/);
     expect(html).toMatch(/sleep-architecture decoder/i);
     expect(src).toContain('sleep_architecture_decoder_sleep');
@@ -433,8 +565,8 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'stimulate', stimIdx: 0 });
 
     expect(html).toContain('Stimulation Lab');
-    expect(html).toContain('width="600"');
-    expect(html).toContain('height="500"');
+    expect(html).toContain('width="900"');
+    expect(html).toContain('height="680"');
     expect(html).toMatch(/7 targets/);
     expect(html).toMatch(/Motor Response Zone/);
     expect(html).toMatch(/Language Disruption Zone/);
@@ -470,6 +602,12 @@ describe('brainAtlas refinement contracts', () => {
     const html = render({ view: 'lateral', viewGroup: 'atlas' });
 
     expect(html).toContain('data-brainatlas-visible-group="atlas"');
+    expect(html).toContain('data-brainatlas-view-panel="true"');
+    expect(html).toContain('aria-labelledby="brainatlas-view-library-title"');
+    expect(html).toContain('data-brainatlas-view-button="true"');
+    expect(html).toContain('data-brainatlas-active="true"');
+    expect(html).toMatch(/Diagram library/);
+    expect(html).toMatch(/8 views/);
     expect(html).toMatch(/Cranial Nerves &amp; Willis/);
     expect(html).toMatch(/Motor\/Sensory Homunculus/);
     expect(html).toMatch(/Visual Pathway/);
@@ -504,6 +642,9 @@ describe('brainAtlas refinement contracts', () => {
     const plain = render({ view: 'neurotransmitters', selectedRegion: 'dopamine' });
     expect(plain).toContain('data-brainatlas-detail-mode="plain"');
     expect(plain).toContain('data-brainatlas-detail-takeaways="true"');
+    expect(plain).toContain('data-brainatlas-detail-focus="true"');
+    expect(plain).toMatch(/Selected region/);
+    expect(plain).toMatch(/Neurotransmitters.*Systems/);
     expect(plain).toMatch(/Watch for/);
     expect(plain).toMatch(/If damaged/);
     expect(plain).toMatch(/Student takeaway/);

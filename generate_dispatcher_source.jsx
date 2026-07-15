@@ -3135,7 +3135,8 @@ ${_itemsBlock}`;
                  .map(item => ({
                      title: String((item && item.title) || '').trim(),
                      description: String((item && item.description) || '').trim(),
-                     connection: String((item && item.connection) || '').trim()
+                    connection: String((item && item.connection) || '').trim(),
+                    rubric: null // Optional schema slot; generated only when an educator requests it.
                  }))
                  .filter(item => item.title && item.description);
              if (!content.length) {
@@ -3169,6 +3170,14 @@ ${_itemsBlock}`;
                  else parsed = [];
              }
              content = parsed;
+             content = (Array.isArray(content) ? content : []).slice(0, 8)
+                 .map(item => ({
+                     title: String((item && item.title) || '').trim(),
+                     description: String((item && item.description) || '').trim(),
+                     connection: String((item && item.connection) || '').trim(),
+                     rubric: null // Optional schema slot; generated only when an educator requests it.
+                 }))
+                 .filter(item => item.title && item.description);
              metaInfo = t('meta.engagement_ideas');
          } catch (parseErr) {
              warnLog("Brainstorm Parse Error:", parseErr);

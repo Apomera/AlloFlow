@@ -1024,8 +1024,47 @@ function FluencyModePanel(props) {
     setIsFluencyMode,
     showFluencyConfetti,
     t,
-    toggleFluencyRecording
+    toggleFluencyRecording,
+    applyFluencyReview,
+    fluencyAssessments = [],
+    isTeacherMode,
+    saveFluencyReview,
+    summarizeFluencyEvidence
   } = props;
+  const [isReviewingFluency, setIsReviewingFluency] = React.useState(false);
+  const [fluencyReviewDraft, setFluencyReviewDraft] = React.useState(null);
+  const beginFluencyReview = () => {
+    if (!fluencyResult?.wordData) return;
+    setFluencyReviewDraft({
+      wordData: fluencyResult.wordData.map((word) => ({ ...word })),
+      insertionsText: (fluencyResult.insertions || []).join(", "),
+      reviewer: fluencyResult.review?.reviewer || "Educator",
+      note: fluencyResult.review?.note || ""
+    });
+    setIsReviewingFluency(true);
+  };
+  const updateFluencyReviewWord = (index, field, value) => {
+    setFluencyReviewDraft((prev) => {
+      if (!prev) return prev;
+      const wordData = prev.wordData.map(
+        (word, wordIndex) => wordIndex === index ? { ...word, [field]: value } : word
+      );
+      return { ...prev, wordData };
+    });
+  };
+  const commitFluencyReview = () => {
+    if (!fluencyReviewDraft || typeof applyFluencyReview !== "function") return;
+    const reviewedResult = applyFluencyReview(fluencyResult, {
+      wordData: fluencyReviewDraft.wordData,
+      insertions: fluencyReviewDraft.insertionsText.split(",").map((word) => word.trim()).filter(Boolean),
+      reviewer: fluencyReviewDraft.reviewer,
+      note: fluencyReviewDraft.note
+    });
+    if (typeof saveFluencyReview === "function") saveFluencyReview(reviewedResult);
+    else setFluencyResult(reviewedResult);
+    setIsReviewingFluency(false);
+    setFluencyReviewDraft(null);
+  };
   if (!(isFluencyMode && generatedContent)) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" }, showFluencyConfetti && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-[250] flex items-center justify-center" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), /* @__PURE__ */ React.createElement(
     "div",
@@ -1071,6 +1110,8 @@ function FluencyModePanel(props) {
           setIsFluencyMode(false);
           setFluencyStatus("idle");
           setFluencyTimeRemaining(fluencyTimeLimit);
+          setIsReviewingFluency(false);
+          setFluencyReviewDraft(null);
         },
         className: "p-1.5 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors",
         "aria-label": t("fluency.close_label")
@@ -1084,6 +1125,11 @@ function FluencyModePanel(props) {
       const levelLabels = { above: t("fluency.benchmark_above"), at: t("fluency.benchmark_at"), approaching: t("fluency.benchmark_approaching"), well_below: t("fluency.benchmark_below"), unknown: "\u2014" };
       const readingLevelColors = { independent: "bg-green-100 text-green-700 border-green-300", instructional: "bg-yellow-100 text-yellow-700 border-yellow-300", frustrational: "bg-red-100 text-red-700 border-red-300" };
       const readingLevelLabels = { independent: t("fluency.independent"), instructional: t("fluency.instructional"), frustrational: t("fluency.frustrational") };
+      const evidenceRecords = (Array.isArray(fluencyAssessments) ? fluencyAssessments : []).slice();
+      if (!evidenceRecords.some((item) => (item?.recordId || item?.id) === fluencyResult.recordId)) {
+        evidenceRecords.push(fluencyResult);
+      }
+      const evidenceSummary = typeof summarizeFluencyEvidence === "function" ? summarizeFluencyEvidence(evidenceRecords, { sampleSize: 3 }) : null;
       return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4 gap-4 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t("fluency.accuracy_score")), /* @__PURE__ */ React.createElement("div", { className: `text-6xl font-black ${fluencyResult.accuracy >= 90 ? "text-green-500" : fluencyResult.accuracy >= 70 ? "text-yellow-500" : "text-red-500"}` }, fluencyResult.accuracy, "%"), /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${readingLevelColors[rrMetrics.readingLevel]}` }, readingLevelLabels[rrMetrics.readingLevel])), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden animate-in zoom-in duration-300 delay-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-2" }, t("fluency.rate_label")), /* @__PURE__ */ React.createElement("div", { className: "text-6xl font-black text-indigo-600" }, fluencyResult.wcpm), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mt-1" }, t("fluency.wcpm_label")), /* @__PURE__ */ React.createElement("div", { className: `mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${levelColors[benchmarkResult.level]}` }, levelLabels[benchmarkResult.level]))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase" }, t("fluency.benchmark_title")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.grade"), value: fluencyBenchmarkGrade, onChange: (e) => setFluencyBenchmarkGrade(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, Object.keys(FLUENCY_BENCHMARKS).map((g) => /* @__PURE__ */ React.createElement("option", { key: g, value: g }, t("fluency.grade_select"), " ", g)), /* @__PURE__ */ React.createElement("option", { value: "custom" }, t("fluency.custom_norms") || "Custom (Manual)")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.season"), value: fluencyBenchmarkSeason, onChange: (e) => setFluencyBenchmarkSeason(e.target.value), className: "text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" }, /* @__PURE__ */ React.createElement("option", { value: "fall" }, t("fluency.season_fall")), /* @__PURE__ */ React.createElement("option", { value: "winter" }, t("fluency.season_winter")), /* @__PURE__ */ React.createElement("option", { value: "spring" }, t("fluency.season_spring"))), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, t("fluency.benchmark_target"), ": ", benchmarkResult.target, " WCPM")), fluencyBenchmarkGrade === "custom" && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-3 mb-4 items-center animate-in slide-in-from-top duration-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.custom_wcpm") || "Target WCPM", ":"), ["fall", "winter", "spring"].map((s) => /* @__PURE__ */ React.createElement("div", { key: s, className: "flex flex-col items-center gap-0.5" }, /* @__PURE__ */ React.createElement(
         "input",
         {
@@ -1096,7 +1142,7 @@ function FluencyModePanel(props) {
           placeholder: "0",
           "aria-label": `${s} target WCPM`
         }
-      ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 font-bold uppercase" }, t(`fluency.season_${s}`) || s)))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 border border-red-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-red-600" }, rrMetrics.substitutions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.substitutions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border border-orange-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-orange-600" }, rrMetrics.omissions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.omissions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border border-purple-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-purple-600" }, rrMetrics.insertions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.insertions_label"))), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 border border-blue-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-blue-600" }, rrMetrics.selfCorrections), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.self_corrections")))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-6 mb-6 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, "1:", rrMetrics.errorRate), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.error_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.scRate, "%"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.sc_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.totalErrors), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.errors_label")))), fluencyResult.prosody && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4 animate-in fade-in duration-300" }, [
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 font-bold uppercase" }, t(`fluency.season_${s}`) || s)))), evidenceSummary && /* @__PURE__ */ React.createElement("div", { className: `mb-4 rounded-xl border p-3 text-left ${evidenceSummary.benchmarkReady ? "bg-emerald-50 border-emerald-200" : "bg-sky-50 border-sky-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-700 uppercase tracking-wide" }, "Recent reading evidence"), /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, evidenceSummary.sampleCount >= 3 ? `Median of ${evidenceSummary.sampleCount}: ` : "Current sample: ", evidenceSummary.medianWcpm ?? 0, " WCPM", evidenceSummary.medianAccuracy != null ? ` | ${evidenceSummary.medianAccuracy}% accuracy` : "")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, evidenceSummary.message)), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 border border-red-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-red-600" }, rrMetrics.substitutions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.substitutions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border border-orange-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-orange-600" }, rrMetrics.omissions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.omissions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border border-purple-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-purple-600" }, rrMetrics.insertions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.insertions_label"))), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 border border-blue-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-blue-600" }, rrMetrics.selfCorrections), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.self_corrections")))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-6 mb-6 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, "1:", rrMetrics.errorRate), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.error_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.scRate, "%"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.sc_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.totalErrors), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.errors_label")))), fluencyResult.prosody && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4 animate-in fade-in duration-300" }, [
         { key: "pacing", label: t("fluency.prosody_pacing") || "Pacing", color: "indigo" },
         { key: "expression", label: t("fluency.prosody_expression") || "Expression", color: "violet" },
         { key: "phrasing", label: t("fluency.prosody_phrasing") || "Phrasing", color: "fuchsia" }
@@ -1105,7 +1151,79 @@ function FluencyModePanel(props) {
         const pct = val / 5 * 100;
         return /* @__PURE__ */ React.createElement("div", { key, className: `bg-${color}-50 border border-${color}-200 rounded-xl p-3 text-center` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black text-${color}-600` }, val, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-600" }, "/5")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, label), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full bg-${color}-500 rounded-full transition-all duration-500`, style: { width: `${pct}%` } })));
       }), Boolean(fluencyResult.prosody.note) && /* @__PURE__ */ React.createElement("div", { className: "col-span-3 text-xs text-slate-600 italic text-center mt-1" }, fluencyResult.prosody.note)), fluencyResult.confidence && /* @__PURE__ */ React.createElement("div", { className: `rounded-xl p-4 mb-4 border ${fluencyResult.confidence.overall >= 7 ? "bg-green-50 border-green-200" : fluencyResult.confidence.overall >= 4 ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${fluencyResult.confidence.overall >= 7 ? "text-green-600" : fluencyResult.confidence.overall >= 4 ? "text-amber-600" : "text-red-600"}` }, fluencyResult.confidence.overall, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/10")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, t("fluency.ai_confidence_title") || "AI Confidence in This Analysis"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, fluencyResult.confidence.overall >= 7 ? "High confidence" : fluencyResult.confidence.overall >= 4 ? "Moderate confidence \u2014 some results may be inaccurate" : "Low confidence \u2014 human verification recommended"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 text-[11px] mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F399}\uFE0F Audio: ", fluencyResult.confidence.audioQuality, "/10"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F5E3}\uFE0F Clarity: ", fluencyResult.confidence.speakerClarity, "/10"), fluencyResult.confidence.accentDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold" }, t("fluency.accent_detected_badge") || "Accent detected \u2014 scored conservatively"), fluencyResult.confidence.youngVoiceDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold" }, t("fluency.young_voice_badge") || "Young voice detected"), fluencyResult.confidence.dialectalPatternsDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold" }, t("fluency.dialectal_patterns_badge") || "Dialectal patterns respected")), fluencyResult.confidence.lowConfidenceWordCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 font-medium" }, "\u26A0 ", fluencyResult.confidence.lowConfidenceWordCount, " word(s) marked with low confidence \u2014 look for \u26A0 in the word display below"), fluencyResult.confidence.note && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 italic" }, fluencyResult.confidence.note), fluencyResult.confidence.limitationsApplied && fluencyResult.confidence.limitationsApplied !== "none" && fluencyResult.confidence.limitationsApplied !== "none detected" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "Research basis: ", fluencyResult.confidence.limitationsApplied)));
-    })(), fluencyFeedback && /* @__PURE__ */ React.createElement("div", { className: "mb-6 animate-in slide-in-from-bottom-2 fade-in" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 text-left bg-indigo-50 p-3 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-full text-indigo-600 mt-0.5 shrink-0" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900 leading-relaxed font-medium" }, fluencyFeedback))), /* @__PURE__ */ React.createElement("div", { className: "text-xl md:text-2xl font-serif leading-loose text-center flex flex-wrap justify-center gap-1.5", "data-help-key": "fluency_mode_word_analysis" }, fluencyResult.wordData.map((w, i) => /* @__PURE__ */ React.createElement(
+    })(), fluencyFeedback && /* @__PURE__ */ React.createElement("div", { className: "mb-6 animate-in slide-in-from-bottom-2 fade-in" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 text-left bg-indigo-50 p-3 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-full text-indigo-600 mt-0.5 shrink-0" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900 leading-relaxed font-medium" }, fluencyFeedback))), /* @__PURE__ */ React.createElement("div", { className: `mb-4 rounded-xl border p-3 flex flex-wrap items-center justify-between gap-3 ${fluencyResult.review?.status === "reviewed" ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-700 uppercase tracking-wide" }, fluencyResult.review?.status === "reviewed" ? "Teacher-reviewed running record" : "Automated running record - review recommended"), fluencyResult.review?.status === "reviewed" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, "Revision ", fluencyResult.review.revision || 1, " by ", fluencyResult.review.reviewer || "Educator", fluencyResult.review.correctedWordCount ? ` | ${fluencyResult.review.correctedWordCount} corrected word classification(s)` : "")), isTeacherMode && !isReviewingFluency && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: beginFluencyReview,
+        className: "px-3 py-2 rounded-lg text-xs font-bold bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-50",
+        "aria-label": "Review and correct the automated running record"
+      },
+      "Review word classifications"
+    )), isReviewingFluency && fluencyReviewDraft && /* @__PURE__ */ React.createElement("div", { className: "w-full rounded-xl border border-indigo-200 bg-white p-4", "data-help-key": "fluency_teacher_review" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3 text-left" }, "Listen again when possible. Change only classifications you can verify; the automated result remains in the audit trail."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2" }, fluencyReviewDraft.wordData.map((word, index) => /* @__PURE__ */ React.createElement("div", { key: index, className: `rounded-lg border p-2 ${word.lowConfidence ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-slate-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "font-serif text-base font-bold text-slate-800 truncate", title: word.word }, word.word), /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 mt-1" }, "Classification", /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        value: word.status,
+        onChange: (event) => updateFluencyReviewWord(index, "status", event.target.value),
+        className: "mt-0.5 w-full text-[11px] border border-slate-400 rounded px-1 py-1 bg-white",
+        "aria-label": `Classification for ${word.word}`
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "correct" }, "Correct"),
+      /* @__PURE__ */ React.createElement("option", { value: "stumbled" }, "Hesitation"),
+      /* @__PURE__ */ React.createElement("option", { value: "self_corrected" }, "Self-corrected"),
+      /* @__PURE__ */ React.createElement("option", { value: "mispronounced" }, "Substitution / mispronounced"),
+      /* @__PURE__ */ React.createElement("option", { value: "missed" }, "Omission")
+    )), (word.status === "mispronounced" || word.status === "self_corrected") && /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 mt-1" }, "Student said", /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: word.said || "",
+        onChange: (event) => updateFluencyReviewWord(index, "said", event.target.value),
+        className: "mt-0.5 w-full text-[11px] border border-slate-400 rounded px-1 py-1 bg-white",
+        "aria-label": `What the student said for ${word.word}`
+      }
+    ))))), /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 gap-3 mt-4 text-left" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, "Inserted words", /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: fluencyReviewDraft.insertionsText,
+        onChange: (event) => setFluencyReviewDraft((prev) => ({ ...prev, insertionsText: event.target.value })),
+        placeholder: "Comma-separated, or leave blank",
+        className: "mt-1 w-full text-sm border border-slate-400 rounded-lg px-2 py-2 bg-white"
+      }
+    )), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, "Reviewer", /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: fluencyReviewDraft.reviewer,
+        onChange: (event) => setFluencyReviewDraft((prev) => ({ ...prev, reviewer: event.target.value })),
+        className: "mt-1 w-full text-sm border border-slate-400 rounded-lg px-2 py-2 bg-white"
+      }
+    ))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700 mt-3 text-left" }, "Review note", /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        value: fluencyReviewDraft.note,
+        onChange: (event) => setFluencyReviewDraft((prev) => ({ ...prev, note: event.target.value })),
+        placeholder: "Optional context, such as audio quality or dialect consideration",
+        className: "mt-1 w-full min-h-16 text-sm border border-slate-400 rounded-lg px-2 py-2 bg-white"
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 mt-3" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          setIsReviewingFluency(false);
+          setFluencyReviewDraft(null);
+        },
+        className: "px-3 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200"
+      },
+      "Cancel"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: commitFluencyReview,
+        className: "px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700"
+      },
+      "Save reviewed record"
+    ))), !isReviewingFluency && /* @__PURE__ */ React.createElement("div", { className: "text-xl md:text-2xl font-serif leading-loose text-center flex flex-wrap justify-center gap-1.5", "data-help-key": "fluency_mode_word_analysis" }, fluencyResult.wordData.map((w, i) => /* @__PURE__ */ React.createElement(
       "span",
       {
         key: i,
@@ -1141,6 +1259,8 @@ function FluencyModePanel(props) {
         onClick: () => {
           setFluencyTranscript("");
           setFluencyResult(null);
+          setIsReviewingFluency(false);
+          setFluencyReviewDraft(null);
           setFluencyFeedback("");
           setFluencyStatus("idle");
         },

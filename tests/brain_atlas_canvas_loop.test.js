@@ -11,6 +11,7 @@ describe('brain atlas canvas loops', () => {
     BRAIN_ATLAS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
+      expect(source).toContain('window.StemLab.setupHiDPI(canvas, atlasW, atlasH);');
       expect(source).toContain('if (window.__alloBrainAtlasCanvasCleanup) window.__alloBrainAtlasCanvasCleanup();');
       expect(source).toContain('if (canvas._brainCleanup) canvas._brainCleanup();');
       expect(source).toContain('function cleanupBrainCanvas()');

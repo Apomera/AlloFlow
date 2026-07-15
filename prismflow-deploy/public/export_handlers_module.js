@@ -930,7 +930,8 @@
     // Failed popups/ZIP generation remain recoverable and preserve the live draft.
     if (mode === 'slides') {
       if (typeof handleExportSlides !== 'function') return false;
-      await handleExportSlides();
+      const slideExported = await handleExportSlides();
+      if (slideExported === false) return false;
       if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
       return true;
     }

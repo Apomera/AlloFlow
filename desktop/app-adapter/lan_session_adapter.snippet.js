@@ -12,7 +12,7 @@
 // assets) and seeds localStorage.alloflow_live_session_config: the command
 // center writes it for the teacher (lanApiBase = the private 127.0.0.1 origin)
 // and the public /join/{code} page writes it for students (lanApiBase = the
-// LAN share origin, plus the validated join PIN). When that config selects a
+// LAN share origin, plus a scoped token minted after join-PIN validation). When that config selects a
 // LAN-backed mode, the wrappers below reroute ONLY classroom session documents
 // (artifacts/{appId}/public/data/sessions/{code}) and their chunked assets
 // (…/session_assets/{id}) from Firestore to the bridge — every other doc
@@ -40,7 +40,7 @@ function _alloLanConfig() {
       // firestoreAllowed !== true keeps explicit cloud opt-ins (byo-firebase,
       // demo cloud) on Firestore even if a stale lanApiBase lingers.
       if ((mode === 'schoolbox-lan' || mode === 'district-server') && base && parsed.firestoreAllowed !== true) {
-        cfg = { base, pin: typeof parsed.lanPin === 'string' ? parsed.lanPin : '' };
+        cfg = { base, token: typeof parsed.lanToken === 'string' ? parsed.lanToken : '' };
       }
     }
   } catch (_) { cfg = null; }
@@ -71,7 +71,7 @@ async function _alloLanFetch(pathname, init) {
   const cfg = _alloLanConfig();
   if (!cfg) throw new Error('LAN session bridge is not configured');
   const headers = Object.assign({}, (init && init.headers) || {});
-  if (cfg.pin) headers['x-allo-lan-pin'] = cfg.pin;
+  if (cfg.token) headers.Authorization = 'Bearer ' + cfg.token;
   if (init && init.body) headers['Content-Type'] = 'application/json';
   return fetch(cfg.base + pathname, Object.assign({}, init, { headers }));
 }
@@ -159,13 +159,13 @@ function _applyLanSessionAdapter() {
       if (errCb) { try { errCb(new Error('LAN session bridge is not configured')); } catch (_) {} }
       return () => {};
     }
-    // EventSource cannot send headers, so the PIN rides as ?pin= (the runtime
-    // accepts both forms; its access logs are expected to redact query args —
+    // EventSource cannot send headers, so the scoped token rides as ?token= (the runtime
+    // and validates its signature/scope; access logs must redact query args —
     // see docs/SCHOOL_SERVER_ARCHITECTURE.md).
-    const pinQs = cfg.pin ? ('?pin=' + encodeURIComponent(cfg.pin)) : '';
+    const tokenQs = cfg.token ? ('?token=' + encodeURIComponent(cfg.token)) : '';
     let closed = false;
     let gotMessage = false;
-    const es = new EventSource(cfg.base + '/api/lan-sessions/' + encodeURIComponent(ref.id) + '/events' + pinQs);
+    const es = new EventSource(cfg.base + '/api/lan-sessions/' + encodeURIComponent(ref.id) + '/events' + tokenQs);
     const handle = (event) => {
       gotMessage = true;
       let payload = null;

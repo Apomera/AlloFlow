@@ -643,3 +643,329 @@ describe('Astronomy cosmic-inflation explorer resilience', () => {
     expect(source).toContain("document.getElementById('astronomy-inf-tab-' + nextTopic.id)");
   });
 });
+describe('Astronomy black-hole information explorer resilience', () => {
+  it('recovers malformed restored topics to a coherent classical tab and panel', () => {
+    expect(() => renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedBH: { forged: true }
+    })).not.toThrow();
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedBH: { forged: true }
+    });
+    expect(html).toContain('id="astronomy-bh-tab-classical"');
+    expect(html).toContain('aria-selected="true" aria-controls="astronomy-bh-panel" tabindex="0"');
+    expect(html).toContain('id="astronomy-bh-panel" role="tabpanel" aria-labelledby="astronomy-bh-tab-classical"');
+    expect(html).toContain('The classical black hole');
+    expect(html).not.toContain('[object Object]');
+  });
+
+  it('keeps valid topic selection and panel labelling synchronized', () => {
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedBH: 'page'
+    });
+    expect(html).toContain('id="astronomy-bh-tab-page"');
+    expect(html).toContain('id="astronomy-bh-panel" role="tabpanel" aria-labelledby="astronomy-bh-tab-page"');
+    expect(html).toContain('Page curve + the recent breakthrough');
+    expect(html).toContain('role="tablist" aria-label="Black-hole information topics"');
+  });
+
+  it('renders a responsive and narrated Page-curve comparison', () => {
+    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
+    expect(html).toContain('id="astronomy-page-curve-diagram" viewBox="0 0 600 230" role="img"');
+    expect(html).toContain('aria-labelledby="astronomy-page-curve-title astronomy-page-curve-desc"');
+    expect(html).toContain('Hawking: keeps rising');
+    expect(html).toContain('Unitary Page curve');
+    expect(html).toContain('information recovered');
+    expect(html).toContain('axes are not numerical or to scale');
+  });
+
+  it('supports roving focus and complete keyboard topic navigation', () => {
+    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
+    expect(html).toContain('type="button" role="tab"');
+    expect(html).toContain('tabindex="-1"');
+    const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
+    expect(source).toContain('function onBHTopicKeyDown(e, index)');
+    expect(source).toContain("if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;");
+    expect(source).toContain("else if (e.key === 'Home') nextIndex = 0;");
+    expect(source).toContain("else if (e.key === 'End') nextIndex = BH_TOPICS.length - 1;");
+    expect(source).toContain("document.getElementById('astronomy-bh-tab-' + nextTopic.id)");
+  });
+});
+describe('Astronomy gravitational-wave explorer resilience', () => {
+  it('recovers malformed restored topics to a coherent prediction tab and panel', () => {
+    expect(() => renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedGW: { forged: true }
+    })).not.toThrow();
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedGW: { forged: true }
+    });
+    expect(html).toContain('id="astronomy-gw-tab-predict"');
+    expect(html).toContain('aria-selected="true" aria-controls="astronomy-gw-panel" tabindex="0"');
+    expect(html).toContain('id="astronomy-gw-panel" role="tabpanel" aria-labelledby="astronomy-gw-tab-predict"');
+    expect(html).toContain('Einstein&#x27;s prediction');
+    expect(html).not.toContain('[object Object]');
+  });
+
+  it('keeps valid topic selection and panel labelling synchronized', () => {
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedGW: 'ligo'
+    });
+    expect(html).toContain('id="astronomy-gw-tab-ligo"');
+    expect(html).toContain('id="astronomy-gw-panel" role="tabpanel" aria-labelledby="astronomy-gw-tab-ligo"');
+    expect(html).toContain('LIGO + the 2015 detection');
+    expect(html).toContain('role="tablist" aria-label="Gravitational-wave astronomy topics"');
+  });
+
+  it('renders a responsive and narrated interferometer schematic', () => {
+    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
+    expect(html).toContain('id="astronomy-interferometer-diagram" viewBox="0 0 600 270" role="img"');
+    expect(html).toContain('aria-labelledby="astronomy-interferometer-title astronomy-interferometer-desc"');
+    expect(html).toContain('A laser reaches a beam splitter and travels along two perpendicular arms');
+    expect(html).toContain('relative arm-length change');
+    expect(html).toContain('arm lengths and strain are not to scale');
+  });
+
+  it('supports roving focus and complete keyboard topic navigation', () => {
+    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
+    expect(html).toContain('type="button" role="tab"');
+    expect(html).toContain('tabindex="-1"');
+    const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
+    expect(source).toContain('function onGWTopicKeyDown(e, index)');
+    expect(source).toContain("if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;");
+    expect(source).toContain("else if (e.key === 'Home') nextIndex = 0;");
+    expect(source).toContain("else if (e.key === 'End') nextIndex = GW_TOPICS.length - 1;");
+    expect(source).toContain("document.getElementById('astronomy-gw-tab-' + nextTopic.id)");
+  });
+});
+describe('Astronomy pulsar explorer resilience', () => {
+  it('recovers malformed restored topics to a coherent discovery tab and panel', () => {
+    expect(() => renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedPSR: { forged: true }
+    })).not.toThrow();
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedPSR: { forged: true }
+    });
+    expect(html).toContain('id="astronomy-psr-tab-discovery"');
+    expect(html).toContain('aria-selected="true" aria-controls="astronomy-psr-panel" tabindex="0"');
+    expect(html).toContain('id="astronomy-psr-panel" role="tabpanel" aria-labelledby="astronomy-psr-tab-discovery"');
+    expect(html).toContain('Jocelyn Bell + LGM-1');
+    expect(html).not.toContain('[object Object]');
+  });
+
+  it('keeps valid topic selection and panel labelling synchronized', () => {
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedPSR: 'magnetars'
+    });
+    expect(html).toContain('id="astronomy-psr-tab-magnetars"');
+    expect(html).toContain('id="astronomy-psr-panel" role="tabpanel" aria-labelledby="astronomy-psr-tab-magnetars"');
+    expect(html).toContain('Magnetars');
+    expect(html).toContain('role="tablist" aria-label="Pulsar, magnetar, and fast radio burst topics"');
+  });
+
+  it('renders a responsive and narrated pulsar lighthouse schematic', () => {
+    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
+    expect(html).toContain('id="astronomy-pulsar-diagram" viewBox="0 0 600 270" role="img"');
+    expect(html).toContain('aria-labelledby="astronomy-pulsar-title astronomy-pulsar-desc"');
+    expect(html).toContain('Its magnetic axis is tilted, producing two radiation beams');
+    expect(html).toContain('rotation axis');
+    expect(html).toContain('magnetic / beam axis');
+    expect(html).toContain('angles, beam width, and sizes are not to scale');
+  });
+
+  it('supports roving focus and complete keyboard topic navigation', () => {
+    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
+    expect(html).toContain('type="button" role="tab"');
+    expect(html).toContain('tabindex="-1"');
+    const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
+    expect(source).toContain('function onPSRTopicKeyDown(e, index)');
+    expect(source).toContain("if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;");
+    expect(source).toContain("else if (e.key === 'Home') nextIndex = 0;");
+    expect(source).toContain("else if (e.key === 'End') nextIndex = PSR_TOPICS.length - 1;");
+    expect(source).toContain("document.getElementById('astronomy-psr-tab-' + nextTopic.id)");
+  });
+});
+describe('Astronomy Cosmic Calendar resilience', () => {
+  it('recovers malformed restored events to a coherent January 1 tab and panel', () => {
+    expect(() => renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedCC: { forged: true }
+    })).not.toThrow();
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedCC: { forged: true }
+    });
+    expect(html).toContain('id="astronomy-cc-tab-jan1"');
+    expect(html).toContain('aria-selected="true" aria-controls="astronomy-cc-panel" tabindex="0"');
+    expect(html).toContain('id="astronomy-cc-panel" role="tabpanel" aria-labelledby="astronomy-cc-tab-jan1"');
+    expect(html).toContain('January 1, 12:00 AM');
+    expect(html).not.toContain('[object Object]');
+  });
+
+  it('keeps valid event selection and panel labelling synchronized', () => {
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], selectedCC: 'agriculture'
+    });
+    expect(html).toContain('id="astronomy-cc-tab-agriculture"');
+    expect(html).toContain('id="astronomy-cc-panel" role="tabpanel" aria-labelledby="astronomy-cc-tab-agriculture"');
+    expect(html).toContain('December 31, 11:59:30 PM');
+    expect(html).toContain('role="tablist" aria-label="Cosmic Calendar events"');
+  });
+
+  it('renders a responsive, narrated timeline with a final-minute zoom', () => {
+    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
+    expect(html).toContain('id="astronomy-cosmic-calendar-diagram" viewBox="0 0 600 250" role="img"');
+    expect(html).toContain('aria-labelledby="astronomy-cc-title astronomy-cc-desc"');
+    expect(html).toContain('The lower timeline zooms into the final cosmic minute');
+    expect(html).toContain('Zoom: final cosmic minute');
+    expect(html).toContain('agriculture (~30 s before midnight)');
+    expect(html).toContain('events in the final seconds overlap on a full-year timeline');
+  });
+
+  it('supports roving focus and complete keyboard event navigation', () => {
+    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
+    expect(html).toContain('type="button" role="tab"');
+    expect(html).toContain('tabindex="-1"');
+    const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
+    expect(source).toContain('function onCCTopicKeyDown(e, index)');
+    expect(source).toContain("if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;");
+    expect(source).toContain("else if (e.key === 'Home') nextIndex = 0;");
+    expect(source).toContain("else if (e.key === 'End') nextIndex = CC_DATES.length - 1;");
+    expect(source).toContain("document.getElementById('astronomy-cc-tab-' + nextTopic.id)");
+  });
+});
+describe('Astronomy Messier catalog resilience', () => {
+  it('recovers malformed restored filters without crashing or leaking values', () => {
+    expect(() => renderAstronomy({
+      tab: 'galaxies', observingList: [], messierType: { forged: true },
+      messierSeason: Number.POSITIVE_INFINITY, messierSearch: { forged: true }
+    })).not.toThrow();
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], messierType: { forged: true },
+      messierSeason: Number.POSITIVE_INFINITY, messierSearch: { forged: true }
+    });
+    expect(html).toContain('Showing 110 of 110 Messier objects');
+    expect(html).toContain('id="astronomy-messier-results" role="list"');
+    expect(html).not.toContain('[object Object]');
+    expect(html).not.toContain('Infinity');
+  });
+
+  it('treats a Messier identifier as an exact match rather than a substring', () => {
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], messierSearch: 'M1'
+    });
+    expect(html).toContain('Showing 1 of 110 Messier objects');
+    expect(html).toContain('Crab Nebula');
+    expect(html).toContain('id="astronomy-messier-result-0"');
+  });
+
+  it('searches descriptive metadata and supports composite and other types', () => {
+    const metadata = renderAstronomy({
+      tab: 'galaxies', observingList: [], messierSearch: 'water-maser'
+    });
+    const emission = renderAstronomy({
+      tab: 'galaxies', observingList: [], messierType: 'EN', messierSearch: 'Trifid'
+    });
+    const other = renderAstronomy({
+      tab: 'galaxies', observingList: [], messierType: 'OTHER', messierSearch: 'Winnecke'
+    });
+    expect(metadata).toContain('Showing 1 of 110 Messier objects');
+    expect(metadata).toContain('M106 Galaxy');
+    expect(emission).toContain('Trifid Nebula');
+    expect(other).toContain('Winnecke 4');
+  });
+
+  it('provides an actionable empty state and clear-filter workflow', () => {
+    const html = renderAstronomy({
+      tab: 'galaxies', observingList: [], messierType: 'SNR',
+      messierSeason: 'Summer', messierSearch: 'no-such-object-zzzz'
+    });
+    expect(html).toContain('Showing 0 of 110 Messier objects');
+    expect(html).toContain('No Messier objects match these filters.');
+    expect(html).toContain('Try another identifier, object type, season, or keyword.');
+    expect(html).toContain('Show all Messier objects');
+    expect(html).toContain('aria-label="No Messier catalog results"');
+  });
+
+  it('exposes labelled filters and semantic result relationships', () => {
+    const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
+    expect(html).toContain('role="search" aria-label="Filter Messier catalog"');
+    expect(html).toContain('id="astronomy-messier-search" type="search"');
+    expect(html).toContain('maxLength="100" autoComplete="off"');
+    expect(html).toContain('aria-controls="astronomy-messier-results" aria-describedby="astronomy-messier-result-count"');
+    expect(html).toContain('id="astronomy-messier-result-count" role="status" aria-live="polite" aria-atomic="true"');
+    expect(html).toContain('role="listitem" aria-labelledby="astronomy-messier-result-0"');
+    const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
+    expect(source).toContain("if (e.key === 'Escape' && search) upd({ messierSearch: '' });");
+    expect(source).toContain("var identifierMatch = /^m\\s*0*(\\d{1,3})$/i.exec(search.trim());");
+    expect(source).toContain("[o.name, 'M' + o.m, o.con, typeLabel(o.type), o.season, o.notes].join(' ')");
+  });
+});
+describe('Astronomy telescope simulator resilience', () => {
+  it('recovers malformed restored optics without invalid calculations or SVG', () => {
+    expect(() => renderAstronomy({
+      tab: 'observe', observingList: [], scopeType: { forged: true },
+      scopeAperture: { forged: true }, scopeFocalLen: Number.POSITIVE_INFINITY,
+      eyepieceFl: Number.NaN
+    })).not.toThrow();
+    const html = renderAstronomy({
+      tab: 'observe', observingList: [], scopeType: { forged: true },
+      scopeAperture: { forged: true }, scopeFocalLen: Number.POSITIVE_INFINITY,
+      eyepieceFl: Number.NaN
+    });
+    expect(html).toContain('Refractor: 100 millimeter aperture, 1000 millimeter focal length, 25 millimeter eyepiece.');
+    expect(html).toContain('40 times magnification, f/10.0, 2.5 millimeter exit pupil.');
+    expect(html).toContain('aria-valuetext="100 millimeters"');
+    expect(html).not.toContain('NaN');
+    expect(html).not.toContain('Infinity');
+    expect(html).not.toContain('[object Object]');
+  });
+
+  it('clamps and snaps restored optical controls to supported values', () => {
+    const extremes = renderAstronomy({
+      tab: 'observe', observingList: [], scopeAperture: 999,
+      scopeFocalLen: -20, eyepieceFl: 0
+    });
+    const snapped = renderAstronomy({
+      tab: 'observe', observingList: [], scopeAperture: 106,
+      scopeFocalLen: 1024, eyepieceFl: 25.6
+    });
+    expect(extremes).toContain('aria-valuetext="400 millimeters"');
+    expect(extremes).toContain('aria-valuetext="300 millimeters"');
+    expect(extremes).toContain('aria-valuetext="4 millimeters"');
+    expect(snapped).toContain('aria-valuetext="110 millimeters"');
+    expect(snapped).toContain('aria-valuetext="1000 millimeters"');
+    expect(snapped).toContain('aria-valuetext="26 millimeters"');
+  });
+
+  it('warns when magnification exceeds the approximate useful limit', () => {
+    const html = renderAstronomy({
+      tab: 'observe', observingList: [], scopeAperture: 50,
+      scopeFocalLen: 3000, eyepieceFl: 4
+    });
+    expect(html).toContain('750 times magnification');
+    expect(html).toContain('Magnification exceeds the approximate useful limit of 100 times.');
+    expect(html).toContain('too small');
+  });
+
+  it('keeps telescope design tabs, panel labels, and diagrams synchronized', () => {
+    const reflector = renderAstronomy({
+      tab: 'observe', observingList: [], scopeType: 'reflector'
+    });
+    expect(reflector).toContain('role="tablist" aria-label="Telescope optical design"');
+    expect(reflector).toContain('id="astronomy-scope-tab-reflector" type="button" role="tab" aria-selected="true"');
+    expect(reflector).toContain('id="astronomy-scope-diagram-panel" role="tabpanel" aria-labelledby="astronomy-scope-tab-reflector"');
+    expect(reflector).toContain('id="astronomy-scope-reflector-diagram" viewBox="0 0 600 220" role="img"');
+    expect(reflector).toContain('Reflector: 100 millimeter aperture');
+  });
+
+  it('provides described controls, live results, performance grouping, and reset', () => {
+    const html = renderAstronomy({ tab: 'observe', observingList: [] });
+    expect(html).toContain('role="group" aria-label="Telescope optical controls"');
+    expect(html).toContain('id="astronomy-scope-status" role="status" aria-live="polite" aria-atomic="true"');
+    expect(html).toContain('aria-describedby="astronomy-scope-status astronomy-scope-help"');
+    expect(html).toContain('id="astronomy-scope-stats" role="group" aria-label="Calculated telescope performance"');
+    expect(html).toContain('aria-label="Reset telescope simulator"');
+    expect(html).toContain('dimensions are not drawn to scale');
+    const source = readFileSync('stem_lab/stem_tool_astronomy.js', 'utf8');
+    expect(source).toContain('function normalizedScopeValue(value, min, max, step, fallback)');
+    expect(source).toContain("var type = d.scopeType === 'reflector' ? 'reflector' : 'refractor';");
+    expect(source).toContain("document.getElementById('astronomy-scope-tab-' + nextType)");
+  });
+});

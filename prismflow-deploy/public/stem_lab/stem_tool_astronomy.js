@@ -4124,24 +4124,76 @@
                   caveat: 'There is still no agreed-upon resolution. Different camps endorse complementarity, firewalls, fuzzballs, replica wormholes + islands, or "we don\'t yet know." The healthy interpretation is: this is a hard problem at the frontier, and the answer when it comes will probably reshape physics — like the discoveries of quantum mechanics or relativity did a century ago. Or it may turn out to be a longer climb than that.'
                 }
               ];
-              var sel = d.selectedBH || 'classical';
-              var topic = BH_TOPICS.find(function(t) { return t.id === sel; }) || BH_TOPICS[0];
+              var requestedBH = typeof d.selectedBH === 'string' ? d.selectedBH : 'classical';
+              var topicIndex = BH_TOPICS.findIndex(function(t) { return t.id === requestedBH; });
+              if (topicIndex < 0) topicIndex = 0;
+              var topic = BH_TOPICS[topicIndex];
+              var sel = topic.id;
+              function selectBHTopic(index, moveFocus) {
+                var normalizedIndex = (index + BH_TOPICS.length) % BH_TOPICS.length;
+                var nextTopic = BH_TOPICS[normalizedIndex];
+                upd({ selectedBH: nextTopic.id });
+                if (moveFocus && typeof document !== 'undefined') {
+                  setTimeout(function() {
+                    var target = document.getElementById('astronomy-bh-tab-' + nextTopic.id);
+                    if (target) target.focus();
+                  }, 0);
+                }
+              }
+              function onBHTopicKeyDown(e, index) {
+                var nextIndex = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = BH_TOPICS.length - 1;
+                if (nextIndex == null) return;
+                e.preventDefault();
+                selectBHTopic(nextIndex, true);
+              }
               return h('div', null,
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
                   __alloT('stem.astronomy.black_holes_are_not_just_astronomical_', 'Black holes are not just astronomical curiosities. They are the cleanest laboratory we have for the place where general relativity meets quantum mechanics — the two best-tested theories of physics, which famously give incompatible answers in extreme regimes. The "information paradox" is the sharpest version of that conflict.')
                 ),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-                  BH_TOPICS.map(function(t) {
+                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #0c4a6e' } },
+                  h('svg', { id: 'astronomy-page-curve-diagram', viewBox: '0 0 600 230', role: 'img', 'aria-labelledby': 'astronomy-page-curve-title astronomy-page-curve-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                    h('title', { id: 'astronomy-page-curve-title' }, 'Page curve comparison'),
+                    h('desc', { id: 'astronomy-page-curve-desc' }, 'Entanglement entropy over a black hole lifetime. Hawking’s original calculation rises continuously, implying lost information. A unitary Page curve rises to the Page time and then falls to zero as information returns in the radiation.'),
+                    h('line', { x1: 64, y1: 184, x2: 558, y2: 184, stroke: '#64748b', strokeWidth: 2 }),
+                    h('line', { x1: 64, y1: 184, x2: 64, y2: 25, stroke: '#64748b', strokeWidth: 2 }),
+                    h('text', { x: 310, y: 218, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, 'black-hole lifetime →'),
+                    h('text', { x: 18, y: 108, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12, transform: 'rotate(-90 18 108)' }, 'entanglement entropy'),
+                    h('line', { x1: 310, y1: 35, x2: 310, y2: 184, stroke: '#475569', strokeDasharray: '5 5' }),
+                    h('text', { x: 310, y: 27, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11 }, 'Page time'),
+                    h('path', { d: 'M64 184 C170 151 274 103 558 45', fill: 'none', stroke: '#fb7185', strokeWidth: 4, strokeLinecap: 'round' }),
+                    h('path', { d: 'M64 184 C165 151 246 79 310 67 C379 82 451 151 558 184', fill: 'none', stroke: '#38bdf8', strokeWidth: 4, strokeLinecap: 'round' }),
+                    h('line', { x1: 382, y1: 48, x2: 410, y2: 48, stroke: '#fb7185', strokeWidth: 4 }),
+                    h('text', { x: 418, y: 52, fill: '#fecdd3', fontSize: 11 }, 'Hawking: keeps rising'),
+                    h('line', { x1: 382, y1: 68, x2: 410, y2: 68, stroke: '#38bdf8', strokeWidth: 4 }),
+                    h('text', { x: 418, y: 72, fill: '#bae6fd', fontSize: 11 }, 'Unitary Page curve'),
+                    h('text', { x: 550, y: 174, textAnchor: 'end', fill: '#7dd3fc', fontSize: 11 }, 'information recovered')
+                  ),
+                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Conceptual comparison: the curve shape matters; axes are not numerical or to scale.')
+                ),
+                h('div', { role: 'tablist', 'aria-label': 'Black-hole information topics', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  BH_TOPICS.map(function(t, index) {
                     var on = t.id === sel;
                     return h('button', {
+                      id: 'astronomy-bh-tab-' + t.id,
                       key: t.id,
-                      onClick: function() { upd({ selectedBH: t.id }); },
-                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#0ea5e9' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #0ea5e9' : '1px solid #334155' }
+                      type: 'button',
+                      role: 'tab',
+                      'aria-selected': on ? 'true' : 'false',
+                      'aria-controls': 'astronomy-bh-panel',
+                      tabIndex: on ? 0 : -1,
+                      onClick: function() { selectBHTopic(index, false); },
+                      onKeyDown: function(e) { onBHTopicKeyDown(e, index); },
+                      className: 'astr-focus',
+                      style: { padding: '7px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#0ea5e9' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #7dd3fc' : '1px solid #475569' }
                     }, t.emoji + ' ' + t.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#7dd3fc', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                h('div', { id: 'astronomy-bh-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-bh-tab-' + sel, tabIndex: 0, 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.35)' } },
+                  h('h3', { style: { margin: '0 0 6px', fontSize: 13.5, fontWeight: 700, color: '#7dd3fc' } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.astronomy.what_we_should_not_overstate_3', 'What we should not overstate: ')), topic.caveat
@@ -4189,24 +4241,83 @@
                   caveat: 'GW astronomy started in 2015, just 11 years ago at the time of this writing. The field is genuinely young + every year brings something new. Predictions about what will be impossible "in principle" should be hedged accordingly; predictions in this field have been wrong before.'
                 }
               ];
-              var sel = d.selectedGW || 'predict';
-              var topic = GW_TOPICS.find(function(t) { return t.id === sel; }) || GW_TOPICS[0];
+              var requestedGW = typeof d.selectedGW === 'string' ? d.selectedGW : 'predict';
+              var topicIndex = GW_TOPICS.findIndex(function(t) { return t.id === requestedGW; });
+              if (topicIndex < 0) topicIndex = 0;
+              var topic = GW_TOPICS[topicIndex];
+              var sel = topic.id;
+              function selectGWTopic(index, moveFocus) {
+                var normalizedIndex = (index + GW_TOPICS.length) % GW_TOPICS.length;
+                var nextTopic = GW_TOPICS[normalizedIndex];
+                upd({ selectedGW: nextTopic.id });
+                if (moveFocus && typeof document !== 'undefined') {
+                  setTimeout(function() {
+                    var target = document.getElementById('astronomy-gw-tab-' + nextTopic.id);
+                    if (target) target.focus();
+                  }, 0);
+                }
+              }
+              function onGWTopicKeyDown(e, index) {
+                var nextIndex = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = GW_TOPICS.length - 1;
+                if (nextIndex == null) return;
+                e.preventDefault();
+                selectGWTopic(nextIndex, true);
+              }
               return h('div', null,
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
                   __alloT('stem.astronomy.for_99_9999_of_human_history_astronomy', 'For 99.9999% of human history, astronomy meant looking at light. In 2015 that changed. Gravitational-wave astronomy added a completely new sense — the ability to LISTEN to the universe rather than just SEE it. Multi-messenger astronomy combines all of these: light + neutrinos + gravitational waves from the same event.')
                 ),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-                  GW_TOPICS.map(function(t) {
+                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #134e4a' } },
+                  h('svg', { id: 'astronomy-interferometer-diagram', viewBox: '0 0 600 270', role: 'img', 'aria-labelledby': 'astronomy-interferometer-title astronomy-interferometer-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                    h('title', { id: 'astronomy-interferometer-title' }, 'Laser interferometer schematic'),
+                    h('desc', { id: 'astronomy-interferometer-desc' }, 'A laser reaches a beam splitter and travels along two perpendicular arms to mirrors. Returning beams recombine at a detector. A gravitational wave changes the arms by different tiny amounts, shifting the interference signal.'),
+                    h('path', { d: 'M35 42 C60 22 85 62 110 42 S160 62 185 42', fill: 'none', stroke: '#a78bfa', strokeWidth: 3 }),
+                    h('path', { d: 'M35 58 C60 38 85 78 110 58 S160 78 185 58', fill: 'none', stroke: '#818cf8', strokeWidth: 2, opacity: 0.8 }),
+                    h('text', { x: 110, y: 91, textAnchor: 'middle', fill: '#c4b5fd', fontSize: 11, fontWeight: 700 }, 'passing gravitational wave'),
+                    h('line', { x1: 82, y1: 166, x2: 252, y2: 166, stroke: '#fef08a', strokeWidth: 5 }),
+                    h('rect', { x: 45, y: 151, width: 38, height: 30, rx: 5, fill: '#f59e0b', stroke: '#fde68a' }),
+                    h('text', { x: 64, y: 143, textAnchor: 'middle', fill: '#fde68a', fontSize: 11 }, 'laser'),
+                    h('line', { x1: 258, y1: 160, x2: 500, y2: 160, stroke: '#2dd4bf', strokeWidth: 4 }),
+                    h('line', { x1: 252, y1: 154, x2: 252, y2: 36, stroke: '#2dd4bf', strokeWidth: 4 }),
+                    h('line', { x1: 258, y1: 172, x2: 490, y2: 172, stroke: '#5eead4', strokeWidth: 2, strokeDasharray: '7 5' }),
+                    h('line', { x1: 264, y1: 160, x2: 264, y2: 46, stroke: '#5eead4', strokeWidth: 2, strokeDasharray: '7 5' }),
+                    h('rect', { x: 246, y: 153, width: 18, height: 18, fill: '#bae6fd', stroke: '#e0f2fe', transform: 'rotate(45 255 162)' }),
+                    h('text', { x: 285, y: 197, fill: '#bae6fd', fontSize: 11 }, 'beam splitter'),
+                    h('rect', { x: 500, y: 143, width: 12, height: 38, rx: 2, fill: '#cbd5e1', stroke: '#f8fafc' }),
+                    h('rect', { x: 235, y: 25, width: 38, height: 12, rx: 2, fill: '#cbd5e1', stroke: '#f8fafc' }),
+                    h('text', { x: 506, y: 135, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'mirror'),
+                    h('text', { x: 286, y: 34, fill: '#cbd5e1', fontSize: 11 }, 'mirror'),
+                    h('line', { x1: 255, y1: 171, x2: 255, y2: 226, stroke: '#38bdf8', strokeWidth: 3 }),
+                    h('rect', { x: 225, y: 226, width: 60, height: 26, rx: 6, fill: '#0c4a6e', stroke: '#38bdf8' }),
+                    h('text', { x: 255, y: 243, textAnchor: 'middle', fill: '#e0f2fe', fontSize: 11, fontWeight: 700 }, 'detector'),
+                    h('text', { x: 406, y: 215, textAnchor: 'middle', fill: '#99f6e4', fontSize: 11 }, 'relative arm-length change → interference shift')
+                  ),
+                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Conceptual L-shaped interferometer — arm lengths and strain are not to scale.')
+                ),
+                h('div', { role: 'tablist', 'aria-label': 'Gravitational-wave astronomy topics', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  GW_TOPICS.map(function(t, index) {
                     var on = t.id === sel;
                     return h('button', {
+                      id: 'astronomy-gw-tab-' + t.id,
                       key: t.id,
-                      onClick: function() { upd({ selectedGW: t.id }); },
-                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#14b8a6' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #14b8a6' : '1px solid #334155' }
+                      type: 'button',
+                      role: 'tab',
+                      'aria-selected': on ? 'true' : 'false',
+                      'aria-controls': 'astronomy-gw-panel',
+                      tabIndex: on ? 0 : -1,
+                      onClick: function() { selectGWTopic(index, false); },
+                      onKeyDown: function(e) { onGWTopicKeyDown(e, index); },
+                      className: 'astr-focus',
+                      style: { padding: '7px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#14b8a6' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #5eead4' : '1px solid #475569' }
                     }, t.emoji + ' ' + t.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#5eead4', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                h('div', { id: 'astronomy-gw-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-gw-tab-' + sel, tabIndex: 0, 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.35)' } },
+                  h('h3', { style: { margin: '0 0 6px', fontSize: 13.5, fontWeight: 700, color: '#5eead4' } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.astronomy.what_we_should_not_overstate_4', 'What we should not overstate: ')), topic.caveat
@@ -4254,24 +4365,87 @@
                   caveat: 'The history of astronomy is FULL of strange signals that turned out to be natural (pulsars, FRBs, the "WOW! signal," Tabby\'s Star). None have ever turned out to be alien. This is not evidence aliens don\'t exist — it is evidence that we should default to natural explanations + only invoke aliens when the natural hypotheses really fail. They never have, in 100+ years of trying.'
                 }
               ];
-              var sel = d.selectedPSR || 'discovery';
-              var topic = PSR_TOPICS.find(function(t) { return t.id === sel; }) || PSR_TOPICS[0];
+              var requestedPSR = typeof d.selectedPSR === 'string' ? d.selectedPSR : 'discovery';
+              var topicIndex = PSR_TOPICS.findIndex(function(t) { return t.id === requestedPSR; });
+              if (topicIndex < 0) topicIndex = 0;
+              var topic = PSR_TOPICS[topicIndex];
+              var sel = topic.id;
+              function selectPSRTopic(index, moveFocus) {
+                var normalizedIndex = (index + PSR_TOPICS.length) % PSR_TOPICS.length;
+                var nextTopic = PSR_TOPICS[normalizedIndex];
+                upd({ selectedPSR: nextTopic.id });
+                if (moveFocus && typeof document !== 'undefined') {
+                  setTimeout(function() {
+                    var target = document.getElementById('astronomy-psr-tab-' + nextTopic.id);
+                    if (target) target.focus();
+                  }, 0);
+                }
+              }
+              function onPSRTopicKeyDown(e, index) {
+                var nextIndex = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = PSR_TOPICS.length - 1;
+                if (nextIndex == null) return;
+                e.preventDefault();
+                selectPSRTopic(nextIndex, true);
+              }
               return h('div', null,
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
                   __alloT('stem.astronomy.neutron_stars_are_the_densest_objects_', 'Neutron stars are the densest objects in the universe short of black holes. Some of them are pulsars, some are magnetars, and some appear to be the sources of fast radio bursts — millisecond flashes of radio energy bright enough to be seen across the universe. Each tells us something different about extreme physics.')
                 ),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-                  PSR_TOPICS.map(function(t) {
+                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #78350f' } },
+                  h('svg', { id: 'astronomy-pulsar-diagram', viewBox: '0 0 600 270', role: 'img', 'aria-labelledby': 'astronomy-pulsar-title astronomy-pulsar-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                    h('title', { id: 'astronomy-pulsar-title' }, 'Pulsar lighthouse geometry'),
+                    h('desc', { id: 'astronomy-pulsar-desc' }, 'A neutron star spins around its rotation axis. Its magnetic axis is tilted, producing two radiation beams. An observer detects a pulse whenever a beam sweeps across Earth.'),
+                    h('defs', null,
+                      h('radialGradient', { id: 'astronomy-pulsar-star-glow' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff' }),
+                        h('stop', { offset: '45%', stopColor: '#67e8f9' }),
+                        h('stop', { offset: '100%', stopColor: '#1d4ed8' })
+                      ),
+                      h('marker', { id: 'astronomy-pulsar-rotation-arrow', markerWidth: 8, markerHeight: 8, refX: 7, refY: 3, orient: 'auto' },
+                        h('path', { d: 'M0,0 L0,6 L8,3 z', fill: '#fbbf24' })
+                      )
+                    ),
+                    h('line', { x1: 300, y1: 24, x2: 300, y2: 236, stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '6 5' }),
+                    h('text', { x: 312, y: 36, fill: '#cbd5e1', fontSize: 11 }, 'rotation axis'),
+                    h('polygon', { points: '322,112 492,40 516,67 329,126', fill: 'rgba(250,204,21,0.22)', stroke: '#fde047', strokeWidth: 1.5 }),
+                    h('polygon', { points: '278,148 108,230 84,203 271,134', fill: 'rgba(250,204,21,0.16)', stroke: '#facc15', strokeWidth: 1.5 }),
+                    h('line', { x1: 105, y1: 218, x2: 503, y2: 54, stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '5 5' }),
+                    h('text', { x: 407, y: 103, fill: '#fde68a', fontSize: 11 }, 'magnetic / beam axis'),
+                    h('circle', { cx: 300, cy: 130, r: 38, fill: 'rgba(56,189,248,0.14)', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: 300, cy: 130, r: 25, fill: 'url(#astronomy-pulsar-star-glow)' }),
+                    h('path', { d: 'M252 105 A58 58 0 0 1 347 102', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, markerEnd: 'url(#astronomy-pulsar-rotation-arrow)' }),
+                    h('text', { x: 300, y: 189, textAnchor: 'middle', fill: '#bae6fd', fontSize: 12, fontWeight: 700 }, 'rotating neutron star'),
+                    h('circle', { cx: 531, cy: 54, r: 12, fill: '#2563eb', stroke: '#93c5fd', strokeWidth: 2 }),
+                    h('path', { d: 'M522 50 Q531 43 540 50', fill: 'none', stroke: '#22c55e', strokeWidth: 2 }),
+                    h('text', { x: 531, y: 82, textAnchor: 'middle', fill: '#bfdbfe', fontSize: 11 }, 'Earth / observer'),
+                    h('text', { x: 461, y: 23, textAnchor: 'middle', fill: '#fef08a', fontSize: 11, fontWeight: 700 }, 'pulse when beam crosses observer')
+                  ),
+                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Conceptual lighthouse model — angles, beam width, and sizes are not to scale.')
+                ),
+                h('div', { role: 'tablist', 'aria-label': 'Pulsar, magnetar, and fast radio burst topics', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  PSR_TOPICS.map(function(t, index) {
                     var on = t.id === sel;
                     return h('button', {
+                      id: 'astronomy-psr-tab-' + t.id,
                       key: t.id,
-                      onClick: function() { upd({ selectedPSR: t.id }); },
-                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#f59e0b' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #f59e0b' : '1px solid #334155' }
+                      type: 'button',
+                      role: 'tab',
+                      'aria-selected': on ? 'true' : 'false',
+                      'aria-controls': 'astronomy-psr-panel',
+                      tabIndex: on ? 0 : -1,
+                      onClick: function() { selectPSRTopic(index, false); },
+                      onKeyDown: function(e) { onPSRTopicKeyDown(e, index); },
+                      className: 'astr-focus',
+                      style: { padding: '7px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#f59e0b' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fcd34d' : '1px solid #475569' }
                     }, t.emoji + ' ' + t.name);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                h('div', { id: 'astronomy-psr-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-psr-tab-' + sel, tabIndex: 0, 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.35)' } },
+                  h('h3', { style: { margin: '0 0 6px', fontSize: 13.5, fontWeight: 700, color: '#fbbf24' } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.astronomy.what_we_should_not_overstate_5', 'What we should not overstate: ')), topic.caveat
@@ -4331,24 +4505,87 @@
                   context: 'This is the perspective the cosmic calendar is meant to give. NOT to make our lives feel meaningless (we are still here, doing this) but to make our species feel young + our recent achievements + threats feel as RECENT as they actually are. Climate change, nuclear weapons, AI — every one of our existential challenges is the work of the LAST FEW SECONDS of cosmic time. We are all newborns trying to figure out how to live.'
                 }
               ];
-              var sel = d.selectedCC || 'jan1';
-              var topic = CC_DATES.find(function(t) { return t.id === sel; }) || CC_DATES[0];
+              var requestedCC = typeof d.selectedCC === 'string' ? d.selectedCC : 'jan1';
+              var topicIndex = CC_DATES.findIndex(function(t) { return t.id === requestedCC; });
+              if (topicIndex < 0) topicIndex = 0;
+              var topic = CC_DATES[topicIndex];
+              var sel = topic.id;
+              function selectCCTopic(index, moveFocus) {
+                var normalizedIndex = (index + CC_DATES.length) % CC_DATES.length;
+                var nextTopic = CC_DATES[normalizedIndex];
+                upd({ selectedCC: nextTopic.id });
+                if (moveFocus && typeof document !== 'undefined') {
+                  setTimeout(function() {
+                    var target = document.getElementById('astronomy-cc-tab-' + nextTopic.id);
+                    if (target) target.focus();
+                  }, 0);
+                }
+              }
+              function onCCTopicKeyDown(e, index) {
+                var nextIndex = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = CC_DATES.length - 1;
+                if (nextIndex == null) return;
+                e.preventDefault();
+                selectCCTopic(nextIndex, true);
+              }
               return h('div', null,
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
                   __alloT('stem.astronomy.in_the_1970s_carl_sagan_compressed_the', 'In the 1970s, Carl Sagan compressed the entire 13.8-billion-year history of the universe into a single year. The Big Bang is January 1 at midnight; "now" is December 31 at 11:59:59 PM. This framing remains one of the most powerful ways to grasp cosmic time. A cosmic SECOND is ~437 years of real time. Recorded human history occupies the last ~14 cosmic seconds.')
                 ),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-                  CC_DATES.map(function(t) {
+                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #7c2d12' } },
+                  h('svg', { id: 'astronomy-cosmic-calendar-diagram', viewBox: '0 0 600 250', role: 'img', 'aria-labelledby': 'astronomy-cc-title astronomy-cc-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                    h('title', { id: 'astronomy-cc-title' }, 'Cosmic Calendar timeline'),
+                    h('desc', { id: 'astronomy-cc-desc' }, 'The full 13.8-billion-year history of the universe is compressed into one calendar year. The lower timeline zooms into the final cosmic minute, where agriculture and recorded civilization appear.'),
+                    h('text', { x: 50, y: 28, fill: '#fdba74', fontSize: 12, fontWeight: 700 }, '13.8 billion years → one cosmic year'),
+                    h('line', { x1: 50, y1: 72, x2: 550, y2: 72, stroke: '#fb923c', strokeWidth: 8, strokeLinecap: 'round' }),
+                    [
+                      { x: 50, label: 'Jan 1', detail: 'Big Bang', anchor: 'start' },
+                      { x: 151, label: 'Mar 15', detail: 'Milky Way', anchor: 'middle' },
+                      { x: 377, label: 'Aug 28', detail: 'Solar System', anchor: 'middle' },
+                      { x: 384, label: 'Sep', detail: 'first life', anchor: 'middle' },
+                      { x: 514, label: 'Dec 5', detail: 'animals', anchor: 'middle' },
+                      { x: 550, label: 'Dec 31', detail: 'humans / now', anchor: 'end' }
+                    ].map(function(mark, i) {
+                      var labelY = i % 2 === 0 ? 105 : 125;
+                      return h('g', { key: 'year-' + i },
+                        h('line', { x1: mark.x, y1: 59, x2: mark.x, y2: 86, stroke: '#fed7aa', strokeWidth: 2 }),
+                        h('text', { x: mark.x, y: labelY, textAnchor: mark.anchor, fill: '#ffedd5', fontSize: 10.5, fontWeight: 700 }, mark.label),
+                        h('text', { x: mark.x, y: labelY + 14, textAnchor: mark.anchor, fill: '#94a3b8', fontSize: 9.5 }, mark.detail)
+                      );
+                    }),
+                    h('text', { x: 50, y: 165, fill: '#c4b5fd', fontSize: 12, fontWeight: 700 }, 'Zoom: final cosmic minute'),
+                    h('line', { x1: 50, y1: 198, x2: 550, y2: 198, stroke: '#8b5cf6', strokeWidth: 6, strokeLinecap: 'round' }),
+                    h('line', { x1: 300, y1: 184, x2: 300, y2: 212, stroke: '#fbbf24', strokeWidth: 2 }),
+                    h('text', { x: 300, y: 228, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'agriculture (~30 s before midnight)'),
+                    h('line', { x1: 550, y1: 182, x2: 550, y2: 214, stroke: '#34d399', strokeWidth: 3 }),
+                    h('text', { x: 550, y: 174, textAnchor: 'end', fill: '#a7f3d0', fontSize: 10.5, fontWeight: 700 }, 'present'),
+                    h('text', { x: 50, y: 228, textAnchor: 'start', fill: '#94a3b8', fontSize: 10 }, '11:59:00 PM')
+                  ),
+                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Two scales are shown because events in the final seconds overlap on a full-year timeline.')
+                ),
+                h('div', { role: 'tablist', 'aria-label': 'Cosmic Calendar events', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  CC_DATES.map(function(t, index) {
                     var on = t.id === sel;
                     return h('button', {
+                      id: 'astronomy-cc-tab-' + t.id,
                       key: t.id,
-                      onClick: function() { upd({ selectedCC: t.id }); },
-                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fb923c' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fb923c' : '1px solid #334155' }
+                      type: 'button',
+                      role: 'tab',
+                      'aria-selected': on ? 'true' : 'false',
+                      'aria-controls': 'astronomy-cc-panel',
+                      tabIndex: on ? 0 : -1,
+                      onClick: function() { selectCCTopic(index, false); },
+                      onKeyDown: function(e) { onCCTopicKeyDown(e, index); },
+                      className: 'astr-focus',
+                      style: { padding: '7px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fb923c' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fdba74' : '1px solid #475569' }
                     }, t.emoji + ' ' + t.when.split(',')[0]);
                   })
                 ),
-                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fdba74', marginBottom: 2 } }, topic.emoji + ' ' + topic.when),
+                h('div', { id: 'astronomy-cc-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-cc-tab-' + sel, tabIndex: 0, 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 10, background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.35)' } },
+                  h('h3', { style: { margin: '0 0 2px', fontSize: 13.5, fontWeight: 700, color: '#fdba74' } }, topic.emoji + ' ' + topic.when),
                   h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10, marginTop: 8 } }, topic.what),
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.astronomy.on_the_calendar', 'On the calendar: ')), topic.context
@@ -4488,21 +4725,15 @@
           ];
 
           // Filter controls
-          var typeFilter = d.messierType || 'all';
-          var seasonFilter = d.messierSeason || 'all';
-          var search = d.messierSearch || '';
-
-          var filtered = MESSIER.filter(function(o) {
-            if (typeFilter !== 'all' && o.type !== typeFilter) return false;
-            if (seasonFilter !== 'all' && o.season !== seasonFilter) return false;
-            if (search) {
-              var q = search.toLowerCase();
-              if (o.name.toLowerCase().indexOf(q) === -1 &&
-                  ('m' + o.m).indexOf(q) === -1 &&
-                  o.con.toLowerCase().indexOf(q) === -1) return false;
-            }
-            return true;
-          });
+          var MESSIER_TYPE_FILTERS = ['all', 'G', 'GC', 'OC', 'EN', 'PN', 'SNR', 'RN', 'OTHER'];
+          var MESSIER_SEASONS = ['all', 'Winter', 'Spring', 'Summer', 'Autumn'];
+          var requestedType = typeof d.messierType === 'string' ? d.messierType : 'all';
+          var requestedSeason = typeof d.messierSeason === 'string' ? d.messierSeason : 'all';
+          var typeFilter = MESSIER_TYPE_FILTERS.indexOf(requestedType) >= 0 ? requestedType : 'all';
+          var seasonFilter = MESSIER_SEASONS.indexOf(requestedSeason) >= 0 ? requestedSeason : 'all';
+          var search = typeof d.messierSearch === 'string' ? d.messierSearch.slice(0, 100) : '';
+          var searchQuery = search.trim().toLowerCase();
+          var identifierMatch = /^m\s*0*(\d{1,3})$/i.exec(search.trim());
 
           var typeLabel = function(t) {
             return { G: 'Galaxy', GC: 'Globular Cluster', OC: 'Open Cluster', EN: 'Emission Nebula', RN: 'Reflection Nebula', PN: 'Planetary Nebula', SNR: 'Supernova Remnant', AS: 'Asterism', 'D*': 'Double Star', SC: 'Star Cloud', 'EN+RN': 'Emission + Reflection Nebula' }[t] || t;
@@ -4512,75 +4743,126 @@
             return { G: '#fbbf24', GC: '#e2e8f0', OC: '#bfdbfe', EN: '#86efac', RN: '#a5b4fc', PN: '#fbcfe8', SNR: '#fca5a5', AS: '#94a3b8', 'D*': '#94a3b8', SC: '#fde68a', 'EN+RN': '#86efac' }[t] || '#94a3b8';
           };
 
+          function matchesMessierType(o) {
+            if (typeFilter === 'all') return true;
+            if (typeFilter === 'EN') return o.type === 'EN' || o.type === 'EN+RN';
+            if (typeFilter === 'RN') return o.type === 'RN' || o.type === 'EN+RN';
+            if (typeFilter === 'OTHER') return ['AS', 'D*', 'SC'].indexOf(o.type) >= 0;
+            return o.type === typeFilter;
+          }
+
+          var filtered = MESSIER.filter(function(o) {
+            if (!matchesMessierType(o)) return false;
+            if (seasonFilter !== 'all' && o.season !== seasonFilter) return false;
+            if (identifierMatch) return o.m === parseInt(identifierMatch[1], 10);
+            if (searchQuery) {
+              var haystack = [o.name, 'M' + o.m, o.con, typeLabel(o.type), o.season, o.notes].join(' ').toLowerCase();
+              if (haystack.indexOf(searchQuery) === -1) return false;
+            }
+            return true;
+          });
+
+          var filtersActive = typeFilter !== 'all' || seasonFilter !== 'all' || search.length > 0;
+          function clearMessierFilters() {
+            upd({ messierType: 'all', messierSeason: 'all', messierSearch: '' });
+          }
           return sectionCard('🗂️ Messier Catalog — all 110 deep-sky objects',
             h('div', null,
               h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55, marginBottom: 10 } }, __alloT('stem.astronomy.charles_messier_s_1764_1782_catalog_of', 'Charles Messier\'s 1764-1782 catalog of "fuzzy non-comet" objects has become the most-observed list in amateur astronomy. Completing all 110 in a single calendar year (the "Messier Marathon") is a classic challenge — best in late March from latitudes 25-35° North. Each entry: object type, constellation, magnitude, observing season, history + science.')),
 
               // Filter UI
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 } },
-                h('select', {
-                  value: typeFilter,
-                  onChange: function(e) { upd({ messierType: e.target.value }); },
-                  'aria-label': __alloT('stem.astronomy.filter_by_object_type', 'Filter by object type'),
-                  className: 'astr-focus',
-                  style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
-                },
-                  h('option', { value: 'all' }, __alloT('stem.astronomy.all_types', 'All types')),
-                  h('option', { value: 'G' }, __alloT('stem.astronomy.galaxies_2', 'Galaxies')),
-                  h('option', { value: 'GC' }, __alloT('stem.astronomy.globular_clusters', 'Globular clusters')),
-                  h('option', { value: 'OC' }, __alloT('stem.astronomy.open_clusters', 'Open clusters')),
-                  h('option', { value: 'EN' }, __alloT('stem.astronomy.emission_nebulae', 'Emission nebulae')),
-                  h('option', { value: 'PN' }, __alloT('stem.astronomy.planetary_nebulae', 'Planetary nebulae')),
-                  h('option', { value: 'SNR' }, __alloT('stem.astronomy.supernova_remnants', 'Supernova remnants')),
-                  h('option', { value: 'RN' }, __alloT('stem.astronomy.reflection_nebulae', 'Reflection nebulae'))
+              h('div', { role: 'search', 'aria-label': 'Filter Messier catalog', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(165px, 1fr))', gap: 8, marginBottom: 8 } },
+                h('div', null,
+                  h('label', { htmlFor: 'astronomy-messier-type', style: { display: 'block', marginBottom: 3, fontSize: 10.5, color: '#94a3b8', fontWeight: 700 } }, __alloT('stem.astronomy.filter_by_object_type', 'Filter by object type')),
+                  h('select', {
+                    id: 'astronomy-messier-type',
+                    value: typeFilter,
+                    onChange: function(e) { upd({ messierType: e.target.value }); },
+                    'aria-controls': 'astronomy-messier-results',
+                    'aria-describedby': 'astronomy-messier-result-count',
+                    className: 'astr-focus',
+                    style: { width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
+                  },
+                    h('option', { value: 'all' }, __alloT('stem.astronomy.all_types', 'All types')),
+                    h('option', { value: 'G' }, __alloT('stem.astronomy.galaxies_2', 'Galaxies')),
+                    h('option', { value: 'GC' }, __alloT('stem.astronomy.globular_clusters', 'Globular clusters')),
+                    h('option', { value: 'OC' }, __alloT('stem.astronomy.open_clusters', 'Open clusters')),
+                    h('option', { value: 'EN' }, __alloT('stem.astronomy.emission_nebulae', 'Emission nebulae')),
+                    h('option', { value: 'PN' }, __alloT('stem.astronomy.planetary_nebulae', 'Planetary nebulae')),
+                    h('option', { value: 'SNR' }, __alloT('stem.astronomy.supernova_remnants', 'Supernova remnants')),
+                    h('option', { value: 'RN' }, __alloT('stem.astronomy.reflection_nebulae', 'Reflection nebulae')),
+                    h('option', { value: 'OTHER' }, 'Other catalog entries')
+                  )
                 ),
-                h('select', {
-                  value: seasonFilter,
-                  onChange: function(e) { upd({ messierSeason: e.target.value }); },
-                  'aria-label': __alloT('stem.astronomy.filter_by_season', 'Filter by season'),
-                  className: 'astr-focus',
-                  style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
-                },
-                  h('option', { value: 'all' }, __alloT('stem.astronomy.all_seasons', 'All seasons')),
-                  h('option', { value: 'Winter' }, __alloT('stem.astronomy.winter_dec_feb', 'Winter (Dec-Feb)')),
-                  h('option', { value: 'Spring' }, __alloT('stem.astronomy.spring_mar_may', 'Spring (Mar-May)')),
-                  h('option', { value: 'Summer' }, __alloT('stem.astronomy.summer_jun_aug', 'Summer (Jun-Aug)')),
-                  h('option', { value: 'Autumn' }, __alloT('stem.astronomy.autumn_sep_nov', 'Autumn (Sep-Nov)'))
+                h('div', null,
+                  h('label', { htmlFor: 'astronomy-messier-season', style: { display: 'block', marginBottom: 3, fontSize: 10.5, color: '#94a3b8', fontWeight: 700 } }, __alloT('stem.astronomy.filter_by_season', 'Filter by season')),
+                  h('select', {
+                    id: 'astronomy-messier-season',
+                    value: seasonFilter,
+                    onChange: function(e) { upd({ messierSeason: e.target.value }); },
+                    'aria-controls': 'astronomy-messier-results',
+                    'aria-describedby': 'astronomy-messier-result-count',
+                    className: 'astr-focus',
+                    style: { width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
+                  },
+                    h('option', { value: 'all' }, __alloT('stem.astronomy.all_seasons', 'All seasons')),
+                    h('option', { value: 'Winter' }, __alloT('stem.astronomy.winter_dec_feb', 'Winter (Dec-Feb)')),
+                    h('option', { value: 'Spring' }, __alloT('stem.astronomy.spring_mar_may', 'Spring (Mar-May)')),
+                    h('option', { value: 'Summer' }, __alloT('stem.astronomy.summer_jun_aug', 'Summer (Jun-Aug)')),
+                    h('option', { value: 'Autumn' }, __alloT('stem.astronomy.autumn_sep_nov', 'Autumn (Sep-Nov)'))
+                  )
                 ),
-                h('input', {
-                  type: 'text',
-                  placeholder: __alloT('stem.astronomy.search_messier_m13_ngc_orion', 'Search Messier (M13, NGC, Orion…)'),
-                  value: search,
-                  onChange: function(e) { upd({ messierSearch: e.target.value }); },
-                  'aria-label': __alloT('stem.astronomy.search_messier_catalog', 'Search Messier catalog'),
-                  className: 'astr-focus',
-                  style: { flex: 1, minWidth: 140, padding: '5px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
-                })
+                h('div', null,
+                  h('label', { htmlFor: 'astronomy-messier-search', style: { display: 'block', marginBottom: 3, fontSize: 10.5, color: '#94a3b8', fontWeight: 700 } }, __alloT('stem.astronomy.search_messier_catalog', 'Search Messier catalog')),
+                  h('input', {
+                    id: 'astronomy-messier-search',
+                    type: 'search',
+                    placeholder: __alloT('stem.astronomy.search_messier_m13_ngc_orion', 'Search Messier (M13, NGC, Orion…)'),
+                    value: search,
+                    maxLength: 100,
+                    autoComplete: 'off',
+                    onChange: function(e) { upd({ messierSearch: e.target.value.slice(0, 100) }); },
+                    onKeyDown: function(e) { if (e.key === 'Escape' && search) upd({ messierSearch: '' }); },
+                    'aria-controls': 'astronomy-messier-results',
+                    'aria-describedby': 'astronomy-messier-result-count',
+                    className: 'astr-focus',
+                    style: { width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 11 }
+                  })
+                )
               ),
 
-              h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Showing ' + filtered.length + ' of 110 Messier objects'),
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+                h('div', { id: 'astronomy-messier-result-count', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11, color: '#94a3b8' } }, 'Showing ' + filtered.length + ' of 110 Messier objects'),
+                filtersActive ? a11yButton({ type: 'button', onClick: clearMessierFilters, 'aria-controls': 'astronomy-messier-results astronomy-messier-result-count', style: { padding: '5px 9px', borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', fontSize: 11, cursor: 'pointer' } }, 'Clear filters') : null
+              ),
 
-              h('div', { style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
-                filtered.map(function(o) {
-                  return h('div', {
+              filtered.length ? h('div', { id: 'astronomy-messier-results', role: 'list', 'aria-label': 'Messier catalog results', tabIndex: 0, className: 'astr-focus', style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
+                filtered.map(function(o, index) {
+                  var resultId = 'astronomy-messier-result-' + index;
+                  return h('article', {
                     key: 'M' + o.m,
-                    style: { display: 'grid', gridTemplateColumns: '50px 1fr', gap: 8, padding: 8, marginBottom: 6, background: '#0f172a', borderRadius: 6, borderLeft: '3px solid ' + typeColor(o.type) }
+                    role: 'listitem',
+                    'aria-labelledby': resultId,
+                    style: { display: 'grid', gridTemplateColumns: '50px minmax(0, 1fr)', gap: 8, padding: 8, marginBottom: 6, background: '#0f172a', borderRadius: 6, borderLeft: '3px solid ' + typeColor(o.type) }
                   },
                     h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                       h('div', { style: { fontSize: 16, fontWeight: 900, color: typeColor(o.type) } }, 'M' + o.m),
                       h('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' } }, o.type)
                     ),
-                    h('div', null,
+                    h('div', { style: { minWidth: 0 } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 4, marginBottom: 2 } },
-                        h('h4', { style: { margin: 0, color: '#c7d2fe', fontSize: 12.5 } }, o.name),
+                        h('h4', { id: resultId, style: { margin: 0, color: '#c7d2fe', fontSize: 12.5 } }, o.name),
                         h('span', { style: { fontSize: 10, color: '#94a3b8' } }, typeLabel(o.type) + ' · ' + o.con + ' · mag ' + o.mag + ' · ' + o.season)
                       ),
                       h('p', { style: { margin: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, o.notes)
                     )
                   );
                 })
+              ) : h('div', { id: 'astronomy-messier-results', role: 'region', 'aria-label': 'No Messier catalog results', style: { padding: 18, borderRadius: 8, border: '1px dashed #475569', background: '#0f172a', textAlign: 'center' } },
+                h('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 700, marginBottom: 4 } }, 'No Messier objects match these filters.'),
+                h('div', { style: { color: '#94a3b8', fontSize: 11.5, marginBottom: 10 } }, 'Try another identifier, object type, season, or keyword.'),
+                a11yButton({ type: 'button', onClick: clearMessierFilters, 'aria-controls': 'astronomy-messier-results astronomy-messier-result-count', style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #f59e0b', background: '#78350f', color: '#fef3c7', fontWeight: 700, cursor: 'pointer' } }, 'Show all Messier objects')
               ),
-
               h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.astronomy.the_messier_marathon', '🏆 The Messier Marathon: ')),
                 __alloT('stem.astronomy.observers_in_northern_temperate_latitu', 'Observers in northern temperate latitudes (25-35° North) can try to observe ALL 110 Messier objects in a SINGLE NIGHT — the "Messier Marathon." Best around the spring equinox (mid to late March), when an all-night observation pass can catch every object as it transits the meridian. A typical successful marathon requires: clear skies all night, dark sky (Bortle 3 or better), a low southern horizon, a planned target sequence + a watchful eye on the western (setting) objects in the early evening. Most beginners complete 70-90 in their first marathon attempt. The Messier Marathon is a rite of passage for serious amateur observers.')
@@ -5747,10 +6029,16 @@
 
         // Telescope ray-diagram simulator
         function telescopeSim() {
-          var type = d.scopeType || 'refractor';
-          var aperture = d.scopeAperture || 100;  // mm
-          var focalLen = d.scopeFocalLen || 1000;  // mm objective focal length
-          var eyepieceFl = d.eyepieceFl || 25;     // mm eyepiece focal length
+          function normalizedScopeValue(value, min, max, step, fallback) {
+            var numeric = Number(value);
+            if (!Number.isFinite(numeric)) return fallback;
+            var clamped = Math.min(max, Math.max(min, numeric));
+            return Math.min(max, Math.max(min, min + Math.round((clamped - min) / step) * step));
+          }
+          var type = d.scopeType === 'reflector' ? 'reflector' : 'refractor';
+          var aperture = normalizedScopeValue(d.scopeAperture, 50, 400, 10, 100);  // mm
+          var focalLen = normalizedScopeValue(d.scopeFocalLen, 300, 3000, 50, 1000);  // mm objective focal length
+          var eyepieceFl = normalizedScopeValue(d.eyepieceFl, 4, 40, 1, 25);     // mm eyepiece focal length
 
           // Calculations
           var magnification = focalLen / eyepieceFl;
@@ -5764,7 +6052,7 @@
 
           // Render SVG ray diagram
           function refractorSvg() {
-            return h('svg', { viewBox: '0 0 600 220', width: '100%', height: 220, role: 'img', 'aria-labelledby': 'refractorT refractorD' },
+            return h('svg', { id: 'astronomy-scope-refractor-diagram', viewBox: '0 0 600 220', role: 'img', 'aria-labelledby': 'refractorT refractorD', 'aria-describedby': 'astronomy-scope-status astronomy-scope-help', style: { width: '100%', height: 'auto', display: 'block' } },
               h('title', { id: 'refractorT' }, __alloT('stem.astronomy.refractor_telescope_ray_diagram', 'Refractor telescope ray diagram')),
               h('desc', { id: 'refractorD' }, 'A refractor telescope uses an objective lens to focus parallel light from a distant object to a focal point, where an eyepiece lens magnifies it to the eye. ' + aperture + ' mm aperture, ' + focalLen + ' mm focal length, magnification ' + magnification.toFixed(0) + ' times.'),
               // Tube
@@ -5808,7 +6096,7 @@
           function reflectorSvg() {
             // Newtonian reflector: primary concave mirror at far end, light comes IN, bounces off primary,
             // hits secondary mirror, exits side to eyepiece
-            return h('svg', { viewBox: '0 0 600 220', width: '100%', height: 220, role: 'img', 'aria-labelledby': 'reflectorT reflectorD' },
+            return h('svg', { id: 'astronomy-scope-reflector-diagram', viewBox: '0 0 600 220', role: 'img', 'aria-labelledby': 'reflectorT reflectorD', 'aria-describedby': 'astronomy-scope-status astronomy-scope-help', style: { width: '100%', height: 'auto', display: 'block' } },
               h('title', { id: 'reflectorT' }, __alloT('stem.astronomy.newtonian_reflector_ray_diagram', 'Newtonian reflector ray diagram')),
               h('desc', { id: 'reflectorD' }, 'A Newtonian reflector uses a concave primary mirror at the back end of the tube to focus light forward to a flat secondary mirror, which reflects it out the side to an eyepiece. ' + aperture + ' mm aperture, ' + focalLen + ' mm focal length, magnification ' + magnification.toFixed(0) + ' times.'),
               // Tube
@@ -5845,46 +6133,59 @@
           }
 
           var maxOK = magnification <= maxMag;
+          var exitPupilState = exitPupil > 7 ? 'Exit pupil is larger than a typical dark-adapted eye and wastes some light.' : exitPupil < 0.5 ? 'Exit pupil is very small, so the image will be dim.' : 'Exit pupil is in a practical range.';
+          var magnificationState = maxOK ? 'Magnification is within the approximate useful limit.' : 'Magnification exceeds the approximate useful limit of ' + maxMag.toFixed(0) + ' times.';
+          var scopeStatus = (type === 'refractor' ? 'Refractor' : 'Reflector') + ': ' + aperture + ' millimeter aperture, ' + focalLen + ' millimeter focal length, ' + eyepieceFl + ' millimeter eyepiece. ' + magnification.toFixed(0) + ' times magnification, f/' + focalRatio.toFixed(1) + ', ' + exitPupil.toFixed(1) + ' millimeter exit pupil. ' + magnificationState + ' ' + exitPupilState;
 
           return h('div', null,
-            h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+            h('div', { role: 'tablist', 'aria-label': 'Telescope optical design', style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
               ['refractor', 'reflector'].map(function(t) {
                 var active = type === t;
-                return h('button', { key: t,
+                return h('button', { id: 'astronomy-scope-tab-' + t, key: t,
+                  type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                  'aria-controls': 'astronomy-scope-diagram-panel', tabIndex: active ? 0 : -1,
                   onClick: function() { upd({ scopeType: t }); },
-                  style: { padding: '8px 14px', borderRadius: 8, background: active ? 'rgba(99,102,241,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#6366f1' : '#334155'), color: active ? '#c7d2fe' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                  onKeyDown: function(e) {
+                    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+                    e.preventDefault();
+                    var nextType = t === 'refractor' ? 'reflector' : 'refractor';
+                    upd({ scopeType: nextType });
+                    if (typeof document !== 'undefined') setTimeout(function() {
+                      var target = document.getElementById('astronomy-scope-tab-' + nextType);
+                      if (target) target.focus();
+                    }, 0);
+                  },
+                  className: 'astr-focus',
+                  style: { padding: '8px 14px', borderRadius: 8, background: active ? 'rgba(99,102,241,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#818cf8' : '#475569'), color: active ? '#c7d2fe' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                 }, t === 'refractor' ? '🔭 Refractor (lens)' : '🔭 Reflector (mirror)');
               })
             ),
 
-            h('div', { style: { padding: 10, borderRadius: 10, background: '#0a0e1a', border: '1px solid #334155', marginBottom: 12, overflow: 'hidden' } },
+            h('div', { id: 'astronomy-scope-diagram-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-scope-tab-' + type, style: { padding: 10, borderRadius: 10, background: '#0a0e1a', border: '1px solid #334155', marginBottom: 10, overflow: 'hidden' } },
               type === 'refractor' ? refractorSvg() : reflectorSvg()
             ),
 
-            // Sliders
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 12 } },
-              [
-                { label: __alloT('stem.astronomy.aperture_mm', 'Aperture (mm)'), value: aperture, min: 50, max: 400, step: 10, key: 'scopeAperture' },
-                { label: __alloT('stem.astronomy.focal_length_mm', 'Focal length (mm)'), value: focalLen, min: 300, max: 3000, step: 50, key: 'scopeFocalLen' },
-                { label: __alloT('stem.astronomy.eyepiece_focal_length_mm', 'Eyepiece focal length (mm)'), value: eyepieceFl, min: 4, max: 40, step: 1, key: 'eyepieceFl' }
-              ].map(function(s, i) {
-                var patch = {}; patch[s.key] = s.value;
-                return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
-                  h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                    h('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700 } }, s.label),
-                    h('span', { style: { fontSize: 13, color: INDIGO, fontWeight: 800 } }, s.value)
-                  ),
-                  h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
-                    onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
-                    'aria-label': s.label,
-                    style: { width: '100%', accentColor: INDIGO }
-                  })
-                );
-              })
-            ),
+            h('div', { id: 'astronomy-scope-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: '8px 10px', borderRadius: 8, background: maxOK && exitPupil >= 0.5 && exitPupil <= 7 ? 'rgba(34,197,94,0.10)' : 'rgba(245,158,11,0.10)', border: '1px solid ' + (maxOK && exitPupil >= 0.5 && exitPupil <= 7 ? 'rgba(34,197,94,0.35)' : 'rgba(245,158,11,0.40)'), color: maxOK && exitPupil >= 0.5 && exitPupil <= 7 ? '#bbf7d0' : '#fde68a', fontSize: 11.5, lineHeight: 1.55, marginBottom: 10 } }, scopeStatus),
 
+            h('div', { role: 'group', 'aria-label': 'Telescope optical controls', style: { marginBottom: 12 } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+                h('div', { style: { padding: 9, borderRadius: 7, background: '#1e293b', border: '1px solid #334155' } },
+                  a11ySlider({ id: 'astronomy-scope-aperture', label: __alloT('stem.astronomy.aperture_mm', 'Aperture (mm)'), value: aperture, min: 50, max: 400, step: 10, valueText: aperture + ' millimeters', ariaDescribedBy: 'astronomy-scope-status astronomy-scope-help', onChange: function(v) { upd({ scopeAperture: v }); }, accent: INDIGO })
+                ),
+                h('div', { style: { padding: 9, borderRadius: 7, background: '#1e293b', border: '1px solid #334155' } },
+                  a11ySlider({ id: 'astronomy-scope-focal-length', label: __alloT('stem.astronomy.focal_length_mm', 'Focal length (mm)'), value: focalLen, min: 300, max: 3000, step: 50, valueText: focalLen + ' millimeters', ariaDescribedBy: 'astronomy-scope-status astronomy-scope-help', onChange: function(v) { upd({ scopeFocalLen: v }); }, accent: INDIGO })
+                ),
+                h('div', { style: { padding: 9, borderRadius: 7, background: '#1e293b', border: '1px solid #334155' } },
+                  a11ySlider({ id: 'astronomy-scope-eyepiece', label: __alloT('stem.astronomy.eyepiece_focal_length_mm', 'Eyepiece focal length (mm)'), value: eyepieceFl, min: 4, max: 40, step: 1, valueText: eyepieceFl + ' millimeters', ariaDescribedBy: 'astronomy-scope-status astronomy-scope-help', onChange: function(v) { upd({ eyepieceFl: v }); }, accent: INDIGO })
+                )
+              ),
+              h('div', { style: { marginTop: 9, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+                h('div', { id: 'astronomy-scope-help', style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.45 } }, 'Adjust aperture, telescope focal length, and eyepiece focal length. The ray path is conceptual; dimensions are not drawn to scale.'),
+                a11yButton({ type: 'button', onClick: function() { upd({ scopeType: 'refractor', scopeAperture: 100, scopeFocalLen: 1000, eyepieceFl: 25 }); }, 'aria-label': 'Reset telescope simulator', 'aria-controls': 'astronomy-scope-diagram-panel astronomy-scope-status', style: { padding: '6px 10px', borderRadius: 7, border: '1px solid #475569', background: '#1e293b', color: '#e2e8f0', fontWeight: 700, cursor: 'pointer' } }, '↺ Reset telescope')
+              )
+            ),
             // Stats
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 } },
+            h('div', { id: 'astronomy-scope-stats', role: 'group', 'aria-label': 'Calculated telescope performance', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 } },
               [
                 { label: __alloT('stem.astronomy.magnification', 'Magnification'), value: magnification.toFixed(0) + '×', color: maxOK ? '#86efac' : '#fca5a5', sub: maxOK ? '' : 'Exceeds max useful (' + maxMag.toFixed(0) + '×)' },
                 { label: __alloT('stem.astronomy.focal_ratio', 'Focal ratio'), value: 'f/' + focalRatio.toFixed(1), color: '#c7d2fe', sub: focalRatio < 6 ? 'fast (wide field)' : focalRatio > 12 ? 'slow (high mag)' : 'medium' },

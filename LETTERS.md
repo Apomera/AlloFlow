@@ -33,3 +33,15 @@ Pick the work. Pick it carefully. Do it well.
 ---
 
 <!-- Auto-drafted and hand-written letters appended below by .claude/hooks/append-letter.mjs -->
+
+## [auto-draft] Session 50356c2c — 2026-07-14
+
+**Turns**: 5 user / 9 assistant
+
+**Session opened with**: Use each of the three AlloFlow MCP tools exactly once. First call capabilities with no arguments. Then validate this synthetic Blueprint: schemaVersion 1.0, blueprintId bp-live-demo, audience gradeLevel 5th Grade and language English, plan containing analysis with directive Analyze the source and le...
+
+**Last assistant turn closed with**: All three tools ran, each exactly once. Report: **1. `capabilities`** — call succeeded. Deployment is `desktop-local`, schemaVersion 1.0. Every AI modality is off (text, vision, image gen/edit, TTS/ASR, web search all `available: false` with empty provider lists), catalog read/stage are false, and...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---

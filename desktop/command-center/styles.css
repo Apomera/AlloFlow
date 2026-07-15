@@ -239,6 +239,7 @@ h2 {
 .toolbar,
 .button-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
@@ -708,7 +709,7 @@ body.app-focus-mode .focus-exit:focus-visible::before {
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1180px) {
   .shell {
     grid-template-columns: 1fr;
   }

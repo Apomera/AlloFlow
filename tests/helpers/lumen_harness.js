@@ -44,7 +44,7 @@ export function setupLumen() {
 
 function ctxFor(d) {
   // No ctx.callGemini -> the AI dial's network path is inert (deterministic render).
-  return { React, toolData: { lumen: d }, update: noop, setToolData: noop, announceToSR: noop };
+  return { React, toolData: { lumen: Object.assign({ mode: 'data' }, d || {}) }, update: noop, setToolData: noop, announceToSR: noop };
 }
 
 function scrub(html) { return html.split('><').join('>\n<'); } // one tag per line -> readable diffs

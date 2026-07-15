@@ -32,6 +32,144 @@ function _ensureHarper() {
   return _harperPromise;
 }
 // end _ensureHarper
+function _builderWordCount(doc) {
+  if (!doc?.body) return 0;
+  const win = doc.defaultView;
+  const NF = win?.NodeFilter || NodeFilter;
+  const walker = doc.createTreeWalker(doc.body, NF.SHOW_TEXT);
+  const parts = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui]')) continue;
+    if (node.nodeValue) parts.push(node.nodeValue);
+  }
+  const text = parts.join(' ').trim();
+  return text ? text.split(/\s+/).length : 0;
+}
+
+function _builderHeadingOutline(doc) {
+  if (!doc) return [];
+  return Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6')).map((heading, index) => ({
+    index,
+    level: Number(heading.tagName.substring(1)) || 1,
+    text: (heading.textContent || '').replace(/\s+/g, ' ').trim() || `Untitled heading ${index + 1}`,
+    node: heading,
+  }));
+}
+
+function _builderExportPreflight(doc, mode) {
+  const issues = [];
+  const add = (severity, code, message, count) => issues.push({ severity, code, message, count: count || 1 });
+  if (!doc || !doc.body || !doc.documentElement) {
+    add('error', 'preview-missing', 'The editable preview is not ready.');
+    return { issues, errors: 1, warnings: 0, passed: 0 };
+  }
+  if (doc.body.getAttribute('data-allo-preview-error') === '1') add('error', 'preview-error', 'The preview contains a render error.');
+  const meaningful = (doc.body.textContent || '').trim() || doc.body.querySelector('img,svg,math,table,form,input,textarea,select');
+  if (!meaningful) add('error', 'empty-document', 'The document has no exportable content.');
+  if (!(doc.documentElement.getAttribute('lang') || '').trim()) add('warning', 'language', 'Set the document language for screen readers and spell-checkers.');
+  if (!(doc.title || '').trim()) add('warning', 'title', 'Add a descriptive document title.');
+  const headings = _builderHeadingOutline(doc);
+  if (!headings.length) add('warning', 'headings', 'Add headings so readers can navigate the document.');
+  let previousLevel = 0;
+  let skipped = 0;
+  headings.forEach((heading) => {
+    if (previousLevel && heading.level > previousLevel + 1) skipped += 1;
+    previousLevel = heading.level;
+  });
+  if (skipped) add('warning', 'heading-order', `${skipped} heading level jump${skipped === 1 ? '' : 's'} may make navigation confusing.`, skipped);
+  const missingAlt = Array.from(doc.images || []).filter((img) => !img.hasAttribute('alt')).length;
+  if (missingAlt) add('error', 'image-alt', `${missingAlt} image${missingAlt === 1 ? ' is' : 's are'} missing alternative text.`, missingAlt);
+  const unlabeled = Array.from(doc.querySelectorAll('input,select,textarea')).filter((control) => {
+    if (control.type === 'hidden') return false;
+    if (control.getAttribute('aria-label') || control.getAttribute('aria-labelledby') || control.closest('label')) return false;
+    return !(control.id && Array.from(doc.querySelectorAll('label[for]')).some((label) => label.htmlFor === control.id));
+  }).length;
+  if (unlabeled) add('error', 'form-label', `${unlabeled} form control${unlabeled === 1 ? ' has' : 's have'} no accessible label.`, unlabeled);
+  const tablesWithoutHeaders = Array.from(doc.querySelectorAll('table')).filter((table) => !table.querySelector('th')).length;
+  if (tablesWithoutHeaders) add('warning', 'table-headers', `${tablesWithoutHeaders} table${tablesWithoutHeaders === 1 ? ' has' : 's have'} no header cells.`, tablesWithoutHeaders);
+  const unsafeLinks = Array.from(doc.querySelectorAll('a[href]')).filter((a) => /^\s*(javascript|vbscript|data):/i.test(a.getAttribute('href') || '')).length;
+  if (unsafeLinks) add('error', 'unsafe-links', `${unsafeLinks} unsafe link${unsafeLinks === 1 ? '' : 's'} must be removed.`, unsafeLinks);
+  const seenIds = new Set();
+  let duplicateIds = 0;
+  Array.from(doc.querySelectorAll('[id]')).forEach((node) => { const id = node.id; if (seenIds.has(id)) duplicateIds += 1; else seenIds.add(id); });
+  if (duplicateIds) add('error', 'duplicate-ids', `${duplicateIds} duplicate element ID${duplicateIds === 1 ? '' : 's'} can break links and labels.`, duplicateIds);
+  const chrome = doc.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui]').length;
+  if (chrome) add('warning', 'editor-chrome', 'Editor-only controls will be removed from the exported file.', chrome);
+  if (mode === 'slides' && headings.length < 2) add('warning', 'slide-structure', 'Add section headings so the slide deck can split content into meaningful slides.');
+  if (mode === 'epub') {
+    const remoteImages = Array.from(doc.images || []).filter((img) => !/^data:image\//i.test(img.getAttribute('src') || '')).length;
+    if (remoteImages) add('warning', 'epub-images', `${remoteImages} image${remoteImages === 1 ? '' : 's'} must be fetched and packaged for offline e-readers.`, remoteImages);
+    const remoteStyles = Array.from(doc.querySelectorAll('link[rel~="stylesheet"][href],style')).filter((node) => {
+      const value = node.tagName === 'STYLE' ? node.textContent : node.getAttribute('href');
+      return /https?:/i.test(value || '');
+    }).length;
+    if (remoteStyles) add('warning', 'epub-styles', `${remoteStyles} remote stylesheet or font reference${remoteStyles === 1 ? '' : 's'} will be removed for offline reading.`, remoteStyles);
+    const remoteMedia = Array.from(doc.querySelectorAll('audio[src],video[src],source[src],object[data]')).filter((node) => /https?:/i.test(node.getAttribute('src') || node.getAttribute('data') || '')).length;
+    if (remoteMedia) add('warning', 'epub-media', `${remoteMedia} remote media asset${remoteMedia === 1 ? '' : 's'} may still require an internet connection.`, remoteMedia);
+  }
+  const errors = issues.filter((issue) => issue.severity === 'error').length;
+  const warnings = issues.filter((issue) => issue.severity === 'warning').length;
+  return { issues, errors, warnings, passed: Math.max(0, 8 - errors - warnings) };
+}
+
+function _builderH5PCompatibility(item) {
+  const type = String(item?.type || '').toLowerCase();
+  const plain = (value) => String(value == null ? '' : value).trim();
+  if (type === 'quiz') {
+    const questions = Array.isArray(item?.data?.questions) ? item.data.questions : [];
+    const valid = questions.filter((question) => {
+      const options = Array.isArray(question?.options) ? question.options.map(plain) : [];
+      let correctIndex = Number.isInteger(question?.correctIndex) ? question.correctIndex : -1;
+      if (correctIndex < 0) correctIndex = options.findIndex((option) => option === plain(question?.correctAnswer));
+      return plain(question?.question) && options.length >= 2 && options.length <= 4
+        && options.every(Boolean) && correctIndex >= 0 && correctIndex < options.length;
+    }).length;
+    return {
+      type,
+      unit: 'question',
+      library: 'Single Choice Set 1.11',
+      total: questions.length,
+      valid,
+      omitted: questions.length - valid,
+      embeddedMedia: 0,
+      omittedMedia: 0,
+      ready: valid > 0,
+    };
+  }
+  if (type === 'glossary' || type === 'flashcards') {
+    const rawData = item?.data;
+    const cards = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.cards) ? rawData.cards : (Array.isArray(rawData?.items) ? rawData.items : []));
+    let valid = 0;
+    let embeddedMedia = 0;
+    let omittedMedia = 0;
+    const isEmbeddedImage = (value) => typeof value === 'string' && /^data:image\/(png|jpeg|gif);base64,[a-z0-9+/=\s]+$/i.test(value.trim());
+    const isEmbeddedAudio = (value) => typeof value === 'string' && /^data:audio\/(mpeg|mp4|ogg|wav|x-wav|webm);base64,[a-z0-9+/=\s]+$/i.test(value.trim());
+    cards.forEach((card) => {
+      const front = plain(type === 'glossary' ? (card?.term ?? card?.word ?? card?.phrase) : (card?.front ?? card?.term ?? card?.question));
+      const back = plain(type === 'glossary' ? (card?.def ?? card?.definition ?? card?.meaning) : (card?.back ?? card?.definition ?? card?.answer));
+      if (!front || !back) return;
+      valid += 1;
+      const image = card?.image ?? card?.imageUrl ?? card?.png;
+      const rawAudio = card?.audio ?? card?.audioUrl ?? card?.pronunciationAudio;
+      const audio = Array.isArray(rawAudio) ? rawAudio.find((value) => typeof value === 'string' && value.trim()) : rawAudio;
+      if (image) { if (isEmbeddedImage(image)) embeddedMedia += 1; else omittedMedia += 1; }
+      if (audio) { if (isEmbeddedAudio(audio)) embeddedMedia += 1; else omittedMedia += 1; }
+    });
+    return {
+      type,
+      unit: 'card',
+      library: 'Dialog Cards 1.9',
+      total: cards.length,
+      valid,
+      omitted: cards.length - valid,
+      embeddedMedia,
+      omittedMedia,
+      ready: valid > 0,
+    };
+  }
+  return { type, unit: 'item', library: '', total: 0, valid: 0, omitted: 0, embeddedMedia: 0, omittedMedia: 0, ready: false };
+}
 
 function ExportPreviewView(props) {
   const {
@@ -42,6 +180,7 @@ function ExportPreviewView(props) {
     exportAuditResult, exportConfig, exportPresets, exportPreviewMode,
     exportPreviewRef, exportStylePrompt, exportTheme, generateCustomExportStyle,
     getExportPreviewHTML, getSkippedResources, history, isAgentRunning, isGeneratingStyle,
+    handleExportH5P, handleExportIMS, handleExportQTI,
     pdfFixResult, pptxLoaded, processExpertCommand, runAxeAudit,
     saveExportPreset, selectedFont, setAgentActivityLog, setAgentLogFullView,
     setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
@@ -59,7 +198,38 @@ function ExportPreviewView(props) {
   // | {status:'done', items:[{blockIndex,message,start,end,bad,snippet,suggestions}], capped}
   const [writingCheck, setWritingCheck] = React.useState(null);
   const [wordGoalProgress, setWordGoalProgress] = React.useState({ count: 0, goal: 0, percent: 0 });
+  const [wordCount, setWordCount] = React.useState(0);
+  const [wordGoal, setWordGoal] = React.useState(0);
+  const [headingOutline, setHeadingOutline] = React.useState([]);
+  const [preflightResult, setPreflightResult] = React.useState(null);
+  const [findQuery, setFindQuery] = React.useState('');
+  const [replaceQuery, setReplaceQuery] = React.useState('');
+  const [altExportBusy, setAltExportBusy] = React.useState('');
   const [pendingImageFile, setPendingImageFile] = React.useState(null);
+  const qtiAssessments = React.useMemo(() => (Array.isArray(history) ? history : [])
+    .map((item, index) => ({ item, key: `${item?.id || 'quiz'}:${index}` }))
+    .filter(({ item }) => item?.type === 'quiz' && Array.isArray(item?.data?.questions)), [history]);
+  const [selectedQtiKey, setSelectedQtiKey] = React.useState('');
+  React.useEffect(() => {
+    if (!qtiAssessments.length) { if (selectedQtiKey) setSelectedQtiKey(''); return; }
+    if (!qtiAssessments.some((entry) => entry.key === selectedQtiKey)) {
+      setSelectedQtiKey(qtiAssessments[qtiAssessments.length - 1].key);
+    }
+  }, [qtiAssessments, selectedQtiKey]);
+  const h5pActivities = React.useMemo(() => (Array.isArray(history) ? history : [])
+    .map((item, index) => ({ item, key: `${item?.id || item?.type || 'activity'}:${index}` }))
+    .filter(({ item }) => ['quiz', 'glossary', 'flashcards'].includes(item?.type)), [history]);
+  const [selectedH5PKey, setSelectedH5PKey] = React.useState('');
+  React.useEffect(() => {
+    if (!h5pActivities.length) { if (selectedH5PKey) setSelectedH5PKey(''); return; }
+    if (!h5pActivities.some((entry) => entry.key === selectedH5PKey)) {
+      setSelectedH5PKey(h5pActivities[h5pActivities.length - 1].key);
+    }
+  }, [h5pActivities, selectedH5PKey]);
+  const selectedH5PActivity = React.useMemo(() => (
+    h5pActivities.find((entry) => entry.key === selectedH5PKey) || h5pActivities[h5pActivities.length - 1] || null
+  ), [h5pActivities, selectedH5PKey]);
+  const h5pCompatibility = React.useMemo(() => _builderH5PCompatibility(selectedH5PActivity?.item), [selectedH5PActivity]);
   const [imageAltText, setImageAltText] = React.useState('');
   const [imageDecorative, setImageDecorative] = React.useState(false);
   const [imageAltError, setImageAltError] = React.useState('');
@@ -77,6 +247,7 @@ function ExportPreviewView(props) {
   const expertRunRef = React.useRef(0);
   const exportActionLockRef = React.useRef(false);
   const mountedRef = React.useRef(true);
+  const findCursorRef = React.useRef({ node: null, offset: 0 });
   const openerRef = React.useRef(null);
 
   React.useEffect(() => () => {
@@ -226,7 +397,190 @@ function ExportPreviewView(props) {
     reader.readAsDataURL(file);
   }, [pendingImageFile, imageInsertBusy, imageDecorative, imageAltText, exportPreviewRef, addToast, closeImageDialog]);
 
+  const applyPageMargin = React.useCallback((margin) => {
+    const value = ['0.5in', '1in', '1.5in'].includes(margin) ? margin : '1in';
+    try {
+      const doc = exportPreviewRef.current?.contentDocument;
+      if (doc?.head) {
+        let style = doc.getElementById('allo-margin-style');
+        if (!style) { style = doc.createElement('style'); style.id = 'allo-margin-style'; doc.head.appendChild(style); }
+        style.textContent = `@media print { @page { margin: ${value}; } } body { padding-left: ${value}; padding-right: ${value}; }`;
+      }
+    } catch (_) {}
+  }, [exportPreviewRef]);
+
+  React.useEffect(() => {
+    applyPageMargin(exportConfig.pageMargin || '1in');
+  }, [applyPageMargin, exportConfig.pageMargin, showExportPreview]);
+
+  React.useEffect(() => {
+    const goal = Number.isFinite(wordGoal) && wordGoal > 0 ? wordGoal : 0;
+    setWordGoalProgress({
+      count: wordCount,
+      goal,
+      percent: goal ? Math.min(100, Math.round((wordCount / goal) * 100)) : 0,
+    });
+  }, [wordCount, wordGoal]);
+
+  const refreshDocumentStats = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    setWordCount(_builderWordCount(doc));
+    setHeadingOutline(_builderHeadingOutline(doc));
+    setPreflightResult(null);
+  }, [exportPreviewRef]);
+
+  const runBuilderPreflight = React.useCallback((modeOverride, announce = true) => {
+    const result = _builderExportPreflight(exportPreviewRef.current?.contentDocument, modeOverride || exportPreviewMode);
+    setPreflightResult(result);
+    if (announce && addToast) {
+      if (result.errors) addToast(`Export preflight found ${result.errors} blocking issue${result.errors === 1 ? '' : 's'} and ${result.warnings} warning${result.warnings === 1 ? '' : 's'}.`, 'error');
+      else if (result.warnings) addToast(`Export preflight passed with ${result.warnings} warning${result.warnings === 1 ? '' : 's'} to review.`, 'info');
+      else addToast('Export preflight passed - no issues found.', 'success');
+    }
+    return result;
+  }, [exportPreviewRef, exportPreviewMode, addToast]);
+
+  const findNextInPreview = React.useCallback(() => {
+    const needle = findQuery.trim();
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc || !needle) return;
+    const win = doc.defaultView;
+    const NF = win?.NodeFilter || NodeFilter;
+    const walker = doc.createTreeWalker(doc.body, NF.SHOW_TEXT, {
+      acceptNode(node) {
+        const parent = node.parentElement;
+        return parent && !parent.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui]') && node.nodeValue
+          ? NF.FILTER_ACCEPT : NF.FILTER_REJECT;
+      }
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    if (!nodes.length) return;
+    const selection = win?.getSelection();
+    let startIndex = selection?.anchorNode ? nodes.indexOf(selection.anchorNode) : -1;
+    let startOffset = startIndex >= 0 ? Math.max(selection.anchorOffset || 0, selection.focusOffset || 0) : 0;
+    const lowerNeedle = needle.toLocaleLowerCase();
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = pass ? 0 : Math.max(0, startIndex); i < nodes.length; i++) {
+        const from = !pass && i === startIndex ? startOffset : 0;
+        const at = String(nodes[i].nodeValue || '').toLocaleLowerCase().indexOf(lowerNeedle, from);
+        if (at < 0) continue;
+        const range = doc.createRange();
+        range.setStart(nodes[i], at);
+        range.setEnd(nodes[i], at + needle.length);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        nodes[i].parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        findCursorRef.current = { node: nodes[i], offset: at + needle.length };
+        return;
+      }
+      startIndex = 0; startOffset = 0;
+    }
+    addToast && addToast(`?${needle}? was not found.`, 'info');
+  }, [findQuery, exportPreviewRef, addToast]);
+
+  const replaceAllInPreview = React.useCallback(() => {
+    const needle = findQuery.trim();
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc || !needle) return;
+    const win = doc.defaultView;
+    const NF = win?.NodeFilter || NodeFilter;
+    const walker = doc.createTreeWalker(doc.body, NF.SHOW_TEXT);
+    const escaped = needle.replace(/[.*+?^$()|[\]{}\\]/g, '\\$&');
+    const pattern = new RegExp(escaped, 'gi');
+    let count = 0;
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui]')) continue;
+      const before = node.nodeValue || '';
+      const after = before.replace(pattern, () => { count += 1; return replaceQuery; });
+      if (after !== before) node.nodeValue = after;
+    }
+    if (count) {
+      try { doc.body.dispatchEvent(new (win?.Event || Event)('input', { bubbles: true })); } catch (_) {}
+      addToast && addToast(`Replaced ${count} occurrence${count === 1 ? '' : 's'}.`, 'success');
+    } else addToast && addToast(`?${needle}? was not found.`, 'info');
+  }, [findQuery, replaceQuery, exportPreviewRef, addToast]);
+
+  const getCleanBuilderDocument = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.documentElement) return null;
+    const clone = doc.documentElement.cloneNode(true);
+    clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,script').forEach((node) => node.remove());
+    clone.querySelectorAll('[contenteditable]').forEach((node) => node.removeAttribute('contenteditable'));
+    clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach((node) => {
+      const added = node.getAttribute('data-allo-crop-tabindex-added') === 'added';
+      node.removeAttribute('data-allo-crop-tabindex-added');
+      if (added) node.removeAttribute('tabindex');
+      node.removeAttribute('aria-keyshortcuts');
+    });
+    const title = String((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || doc.title || 'AlloFlow Document').trim();
+    return { doc, clone, title, html: '<!DOCTYPE html>\n' + clone.outerHTML };
+  }, [exportPreviewRef, exportConfig]);
+
+  const downloadBuilderBlob = React.useCallback((blob, options = {}) => {
+    if (!blob) throw new Error('The export did not produce a file.');
+    const clean = getCleanBuilderDocument();
+    const safeTitle = String(clean?.title || 'document').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').substring(0, 60) || 'document';
+    const extension = String(options.extension || 'bin').replace(/^\./, '');
+    const fileName = options.fileName || `${safeTitle}${options.suffix || ''}.${extension}`;
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return fileName;
+  }, [getCleanBuilderDocument]);
+
+  const runPackageExport = React.useCallback(async (kind) => {
+    if (altExportBusy) return;
+    const handler = kind === 'qti' ? handleExportQTI : (kind === 'h5p' ? handleExportH5P : handleExportIMS);
+    if (typeof handler !== 'function') { addToast && addToast(`${kind.toUpperCase()} export is unavailable right now.`, 'error'); return; }
+    setAltExportBusy(kind);
+    try {
+      if (kind === 'qti' || kind === 'h5p') {
+        const activities = kind === 'qti' ? qtiAssessments : h5pActivities;
+        const selectedKey = kind === 'qti' ? selectedQtiKey : selectedH5PKey;
+        const selected = activities.find((entry) => entry.key === selectedKey) || activities[activities.length - 1];
+        if (!selected) throw new Error(`Choose an activity before exporting ${kind.toUpperCase()}.`);
+        const succeeded = await handler({ generatedContent: selected.item });
+        if (succeeded === false) return;
+      } else {
+        const clean = getCleanBuilderDocument();
+        if (!clean) throw new Error('The editable preview is not ready.');
+        await handler({ liveHtml: clean.html, liveTitle: clean.title });
+      }
+    }
+    catch (error) { addToast && addToast(`${kind.toUpperCase()} export failed: ${error?.message || 'unknown error'}`, 'error'); }
+    finally { if (mountedRef.current) setAltExportBusy(''); }
+  }, [altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument]);
+
+  const runOfficeExport = React.useCallback(async (format) => {
+    if (altExportBusy) return;
+    const api = window.AlloModules?.AccessibleOfficeExport;
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!api || typeof api.build !== 'function') { addToast && addToast('The accessible Office exporter is still loading. Try again in a moment.', 'info'); return; }
+    if (!doc) return;
+    const preflight = runBuilderPreflight(format, false);
+    if (preflight.errors) { addToast && addToast('Office export stopped: fix the blocking preflight issues first.', 'error'); return; }
+    setAltExportBusy(format);
+    try {
+      const clean = getCleanBuilderDocument();
+      if (!clean) throw new Error('The editable preview is not ready.');
+      const result = await api.build({ html: clean.html, title: clean.title, format });
+      downloadBuilderBlob(result.blob, { fileName: result.fileName, extension: format });
+      addToast && addToast(result.message, 'success');
+    } catch (error) {
+      addToast && addToast(`${format.toUpperCase()} export failed: ${error?.message || 'unknown error'}`, 'error');
+    } finally { if (mountedRef.current) setAltExportBusy(''); }
+  }, [altExportBusy, exportPreviewRef, runBuilderPreflight, addToast, getCleanBuilderDocument, downloadBuilderBlob]);
+
   const runExportFromPreview = React.useCallback(async () => {
+    const preflight = runBuilderPreflight(exportPreviewMode, false);
+    if (preflight.errors) { addToast && addToast('Export stopped: fix the blocking preflight issues first.', 'error'); return; }
     if (exportActionLockRef.current) return;
     exportActionLockRef.current = true;
     setExportActionBusy(true);
@@ -238,7 +592,7 @@ function ExportPreviewView(props) {
       exportActionLockRef.current = false;
       if (mountedRef.current) setExportActionBusy(false);
     }
-  }, [executeExportFromPreview, addToast]);
+  }, [executeExportFromPreview, runBuilderPreflight, exportPreviewMode, addToast]);
 
   const handleRadioGroupKeyDown = React.useCallback((e) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
@@ -269,6 +623,7 @@ function ExportPreviewView(props) {
   const hasTimeline = (history || []).some(h => h && h.type === 'timeline');
   const hasBrainstorm = (history || []).some(h => h && h.type === 'brainstorm');
   const hasConceptSort = (history || []).some(h => h && h.type === 'concept-sort');
+  const hasAssessmentContent = (history || []).some(h => h && (h.type === 'quiz' || h.type === 'assessment' || h.type === 'stem-assessment'));
   const showDisplayModes = hasGlossary || hasTimeline || hasBrainstorm || hasConceptSort;
 
   if (!showExportPreview) return null;
@@ -446,16 +801,11 @@ function ExportPreviewView(props) {
                         { label: 'Normal', val: '1in' },
                         { label: 'Wide', val: '1.5in' },
                       ].map(m => (
-                        <button key={m.label} onClick={() => {
-                          const iframe = exportPreviewRef.current;
-                          const doc = iframe?.contentDocument;
-                          if (doc) {
-                            let ms = doc.getElementById('allo-margin-style');
-                            if (!ms) { ms = doc.createElement('style'); ms.id = 'allo-margin-style'; doc.head.appendChild(ms); }
-                            ms.textContent = `@media print { @page { margin: ${m.val}; } } body { padding-left: ${m.val}; padding-right: ${m.val}; }`;
-                          }
+                        <button key={m.label} type="button" aria-pressed={(exportConfig.pageMargin || '1in') === m.val} onClick={() => {
+                          applyPageMargin(m.val);
+                          setExportConfigAndRefresh(p => ({ ...p, pageMargin: m.val }));
                         }}
-                          className="flex-1 text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                          className={`flex-1 text-[11px] font-bold py-1 border rounded transition-colors ${(exportConfig.pageMargin || '1in') === m.val ? 'bg-indigo-600 text-white border-indigo-700' : 'text-slate-600 bg-white border-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}
                           title={`${m.label} margins (${m.val})`} aria-label={`Set ${m.label} page margins`}>{m.label}</button>
                       ))}
                     </div>
@@ -467,42 +817,20 @@ function ExportPreviewView(props) {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-bold text-slate-600 uppercase">Word Count</span>
                     <span className="text-[11px] font-mono text-slate-600" aria-live="polite">
-                      {(() => {
-                        const iframe = exportPreviewRef.current;
-                        const text = iframe?.contentDocument?.body?.textContent || '';
-                        return text.split(/\s+/).filter(w => w.length > 0).length.toLocaleString();
-                      })()} words
+                      {wordCount.toLocaleString()} words
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <label className="text-[11px] text-slate-600 shrink-0" htmlFor="word-goal-input">Goal:</label>
-                    <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
+                    <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" value={wordGoal || ''}
                       className="flex-1 text-[11px] border border-slate-400 rounded px-2 py-1 bg-white"
                       aria-label={t("a11y.target_word_count")}
-                      onChange={(e) => {
-                        const goal = parseInt(e.target.value);
-                        const iframe = exportPreviewRef.current;
-                        const text = iframe?.contentDocument?.body?.textContent || '';
-                        const count = text.split(/\s+/).filter(w => w.length > 0).length;
-                        const bar = document.getElementById('word-goal-bar');
-                        const lbl = document.getElementById('word-goal-label');
-                        if (bar && goal > 0) {
-                          const pct = Math.min(100, Math.round((count / goal) * 100));
-                          setWordGoalProgress({ count, goal, percent: pct });
-                          bar.style.width = pct + '%';
-                          bar.style.background = pct >= 100 ? '#16a34a' : pct >= 75 ? '#2563eb' : '#d97706';
-                          if (lbl) lbl.textContent = count + ' / ' + goal + ' (' + pct + '%)';
-                        } else {
-                          setWordGoalProgress({ count, goal: 0, percent: 0 });
-                          if (bar) bar.style.width = '0%';
-                          if (lbl) lbl.textContent = '';
-                        }
-                      }} />
+                      onChange={(e) => setWordGoal(Math.max(0, parseInt(e.target.value, 10) || 0))} />
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label={t("a11y.word_count_progress")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={wordGoalProgress.percent} aria-valuetext={wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words (${wordGoalProgress.percent}%)` : 'No word-count goal set'}>
-                    <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
+                    <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: wordGoalProgress.percent + '%', background: wordGoalProgress.percent >= 100 ? '#16a34a' : wordGoalProgress.percent >= 75 ? '#2563eb' : '#d97706' }}></div>
                   </div>
-                  <div id="word-goal-label" className="text-[11px] text-slate-600 mt-0.5"></div>
+                  <div id="word-goal-label" className="text-[11px] text-slate-600 mt-0.5">{wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} / ${wordGoalProgress.goal} (${wordGoalProgress.percent}%)` : ''}</div>
                   <div className="text-[11px] text-slate-600 mt-1">⌨ Ctrl+1/2/3 = headings · Ctrl+K = link · Ctrl+Shift+L = list</div>
                 </div>
 
@@ -1234,6 +1562,11 @@ function ExportPreviewView(props) {
                       title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Editable badges support Enter, Space, and click.">
                       ♿ A11y Inspect
                     </button>
+                    <button type="button" onClick={() => runBuilderPreflight(exportPreviewMode, true)}
+                      className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded transition-all ${preflightResult ? (preflightResult.errors ? 'bg-red-100 text-red-800 ring-1 ring-red-300' : preflightResult.warnings ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-300' : 'bg-green-100 text-green-800 ring-1 ring-green-300') : 'text-slate-600 hover:text-emerald-700 hover:bg-emerald-50'}`}
+                      aria-label="Run export preflight checks" title="Check this document for blocking export, accessibility, structure, and packaging issues">
+                      Preflight{preflightResult ? ` (${preflightResult.errors ? preflightResult.errors + ' errors' : preflightResult.warnings ? preflightResult.warnings + ' warnings' : 'passed'})` : ''}
+                    </button>
                     {/* Diff view entry point for the remediated-PDF pathway of Document Builder.
                         Only shown when a PDF remediation result is loaded (pdfFixResult.sourceText
                         + finalText present). The AlloFlow-generated pathway has no source PDF to
@@ -1271,7 +1604,36 @@ function ExportPreviewView(props) {
                       <summary className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none">
                         ♿ Alt Formats <span className="text-[11px] text-slate-600">▾</span>
                       </summary>
-                      <div className="absolute right-0 top-full mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 w-48 space-y-1">
+                      <div className="absolute right-0 top-full mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 w-72 space-y-1">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Editable documents</div>
+                        <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('docx')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50">{altExportBusy === 'docx' ? 'Building Word...' : 'Accessible Word (.docx)'}</button>
+                        <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('odt')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50">{altExportBusy === 'odt' ? 'Building ODT...' : 'OpenDocument (.odt)'}</button>
+                        {qtiAssessments.length > 0 && <>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Assessment packages</div>
+                          {qtiAssessments.length > 1 && <select aria-label="Quiz to export as QTI" value={selectedQtiKey} onChange={(event) => setSelectedQtiKey(event.target.value)} disabled={!!altExportBusy} className="w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white">
+                            {qtiAssessments.map(({ item, key }, index) => <option key={key} value={key}>{item.title || `Quiz ${index + 1}`}</option>)}
+                          </select>}
+                          <button type="button" disabled={!!altExportBusy} onClick={() => runPackageExport('qti')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50">{altExportBusy === 'qti' ? 'Building QTI...' : 'QTI quiz package'}</button>
+                          <div className="px-2 text-[10px] leading-tight text-slate-500">QTI uses the selected quiz's structured questions and answers.</div>
+                        </>}
+                        {h5pActivities.length > 0 && <>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Interactive H5P</div>
+                          {h5pActivities.length > 1 && <select aria-label="Activity to export as H5P" value={selectedH5PKey} onChange={(event) => setSelectedH5PKey(event.target.value)} disabled={!!altExportBusy} className="w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white">
+                            {h5pActivities.map(({ item, key }, index) => <option key={key} value={key}>{item.title || `${item.type === 'quiz' ? 'Quiz' : 'Study cards'} ${index + 1}`}</option>)}
+                          </select>}
+                          <button type="button" aria-describedby="h5p-compatibility-summary" disabled={!!altExportBusy || !h5pCompatibility.ready} onClick={() => runPackageExport('h5p')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50">{altExportBusy === 'h5p' ? 'Building H5P...' : 'H5P interactive activity (.h5p)'}</button>
+                          <div id="h5p-compatibility-summary" role="status" className={`px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? (h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? 'text-amber-700' : 'text-emerald-700') : 'text-red-700'}`}>
+                            {h5pCompatibility.valid} of {h5pCompatibility.total} {h5pCompatibility.unit}{h5pCompatibility.total === 1 ? '' : 's'} ready for {h5pCompatibility.library || 'H5P'}.
+                            {h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : ''}
+                            {h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : ''}
+                            {h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ''}
+                          </div>
+                          <div className="px-2 text-[10px] leading-tight text-slate-500">Quiz exports as Single Choice Set; glossary and flashcards export as Dialog Cards. The destination needs that official H5P content type installed.</div>
+                        </>}
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Content package</div>
+                        <button type="button" disabled={!!altExportBusy} onClick={() => runPackageExport('ims')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50">{altExportBusy === 'ims' ? 'Building IMS...' : 'IMS content package'}</button>
+                        <div className="px-2 text-[10px] leading-tight text-slate-500">IMS includes the current editable Builder document.</div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Reading & text</div>
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
@@ -1287,7 +1649,7 @@ function ExportPreviewView(props) {
                             text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
                           } catch (_) { text = (doc.body.innerText || doc.body.textContent || '').trim(); }
                           const blob = new Blob([text], { type: 'text/plain' });
-                          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.txt'; a.click(); URL.revokeObjectURL(a.href);
+                          downloadBuilderBlob(blob, { extension: 'txt' });
                           addToast('Plain text downloaded', 'success');
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📄 Plain Text (.txt)</button>
                         <button onClick={async () => {
@@ -1339,10 +1701,12 @@ function ExportPreviewView(props) {
                             .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
                             .replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
                           const blob = new Blob([md], { type: 'text/markdown' });
-                          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.md'; a.click(); URL.revokeObjectURL(a.href);
+                          downloadBuilderBlob(blob, { extension: 'md' });
                           addToast('Markdown downloaded', 'success');
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📝 Markdown (.md)</button>
-                        <button onClick={async () => {
+                        <button disabled={!!altExportBusy} onClick={async () => {
+                          if (altExportBusy) return;
+                          setAltExportBusy('notebooklm');
                           // Send to NotebookLM: build a NotebookLM-tuned Markdown source from the
                           // structured lesson `history` (front matter + one ## section per resource,
                           // quiz answer keys, glossary/outline/timeline), falling back to converting
@@ -1434,15 +1798,18 @@ function ExportPreviewView(props) {
                             let copied = false;
                             try { copied = window.alloCopyText ? await window.alloCopyText(md) : false; } catch (_) {}
                             const blob = new Blob([md], { type: 'text/markdown' });
-                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-                            const safe = esc(title).replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').substring(0, 40) || 'lesson';
-                            a.download = safe + '-notebooklm.md'; a.click(); URL.revokeObjectURL(a.href);
+                            downloadBuilderBlob(blob, { extension: 'md', suffix: '-notebooklm' });
                             addToast(copied ? 'Copied to clipboard + downloaded .md — paste or upload into NotebookLM as a source' : 'Downloaded .md — upload it into NotebookLM as a source', 'success');
                           } catch (e) { if (addToast) addToast('NotebookLM export failed', 'error'); }
-                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg">📓 Send to NotebookLM (.md)</button>
-                        <button onClick={() => {
+                          finally { if (mountedRef.current) setAltExportBusy(''); }
+                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg disabled:opacity-50">{altExportBusy === 'notebooklm' ? 'Building NotebookLM source...' : '📓 Send to NotebookLM (.md)'}</button>
+                        <button disabled={!!altExportBusy} onClick={async () => {
+                          const _preflight = runBuilderPreflight('epub', false);
+                          if (_preflight.errors) { addToast && addToast('ePub export stopped: fix the blocking preflight issues first.', 'error'); return; }
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc || !window.JSZip) { addToast('ePub library loading...', 'info'); return; }
+                          if (altExportBusy) return;
+                          setAltExportBusy('epub'); try {
                           // Export-format review #1/#5/#14 (2026-07-01): the old ePub shipped the RAW
                           // editor DOM (chrome + contenteditable), a hard-coded single-entry nav (no
                           // TOC — the thing low-vision readers navigate by), title always "AlloFlow
@@ -1455,9 +1822,19 @@ function ExportPreviewView(props) {
                             _clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach(el => { const added = el.getAttribute('data-allo-crop-tabindex-added') === 'added'; el.removeAttribute('data-allo-crop-tabindex-added'); if (added) el.removeAttribute('tabindex'); el.removeAttribute('aria-keyshortcuts'); });
                             _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
                           } catch (_) {}
-                          const _escXml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                          const _escXml = (s) => String(s || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                           const title = ((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc.title || '').trim() || 'AlloFlow Document').substring(0, 120);
-                          const lang = (doc.documentElement.getAttribute('lang') || 'en').split(/[_ ]/)[0];
+                            _clone.querySelectorAll('link[rel~="stylesheet"][href]').forEach((link) => {
+                              try { if (/^https?:/i.test(new URL(link.getAttribute('href') || '', doc.baseURI).href)) link.remove(); } catch (_) {}
+                            });
+                            _clone.querySelectorAll('style').forEach((style) => {
+                              const css = style.textContent || '';
+                              style.textContent = css.replace(/@import\s+[^;]+;/gi, '')
+                                .replace(/@font-face\s*\{[^}]*https?:[^}]*\}/gi, '')
+                                .replace(/url\(\s*(['"]?)https?:[^)]+\)/gi, 'none');
+                            });
+                          const _rawLang = (doc.documentElement.getAttribute('lang') || 'en').trim().replace(/_/g, '-');
+                          const lang = /^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i.test(_rawLang) ? _rawLang : 'en';
                           const xmlTitle = _escXml(title);
                           // Real TOC: every h1-h3 in content order, anchored by generated ids.
                           const _navItems = [];
@@ -1475,11 +1852,66 @@ function ExportPreviewView(props) {
                           const zip = new window.JSZip();
                           zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
                           zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+                           const _imageManifest = [];
+                           let _hasRemoteResources = false;
+                           let _unavailableRemoteImages = 0;
+                           const _replaceImageFallback = (img) => {
+                             const fallback = _clone.ownerDocument.createElement('span');
+                             fallback.setAttribute('role', 'img');
+                             const alt = (img.getAttribute('alt') || '').trim();
+                             fallback.setAttribute('aria-label', alt || 'Image unavailable in this ePub');
+                             fallback.textContent = alt ? '[Image: ' + alt + ']' : '[Image unavailable]';
+                             img.replaceWith(fallback);
+                           };
+                           const _images = Array.from(_clone.querySelectorAll('img[src]'));
+                           for (let index = 0; index < _images.length; index++) {
+                             const img = _images[index];
+                             const src = img.getAttribute('src') || '';
+                             const match = src.match(/^data:image\/(png|jpe?g|gif|webp);base64,([a-z0-9+/=\s]+)$/i);
+                             if (match) {
+                               const kind = match[1].toLowerCase();
+                               const ext = kind === 'jpeg' || kind === 'jpg' ? 'jpg' : kind;
+                               const mediaType = ext === 'jpg' ? 'image/jpeg' : 'image/' + ext;
+                               const path = 'images/image-' + (index + 1) + '.' + ext;
+                               zip.file('OEBPS/' + path, match[2].replace(/\s/g, ''), { base64: true });
+                               img.setAttribute('src', path);
+                               _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
+                               continue;
+                             }
+                             try {
+                               const absolute = new URL(src, doc.baseURI).href;
+                               if (!/^https?:/i.test(absolute)) { _replaceImageFallback(img); continue; }
+                               const controller = typeof AbortController === 'function' ? new AbortController() : null;
+                               const timer = window.setTimeout(() => controller?.abort(), 10000);
+                               let response;
+                               try { response = await fetch(absolute, { credentials: 'omit', signal: controller?.signal }); }
+                               finally { window.clearTimeout(timer); }
+                               if (!response.ok) throw new Error(`Image request failed (${response.status})`);
+                               const mediaType = String(response.headers.get('content-type') || '').split(';')[0].toLowerCase();
+                               const extensionByType = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' };
+                               const ext = extensionByType[mediaType];
+                               if (!ext) throw new Error('Unsupported remote image type');
+                               const bytes = await response.arrayBuffer();
+                               if (bytes.byteLength > 8 * 1024 * 1024) throw new Error('Remote image exceeds 8 MB');
+                               const path = 'images/image-' + (index + 1) + '.' + ext;
+                               zip.file('OEBPS/' + path, bytes);
+                               img.setAttribute('src', path);
+                               _imageManifest.push('<item id="image-' + (index + 1) + '" href="' + path + '" media-type="' + mediaType + '"/>');
+                             } catch (_) {
+                               _unavailableRemoteImages += 1;
+                               _replaceImageFallback(img);
+                             }
+                           }
                           const _uid = 'alloflow-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+                          try {
+                            _hasRemoteResources = Array.from(_clone.querySelectorAll('audio[src],video[src],source[src],object[data]')).some((node) => {
+                              const ref = node.getAttribute('src') || node.getAttribute('data') || ''; try { return /^https?:/i.test(new URL(ref, doc.baseURI).href); } catch (_) { return false; }
+                            });
+                          } catch (_) {}
                           const _contentProps = [];
-                          try { if (_clone.querySelector('svg')) _contentProps.push('svg'); if (_clone.querySelector('math')) _contentProps.push('mathml'); } catch (_) {}
+                          try { if (_clone.querySelector('svg')) _contentProps.push('svg'); if (_clone.querySelector('math')) _contentProps.push('mathml'); if (_hasRemoteResources) _contentProps.push('remote-resources'); } catch (_) {}
                           const _contentPropAttr = _contentProps.length ? ' properties="' + _contentProps.join(' ') + '"' : '';
-                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
+                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${_imageManifest.join('')}</manifest><spine><itemref idref="content"/></spine></package>`);
                           // #7 (export-format review R2): serialize via XMLSerializer so content.xhtml
                           // is well-formed XML — every void element (<meta>, <input>, <col>, <br>, <img>)
                           // self-closed and entities encoded. The old outerHTML+regex only patched
@@ -1498,16 +1930,21 @@ function ExportPreviewView(props) {
                           if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
                           zip.file('OEBPS/content.xhtml', xhtml);
                           zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} — Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
-                          zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' }).then(blob => {
-                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-                            a.download = (title.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').substring(0, 40) || 'document') + '.epub';
-                            a.click(); URL.revokeObjectURL(a.href);
+                          const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
+                          downloadBuilderBlob(blob, { extension: 'epub' });
+                          if (_unavailableRemoteImages) {
+                            addToast(`${_unavailableRemoteImages} remote image${_unavailableRemoteImages === 1 ? '' : 's'} could not be packaged and were replaced with accessible text.`, 'warning');
+                          } else {
                             addToast('ePub downloaded', 'success');
-                          });
-                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📚 ePub (e-readers)</button>
-                        <button onClick={() => {
+                          }
+                          } catch (error) { addToast && addToast('ePub export failed: ' + (error?.message || 'unknown error'), 'error'); }
+                          finally { if (mountedRef.current) setAltExportBusy(''); }
+                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'epub' ? 'Building ePub...' : '📚 ePub (e-readers)'}</button>
+                        <button disabled={!!altExportBusy} onClick={async () => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
+                          if (altExportBusy) return;
+                          setAltExportBusy('brf'); try {
                           // #14: strip editor chrome before flattening — button labels ("×", "+ Row")
                           // were being embossed into the braille output.
                           // #8 (structured sourcing): flatten per BLOCK (a braille line per logical
@@ -1595,7 +2032,7 @@ function ExportPreviewView(props) {
                           };
 const _downloadBRF = (brf) => {
                             const blob = new Blob([brf], { type: 'application/x-brf' });
-                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.brf'; a.click(); URL.revokeObjectURL(a.href);
+                            downloadBuilderBlob(blob, { extension: 'brf' });
                           };
                           // Prefer UEB Grade 2 (contracted) via liblouis when it's available;
                           // fall back to the shared canonical Grade-1 converter (loaded with the
@@ -1607,7 +2044,7 @@ const _downloadBRF = (brf) => {
                           const _ensureBrailleLoader = (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function')
                             ? Promise.resolve(true)
                             : (window.__alloLoadPlugin ? window.__alloLoadPlugin('liblouis_braille_loader.js') : Promise.resolve(false));
-                          Promise.resolve(_ensureBrailleLoader).catch(() => false).then(() => {
+                          await Promise.resolve(_ensureBrailleLoader).catch(() => false).then(async () => {
                             let _g1Dropped = 0, _grade1;
                             if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === 'function') {
                               const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
@@ -1616,7 +2053,7 @@ const _downloadBRF = (brf) => {
                             const _warnDrop = () => { if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + ' character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.', 'info'); };
                             if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
                               addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
-                              Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
+                              await Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
                                 if (ueb && ueb.replace(/\s/g, '').length) {
                                   _downloadBRF(ueb);
                                   addToast('Electronic Braille (UEB Grade 2) downloaded', 'success');
@@ -1633,11 +2070,50 @@ const _downloadBRF = (brf) => {
                               addToast('Electronic Braille (BRF) downloaded', 'success');
                             }
                           });
-                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">⠿ Electronic Braille (.brf)</button>
+                          } catch (error) { addToast && addToast('Braille export failed: ' + (error?.message || 'unknown error'), 'error'); }
+                          finally { if (mountedRef.current) setAltExportBusy(''); }
+                        }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'brf' ? 'Building Braille...' : '⠿ Electronic Braille (.brf)'}</button>
                       </div>
                     </details>
                   </div>
                 </div>
+                {preflightResult && (
+                  <div className={`border-b px-3 py-2 text-xs ${preflightResult.errors ? 'bg-red-50 border-red-300 text-red-900' : preflightResult.warnings ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-green-50 border-green-300 text-green-900'}`} role="status" aria-live="polite">
+                    <div className="flex items-center gap-2">
+                      <strong>{preflightResult.errors ? 'Export blocked by preflight' : preflightResult.warnings ? 'Preflight passed with warnings' : 'Preflight passed'}</strong>
+                      <span>{preflightResult.errors} error{preflightResult.errors === 1 ? '' : 's'} / {preflightResult.warnings} warning{preflightResult.warnings === 1 ? '' : 's'}</span>
+                      <button type="button" onClick={() => setPreflightResult(null)} className="ml-auto underline font-bold">Dismiss</button>
+                    </div>
+                    {!!preflightResult.issues.length && <ul className="mt-1 list-disc pl-5 space-y-0.5">
+                      {preflightResult.issues.map((issue, index) => <li key={issue.code + '-' + index}><strong>{issue.severity === 'error' ? 'Fix:' : 'Review:'}</strong> {issue.message}</li>)}
+                    </ul>}
+                  </div>
+                )}
+                <details className="bg-white border-b border-slate-200 shrink-0">
+                  <summary className="cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50">Find / Replace | Heading Outline ({headingOutline.length})</summary>
+                  <div className="grid gap-2 border-t border-slate-200 bg-slate-50 p-2 lg:grid-cols-2">
+                    <div className="flex flex-wrap items-center gap-1">
+                      <label htmlFor="builder-find" className="sr-only">Find text</label>
+                      <input id="builder-find" value={findQuery} onChange={(e) => { setFindQuery(e.target.value); findCursorRef.current = { node: null, offset: 0 }; }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); findNextInPreview(); } }} placeholder="Find" className="min-w-28 flex-1 rounded border border-slate-400 px-2 py-1 text-xs" />
+                      <button type="button" onClick={findNextInPreview} disabled={!findQuery.trim()} className="rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40">Next</button>
+                      <label htmlFor="builder-replace" className="sr-only">Replace with</label>
+                      <input id="builder-replace" value={replaceQuery} onChange={(e) => setReplaceQuery(e.target.value)} placeholder="Replace with" className="min-w-28 flex-1 rounded border border-slate-400 px-2 py-1 text-xs" />
+                      <button type="button" onClick={replaceAllInPreview} disabled={!findQuery.trim()} className="rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40">Replace all</button>
+                    </div>
+                    <nav aria-label="Document heading outline" className="max-h-24 overflow-y-auto rounded border border-slate-300 bg-white p-1">
+                      {headingOutline.length ? headingOutline.map((heading) => (
+                        <button key={heading.index + '-' + heading.text} type="button" onClick={() => {
+                          const doc = exportPreviewRef.current?.contentDocument;
+                          const node = heading.node;
+                          if (!doc || !node?.isConnected) return;
+                          node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          const range = doc.createRange(); range.selectNodeContents(node); range.collapse(false);
+                          const selection = doc.defaultView?.getSelection(); selection?.removeAllRanges(); selection?.addRange(range); exportPreviewRef.current?.focus();
+                        }} className="block w-full truncate rounded px-2 py-1 text-left text-[11px] text-slate-700 hover:bg-indigo-50" style={{ paddingLeft: Math.min(28, 4 + (heading.level - 1) * 6) }} title={heading.text}>H{heading.level} - {heading.text}</button>
+                      )) : <span className="block px-2 py-1 text-[11px] text-slate-500">No headings yet.</span>}
+                    </nav>
+                  </div>
+                </details>
                 {/* Formatting toolbar */}
                 <div className="px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0" role="toolbar" aria-label={t("a11y.text_formatting")}>
                   {[
@@ -1867,6 +2343,8 @@ const _downloadBRF = (brf) => {
                         const doc = exportPreviewRef.current?.contentDocument;
                         if (!doc || doc.__alloPasteGuard) return;
                         doc.__alloPasteGuard = true;
+                        applyPageMargin(exportConfig.pageMargin || '1in');
+                        refreshDocumentStats();
                         const _sanitizeFragment = (html) => {
                           try {
                             const p = new DOMParser().parseFromString('<body>' + String(html || '') + '</body>', 'text/html');
@@ -1913,6 +2391,7 @@ const _downloadBRF = (brf) => {
                               setExportAuditResult(null);
                               setExportAuditLoading(false);
                             }
+                              refreshDocumentStats();
                             if (_capT) clearTimeout(_capT);
                             _capT = setTimeout(_captureEdits, 800);
                           } catch (_) {}

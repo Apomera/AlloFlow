@@ -171,6 +171,11 @@ describe('prism net (geoPrismNet)', () => {
     expect(P.geoPrismNet(slanted)).toBe(null);
     expect(P.geoPrismNet({ type: 'rect', position:[0,0,0], u:[1,0,0], v:[0,1,0] })).toBe(null);
   });
+  it('returns null for a prism with a sheared base', () => {
+    const shearedBase = { type:'prism', position:[0,0,0], u:[3,0,0], v:[1,4,0], w:[0,0,5] };
+    expect(P.geoStretchMeasure(shearedBase).oblique).toBe(false);
+    expect(P.geoPrismNet(shearedBase)).toBe(null);
+  });
 });
 
 describe('square-cube law scaling (geoScaleObject, geoScaleReport)', () => {
@@ -205,6 +210,20 @@ describe('square-cube law scaling (geoScaleObject, geoScaleReport)', () => {
   });
   it('null report for a point (0-D nothing to scale)', () => {
     expect(P.geoScaleReport({ type: 'point', position: [0,0,0] }, 2)).toBe(null);
+  });
+  it('scales tapered solids without dropping their shape data', () => {
+    const pyramid = { type: 'pyramid', position:[0,0,0], u:[3,0,0], v:[0,3,0], w:[0,0,4], topScale:0 };
+    const scaled = P.geoScaleObject(pyramid, 2);
+    expect(scaled.topScale).toBe(0);
+    expect(scaled.u).toEqual([6,0,0]);
+    const report = P.geoScaleReport(pyramid, 2);
+    expect(report.rows.find(function(r){ return r.label === 'Surface'; }).ratio).toBe(4);
+    expect(report.rows.find(function(r){ return r.label === 'Volume'; }).ratio).toBe(8);
+  });
+  it('returns null for unsupported solids instead of throwing during render', () => {
+    const revolution = P.revolveRect({ type:'rect', position:[0,0,0], u:[2,0,0], v:[0,3,0] }, 'y', 360, 48);
+    expect(P.geoScaleObject(revolution, 2)).toBe(null);
+    expect(P.geoScaleReport(revolution, 2)).toBe(null);
   });
   it('square-cube mission solves for a prism + its 2x similar copy', () => {
     const m = P.GEO_MISSIONS.find(function(x){ return x.id === 'squarecube'; });
@@ -382,6 +401,40 @@ describe('geoFormulaSteps (single-mode "show the math")', () => {
     expect(P.geoFormulaSteps('sphere', { r: 3 }).vol.value).toBeCloseTo(4 / 3 * Math.PI * 27, 4);
     expect(P.geoFormulaSteps('cone', { r: 2, h: 6 }).vol.value).toBeCloseTo(Math.PI * 4 * 6 / 3, 4);
   });
+  it('shows complete frustum substitutions instead of the cylinder formula or ellipses', () => {
+    const s = P.geoFormulaSteps('cylinder', { rTop: 1, rBot: 3, h: 4 });
+    expect(s.name).toBe('Frustum');
+    expect(s.vol.formula).toContain('r₁² + r₁r₂ + r₂²');
+    expect(s.vol.sub).toContain('(1)²');
+    expect(s.vol.sub).toContain('(3)²');
+    expect(s.vol.sub).not.toContain('…');
+    expect(s.sa.sub).toContain('[l=√');
+  });
+});
+
+describe('square-pyramid mesh dimensions', () => {
+  it('converts a base half-side to the square circumradius used by Three.js', () => {
+    const halfSide = 2;
+    const radius = P.geoPyramidGeometryRadius(halfSide);
+    expect(radius).toBeCloseTo(2 * Math.sqrt(2), 8);
+    expect(2 * radius * radius).toBeCloseTo(Math.pow(2 * halfSide, 2), 8);
+  });
+});
+
+describe('geoChallengeAnswerCorrect', () => {
+  it('accepts full shape names and intentional aliases, but rejects arbitrary fragments', () => {
+    const challenge = { type: 'identify', answer: 'Rectangular Prism' };
+    expect(P.geoChallengeAnswerCorrect(challenge, 'rectangular prism')).toBe(true);
+    expect(P.geoChallengeAnswerCorrect(challenge, 'cuboid')).toBe(true);
+    expect(P.geoChallengeAnswerCorrect(challenge, 'r')).toBe(false);
+    expect(P.geoChallengeAnswerCorrect(challenge, 'prism')).toBe(false);
+  });
+  it('requires exact integers for topology answers and strict numeric parsing', () => {
+    expect(P.geoChallengeAnswerCorrect({ type: 'faces', answer: 6 }, '6')).toBe(true);
+    expect(P.geoChallengeAnswerCorrect({ type: 'faces', answer: 6 }, '6.9')).toBe(false);
+    expect(P.geoChallengeAnswerCorrect({ type: 'volume', answer: 100 }, '104.9')).toBe(true);
+    expect(P.geoChallengeAnswerCorrect({ type: 'volume', answer: 100 }, '100 units')).toBe(false);
+  });
 });
 
 describe('geoCrossSection + geoConicSection (single-mode slicing)', () => {
@@ -429,6 +482,18 @@ describe('geoShapeNet + geoRealWorldScale (single-mode nets & scale)', () => {
     const wrap = net.pieces.find(function (p) { return p.kind === 'rect'; });
     expect(wrap.w).toBeCloseTo(2 * Math.PI * 2, 5);
     expect(net.pieces.filter(function (p) { return p.kind === 'circle'; }).length).toBe(2);
+  });
+  it('frustum net uses two unequal circles and an annular sector with matching rim arcs', () => {
+    const rTop = 1, rBot = 3, h = 4;
+    const net = P.geoShapeNet('cylinder', { rTop: rTop, rBot: rBot, h: h });
+    const side = net.pieces.find(function (p) { return p.kind === 'annularSector'; });
+    expect(side).toBeTruthy();
+    expect(net.pieces.filter(function (p) { return p.kind === 'circle'; }).map(function(p){ return p.r; })).toEqual([rTop, rBot]);
+    expect(side.angle * side.rOuter).toBeCloseTo(2 * Math.PI * rBot, 5);
+    expect(side.angle * side.rInner).toBeCloseTo(2 * Math.PI * rTop, 5);
+    const slant = Math.hypot(rBot - rTop, h);
+    const expectedSurface = Math.PI * (rTop * rTop + rBot * rBot + (rTop + rBot) * slant);
+    expect(net.pieces.reduce(function(sum, piece){ return sum + piece.area; }, 0)).toBeCloseTo(expectedSurface, 5);
   });
   it('sphere has no flat net', () => {
     expect(P.geoShapeNet('sphere', { r: 2 }).unfoldable).toBe(false);
@@ -481,5 +546,57 @@ describe('revolve triangle profile → true cone (Wave E)', () => {
     const cyl = P.revolutionVolume(P.revolveRect(rect, 'y', 360, 48, 'rect'));
     const cone = P.revolutionVolume(P.revolveRect(rect, 'y', 360, 48, 'triangle'));
     expect(cyl / cone).toBeCloseTo(3, 4);   // cone is a third of its cylinder
+  });
+});
+
+describe('geoDescribeScene (screen-reader scene summary)', () => {
+  it('describes a single solid with its measurements and units', () => {
+    const description = P.geoDescribeScene('single', 'box', { w: 2, h: 3, d: 4 }, null, 'cm');
+    expect(description).toContain('Single box');
+    expect(description).toContain('Volume 24 cm cubed');
+    expect(description).toContain('Surface area 52 cm squared');
+  });
+
+  it('summarizes construction types and the selected object', () => {
+    const construction = {
+      objects: [
+        { id: 1, type: 'point', position: [0,0,0] },
+        { id: 2, type: 'segment', position: [0,0,0], vector: [3,0,0] },
+        { id: 3, type: 'segment', position: [0,0,0], vector: [0,4,0] }
+      ],
+      selection: 2
+    };
+    const description = P.geoDescribeScene('stretch', null, null, construction, 'u');
+    expect(description).toContain('3 objects');
+    expect(description).toContain('1 point');
+    expect(description).toContain('2 segments');
+    expect(description).toContain('Selected Segment #2, Length: 3 u');
+  });
+
+  it('describes an empty stretch scene with a useful next action', () => {
+    expect(P.geoDescribeScene('stretch', null, null, { objects: [], selection: null }, 'u')).toContain('Add a point to begin');
+  });
+});
+describe('saved construction safety', () => {
+  it('creates a bounded unique name instead of overwriting an existing save', () => {
+    expect(P.geoUniqueSaveName('My build', {})).toBe('My build');
+    expect(P.geoUniqueSaveName('My build', { 'My build': {}, 'My build 2': {} })).toBe('My build 3');
+    const long = 'x'.repeat(60);
+    expect(P.geoUniqueSaveName(long, { [long.slice(0, 40)]: {} }).length).toBeLessThanOrEqual(40);
+  });
+
+  it('deep-clones loaded objects and repairs stale selection ids', () => {
+    const snapshot = { objects: [{ id: 7, type: 'point', position: [1, 0, 2] }], selection: 99 };
+    const restored = P.geoNormalizeConstruction(snapshot);
+    expect(restored.selection).toBe(7);
+    expect(restored.objects).toEqual(snapshot.objects);
+    expect(restored.objects).not.toBe(snapshot.objects);
+    restored.objects[0].position[0] = 42;
+    expect(snapshot.objects[0].position[0]).toBe(1);
+  });
+
+  it('normalizes malformed or empty snapshots safely', () => {
+    expect(P.geoNormalizeConstruction(null)).toEqual({ objects: [], selection: null });
+    expect(P.geoNormalizeConstruction({ objects: 'not-an-array', selection: 2 })).toEqual({ objects: [], selection: null });
   });
 });

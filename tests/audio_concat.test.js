@@ -52,10 +52,8 @@ describe('_concatAudioBlobs — two-pass single-allocation WAV stitch (byte-fait
     expect(Array.from(out.slice(44))).toEqual([1, 1, 2, 2, 3, 3]);
   });
 
-  it('uses the first segment sample rate (mixed-rate warns, does not crash)', async () => {
-    const out = await bytes(await _concatAudioBlobs([makeWav([1, 2], 22050), makeWav([3, 4], 24000)]));
-    expect(u32(out, 24)).toBe(22050);
-    expect(Array.from(out.slice(44))).toEqual([1, 2, 3, 4]);
+  it('rejects mixed sample rates instead of pitch-shifting later sections', async () => {
+    expect(await _concatAudioBlobs([makeWav([1, 2], 22050), makeWav([3, 4], 24000)])).toBe(null);
   });
 
   it('returns the single blob unchanged for a one-element array', async () => {
@@ -71,6 +69,29 @@ describe('_concatAudioBlobs — two-pass single-allocation WAV stitch (byte-fait
     const mp3 = new Blob([new Uint8Array([0xff, 0xfb, 0x10, 0x20])], { type: 'audio/mpeg' });
     expect(await _concatAudioBlobs([makeWav([1, 2], 24000), mp3])).toBe(null);
     expect(await _concatAudioBlobs([mp3, makeWav([1, 2], 24000)])).toBe(null);
+  });
+
+  it('rejects incompatible PCM layouts and malformed declared chunk sizes', async () => {
+    const stereoBytes = await bytes(makeWav([1, 2, 3, 4], 24000));
+    stereoBytes[22] = 2; // channels
+    const stereo = new Blob([stereoBytes], { type: 'audio/wav' });
+    expect(await _concatAudioBlobs([makeWav([1, 2], 24000), stereo])).toBe(null);
+
+    const malformedBytes = await bytes(makeWav([3, 4], 24000));
+    malformedBytes[40] = 200; // declared data size runs beyond the blob
+    const malformed = new Blob([malformedBytes], { type: 'audio/wav' });
+    expect(await _concatAudioBlobs([makeWav([1, 2], 24000), malformed])).toBe(null);
+  });
+
+  it('copies only the declared data chunk and excludes trailing metadata', async () => {
+    const base = await bytes(makeWav([1, 2], 24000));
+    const extended = new Uint8Array(base.length + 12);
+    extended.set(base);
+    extended.set([0x4c, 0x49, 0x53, 0x54, 4, 0, 0, 0, 9, 9, 9, 9], base.length); // LIST chunk
+    const first = new Blob([extended], { type: 'audio/wav' });
+    const out = await bytes(await _concatAudioBlobs([first, makeWav([3, 4], 24000)]));
+    expect(Array.from(out.slice(44))).toEqual([1, 2, 3, 4]);
+    expect(u32(out, 40)).toBe(4);
   });
 
   it('non-WAV (mp3) input is frame-concatenated, not WAV-stitched', async () => {
