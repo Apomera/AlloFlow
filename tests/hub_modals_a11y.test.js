@@ -17,14 +17,10 @@ describe.each(surfaces)('%s modal accessibility', (_name, sourcePath, modulePath
   it('contains focus, closes with Escape, and restores the trigger', () => {
     expect(source).toContain("if (event.key === 'Escape')");
     expect(source).toContain("if (event.key !== 'Tab') return");
-    if (_name === 'Learning Hub') {
-      expect(source).toContain('window.__alloFocusTrapStack');
-      expect(source).toContain('if (!isTopTrap()) return');
-      expect(source).toContain("document.addEventListener('keydown', onKeyDown)");
-      expect(source).toContain('previousFocus.isConnected');
-    } else {
-      expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()");
-    }
+    expect(source).toContain('window.__alloFocusTrapStack');
+    expect(source).toContain('if (!isTopTrap()) return');
+    expect(source).toContain("document.addEventListener('keydown', onKeyDown)");
+    expect(source).toContain('previousFocus.isConnected');
   });
   it('synchronizes its public module', () => {
     expect(fs.readFileSync(`prismflow-deploy/public/${modulePath}`, 'utf8')).toBe(fs.readFileSync(modulePath, 'utf8'));
@@ -41,5 +37,21 @@ describe('Learning Hub launcher grid accessibility', () => {
     expect(source).toContain('min-w-11 min-h-11');
     expect(source.match(/motion-reduce:transform-none/g)).toHaveLength(14);
     expect(source).not.toMatch(/<span className="text-4xl"(?![^>]*aria-hidden)/);
+  });
+});
+
+
+describe('Educator Hub launcher grid accessibility', () => {
+  const source = fs.readFileSync('view_educator_hub_modal_source.jsx', 'utf8');
+  it('uses visible naming, explicit controls, reduced motion, and a separate status summary', () => {
+    expect(source).toContain('aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle"');
+    expect(source.match(/<button\b/g)).toHaveLength(19);
+    expect(source.match(/type="button"/g)).toHaveLength(19);
+    expect(source.match(/motion-reduce:transform-none/g)).toHaveLength(14);
+    expect(source).toContain('role="region" aria-labelledby="educator-platform-results-title"');
+    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true">Platform check complete.');
+    expect(source).not.toContain('rounded-lg p-2 text-[11px]" role="status"');
+    expect(source).toContain('min-w-11 min-h-11');
+    expect(source).toMatch(/<span aria-hidden="true">[^<]+<\/span> \{t\('pdf_audit\.view_last_audit'\)/);
   });
 });

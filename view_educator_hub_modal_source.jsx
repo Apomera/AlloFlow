@@ -51,20 +51,40 @@ function EducatorHubModal(props) {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
-    const getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
+    const getFocusable = function () {
+      return Array.from(dialog.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      )).filter(function (element) {
+        if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      });
+    };
     const first = getFocusable()[0];
     (first || dialog).focus();
     const onKeyDown = function (event) {
-      if (event.key === 'Escape') { event.preventDefault(); setShowEducatorHub(false); return; }
+      if (!isTopTrap()) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setShowEducatorHub(false); return; }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
       else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
     };
-    dialog.addEventListener('keydown', onKeyDown);
-    return function () { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
+    document.addEventListener('keydown', onKeyDown);
+    return function () {
+      document.removeEventListener('keydown', onKeyDown);
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
   }, [setShowEducatorHub]);
 
   // ── Platform Check (2026-06-12) ──
@@ -181,32 +201,32 @@ function EducatorHubModal(props) {
   const _probeReportText = () => !platProbe ? '' : ('AlloFlow Platform Check — ' + platProbe.when + '\n' + (typeof navigator !== 'undefined' ? navigator.userAgent : '') + '\n\n' + platProbe.rows.map((r) => '[' + r.status.toUpperCase() + '] ' + r.name + ' — ' + r.detail).join('\n'));
 
   return (
-        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} onClick={() => setShowEducatorHub(false)}>
+        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={() => setShowEducatorHub(false)}>
           {/* allo-docsuite: portal modal rendered OUTSIDE the .allo-docsuite content wrapper,
               so the theme-dark gradient/text remaps never reached its pastel cards. Opting into
               the scope class inherits the existing dark remap (from-*-50 -> dark, text -> light).
               No-op in light mode (all .allo-docsuite rules are .theme-dark / .theme-contrast). */}
-          <div ref={dialogRef} tabIndex={-1} data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
+          <div ref={dialogRef} tabIndex={-1} data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
-                <p className="text-sm text-slate-600 mt-1">{t('educator_hub.subtitle') || 'Professional tools for educators and clinicians'}</p>
+                <h2 id="educator-hub-title" className="text-xl font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">🛠️</span> {t('educator_hub.title') || 'Educator Tools'}</h2>
+                <p id="educator-hub-subtitle" className="text-sm text-slate-600 mt-1">{t('educator_hub.subtitle') || 'Professional tools for educators and clinicians'}</p>
               </div>
-              <button onClick={() => setShowEducatorHub(false)} className="p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
+              <button type="button" onClick={() => setShowEducatorHub(false)} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Bridge card removed 2026-07-02 (Aaron): the header Bridge button is the
                   single entry point now. setBridgeSendOpen prop stays accepted (unused)
                   so hosts that still pass it render unchanged. */}
-              <button data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🧠</span>
+              <button type="button" data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🧠</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.behavior_lens_desc') || 'FBA/BIP behavioral observation, ABC data collection, and 60+ clinical tools'}</p>
                 </div>
               </button>
-              <button data-help-key="educator_hub_report_writer_card" onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">📝</span>
+              <button type="button" data-help-key="educator_hub_report_writer_card" onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">📝</span>
                 <div>
                   <h3 className="font-bold text-violet-800">{t('educator_hub.report_writer_title') || 'Report Writer'}</h3>
                   <p className="text-xs text-violet-600 mt-1">{t('educator_hub.report_writer_desc') || 'AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms'}</p>
@@ -216,22 +236,22 @@ function EducatorHubModal(props) {
                   Video Studio as the "NotebookLM / AI-video tools" entry — one video
                   card instead of two confusing ones. setShowCinematicStudio prop stays
                   accepted (unused) so hosts that still pass it render unchanged. */}
-              <button data-help-key="educator_hub_video_studio_card" onClick={() => { setShowEducatorHub(false); setIsVideoStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🎥</span>
+              <button type="button" data-help-key="educator_hub_video_studio_card" onClick={() => { setShowEducatorHub(false); setIsVideoStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🎥</span>
                 <div>
                   <h3 className="font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</h3>
                   <p className="text-xs text-sky-600 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export video demos — plus prompt tools for NotebookLM and other AI video generators'}</p>
                 </div>
               </button>
-              <button data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🎨</span>
+              <button type="button" data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
                 <div>
                   <h3 className="font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'AlloStudio'}</h3>
                   <p className="text-xs text-rose-600 mt-1">{t('educator_hub.allo_studio_desc') || 'Design flyers, worksheets, and posters that export born-accessible (tagged PDF, real reading order, enforced alt text) — with a process timeline that shows what was made by hand vs. AI'}</p>
                 </div>
               </button>
-              <button data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🎨</span>
+              <button type="button" data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
                 <div>
                   <h3 className="font-bold text-purple-800">{t('educator_hub.symbol_studio_title') || 'Symbol Studio'}</h3>
                   <p className="text-xs text-purple-600 mt-1">{t('educator_hub.symbol_studio_desc') || 'AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing'}</p>
@@ -241,42 +261,42 @@ function EducatorHubModal(props) {
                   in its own window — the escape-hatch popup pattern, so it works inside the
                   Gemini Canvas sandbox. A general, cross-subject "multiple means of
                   expression" tool, so it lives here in the Educator Hub, not the STEM grid. */}
-              <button data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { openWhiteboard(); } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">✏️</span>
+              <button type="button" data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { openWhiteboard(); } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">✏️</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.whiteboard_desc') || 'A freehand canvas (Excalidraw) to sketch ideas, build diagrams, and map thinking — with ready-made graphic organizers (Venn, T-chart, story map, KWL, concept web, number line) and one-click image export.'}</p>
                 </div>
               </button>
-              <button data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🔬</span>
+              <button type="button" data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🔬</span>
                 <div>
                   <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
                   <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs'}</p>
                 </div>
               </button>
-              <button data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🪄</span>
+              <button type="button" data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🪄</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.lesson_builder_title') || 'Help me build a lesson'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.lesson_builder_desc') || "I'll ask you a few questions and build a differentiated lesson with you, step by step."}</p>
                 </div>
               </button>
-              <button data-help-key="educator_hub_lumen_card" onClick={() => { setShowEducatorHub(false); setLabToolData(prev => ({ ...prev, lumen: { ...((prev && prev.lumen) || {}), mode: 'home' } })); setStemLabTool('lumen'); setShowStemLab(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">💡</span>
+              <button type="button" data-help-key="educator_hub_lumen_card" onClick={() => { setShowEducatorHub(false); setLabToolData(prev => ({ ...prev, lumen: { ...((prev && prev.lumen) || {}), mode: 'home' } })); setStemLabTool('lumen'); setShowStemLab(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">💡</span>
                 <div>
                   <h3 className="font-bold text-amber-800">{t('educator_hub.lumen_title') || 'Lumen'}</h3>
                   <p className="text-xs text-amber-600 mt-1">{t('educator_hub.lumen_desc') || 'Study sources or analyze data in one evidence workspace. Grounded answers cite exact passages; data findings keep uncertainty and provenance visible.'}</p>
                 </div>
               </button>
-              <button data-help-key="educator_hub_document_hub_card" onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">📄</span>
+              <button type="button" data-help-key="educator_hub_document_hub_card" onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">📄</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">{t('educator_hub.document_hub_title') || 'Document Hub'}</h3>
                   <p className="text-xs text-emerald-600 mt-1">{t('educator_hub.document_hub_desc') || 'Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)'}</p>
                 </div>
               </button>
-              <button data-help-key="educator_hub_pdf_accessibility_card" onClick={() => {
+              <button type="button" data-help-key="educator_hub_pdf_accessibility_card" onClick={() => {
                   setShowEducatorHub(false);
                   const input = document.createElement('input');
                   input.type = 'file';
@@ -323,25 +343,25 @@ function EducatorHubModal(props) {
                       }
                   };
                   input.click();
-              }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">♿</span>
+              }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">♿</span>
                 <div>
                   <h3 className="font-bold text-teal-800">{t('educator_hub.pdf_accessibility_title') || 'PDF Accessibility'}</h3>
                   <p className="text-xs text-teal-600 mt-1">{t('educator_hub.pdf_accessibility_desc') || 'Upload PDFs for WCAG accessibility audit & remediation with axe-core verification'}</p>
                 </div>
               </button>
               {pdfFixResult && !pdfFixLoading && !pdfAuditResult && (
-                <button
+                <button type="button"
                   onClick={() => { setPdfAuditResult({ _restored: true }); }}
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold transition-all col-span-full md:col-span-2"
+                  className="min-h-11 flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold transition-all col-span-full md:col-span-2"
                   title={t('educator_hub.view_last_audit_tooltip') || 'Re-open the last PDF audit — view the diff, verification, and remediated HTML without re-running the pipeline'}
                 >
-                  📊 {t('pdf_audit.view_last_audit') || 'View Last Audit'}
+                  <span aria-hidden="true">📊</span> {t('pdf_audit.view_last_audit') || 'View Last Audit'}
                   {pdfFixResult._userEditedAt && <span className="opacity-70 text-[10px]">· edited</span>}
                 </button>
               )}
-              <button data-help-key="educator_hub_community_catalog_card" onClick={() => { setShowEducatorHub(false); setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.books_emoji_aria') || 'books'}>📚</span>
+              <button type="button" data-help-key="educator_hub_community_catalog_card" onClick={() => { setShowEducatorHub(false); setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">📚</span>
                 <div>
                   <h3 className="font-bold text-amber-800">{t('educator_hub.community_catalog_title') || 'Community Catalog'}</h3>
                   <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons from the AlloFlow community, or submit your own for review'}</p>
@@ -350,8 +370,8 @@ function EducatorHubModal(props) {
               {/* Professional Development (2026-06-19): opens the Community Catalog modal straight to
                   its PD tab via a one-shot intent flag the catalog module reads itself — so this reuses
                   the existing setIsCommunityCatalogOpen prop and needs no new host wiring. */}
-              <button data-help-key="educator_hub_professional_dev_card" onClick={() => { setShowEducatorHub(false); try { window.__alloPdIntent = true; localStorage.setItem('alloflow_pd_intent', '1'); } catch (_) {} setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.graduation_emoji_aria') || 'graduation cap'}>🎓</span>
+              <button type="button" data-help-key="educator_hub_professional_dev_card" onClick={() => { setShowEducatorHub(false); try { window.__alloPdIntent = true; localStorage.setItem('alloflow_pd_intent', '1'); } catch (_) {} setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🎓</span>
                 <div>
                   <h3 className="font-bold text-sky-800">{t('educator_hub.professional_dev_title') || 'Professional Development'}</h3>
                   <p className="text-xs text-sky-700 mt-1">{t('educator_hub.professional_dev_desc') || 'Short, self-paced PD modules — learn, take a knowledge check, and download a completion record'}</p>
@@ -361,15 +381,16 @@ function EducatorHubModal(props) {
                   it's developer-focused — keep it findable, not billboard-sized). */}
               <div data-help-key="educator_hub_platform_check_card" className="col-span-full flex flex-col gap-2">
                 <div className="flex items-center gap-2 justify-end">
-                  <button onClick={_runPlatformProbe} className="text-[11px] text-slate-500 hover:text-slate-700 underline decoration-dotted" title={t('educator_hub.platform_check_desc') || 'Tests what this environment can do — pop-ups, downloads, storage, WebAssembly, clipboard, CDN reach. For troubleshooting; copy the report when something seems broken.'}>🔬 {t('educator_hub.platform_check_title') || 'Platform check (diagnostics)'}</button>
-                  <button data-help-ignore="true" onClick={() => { let v = null; try { v = window.confirm(t('educator_hub.dialog_probe_q') || 'Dialog test: click OK.'); } catch (e) { v = 'threw: ' + e.message; }
-                    setPlatProbe((p) => ({ when: (p && p.when) || new Date().toLocaleString(), rows: [...((p && p.rows) || []).filter((r) => r.name !== 'Dialogs (live test)'), { name: 'Dialogs (live test)', status: v === true ? 'pass' : (v === false ? 'warn' : 'fail'), detail: v === true ? 'confirm() returned true after OK — dialogs work' : (v === false ? 'confirm() returned FALSE — either you clicked Cancel, or the sandbox suppressed the dialog (if you never saw one, it is suppressed and confirm-gated flows auto-decline here)' : String(v)) }] })); }} className="text-[11px] text-slate-500 hover:text-slate-700 underline decoration-dotted">🧪 {t('educator_hub.platform_check_dialog') || 'dialog test'}</button>
+                  <button type="button" onClick={_runPlatformProbe} className="min-h-11 px-2 text-[11px] text-slate-600 hover:text-slate-700 underline decoration-dotted" title={t('educator_hub.platform_check_desc') || 'Tests what this environment can do — pop-ups, downloads, storage, WebAssembly, clipboard, CDN reach. For troubleshooting; copy the report when something seems broken.'}><span aria-hidden="true">🔬</span> {t('educator_hub.platform_check_title') || 'Platform check (diagnostics)'}</button>
+                  <button type="button" data-help-ignore="true" onClick={() => { let v = null; try { v = window.confirm(t('educator_hub.dialog_probe_q') || 'Dialog test: click OK.'); } catch (e) { v = 'threw: ' + e.message; }
+                    setPlatProbe((p) => ({ when: (p && p.when) || new Date().toLocaleString(), rows: [...((p && p.rows) || []).filter((r) => r.name !== 'Dialogs (live test)'), { name: 'Dialogs (live test)', status: v === true ? 'pass' : (v === false ? 'warn' : 'fail'), detail: v === true ? 'confirm() returned true after OK — dialogs work' : (v === false ? 'confirm() returned FALSE — either you clicked Cancel, or the sandbox suppressed the dialog (if you never saw one, it is suppressed and confirm-gated flows auto-decline here)' : String(v)) }] })); }} className="min-h-11 px-2 text-[11px] text-slate-600 hover:text-slate-700 underline decoration-dotted"><span aria-hidden="true">🧪</span> {t('educator_hub.platform_check_dialog') || 'dialog test'}</button>
                 </div>
                 {platProbe && (
-                  <div className="bg-white border border-slate-300 rounded-lg p-2 text-[11px]" role="status">
+                  <>
+                  <div className="bg-white border border-slate-300 rounded-lg p-2 text-[11px]" role="region" aria-labelledby="educator-platform-results-title">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-700">{t('educator_hub.platform_check_results') || 'Results'} — {platProbe.when}</span>
-                      <button onClick={async () => { const txt = _probeReportText(); try { await navigator.clipboard.writeText(txt); } catch (_) { try { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); } catch (_) {} } }} className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200">📋 {t('educator_hub.platform_check_copy') || 'Copy report'}</button>
+                      <span id="educator-platform-results-title" className="font-bold text-slate-700">{t('educator_hub.platform_check_results') || 'Results'} — {platProbe.when}</span>
+                      <button type="button" onClick={async () => { const txt = _probeReportText(); try { await navigator.clipboard.writeText(txt); } catch (_) { try { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); } catch (_) {} } }} className="min-h-11 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200"><span aria-hidden="true">📋</span> {t('educator_hub.platform_check_copy') || 'Copy report'}</button>
                     </div>
                     <ul className="space-y-0.5">
                       {platProbe.rows.map((r, i) => (
@@ -380,10 +401,12 @@ function EducatorHubModal(props) {
                       ))}
                     </ul>
                   </div>
+                  <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">Platform check complete. {platProbe.rows.length} results available.</div>
+                  </>
                 )}
               </div>
-              <button data-help-key="educator_hub_accessibility_lab_card" onClick={() => { setShowEducatorHub(false); setIsAccessibilityLabOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.magnifying_glass_emoji_aria') || 'magnifying glass'}>🔍</span>
+              <button type="button" data-help-key="educator_hub_accessibility_lab_card" onClick={() => { setShowEducatorHub(false); setIsAccessibilityLabOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🔍</span>
                 <div>
                   <h3 className="font-bold text-rose-800">{t('educator_hub.accessibility_lab_title') || 'Accessibility Lab'}</h3>
                   <p className="text-xs text-rose-700 mt-1">{t('educator_hub.accessibility_lab_desc') || 'Verify the student experience: preview as student, keyboard-only tour, live WCAG audit (axe-core) with violations framed by student impact, screen-reader announcement preview, and disability simulators (low-vision, color-blindness, dyslexia, motor delay).'}</p>
