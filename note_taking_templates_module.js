@@ -304,9 +304,10 @@ function _calculateNotesXPScore(rubric, isFirstTime) {
 }
 const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t }) => {
   if (!feedback) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 pb-6" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-amber-50 border-2 border-emerald-300 rounded-xl p-5 shadow-md animate-in slide-in-from-bottom-2 duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, "\u{1F4AC}"), /* @__PURE__ */ React.createElement("h3", { className: "font-black text-base text-emerald-800" }, t("notes_feedback.title") || "Feedback on your notes")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 pb-6" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-amber-50 border-2 border-emerald-300 rounded-xl p-5 shadow-md animate-in motion-reduce:animate-none slide-in-from-bottom-2 duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, "\u{1F4AC}"), /* @__PURE__ */ React.createElement("h3", { className: "font-black text-base text-emerald-800" }, t("notes_feedback.title") || "Feedback on your notes")), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onDismiss,
       className: "text-slate-600 hover:text-slate-600 text-lg leading-none",
       "aria-label": t("notes_feedback.dismiss_aria") || "Dismiss feedback"
@@ -422,9 +423,10 @@ const _GetFeedbackButton = ({ onClick, isLoading, t, colorClass = "emerald" }) =
   return /* @__PURE__ */ React.createElement("div", { className: "flex justify-center pt-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick,
       disabled: isLoading,
-      className: `px-5 py-2 text-sm font-bold rounded-full border shadow-sm transition-all ${palette} disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2`,
+      className: `px-5 py-2 text-sm font-bold rounded-full border shadow-sm transition-all motion-reduce:transition-none ${palette} disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2`,
       "aria-busy": isLoading,
       "data-help-key": "notes_feedback_button"
     },
@@ -505,6 +507,7 @@ const CornellNotesView = React.memo((props) => {
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => handleRemoveRow(idx),
         className: "absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1",
         "aria-label": `Remove row ${idx + 1}`,
@@ -515,6 +518,7 @@ const CornellNotesView = React.memo((props) => {
   })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleAddRow,
       className: "px-4 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-300 rounded-full hover:bg-indigo-100",
       "aria-label": t("a11y.cornell_add_row"),
@@ -607,7 +611,7 @@ const LabReportView = React.memo((props) => {
       className: "flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-300",
       "aria-label": `Material ${idx + 1}`
     }
-  ), /* @__PURE__ */ React.createElement("button", { onClick: () => removeMaterialAt(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs", "aria-label": t("a11y.remove_material") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { onClick: addMaterial, className: "mt-2 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200" }, "+ Add material")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Procedure", hint: "Number each step. Another student should be able to follow your procedure and reproduce your experiment.", color: "emerald" }, /* @__PURE__ */ React.createElement("ol", { className: "space-y-1" }, procedure.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "No steps added yet.") : procedure.map((s, idx) => /* @__PURE__ */ React.createElement("li", { key: s.id || idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs font-bold mt-1.5 w-5 flex-shrink-0" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeMaterialAt(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs", "aria-label": t("a11y.remove_material") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addMaterial, className: "mt-2 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200" }, "+ Add material")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Procedure", hint: "Number each step. Another student should be able to follow your procedure and reproduce your experiment.", color: "emerald" }, /* @__PURE__ */ React.createElement("ol", { className: "space-y-1" }, procedure.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "No steps added yet.") : procedure.map((s, idx) => /* @__PURE__ */ React.createElement("li", { key: s.id || idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs font-bold mt-1.5 w-5 flex-shrink-0" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: s.text || "",
@@ -616,7 +620,7 @@ const LabReportView = React.memo((props) => {
       rows: 1,
       "aria-label": `Procedure step ${idx + 1}`
     }
-  ), /* @__PURE__ */ React.createElement("button", { onClick: () => removeProcedureStepAt(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": t("a11y.remove_step") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { onClick: addProcedureStep, className: "mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200", "data-help-key": "lab_report_add_step_button" }, "+ Add step")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Data / Observations", hint: "Record what you see, measure, or count. Use specific numbers and units when possible.", color: "indigo" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeProcedureStepAt(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": t("a11y.remove_step") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addProcedureStep, className: "mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200", "data-help-key": "lab_report_add_step_button" }, "+ Add step")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Data / Observations", hint: "Record what you see, measure, or count. Use specific numbers and units when possible.", color: "indigo" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: dataObservations,
@@ -729,6 +733,7 @@ const ReadingResponseView = React.memo((props) => {
   )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Connection", hint: activeConnType.hint, color: "sky" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", "data-help-key": "reading_response_connection_type_toggle" }, connTypes.map((ct) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: ct.id,
       onClick: () => setConnectionType(ct.id),
       className: `px-3 py-1 text-xs font-bold rounded-full border ${connection.type === ct.id ? "bg-sky-600 text-white border-sky-700" : "bg-white text-sky-700 border-sky-300 hover:bg-sky-50"}`,
@@ -816,6 +821,7 @@ const DoubleEntryView = React.memo((props) => {
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => removeRow(idx),
         className: "absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1",
         "aria-label": `Remove row ${idx + 1}`,
@@ -826,6 +832,7 @@ const DoubleEntryView = React.memo((props) => {
   })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: addRow,
       className: "px-4 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full hover:bg-rose-100",
       "aria-label": "Add a new quote and response row",
@@ -861,7 +868,7 @@ const GuidedNotesView = React.memo((props) => {
       value: title,
       onChange: (e) => handleNoteUpdate("title", e.target.value),
       placeholder: "Today's lesson title",
-      className: "w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-emerald-500 outline-none py-1",
+      className: "w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-emerald-500 outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 py-1",
       "aria-label": "Lesson title",
       "data-help-key": "guided_notes_title_field"
     }
@@ -877,7 +884,7 @@ const GuidedNotesView = React.memo((props) => {
         value: studentAnswer,
         onChange: (e) => updateBlank(idx, e.target.value),
         placeholder: "________",
-        className: `inline-block mx-1 px-2 py-0.5 text-sm font-semibold text-slate-800 bg-white border-b-2 rounded-sm outline-none align-baseline ${inputBorder}`,
+        className: `inline-block mx-1 px-2 py-0.5 text-sm font-semibold text-slate-800 bg-white border-b-2 rounded-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 align-baseline ${inputBorder}`,
         "aria-label": `Blank ${idx + 1}`,
         style: { width: Math.max(110, ((b.answer || "").length + 4) * 9) + "px" }
       }
@@ -885,6 +892,7 @@ const GuidedNotesView = React.memo((props) => {
   })), blanks.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-4" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setRevealed((r) => !r),
       className: "px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-full hover:bg-emerald-200",
       "aria-pressed": revealed,
@@ -931,6 +939,7 @@ const QAndAView = React.memo((props) => {
   return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "qanda_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-cyan-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-cyan-700 uppercase tracking-wider mb-1" }, "Q&A Study Notes"), hasStudyable ? /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setQuizMode((q) => !q),
       className: "px-3 py-1 text-xs font-bold rounded-full border border-cyan-300 text-cyan-800 bg-cyan-50 hover:bg-cyan-100",
       "aria-pressed": quizMode,
@@ -950,7 +959,7 @@ const QAndAView = React.memo((props) => {
     }
   ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, "Started: ", new Date(lessonRef.generatedAt).toLocaleString()) : null), quizMode ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3", "data-help-key": "qanda_quiz_view" }, quizPairs.map((p, idx) => {
     const key = p.id || idx;
-    return /* @__PURE__ */ React.createElement("div", { key, className: "bg-white border border-slate-200 rounded-lg p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 mr-1" }, "Q", idx + 1, "."), p.question), shown[key] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 bg-cyan-50 border-l-4 border-cyan-400 rounded-r p-2" }, (p.answer || "").trim() ? p.answer : /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, "No answer written yet.")), /* @__PURE__ */ React.createElement("button", { onClick: () => toggleShown(key), className: "mt-2 text-[11px] text-slate-500 hover:text-slate-700 underline" }, "Hide answer")) : /* @__PURE__ */ React.createElement("button", { onClick: () => toggleShown(key), className: "text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full px-3 py-1 hover:bg-cyan-100" }, "Show answer"));
+    return /* @__PURE__ */ React.createElement("div", { key, className: "bg-white border border-slate-200 rounded-lg p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 mr-1" }, "Q", idx + 1, "."), p.question), shown[key] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 bg-cyan-50 border-l-4 border-cyan-400 rounded-r p-2" }, (p.answer || "").trim() ? p.answer : /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, "No answer written yet.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "mt-2 text-[11px] text-slate-500 hover:text-slate-700 underline" }, "Hide answer")) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full px-3 py-1 hover:bg-cyan-100" }, "Show answer"));
   })) : /* @__PURE__ */ React.createElement(React.Fragment, null, Array.from({ length: rowCount }).map((_, idx) => {
     const p = pairs[idx] || { question: "", answer: "" };
     return /* @__PURE__ */ React.createElement("div", { key: p && p.id || idx, className: "bg-white border border-slate-200 rounded-lg p-3 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 text-xs font-black mt-2 w-8 flex-shrink-0" }, "Q", idx + 1), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
@@ -973,10 +982,11 @@ const QAndAView = React.memo((props) => {
         rows: 2,
         "aria-label": `Answer ${idx + 1}`
       }
-    )), /* @__PURE__ */ React.createElement("button", { onClick: () => removePair(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": `Remove pair ${idx + 1}`, title: "Remove" }, "\u2715")));
+    )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removePair(idx), className: "opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": `Remove pair ${idx + 1}`, title: "Remove" }, "\u2715")));
   }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: addPair,
       className: "px-4 py-1.5 text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full hover:bg-cyan-100",
       "aria-label": "Add a question and answer pair",
@@ -1188,7 +1198,7 @@ const _NoteInsightsModal = ({ isOpen, onClose, insights, isLoading, t }) => {
   const dialogRef = React.useRef(null);
   _useNoteDialogFocus(isOpen, dialogRef, onClose);
   if (!isOpen) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[110] flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", onClick: onClose, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "note-insights-modal-title", "aria-describedby": "note-insights-modal-subtitle" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase tracking-wider" }, "Note-Taking Insights"), /* @__PURE__ */ React.createElement("h2", { id: "note-insights-modal-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CA}"), " ", t("note_insights.title") || "Your note-taking patterns"), /* @__PURE__ */ React.createElement("p", { id: "note-insights-modal-subtitle", className: "text-xs text-slate-600 mt-1 leading-snug" }, t("note_insights.subtitle") || "Growth-focused observations across your saved entries. Not a grade \u2014 a mirror.")), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100", "aria-label": t("note_insights.close_aria") || "Close insights" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3" }, isLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 animate-pulse", "aria-hidden": "true" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, t("note_insights.loading") || "Looking across your notebook..."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-1" }, t("note_insights.loading_hint") || "This takes a few seconds \u2014 patterns need a careful read.")) : !insights ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-500 text-sm" }, t("note_insights.no_data") || "No insights yet.") : /* @__PURE__ */ React.createElement(React.Fragment, null, insights.summary ? /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("note_insights.overview_label") || "Overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.summary)) : null, Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-xl p-4 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("note_insights.try_next_label") || "Try next:"), " ", p.tryNext))), insights.celebration ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 mt-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("note_insights.celebration_label") || "Keep doing this"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration)) : null)), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 italic" }, t("note_insights.footer") || "These observations are a mirror, not a grade. Use what's useful, set aside what isn't.")));
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[110] flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", onClick: onClose, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none focus:ring-4 focus:ring-inset focus:ring-indigo-500", role: "dialog", "aria-modal": "true", "aria-labelledby": "note-insights-modal-title", "aria-describedby": "note-insights-modal-subtitle" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase tracking-wider" }, "Note-Taking Insights"), /* @__PURE__ */ React.createElement("h2", { id: "note-insights-modal-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CA}"), " ", t("note_insights.title") || "Your note-taking patterns"), /* @__PURE__ */ React.createElement("p", { id: "note-insights-modal-subtitle", className: "text-xs text-slate-600 mt-1 leading-snug" }, t("note_insights.subtitle") || "Growth-focused observations across your saved entries. Not a grade \u2014 a mirror.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100", "aria-label": t("note_insights.close_aria") || "Close insights" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3" }, isLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, t("note_insights.loading") || "Looking across your notebook..."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-1" }, t("note_insights.loading_hint") || "This takes a few seconds \u2014 patterns need a careful read.")) : !insights ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-500 text-sm" }, t("note_insights.no_data") || "No insights yet.") : /* @__PURE__ */ React.createElement(React.Fragment, null, insights.summary ? /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("note_insights.overview_label") || "Overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.summary)) : null, Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-xl p-4 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("note_insights.try_next_label") || "Try next:"), " ", p.tryNext))), insights.celebration ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 mt-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("note_insights.celebration_label") || "Keep doing this"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration)) : null)), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 italic" }, t("note_insights.footer") || "These observations are a mirror, not a grade. Use what's useful, set aside what isn't.")));
 };
 const NotebookOverlay = React.memo((props) => {
   const isOpen = !!props.isOpen;
@@ -1284,9 +1294,10 @@ const NotebookOverlay = React.memo((props) => {
         "aria-hidden": "true"
       }
     ),
-    /* @__PURE__ */ React.createElement("div", { ref: notebookDialogRef, tabIndex: -1, className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "notebook-dialog-title", "aria-describedby": "notebook-dialog-description", inert: insightsOpen ? true : void 0, "aria-hidden": insightsOpen ? "true" : void 0 }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider" }, "My Notebook"), /* @__PURE__ */ React.createElement("h2", { id: "notebook-dialog-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D3}"), " Notebook"), /* @__PURE__ */ React.createElement("p", { id: "notebook-dialog-description", className: "text-xs text-slate-600 mt-1 leading-snug" }, "Everything you've saved across sessions \u2014 Cornell Notes, Lab Reports, Reading Responses, Double-Entry Journals, Guided Notes, Q&A sets, and Anchor Charts.")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { ref: notebookDialogRef, tabIndex: -1, className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none focus:ring-4 focus:ring-inset focus:ring-indigo-500", role: "dialog", "aria-modal": "true", "aria-labelledby": "notebook-dialog-title", "aria-describedby": "notebook-dialog-description", inert: insightsOpen ? true : void 0, "aria-hidden": insightsOpen ? "true" : void 0 }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider" }, "My Notebook"), /* @__PURE__ */ React.createElement("h2", { id: "notebook-dialog-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D3}"), " Notebook"), /* @__PURE__ */ React.createElement("p", { id: "notebook-dialog-description", className: "text-xs text-slate-600 mt-1 leading-snug" }, "Everything you've saved across sessions \u2014 Cornell Notes, Lab Reports, Reading Responses, Double-Entry Journals, Guided Notes, Q&A sets, and Anchor Charts.")), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: onClose,
         className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100",
         "aria-label": "Close notebook",
@@ -1299,9 +1310,10 @@ const NotebookOverlay = React.memo((props) => {
       return /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           key: f.id,
           onClick: () => setActiveFilter(f.id),
-          className: `px-3 py-1.5 text-xs font-bold rounded-full border transition-colors ${isActive ? _accentClasses(f.accent, "chip") : _accentClasses(f.accent, "chipOff")}`,
+          className: `px-3 py-1.5 text-xs font-bold rounded-full border transition-colors motion-reduce:transition-none ${isActive ? _accentClasses(f.accent, "chip") : _accentClasses(f.accent, "chipOff")}`,
           "aria-pressed": isActive
         },
         f.label,
@@ -1311,6 +1323,7 @@ const NotebookOverlay = React.memo((props) => {
     }), /* @__PURE__ */ React.createElement("div", { className: "ml-auto flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: handleGenerateInsights,
         disabled: insightsLoading || noteEntries.length < 2,
         className: "px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1",
@@ -1324,6 +1337,7 @@ const NotebookOverlay = React.memo((props) => {
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: handlePrintAll,
         className: "px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 border border-slate-300 rounded-full hover:bg-slate-200",
         "aria-label": "Print or export notebook as PDF",
@@ -1346,8 +1360,9 @@ const NotebookOverlay = React.memo((props) => {
       return /* @__PURE__ */ React.createElement("li", { key: entry.id }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: () => onSelectEntry(entry),
-          className: "w-full text-left bg-white border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:shadow-md transition-all group focus:outline-none focus:ring-2 focus:ring-indigo-400",
+          className: "w-full text-left bg-white border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:shadow-md transition-all motion-reduce:transition-none group focus:outline-none focus:ring-2 focus:ring-indigo-400",
           "aria-label": `Open ${meta.label}: ${title}`
         },
         /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-1 self-stretch rounded-full ${_accentClasses(meta.accent, "bar")}`, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${_accentClasses(meta.accent, "badge")}` }, meta.icon, " ", meta.short), when ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, when) : null), /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 text-sm truncate group-hover:text-indigo-700" }, title), previewTruncated ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1 leading-snug line-clamp-2" }, previewTruncated) : /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic mt-1" }, "No notes yet \u2014 open to start writing.")))
