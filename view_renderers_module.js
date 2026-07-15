@@ -254,7 +254,7 @@ const renderOutlineContent = (deps) => {
       "aria-label": t("common.enter_main"),
       value: main,
       onChange: (e) => handleOutlineChange(null, "main", e.target.value),
-      className: "text-2xl font-black text-center text-slate-800 bg-white border border-indigo-200 rounded p-1 focus:ring-2 focus:ring-indigo-400 outline-none w-full"
+      className: "text-2xl font-black text-center text-slate-800 bg-white border border-indigo-200 rounded p-1 focus:ring-2 focus:ring-indigo-400 w-full"
     }
   ), (main_en || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
     "input",
@@ -262,7 +262,7 @@ const renderOutlineContent = (deps) => {
       "aria-label": t("common.common_placeholder_translation"),
       value: main_en || "",
       onChange: (e) => handleOutlineChange(null, "main", e.target.value, null, true),
-      className: "text-sm text-center text-slate-600 bg-white border border-slate-400 rounded p-1 focus:ring-2 focus:ring-indigo-400 outline-none w-full",
+      className: "text-sm text-center text-slate-600 bg-white border border-slate-400 rounded p-1 focus:ring-2 focus:ring-indigo-400 w-full",
       placeholder: t("common.placeholder_translation")
     }
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, main), main_en && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 italic" }, "(", main_en, ")")));
@@ -272,7 +272,7 @@ const renderOutlineContent = (deps) => {
       "aria-label": t("common.enter_branch"),
       value: branch.title,
       onChange: (e) => handleOutlineChange(bIdx, "title", e.target.value),
-      className: "font-bold text-lg text-indigo-900 w-full bg-transparent outline-none border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1"
+      className: "font-bold text-lg text-indigo-900 w-full bg-transparent border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1"
     }
   ), (branch.title_en || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
     "input",
@@ -280,7 +280,7 @@ const renderOutlineContent = (deps) => {
       "aria-label": t("common.common_placeholder_title_trans"),
       value: branch.title_en || "",
       onChange: (e) => handleOutlineChange(bIdx, "title", e.target.value, null, true),
-      className: "text-xs text-slate-600 w-full bg-transparent outline-none border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1",
+      className: "text-xs text-slate-600 w-full bg-transparent border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1",
       placeholder: t("common.placeholder_title_trans")
     }
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-lg text-indigo-900" }, branch.title), branch.title_en && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, "(", branch.title_en, ")"))), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items && branch.items.map((item, iIdx) => /* @__PURE__ */ React.createElement("li", { key: iIdx, className: "flex items-start gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: `w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${bIdx % 2 === 0 ? "bg-indigo-400" : "bg-teal-400"}` }), /* @__PURE__ */ React.createElement("div", { className: "w-full" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement(
@@ -289,7 +289,7 @@ const renderOutlineContent = (deps) => {
       "aria-label": t("common.enter_item"),
       value: item,
       onChange: (e) => handleOutlineChange(bIdx, "item", e.target.value, iIdx),
-      className: "w-full bg-white/50 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
+      className: "w-full bg-white/50 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
     }
   ), (branch.items_en?.[iIdx] || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
     "input",
@@ -297,7 +297,7 @@ const renderOutlineContent = (deps) => {
       "aria-label": t("common.common_placeholder_item_trans"),
       value: branch.items_en?.[iIdx] || "",
       onChange: (e) => handleOutlineChange(bIdx, "item", e.target.value, iIdx, true),
-      className: "w-full bg-white/50 rounded px-2 py-0.5 text-xs text-slate-600 italic outline-none focus:ring-2 focus:ring-indigo-300",
+      className: "w-full bg-white/50 rounded px-2 py-0.5 text-xs text-slate-600 italic focus:ring-2 focus:ring-indigo-300",
       placeholder: t("common.placeholder_item_trans")
     }
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, item), branch.items_en?.[iIdx] && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "(", branch.items_en[iIdx], ")"))))))));
@@ -379,7 +379,7 @@ const renderOutlineContent = (deps) => {
           value: it,
           onChange: (e) => handleOutlineChange(branchIndex, "item", e.target.value, i),
           onClick: (e) => e.stopPropagation(),
-          className: "w-full bg-white/50 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200 text-xs font-bold"
+          className: "w-full bg-white/50 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200 text-xs font-bold"
         }
       ), showEnglish && isNonEnglish && (items_en?.[i] || items_en?.[i] === "") && /* @__PURE__ */ React.createElement(
         "input",
@@ -388,7 +388,7 @@ const renderOutlineContent = (deps) => {
           value: items_en[i] || "",
           onChange: (e) => handleOutlineChange(branchIndex, "item", e.target.value, i, true),
           onClick: (e) => e.stopPropagation(),
-          className: "w-full bg-white/50 rounded px-2 py-0.5 text-[0.8em] opacity-80 font-normal outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200",
+          className: "w-full bg-white/50 rounded px-2 py-0.5 text-[0.8em] opacity-80 font-normal focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200",
           placeholder: t("common.placeholder_item_trans")
         }
       )) : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2022 ", it, showEnglish && isNonEnglish && items_en?.[i] && /* @__PURE__ */ React.createElement("div", { className: "text-[0.8em] opacity-80 font-normal mt-0.5" }, "(", items_en[i], ")"))));
@@ -399,7 +399,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.enter_title"),
         value: title,
         onChange: (e) => handleOutlineChange(branchIndex, "title", e.target.value),
-        className: "font-black text-center bg-transparent outline-none border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full"
+        className: "font-black text-center bg-transparent border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full"
       }
     ), showEnglish && isNonEnglish && (title_en || title_en === "") && /* @__PURE__ */ React.createElement(
       "input",
@@ -407,7 +407,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.common_placeholder_title_trans"),
         value: title_en || "",
         onChange: (e) => handleOutlineChange(branchIndex, "title", e.target.value, null, true),
-        className: "text-[0.6em] text-center opacity-80 font-normal uppercase tracking-normal bg-transparent outline-none border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full",
+        className: "text-[0.6em] text-center opacity-80 font-normal uppercase tracking-normal bg-transparent border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full",
         placeholder: t("common.placeholder_title_trans")
       }
     )) : /* @__PURE__ */ React.createElement(React.Fragment, null, title, showEnglish && isNonEnglish && title_en && /* @__PURE__ */ React.createElement("div", { className: "text-[0.6em] opacity-80 font-normal mt-1 uppercase tracking-normal" }, "(", title_en, ")")));
@@ -436,9 +436,9 @@ const renderOutlineContent = (deps) => {
           onChange: (e) => setVennInputs({ ...vennInputs, setA: e.target.value }),
           onKeyDown: (e) => e.key === "Enter" && handleAddVennItem("setA"),
           placeholder: t("concept_map.venn.add_item_placeholder"),
-          className: "flex-grow text-xs p-2 rounded border border-rose-200 outline-none focus:ring-2 focus:ring-rose-400"
+          className: "flex-grow text-xs p-2 rounded border border-rose-200 focus:ring-2 focus:ring-rose-400"
         }
-      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleAddVennItem("setA"), className: "min-h-11 min-w-11 bg-rose-200 hover:bg-rose-300 text-rose-800 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2", "aria-label": `${t("common.add")}: ${setA.title}` }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.setA.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-rose-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveVennItem("setA", i), className: "min-h-11 min-w-11 text-rose-700 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2", "aria-label": `${t("common.remove")}: ${typeof item === "object" ? item.text : item}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.setA.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-rose-700 italic text-center" }, t("concept_sort.no_items")))), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 rounded-xl border-2 border-purple-200 p-4 flex flex-col" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-purple-800 mb-3 text-center uppercase tracking-wider" }, shared.title || "Shared"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleAddVennItem("setA"), className: "min-h-11 min-w-11 bg-rose-200 hover:bg-rose-300 text-rose-800 p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2", "aria-label": `${t("common.add")}: ${setA.title}` }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.setA.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-rose-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveVennItem("setA", i), className: "min-h-11 min-w-11 text-rose-700 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2", "aria-label": `${t("common.remove")}: ${typeof item === "object" ? item.text : item}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.setA.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-rose-700 italic text-center" }, t("concept_sort.no_items")))), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 rounded-xl border-2 border-purple-200 p-4 flex flex-col" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-purple-800 mb-3 text-center uppercase tracking-wider" }, shared.title || "Shared"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
         "input",
         {
           "aria-label": t("common.enter_venn_inputs"),
@@ -447,9 +447,9 @@ const renderOutlineContent = (deps) => {
           onChange: (e) => setVennInputs({ ...vennInputs, shared: e.target.value }),
           onKeyDown: (e) => e.key === "Enter" && handleAddVennItem("shared"),
           placeholder: t("concept_map.venn.add_item_placeholder"),
-          className: "flex-grow text-xs p-2 rounded border border-purple-200 outline-none focus:ring-2 focus:ring-purple-400"
+          className: "flex-grow text-xs p-2 rounded border border-purple-200 focus:ring-2 focus:ring-purple-400"
         }
-      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleAddVennItem("shared"), className: "min-h-11 min-w-11 bg-purple-200 hover:bg-purple-300 text-purple-800 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2", "aria-label": `${t("common.add")}: ${shared.title || "Shared"}` }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.shared.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-purple-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveVennItem("shared", i), className: "min-h-11 min-w-11 text-purple-700 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2", "aria-label": `${t("common.remove")}: ${typeof item === "object" ? item.text : item}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.shared.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 italic text-center" }, t("concept_sort.no_items")))), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 rounded-xl border-2 border-blue-200 p-4 flex flex-col" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-blue-800 mb-3 text-center uppercase tracking-wider" }, setB.title), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleAddVennItem("shared"), className: "min-h-11 min-w-11 bg-purple-200 hover:bg-purple-300 text-purple-800 p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2", "aria-label": `${t("common.add")}: ${shared.title || "Shared"}` }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.shared.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-purple-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveVennItem("shared", i), className: "min-h-11 min-w-11 text-purple-700 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2", "aria-label": `${t("common.remove")}: ${typeof item === "object" ? item.text : item}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.shared.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 italic text-center" }, t("concept_sort.no_items")))), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 rounded-xl border-2 border-blue-200 p-4 flex flex-col" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-blue-800 mb-3 text-center uppercase tracking-wider" }, setB.title), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
         "input",
         {
           "aria-label": t("common.enter_venn_inputs"),
@@ -458,9 +458,9 @@ const renderOutlineContent = (deps) => {
           onChange: (e) => setVennInputs({ ...vennInputs, setB: e.target.value }),
           onKeyDown: (e) => e.key === "Enter" && handleAddVennItem("setB"),
           placeholder: t("concept_map.venn.add_item_placeholder"),
-          className: "flex-grow text-xs p-2 rounded border border-blue-200 outline-none focus:ring-2 focus:ring-blue-400"
+          className: "flex-grow text-xs p-2 rounded border border-blue-200 focus:ring-2 focus:ring-blue-400"
         }
-      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleAddVennItem("setB"), className: "min-h-11 min-w-11 bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.add")}: ${setB.title}` }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.setB.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveVennItem("setB", i), className: "min-h-11 min-w-11 text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.remove")}: ${typeof item === "object" ? item.text : item}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.setB.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-blue-700 italic text-center" }, t("concept_sort.no_items"))))), /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleAddVennItem("setB"), className: "min-h-11 min-w-11 bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.add")}: ${setB.title}` }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.setB.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveVennItem("setB", i), className: "min-h-11 min-w-11 text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.remove")}: ${typeof item === "object" ? item.text : item}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.setB.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-blue-700 italic text-center" }, t("concept_sort.no_items"))))), /* @__PURE__ */ React.createElement(
         "button",
         {
           "aria-label": t("common.start_game"),
@@ -488,7 +488,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.selection"),
         value: outlineTranslationMode,
         onChange: (e) => setOutlineTranslationMode(e.target.value),
-        className: "text-xs border border-indigo-200 rounded-full px-3 py-2 bg-white text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm cursor-pointer"
+        className: "text-xs border border-indigo-200 rounded-full px-3 py-2 bg-white text-indigo-700 font-bold focus:ring-2 focus:ring-indigo-200 shadow-sm cursor-pointer"
       },
       /* @__PURE__ */ React.createElement("option", { value: "bilingual" }, leveledTextLanguage, " + ", t("languages.english")),
       /* @__PURE__ */ React.createElement("option", { value: "target" }, leveledTextLanguage, " Only")
@@ -526,7 +526,7 @@ const renderOutlineContent = (deps) => {
           "aria-label": t("common.enter_branch") || "Column heading",
           value: branch.title || "",
           onChange: (e) => handleOutlineChange(branchIdx, "title", e.target.value),
-          className: `w-full font-black text-lg uppercase tracking-wider text-center px-3 py-2 rounded-lg border-2 focus:ring-2 outline-none ${colorClasses.input} ${colorClasses.header.split(" ").filter((c) => c.startsWith("text-")).join(" ")} bg-white`,
+          className: `w-full font-black text-lg uppercase tracking-wider text-center px-3 py-2 rounded-lg border-2 focus:ring-2 ${colorClasses.input} ${colorClasses.header.split(" ").filter((c) => c.startsWith("text-")).join(" ")} bg-white`,
           placeholder: fallbackTitle
         }
       ), showBilingual && /* @__PURE__ */ React.createElement(
@@ -535,7 +535,7 @@ const renderOutlineContent = (deps) => {
           "aria-label": t("common.placeholder_translation") || "Translation",
           value: branch.title_en || "",
           onChange: (e) => handleOutlineChange(branchIdx, "title", e.target.value, null, true),
-          className: "w-full text-xs italic text-center px-2 py-1 rounded border border-slate-300 focus:ring-2 focus:ring-slate-200 outline-none bg-white text-slate-600",
+          className: "w-full text-xs italic text-center px-2 py-1 rounded border border-slate-300 focus:ring-2 focus:ring-slate-200 bg-white text-slate-600",
           placeholder: t("common.placeholder_translation") || "Translation (optional)"
         }
       )) : /* @__PURE__ */ React.createElement("h4", { className: `font-black text-lg uppercase tracking-wider mb-3 text-center rounded-lg py-2 border ${colorClasses.header}` }, branch.title || fallbackTitle, branch.title_en && /* @__PURE__ */ React.createElement("div", { className: "text-xs italic font-normal opacity-80 normal-case tracking-normal" }, "(", branch.title_en, ")")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, items.map((it, k) => {
@@ -547,7 +547,7 @@ const renderOutlineContent = (deps) => {
             "aria-label": t("common.enter_item") || "Item text",
             value: text,
             onChange: (e) => handleOutlineChange(branchIdx, "item", e.target.value, k),
-            className: "w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500 outline-none"
+            className: "w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500"
           }
         ), showBilingual && /* @__PURE__ */ React.createElement(
           "input",
@@ -555,7 +555,7 @@ const renderOutlineContent = (deps) => {
             "aria-label": t("common.placeholder_translation") || "Translation",
             value: trans || "",
             onChange: (e) => handleOutlineChange(branchIdx, "item", e.target.value, k, true),
-            className: "w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400 outline-none",
+            className: "w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400",
             placeholder: t("common.placeholder_translation") || "Translation"
           }
         )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, text), trans && /* @__PURE__ */ React.createElement("div", { className: "text-xs italic opacity-75 mt-0.5" }, "(", trans, ")"))));
@@ -656,7 +656,7 @@ const renderOutlineContent = (deps) => {
           "aria-label": t("common.enter_branch") || "Category name",
           value: branch.title || "",
           onChange: (e) => handleOutlineChange(branchIdx, "title", e.target.value),
-          className: "w-full font-black text-violet-900 text-sm uppercase tracking-wider bg-white px-2 py-1 rounded border border-violet-300 focus:ring-2 focus:ring-violet-300 outline-none",
+          className: "w-full font-black text-violet-900 text-sm uppercase tracking-wider bg-white px-2 py-1 rounded border border-violet-300 focus:ring-2 focus:ring-violet-300",
           placeholder: `Category ${branchIdx + 1}`
         }
       ), showBilingual && /* @__PURE__ */ React.createElement(
@@ -665,7 +665,7 @@ const renderOutlineContent = (deps) => {
           "aria-label": t("common.placeholder_translation") || "Translation",
           value: branch.title_en || "",
           onChange: (e) => handleOutlineChange(branchIdx, "title", e.target.value, null, true),
-          className: "w-full text-xs italic text-violet-700 bg-white px-2 py-0.5 rounded border border-violet-200 focus:ring-2 focus:ring-violet-200 outline-none",
+          className: "w-full text-xs italic text-violet-700 bg-white px-2 py-0.5 rounded border border-violet-200 focus:ring-2 focus:ring-violet-200",
           placeholder: t("common.placeholder_translation") || "Translation (optional)"
         }
       )) : /* @__PURE__ */ React.createElement("h4", { className: "font-black text-violet-900 text-sm uppercase tracking-wider" }, branch.title || `Category ${branchIdx + 1}`, branch.title_en && /* @__PURE__ */ React.createElement("div", { className: "text-xs italic font-normal opacity-80 normal-case tracking-normal" }, "(", branch.title_en, ")"))), /* @__PURE__ */ React.createElement("ul", { className: "p-3 space-y-2" }, items.map((it, k) => {
@@ -677,7 +677,7 @@ const renderOutlineContent = (deps) => {
             "aria-label": t("common.enter_item") || "Cause text",
             value: text,
             onChange: (e) => handleOutlineChange(branchIdx, "item", e.target.value, k),
-            className: "w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500 outline-none"
+            className: "w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500"
           }
         ), showBilingual && /* @__PURE__ */ React.createElement(
           "input",
@@ -685,7 +685,7 @@ const renderOutlineContent = (deps) => {
             "aria-label": t("common.placeholder_translation") || "Translation",
             value: trans || "",
             onChange: (e) => handleOutlineChange(branchIdx, "item", e.target.value, k, true),
-            className: "w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400 outline-none",
+            className: "w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400",
             placeholder: t("common.placeholder_translation") || "Translation"
           }
         )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, text), trans && /* @__PURE__ */ React.createElement("div", { className: "text-xs italic opacity-75 mt-0.5" }, "(", trans, ")"))));
@@ -750,7 +750,7 @@ const renderOutlineContent = (deps) => {
           "aria-label": t("outline.edit_cause") || "Edit cause",
           value: b.title,
           onChange: (e) => handleOutlineChange(i, "title", e.target.value),
-          className: "w-full bg-transparent outline-none focus:ring-2 focus:ring-orange-400 text-orange-900 font-bold resize-none h-full"
+          className: "w-full bg-transparent focus:ring-2 focus:ring-orange-400 text-orange-900 font-bold resize-none h-full"
         }
       ) : /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-orange-900 text-lg" }, b.title))), /* @__PURE__ */ React.createElement("div", { className: "bg-white flex items-center justify-center w-full md:w-12 py-2 md:py-0 border-y md:border-y-0 md:border-r border-slate-100 relative overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-50 opacity-50" }), /* @__PURE__ */ React.createElement(ArrowRight, { size: 24, className: "text-slate-600 rotate-90 md:rotate-0 relative z-10", strokeWidth: 3 })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 p-6 bg-teal-50 relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 bg-teal-200 text-teal-800 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-br-lg" }, t("outline.labels.effect")), /* @__PURE__ */ React.createElement("div", { className: "pt-4 h-full" }, /* @__PURE__ */ React.createElement("ul", { className: "list-disc list-inside text-teal-900 space-y-2 marker:text-teal-400" }, b.items.map((item, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-sm font-medium leading-relaxed" }, item))))))))));
     }
@@ -824,7 +824,7 @@ const renderOutlineContent = (deps) => {
         disabled: isProcessing,
         className: "mt-4 text-xs font-bold bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:cursor-wait"
       },
-      isProcessing ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
+      isProcessing ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
       t("outline.labels.generate_outcome") || "Generate Outcome"
     )))));
   }
@@ -1158,7 +1158,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.enter_branch"),
         value: branch.title,
         onChange: (e) => handleOutlineChange(i, "title", e.target.value),
-        className: "font-bold text-lg text-indigo-900 w-full bg-transparent outline-none border-b border-dashed border-indigo-200 focus:border-indigo-500"
+        className: "font-bold text-lg text-indigo-900 w-full bg-transparent border-b border-dashed border-indigo-200 focus:border-indigo-500"
       }
     ), (branch.title_en || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
       "input",
@@ -1166,7 +1166,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.common_placeholder_translation"),
         value: branch.title_en || "",
         onChange: (e) => handleOutlineChange(i, "title", e.target.value, null, true),
-        className: "text-xs text-slate-600 w-full bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 border-b border-dashed border-slate-200",
+        className: "text-xs text-slate-600 w-full bg-transparent focus:ring-2 focus:ring-indigo-400 border-b border-dashed border-slate-200",
         placeholder: t("common.placeholder_translation")
       }
     )) : /* @__PURE__ */ React.createElement("div", { className: "border-b border-slate-50 pb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-lg text-indigo-900" }, branch.title), branch.title_en && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, "(", branch.title_en, ")")))), /* @__PURE__ */ React.createElement("ul", { className: "space-y-0 text-sm text-slate-700 bg-slate-50/50 rounded-lg overflow-hidden border border-slate-100" }, branch.items && branch.items.map((item, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "group/item relative flex items-start gap-3 p-3 border-b border-slate-100 last:border-0 hover:bg-indigo-50/30 transition-colors" }, /* @__PURE__ */ React.createElement("span", { className: "font-mono text-indigo-600 font-bold text-xs mt-0.5 select-none" }, String.fromCharCode(65 + k), "."), /* @__PURE__ */ React.createElement("div", { className: "w-full" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement(
@@ -1175,7 +1175,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.enter_item"),
         value: item,
         onChange: (e) => handleOutlineChange(i, "item", e.target.value, k),
-        className: "w-full bg-white rounded px-2 py-1 outline-none border border-slate-400 focus:border-indigo-600"
+        className: "w-full bg-white rounded px-2 py-1 border border-slate-400 focus:border-indigo-600"
       }
     ), (branch.items_en?.[k] || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
       "input",
@@ -1183,7 +1183,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.common_placeholder_translation"),
         value: branch.items_en?.[k] || "",
         onChange: (e) => handleOutlineChange(i, "item", e.target.value, k, true),
-        className: "w-full bg-white rounded px-2 py-0.5 text-xs text-slate-600 italic outline-none focus:ring-2 focus:ring-indigo-400 border border-slate-100",
+        className: "w-full bg-white rounded px-2 py-0.5 text-xs text-slate-600 italic focus:ring-2 focus:ring-indigo-400 border border-slate-100",
         placeholder: t("common.placeholder_translation")
       }
     )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "leading-relaxed" }, item), branch.items_en?.[k] && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic mt-0.5" }, "(", branch.items_en[k], ")")))))))))));
@@ -1295,40 +1295,52 @@ function openConceptMap3D(opts) {
     return function() {
     };
   }
+  var previouslyFocused = document.activeElement;
   var overlay = document.createElement("div");
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", t("concept_map.view_3d") || "View concept map in 3D");
+  overlay.setAttribute("aria-labelledby", "vo-cg3d-title");
+  overlay.setAttribute("aria-describedby", "vo-cg3d-hint");
+  overlay.tabIndex = -1;
   overlay.style.cssText = "position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;";
   var header = document.createElement("div");
   header.style.cssText = "display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b1020;border-bottom:1px solid #1e293b;color:#e2e8f0;";
   var titleWrap = document.createElement("div");
   titleWrap.style.cssText = "flex:1;min-width:0;";
   var title = document.createElement("div");
+  title.id = "vo-cg3d-title";
   title.style.cssText = "font-weight:800;font-size:14px;";
   title.textContent = "\u{1F9CA} " + (t("concept_map.view_3d") || "3D concept map");
   var hint = document.createElement("div");
+  hint.id = "vo-cg3d-hint";
   hint.style.cssText = "font-size:11px;color:#94a3b8;";
   hint.textContent = t("concept_map.view_3d_controls") || "Drag to orbit \xB7 scroll to zoom \xB7 depth = strand";
   titleWrap.appendChild(title);
   titleWrap.appendChild(hint);
   var closeBtn = document.createElement("button");
+  closeBtn.type = "button";
   closeBtn.setAttribute("aria-label", t("common.close") || "Close");
   closeBtn.textContent = "\u2715";
-  closeBtn.style.cssText = "border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;";
+  closeBtn.style.cssText = "border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;min-width:44px;min-height:44px;";
   header.appendChild(titleWrap);
   header.appendChild(closeBtn);
   var body = document.createElement("div");
   body.style.cssText = "flex:1;position:relative;min-height:0;";
   var status = document.createElement("div");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
   status.style.cssText = "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;";
   status.textContent = "\u{1F9ED} " + (t("concept_map.view_3d_loading") || "Loading the 3D view\u2026");
   body.appendChild(status);
   overlay.appendChild(header);
   overlay.appendChild(body);
   document.body.appendChild(overlay);
+  closeBtn.focus();
   var handle = null, aiBtn = null;
+  var destroyed = false;
   function destroy() {
+    if (destroyed) return;
+    destroyed = true;
     try {
       if (handle && handle.destroy) handle.destroy();
     } catch (e) {
@@ -1341,11 +1353,33 @@ function openConceptMap3D(opts) {
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     } catch (e) {
     }
+    try {
+      if (previouslyFocused && document.contains(previouslyFocused)) previouslyFocused.focus();
+    } catch (e) {
+    }
   }
   function onKey(e) {
     if (e.key === "Escape") {
       e.preventDefault();
       destroy();
+      return;
+    }
+    if (e.key !== "Tab") return;
+    var focusable = Array.from(overlay.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function(el) {
+      return el.getClientRects().length > 0;
+    });
+    if (!focusable.length) {
+      e.preventDefault();
+      overlay.focus();
+      return;
+    }
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
     }
   }
   document.addEventListener("keydown", onKey, true);
@@ -1381,7 +1415,7 @@ function openConceptMap3D(opts) {
     if (canPersist) {
       var resetArrBtn = document.createElement("button");
       resetArrBtn.textContent = "\u21BA " + (t("concept_space.reset") || "Reset arrangement");
-      resetArrBtn.style.cssText = "font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #334155;white-space:nowrap;background:transparent;color:#cbd5e1;cursor:pointer;";
+      resetArrBtn.style.cssText = "font-size:12px;font-weight:700;padding:6px 12px;min-height:44px;border-radius:8px;border:1px solid #334155;white-space:nowrap;background:transparent;color:#cbd5e1;cursor:pointer;";
       header.insertBefore(resetArrBtn, closeBtn);
       resetArrBtn.onclick = function() {
         try {
@@ -1400,7 +1434,7 @@ function openConceptMap3D(opts) {
     if (typeof window.callGemini === "function") {
       aiBtn = document.createElement("button");
       aiBtn.textContent = "\u2728 " + (t("concept_map.view_3d_arrange") || "Arrange by meaning");
-      aiBtn.style.cssText = "font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;";
+      aiBtn.style.cssText = "font-size:12px;font-weight:800;padding:6px 12px;min-height:44px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;";
       header.insertBefore(aiBtn, closeBtn);
       aiBtn.onclick = function() {
         aiBtn.disabled = true;
@@ -1922,7 +1956,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     if (addToast) addToast(t("concept_space.art_removed") || "Removed.", "info");
   };
   const nodeArtType = selectedNode && selectedNode.artType || selectedNode && artRef.current[selectedNode.id] && artRef.current[selectedNode.id].type || null;
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, challenge ? t("concept_space.challenge_hint") || "\u{1F3AF} Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready." : t("concept_space.hint") || "Position carries meaning: left \u2192 right = sequence \xB7 higher = more abstract \xB7 depth = strand."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, challenge ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums", role: "status" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("concept_space.challenge_progress") || "{placed}/{total} placed").replace("{placed}", String(placedCount)).replace("{total}", String(challenge.targets.length))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, challenge ? t("concept_space.challenge_hint") || "\u{1F3AF} Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready." : t("concept_space.hint") || "Position carries meaning: left \u2192 right = sequence \xB7 higher = more abstract \xB7 depth = strand."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, challenge ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("concept_space.challenge_progress") || "{placed}/{total} placed").replace("{placed}", String(placedCount)).replace("{total}", String(challenge.targets.length))), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: checkChallenge,
@@ -2091,13 +2125,13 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   }, "aria-label": t("common.close") || "Close", className: "text-slate-400 hover:text-slate-700 font-bold text-sm leading-none" }, "\u2715")), nodeArtType ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, nodeArtType === "sculpture" ? t("concept_space.art_has_sculpture") || "A sculpture floats above this concept." : t("concept_space.art_has_image") || "An image floats above this concept."), nodeArtType === "sculpture" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("bigger"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("smaller"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("rotate"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("recolor"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleArtRefine();
-  }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: refinePrompt, onChange: (e) => setRefinePrompt(e.target.value), disabled: refineBusy, placeholder: t("concept_space.refine_placeholder") || "Tell the AI what to change\u2026", "aria-label": t("concept_space.refine_placeholder") || "Tell the AI what to change", className: "flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 outline-none" }), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || refineBusy, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728"))), /* @__PURE__ */ React.createElement("button", { onClick: handleArtClear, className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50" }, "\u{1F5D1} ", t("concept_space.art_remove") || "Remove art")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, directBusy ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 font-bold py-2 text-center", role: "status" }, directBusy === "evaluating" ? t("concept_space.art_checking") || "\u2026 Checking your idea" : t("concept_space.art_creating") || "\u2026 Creating") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: doSculptFromLabel, disabled: typeof window.callGemini !== "function", className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u{1F9CA} ", t("concept_space.art_sculpt_auto") || "Sculpt from this concept"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 text-center" }, t("concept_space.art_or_direct") || "or describe your own:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("sculpture"), className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F9CA} ", t("memory_palace.direct_sculpture") || "Sculpture"), /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("image"), disabled: !canImagen, title: !canImagen ? t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture." : void 0, className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image")), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1 text-fuchsia-900" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-1" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directEval.enhancedPrompt || directPrompt), className: "flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directPrompt), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50" }, t("memory_palace.direct_use_mine") || "Use mine"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+  }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: refinePrompt, onChange: (e) => setRefinePrompt(e.target.value), disabled: refineBusy, placeholder: t("concept_space.refine_placeholder") || "Tell the AI what to change\u2026", "aria-label": t("concept_space.refine_placeholder") || "Tell the AI what to change", className: "flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" }), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || refineBusy, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728"))), /* @__PURE__ */ React.createElement("button", { onClick: handleArtClear, className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50" }, "\u{1F5D1} ", t("concept_space.art_remove") || "Remove art")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, directBusy ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 font-bold py-2 text-center", role: "status" }, directBusy === "evaluating" ? t("concept_space.art_checking") || "\u2026 Checking your idea" : t("concept_space.art_creating") || "\u2026 Creating") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: doSculptFromLabel, disabled: typeof window.callGemini !== "function", className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u{1F9CA} ", t("concept_space.art_sculpt_auto") || "Sculpt from this concept"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 text-center" }, t("concept_space.art_or_direct") || "or describe your own:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("sculpture"), className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F9CA} ", t("memory_palace.direct_sculpture") || "Sculpture"), /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("image"), disabled: !canImagen, title: !canImagen ? t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture." : void 0, className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image")), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1 text-fuchsia-900" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-1" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directEval.enhancedPrompt || directPrompt), className: "flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directPrompt), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50" }, t("memory_palace.direct_use_mine") || "Use mine"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleArtSubmit();
   }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: directPrompt, onChange: (e) => {
     setDirectPrompt(e.target.value);
     if (directEval) setDirectEval(null);
-  }, placeholder: t("concept_space.art_prompt_placeholder") || "e.g. a glowing brain with gears", "aria-label": t("concept_space.art_prompt_placeholder") || "Describe the art", className: "flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 outline-none" }), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !directPrompt.trim(), className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728")))))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("concept_space.caption") || "Drag to orbit \xB7 scroll to zoom \xB7 click a concept for details. Drag a concept to place it on its strand plane \u2014 position is saved with the resource."));
+  }, placeholder: t("concept_space.art_prompt_placeholder") || "e.g. a glowing brain with gears", "aria-label": t("concept_space.art_prompt_placeholder") || "Describe the art", className: "flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" }), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !directPrompt.trim(), className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728")))))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("concept_space.caption") || "Drag to orbit \xB7 scroll to zoom \xB7 click a concept for details. Drag a concept to place it on its strand plane \u2014 position is saved with the resource."));
 };
 const _MP_STAMPS = [
   { id: "star", e: "\u2B50", label: "Star" },
@@ -2121,6 +2155,8 @@ const _MP_STAMP_THEMES = {
 const _mpStampImage = (emoji, theme) => {
   try {
     const c = document.createElement("canvas");
+    c.setAttribute("role", "img");
+    c.setAttribute("aria-label", "Generated memory palace illustration stamp");
     c.width = 320;
     c.height = 240;
     const g = c.getContext("2d");
@@ -2947,7 +2983,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     };
     step(0);
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, recall ? t("memory_palace.recall_hint") || "\u{1F9E0} The labels are covered \u2014 the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears." : t("memory_palace.hint") || "A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums", role: "status" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_progress") || "{done}/{total} recalled").replace("{done}", String(answered)).replace("{total}", String((palaceRef.current?.route?.length || 1) - 1))), finished && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, recall ? t("memory_palace.recall_hint") || "\u{1F9E0} The labels are covered \u2014 the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears." : t("memory_palace.hint") || "A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_progress") || "{done}/{total} recalled").replace("{done}", String(answered)).replace("{total}", String((palaceRef.current?.route?.length || 1) - 1))), finished && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: retryRecall,
@@ -3119,7 +3155,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       onChange: (e) => setRefinePrompt(e.target.value),
       placeholder: t("memory_palace.refine_placeholder") || "Tell the AI what to change\u2026 (e.g. add a red hat)",
       "aria-label": t("memory_palace.refine_placeholder") || "Tell the AI what to change",
-      className: "flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
+      className: "flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 bg-white"
     }
   ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || refineBusy, className: "px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed" }, refineBusy ? t("memory_palace.direct_creating") || "Creating\u2026" : "\u2728 " + (t("memory_palace.refine_apply") || "Refine")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-fuchsia-800" }, t("memory_palace.direct_make") || "Make:"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDirectType("image"), className: `px-2.5 py-1 rounded-full text-xs font-bold border ${directType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDirectType("sculpture"), className: `px-2.5 py-1 rounded-full text-xs font-bold border ${directType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5FF} ", t("memory_palace.direct_sculpture") || "Sculpture")), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-sm text-fuchsia-900 bg-white border border-fuchsia-200 rounded-lg px-3 py-2", role: "status", "aria-live": "polite" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-2" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleDirectGenerate(directEval.enhancedPrompt || directPrompt), disabled: !!directBusy, className: "px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDirectGenerate(directPrompt), disabled: !!directBusy, className: "px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50 disabled:opacity-50" }, t("memory_palace.direct_use_mine") || "Use mine as-is"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
@@ -3135,7 +3171,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       placeholder: t("memory_palace.direct_placeholder") || "Describe what the AI should create here\u2026",
       "aria-label": t("memory_palace.direct_placeholder") || "Describe what the AI should create here",
       rows: 2,
-      className: "w-full text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
+      className: "w-full text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 bg-white"
     }
   ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !directPrompt.trim() || !!directBusy, className: "px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed" }, directBusy === "evaluating" ? t("memory_palace.direct_checking") || "Checking\u2026" : directBusy === "generating" ? t("memory_palace.direct_creating") || "Creating\u2026" : t("memory_palace.direct_submit") || "Check & create"), voiceSupported && /* @__PURE__ */ React.createElement(
     "button",
@@ -3145,7 +3181,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       disabled: !!directBusy,
       "aria-pressed": voiceListening ? "true" : "false",
       title: t("memory_palace.voice_direct_title") || "Speak your prompt for this locus, hands-free",
-      className: `px-3 py-2 rounded-lg text-xs font-bold transition-colors ${voiceListening ? "bg-rose-600 text-white animate-pulse" : "bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50"}`
+      className: `px-3 py-2 rounded-lg text-xs font-bold transition-colors ${voiceListening ? "bg-rose-600 text-white animate-pulse motion-reduce:animate-none" : "bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50"}`
     },
     voiceListening ? "\u{1F534} " + (t("memory_palace.voice_listening") || "Listening\u2026") : "\u{1F3A4} " + (t("memory_palace.voice_direct") || "Speak")
   ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-fuchsia-600" }, t("memory_palace.direct_note") || "The AI checks your prompt fits the fact and is school-appropriate before creating."), voiceHeard && /* @__PURE__ */ React.createElement("span", { className: "w-full text-xs text-fuchsia-500 italic" }, "\u201C", voiceHeard, "\u201D"))))), decorMode && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3" }, !current || current.entry ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-emerald-900" }, t("memory_palace.decorate_at_entry") || "\u{1F381} Walk to a locus (\u25B6 or WASD), then pick a decoration for it.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-0.5" }, (t("memory_palace.decorate_for") || "Decorate: {label}").replace("{label}", current.label)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-emerald-700 mb-2" }, t("memory_palace.decorate_note") || "Built-in decorations \u2014 instant and free. Pick something that helps YOU picture this fact."), !!(window.AlloModules && window.AlloModules.Prim3D && window.AlloModules.Prim3D.PRESETS) && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-1.5" }, t("memory_palace.decorate_objects") || "3D decorations (stand beside the frame)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, window.AlloModules.Prim3D.PRESETS.map((p) => {
@@ -3218,7 +3254,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       onChange: (e) => setTypedAnswer(e.target.value),
       placeholder: t("memory_palace.recall_type_placeholder") || "Type what belongs here\u2026",
       "aria-label": t("memory_palace.recall_q") || "What belongs at this locus?",
-      className: "flex-1 text-sm p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 outline-none bg-white"
+      className: "flex-1 text-sm p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 bg-white"
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -3330,7 +3366,7 @@ const renderInteractiveMap = (deps) => {
       onChange: (e) => setNodeInputText(e.target.value),
       onKeyDown: (e) => e.key === "Enter" && !isChallengeActive && !isMapLocked && handleAddManualNode(),
       placeholder: t("concept_map.toolbar.add_placeholder"),
-      className: `text-xs p-2 rounded border border-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none w-32 sm:w-48 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100 ${isMapLocked ? "cursor-not-allowed" : ""}`,
+      className: `text-xs p-2 rounded border border-slate-400 focus:ring-2 focus:ring-indigo-500 w-32 sm:w-48 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100 ${isMapLocked ? "cursor-not-allowed" : ""}`,
       disabled: isChallengeActive || isMapLocked
     }
   ), /* @__PURE__ */ React.createElement(
@@ -3365,7 +3401,7 @@ const renderInteractiveMap = (deps) => {
       title: t("concept_map.toolbar.auto_layout_tooltip"),
       "aria-label": t("concept_map.toolbar.auto_layout_tooltip")
     },
-    isProcessing ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
+    isProcessing ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, t("concept_map.toolbar.auto_layout"))
   ), !isChallengeActive && /* @__PURE__ */ React.createElement(
     "button",
@@ -3415,7 +3451,7 @@ const renderInteractiveMap = (deps) => {
       value: challengeModeType,
       onChange: (e) => setChallengeModeType(e.target.value),
       disabled: isMapLocked,
-      className: `text-xs font-bold text-slate-600 bg-white border border-slate-400 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer shadow-sm ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`,
+      className: `text-xs font-bold text-slate-600 bg-white border border-slate-400 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-yellow-400 cursor-pointer shadow-sm ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`,
       title: t("concept_map.tooltips.select_grading")
     },
     /* @__PURE__ */ React.createElement("option", { value: "strict" }, t("concept_map.challenge.strict_mode")),
@@ -3450,7 +3486,7 @@ const renderInteractiveMap = (deps) => {
       disabled: isCheckingChallenge,
       className: "flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
     },
-    isCheckingChallenge ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14 }),
+    isCheckingChallenge ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14 }),
     isCheckingChallenge ? t("concept_map.challenge.checking") : t("concept_map.challenge.check")
   ), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
@@ -3476,7 +3512,7 @@ const renderInteractiveMap = (deps) => {
                       @media (prefers-reduced-motion: reduce) { .vo-node-anim { animation: none; } }
                   `),
     !isMapLocked && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-dot-pattern pointer-events-none z-0" }),
-    generatedContent?.data?.structureType === "Cause and Effect" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-0 flex" }, /* @__PURE__ */ React.createElement("div", { className: "w-1/2 h-full bg-gradient-to-br from-orange-50/80 to-orange-100/40 border-r-2 border-dashed border-orange-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-4 text-orange-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-orange-300" }), "CAUSES")), /* @__PURE__ */ React.createElement("div", { className: "w-1/2 h-full bg-gradient-to-bl from-teal-50/80 to-teal-100/40" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 right-4 text-teal-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, "EFFECTS", /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-teal-300" }))), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-600" }, /* @__PURE__ */ React.createElement("svg", { width: "48", height: "48", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className: "animate-pulse" }, /* @__PURE__ */ React.createElement("path", { d: "M5 12h14" }), /* @__PURE__ */ React.createElement("path", { d: "m12 5 7 7-7 7" })))),
+    generatedContent?.data?.structureType === "Cause and Effect" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-0 flex" }, /* @__PURE__ */ React.createElement("div", { className: "w-1/2 h-full bg-gradient-to-br from-orange-50/80 to-orange-100/40 border-r-2 border-dashed border-orange-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-4 text-orange-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-orange-300" }), "CAUSES")), /* @__PURE__ */ React.createElement("div", { className: "w-1/2 h-full bg-gradient-to-bl from-teal-50/80 to-teal-100/40" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 right-4 text-teal-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, "EFFECTS", /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-teal-300" }))), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-600" }, /* @__PURE__ */ React.createElement("svg", { width: "48", height: "48", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className: "animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("path", { d: "M5 12h14" }), /* @__PURE__ */ React.createElement("path", { d: "m12 5 7 7-7 7" })))),
     generatedContent?.data?.structureType === "Problem Solution" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-0 flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "h-[20%] w-full bg-gradient-to-b from-red-50/70 to-transparent border-b-2 border-dashed border-red-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-4 text-red-600 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "10" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "8", x2: "12", y2: "12" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "16", x2: "12.01", y2: "16" })), "PROBLEM")), /* @__PURE__ */ React.createElement("div", { className: "flex-grow w-full bg-gradient-to-b from-transparent via-green-50/30 to-transparent" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-[22%] left-4 text-green-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-sm bg-green-300 rotate-45" }), "SOLUTIONS")), /* @__PURE__ */ React.createElement("div", { className: "h-[25%] w-full bg-gradient-to-t from-blue-50/60 to-transparent border-t-2 border-dashed border-blue-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-3 left-4 text-blue-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" }, /* @__PURE__ */ React.createElement("path", { d: "M22 11.08V12a10 10 0 1 1-5.93-9.14" }), /* @__PURE__ */ React.createElement("polyline", { points: "22 4 12 14.01 9 11.01" })), "OUTCOME"))),
     /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 w-full h-full pointer-events-none z-0", "aria-hidden": "true" }, isVenn ? /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "vennGradientA", x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(244, 63, 94, 0.15)" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(244, 63, 94, 0.05)" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "vennGradientB", x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(59, 130, 246, 0.15)" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(59, 130, 246, 0.05)" })), /* @__PURE__ */ React.createElement("radialGradient", { id: "vennGradientShared", cx: "50%", cy: "50%", r: "50%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(168, 85, 247, 0.2)" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(168, 85, 247, 0)" })), /* @__PURE__ */ React.createElement("filter", { id: "vennShadow", x: "-20%", y: "-20%", width: "140%", height: "140%" }, /* @__PURE__ */ React.createElement("feDropShadow", { dx: "0", dy: "4", stdDeviation: "6", floodColor: "rgba(0,0,0,0.08)" }))), /* @__PURE__ */ React.createElement(
       "circle",
@@ -3562,7 +3598,7 @@ const renderInteractiveMap = (deps) => {
         )),
         !isChallengeActive && !isMapLocked && /* @__PURE__ */ React.createElement("g", { className: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" }, /* @__PURE__ */ React.createElement("circle", { cx: (fromNode.x + toNode.x) / 2, cy: (fromNode.y + toNode.y) / 2, r: "8", fill: "#ef4444" }), /* @__PURE__ */ React.createElement("text", { x: (fromNode.x + toNode.x) / 2, y: (fromNode.y + toNode.y) / 2, dy: "3", textAnchor: "middle", fill: "white", fontSize: "10", fontWeight: "bold" }, "\xD7"))
       );
-    }), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("filter", { id: "vo-edge-glow", x: "-50%", y: "-50%", width: "200%", height: "200%" }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "2" })), /* @__PURE__ */ React.createElement("marker", { id: "arrowhead", markerWidth: "10", markerHeight: "7", refX: "9", refY: "3.5", orient: "auto" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#818cf8" }))), !isVenn && (conceptMapNodes || []).filter((node) => node.type && node.type.startsWith("flow-")).map((node) => /* @__PURE__ */ React.createElement(React.Fragment, { key: node.id }, renderFlowShape(node, connectingSourceId === node.id))), !isVenn && connectingSourceId && /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "rgba(99, 102, 241, 0.05)", className: "pointer-events-none animate-pulse" })),
+    }), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("filter", { id: "vo-edge-glow", x: "-50%", y: "-50%", width: "200%", height: "200%" }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "2" })), /* @__PURE__ */ React.createElement("marker", { id: "arrowhead", markerWidth: "10", markerHeight: "7", refX: "9", refY: "3.5", orient: "auto" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#818cf8" }))), !isVenn && (conceptMapNodes || []).filter((node) => node.type && node.type.startsWith("flow-")).map((node) => /* @__PURE__ */ React.createElement(React.Fragment, { key: node.id }, renderFlowShape(node, connectingSourceId === node.id))), !isVenn && connectingSourceId && /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "rgba(99, 102, 241, 0.05)", className: "pointer-events-none animate-pulse motion-reduce:animate-none" })),
     (conceptMapNodes || []).filter((node) => !node.type || !node.type.startsWith("flow-")).map((node, _nodeIdx) => /* @__PURE__ */ React.createElement(
       "div",
       {

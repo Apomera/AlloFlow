@@ -239,13 +239,13 @@ const renderOutlineContent = (deps) => {
                         <input aria-label={t('common.enter_main')}
                             value={main}
                             onChange={(e) => handleOutlineChange(null, 'main', e.target.value)}
-                            className="text-2xl font-black text-center text-slate-800 bg-white border border-indigo-200 rounded p-1 focus:ring-2 focus:ring-indigo-400 outline-none w-full"
+                            className="text-2xl font-black text-center text-slate-800 bg-white border border-indigo-200 rounded p-1 focus:ring-2 focus:ring-indigo-400 w-full"
                         />
                         {(main_en || leveledTextLanguage !== 'English') && (
                             <input aria-label={t('common.common_placeholder_translation')}
                                 value={main_en || ''}
                                 onChange={(e) => handleOutlineChange(null, 'main', e.target.value, null, true)}
-                                className="text-sm text-center text-slate-600 bg-white border border-slate-400 rounded p-1 focus:ring-2 focus:ring-indigo-400 outline-none w-full"
+                                className="text-sm text-center text-slate-600 bg-white border border-slate-400 rounded p-1 focus:ring-2 focus:ring-indigo-400 w-full"
                                 placeholder={t('common.placeholder_translation')}
                             />
                         )}
@@ -266,13 +266,13 @@ const renderOutlineContent = (deps) => {
                              <input aria-label={t('common.enter_branch')}
                                 value={branch.title}
                                 onChange={(e) => handleOutlineChange(bIdx, 'title', e.target.value)}
-                                className="font-bold text-lg text-indigo-900 w-full bg-transparent outline-none border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1"
+                                className="font-bold text-lg text-indigo-900 w-full bg-transparent border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1"
                              />
                              {(branch.title_en || leveledTextLanguage !== 'English') && (
                                  <input aria-label={t('common.common_placeholder_title_trans')}
                                     value={branch.title_en || ''}
                                     onChange={(e) => handleOutlineChange(bIdx, 'title', e.target.value, null, true)}
-                                    className="text-xs text-slate-600 w-full bg-transparent outline-none border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1"
+                                    className="text-xs text-slate-600 w-full bg-transparent border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1"
                                     placeholder={t('common.placeholder_title_trans')}
                                  />
                              )}
@@ -294,13 +294,13 @@ const renderOutlineContent = (deps) => {
                                         <input aria-label={t('common.enter_item')}
                                             value={item}
                                             onChange={(e) => handleOutlineChange(bIdx, 'item', e.target.value, iIdx)}
-                                            className="w-full bg-white/50 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
+                                            className="w-full bg-white/50 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
                                         />
                                         {(branch.items_en?.[iIdx] || leveledTextLanguage !== 'English') && (
                                             <input aria-label={t('common.common_placeholder_item_trans')}
                                                 value={branch.items_en?.[iIdx] || ''}
                                                 onChange={(e) => handleOutlineChange(bIdx, 'item', e.target.value, iIdx, true)}
-                                                className="w-full bg-white/50 rounded px-2 py-0.5 text-xs text-slate-600 italic outline-none focus:ring-2 focus:ring-indigo-300"
+                                                className="w-full bg-white/50 rounded px-2 py-0.5 text-xs text-slate-600 italic focus:ring-2 focus:ring-indigo-300"
                                                 placeholder={t('common.placeholder_item_trans')}
                                             />
                                         )}
@@ -442,14 +442,14 @@ const renderOutlineContent = (deps) => {
                                      value={it}
                                      onChange={(e) => handleOutlineChange(branchIndex, 'item', e.target.value, i)}
                                      onClick={(e) => e.stopPropagation()}
-                                     className="w-full bg-white/50 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200 text-xs font-bold"
+                                     className="w-full bg-white/50 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200 text-xs font-bold"
                                  />
                                  {showEnglish && isNonEnglish && (items_en?.[i] || items_en?.[i] === '') && (
                                      <input aria-label={t('common.enter_items_en')}
                                          value={items_en[i] || ''}
                                          onChange={(e) => handleOutlineChange(branchIndex, 'item', e.target.value, i, true)}
                                          onClick={(e) => e.stopPropagation()}
-                                         className="w-full bg-white/50 rounded px-2 py-0.5 text-[0.8em] opacity-80 font-normal outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
+                                         className="w-full bg-white/50 rounded px-2 py-0.5 text-[0.8em] opacity-80 font-normal focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
                                          placeholder={t('common.placeholder_item_trans')}
                                      />
                                  )}
@@ -474,13 +474,13 @@ const renderOutlineContent = (deps) => {
                             <input aria-label={t('common.enter_title')}
                                 value={title}
                                 onChange={(e) => handleOutlineChange(branchIndex, 'title', e.target.value)}
-                                className="font-black text-center bg-transparent outline-none border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full"
+                                className="font-black text-center bg-transparent border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full"
                             />
                             {showEnglish && isNonEnglish && (title_en || title_en === '') && (
                                 <input aria-label={t('common.common_placeholder_title_trans')}
                                     value={title_en || ''}
                                     onChange={(e) => handleOutlineChange(branchIndex, 'title', e.target.value, null, true)}
-                                    className="text-[0.6em] text-center opacity-80 font-normal uppercase tracking-normal bg-transparent outline-none border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full"
+                                    className="text-[0.6em] text-center opacity-80 font-normal uppercase tracking-normal bg-transparent border-b border-dashed border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full"
                                     placeholder={t('common.placeholder_title_trans')}
                                 />
                             )}
@@ -532,15 +532,15 @@ const renderOutlineContent = (deps) => {
                                         onChange={(e) => setVennInputs({...vennInputs, setA: e.target.value})}
                                         onKeyDown={(e) => e.key === 'Enter' && handleAddVennItem('setA')}
                                         placeholder={t('concept_map.venn.add_item_placeholder')}
-                                        className="flex-grow text-xs p-2 rounded border border-rose-200 outline-none focus:ring-2 focus:ring-rose-400"
+                                        className="flex-grow text-xs p-2 rounded border border-rose-200 focus:ring-2 focus:ring-rose-400"
                                     />
-                                    <button type="button" onClick={() => handleAddVennItem('setA')} className="min-h-11 min-w-11 bg-rose-200 hover:bg-rose-300 text-rose-800 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2" aria-label={`${t('common.add')}: ${setA.title}`}><Plus size={14}/></button>
+                                    <button type="button" onClick={() => handleAddVennItem('setA')} className="min-h-11 min-w-11 bg-rose-200 hover:bg-rose-300 text-rose-800 p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2" aria-label={`${t('common.add')}: ${setA.title}`}><Plus size={14}/></button>
                                 </div>
                                 <div className="space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1">
                                     {vennGameData.setA.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-rose-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button type="button" onClick={() => handleRemoveVennItem('setA', i)} className="min-h-11 min-w-11 text-rose-700 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
+                                            <button type="button" onClick={() => handleRemoveVennItem('setA', i)} className="min-h-11 min-w-11 text-rose-700 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
                                         </div>
                                     ))}
                                     {vennGameData.setA.length === 0 && <p className="text-[11px] text-rose-700 italic text-center">{t('concept_sort.no_items')}</p>}
@@ -555,15 +555,15 @@ const renderOutlineContent = (deps) => {
                                         onChange={(e) => setVennInputs({...vennInputs, shared: e.target.value})}
                                         onKeyDown={(e) => e.key === 'Enter' && handleAddVennItem('shared')}
                                         placeholder={t('concept_map.venn.add_item_placeholder')}
-                                        className="flex-grow text-xs p-2 rounded border border-purple-200 outline-none focus:ring-2 focus:ring-purple-400"
+                                        className="flex-grow text-xs p-2 rounded border border-purple-200 focus:ring-2 focus:ring-purple-400"
                                     />
-                                    <button type="button" onClick={() => handleAddVennItem('shared')} className="min-h-11 min-w-11 bg-purple-200 hover:bg-purple-300 text-purple-800 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2" aria-label={`${t('common.add')}: ${shared.title || 'Shared'}`}><Plus size={14}/></button>
+                                    <button type="button" onClick={() => handleAddVennItem('shared')} className="min-h-11 min-w-11 bg-purple-200 hover:bg-purple-300 text-purple-800 p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2" aria-label={`${t('common.add')}: ${shared.title || 'Shared'}`}><Plus size={14}/></button>
                                 </div>
                                 <div className="space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1">
                                     {vennGameData.shared.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-purple-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button type="button" onClick={() => handleRemoveVennItem('shared', i)} className="min-h-11 min-w-11 text-purple-700 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
+                                            <button type="button" onClick={() => handleRemoveVennItem('shared', i)} className="min-h-11 min-w-11 text-purple-700 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
                                         </div>
                                     ))}
                                     {vennGameData.shared.length === 0 && <p className="text-[11px] text-purple-700 italic text-center">{t('concept_sort.no_items')}</p>}
@@ -578,15 +578,15 @@ const renderOutlineContent = (deps) => {
                                         onChange={(e) => setVennInputs({...vennInputs, setB: e.target.value})}
                                         onKeyDown={(e) => e.key === 'Enter' && handleAddVennItem('setB')}
                                         placeholder={t('concept_map.venn.add_item_placeholder')}
-                                        className="flex-grow text-xs p-2 rounded border border-blue-200 outline-none focus:ring-2 focus:ring-blue-400"
+                                        className="flex-grow text-xs p-2 rounded border border-blue-200 focus:ring-2 focus:ring-blue-400"
                                     />
-                                    <button type="button" onClick={() => handleAddVennItem('setB')} className="min-h-11 min-w-11 bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label={`${t('common.add')}: ${setB.title}`}><Plus size={14}/></button>
+                                    <button type="button" onClick={() => handleAddVennItem('setB')} className="min-h-11 min-w-11 bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label={`${t('common.add')}: ${setB.title}`}><Plus size={14}/></button>
                                 </div>
                                 <div className="space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1">
                                     {vennGameData.setB.map((item, i) => (
                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group">
                                             <span>{typeof item === 'object' ? item.text : item}</span>
-                                            <button type="button" onClick={() => handleRemoveVennItem('setB', i)} className="min-h-11 min-w-11 text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
+                                            <button type="button" onClick={() => handleRemoveVennItem('setB', i)} className="min-h-11 min-w-11 text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
                                         </div>
                                     ))}
                                     {vennGameData.setB.length === 0 && <p className="text-[11px] text-blue-700 italic text-center">{t('concept_sort.no_items')}</p>}
@@ -617,7 +617,7 @@ const renderOutlineContent = (deps) => {
                             <select aria-label={t('common.selection')}
                                 value={outlineTranslationMode}
                                 onChange={(e) => setOutlineTranslationMode(e.target.value)}
-                                className="text-xs border border-indigo-200 rounded-full px-3 py-2 bg-white text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm cursor-pointer"
+                                className="text-xs border border-indigo-200 rounded-full px-3 py-2 bg-white text-indigo-700 font-bold focus:ring-2 focus:ring-indigo-200 shadow-sm cursor-pointer"
                             >
                                 <option value="bilingual">{leveledTextLanguage} + {t('languages.english')}</option>
                                 <option value="target">{leveledTextLanguage} Only</option>
@@ -708,7 +708,7 @@ const renderOutlineContent = (deps) => {
                                     aria-label={t('common.enter_branch') || 'Column heading'}
                                     value={branch.title || ''}
                                     onChange={(e) => handleOutlineChange(branchIdx, 'title', e.target.value)}
-                                    className={`w-full font-black text-lg uppercase tracking-wider text-center px-3 py-2 rounded-lg border-2 focus:ring-2 outline-none ${colorClasses.input} ${colorClasses.header.split(' ').filter(c => c.startsWith('text-')).join(' ')} bg-white`}
+                                    className={`w-full font-black text-lg uppercase tracking-wider text-center px-3 py-2 rounded-lg border-2 focus:ring-2 ${colorClasses.input} ${colorClasses.header.split(' ').filter(c => c.startsWith('text-')).join(' ')} bg-white`}
                                     placeholder={fallbackTitle}
                                 />
                                 {showBilingual && (
@@ -716,7 +716,7 @@ const renderOutlineContent = (deps) => {
                                         aria-label={t('common.placeholder_translation') || 'Translation'}
                                         value={branch.title_en || ''}
                                         onChange={(e) => handleOutlineChange(branchIdx, 'title', e.target.value, null, true)}
-                                        className="w-full text-xs italic text-center px-2 py-1 rounded border border-slate-300 focus:ring-2 focus:ring-slate-200 outline-none bg-white text-slate-600"
+                                        className="w-full text-xs italic text-center px-2 py-1 rounded border border-slate-300 focus:ring-2 focus:ring-slate-200 bg-white text-slate-600"
                                         placeholder={t('common.placeholder_translation') || 'Translation (optional)'}
                                     />
                                 )}
@@ -741,14 +741,14 @@ const renderOutlineContent = (deps) => {
                                                         aria-label={t('common.enter_item') || 'Item text'}
                                                         value={text}
                                                         onChange={(e) => handleOutlineChange(branchIdx, 'item', e.target.value, k)}
-                                                        className="w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500 outline-none"
+                                                        className="w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500"
                                                     />
                                                     {showBilingual && (
                                                         <input
                                                             aria-label={t('common.placeholder_translation') || 'Translation'}
                                                             value={trans || ''}
                                                             onChange={(e) => handleOutlineChange(branchIdx, 'item', e.target.value, k, true)}
-                                                            className="w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400 outline-none"
+                                                            className="w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400"
                                                             placeholder={t('common.placeholder_translation') || 'Translation'}
                                                         />
                                                     )}
@@ -914,7 +914,7 @@ const renderOutlineContent = (deps) => {
                                                     aria-label={t('common.enter_branch') || 'Category name'}
                                                     value={branch.title || ''}
                                                     onChange={(e) => handleOutlineChange(branchIdx, 'title', e.target.value)}
-                                                    className="w-full font-black text-violet-900 text-sm uppercase tracking-wider bg-white px-2 py-1 rounded border border-violet-300 focus:ring-2 focus:ring-violet-300 outline-none"
+                                                    className="w-full font-black text-violet-900 text-sm uppercase tracking-wider bg-white px-2 py-1 rounded border border-violet-300 focus:ring-2 focus:ring-violet-300"
                                                     placeholder={`Category ${branchIdx + 1}`}
                                                 />
                                                 {showBilingual && (
@@ -922,7 +922,7 @@ const renderOutlineContent = (deps) => {
                                                         aria-label={t('common.placeholder_translation') || 'Translation'}
                                                         value={branch.title_en || ''}
                                                         onChange={(e) => handleOutlineChange(branchIdx, 'title', e.target.value, null, true)}
-                                                        className="w-full text-xs italic text-violet-700 bg-white px-2 py-0.5 rounded border border-violet-200 focus:ring-2 focus:ring-violet-200 outline-none"
+                                                        className="w-full text-xs italic text-violet-700 bg-white px-2 py-0.5 rounded border border-violet-200 focus:ring-2 focus:ring-violet-200"
                                                         placeholder={t('common.placeholder_translation') || 'Translation (optional)'}
                                                     />
                                                 )}
@@ -948,14 +948,14 @@ const renderOutlineContent = (deps) => {
                                                                     aria-label={t('common.enter_item') || 'Cause text'}
                                                                     value={text}
                                                                     onChange={(e) => handleOutlineChange(branchIdx, 'item', e.target.value, k)}
-                                                                    className="w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500 outline-none"
+                                                                    className="w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500"
                                                                 />
                                                                 {showBilingual && (
                                                                     <input
                                                                         aria-label={t('common.placeholder_translation') || 'Translation'}
                                                                         value={trans || ''}
                                                                         onChange={(e) => handleOutlineChange(branchIdx, 'item', e.target.value, k, true)}
-                                                                        className="w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400 outline-none"
+                                                                        className="w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400"
                                                                         placeholder={t('common.placeholder_translation') || 'Translation'}
                                                                     />
                                                                 )}
@@ -1051,7 +1051,7 @@ const renderOutlineContent = (deps) => {
                                                          aria-label={t('outline.edit_cause') || 'Edit cause'}
                                                          value={b.title}
                                                          onChange={(e) => handleOutlineChange(i, 'title', e.target.value)}
-                                                         className="w-full bg-transparent outline-none focus:ring-2 focus:ring-orange-400 text-orange-900 font-bold resize-none h-full"
+                                                         className="w-full bg-transparent focus:ring-2 focus:ring-orange-400 text-orange-900 font-bold resize-none h-full"
                                                      />
                                                  ) : (
                                                      <h4 className="font-bold text-orange-900 text-lg">{b.title}</h4>
@@ -1255,7 +1255,7 @@ const renderOutlineContent = (deps) => {
                                             disabled={isProcessing}
                                             className="mt-4 text-xs font-bold bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:cursor-wait"
                                          >
-                                             {isProcessing ? <RefreshCw size={14} className="animate-spin"/> : <Sparkles size={14}/>}
+                                             {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={14}/>}
                                              {t('outline.labels.generate_outcome') || "Generate Outcome"}
                                          </button>
                                      )}
@@ -1791,13 +1791,13 @@ const renderOutlineContent = (deps) => {
                                                     <input aria-label={t('common.enter_branch')}
                                                         value={branch.title}
                                                         onChange={(e) => handleOutlineChange(i, 'title', e.target.value)}
-                                                        className="font-bold text-lg text-indigo-900 w-full bg-transparent outline-none border-b border-dashed border-indigo-200 focus:border-indigo-500"
+                                                        className="font-bold text-lg text-indigo-900 w-full bg-transparent border-b border-dashed border-indigo-200 focus:border-indigo-500"
                                                     />
                                                     {(branch.title_en || leveledTextLanguage !== 'English') && (
                                                         <input aria-label={t('common.common_placeholder_translation')}
                                                             value={branch.title_en || ''}
                                                             onChange={(e) => handleOutlineChange(i, 'title', e.target.value, null, true)}
-                                                            className="text-xs text-slate-600 w-full bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 border-b border-dashed border-slate-200"
+                                                            className="text-xs text-slate-600 w-full bg-transparent focus:ring-2 focus:ring-indigo-400 border-b border-dashed border-slate-200"
                                                             placeholder={t('common.placeholder_translation')}
                                                         />
                                                     )}
@@ -1820,13 +1820,13 @@ const renderOutlineContent = (deps) => {
                                                             <input aria-label={t('common.enter_item')}
                                                                 value={item}
                                                                 onChange={(e) => handleOutlineChange(i, 'item', e.target.value, k)}
-                                                                className="w-full bg-white rounded px-2 py-1 outline-none border border-slate-400 focus:border-indigo-600"
+                                                                className="w-full bg-white rounded px-2 py-1 border border-slate-400 focus:border-indigo-600"
                                                             />
                                                             {(branch.items_en?.[k] || leveledTextLanguage !== 'English') && (
                                                                 <input aria-label={t('common.common_placeholder_translation')}
                                                                     value={branch.items_en?.[k] || ''}
                                                                     onChange={(e) => handleOutlineChange(i, 'item', e.target.value, k, true)}
-                                                                    className="w-full bg-white rounded px-2 py-0.5 text-xs text-slate-600 italic outline-none focus:ring-2 focus:ring-indigo-400 border border-slate-100"
+                                                                    className="w-full bg-white rounded px-2 py-0.5 text-xs text-slate-600 italic focus:ring-2 focus:ring-indigo-400 border border-slate-100"
                                                                     placeholder={t('common.placeholder_translation')}
                                                                 />
                                                             )}
@@ -1934,33 +1934,48 @@ function openConceptMap3D(opts) {
   // interactive mode first.
   var generated = (opts.generated && Array.isArray(opts.generated.branches) && opts.generated.branches.length) ? opts.generated : null;
   if (!nodes.length && !generated) { addToast(t('concept_map.view_3d_empty') || 'Add some concepts first.', 'info'); return function () {}; }
+  var previouslyFocused = document.activeElement;
   var overlay = document.createElement('div');
   overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-label', t('concept_map.view_3d') || 'View concept map in 3D');
+  overlay.setAttribute('aria-labelledby', 'vo-cg3d-title'); overlay.setAttribute('aria-describedby', 'vo-cg3d-hint'); overlay.tabIndex = -1;
   overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;';
   var header = document.createElement('div');
   header.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b1020;border-bottom:1px solid #1e293b;color:#e2e8f0;';
   var titleWrap = document.createElement('div'); titleWrap.style.cssText = 'flex:1;min-width:0;';
-  var title = document.createElement('div'); title.style.cssText = 'font-weight:800;font-size:14px;'; title.textContent = '\u{1F9CA} ' + (t('concept_map.view_3d') || '3D concept map');
-  var hint = document.createElement('div'); hint.style.cssText = 'font-size:11px;color:#94a3b8;'; hint.textContent = t('concept_map.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand';
+  var title = document.createElement('div'); title.id = 'vo-cg3d-title'; title.style.cssText = 'font-weight:800;font-size:14px;'; title.textContent = '\u{1F9CA} ' + (t('concept_map.view_3d') || '3D concept map');
+  var hint = document.createElement('div'); hint.id = 'vo-cg3d-hint'; hint.style.cssText = 'font-size:11px;color:#94a3b8;'; hint.textContent = t('concept_map.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand';
   titleWrap.appendChild(title); titleWrap.appendChild(hint);
   var closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
   closeBtn.setAttribute('aria-label', t('common.close') || 'Close'); closeBtn.textContent = '✕';
-  closeBtn.style.cssText = 'border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;';
+  closeBtn.style.cssText = 'border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;min-width:44px;min-height:44px;';
   header.appendChild(titleWrap); header.appendChild(closeBtn);
   var body = document.createElement('div'); body.style.cssText = 'flex:1;position:relative;min-height:0;';
-  var status = document.createElement('div'); status.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;';
+  var status = document.createElement('div'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;';
   status.textContent = '\u{1F9ED} ' + (t('concept_map.view_3d_loading') || 'Loading the 3D view…');
   body.appendChild(status);
   overlay.appendChild(header); overlay.appendChild(body);
   document.body.appendChild(overlay);
+  closeBtn.focus();
   var handle = null, aiBtn = null;
+  var destroyed = false;
   function destroy() {
+    if (destroyed) return;
+    destroyed = true;
     try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
     try { document.removeEventListener('keydown', onKey, true); } catch (e) {}
     try { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+    try { if (previouslyFocused && document.contains(previouslyFocused)) previouslyFocused.focus(); } catch (e) {}
   }
-  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); destroy(); } }
+  function onKey(e) {
+    if (e.key === 'Escape') { e.preventDefault(); destroy(); return; }
+    if (e.key !== 'Tab') return;
+    var focusable = Array.from(overlay.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function (el) { return el.getClientRects().length > 0; });
+    if (!focusable.length) { e.preventDefault(); overlay.focus(); return; }
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
   document.addEventListener('keydown', onKey, true);
   closeBtn.onclick = destroy;
   _voCg3dEnsure().then(function (ok) {
@@ -1991,7 +2006,7 @@ function openConceptMap3D(opts) {
       // to the deterministic default layout.
       var resetArrBtn = document.createElement('button');
       resetArrBtn.textContent = '↺ ' + (t('concept_space.reset') || 'Reset arrangement');
-      resetArrBtn.style.cssText = 'font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #334155;white-space:nowrap;background:transparent;color:#cbd5e1;cursor:pointer;';
+      resetArrBtn.style.cssText = 'font-size:12px;font-weight:700;padding:6px 12px;min-height:44px;border-radius:8px;border:1px solid #334155;white-space:nowrap;background:transparent;color:#cbd5e1;cursor:pointer;';
       header.insertBefore(resetArrBtn, closeBtn);
       resetArrBtn.onclick = function () {
         try { opts.onArrangementChange(null); } catch (e) {}
@@ -2006,7 +2021,7 @@ function openConceptMap3D(opts) {
     if (typeof window.callGemini === 'function') {
       aiBtn = document.createElement('button');
       aiBtn.textContent = '✨ ' + (t('concept_map.view_3d_arrange') || 'Arrange by meaning');
-      aiBtn.style.cssText = 'font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;';
+      aiBtn.style.cssText = 'font-size:12px;font-weight:800;padding:6px 12px;min-height:44px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;';
       header.insertBefore(aiBtn, closeBtn);
       aiBtn.onclick = function () {
         aiBtn.disabled = true; var prev = aiBtn.textContent; aiBtn.textContent = '… ' + (t('concept_map.view_3d_arranging') || 'Arranging');
@@ -2471,7 +2486,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                 <div className="flex items-center gap-2">
                     {challenge ? (
                         <>
-                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" role="status">
+                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums">
                                 ⏱ {fmtTime(elapsed)} · {(t('concept_space.challenge_progress') || '{placed}/{total} placed')
                                     .replace('{placed}', String(placedCount)).replace('{total}', String(challenge.targets.length))}
                             </span>
@@ -2675,7 +2690,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                             <button onClick={() => handleArtManualTweak('recolor')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
                                         </div>
                                         <form onSubmit={(e) => { e.preventDefault(); handleArtRefine(); }} className="flex gap-1">
-                                            <input value={refinePrompt} onChange={(e) => setRefinePrompt(e.target.value)} disabled={refineBusy} placeholder={t('concept_space.refine_placeholder') || 'Tell the AI what to change…'} aria-label={t('concept_space.refine_placeholder') || 'Tell the AI what to change'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 outline-none" />
+                                            <input value={refinePrompt} onChange={(e) => setRefinePrompt(e.target.value)} disabled={refineBusy} placeholder={t('concept_space.refine_placeholder') || 'Tell the AI what to change…'} aria-label={t('concept_space.refine_placeholder') || 'Tell the AI what to change'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" />
                                             <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨</button>
                                         </form>
                                     </>
@@ -2709,7 +2724,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                         )}
                                         {(!directEval || directEval.verdict === 'reject') && (
                                             <form onSubmit={(e) => { e.preventDefault(); handleArtSubmit(); }} className="flex gap-1">
-                                                <input value={directPrompt} onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }} placeholder={t('concept_space.art_prompt_placeholder') || 'e.g. a glowing brain with gears'} aria-label={t('concept_space.art_prompt_placeholder') || 'Describe the art'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 outline-none" />
+                                                <input value={directPrompt} onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }} placeholder={t('concept_space.art_prompt_placeholder') || 'e.g. a glowing brain with gears'} aria-label={t('concept_space.art_prompt_placeholder') || 'Describe the art'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" />
                                                 <button type="submit" disabled={!directPrompt.trim()} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨</button>
                                             </form>
                                         )}
@@ -2764,6 +2779,8 @@ const _MP_STAMP_THEMES = {
 const _mpStampImage = (emoji, theme) => {
     try {
         const c = document.createElement('canvas');
+        c.setAttribute('role', 'img');
+        c.setAttribute('aria-label', 'Generated memory palace illustration stamp');
         c.width = 320; c.height = 240;
         const g = c.getContext('2d');
         if (!g) return null;
@@ -3498,7 +3515,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 <div className="flex items-center gap-2">
                     {recall ? (
                         <>
-                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" role="status">
+                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums">
                                 ⏱ {fmtTime(elapsed)} · {(t('memory_palace.recall_progress') || '{done}/{total} recalled')
                                     .replace('{done}', String(answered)).replace('{total}', String((palaceRef.current?.route?.length || 1) - 1))}
                             </span>
@@ -3726,7 +3743,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                                 onChange={(e) => setRefinePrompt(e.target.value)}
                                                 placeholder={t('memory_palace.refine_placeholder') || 'Tell the AI what to change… (e.g. add a red hat)'}
                                                 aria-label={t('memory_palace.refine_placeholder') || 'Tell the AI what to change'}
-                                                className="flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
+                                                className="flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 bg-white"
                                             />
                                             <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
                                                 {refineBusy ? (t('memory_palace.direct_creating') || 'Creating…') : ('✨ ' + (t('memory_palace.refine_apply') || 'Refine'))}
@@ -3763,7 +3780,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         placeholder={t('memory_palace.direct_placeholder') || 'Describe what the AI should create here…'}
                                         aria-label={t('memory_palace.direct_placeholder') || 'Describe what the AI should create here'}
                                         rows={2}
-                                        className="w-full text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
+                                        className="w-full text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 bg-white"
                                     />
                                     <div className="mt-2 flex items-center gap-2 flex-wrap">
                                         <button type="submit" disabled={!directPrompt.trim() || !!directBusy} className="px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -3773,7 +3790,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                             <button type="button" onClick={toggleVoiceDirect} disabled={!!directBusy}
                                                 aria-pressed={voiceListening ? 'true' : 'false'}
                                                 title={t('memory_palace.voice_direct_title') || 'Speak your prompt for this locus, hands-free'}
-                                                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${voiceListening ? 'bg-rose-600 text-white animate-pulse' : 'bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50'}`}>
+                                                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${voiceListening ? 'bg-rose-600 text-white animate-pulse motion-reduce:animate-none' : 'bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50'}`}>
                                                 {voiceListening ? ('🔴 ' + (t('memory_palace.voice_listening') || 'Listening…')) : ('🎤 ' + (t('memory_palace.voice_direct') || 'Speak'))}
                                             </button>
                                         )}
@@ -3902,7 +3919,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     onChange={(e) => setTypedAnswer(e.target.value)}
                                     placeholder={t('memory_palace.recall_type_placeholder') || 'Type what belongs here…'}
                                     aria-label={t('memory_palace.recall_q') || 'What belongs at this locus?'}
-                                    className="flex-1 text-sm p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 outline-none bg-white"
+                                    className="flex-1 text-sm p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 bg-white"
                                 />
                                 <button
                                     type="submit"
@@ -4025,7 +4042,7 @@ const renderInteractiveMap = (deps) => {
                                 onChange={(e) => setNodeInputText(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && !isChallengeActive && !isMapLocked && handleAddManualNode()}
                                 placeholder={t('concept_map.toolbar.add_placeholder')}
-                                className={`text-xs p-2 rounded border border-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none w-32 sm:w-48 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100 ${isMapLocked ? 'cursor-not-allowed' : ''}`}
+                                className={`text-xs p-2 rounded border border-slate-400 focus:ring-2 focus:ring-indigo-500 w-32 sm:w-48 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100 ${isMapLocked ? 'cursor-not-allowed' : ''}`}
                                 disabled={isChallengeActive || isMapLocked}
                             />
                             <button aria-label={t('common.add')}
@@ -4053,7 +4070,7 @@ const renderInteractiveMap = (deps) => {
                                     title={t('concept_map.toolbar.auto_layout_tooltip')}
                                     aria-label={t('concept_map.toolbar.auto_layout_tooltip')}
                                 >
-                                    {isProcessing ? <RefreshCw size={14} className="animate-spin"/> : <Sparkles size={14} />}
+                                    {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={14} />}
                                     <span className="hidden sm:inline">{t('concept_map.toolbar.auto_layout')}</span>
                                 </button>
                             )}
@@ -4101,7 +4118,7 @@ const renderInteractiveMap = (deps) => {
                                           value={challengeModeType}
                                           onChange={(e) => setChallengeModeType(e.target.value)}
                                           disabled={isMapLocked}
-                                          className={`text-xs font-bold text-slate-600 bg-white border border-slate-400 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                          className={`text-xs font-bold text-slate-600 bg-white border border-slate-400 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-yellow-400 cursor-pointer shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                                           title={t('concept_map.tooltips.select_grading')}
                                       >
                                           <option value="strict">{t('concept_map.challenge.strict_mode')}</option>
@@ -4152,7 +4169,7 @@ const renderInteractiveMap = (deps) => {
                                               disabled={isCheckingChallenge}
                                               className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                           >
-                                              {isCheckingChallenge ? <RefreshCw size={14} className="animate-spin"/> : <CheckCircle2 size={14} />}
+                                              {isCheckingChallenge ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <CheckCircle2 size={14} />}
                                               {isCheckingChallenge ? t('concept_map.challenge.checking') : t('concept_map.challenge.check')}
                                           </button>
                                           {isTeacherMode && (
@@ -4203,7 +4220,7 @@ const renderInteractiveMap = (deps) => {
                               </div>
                           </div>
                           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-600">
-                              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
+                              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse motion-reduce:animate-none">
                                   <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
                               </svg>
                           </div>
@@ -4383,7 +4400,7 @@ const renderInteractiveMap = (deps) => {
                         .map(node => <React.Fragment key={node.id}>{renderFlowShape(node, connectingSourceId === node.id)}</React.Fragment>)
                       }
                       {!isVenn && connectingSourceId && (
-                          <rect x="0" y="0" width="100%" height="100%" fill="rgba(99, 102, 241, 0.05)" className="pointer-events-none animate-pulse" />
+                          <rect x="0" y="0" width="100%" height="100%" fill="rgba(99, 102, 241, 0.05)" className="pointer-events-none animate-pulse motion-reduce:animate-none" />
                       )}
                   </svg>
                   {(conceptMapNodes || [])
