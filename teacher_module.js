@@ -359,8 +359,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-mono w-10 text-right" }, (value || 1).toFixed(2), "x")) : type === "toggle" ? /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => handleUpdateGroupProfile(gId, field, !value),
-      className: `px-3 py-1 rounded-full text-xs font-bold transition-all ${value ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`
+      className: `px-3 py-1 rounded-full text-xs font-bold transition-all motion-reduce:transition-none ${value ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`
     },
     value ? "On" : "Off"
   ) : /* @__PURE__ */ React.createElement(
@@ -374,27 +375,29 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       className: "flex-1 px-2 py-1 rounded-lg border border-slate-400 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     }
   ));
-  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "teacher-roster-panel-title", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in zoom-in-95 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { id: "teacher-roster-panel-title", className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " ", t("roster.import") || "Import JSON"), /* @__PURE__ */ React.createElement("button", { onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "teacher-roster-panel-title", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { id: "teacher-roster-panel-title", className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " ", t("roster.import") || "Import JSON"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: requestOfflineSubmissionSetup,
       disabled: !rosterKey,
       title: rosterKey?.submissionKey?.publicJwk ? "Offline submissions are active for this class. Click to regenerate (invalidates the existing key)." : "Generate a class keypair so students can save HTML worksheets back to you.",
-      className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 disabled:opacity-40 ${rosterKey?.submissionKey?.publicJwk ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`
+      className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ${rosterKey?.submissionKey?.publicJwk ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`
     },
     /* @__PURE__ */ React.createElement(Lock, { size: 14 }),
     rosterKey?.submissionKey?.publicJwk ? t("roster.submissions_active") || "Submissions On" : t("roster.setup_submissions") || "Set up offline submissions"
   ), typeof onOpenSubmissionInbox === "function" && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onOpenSubmissionInbox,
       disabled: !rosterKey?.submissionKey?.publicJwk,
       title: rosterKey?.submissionKey?.publicJwk ? "Open the submission inbox to decrypt and review student-submitted HTML files." : "Set up offline submissions first to use the inbox.",
-      className: "px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center gap-1.5 disabled:opacity-40"
+      className: "px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40"
     },
     "\u{1F4E5} ",
     t("roster.import_submissions") || "Import submissions"
-  ), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 border border-amber-200" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, title: "Update this live session's group choices and differentiation settings from the roster.", className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, title: "Update this live session's group choices and differentiation settings from the roster.", className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -408,15 +411,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     const group = groups[gId];
     const gStudents = getStudentsInGroup(gId);
     const isExpanded = expandedGroup === gId;
-    return /* @__PURE__ */ React.createElement("div", { key: gId, className: "border border-slate-400 rounded-xl overflow-hidden transition-all hover:border-indigo-200" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: gId, className: "border border-slate-400 rounded-xl overflow-hidden transition-all motion-reduce:transition-none hover:border-indigo-200" }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => setExpandedGroup(isExpanded ? null : gId),
-        className: "w-full flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+        className: "w-full flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 transition-colors motion-reduce:transition-none text-left"
       },
       /* @__PURE__ */ React.createElement("div", { className: "w-3 h-3 rounded-full shrink-0", style: { backgroundColor: group.color || "#4F46E5" } }),
       /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-sm text-slate-800 truncate" }, group.name), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, gStudents.length, " student", gStudents.length !== 1 ? "s" : "", " \xB7 ", group.profile?.gradeLevel || "\u2014", " \xB7 ", group.profile?.leveledTextLanguage || "\u2014")),
-      /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, className: `text-slate-400 transition-transform ${isExpanded ? "rotate-180" : ""}` })
+      /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, className: `text-slate-400 transition-transform motion-reduce:transition-none ${isExpanded ? "rotate-180" : ""}` })
     ), isExpanded && /* @__PURE__ */ React.createElement("div", { className: "p-4 space-y-3 border-t border-slate-100 bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center mb-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
@@ -429,15 +433,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, COLORS.map((c) => /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: c,
         onClick: () => handleUpdateGroupMeta(gId, "color", c),
-        className: `w-6 h-6 rounded-full border-2 transition-all ${group.color === c ? "border-slate-800 scale-110" : "border-transparent hover:scale-105"}`,
+        className: `w-6 h-6 rounded-full border-2 transition-all motion-reduce:transition-none ${group.color === c ? "border-slate-800 scale-110" : "border-transparent hover:scale-105"}`,
         style: { backgroundColor: c },
         "aria-label": (t("roster.set_group_color") || "Set group color") + " " + c,
         "aria-pressed": group.color === c
       }
-    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl" }, /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.grade") || "Grade", value: group.profile?.gradeLevel, field: "gradeLevel", gId, type: "select", options: GRADE_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.language") || "Language", value: group.profile?.leveledTextLanguage, field: "leveledTextLanguage", gId, type: "select", options: LANG_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.reading") || "Reading Lvl", value: group.profile?.readingLevel, field: "readingLevel", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.interests") || "Interests", value: group.profile?.studentInterests, field: "studentInterests", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.dok") || "DOK Level", value: group.profile?.dokLevel, field: "dokLevel", gId, type: "select", options: ["1", "2", "3", "4"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.tts_speed") || "TTS Speed", value: group.profile?.ttsSpeed, field: "ttsSpeed", gId, type: "range" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.karaoke") || "Karaoke", value: group.profile?.karaokeMode, field: "karaokeMode", gId, type: "toggle" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.simplify") || "Simplify", value: group.profile?.simplifyLevel, field: "simplifyLevel", gId, type: "select", options: ["basic", "intermediate", "advanced"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.custom") || "Custom Instr.", value: group.profile?.leveledTextCustomInstructions, field: "leveledTextCustomInstructions", gId })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("roster.students_in_group") || "Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, gStudents.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleMoveStudent(name, ""), className: "w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors ml-0.5 rounded-full", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), gStudents.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("roster.no_students") || "No students assigned"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("button", { onClick: () => onApplyGroup(gId), className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " ", t("roster.apply_to_generator") || "Apply to Generator"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveGroup(gId), className: "px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors ml-auto flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }), " ", t("roster.delete_group") || "Delete Group"))));
-  }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors" }, /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl" }, /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.grade") || "Grade", value: group.profile?.gradeLevel, field: "gradeLevel", gId, type: "select", options: GRADE_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.language") || "Language", value: group.profile?.leveledTextLanguage, field: "leveledTextLanguage", gId, type: "select", options: LANG_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.reading") || "Reading Lvl", value: group.profile?.readingLevel, field: "readingLevel", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.interests") || "Interests", value: group.profile?.studentInterests, field: "studentInterests", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.dok") || "DOK Level", value: group.profile?.dokLevel, field: "dokLevel", gId, type: "select", options: ["1", "2", "3", "4"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.tts_speed") || "TTS Speed", value: group.profile?.ttsSpeed, field: "ttsSpeed", gId, type: "range" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.karaoke") || "Karaoke", value: group.profile?.karaokeMode, field: "karaokeMode", gId, type: "toggle" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.simplify") || "Simplify", value: group.profile?.simplifyLevel, field: "simplifyLevel", gId, type: "select", options: ["basic", "intermediate", "advanced"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.custom") || "Custom Instr.", value: group.profile?.leveledTextCustomInstructions, field: "leveledTextCustomInstructions", gId })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("roster.students_in_group") || "Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, gStudents.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleMoveStudent(name, ""), className: "w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors motion-reduce:transition-none ml-0.5 rounded-full", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), gStudents.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("roster.no_students") || "No students assigned"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onApplyGroup(gId), className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " ", t("roster.apply_to_generator") || "Apply to Generator"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveGroup(gId), className: "px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none ml-auto flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }), " ", t("roster.delete_group") || "Delete Group"))));
+  }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -451,6 +456,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, COLORS.slice(0, 4).map((c) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: c,
       onClick: () => setNewGroupColor(c),
       className: `w-6 h-6 rounded-full border-2 ${newGroupColor === c ? "border-slate-800" : "border-transparent"}`,
@@ -461,9 +467,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   ))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleAddGroup,
       disabled: !newGroupName.trim(),
-      className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40 flex items-center gap-1"
+      className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none disabled:opacity-40 flex items-center gap-1"
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 14 }),
     " ",
@@ -471,18 +478,20 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   )), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), " ", t("roster.manage_students") || "Manage Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-[11px]" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setUseCustomName(false);
         if (!rosterAdj || !rosterAnimal) randomizeRosterName();
       },
-      className: `px-2 py-1 rounded-full font-bold transition-all ${!useCustomName ? "bg-teal-100 text-teal-800 border border-teal-600" : "text-slate-400 hover:text-slate-600"}`
+      className: `px-2 py-1 rounded-full font-bold transition-all motion-reduce:transition-none ${!useCustomName ? "bg-teal-100 text-teal-800 border border-teal-600" : "text-slate-400 hover:text-slate-600"}`
     },
     "\u{1F3B2} Codename Only"
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setUseCustomName(true),
-      className: `px-2 py-1 rounded-full font-bold transition-all ${useCustomName ? "bg-teal-100 text-teal-800 border border-teal-600" : "text-slate-400 hover:text-slate-600"}`
+      className: `px-2 py-1 rounded-full font-bold transition-all motion-reduce:transition-none ${useCustomName ? "bg-teal-100 text-teal-800 border border-teal-600" : "text-slate-400 hover:text-slate-600"}`
     },
     "\u270F\uFE0F Codename + Real Name"
   )), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 items-center" }, /* @__PURE__ */ React.createElement(
@@ -505,7 +514,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("codenames.pick_animal") || "\u2014 Animal \u2014"),
     rosterAnimals.map((a) => /* @__PURE__ */ React.createElement("option", { key: a, value: a }, a))
-  ), /* @__PURE__ */ React.createElement("button", { onClick: randomizeRosterName, title: t("common.randomize") || "Randomize", className: "p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12 }))), useCustomName && /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: randomizeRosterName, title: t("common.randomize") || "Randomize", className: "p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12 }))), useCustomName && /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -529,9 +538,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleAddStudent,
       disabled: !rosterAdj || !rosterAnimal,
-      className: "px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center gap-1"
+      className: "px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-40 flex items-center gap-1"
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 14 }),
     " ",
@@ -548,7 +558,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2192"),
     groupIds.map((gId) => /* @__PURE__ */ React.createElement("option", { key: gId, value: gId }, groups[gId].name))
-  ), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, [...rosterKey.sessionHistory].reverse().slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), session.teacherNote && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Teacher note:"), " ", session.teacherNote), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " live response", record.responseCount === 1 ? "" : "s", record.groupId ? ` \xB7 group ${record.groupId}` : "")), (session.unmatchedCodenames || []).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched:"), " ", session.unmatchedCodenames.join(", "))))), rosterKey.sessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent of ", rosterKey.sessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only"))), submissionDialog && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors motion-reduce:transition-none", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, [...rosterKey.sessionHistory].reverse().slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), session.teacherNote && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Teacher note:"), " ", session.teacherNote), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " live response", record.responseCount === 1 ? "" : "s", record.groupId ? ` \xB7 group ${record.groupId}` : "")), (session.unmatchedCodenames || []).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched:"), " ", session.unmatchedCodenames.join(", "))))), rosterKey.sessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent of ", rosterKey.sessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only"))), submissionDialog && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: submissionDialogRef,
@@ -596,7 +606,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const barWidth = Math.min(40, chartWidth / data.length * 0.6);
   const gap = (chartWidth - barWidth * data.length) / (data.length + 1);
-  return /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex items-center justify-center select-none" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${width} ${height}`, className: "w-full h-auto max-h-[160px]", preserveAspectRatio: "xMidYMid meet" }, data.map((d, i) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex items-center justify-center select-none" }, /* @__PURE__ */ React.createElement("svg", { role: "img", "aria-label": data.map((d) => `${d.label}: ${d.value}`).join(", "), viewBox: `0 0 ${width} ${height}`, className: "w-full h-auto max-h-[160px]", preserveAspectRatio: "xMidYMid meet" }, data.map((d, i) => {
     const barHeight = d.value / maxValue * chartHeight;
     const x = gap + i * (barWidth + gap);
     const y = height - margin - barHeight;
@@ -608,7 +618,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
         width: barWidth,
         height: barHeight,
         rx: "4",
-        className: `fill-${color}-500 group-hover:fill-${color}-600 transition-all duration-300`
+        className: `fill-${color}-500 group-hover:fill-${color}-600 transition-all motion-reduce:transition-none duration-300`
       }
     ), /* @__PURE__ */ React.createElement(
       "text",
@@ -616,7 +626,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
         x: x + barWidth / 2,
         y: y - 5,
         textAnchor: "middle",
-        className: "fill-slate-500 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+        className: "fill-slate-500 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none"
       },
       d.value
     ), /* @__PURE__ */ React.createElement(
@@ -638,7 +648,7 @@ const SimpleDonutChart = ({ percentage, label, color = "indigo" }) => {
   const circumference = 2 * Math.PI * radius;
   const safePercent = Math.min(100, Math.max(0, percentage || 0));
   const offset = circumference - safePercent / 100 * circumference;
-  return /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center justify-center select-none" }, /* @__PURE__ */ React.createElement("div", { className: "relative w-24 h-24" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${size} ${size}`, className: "transform -rotate-90 w-full h-full" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-label": label, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.round(safePercent), className: "flex flex-col items-center justify-center select-none" }, /* @__PURE__ */ React.createElement("div", { className: "relative w-24 h-24" }, /* @__PURE__ */ React.createElement("svg", { "aria-hidden": "true", focusable: "false", viewBox: `0 0 ${size} ${size}`, className: "transform -rotate-90 w-full h-full" }, /* @__PURE__ */ React.createElement(
     "circle",
     {
       cx: size / 2,
@@ -653,7 +663,7 @@ const SimpleDonutChart = ({ percentage, label, color = "indigo" }) => {
       cx: size / 2,
       cy: size / 2,
       r: radius,
-      className: `stroke-${color}-500 fill-none transition-all duration-1000 ease-out`,
+      className: `stroke-${color}-500 fill-none transition-all motion-reduce:transition-none duration-1000 ease-out`,
       strokeWidth,
       strokeDasharray: circumference,
       strokeDashoffset: offset,
@@ -672,7 +682,7 @@ const ConfettiEffect = ({ isActive }) => {
     size: Math.random() * 8 + 4,
     duration: Math.random() * 2 + 2
   }));
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 pointer-events-none z-[10001] overflow-hidden", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("style", null, `
+  return /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 motion-reduce:hidden pointer-events-none z-[10001] overflow-hidden", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("style", null, `
         @keyframes confetti-fall {
           0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
           100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
@@ -681,6 +691,9 @@ const ConfettiEffect = ({ isActive }) => {
           position: absolute;
           top: -20px;
           animation: confetti-fall linear forwards;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .confetti-particle { animation: none !important; display: none !important; }
         }
       `), particles.map((p) => /* @__PURE__ */ React.createElement(
     "div",
@@ -857,37 +870,38 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     }
   };
   if (!userTeam) {
-    return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "status", "aria-live": "polite", "aria-busy": "true", className: "fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white" }, /* @__PURE__ */ React.createElement(RefreshCw, { className: "w-12 h-12 animate-spin mx-auto mb-4 text-purple-700", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("p", { className: "text-xl font-bold" }, t("escape_room.waiting_host"))));
+    return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "status", "aria-live": "polite", "aria-busy": "true", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white" }, /* @__PURE__ */ React.createElement(RefreshCw, { className: "w-12 h-12 animate-spin motion-reduce:animate-none mx-auto mb-4 text-purple-700", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("p", { className: "text-xl font-bold" }, t("escape_room.waiting_host"))));
   }
   if (escapeState.isGameOver) {
-    return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "alert", "aria-labelledby": "escape-room-game-over-title", "aria-describedby": "escape-room-game-over-description", className: "fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-pulse" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-game-over-title", className: "text-5xl font-black mb-4 text-red-600" }, t("escape_room.game_over")), /* @__PURE__ */ React.createElement("p", { id: "escape-room-game-over-description", className: "text-2xl text-slate-300 mb-6" }, t("escape_room.life_lost")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 justify-center text-lg" }, /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.puzzles_remaining"), ": ", puzzles.length - solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.wrong_attempts"), ": ", escapeState.wrongAttempts || 0))));
+    return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "alert", "aria-labelledby": "escape-room-game-over-title", "aria-describedby": "escape-room-game-over-description", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-pulse motion-reduce:animate-none" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-game-over-title", className: "text-5xl font-black mb-4 text-red-600" }, t("escape_room.game_over")), /* @__PURE__ */ React.createElement("p", { id: "escape-room-game-over-description", className: "text-2xl text-slate-300 mb-6" }, t("escape_room.life_lost")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 justify-center text-lg" }, /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.puzzles_remaining"), ": ", puzzles.length - solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.wrong_attempts"), ": ", escapeState.wrongAttempts || 0))));
   }
   if (teamEscaped) {
     const isFirstToEscape = allTeams.filter(
       (team) => escapeState.teamProgress?.[team]?.isEscaped
     ).length === 1;
-    return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "status", "aria-labelledby": "escape-room-escaped-title", "aria-describedby": "escape-room-escaped-description", className: "fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center focus:outline-none" }, /* @__PURE__ */ React.createElement(ConfettiEffect, { isActive: showConfetti }), /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-bounce" }, isFirstToEscape ? "\u{1F3C6}" : "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-escaped-title", className: "text-5xl font-black mb-4" }, isCoopMode ? t("escape_room.class_escaped") : isFirstToEscape ? t("escape_room.first_escape") : t("escape_room.escaped")), /* @__PURE__ */ React.createElement("p", { id: "escape-room-escaped-description", className: "text-2xl text-green-200" }, isCoopMode ? t("escape_room.everyone_escaped") : t("escape_room.team_escaped", { team: userTeam })), !isCoopMode && /* @__PURE__ */ React.createElement("div", { className: `mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full ${myTeamColors.bg} text-white font-bold text-xl` }, t("escape_room.your_team"), ": ", userTeam)));
+    return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "status", "aria-labelledby": "escape-room-escaped-title", "aria-describedby": "escape-room-escaped-description", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement(ConfettiEffect, { isActive: showConfetti }), /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-bounce motion-reduce:animate-none" }, isFirstToEscape ? "\u{1F3C6}" : "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-escaped-title", className: "text-5xl font-black mb-4" }, isCoopMode ? t("escape_room.class_escaped") : isFirstToEscape ? t("escape_room.first_escape") : t("escape_room.escaped")), /* @__PURE__ */ React.createElement("p", { id: "escape-room-escaped-description", className: "text-2xl text-green-200" }, isCoopMode ? t("escape_room.everyone_escaped") : t("escape_room.team_escaped", { team: userTeam })), !isCoopMode && /* @__PURE__ */ React.createElement("div", { className: `mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full ${myTeamColors.bg} text-white font-bold text-xl` }, t("escape_room.your_team"), ": ", userTeam)));
   }
   const currentPuzzle = selectedPuzzle ? puzzles.find((p) => p.linkedObjectId === selectedPuzzle || p.id === selectedPuzzle) : null;
-  return /* @__PURE__ */ React.createElement("div", { ref: escapeMainRef, tabIndex: -1, role: "region", "aria-labelledby": "escape-room-active-title", className: "fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-400", size: 24 }), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-active-title", className: "text-white font-bold text-lg" }, escapeState.room?.theme || t("escape_room.title"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`, "data-help-key": "escape_room_team" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), t(`escape_room.team_${userTeam.toLowerCase()}`, { defaultValue: `${userTeam} Team` })), /* @__PURE__ */ React.createElement("div", { className: "text-white font-mono", "data-help-key": "escape_room_progress" }, /* @__PURE__ */ React.createElement("span", { className: "text-purple-300" }, solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "/", puzzles.length)), escapeState.maxLives < 99 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.lives"), "data-help-key": "escape_room_lives" }, Array.from({ length: escapeState.maxLives }).map((_, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: `text-sm ${i < (escapeState.lives || 0) ? "text-red-500" : "text-slate-600"}` }, "\u2764\uFE0F"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.hints_used") }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "text-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "text-white text-xs font-bold" }, escapeState.hintsRemaining || 0)), (escapeState.streak || 0) >= 3 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse", "data-help-key": "escape_room_streak" }, "\u{1F525} x", escapeState.streak), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? "bg-red-500 text-white animate-pulse" : "bg-slate-700 text-white"}`, "data-help-key": "escape_room_timer" }, /* @__PURE__ */ React.createElement(Clock, { size: 14, className: "inline mr-1" }), formatTime(timeRemaining))))), /* @__PURE__ */ React.createElement("div", { className: "fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40", "data-help-key": "escape_room_leaderboard" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-300 uppercase mb-3" }, t("escape_room.live_progress")), allTeams.map((team) => {
+  return /* @__PURE__ */ React.createElement("div", { ref: escapeMainRef, tabIndex: -1, role: "region", "aria-labelledby": "escape-room-active-title", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-400", size: 24 }), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-active-title", className: "text-white font-bold text-lg" }, escapeState.room?.theme || t("escape_room.title"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`, "data-help-key": "escape_room_team" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), t(`escape_room.team_${userTeam.toLowerCase()}`, { defaultValue: `${userTeam} Team` })), /* @__PURE__ */ React.createElement("div", { className: "text-white font-mono", "data-help-key": "escape_room_progress" }, /* @__PURE__ */ React.createElement("span", { className: "text-purple-300" }, solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "/", puzzles.length)), escapeState.maxLives < 99 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.lives"), "data-help-key": "escape_room_lives" }, Array.from({ length: escapeState.maxLives }).map((_, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: `text-sm ${i < (escapeState.lives || 0) ? "text-red-500" : "text-slate-600"}` }, "\u2764\uFE0F"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.hints_used") }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "text-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "text-white text-xs font-bold" }, escapeState.hintsRemaining || 0)), (escapeState.streak || 0) >= 3 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse motion-reduce:animate-none", "data-help-key": "escape_room_streak" }, "\u{1F525} x", escapeState.streak), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? "bg-red-500 text-white animate-pulse motion-reduce:animate-none" : "bg-slate-700 text-white"}`, "data-help-key": "escape_room_timer" }, /* @__PURE__ */ React.createElement(Clock, { size: 14, className: "inline mr-1" }), formatTime(timeRemaining))))), /* @__PURE__ */ React.createElement("div", { className: "fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40", "data-help-key": "escape_room_leaderboard" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-300 uppercase mb-3" }, t("escape_room.live_progress")), allTeams.map((team) => {
     const progress = escapeState.teamProgress?.[team] || { solvedPuzzles: [] };
     const solved = (progress.solvedPuzzles || []).length;
     const percent = puzzles.length > 0 ? Math.round(solved / puzzles.length * 100) : 0;
     const colors = teamColors[team] || teamColors.Blue;
     const escaped = progress.isEscaped;
-    return /* @__PURE__ */ React.createElement("div", { key: team, className: `mb-2 ${team === userTeam ? "ring-2 ring-white/50 rounded-lg p-1" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, solved, "/", puzzles.length)), /* @__PURE__ */ React.createElement("div", { className: "w-32 h-2 bg-slate-700 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all duration-300`, style: { width: `${percent}%` } })), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-green-700" }, "\u{1F3C6} ", t("escape_room.escaped")));
+    return /* @__PURE__ */ React.createElement("div", { key: team, className: `mb-2 ${team === userTeam ? "ring-2 ring-white/50 rounded-lg p-1" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, solved, "/", puzzles.length)), /* @__PURE__ */ React.createElement("div", { className: "w-32 h-2 bg-slate-700 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all motion-reduce:transition-none duration-300`, style: { width: `${percent}%` } })), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-green-700" }, "\u{1F3C6} ", t("escape_room.escaped")));
   })), /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-6 mt-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-center text-purple-700 mb-6 italic" }, escapeState.room?.description), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" }, objects.map((obj, idx) => {
     const puzzle = puzzles.find((p) => p.linkedObjectId === obj.id) || puzzles[idx];
     const isSolved = puzzle && solvedPuzzlesSet.has(puzzle.id);
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: obj.id,
         onClick: (event) => !isSolved && puzzle && openPuzzleDialog(event, obj.id),
         disabled: isSolved,
         "data-help-key": "escape_room_object",
         className: `
-                  aspect-square rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all
+                  aspect-square rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all motion-reduce:transition-none
                   border-2 ${isSolved ? "bg-green-900/50 border-green-500/50 cursor-default" : "bg-slate-800 border-purple-500/30 hover:border-purple-400 hover:scale-105 cursor-pointer"}
                 `
       },
@@ -928,9 +942,10 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full uppercase font-bold" }, currentPuzzle.type || "mcq")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-initial-focus": "true", onClick: closePuzzleDialog, "data-help-key": "escape_room_close_btn", className: "min-w-11 min-h-11 inline-flex items-center justify-center text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" }))),
     /* @__PURE__ */ React.createElement("h2", { id: "escape-room-puzzle-question", className: "text-xl text-white font-bold mb-4" }, currentPuzzle.question),
-    currentPuzzle.hint && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, escapeState.revealedHints?.[currentPuzzle.id] ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in fade-in" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "inline mr-2 text-yellow-400" }), currentPuzzle.hint) : /* @__PURE__ */ React.createElement(
+    currentPuzzle.hint && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, escapeState.revealedHints?.[currentPuzzle.id] ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in motion-reduce:animate-none fade-in" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "inline mr-2 text-yellow-400" }), currentPuzzle.hint) : /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: async () => {
           if ((escapeState.hintsRemaining || 0) <= 0) return;
           try {
@@ -948,7 +963,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         },
         disabled: (escapeState.hintsRemaining || 0) <= 0,
         "data-help-key": "escape_room_hint_button",
-        className: `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap ${(escapeState.hintsRemaining || 0) > 0 ? "bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40" : "bg-slate-700 text-slate-300 cursor-not-allowed"}`
+        className: `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors motion-reduce:transition-none whitespace-nowrap ${(escapeState.hintsRemaining || 0) > 0 ? "bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40" : "bg-slate-700 text-slate-300 cursor-not-allowed"}`
       },
       /* @__PURE__ */ React.createElement("span", { className: "text-sm" }, "\u{1F4A1}"),
       t("escape_room.hint_btn"),
@@ -961,10 +976,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     (!currentPuzzle.type || currentPuzzle.type === "mcq") && currentPuzzle.options && /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, currentPuzzle.options.map((opt, idx) => /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: idx,
         onClick: () => handleSubmitAnswer(currentPuzzle.id, idx, "mcq"),
         "data-help-key": "escape_room_mcq_option",
-        className: "w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400"
+        className: "w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors motion-reduce:transition-none border-2 border-transparent hover:border-purple-400"
       },
       /* @__PURE__ */ React.createElement("span", { className: "inline-block w-8 font-bold text-purple-400" }, String.fromCharCode(65 + idx), "."),
       opt
@@ -983,18 +999,20 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "cipher"),
         "data-help-key": "escape_room_cipher_submit",
-        className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+        className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.submit_answer")
     )),
     currentPuzzle.type === "fillin" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.sentence && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg text-white text-center text-lg" }, currentPuzzle.sentence.replace("___", userInput ? `[${userInput}]` : "______")), currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 text-center uppercase font-bold" }, t("escape_room.select_word") || "Select the correct word:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, currentPuzzle.wordbank.map((word, idx) => /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: idx,
         onClick: () => setUserInput(word),
-        className: `px-4 py-2 rounded-lg font-bold transition-all ${userInput === word ? "bg-purple-600 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
+        className: `px-4 py-2 rounded-lg font-bold transition-all motion-reduce:transition-none ${userInput === word ? "bg-purple-600 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
       },
       word
     )))) : /* @__PURE__ */ React.createElement(
@@ -1011,10 +1029,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "fillin"),
         disabled: !userInput,
         "data-help-key": "escape_room_fillin_submit",
-        className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
+        className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50"
       },
       t("escape_room.submit_answer")
     )),
@@ -1032,15 +1051,17 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "scramble"),
         "data-help-key": "escape_room_scramble_submit",
-        className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+        className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.check_word")
     )),
     currentPuzzle.type === "sequence" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_sequence_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-300 italic mb-2" }, t("escape_room.sequence_instructions")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "list", "aria-label": t("escape_room.sequence_list") || "Sequence items to order" }, sequenceOrder.length === 0 ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item))) : sequenceOrder.map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", "aria-label": `${t("escape_room.position") || "Position"} ${idx + 1}: ${item}`, className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold", "aria-hidden": "true" }, idx + 1), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": t("escape_room.reorder_buttons") || "Reorder buttons" }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => {
           if (idx > 0) {
             const newOrder = [...sequenceOrder];
@@ -1057,6 +1078,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => {
           if (idx < sequenceOrder.length - 1) {
             const newOrder = [...sequenceOrder];
@@ -1073,19 +1095,21 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     ))))), sequenceOrder.length === 0 && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => setSequenceOrder(currentPuzzle.shuffledItems || currentPuzzle.items || []),
-        className: "w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+        className: "w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.start_ordering") || "Start Ordering"
     ), sequenceOrder.length > 0 && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => {
           const originalItems = currentPuzzle.items || [];
           const orderIndices = sequenceOrder.map((item) => originalItems.indexOf(item));
           handleSubmitAnswer(currentPuzzle.id, orderIndices, "sequence");
         },
-        className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
+        className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.check_sequence")
     )),
@@ -1095,6 +1119,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       return /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           key: idx,
           onClick: () => {
             if (isMatched) return;
@@ -1107,7 +1132,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
           },
           disabled: isMatched,
           "aria-label": isMatched ? `${item} - ${t("escape_room.matched") || "matched"}` : isSelected ? `${item} - ${t("escape_room.selected") || "selected"}` : item,
-          className: `w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${isMatched ? "bg-green-700 text-white opacity-60" : isSelected ? "bg-purple-500 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
+          className: `w-full p-3 rounded-lg text-left font-medium transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-purple-400 ${isMatched ? "bg-green-700 text-white opacity-60" : isSelected ? "bg-purple-500 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
         },
         item
       );
@@ -1117,6 +1142,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       return /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           key: idx,
           onClick: () => {
             if (isMatched) return;
@@ -1129,20 +1155,39 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
           },
           disabled: isMatched,
           "aria-label": isMatched ? `${item} - ${t("escape_room.matched") || "matched"}` : isSelected ? `${item} - ${t("escape_room.selected") || "selected"}` : item,
-          className: `w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${isMatched ? "bg-green-700 text-white opacity-60" : isSelected ? "bg-purple-500 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
+          className: `w-full p-3 rounded-lg text-left font-medium transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-purple-400 ${isMatched ? "bg-green-700 text-white opacity-60" : isSelected ? "bg-purple-500 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
         },
         item
       );
     }))), matchingPairs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-3 rounded-lg", role: "list", "aria-label": t("escape_room.matched_pairs") || "Matched pairs" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2", "aria-hidden": "true" }, t("escape_room.matched_pairs")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, matchingPairs.map((pair, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "text-sm text-green-400" }, "\u2713 ", pair.left, " \u2194 ", pair.right)))), matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => handleSubmitAnswer(currentPuzzle.id, matchingPairs, "matching"),
-        className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
+        className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.submit_answer")
     )),
     currentPuzzle.hint && /* @__PURE__ */ React.createElement("p", { className: "mt-4 text-purple-400 text-sm italic" }, "\u{1F4A1} ", currentPuzzle.hint)
-  )), isPaused && /* @__PURE__ */ React.createElement("div", { ref: pauseDialogRef, tabIndex: -1, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "escape-room-paused-title", "aria-describedby": "escape-room-paused-description", className: "fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-pulse" }, /* @__PURE__ */ React.createElement("div", { className: "text-8xl mb-6" }, "\u23F8\uFE0F"), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-paused-title", className: "text-4xl font-black mb-3" }, t("escape_room.game_paused")), /* @__PURE__ */ React.createElement("p", { id: "escape-room-paused-description", className: "text-xl text-slate-300" }, t("escape_room.waiting_resume")))), teamEscapeToast && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || "border-purple-500"} bg-slate-900` }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl" }, "\u{1F6AA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-white font-bold" }, t("escape_room.team_escaped", { team: teamEscapeToast })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm" }, t("escape_room.hurry_up"))))));
+  )), isPaused && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: pauseDialogRef,
+      tabIndex: -1,
+      role: "alertdialog",
+      "aria-modal": "true",
+      "aria-labelledby": "escape-room-paused-title",
+      "aria-describedby": "escape-room-paused-description",
+      onKeyDown: (event) => {
+        if (event.key === "Tab") {
+          event.preventDefault();
+          pauseDialogRef.current?.focus();
+        }
+      },
+      className: "fixed top-0 right-0 bottom-0 left-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "text-8xl mb-6" }, "\u23F8\uFE0F"), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-paused-title", className: "text-4xl font-black mb-3" }, t("escape_room.game_paused")), /* @__PURE__ */ React.createElement("p", { id: "escape-room-paused-description", className: "text-xl text-slate-300" }, t("escape_room.waiting_resume")))
+  ), teamEscapeToast && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in motion-reduce:animate-none slide-in-from-bottom duration-300" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || "border-purple-500"} bg-slate-900` }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl" }, "\u{1F6AA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-white font-bold" }, t("escape_room.team_escaped", { team: teamEscapeToast })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm" }, t("escape_room.hurry_up"))))));
 });
 const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId: appId2, t, addToast: addToast2 }) => {
   const escapeState = sessionData?.escapeRoomState;
@@ -1228,18 +1273,20 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
     const s2 = seconds % 60;
     return `${m}:${s2.toString().padStart(2, "0")}`;
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 border-2 border-purple-200 shadow-lg mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-600", size: 20 }), /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-purple-900" }, escapeState.room?.theme || t("escape_room.title")), isCoopMode && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full font-bold" }, t("escape_room.coop_mode")), isPaused && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse" }, "\u23F8\uFE0F ", t("escape_room.game_paused"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold" }, studentsAssigned, " ", t("escape_room.teams_competing", { count: allTeams.length })), /* @__PURE__ */ React.createElement("span", { className: `px-3 py-1 rounded-full font-mono font-bold text-sm ${escapeState.timeRemaining < 60 ? "bg-red-500 text-white" : "bg-slate-700 text-white"}` }, /* @__PURE__ */ React.createElement(Clock, { size: 12, className: "inline mr-1" }), formatTime(escapeState.timeRemaining || 0)), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 border-2 border-purple-200 shadow-lg mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-600", size: 20 }), /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-purple-900" }, escapeState.room?.theme || t("escape_room.title")), isCoopMode && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full font-bold" }, t("escape_room.coop_mode")), isPaused && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse motion-reduce:animate-none" }, "\u23F8\uFE0F ", t("escape_room.game_paused"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold" }, studentsAssigned, " ", t("escape_room.teams_competing", { count: allTeams.length })), /* @__PURE__ */ React.createElement("span", { className: `px-3 py-1 rounded-full font-mono font-bold text-sm ${escapeState.timeRemaining < 60 ? "bg-red-500 text-white" : "bg-slate-700 text-white"}` }, /* @__PURE__ */ React.createElement(Clock, { size: 12, className: "inline mr-1" }), formatTime(escapeState.timeRemaining || 0)), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handlePauseToggle,
-      className: `px-4 py-2 rounded-full font-bold text-sm transition-colors whitespace-nowrap ${isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-yellow-500 hover:bg-yellow-600 text-white"}`
+      className: `px-4 py-2 rounded-full font-bold text-sm transition-colors motion-reduce:transition-none whitespace-nowrap ${isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-yellow-500 hover:bg-yellow-600 text-white"}`
     },
     isPaused ? "\u25B6\uFE0F " + t("escape_room.resume") : "\u23F8\uFE0F " + t("escape_room.pause")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: requestEndGame,
-      className: "px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors whitespace-nowrap"
+      className: "px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors motion-reduce:transition-none whitespace-nowrap"
     },
     t("escape_room.end_game")
   ))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" }, allTeams.map((team) => {
@@ -1249,7 +1296,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
     const colors = teamColors[team] || teamColors.Blue;
     const escaped = progress.isEscaped;
     const memberCount = Object.values(escapeState.teams || {}).filter((t2) => t2 === team).length;
-    return /* @__PURE__ */ React.createElement("div", { key: team, className: `p-3 rounded-xl border-2 ${escaped ? "border-green-400 bg-green-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, memberCount, " \u{1F464}")), /* @__PURE__ */ React.createElement("div", { className: "w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all duration-500`, style: { width: `${percent}%` } })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, solved, "/", totalPuzzles), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-green-600 font-bold" }, "\u{1F3C6} ", t("escape_room.escaped"))));
+    return /* @__PURE__ */ React.createElement("div", { key: team, className: `p-3 rounded-xl border-2 ${escaped ? "border-green-400 bg-green-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, memberCount, " \u{1F464}")), /* @__PURE__ */ React.createElement("div", { className: "w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all motion-reduce:transition-none duration-500`, style: { width: `${percent}%` } })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, solved, "/", totalPuzzles), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-green-600 font-bold" }, "\u{1F3C6} ", t("escape_room.escaped"))));
   })), escapedTeams.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 p-3 bg-green-100 rounded-xl border border-green-300 text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-800 font-bold" }, "\u{1F389} ", escapedTeams.length === 1 ? t("escape_room.first_escape") + ": " + escapedTeams[0] : t("escape_room.all_teams_done"))), showEndConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -1284,7 +1331,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
     },
     /* @__PURE__ */ React.createElement("h4", { id: "escape-room-end-game-title", className: "text-lg font-bold text-red-600 mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(X, { className: "text-red-500", size: 20, "aria-hidden": "true" }), t("escape_room.end_game")),
     /* @__PURE__ */ React.createElement("p", { id: "escape-room-end-game-description", className: "text-slate-600 mb-4" }, t("escape_room.end_game_confirm")),
-    /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeEndGameDialog, className: "flex-1 min-h-11 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndGame, className: "flex-1 min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, t("escape_room.end_game")))
+    /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeEndGameDialog, className: "flex-1 min-h-11 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndGame, className: "flex-1 min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, t("escape_room.end_game")))
   )));
 });
 const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId: appId2, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [] }) => {
@@ -1417,11 +1464,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       isCorrect: opt === question.correctAnswer
     };
   });
-  const renderAnalytics = () => /* @__PURE__ */ React.createElement("div", { className: "flex flex-col h-full w-full animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "w-full h-48 mb-6 shrink-0" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: detailedStats, color: "indigo" })), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto pr-1 custom-scrollbar space-y-2" }, detailedStats.map((stat, i) => /* @__PURE__ */ React.createElement(
+  const renderAnalytics = () => /* @__PURE__ */ React.createElement("div", { className: "flex flex-col h-full w-full animate-in motion-reduce:animate-none fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "w-full h-48 mb-6 shrink-0" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: detailedStats, color: "indigo" })), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto pr-1 custom-scrollbar space-y-2" }, detailedStats.map((stat, i) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: i,
-      className: `flex items-center justify-between p-3 rounded-lg border text-xs transition-all ${phase === "revealed" && stat.isCorrect ? "bg-green-50 border-green-200 ring-1 ring-green-300" : "bg-white border-slate-100 hover:border-indigo-200"}`
+      className: `flex items-center justify-between p-3 rounded-lg border text-xs transition-all motion-reduce:transition-none ${phase === "revealed" && stat.isCorrect ? "bg-green-50 border-green-200 ring-1 ring-green-300" : "bg-white border-slate-100 hover:border-indigo-200"}`
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 overflow-hidden mr-4" }, /* @__PURE__ */ React.createElement("span", { className: `font-black w-6 h-6 flex items-center justify-center rounded shrink-0 ${phase === "revealed" && stat.isCorrect ? "bg-green-200 text-green-800" : "bg-indigo-100 text-indigo-700"}` }, stat.label), /* @__PURE__ */ React.createElement("span", { className: `truncate font-medium ${phase === "revealed" && stat.isCorrect ? "text-green-900" : "text-slate-600"}`, title: stat.text }, stat.text)),
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden hidden sm:block" }, /* @__PURE__ */ React.createElement(
@@ -1660,7 +1707,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   const handleDeleteGroup = onDeleteGroup;
   const availableResources = generatedContent?.data.resources || [];
   const activeGroups = useMemo(() => Object.entries(groups).filter(([_, g2]) => g2 !== null), [groups]);
-  return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in slide-in-from-top-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-900 text-white p-4 flex justify-between items-center flex-wrap gap-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 20, className: "text-teal-700" }), " ", t("quiz.live_control_center")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in motion-reduce:animate-none slide-in-from-top-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-900 text-white p-4 flex justify-between items-center flex-wrap gap-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 20, className: "text-teal-700" }), " ", t("quiz.live_control_center")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1688,10 +1735,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ), mode !== "live-pulse" && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.start_game"),
       onClick: () => setShowLocalStats((prev) => !prev),
       "data-help-key": "quiz_local_stats_btn",
-      className: `text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 border ${showLocalStats ? "bg-yellow-400 text-indigo-900 border-yellow-500" : "bg-indigo-800 text-indigo-200 border-indigo-600 hover:bg-indigo-700"}`,
+      className: `text-xs font-bold px-3 py-1.5 rounded-lg transition-colors motion-reduce:transition-none flex items-center gap-2 border ${showLocalStats ? "bg-yellow-400 text-indigo-900 border-yellow-500" : "bg-indigo-800 text-indigo-200 border-indigo-600 hover:bg-indigo-700"}`,
       title: t("quiz.toggle_stats_tooltip")
     },
     showLocalStats ? /* @__PURE__ */ React.createElement(Gamepad2, { size: 14 }) : /* @__PURE__ */ React.createElement(Layout, { size: 14 }),
@@ -1700,7 +1748,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     current: answeredCount,
     total: totalStudents,
     percent: percentage
-  })), /* @__PURE__ */ React.createElement("button", { onClick: handleEndQuiz, className: "text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-white" }, t("quiz.end_quiz")))), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-slate-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "bg-teal-500 h-full transition-all duration-500 ease-out", style: { width: `${percentage}%` } })), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-b border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase mb-2" }, t("groups.title")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndQuiz, className: "text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full font-bold transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-white" }, t("quiz.end_quiz")))), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-slate-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "bg-teal-500 h-full transition-all motion-reduce:transition-none duration-500 ease-out", style: { width: `${percentage}%` } })), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-b border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase mb-2" }, t("groups.title")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.new_group_name"),
@@ -1714,6 +1762,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleCreateGroup,
       "data-help-key": "quiz_add_group_btn",
       disabled: !newGroupName.trim(),
@@ -1721,7 +1770,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     },
     "+ ",
     t("groups.add_button")
-  )), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 max-h-40 overflow-y-auto custom-scrollbar" }, activeGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-2 rounded border border-indigo-100 shadow-sm flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-900" }, group.name), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDeleteGroup(gid), className: "text-[11px] text-red-600 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded" }, t("groups.remove_button")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] uppercase font-bold text-slate-600" }, t("groups.resource_label")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 max-h-40 overflow-y-auto custom-scrollbar" }, activeGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-2 rounded border border-indigo-100 shadow-sm flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-900" }, group.name), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleDeleteGroup(gid), className: "text-[11px] text-red-600 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded" }, t("groups.remove_button")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] uppercase font-bold text-slate-600" }, t("groups.resource_label")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1733,7 +1782,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("groups.default_resource")),
     availableResources.map((r) => /* @__PURE__ */ React.createElement("option", { key: r.id, value: r.id }, r.title || r.type))
-  ), isPushingResource[gid] === "pushing" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-purple-600 font-bold whitespace-nowrap" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, className: "animate-spin" }), " ", t("groups.pushing") || "Pushing\u2026"), isPushingResource[gid] === "success" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-emerald-600 font-bold whitespace-nowrap" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11 }), " ", t("groups.pushed") || "Sent")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] uppercase font-bold text-slate-600" }, t("groups.language_label") || "Quiz Language"), /* @__PURE__ */ React.createElement(
+  ), isPushingResource[gid] === "pushing" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-purple-600 font-bold whitespace-nowrap" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, className: "animate-spin motion-reduce:animate-none" }), " ", t("groups.pushing") || "Pushing\u2026"), isPushingResource[gid] === "success" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-emerald-600 font-bold whitespace-nowrap" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11 }), " ", t("groups.pushed") || "Sent")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] uppercase font-bold text-slate-600" }, t("groups.language_label") || "Quiz Language"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1825,6 +1874,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   })), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-bold text-slate-800 leading-tight" }, question.question)), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-amber-50 border border-amber-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setShowQuizRoutingPanel((v) => !v),
       className: "flex items-center gap-2 text-xs font-bold text-amber-800 hover:text-amber-900",
       "aria-expanded": showQuizRoutingPanel
@@ -1850,6 +1900,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: () => removeQuizRoutingRule(rule.id),
           "aria-label": "Remove confidence rule",
           className: "ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
@@ -1862,6 +1913,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       return /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "bg-white border border-purple-200 rounded p-1.5 text-xs space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "px-1 py-0.5 rounded bg-purple-100 text-purple-800 text-[10px] font-bold uppercase tracking-wide" }, "Aggregation"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, String(rule.when.aggregate), " of items ", across.map((i) => `Q${i + 1}`).join(", ") || "(none)", " ", rule.when.predicate, " ", String(rule.when.value)), across.length < 2 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] text-red-700 italic" }, "\u2014 needs \u22652 items to fire"), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: () => removeQuizRoutingRule(rule.id),
           "aria-label": "Remove aggregation rule",
           className: "ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
@@ -1902,6 +1954,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => removeQuizRoutingRule(rule.id),
         "aria-label": t("teacher.quiz_routing.remove_rule_aria") || "Remove rule",
         className: "ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
@@ -1924,6 +1977,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   }), _currentQuestionIsLikert ? /* @__PURE__ */ React.createElement("div", { className: "rounded border border-purple-200 bg-purple-50 px-2 py-1.5 text-[11px] text-purple-900 leading-snug" }, /* @__PURE__ */ React.createElement("strong", { className: "font-bold" }, "Likert routing:"), " single-item Likert routing is refused \u2014 a single self-report tick is not measurement-reliable. Multi-item aggregation rules (avg / min / max across \u22652 items) are supported by the router and can be pre-authored or AI-generated; in-editor rule creation lands in a future update.") : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: addQuizRoutingRule,
       disabled: groupEntriesForRouting.length === 0,
       className: `text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? "border-slate-300 text-slate-400 cursor-not-allowed" : "border-amber-500 text-amber-800 hover:bg-amber-100"}`
@@ -1932,6 +1986,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => addConfidencePatternRule("fragile"),
       disabled: groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2,
       title: "Route students who are getting answers right while reporting 'I guessed' (\u22652 items) \u2014 consolidation support, not a label",
@@ -1941,6 +1996,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => addConfidencePatternRule("confident-wrong"),
       disabled: groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2,
       title: "Route students who are answering wrong while reporting 'I knew it' (\u22652 items) \u2014 misconception conference list",
@@ -1950,10 +2006,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-auto" }, phase === "answering" ? /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.toggle_visibility"),
       onClick: handleRevealResults,
       "data-help-key": "quiz_reveal_btn",
-      className: "w-full py-4 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-indigo-900 font-black text-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+      className: "w-full py-4 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-indigo-900 font-black text-xl shadow-lg transition-transform motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
     },
     /* @__PURE__ */ React.createElement(Eye, { size: 24 }),
     " ",
@@ -1961,10 +2018,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ) : /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.play"),
       onClick: handleStartQuestion,
       "data-help-key": "quiz_start_question_btn",
-      className: "w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+      className: "w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl shadow-lg transition-transform motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
     },
     /* @__PURE__ */ React.createElement(Play, { size: 24, className: "fill-current" }),
     " ",
@@ -1972,10 +2030,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 pt-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handlePrevQuestion,
       "data-help-key": "quiz_prev_question_btn",
       disabled: currentQuestionIndex === 0,
-      className: "flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+      className: "flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
     },
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 16 }),
     " ",
@@ -1983,15 +2042,16 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleNextQuestion,
       "data-help-key": "quiz_next_question_btn",
       disabled: currentQuestionIndex >= generatedContent?.data.questions.length - 1,
-      className: "flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+      className: "flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
     },
     t("common.next"),
     " ",
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "-rotate-90", size: 16 })
-  )))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl border border-slate-400 p-6 flex flex-col items-center justify-center min-h-[300px] relative" }, showLocalStats || mode === "live-pulse" ? answeredCount > 0 ? renderAnalytics() : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium" }, t("quiz.waiting_responses"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, mode === "boss-battle" && bossStats ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 relative" }, phase === "boss-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement(ConfettiEffect, { isActive: true }), /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4 animate-bounce" }, "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.victory_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-green-200" }, bossStats?.name || "Boss", " has been defeated!"))), phase === "class-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.class_defeat_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-red-200" }, t("teacher.boss.class_fallen") || "The class has fallen..."))), /* @__PURE__ */ React.createElement("div", { className: `relative mb-6 ${phase === "revealed" && bossStats.lastDamage > 0 ? "animate-shake" : ""}` }, bossStats.image ? /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl border border-slate-400 p-6 flex flex-col items-center justify-center min-h-[300px] relative" }, showLocalStats || mode === "live-pulse" ? answeredCount > 0 ? renderAnalytics() : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium" }, t("quiz.waiting_responses"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, mode === "boss-battle" && bossStats ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center animate-in motion-reduce:animate-none fade-in zoom-in duration-300 relative" }, phase === "boss-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement(ConfettiEffect, { isActive: true }), /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4 animate-bounce motion-reduce:animate-none" }, "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.victory_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-green-200" }, bossStats?.name || "Boss", " has been defeated!"))), phase === "class-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.class_defeat_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-red-200" }, t("teacher.boss.class_fallen") || "The class has fallen..."))), /* @__PURE__ */ React.createElement("div", { className: `relative mb-6 ${phase === "revealed" && bossStats.lastDamage > 0 ? "animate-shake motion-reduce:animate-none" : ""}` }, bossStats.image ? /* @__PURE__ */ React.createElement(
     "img",
     {
       loading: "lazy",
@@ -2000,19 +2060,19 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       className: "w-48 h-48 object-contain pixelated drop-shadow-xl",
       style: STYLE_IMAGE_PIXELATED
     }
-  ) : /* @__PURE__ */ React.createElement("div", { className: "w-32 h-32 bg-red-100 rounded-full border-4 border-red-500 flex items-center justify-center text-6xl shadow-xl relative z-10" }, bossStats.isGenerating ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin text-red-500" }) : "\u{1F47E}"), phase === "revealed" && bossStats.lastDamage > 0 && /* @__PURE__ */ React.createElement("div", { className: `absolute top-0 right-[-20px] font-black z-20 stroke-white drop-shadow-md animate-[bounce_0.5s_infinite] ${bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "text-yellow-500 text-6xl" : "text-red-600 text-4xl"}` }, bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "\u{1F4A5} " : "", "-", bossStats.lastDamage)), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black text-slate-800 uppercase tracking-widest mb-2" }, bossStats.name || t("quiz.boss.default_name")), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && bossStats.currentHP / bossStats.maxHP < 0.25 ? "border-red-500 animate-pulse" : "border-slate-400"}` }, /* @__PURE__ */ React.createElement(
+  ) : /* @__PURE__ */ React.createElement("div", { className: "w-32 h-32 bg-red-100 rounded-full border-4 border-red-500 flex items-center justify-center text-6xl shadow-xl relative z-10" }, bossStats.isGenerating ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none text-red-500" }) : "\u{1F47E}"), phase === "revealed" && bossStats.lastDamage > 0 && /* @__PURE__ */ React.createElement("div", { className: `absolute top-0 right-[-20px] font-black z-20 stroke-white drop-shadow-md animate-[bounce_0.5s_infinite] motion-reduce:animate-none ${bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "text-yellow-500 text-6xl" : "text-red-600 text-4xl"}` }, bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "\u{1F4A5} " : "", "-", bossStats.lastDamage)), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black text-slate-800 uppercase tracking-widest mb-2" }, bossStats.name || t("quiz.boss.default_name")), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && bossStats.currentHP / bossStats.maxHP < 0.25 ? "border-red-500 animate-pulse motion-reduce:animate-none" : "border-slate-400"}` }, /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: `h-full transition-all duration-1000 ease-out ${bossStats.currentHP / bossStats.maxHP < 0.25 ? "bg-gradient-to-r from-red-700 to-red-500" : "bg-gradient-to-r from-red-600 to-orange-500"}`,
+      className: `h-full transition-all motion-reduce:transition-none duration-1000 ease-out ${bossStats.currentHP / bossStats.maxHP < 0.25 ? "bg-gradient-to-r from-red-700 to-red-500" : "bg-gradient-to-r from-red-600 to-orange-500"}`,
       style: { width: `${bossStats.currentHP / bossStats.maxHP * 100}%` }
     }
   ), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md" }, Math.round(bossStats.currentHP), " / ", bossStats.maxHP, " ", t("quiz.hp"))), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-sm bg-slate-300 h-6 rounded-full border-4 border-slate-400 relative overflow-hidden shadow-inner mb-2" }, /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: "h-full bg-gradient-to-r from-green-600 to-emerald-400 transition-all duration-1000 ease-out",
+      className: "h-full bg-gradient-to-r from-green-600 to-emerald-400 transition-all motion-reduce:transition-none duration-1000 ease-out",
       style: { width: `${(bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100) * 100}%` }
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md" }, t("quiz.boss.class_hp"), ": ", Math.round(bossStats.classHP ?? 100), " / ", bossStats.classMaxHP || 100)), phase === "revealed" && bossStats.lastClassDamage > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-orange-600 font-bold text-sm mb-2 animate-pulse" }, t("quiz.boss.counter_attack_msg", { damage: bossStats.lastClassDamage })), phase === "revealed" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-center" }, (bossStats.classHP ?? 100) <= 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-red-600 font-black text-2xl animate-bounce" }, t("quiz.boss.class_defeat_msg")) : bossStats.currentHP <= 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-green-600 font-black text-2xl animate-bounce" }, t("quiz.boss.victory_msg")) : bossStats.lastDamage > 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-red-500 font-bold" }, t("quiz.boss.attack_msg", { damage: bossStats.lastDamage })) : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 font-bold" }, t("quiz.boss.miss_msg")))) : mode === "team-showdown" ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-end justify-center gap-4 w-full h-48 pb-2 border-b-2 border-slate-200" }, ["Red", "Blue", "Green", "Yellow"].map((team) => {
+  ), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md" }, t("quiz.boss.class_hp"), ": ", Math.round(bossStats.classHP ?? 100), " / ", bossStats.classMaxHP || 100)), phase === "revealed" && bossStats.lastClassDamage > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-orange-600 font-bold text-sm mb-2 animate-pulse motion-reduce:animate-none" }, t("quiz.boss.counter_attack_msg", { damage: bossStats.lastClassDamage })), phase === "revealed" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-center" }, (bossStats.classHP ?? 100) <= 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-red-600 font-black text-2xl animate-bounce motion-reduce:animate-none" }, t("quiz.boss.class_defeat_msg")) : bossStats.currentHP <= 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-green-600 font-black text-2xl animate-bounce motion-reduce:animate-none" }, t("quiz.boss.victory_msg")) : bossStats.lastDamage > 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-red-500 font-bold" }, t("quiz.boss.attack_msg", { damage: bossStats.lastDamage })) : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 font-bold" }, t("quiz.boss.miss_msg")))) : mode === "team-showdown" ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-end justify-center gap-4 w-full h-48 pb-2 border-b-2 border-slate-200" }, ["Red", "Blue", "Green", "Yellow"].map((team) => {
     const score = teamScores?.[team] || 0;
     const maxScore = Math.max(2e3, ...Object.values(teamScores || {}));
     const height = Math.max(5, score / maxScore * 100);
@@ -2025,11 +2085,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     return /* @__PURE__ */ React.createElement("div", { key: team, className: "flex flex-col items-center justify-end h-full w-16 group relative" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 font-black text-slate-700 text-sm" }, score), /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: `w-full rounded-t-lg transition-all duration-700 ease-out ${colors[team]} shadow-lg`,
+        className: `w-full rounded-t-lg transition-all motion-reduce:transition-none duration-700 ease-out ${colors[team]} shadow-lg`,
         style: { height: `${height}%` }
       }
-    ), /* @__PURE__ */ React.createElement("span", { className: "mt-2 text-xs font-bold uppercase text-slate-600" }, t(`quiz.teams.${team.toLowerCase()}`)), phase === "revealed" && sessionData.quizState.lastRoundStats?.[team]?.points > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-300 text-indigo-900 text-xs font-black px-2 py-1 rounded shadow-sm animate-bounce whitespace-nowrap z-10" }, "+", sessionData.quizState.lastRoundStats[team].points));
-  })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-bold uppercase tracking-wider" }, t("quiz.team_leaderboard"))) : null), phase === "revealed" && /* @__PURE__ */ React.createElement("div", { className: "mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in slide-in-from-bottom-2 shadow-sm z-10" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1" }, t("quiz.correct_answer_label")), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-bold" }, question.correctAnswer)))));
+    ), /* @__PURE__ */ React.createElement("span", { className: "mt-2 text-xs font-bold uppercase text-slate-600" }, t(`quiz.teams.${team.toLowerCase()}`)), phase === "revealed" && sessionData.quizState.lastRoundStats?.[team]?.points > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-300 text-indigo-900 text-xs font-black px-2 py-1 rounded shadow-sm animate-bounce motion-reduce:animate-none whitespace-nowrap z-10" }, "+", sessionData.quizState.lastRoundStats[team].points));
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-bold uppercase tracking-wider" }, t("quiz.team_leaderboard"))) : null), phase === "revealed" && /* @__PURE__ */ React.createElement("div", { className: "mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 shadow-sm z-10" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1" }, t("quiz.correct_answer_label")), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-bold" }, question.correctAnswer)))));
 });
 const calculateAnalyticsMetrics = (dashboardData) => {
   if (!dashboardData || !Array.isArray(dashboardData) || dashboardData.length === 0) {
@@ -2127,7 +2187,7 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
     const y = height - padding - l.xp / maxXP * (height - padding * 2);
     return `${x},${y}`;
   }).join(" ");
-  return /* @__PURE__ */ React.createElement("div", { className: "w-full bg-white p-6 rounded-xl border border-slate-400 shadow-sm mt-6 animate-in slide-in-from-bottom-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-6 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 14, className: "text-yellow-500" }), " ", t("dashboard.progress_chart.title")), /* @__PURE__ */ React.createElement("div", { className: "w-full overflow-x-auto" }, /* @__PURE__ */ React.createElement("svg", { viewBox: `0 0 ${width} ${height}`, className: "w-full h-auto min-w-[500px] overflow-visible" }, /* @__PURE__ */ React.createElement("line", { x1: padding, y1: height - padding, x2: width - padding, y2: height - padding, stroke: "#e2e8f0", strokeWidth: "2" }), /* @__PURE__ */ React.createElement("line", { x1: padding, y1: padding, x2: padding, y2: height - padding, stroke: "#e2e8f0", strokeWidth: "2" }), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "w-full bg-white p-6 rounded-xl border border-slate-400 shadow-sm mt-6 animate-in motion-reduce:animate-none slide-in-from-bottom-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-6 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 14, className: "text-yellow-500" }), " ", t("dashboard.progress_chart.title")), /* @__PURE__ */ React.createElement("div", { className: "w-full overflow-x-auto" }, /* @__PURE__ */ React.createElement("svg", { role: "img", "aria-label": (t("dashboard.progress_chart.title") || "Progress over time") + ": " + logs.map((l) => `${new Date(l.timestamp).toLocaleDateString()}, ${l.xp} XP`).join("; "), viewBox: `0 0 ${width} ${height}`, className: "w-full h-auto min-w-[500px] overflow-visible" }, /* @__PURE__ */ React.createElement("line", { x1: padding, y1: height - padding, x2: width - padding, y2: height - padding, stroke: "#e2e8f0", strokeWidth: "2" }), /* @__PURE__ */ React.createElement("line", { x1: padding, y1: padding, x2: padding, y2: height - padding, stroke: "#e2e8f0", strokeWidth: "2" }), /* @__PURE__ */ React.createElement(
     "polyline",
     {
       points,
@@ -2141,7 +2201,7 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
   ), logs.map((l, i) => {
     const x = padding + (new Date(l.timestamp).getTime() - minTime) / timeSpan * (width - padding * 2);
     const y = height - padding - l.xp / maxXP * (height - padding * 2);
-    return /* @__PURE__ */ React.createElement("g", { key: i, className: "group cursor-pointer" }, /* @__PURE__ */ React.createElement("circle", { cx: x, cy: y, r: "5", className: "fill-white stroke-indigo-600 stroke-2 transition-all duration-300 group-hover:r-7 group-hover:fill-indigo-50" }), /* @__PURE__ */ React.createElement("foreignObject", { x: Math.min(width - 120, Math.max(0, x - 60)), y: y - 50, width: "120", height: "50", className: "opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, new Date(l.timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("div", { className: "text-yellow-300 font-mono" }, l.xp, " XP"))));
+    return /* @__PURE__ */ React.createElement("g", { key: i, className: "group cursor-pointer" }, /* @__PURE__ */ React.createElement("circle", { cx: x, cy: y, r: "5", className: "fill-white stroke-indigo-600 stroke-2 transition-all motion-reduce:transition-none duration-300 group-hover:r-7 group-hover:fill-indigo-50" }), /* @__PURE__ */ React.createElement("foreignObject", { x: Math.min(width - 120, Math.max(0, x - 60)), y: y - 50, width: "120", height: "50", className: "opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none pointer-events-none z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, new Date(l.timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("div", { className: "text-yellow-300 font-mono" }, l.xp, " XP"))));
   }))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 font-medium mt-2 px-2" }, /* @__PURE__ */ React.createElement("span", null, t("dashboard.progress_chart.label_start"), ": ", new Date(logs[0].timestamp).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", null, t("dashboard.progress_chart.label_current"), ": ", new Date(logs[logs.length - 1].timestamp).toLocaleDateString())));
 });
 const _BUILTIN_METRIC_REGISTRY = [
@@ -2598,8 +2658,9 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => setExpanded(true),
-        className: "mt-3 text-xs font-bold text-slate-500 hover:text-indigo-700 flex items-center gap-1.5 transition-colors",
+        className: "mt-3 text-xs font-bold text-slate-500 hover:text-indigo-700 flex items-center gap-1.5 transition-colors motion-reduce:transition-none",
         "data-help-key": "dashboard_teacher_comment_add",
         "aria-label": t("dashboard.comments.add_aria") || "Add a private teacher comment to this resource"
       },
@@ -2610,8 +2671,9 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
   return /* @__PURE__ */ React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3", "data-help-key": "dashboard_teacher_comment_thread" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u{1F4AC} ", t("dashboard.comments.label") || "Teacher notes", list.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 normal-case font-normal" }, "(", list.length, ")"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-slate-500 normal-case font-normal italic" }, t("dashboard.comments.privacy_note") || "Private to you \u2014 never shared with student")), list.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 mb-3" }, list.map((c) => /* @__PURE__ */ React.createElement("li", { key: c.id, className: "bg-amber-50/50 border-l-4 border-amber-400 rounded-r-md p-2 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed whitespace-pre-wrap flex-1" }, c.text), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => onDelete(studentId, resourceId, c.id),
-      className: "text-slate-600 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity text-xs",
+      className: "text-slate-600 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none text-xs",
       "aria-label": t("dashboard.comments.delete_aria") || "Delete this comment",
       title: t("dashboard.comments.delete_tooltip") || "Delete this comment"
     },
@@ -2791,6 +2853,7 @@ Return ONLY JSON:
   return /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400", "data-help-key": "dashboard_class_notebook_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-violet-700 uppercase tracking-wider flex items-center gap-2" }, "\u{1F4D3} ", t("dashboard.class_notebook.title") || "Class Notebook Activity"), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleGenerateClassInsights,
       disabled: insightsLoading || agg.studentsWithNotebook < 2,
       className: "px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1",
@@ -2812,7 +2875,7 @@ Return ONLY JSON:
       denom: sig.denom || "",
       hint: t("dashboard.class_notebook.signal_" + sig.key + "_hint") || sig.hint
     }
-  )))), insightsLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2 animate-pulse" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-bold" }, t("dashboard.class_notebook.loading") || "AI is reading across the class...")) : insights ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200" }, insights.classSummary && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("dashboard.class_notebook.overview_label") || "Class overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.classSummary)), Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("dashboard.class_notebook.mini_lesson_label") || "Try a mini-lesson:"), " ", p.miniLesson))), insights.celebration && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("dashboard.class_notebook.celebration_label") || "Class strength"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration))) : null);
+  )))), insightsLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2 animate-pulse motion-reduce:animate-none" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-bold" }, t("dashboard.class_notebook.loading") || "AI is reading across the class...")) : insights ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200" }, insights.classSummary && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("dashboard.class_notebook.overview_label") || "Class overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.classSummary)), Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("dashboard.class_notebook.mini_lesson_label") || "Try a mini-lesson:"), " ", p.miniLesson))), insights.celebration && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("dashboard.class_notebook.celebration_label") || "Class strength"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration))) : null);
 });
 const LearnerProgressView = React.memo(({
   globalPoints = 0,
@@ -2876,33 +2939,36 @@ const LearnerProgressView = React.memo(({
     };
   }, [history, wordSoundsHistory, phonemeMastery, gameCompletions, fluencyAssessments, labelChallengeResults, studentProgressLog]);
   const heading = isParentMode ? selectedChild ? selectedChild + "'s Learning Journey" : "Your Child's Learning Journey" : "My Learning Progress";
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500", "data-help-key": "learner_progress_panel" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 22, className: "text-white" })), heading), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1 font-medium" }, isParentMode ? "Track your family's learning growth" : "Track your learning growth over time")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500", "data-help-key": "learner_progress_panel" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl md:text-3xl font-black text-slate-800 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 22, className: "text-white" })), heading), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1 font-medium" }, isParentMode ? "Track your family's learning growth" : "Track your learning growth over time")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setShowDiagnostics((prev) => !prev),
-      className: `px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${showDiagnostics ? "bg-indigo-100 text-indigo-700 ring-1 ring-indigo-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+      className: `px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none ${showDiagnostics ? "bg-indigo-100 text-indigo-700 ring-1 ring-indigo-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
       title: showDiagnostics ? "Hide detailed metrics" : "Show detailed metrics",
       "data-help-key": "learner_progress_details_toggle"
     },
     /* @__PURE__ */ React.createElement(BarChart3, { size: 14 }),
     showDiagnostics ? "Details On" : "Details"
-  ), onClose && /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), isParentMode && childProfiles.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100", "data-help-key": "learner_progress_family_filter" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-purple-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), " Family Members"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+  ), onClose && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), isParentMode && childProfiles.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 border border-purple-100", "data-help-key": "learner_progress_family_filter" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-purple-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), " Family Members"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setSelectedChild(null),
-      className: `px-4 py-2 rounded-xl font-bold text-sm transition-all ${!selectedChild ? "bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300" : "bg-white/60 text-slate-600 hover:bg-white"}`
+      className: `px-4 py-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none ${!selectedChild ? "bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300" : "bg-white/60 text-slate-600 hover:bg-white"}`
     },
     "Everyone"
   ), childProfiles.map((child) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: child.name,
       onClick: () => setSelectedChild(child.name),
-      className: `px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${selectedChild === child.name ? "bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300" : "bg-white/60 text-slate-600 hover:bg-white"}`
+      className: `px-4 py-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none flex items-center gap-2 ${selectedChild === child.name ? "bg-white text-indigo-700 shadow-md ring-2 ring-indigo-300" : "bg-white/60 text-slate-600 hover:bg-white"}`
     },
     child.name,
     child.sessionCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-mono" }, child.sessionCount, " sessions")
-  )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 28, className: "text-indigo-900 fill-current" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-2 bg-indigo-900 text-yellow-700 text-[11px] font-black px-2 py-0.5 rounded-full border border-white" }, "Lvl ", globalLevel)), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("learner.total_xp")), /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-900" }, globalPoints.toLocaleString())), stats.trend > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 12 }), " +", stats.trend, " XP")), !isTeacherMode && (wordSoundsScore?.streak > 0 || (() => {
+  )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 28, className: "text-indigo-900 fill-current" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-2 bg-indigo-900 text-yellow-700 text-[11px] font-black px-2 py-0.5 rounded-full border border-white" }, "Lvl ", globalLevel)), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("learner.total_xp")), /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-indigo-900" }, globalPoints.toLocaleString())), stats.trend > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 12 }), " +", stats.trend, " XP")), !isTeacherMode && (wordSoundsScore?.streak > 0 || (() => {
     const days = /* @__PURE__ */ new Set();
     pointHistory.forEach((e) => {
       if (e.timestamp) days.add(new Date(e.timestamp).toDateString());
@@ -2932,18 +2998,18 @@ const LearnerProgressView = React.memo(({
       else break;
     }
     return dayStreak >= 2 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 ml-auto" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4C5}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-red-600" }, dayStreak, " Days"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-red-600 font-bold uppercase" }, t("learner.daily_streak")))) : null;
-  })()), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-bold text-slate-600 uppercase" }, /* @__PURE__ */ React.createElement("span", null, "Level ", globalLevel), /* @__PURE__ */ React.createElement("span", null, Math.round(globalProgress), "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-3 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 rounded-full", style: { width: `${Math.max(5, globalProgress)}%` } })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-mono text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, currentLevelXP, " XP"), /* @__PURE__ */ React.createElement("span", null, globalXPNext, " XP to next")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow", "data-help-key": "learner_progress_activities_card" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Activity, { size: 14 }), " Activities Completed"), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black text-slate-800 mb-4" }, stats.totalActivities), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, [
+  })()), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-bold text-slate-600 uppercase" }, /* @__PURE__ */ React.createElement("span", null, "Level ", globalLevel), /* @__PURE__ */ React.createElement("span", null, Math.round(globalProgress), "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-3 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all motion-reduce:transition-none duration-1000 rounded-full", style: { width: `${Math.max(5, globalProgress)}%` } })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-mono text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, currentLevelXP, " XP"), /* @__PURE__ */ React.createElement("span", null, globalXPNext, " XP to next")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none", "data-help-key": "learner_progress_activities_card" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Activity, { size: 14 }), " Activities Completed"), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black text-slate-800 mb-4" }, stats.totalActivities), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, [
     { label: "Quizzes", value: stats.quizCount, icon: "\u{1F4DD}", color: "bg-blue-50 text-blue-700" },
     { label: "Words Practiced", value: stats.wsTotal, icon: "\u{1F524}", color: "bg-purple-50 text-purple-700" },
     { label: "Games", value: stats.gamesPlayed, icon: "\u{1F3AE}", color: "bg-green-50 text-green-700" },
     { label: "Fluency Tests", value: stats.fluencyTests, icon: "\u23F1\uFE0F", color: "bg-orange-50 text-orange-700" }
-  ].map((item) => /* @__PURE__ */ React.createElement("div", { key: item.label, className: `${item.color} rounded-lg px-3 py-2 text-center` }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black" }, item.icon, " ", item.value), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold uppercase tracking-wider opacity-80" }, item.label))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow", "data-help-key": "learner_progress_skills_chart" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Target, { size: 14 }), " Skills Progress"), stats.wsTotal === 0 && Object.keys(phonemeMastery).length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-6 text-slate-600 italic text-sm" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 32, className: "mx-auto mb-2 opacity-40" }), "Start practicing to see your skills grow!") : /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, stats.wsTotal > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-600" }, t("learner.ws_accuracy")), /* @__PURE__ */ React.createElement("span", { className: `text-sm font-black ${stats.wsAccuracy >= 80 ? "text-green-600" : stats.wsAccuracy >= 60 ? "text-yellow-600" : "text-orange-500"}` }, stats.wsAccuracy, "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2.5" }, /* @__PURE__ */ React.createElement(
+  ].map((item) => /* @__PURE__ */ React.createElement("div", { key: item.label, className: `${item.color} rounded-lg px-3 py-2 text-center` }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black" }, item.icon, " ", item.value), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold uppercase tracking-wider opacity-80" }, item.label))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none", "data-help-key": "learner_progress_skills_chart" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Target, { size: 14 }), " Skills Progress"), stats.wsTotal === 0 && Object.keys(phonemeMastery).length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-6 text-slate-600 italic text-sm" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 32, className: "mx-auto mb-2 opacity-40" }), "Start practicing to see your skills grow!") : /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, stats.wsTotal > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-600" }, t("learner.ws_accuracy")), /* @__PURE__ */ React.createElement("span", { className: `text-sm font-black ${stats.wsAccuracy >= 80 ? "text-green-600" : stats.wsAccuracy >= 60 ? "text-yellow-600" : "text-orange-500"}` }, stats.wsAccuracy, "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2.5" }, /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: `h-full rounded-full transition-all duration-500 ${stats.wsAccuracy >= 80 ? "bg-green-500" : stats.wsAccuracy >= 60 ? "bg-yellow-500" : "bg-orange-400"}`,
+      className: `h-full rounded-full transition-all motion-reduce:transition-none duration-500 ${stats.wsAccuracy >= 80 ? "bg-green-500" : stats.wsAccuracy >= 60 ? "bg-yellow-500" : "bg-orange-400"}`,
       style: { width: `${stats.wsAccuracy}%` }
     }
-  ))), stats.masteredPhonemes.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-600 uppercase tracking-wider mb-1.5" }, "\u2728 ", stats.masteredPhonemes.length, " Sounds Mastered"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, stats.masteredPhonemes.slice(0, 12).map(([phoneme]) => /* @__PURE__ */ React.createElement("span", { key: phoneme, className: "px-2 py-0.5 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200" }, "/", phoneme, "/")), stats.masteredPhonemes.length > 12 && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 bg-green-50 text-green-600 text-xs font-bold rounded-full" }, "+", stats.masteredPhonemes.length - 12, " more"))), showDiagnostics && stats.practicingPhonemes.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1.5" }, "\u{1F504} ", stats.practicingPhonemes.length, " Sounds In Progress"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, stats.practicingPhonemes.slice(0, 8).map(([phoneme, data]) => /* @__PURE__ */ React.createElement("span", { key: phoneme, className: "px-2 py-0.5 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-200", title: `${Math.round(data.accuracy)}% accuracy` }, "/", phoneme, "/ ", /* @__PURE__ */ React.createElement("span", { className: "opacity-60" }, Math.round(data.accuracy), "%"))))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Award, { size: 14 }), " Achievements"), (() => {
+  ))), stats.masteredPhonemes.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-600 uppercase tracking-wider mb-1.5" }, "\u2728 ", stats.masteredPhonemes.length, " Sounds Mastered"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, stats.masteredPhonemes.slice(0, 12).map(([phoneme]) => /* @__PURE__ */ React.createElement("span", { key: phoneme, className: "px-2 py-0.5 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200" }, "/", phoneme, "/")), stats.masteredPhonemes.length > 12 && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 bg-green-50 text-green-600 text-xs font-bold rounded-full" }, "+", stats.masteredPhonemes.length - 12, " more"))), showDiagnostics && stats.practicingPhonemes.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1.5" }, "\u{1F504} ", stats.practicingPhonemes.length, " Sounds In Progress"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, stats.practicingPhonemes.slice(0, 8).map(([phoneme, data]) => /* @__PURE__ */ React.createElement("span", { key: phoneme, className: "px-2 py-0.5 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-200", title: `${Math.round(data.accuracy)}% accuracy` }, "/", phoneme, "/ ", /* @__PURE__ */ React.createElement("span", { className: "opacity-60" }, Math.round(data.accuracy), "%"))))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Award, { size: 14 }), " Achievements"), (() => {
     const milestones = [
       { name: "First Steps", earned: globalPoints >= 10, icon: "\u{1F463}", desc: "Earned your first XP" },
       { name: "Quiz Whiz", earned: stats.quizCount >= 3, icon: "\u{1F9E0}", desc: "Completed 3 quizzes" },
@@ -2956,7 +3022,7 @@ const LearnerProgressView = React.memo(({
     ];
     const earned = milestones.filter((m) => m.earned);
     const locked = milestones.filter((m) => !m.earned);
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, earned.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, earned.map((m) => /* @__PURE__ */ React.createElement("div", { key: m.name, className: "bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-center min-w-[80px] hover:shadow-sm transition-shadow", title: m.desc }, /* @__PURE__ */ React.createElement("div", { className: "text-xl" }, m.icon), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-yellow-800 mt-0.5" }, m.name)))), earned.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center py-4 text-slate-600 italic text-sm" }, "Complete activities to earn achievements! \u{1F31F}"), showDiagnostics && locked.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("learner.coming_up")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, locked.slice(0, 4).map((m) => /* @__PURE__ */ React.createElement("div", { key: m.name, className: "bg-slate-50 border border-slate-400 rounded-lg px-2 py-1.5 text-center opacity-50", title: m.desc }, /* @__PURE__ */ React.createElement("div", { className: "text-sm grayscale" }, m.icon), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600" }, m.name))))));
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, earned.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, earned.map((m) => /* @__PURE__ */ React.createElement("div", { key: m.name, className: "bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-center min-w-[80px] hover:shadow-sm transition-shadow motion-reduce:transition-none", title: m.desc }, /* @__PURE__ */ React.createElement("div", { className: "text-xl" }, m.icon), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-yellow-800 mt-0.5" }, m.name)))), earned.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center py-4 text-slate-600 italic text-sm" }, "Complete activities to earn achievements! \u{1F31F}"), showDiagnostics && locked.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("learner.coming_up")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, locked.slice(0, 4).map((m) => /* @__PURE__ */ React.createElement("div", { key: m.name, className: "bg-slate-50 border border-slate-400 rounded-lg px-2 py-1.5 text-center opacity-50", title: m.desc }, /* @__PURE__ */ React.createElement("div", { className: "text-sm grayscale" }, m.icon), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600" }, m.name))))));
   })())), (() => {
     const today = (/* @__PURE__ */ new Date()).toDateString();
     const todayXP = pointHistory.filter((e) => e.timestamp && new Date(e.timestamp).toDateString() === today);
@@ -2979,9 +3045,10 @@ const LearnerProgressView = React.memo(({
     const weekAccuracy = weekWords.length > 0 ? Math.round(weekWords.filter((w) => w.correct).length / weekWords.length * 100) : null;
     if (weekXP.length === 0 && weekWords.length === 0) return null;
     return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-5" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Calendar, { size: 14 }), " This Week's Progress"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekTotalXP), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase" }, t("learner.xp_this_week")), xpDelta !== 0 && /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold mt-0.5 ${xpDelta > 0 ? "text-green-500" : "text-red-400"}` }, xpDelta > 0 ? "\u2191" : "\u2193", " ", Math.abs(xpDelta), " vs last week")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekXP.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase" }, "Activities")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekWords.filter((w) => w.correct).length, "/", weekWords.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase" }, t("learner.words_this_week"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-emerald-700" }, weekAccuracy !== null ? weekAccuracy + "%" : "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase" }, "Accuracy"))), weekGames.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-emerald-600 font-medium bg-white/60 rounded-lg px-3 py-2" }, "\u{1F3AE} ", weekGames.length, " game", weekGames.length !== 1 ? "s" : "", " played this week"));
-  })(), studentProgressLog.length >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow", "data-help-key": "learner_progress_growth_chart" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 14 }), " Growth Over Time"), /* @__PURE__ */ React.createElement(LongitudinalProgressChart, { logs: studentProgressLog })), showDiagnostics && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300", "data-help-key": "learner_progress_diagnostics_panel" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(BarChart3, { size: 14 }), " Detailed Metrics"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.wsCorrect, "/", stats.wsTotal), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.words_correct"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, Object.keys(phonemeMastery).length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.phonemes_touched"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.sessionCount), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Sessions")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.labelChallenges), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.label_challenges")))), pointHistory.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("learner.recent_activity")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1 max-h-32 overflow-y-auto" }, pointHistory.slice(0, 10).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: entry.id || i, className: "flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-white" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-medium truncate max-w-[200px]" }, entry.activity), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-green-600" }, "+", entry.points, " XP")))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-3 pt-2" }, /* @__PURE__ */ React.createElement(
+  })(), studentProgressLog.length >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 shadow-sm p-5 hover:shadow-md transition-shadow motion-reduce:transition-none", "data-help-key": "learner_progress_growth_chart" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(TrendingUp, { size: 14 }), " Growth Over Time"), /* @__PURE__ */ React.createElement(LongitudinalProgressChart, { logs: studentProgressLog })), showDiagnostics && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-4 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-300", "data-help-key": "learner_progress_diagnostics_panel" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(BarChart3, { size: 14 }), " Detailed Metrics"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.wsCorrect, "/", stats.wsTotal), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.words_correct"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, Object.keys(phonemeMastery).length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.phonemes_touched"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.sessionCount), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Sessions")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-slate-700" }, stats.labelChallenges), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("learner.label_challenges")))), pointHistory.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("learner.recent_activity")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1 max-h-32 overflow-y-auto" }, pointHistory.slice(0, 10).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: entry.id || i, className: "flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-white" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-medium truncate max-w-[200px]" }, entry.activity), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-green-600" }, "+", entry.points, " XP")))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-3 pt-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         const date = (/* @__PURE__ */ new Date()).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
         const metricBar = (label, value, max, unit, icon) => {
@@ -2991,14 +3058,14 @@ const LearnerProgressView = React.memo(({
         };
         const masteredCount = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy >= 80).length;
         const masteredList = Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy >= 80).map(([p]) => "/" + p + "/").join(", ");
-        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${t("learner.progress_report")}</title><style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',-apple-system,sans-serif;color:#1e293b;background:#f8fafc;padding:32px;line-height:1.5}.report{max-width:700px;margin:0 auto;background:white;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden}.header{padding:28px 32px;background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:white}.header h1{font-size:22px;font-weight:800;margin-bottom:4px}.header p{font-size:13px;opacity:.85}.content{padding:28px 32px}.section-title{font-size:15px;font-weight:800;color:#334155;margin:20px 0 12px;padding-bottom:6px;border-bottom:2px solid #e2e8f0}.badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.badge{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fef9c3;border:1px solid #fcd34d;border-radius:10px;font-size:12px;font-weight:700;color:#92400e}.footer{padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;font-size:11px;color:#94a3b8}.print-btn{display:block;margin:16px auto;padding:10px 28px;background:#4f46e5;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}.print-btn:hover{background:#4338ca}@media print{body{padding:0;background:white}.report{box-shadow:none;border-radius:0}.print-btn{display:none!important}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="report"><div class="header"><h1>\u{1F31F} ${isParentMode ? "Your Child's" : "My"} Learning Progress Report</h1><p>${isParentMode ? "Family Progress Overview" : "Personal Progress Overview"} &bull; ${date}</p></div><div class="content"><div style="display:flex;align-items:center;gap:16px;padding:16px;background:linear-gradient(135deg,#fef3c7,#fef9c3);border:2px solid #fcd34d;border-radius:12px;margin-bottom:20px"><div style="width:56px;height:56px;background:#eab308;border-radius:50%;display:flex;align-items:center;justify-content:center;border:4px solid #1e1b4b;font-size:24px;font-weight:900;color:#1e1b4b">Lv${globalLevel}</div><div><div style="font-size:20px;font-weight:800;color:#1e1b4b">${globalPoints.toLocaleString()} Total XP</div><div style="font-size:12px;color:#92400e;font-weight:600">Level ${globalLevel} Learner &bull; ${Math.round(globalProgress)}% to next level</div></div></div><div class="section-title">\u{1F4CA} Performance Summary</div>${metricBar("Word Sounds Accuracy", stats.wsAccuracy, 100, "%", "\u{1F50A}")}${metricBar("Quizzes Completed", stats.quizCount, 10, "", "\u{1F4DD}")}${metricBar("Words Practiced", stats.wsTotal, 50, "", "\u{1F524}")}${metricBar("Games Played", stats.gamesPlayed, 10, "", "\u{1F3AE}")}${metricBar("Fluency Tests", stats.fluencyTests, 5, "", "\u23F1\uFE0F")}${metricBar("Total Activities", stats.totalActivities, 20, "", "\u{1F4CA}")}<div class="section-title">\u{1F3AF} Skills Mastered</div><div style="font-size:13px;color:#475569;margin-bottom:8px"><strong>${masteredCount}</strong> phoneme sounds mastered${masteredCount > 0 ? ":" : ""}</div>${masteredCount > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">' + Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy >= 80).map(([p]) => '<span style="padding:4px 12px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:20px;font-size:12px;font-weight:700">/' + p + "/</span>").join("") + "</div>" : '<p style="font-size:13px;color:#94a3b8;font-style:italic">Keep practicing to master sounds!</p>'}<div class="section-title">\u{1F3C5} Achievements Earned</div><div class="badge-row">${globalPoints >= 10 ? '<div class="badge">\u{1F463} First Steps</div>' : ""}${stats.quizCount >= 3 ? '<div class="badge">\u{1F9E0} Quiz Whiz</div>' : ""}${stats.wsTotal >= 20 ? '<div class="badge">\u{1F50D} Word Explorer</div>' : ""}${stats.gamesPlayed >= 5 ? '<div class="badge">\u{1F3C6} Game Champion</div>' : ""}${globalLevel >= 2 ? '<div class="badge">\u2B50 Level Up!</div>' : ""}${globalLevel >= 5 ? '<div class="badge">\u{1F31F} Super Scholar</div>' : ""}${stats.masteredPhonemes.length >= 5 ? '<div class="badge">\u{1F3B5} Sound Master</div>' : ""}${stats.sessionCount >= 3 ? '<div class="badge">\u{1F4C5} Consistent</div>' : ""}</div></div><div class="footer">Generated ${date} &bull; Created with AlloFlow &bull; Learning Progress Report</div></div><button class="print-btn" onclick="window.print()">\u{1F5A8}\uFE0F Print This Report</button></body></html>`;
+        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${t("learner.progress_report")}</title><style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',-apple-system,sans-serif;color:#1e293b;background:#f8fafc;padding:32px;line-height:1.5}.report{max-width:700px;margin:0 auto;background:white;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden}.header{padding:28px 32px;background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:white}.header h1{font-size:22px;font-weight:800;margin-bottom:4px}.header p{font-size:13px;opacity:.85}.content{padding:28px 32px}.section-title{font-size:15px;font-weight:800;color:#334155;margin:20px 0 12px;padding-bottom:6px;border-bottom:2px solid #e2e8f0}.badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.badge{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fef9c3;border:1px solid #fcd34d;border-radius:10px;font-size:12px;font-weight:700;color:#92400e}.footer{padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;font-size:11px;color:#94a3b8}.print-btn{display:block;margin:16px auto;padding:10px 28px;background:#4f46e5;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}.print-btn:hover{background:#4338ca}@media print{body{padding:0;background:white}.report{box-shadow:none;border-radius:0}.print-btn{display:none!important}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="report"><div class="header"><h1>\u{1F31F} ${isParentMode ? "Your Child's" : "My"} Learning Progress Report</h1><p>${isParentMode ? "Family Progress Overview" : "Personal Progress Overview"} &bull; ${date}</p></div><div class="content"><div style="display:flex;align-items:center;gap:16px;padding:16px;background:linear-gradient(135deg,#fef3c7,#fef9c3);border:2px solid #fcd34d;border-radius:12px;margin-bottom:20px"><div style="width:56px;height:56px;background:#eab308;border-radius:50%;display:flex;align-items:center;justify-content:center;border:4px solid #1e1b4b;font-size:24px;font-weight:900;color:#1e1b4b">Lv${globalLevel}</div><div><div style="font-size:20px;font-weight:800;color:#1e1b4b">${globalPoints.toLocaleString()} Total XP</div><div style="font-size:12px;color:#92400e;font-weight:600">Level ${globalLevel} Learner &bull; ${Math.round(globalProgress)}% to next level</div></div></div><div class="section-title">\u{1F4CA} Performance Summary</div>${metricBar("Word Sounds Accuracy", stats.wsAccuracy, 100, "%", "\u{1F50A}")}${metricBar("Quizzes Completed", stats.quizCount, 10, "", "\u{1F4DD}")}${metricBar("Words Practiced", stats.wsTotal, 50, "", "\u{1F524}")}${metricBar("Games Played", stats.gamesPlayed, 10, "", "\u{1F3AE}")}${metricBar("Fluency Tests", stats.fluencyTests, 5, "", "\u23F1\uFE0F")}${metricBar("Total Activities", stats.totalActivities, 20, "", "\u{1F4CA}")}<div class="section-title">\u{1F3AF} Skills Mastered</div><div style="font-size:13px;color:#475569;margin-bottom:8px"><strong>${masteredCount}</strong> phoneme sounds mastered${masteredCount > 0 ? ":" : ""}</div>${masteredCount > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">' + Object.entries(phonemeMastery).filter(([_, v]) => v.accuracy >= 80).map(([p]) => '<span style="padding:4px 12px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:20px;font-size:12px;font-weight:700">/' + p + "/</span>").join("") + "</div>" : '<p style="font-size:13px;color:#94a3b8;font-style:italic">Keep practicing to master sounds!</p>'}<div class="section-title">\u{1F3C5} Achievements Earned</div><div class="badge-row">${globalPoints >= 10 ? '<div class="badge">\u{1F463} First Steps</div>' : ""}${stats.quizCount >= 3 ? '<div class="badge">\u{1F9E0} Quiz Whiz</div>' : ""}${stats.wsTotal >= 20 ? '<div class="badge">\u{1F50D} Word Explorer</div>' : ""}${stats.gamesPlayed >= 5 ? '<div class="badge">\u{1F3C6} Game Champion</div>' : ""}${globalLevel >= 2 ? '<div class="badge">\u2B50 Level Up!</div>' : ""}${globalLevel >= 5 ? '<div class="badge">\u{1F31F} Super Scholar</div>' : ""}${stats.masteredPhonemes.length >= 5 ? '<div class="badge">\u{1F3B5} Sound Master</div>' : ""}${stats.sessionCount >= 3 ? '<div class="badge">\u{1F4C5} Consistent</div>' : ""}</div></div><div class="footer">Generated ${date} &bull; Created with AlloFlow &bull; Learning Progress Report</div></div><button type="button" class="print-btn" onclick="window.print()">\u{1F5A8}\uFE0F Print This Report</button></body></html>`;
         const w = window.open("", "_blank");
         if (w) {
           w.document.write(html);
           w.document.close();
         }
       },
-      className: "px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm",
+      className: "px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm",
       "data-help-key": "learner_progress_print_report_btn"
     },
     /* @__PURE__ */ React.createElement(Printer, { size: 16 }),
@@ -3006,8 +3073,9 @@ const LearnerProgressView = React.memo(({
   ), isParentMode && onShareWithTeacher && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onShareWithTeacher,
-      className: "px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center gap-2 text-sm",
+      className: "px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm",
       "data-help-key": "learner_progress_share_teacher_btn"
     },
     /* @__PURE__ */ React.createElement(Share2, { size: 16 }),
@@ -3418,11 +3486,11 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
-                        <th style="text-align: left; padding: 6px 8px;">${t("research.construct")}</th>
-                        <th style="text-align: center; padding: 6px 8px;">n</th>
-                        <th style="text-align: center; padding: 6px 8px;">M</th>
-                        <th style="text-align: center; padding: 6px 8px;">SD</th>
-                        <th style="text-align: center; padding: 6px 8px;">${t("research.scale")}</th>
+                        <th scope="col" style="text-align: left; padding: 6px 8px;">${t("research.construct")}</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">n</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">M</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">SD</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">${t("research.scale")}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -3453,10 +3521,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
-                        <th style="text-align: left; padding: 6px 8px;">${t("research.measure")}</th>
-                        <th style="text-align: center; padding: 6px 8px;">n</th>
-                        <th style="text-align: center; padding: 6px 8px;">M</th>
-                        <th style="text-align: center; padding: 6px 8px;">SD</th>
+                        <th scope="col" style="text-align: left; padding: 6px 8px;">${t("research.measure")}</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">n</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">M</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">SD</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -3484,8 +3552,8 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
                 <thead>
                     <tr style="border-bottom: 2px solid #333; border-top: 2px solid #333;">
-                        <th style="text-align: left; padding: 6px 8px;">${t("research.metric")}</th>
-                        <th style="text-align: center; padding: 6px 8px;">${t("research.value")}</th>
+                        <th scope="col" style="text-align: left; padding: 6px 8px;">${t("research.metric")}</th>
+                        <th scope="col" style="text-align: center; padding: 6px 8px;">${t("research.value")}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -3806,18 +3874,19 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
   return /* @__PURE__ */ React.createElement(
     "div",
     {
+      className: "fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in motion-reduce:animate-none fade-in duration-300",
       ref: modalRef,
       role: "dialog",
       "aria-modal": "true",
-      "aria-labelledby": "teacher-grading-dashboard-title",
-      className: "fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300"
+      "aria-labelledby": "teacher-grading-dashboard-title"
     },
     /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10 flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4 flex flex-wrap justify-between items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 sm:gap-3 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-2 rounded-lg text-indigo-600 shrink-0" }, /* @__PURE__ */ React.createElement(Layout, { size: 24 })), /* @__PURE__ */ React.createElement("h2", { id: "teacher-grading-dashboard-title", className: "text-base sm:text-xl font-black text-slate-800 truncate" }, t("dashboard.grading_dashboard"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-2 flex-wrap" }, dashboardData.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: handleExportCSV,
         "data-help-key": "dashboard_export_csv_btn",
-        className: "text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-green-200 shadow-sm flex items-center gap-1",
+        className: "text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-green-200 shadow-sm flex items-center gap-1",
         title: t("dashboard.export_csv_tooltip"),
         "aria-label": t("dashboard.export_csv_tooltip")
       },
@@ -3828,9 +3897,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: handleExportResearchPDF,
         "data-help-key": "dashboard_export_research_btn",
-        className: "text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-purple-200 shadow-sm flex items-center gap-1",
+        className: "text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-purple-200 shadow-sm flex items-center gap-1",
         title: t("research.export_apa_title"),
         "aria-label": t("teacher.research.export_btn_aria") || "Export Research Report"
       },
@@ -3841,9 +3911,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     )), dashboardData.length > 0 && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: handleClearAll,
         "data-help-key": "dashboard_clear_all_btn",
-        className: "text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors border border-transparent hover:border-red-100",
+        className: "text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-transparent hover:border-red-100",
         title: t("dashboard.reset_tooltip"),
         "aria-label": t("dashboard.reset_tooltip")
       },
@@ -3852,8 +3923,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: onClose,
-        className: "p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors shrink-0",
+        className: "p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none shrink-0",
         autoFocus: true,
         "aria-label": t("common.close_dashboard")
       },
@@ -3861,10 +3933,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     ))), dashboardData.length > 0 && dashboardView === "list" && /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": t("dashboard.sections") || "Dashboard sections", className: "flex px-3 sm:px-6 gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap" }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         ref: (element) => {
           dashboardTabRefs.current.students = element;
         },
-        type: "button",
         role: "tab",
         id: "teacher-dashboard-tab-students",
         "aria-selected": activeTab === "students",
@@ -3872,7 +3944,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         tabIndex: activeTab === "students" ? 0 : -1,
         onKeyDown: (event) => handleDashboardTabKeyDown(event, "students"),
         onClick: () => setActiveTab("students"),
-        className: `pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === "students" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
+        className: `pb-3 text-sm font-bold border-b-2 transition-all motion-reduce:transition-none shrink-0 ${activeTab === "students" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
       },
       t("dashboard.tab_students"),
       " (",
@@ -3881,10 +3953,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         ref: (element) => {
           dashboardTabRefs.current.insights = element;
         },
-        type: "button",
         role: "tab",
         id: "teacher-dashboard-tab-insights",
         "aria-selected": activeTab === "insights",
@@ -3892,16 +3964,16 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         tabIndex: activeTab === "insights" ? 0 : -1,
         onKeyDown: (event) => handleDashboardTabKeyDown(event, "insights"),
         onClick: () => setActiveTab("insights"),
-        className: `pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === "insights" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
+        className: `pb-3 text-sm font-bold border-b-2 transition-all motion-reduce:transition-none shrink-0 ${activeTab === "insights" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
       },
       t("dashboard.tab_insights")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         ref: (element) => {
           dashboardTabRefs.current.behavior = element;
         },
-        type: "button",
         role: "tab",
         id: "teacher-dashboard-tab-behavior",
         "aria-selected": activeTab === "behavior",
@@ -3909,17 +3981,17 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         tabIndex: activeTab === "behavior" ? 0 : -1,
         onKeyDown: (event) => handleDashboardTabKeyDown(event, "behavior"),
         onClick: () => setActiveTab("behavior"),
-        className: `pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === "behavior" ? "border-orange-600 text-orange-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
+        className: `pb-3 text-sm font-bold border-b-2 transition-all motion-reduce:transition-none shrink-0 ${activeTab === "behavior" ? "border-orange-600 text-orange-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
       },
       "\u{1F50D} ",
       t("behavior_lens.hub.title") || "Behavior"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         ref: (element) => {
           dashboardTabRefs.current.stems = element;
         },
-        type: "button",
         role: "tab",
         id: "teacher-dashboard-tab-stems",
         "aria-selected": activeTab === "stems",
@@ -3927,21 +3999,22 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         tabIndex: activeTab === "stems" ? 0 : -1,
         onKeyDown: (event) => handleDashboardTabKeyDown(event, "stems"),
         onClick: () => setActiveTab("stems"),
-        className: `pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === "stems" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
+        className: `pb-3 text-sm font-bold border-b-2 transition-all motion-reduce:transition-none shrink-0 ${activeTab === "stems" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-600 hover:text-slate-700"}`
       },
       "\u{1F52C} STEM Stations"
     ))),
-    /* @__PURE__ */ React.createElement("div", { className: "flex-grow p-6 overflow-y-auto bg-slate-100" }, dashboardView === "detail" && selectedStudent ? /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto h-full flex flex-col animate-in slide-in-from-right-8 duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-3 sm:gap-6 mb-6 border-b border-slate-200 pb-4 sm:pb-6 sticky top-0 bg-slate-50 z-10 pt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 sm:gap-6 min-w-0 flex-1" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex-grow p-6 overflow-y-auto bg-slate-100" }, dashboardView === "detail" && selectedStudent ? /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto h-full flex flex-col animate-in motion-reduce:animate-none slide-in-from-right-8 duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-3 sm:gap-6 mb-6 border-b border-slate-200 pb-4 sm:pb-6 sticky top-0 bg-slate-50 z-10 pt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 sm:gap-6 min-w-0 flex-1" }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         "aria-label": t("common.check"),
         onClick: () => setDashboardView("list"),
-        className: "flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors shrink-0 text-xs sm:text-sm"
+        className: "flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white text-slate-600 font-bold rounded-full shadow-sm border border-slate-400 hover:bg-slate-50 transition-colors motion-reduce:transition-none shrink-0 text-xs sm:text-sm"
       },
       /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 16 }),
       " ",
       /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, t("dashboard.back_button"))
-    ), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h2", { className: "text-xl sm:text-3xl font-black text-slate-800 flex items-center gap-2 sm:gap-3 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "relative shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-base sm:text-xl shadow-md border-2 sm:border-4 border-indigo-100" }, selectedStudent.studentNickname.charAt(0).toUpperCase()), gradedIds.has(selectedStudent.id) && /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12 }))), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, selectedStudent.studentNickname)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-400" }, new Date(selectedStudent.timestamp).toLocaleString()), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 hidden sm:block" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 12 }), " ", t("dashboard.detail.adventure_badge", { level: getStudentLevel(selectedStudent.history) })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full border border-green-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 12 }), " ", t("dashboard.detail.quiz_badge", { count: quizHistory.length })), selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1 rounded-full border border-amber-200 flex items-center gap-1" }, "\u{1F4CA} ", Object.values(selectedStudent.probeHistory).flat().length, " Probes"), selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1" }, "\u{1F4DD} ", selectedStudent.surveyResponses.length, " Surveys")))), /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all select-none shadow-sm ${gradedIds.has(selectedStudent.id) ? "bg-green-50 border-green-500 text-green-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"}` }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h2", { className: "text-xl sm:text-3xl font-black text-slate-800 flex items-center gap-2 sm:gap-3 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "relative shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-base sm:text-xl shadow-md border-2 sm:border-4 border-indigo-100" }, selectedStudent.studentNickname.charAt(0).toUpperCase()), gradedIds.has(selectedStudent.id) && /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12 }))), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, selectedStudent.studentNickname)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-400" }, new Date(selectedStudent.timestamp).toLocaleString()), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 hidden sm:block" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 12 }), " ", t("dashboard.detail.adventure_badge", { level: getStudentLevel(selectedStudent.history) })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full border border-green-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 12 }), " ", t("dashboard.detail.quiz_badge", { count: quizHistory.length })), selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-amber-100 text-amber-700 px-3 py-1 rounded-full border border-amber-200 flex items-center gap-1" }, "\u{1F4CA} ", Object.values(selectedStudent.probeHistory).flat().length, " Probes"), selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full border border-purple-200 flex items-center gap-1" }, "\u{1F4DD} ", selectedStudent.surveyResponses.length, " Surveys")))), /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all motion-reduce:transition-none select-none shadow-sm ${gradedIds.has(selectedStudent.id) ? "bg-green-50 border-green-500 text-green-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"}` }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.text_field"),
@@ -3978,7 +4051,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       return /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50 rounded-xl p-4 border border-violet-200", "data-help-key": "dashboard_notebook_activity_tile" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-violet-700" }, totalNotebook), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-violet-600 uppercase mt-1" }, t("dashboard.notebook_activity") || "Notebook Activity"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-2 space-y-0.5" }, byType["cornell-notes"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D3} Cornell"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["cornell-notes"])), byType["lab-report"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F9EA} Lab Report"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["lab-report"])), byType["reading-response"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D6} Reading"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["reading-response"])), byType["double-entry"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u270D\uFE0F Double-Entry"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["double-entry"])), byType["guided-notes"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4DD} Guided Notes"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["guided-notes"])), byType["q-and-a"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u2753 Q&A"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["q-and-a"])), byType["anchor-chart"] > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4CB} Anchor Chart"), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, byType["anchor-chart"])), feedbackEvents > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-violet-700 font-semibold pt-1 mt-1 border-t border-violet-200" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4AC} AI feedback"), /* @__PURE__ */ React.createElement("span", null, feedbackEvents, "\xD7"))));
     })()), selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 space-y-2" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("research.recent_probe_results")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, Object.entries(selectedStudent.probeHistory).flatMap(
       ([name, probes]) => probes.slice(-3).map((p, i) => /* @__PURE__ */ React.createElement("div", { key: name + "-" + i, className: "flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 border border-slate-100 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, name), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, p.probeType || p.type || "Probe"), p.wcpm !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-amber-700" }, p.wcpm, " WCPM"), p.dcpm !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-amber-700" }, p.dcpm, " DCPM"), p.accuracy !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-emerald-700" }, Math.round(p.accuracy * 100), "%"), p.score !== void 0 && /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold text-indigo-700" }, p.score), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, new Date(p.timestamp || p.date || Date.now()).toLocaleDateString()))))
-    ))), selectedStudent.externalCBMScores && Object.keys(selectedStudent.externalCBMScores).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase mb-2" }, t("research.external_cbm_scores")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-2" }, Object.entries(selectedStudent.externalCBMScores).map(([source, scores]) => /* @__PURE__ */ React.createElement("div", { key: source, className: "bg-slate-50 rounded-lg px-3 py-2 border border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, source), Array.isArray(scores) ? scores.slice(-1).map((s2, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-sm font-bold text-slate-800" }, s2.score || s2.value || JSON.stringify(s2))) : /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800" }, JSON.stringify(scores))))))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto custom-scrollbar space-y-6 pb-10" }, (selectedStudent.history || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: item.id || idx, className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-300 transition-colors" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg text-slate-800" }, item.title || "Untitled Resource"), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100" }, item.type)), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 font-mono" }, new Date(item.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), item.meta && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 italic border-l-2 border-slate-200 pl-3 mb-4" }, item.meta), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg p-4 border border-slate-100 overflow-x-auto" }, /* @__PURE__ */ React.createElement(
+    ))), selectedStudent.externalCBMScores && Object.keys(selectedStudent.externalCBMScores).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement("h5", { className: "text-[11px] font-bold text-slate-600 uppercase mb-2" }, t("research.external_cbm_scores")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-2" }, Object.entries(selectedStudent.externalCBMScores).map(([source, scores]) => /* @__PURE__ */ React.createElement("div", { key: source, className: "bg-slate-50 rounded-lg px-3 py-2 border border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, source), Array.isArray(scores) ? scores.slice(-1).map((s2, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-sm font-bold text-slate-800" }, s2.score || s2.value || JSON.stringify(s2))) : /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800" }, JSON.stringify(scores))))))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto custom-scrollbar space-y-6 pb-10" }, (selectedStudent.history || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: item.id || idx, className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-300 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg text-slate-800" }, item.title || "Untitled Resource"), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100" }, item.type)), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 font-mono" }, new Date(item.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), item.meta && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 italic border-l-2 border-slate-200 pl-3 mb-4" }, item.meta), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg p-4 border border-slate-100 overflow-x-auto" }, /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "prose prose-sm max-w-none text-slate-700 leading-relaxed",
@@ -3996,7 +4069,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         onDelete: deleteComment,
         t
       }
-    ))), selectedStudent.history.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600 italic" }, t("dashboard.empty.no_history")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, dashboardData.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "relative flex flex-col items-center justify-center h-full text-slate-600 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all cursor-pointer group min-h-[400px] bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform" }, /* @__PURE__ */ React.createElement(Upload, { size: 48, className: "text-slate-600 group-hover:text-indigo-500" })), /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-600 group-hover:text-indigo-700" }, t("dashboard.drop_files")), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors" }, t("dashboard.batch_supported")), /* @__PURE__ */ React.createElement(
+    ))), selectedStudent.history.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600 italic" }, t("dashboard.empty.no_history")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, dashboardData.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "relative flex flex-col items-center justify-center h-full text-slate-600 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all motion-reduce:transition-none cursor-pointer group min-h-[400px] bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(Upload, { size: 48, className: "text-slate-600 group-hover:text-indigo-500" })), /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-600 group-hover:text-indigo-700" }, t("dashboard.drop_files")), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors motion-reduce:transition-none" }, t("dashboard.batch_supported")), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.upload_json_file"),
@@ -4007,7 +4080,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         "data-help-key": "dashboard_drop_zone_input",
         className: "absolute inset-0 opacity-0 cursor-pointer w-full h-full"
       }
-    )) : /* @__PURE__ */ React.createElement(React.Fragment, null, activeTab === "students" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "teacher-dashboard-panel-students", "aria-labelledby": "teacher-dashboard-tab-students", tabIndex: 0, className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-left-4 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-3 rounded-full text-blue-600" }, /* @__PURE__ */ React.createElement(Users, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, dashboardData.length), /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase" }, t("dashboard.stats.students_loaded")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 relative group cursor-pointer hover:border-indigo-300 transition-colors" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-3 rounded-full text-green-600" }, /* @__PURE__ */ React.createElement(Upload, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-green-700" }, t("dashboard.stats.add_files")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, t("dashboard.stats.click_upload"))), /* @__PURE__ */ React.createElement(
+    )) : /* @__PURE__ */ React.createElement(React.Fragment, null, activeTab === "students" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "teacher-dashboard-panel-students", "aria-labelledby": "teacher-dashboard-tab-students", tabIndex: 0, className: "max-w-6xl mx-auto space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-left-4 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-3 rounded-full text-blue-600" }, /* @__PURE__ */ React.createElement(Users, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, dashboardData.length), /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase" }, t("dashboard.stats.students_loaded")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 relative group cursor-pointer hover:border-indigo-300 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-3 rounded-full text-green-600" }, /* @__PURE__ */ React.createElement(Upload, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-green-700" }, t("dashboard.stats.add_files")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, t("dashboard.stats.click_upload"))), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.upload_json_file"),
@@ -4018,15 +4091,16 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         "data-help-key": "dashboard_add_file_btn_input",
         className: "absolute inset-0 opacity-0 cursor-pointer w-full h-full"
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors", onClick: handleClearAll, role: "button", tabIndex: "0", "aria-label": t("dashboard.stats.clear_dashboard"), onKeyDown: (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), handleClearAll(e)) }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-3 rounded-full text-red-600" }, /* @__PURE__ */ React.createElement(Trash2, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-red-700" }, t("dashboard.stats.clear_dashboard")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, t("dashboard.stats.clear_desc"))))), (() => {
+    )), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors motion-reduce:transition-none", onClick: handleClearAll, role: "button", tabIndex: "0", "aria-label": t("dashboard.stats.clear_dashboard"), onKeyDown: (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), handleClearAll(e)) }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-3 rounded-full text-red-600" }, /* @__PURE__ */ React.createElement(Trash2, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-red-700" }, t("dashboard.stats.clear_dashboard")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, t("dashboard.stats.clear_desc"))))), (() => {
       const filteredCount = getCurrentFilteredStudents().length;
       const filteredNotebookCount = getCurrentFilteredStudents().filter((s2) => (s2.history || []).some((h) => h && h.type === "note-taking")).length;
       if (filteredCount === 0) return null;
       return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 sm:gap-2 flex-wrap bg-slate-50 border border-slate-200 rounded-xl p-2", "data-help-key": "dashboard_bulk_actions_toolbar" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider pl-1 sm:pl-2 pr-1 w-full sm:w-auto" }, t("dashboard.bulk.label") || "Bulk actions", " (", filteredCount, "):"), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: handleBulkMarkGraded,
-          className: "text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors",
+          className: "text-xs font-bold text-green-700 bg-green-50 hover:bg-green-100 border border-green-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors motion-reduce:transition-none",
           title: t("dashboard.bulk.mark_graded_tooltip") || "Mark all currently-filtered students as graded"
         },
         /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "\u2705 Mark all graded"),
@@ -4034,8 +4108,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: handleBulkUnmarkGraded,
-          className: "text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors",
+          className: "text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors motion-reduce:transition-none",
           title: t("dashboard.bulk.unmark_graded_tooltip") || "Clear graded flag on all currently-filtered students"
         },
         /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "\u2B1C Clear graded"),
@@ -4043,9 +4118,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: handleBulkExportNotebooksPDF,
           disabled: filteredNotebookCount === 0,
-          className: "text-xs font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 border border-violet-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+          className: "text-xs font-bold text-violet-800 bg-violet-50 hover:bg-violet-100 border border-violet-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed",
           title: filteredNotebookCount === 0 ? t("dashboard.bulk.no_notebook_in_filter") || "No filtered students have notebook entries" : t("dashboard.bulk.export_notebooks_tooltip") || "Export all filtered students' notebooks as one PDF (cut-apart classroom set)"
         },
         /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "\u{1F4D3} Export notebooks (", filteredNotebookCount, ")"),
@@ -4053,9 +4129,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: handleBulkGenerateFeedback,
           disabled: filteredNotebookCount === 0,
-          className: "text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+          className: "text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed",
           title: filteredNotebookCount === 0 ? t("dashboard.bulk.no_notebook_in_filter") || "No filtered students have notebook entries" : t("dashboard.bulk.feedback_tooltip") || "AI generates one short feedback note per student, ready to print + hand back"
         },
         /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, "\u{1F4AC} AI feedback sheets (", filteredNotebookCount, ")"),
@@ -4071,18 +4148,19 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     ].map(([key, label, count]) => /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key,
         onClick: () => setStudentFilter(key),
-        className: "text-xs font-bold px-3 py-1.5 rounded-full transition-all border " + (studentFilter === key ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50")
+        className: "text-xs font-bold px-3 py-1.5 rounded-full transition-all motion-reduce:transition-none border " + (studentFilter === key ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50")
       },
       label,
       " (",
       count,
       ")"
-    ))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-sm border border-slate-400 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-left text-sm text-slate-600 min-w-[600px]" }, /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-50 text-xs uppercase font-bold text-slate-600" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { className: "p-4" }, t("dashboard.header_nickname")), /* @__PURE__ */ React.createElement("th", { className: "p-4" }, t("dashboard.header_date")), /* @__PURE__ */ React.createElement("th", { className: "p-4" }, t("dashboard.header_progress")), /* @__PURE__ */ React.createElement("th", { className: "p-4" }, t("dashboard.header_level")), /* @__PURE__ */ React.createElement("th", { className: "p-4 text-right" }, t("dashboard.header_actions")))), /* @__PURE__ */ React.createElement("tbody", { className: "divide-y divide-slate-100" }, dashboardData.map((student, idx) => {
+    ))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-sm border border-slate-400 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-left text-sm text-slate-600 min-w-[600px]" }, /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-50 text-xs uppercase font-bold text-slate-600" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-4" }, t("dashboard.header_nickname")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-4" }, t("dashboard.header_date")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-4" }, t("dashboard.header_progress")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-4" }, t("dashboard.header_level")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-4 text-right" }, t("dashboard.header_actions")))), /* @__PURE__ */ React.createElement("tbody", { className: "divide-y divide-slate-100" }, dashboardData.map((student, idx) => {
       const level = getStudentLevel(student.history);
       const isGraded = gradedIds.has(student.id);
-      return /* @__PURE__ */ React.createElement("tr", { key: idx, className: `hover:bg-slate-50 transition-colors ${isGraded ? "bg-green-50/30" : ""}` }, /* @__PURE__ */ React.createElement("td", { className: "p-4 font-bold text-indigo-900 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs" }, student.studentNickname.charAt(0).toUpperCase()), isGraded && /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border border-white shadow-sm" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 8 }))), student.studentNickname, isGraded && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider" }, t("dashboard.table.graded")), student.probeHistory && Object.keys(student.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200", title: Object.values(student.probeHistory).flat().length + " probes" }, "\u{1F4CA}"), student.surveyResponses && student.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200", title: student.surveyResponses.length + " surveys" }, "\u{1F4DD}"), student.sessionCounter > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200", title: student.sessionCounter + " sessions" }, "\u{1F504}"), (() => {
+      return /* @__PURE__ */ React.createElement("tr", { key: idx, className: `hover:bg-slate-50 transition-colors motion-reduce:transition-none ${isGraded ? "bg-green-50/30" : ""}` }, /* @__PURE__ */ React.createElement("td", { className: "p-4 font-bold text-indigo-900 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs" }, student.studentNickname.charAt(0).toUpperCase()), isGraded && /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border border-white shadow-sm" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 8 }))), student.studentNickname, isGraded && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider" }, t("dashboard.table.graded")), student.probeHistory && Object.keys(student.probeHistory).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200", title: Object.values(student.probeHistory).flat().length + " probes" }, "\u{1F4CA}"), student.surveyResponses && student.surveyResponses.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200", title: student.surveyResponses.length + " surveys" }, "\u{1F4DD}"), student.sessionCounter > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200", title: student.sessionCounter + " sessions" }, "\u{1F504}"), (() => {
         const noteCount = (student.history || []).filter((h) => h && (h.type === "note-taking" || h.type === "anchor-chart")).length;
         return noteCount > 0 ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded ml-1 border border-violet-200", title: noteCount + " notebook entries (notes + anchor charts)" }, "\u{1F4D3}") : null;
       })(), (() => {
@@ -4091,22 +4169,24 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       })()), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-slate-600 font-mono text-xs" }, new Date(student.timestamp).toLocaleDateString(), " ", /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, new Date(student.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, /* @__PURE__ */ React.createElement("span", { className: "bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-bold border border-green-200" }, calculateScore(student.history))), /* @__PURE__ */ React.createElement("td", { className: "p-4" }, level !== "N/A" ? /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-bold border border-purple-200 flex items-center gap-1 w-fit" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 10 }), " Lvl ", level) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs" }, "-")), /* @__PURE__ */ React.createElement("td", { className: "p-4 text-right" }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: () => {
             setSelectedStudentId(student.id);
             setDashboardView("detail");
           },
           "data-help-key": "dashboard_review_btn",
-          className: "text-indigo-600 hover:text-indigo-800 font-bold text-xs px-3 py-1 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-all"
+          className: "text-indigo-600 hover:text-indigo-800 font-bold text-xs px-3 py-1 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-all motion-reduce:transition-none"
         },
         t("dashboard.table.review_work")
       )));
-    }))))), activeTab === "insights" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "teacher-dashboard-panel-insights", "aria-labelledby": "teacher-dashboard-tab-insights", tabIndex: 0, className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg text-slate-800" }, t("dashboard.insights.class_performance")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("dashboard.insights.generated_date"), " ", (/* @__PURE__ */ new Date()).toLocaleDateString())), /* @__PURE__ */ React.createElement(
+    }))))), activeTab === "insights" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "teacher-dashboard-panel-insights", "aria-labelledby": "teacher-dashboard-tab-insights", tabIndex: 0, className: "max-w-6xl mx-auto space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-right-4 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg text-slate-800" }, t("dashboard.insights.class_performance")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("dashboard.insights.generated_date"), " ", (/* @__PURE__ */ new Date()).toLocaleDateString())), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         "aria-label": t("common.export_file"),
         onClick: handleExportAnalyticsPDF,
         "data-help-key": "dashboard_export_pdf_btn",
-        className: "flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"
+        className: "flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none shadow-sm"
       },
       /* @__PURE__ */ React.createElement(FileDown, { size: 14 }),
       " ",
@@ -4253,7 +4333,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                   React.createElement(
                     "div",
                     { className: "w-full bg-slate-200 rounded-full h-2 mt-2 overflow-hidden" },
-                    React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all", style: { width: parseFloat(c.avg) / 5 * 100 + "%" } })
+                    React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all motion-reduce:transition-none", style: { width: parseFloat(c.avg) / 5 * 100 + "%" } })
                   ),
                   React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "n = " + c.n + " responses")
                 )
@@ -4348,17 +4428,18 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
           })()
         )
       );
-    })()), activeTab === "behavior" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: `teacher-dashboard-panel-${activeTab}`, "aria-labelledby": `teacher-dashboard-tab-${activeTab}`, tabIndex: 0, className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl sm:text-5xl mb-4" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("h3", { className: "text-xl sm:text-2xl font-black text-slate-800 mb-2" }, t("behavior_lens.hub.title") || "BehaviorLens"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-6 max-w-md mx-auto" }, t("behavior_lens.hub.subtitle") || "Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools."), /* @__PURE__ */ React.createElement(
+    })()), activeTab === "behavior" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: `teacher-dashboard-panel-${activeTab}`, "aria-labelledby": `teacher-dashboard-tab-${activeTab}`, tabIndex: 0, className: "max-w-6xl mx-auto space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl sm:text-5xl mb-4" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("h3", { className: "text-xl sm:text-2xl font-black text-slate-800 mb-2" }, t("behavior_lens.hub.title") || "BehaviorLens"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-6 max-w-md mx-auto" }, t("behavior_lens.hub.subtitle") || "Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools."), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => {
           if (onOpenBehaviorLens) onOpenBehaviorLens();
         },
-        className: "px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm flex items-center gap-2 mx-auto"
+        className: "px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none text-sm flex items-center gap-2 mx-auto"
       },
       "\u{1F50D} ",
       t("behavior_lens.hub.open_btn") || "Open BehaviorLens"
-    ))), activeTab === "stems" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: `teacher-dashboard-panel-${activeTab}`, "aria-labelledby": `teacher-dashboard-tab-${activeTab}`, tabIndex: 0, className: "max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-base sm:text-lg font-black text-slate-800 flex items-center gap-2 mb-4" }, t("teacher.stem_stations.section_title") || "\u{1F52C} STEM Station Activity"), (() => {
+    ))), activeTab === "stems" && /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: `teacher-dashboard-panel-${activeTab}`, "aria-labelledby": `teacher-dashboard-tab-${activeTab}`, tabIndex: 0, className: "max-w-6xl mx-auto space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-base sm:text-lg font-black text-slate-800 flex items-center gap-2 mb-4" }, t("teacher.stem_stations.section_title") || "\u{1F52C} STEM Station Activity"), (() => {
       const stations = JSON.parse(localStorage.getItem("alloflow_stem_stations") || "[]");
       const xpLog = JSON.parse(localStorage.getItem("alloflow_stem_xp_log") || "[]");
       if (stations.length === 0) {
@@ -4367,20 +4448,20 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       return /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2 sm:gap-4 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 rounded-xl p-3 sm:p-4 text-center border border-emerald-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xl sm:text-2xl font-black text-emerald-700" }, stations.length), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] sm:text-xs text-emerald-600 font-bold mt-1 leading-tight" }, t("teacher.stem_stations.stations_created") || "Stations Created")), /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50 rounded-xl p-3 sm:p-4 text-center border border-teal-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xl sm:text-2xl font-black text-teal-700" }, new Set(stations.flatMap((s2) => s2.tools)).size), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] sm:text-xs text-teal-600 font-bold mt-1 leading-tight" }, t("teacher.stem_stations.unique_tools_used") || "Unique Tools Used")), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-3 sm:p-4 text-center border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xl sm:text-2xl font-black text-indigo-700" }, xpLog.filter((e) => e.stationId).length), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] sm:text-xs text-indigo-600 font-bold mt-1 leading-tight" }, t("teacher.stem_stations.station_xp_events") || "Station XP Events"))), stations.map((st) => {
         const stationXP = xpLog.filter((e) => e.stationId === st.id);
         const totalXP = stationXP.reduce((s2, e) => s2 + (e.xp || 0), 0);
-        return /* @__PURE__ */ React.createElement("div", { key: st.id, className: "bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-400 hover:border-emerald-300 transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg shrink-0" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm text-slate-800 truncate" }, st.name), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 sm:gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 hidden sm:inline" }, new Date(st.createdAt).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", { className: "bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full" }, totalXP, " XP"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" }, st.tools.map((toolId) => {
+        return /* @__PURE__ */ React.createElement("div", { key: st.id, className: "bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-400 hover:border-emerald-300 transition-all motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg shrink-0" }, "\u{1F4CC}"), /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-sm text-slate-800 truncate" }, st.name), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 sm:gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 hidden sm:inline" }, new Date(st.createdAt).toLocaleDateString()), /* @__PURE__ */ React.createElement("span", { className: "bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full" }, totalXP, " XP"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" }, st.tools.map((toolId) => {
           const registry = window.STEM_TOOL_REGISTRY || [];
           const meta = registry.find((r) => r.id === toolId);
           return /* @__PURE__ */ React.createElement("span", { key: toolId, className: "bg-white text-slate-600 text-[11px] font-medium px-2 py-1 rounded-lg border border-slate-400" }, "\u{1F9EA} ", meta ? meta.name : toolId);
         })), st.teacherNote && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic mt-2" }, '"', st.teacherNote, '"'));
       }));
     })()))))),
-    showClearConfirm && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200", onMouseDown: (event) => {
+    showClearConfirm && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in motion-reduce:animate-none fade-in duration-200", onMouseDown: (event) => {
       if (event.target === event.currentTarget) closeClearConfirm();
     } }, /* @__PURE__ */ React.createElement(
       "div",
       {
         ref: clearConfirmDialogRef,
-        className: "bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200",
+        className: "bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in motion-reduce:animate-none zoom-in-95 duration-200",
         role: "alertdialog",
         "aria-modal": "true",
         "aria-labelledby": "teacher-clear-confirm-title",
@@ -4410,7 +4491,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       },
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-3 rounded-full", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Trash2, { size: 24, className: "text-red-600" })), /* @__PURE__ */ React.createElement("h3", { id: "teacher-clear-confirm-title", className: "text-lg font-bold text-slate-800" }, t("dashboard.clear_all"))),
       /* @__PURE__ */ React.createElement("p", { id: "teacher-clear-confirm-description", className: "text-slate-600 mb-6" }, t("dashboard.clear_confirm")),
-      /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeClearConfirm, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("common.cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmClearAll, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-red-700 hover:bg-red-800 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, t("common.confirm")))
+      /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeClearConfirm, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("common.cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmClearAll, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-red-700 hover:bg-red-800 transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, t("common.confirm")))
     ))
   );
 });
