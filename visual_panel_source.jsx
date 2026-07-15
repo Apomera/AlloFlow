@@ -720,6 +720,8 @@ Return ONLY valid JSON:
             const cw = img.naturalWidth || 800;
             const ch = img.naturalHeight || 600;
             const canvas = document.createElement('canvas');
+            canvas.setAttribute('role', 'img');
+            canvas.setAttribute('aria-label', 'Exported visual panel with annotations');
             canvas.width = cw * scale;
             canvas.height = ch * scale;
             const ctx = canvas.getContext('2d');
@@ -962,7 +964,7 @@ Return ONLY valid JSON:
             <div className="visual-grid-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '8px 12px', background: 'linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%)', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '8px', alignItems: 'center' }}>
                 {!isStudentChallenge && (
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                    <button
+                    <button type="button"
                         aria-label={t('common.toggle_labels')}
                         onClick={() => setLabelsHidden(!labelsHidden)}
                         className={labelsHidden ? 'active' : ''}
@@ -971,7 +973,7 @@ Return ONLY valid JSON:
                     >
                         {labelsHidden ? '👁️ Show' : '🏷️ Labels'}
                     </button>
-                    <button
+                    <button type="button"
                         aria-label={t('common.add_label')}
                         onClick={() => setAddingLabelPanel(addingLabelPanel !== null ? null : -1)}
                         className={addingLabelPanel !== null ? 'active' : ''}
@@ -984,15 +986,15 @@ Return ONLY valid JSON:
                 )}
                 <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }} />
                 <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-                    <button onClick={handleUndo} disabled={labelHistoryIndex <= 0} title={t('common.undo')} aria-label={t('common.undo')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer', fontSize: '14px', opacity: labelHistoryIndex <= 0 ? 0.4 : 1 }}>↩️</button>
-                    <button onClick={handleRedo} disabled={labelHistoryIndex >= labelHistory.length - 1} title={t('common.redo')} aria-label={t('common.redo')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer', fontSize: '14px', opacity: labelHistoryIndex >= labelHistory.length - 1 ? 0.4 : 1 }}>↪️</button>
+                    <button type="button" onClick={handleUndo} disabled={labelHistoryIndex <= 0} title={t('common.undo')} aria-label={t('common.undo')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer', fontSize: '14px', opacity: labelHistoryIndex <= 0 ? 0.4 : 1 }}>↩️</button>
+                    <button type="button" onClick={handleRedo} disabled={labelHistoryIndex >= labelHistory.length - 1} title={t('common.redo')} aria-label={t('common.redo')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer', fontSize: '14px', opacity: labelHistoryIndex >= labelHistory.length - 1 ? 0.4 : 1 }}>↪️</button>
                 </div>
                 <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }} />
                 <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                    <button onClick={() => setDrawingMode(drawingMode === 'freehand' ? null : 'freehand')} className={drawingMode === 'freehand' ? 'active' : ''} title={t('common.freehand_draw')} aria-label={t('common.freehand_draw')} style={{ padding: '4px 8px', borderRadius: '6px', border: drawingMode === 'freehand' ? '1px solid #4f46e5' : '1px solid #e2e8f0', background: drawingMode === 'freehand' ? '#eef2ff' : 'white', cursor: 'pointer', fontSize: '14px' }}>✏️</button>
-                    <button onClick={() => setDrawingMode(drawingMode === 'arrow' ? null : 'arrow')} className={drawingMode === 'arrow' ? 'active' : ''} title={t('common.draw_arrow')} aria-label={t('common.draw_arrow')} style={{ padding: '4px 8px', borderRadius: '6px', border: drawingMode === 'arrow' ? '1px solid #4f46e5' : '1px solid #e2e8f0', background: drawingMode === 'arrow' ? '#eef2ff' : 'white', cursor: 'pointer', fontSize: '14px' }}>➡️</button>
-                    <button onClick={() => setDrawingMode(drawingMode === 'circle' ? null : 'circle')} className={drawingMode === 'circle' ? 'active' : ''} title={t('common.draw_circle')} aria-label={t('common.draw_circle')} style={{ padding: '4px 8px', borderRadius: '6px', border: drawingMode === 'circle' ? '1px solid #4f46e5' : '1px solid #e2e8f0', background: drawingMode === 'circle' ? '#eef2ff' : 'white', cursor: 'pointer', fontSize: '14px' }}>⭕</button>
-                    <button onClick={() => setDrawingMode(drawingMode === 'highlight' ? null : 'highlight')} className={drawingMode === 'highlight' ? 'active' : ''} title={t('common.highlighter')} aria-label={t('common.highlighter')} style={{ padding: '4px 8px', borderRadius: '6px', border: drawingMode === 'highlight' ? '1px solid #4f46e5' : '1px solid #e2e8f0', background: drawingMode === 'highlight' ? '#eef2ff' : 'white', cursor: 'pointer', fontSize: '14px' }}>🖍️</button>
+                    <button type="button" onClick={() => setDrawingMode(drawingMode === 'freehand' ? null : 'freehand')} className={drawingMode === 'freehand' ? 'active' : ''} title={t('common.freehand_draw')} aria-label={t('common.freehand_draw')} style={{ padding: '4px 8px', borderRadius: '6px', border: drawingMode === 'freehand' ? '1px solid #4f46e5' : '1px solid #e2e8f0', background: drawingMode === 'freehand' ? '#eef2ff' : 'white', cursor: 'pointer', fontSize: '14px' }}>✏️</button>
+                    <button type="button" onClick={() => setDrawingMode(drawingMode === 'arrow' ? null : 'arrow')} className={drawingMode === 'arrow' ? 'active' : ''} title={t('common.draw_arrow')} aria-label={t('common.draw_arrow')} style={{ padding: '4px 8px', borderRadius: '6px', border: drawingMode === 'arrow' ? '1px solid #4f46e5' : '1px solid #e2e8f0', background: drawingMode === 'arrow' ? '#eef2ff' : 'white', cursor: 'pointer', fontSize: '14px' }}>➡️</button>
+                    <button type="button" onClick={() => setDrawingMode(drawingMode === 'circle' ? null : 'circle')} className={drawingMode === 'circle' ? 'active' : ''} title={t('common.draw_circle')} aria-label={t('common.draw_circle')} style={{ padding: '4px 8px', borderRadius: '6px', border: drawingMode === 'circle' ? '1px solid #4f46e5' : '1px solid #e2e8f0', background: drawingMode === 'circle' ? '#eef2ff' : 'white', cursor: 'pointer', fontSize: '14px' }}>⭕</button>
+                    <button type="button" onClick={() => setDrawingMode(drawingMode === 'highlight' ? null : 'highlight')} className={drawingMode === 'highlight' ? 'active' : ''} title={t('common.highlighter')} aria-label={t('common.highlighter')} style={{ padding: '4px 8px', borderRadius: '6px', border: drawingMode === 'highlight' ? '1px solid #4f46e5' : '1px solid #e2e8f0', background: drawingMode === 'highlight' ? '#eef2ff' : 'white', cursor: 'pointer', fontSize: '14px' }}>🖍️</button>
                 </div>
                 <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
                     {['#ef4444','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#1e293b'].map(c => {
@@ -1003,10 +1005,10 @@ Return ONLY valid JSON:
                             title={colorName} style={{ width: 24, height: 24, borderRadius: '50%', background: c, border: drawingColor === c ? '2px solid #1e293b' : '2px solid transparent', cursor: 'pointer', transition: 'transform 0.15s', transform: drawingColor === c ? 'scale(1.2)' : 'scale(1)' }} />
                     ); })}
                 </div>
-                <button onClick={() => { setDrawings({}); }} title={t('common.clear_drawings')} aria-label={t('common.clear_all_drawings')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fff1f2', color: '#ef4444', cursor: 'pointer', fontSize: '12px', fontWeight: 600, marginLeft: 'auto' }}>🗑️ Clear</button>
+                <button type="button" onClick={() => { setDrawings({}); }} title={t('common.clear_drawings')} aria-label={t('common.clear_all_drawings')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fff1f2', color: '#ef4444', cursor: 'pointer', fontSize: '12px', fontWeight: 600, marginLeft: 'auto' }}>🗑️ Clear</button>
                 <div style={{ width: "1px", height: "20px", background: "#e2e8f0" }} />
                 {!isStudentChallenge && (
-                    <button
+                    <button type="button"
                         onClick={() => orderedPanels.forEach((_, i) => setTimeout(() => handleExportPanel(i), i * 500))}
                         title={t('common.download_all_panels_as_png_images')}
                         aria-label={t('common.export_all_panels_as_png_images')}
@@ -1018,14 +1020,14 @@ Return ONLY valid JSON:
                 {isTeacherMode && !isStudentChallenge && (
                     challengeMode ? (
                         <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-                            <button
+                            <button type="button"
                                 onClick={() => handleToggleChallenge()}
                                 title={t('common.deactivate_label_challenge')}
                                 style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #16a34a", background: "#16a34a", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
                             >
                                 🏆 {challengeType === 'fill-blank' ? 'Fill-in-Blank' : 'From Scratch'} ✓
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => setChallengeType(challengeType === 'fill-blank' ? 'scratch' : 'fill-blank')}
                                 title={t('common.switch_challenge_mode')}
                                 style={{ display: "flex", alignItems: "center", gap: "3px", padding: "5px 10px", borderRadius: "6px", border: "1px solid #d1d5db", background: "white", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
@@ -1035,14 +1037,14 @@ Return ONLY valid JSON:
                         </div>
                     ) : (
                         <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-                            <button
+                            <button type="button"
                                 onClick={() => handleToggleChallenge('fill-blank')}
                                 title={t('common.students_fill_in_blank_labels_at_existing_position')}
                                 style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #86efac", background: "#f0fdf4", color: "#15803d", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
                             >
                                 🔤 Fill-in-Blank
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => handleToggleChallenge('scratch')}
                                 title={t('common.students_place_labels_from_scratch')}
                                 aria-label={t('common.set_label_challenge_mode_from_scratch')}
@@ -1056,7 +1058,7 @@ Return ONLY valid JSON:
                 {isStudentChallenge && !challengeSubmitted && (
                     <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
                         {!isFillBlank && (
-                            <button
+                            <button type="button"
                                 onClick={() => setAddingLabelPanel(addingLabelPanel !== null ? null : -1)}
                                 aria-label={addingLabelPanel !== null ? "Cancel adding label" : "Add a label to the diagram"}
                                 aria-pressed={addingLabelPanel !== null}
@@ -1065,7 +1067,7 @@ Return ONLY valid JSON:
                                 ➕ Add Label
                             </button>
                         )}
-                        <button
+                        <button type="button"
                             onClick={handleChallengeSubmit}
                             disabled={isAnalyzing || (isFillBlank ? Object.values(fillBlankAnswers).filter(v => v && v.trim()).length === 0 : Object.keys(studentLabels).length === 0)}
                             style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #4f46e5", background: "#4f46e5", color: "white", fontSize: "12px", fontWeight: 700, cursor: isAnalyzing ? "wait" : "pointer", opacity: (isFillBlank ? Object.values(fillBlankAnswers).filter(v => v && v.trim()).length === 0 : Object.keys(studentLabels).length === 0) ? 0.5 : 1 }}
@@ -1081,10 +1083,10 @@ Return ONLY valid JSON:
                 )}
                 {challengeSubmitted && (
                     <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-                        <button onClick={() => setShowComparison(!showComparison)} aria-label={showComparison ? "Hide label comparison results" : "Show label comparison results"} aria-expanded={showComparison} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #6366f1", background: showComparison ? "#4f46e5" : "#eef2ff", color: showComparison ? "white" : "#4f46e5", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
+                        <button type="button" onClick={() => setShowComparison(!showComparison)} aria-label={showComparison ? "Hide label comparison results" : "Show label comparison results"} aria-expanded={showComparison} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #6366f1", background: showComparison ? "#4f46e5" : "#eef2ff", color: showComparison ? "white" : "#4f46e5", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
                             {showComparison ? "📋 Hide Comparison" : "📋 Show Comparison"}
                         </button>
-                        <button onClick={handleResetChallenge} aria-label={t('common.reset_the_challenge_and_try_again')} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#b45309", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
+                        <button type="button" onClick={handleResetChallenge} aria-label={t('common.reset_the_challenge_and_try_again')} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#b45309", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
                             🔄 Try Again
                         </button>
                         <span role="status" aria-live="polite" aria-atomic="true" aria-label={`Your score is ${challengeResult?.score || 0} percent`} style={{ fontSize: "13px", fontWeight: 800, color: challengeResult?.score >= 80 ? "#16a34a" : challengeResult?.score >= 50 ? "#f59e0b" : "#ef4444" }}>
@@ -1143,7 +1145,7 @@ Return ONLY valid JSON:
                                                     cover the animation when playing), plus a small frame strip
                                                     of ◀ N/M ▶ controls at bottom-left for stepping. */}
                                                 {paused && (
-                                                    <button
+                                                    <button type="button"
                                                         onClick={(e) => { e.stopPropagation(); togglePlayPause(panelIdx, panel); }}
                                                         aria-label={t('common.play_animation') || 'Play animation'}
                                                         title={t('common.play_animation') || 'Play animation'}
@@ -1153,12 +1155,12 @@ Return ONLY valid JSON:
                                                 <div style={{ position: 'absolute', bottom: 6, left: 6, display: 'flex', gap: 2, background: 'rgba(15,23,42,0.65)', color: 'white', borderRadius: 12, padding: '2px 4px', alignItems: 'center', fontSize: 10, fontWeight: 600, zIndex: 5 }}>
                                                     {paused ? (
                                                         <>
-                                                            <button onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, -1); }} aria-label={t('common.previous_frame') || 'Previous frame'} title={t('common.previous_frame') || 'Previous frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', minWidth: 24, minHeight: 24, padding: '2px 6px', fontSize: 12 }}>◀</button>
+                                                            <button type="button" onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, -1); }} aria-label={t('common.previous_frame') || 'Previous frame'} title={t('common.previous_frame') || 'Previous frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', minWidth: 24, minHeight: 24, padding: '2px 6px', fontSize: 12 }}>◀</button>
                                                             <span aria-live="polite">{frameIdx + 1}/{panel.frames.length}</span>
-                                                            <button onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, +1); }} aria-label={t('common.next_frame') || 'Next frame'} title={t('common.next_frame') || 'Next frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', minWidth: 24, minHeight: 24, padding: '2px 6px', fontSize: 12 }}>▶</button>
+                                                            <button type="button" onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, +1); }} aria-label={t('common.next_frame') || 'Next frame'} title={t('common.next_frame') || 'Next frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', minWidth: 24, minHeight: 24, padding: '2px 6px', fontSize: 12 }}>▶</button>
                                                         </>
                                                     ) : (
-                                                        <button onClick={(e) => { e.stopPropagation(); togglePlayPause(panelIdx, panel); }} aria-label={t('common.pause_animation') || 'Pause animation'} title={t('common.pause_animation') || 'Pause animation'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', minHeight: 24, padding: '2px 8px', fontSize: 12 }}>⏸ {panel.frames.length}f</button>
+                                                        <button type="button" onClick={(e) => { e.stopPropagation(); togglePlayPause(panelIdx, panel); }} aria-label={t('common.pause_animation') || 'Pause animation'} title={t('common.pause_animation') || 'Pause animation'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', minHeight: 24, padding: '2px 8px', fontSize: 12 }}>⏸ {panel.frames.length}f</button>
                                                     )}
                                                 </div>
                                             </>
@@ -1168,7 +1170,7 @@ Return ONLY valid JSON:
                                 })()
                             ) : (
                                 <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', color: '#475569' }}>
-                                    <div className="animate-spin" style={{ width: 24, height: 24, border: '3px solid #cbd5e1', borderTopColor: '#6366f1', borderRadius: '50%' }} />
+                                    <div className="animate-spin motion-reduce:animate-none" style={{ width: 24, height: 24, border: '3px solid #cbd5e1', borderTopColor: '#6366f1', borderRadius: '50%' }} />
                                 </div>
                             )}
                             {!labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx)}
@@ -1205,7 +1207,7 @@ Return ONLY valid JSON:
                                                 onChange={(e) => setFillBlankAnswers(prev => ({...prev, [panelIdx + '-' + labelIdx]: e.target.value}))}
                                                 onMouseDown={(e) => e.stopPropagation()}
                                                 aria-label={`Label ${labelIdx + 1} on panel ${panelIdx + 1} — type your answer`}
-                                                style={{ border: 'none', outline: 'none', background: 'transparent', fontWeight: 700, fontSize: '13px', color: '#166534', width: Math.max(80, (fillBlankAnswers[panelIdx + '-' + labelIdx] || '').length * 9) + 'px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }}
+                                                style={{ border: 'none', background: 'transparent', fontWeight: 700, fontSize: '13px', color: '#166534', width: Math.max(80, (fillBlankAnswers[panelIdx + '-' + labelIdx] || '').length * 9) + 'px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }}
                                                 disabled={challengeSubmitted}
                                             />
                                         ) : isEditing ? (
@@ -1251,7 +1253,7 @@ Return ONLY valid JSON:
                                             onChange={(e) => setFillBlankAnswers(prev => ({...prev, [fillKey]: e.target.value}))}
                                             onMouseDown={(e) => e.stopPropagation()}
                                             aria-label={`Teacher label ${uIdx + 1} on panel ${panelIdx + 1} — type your answer`}
-                                            style={{ border: 'none', outline: 'none', background: 'transparent', fontWeight: 700, fontSize: '13px', color: '#166534', width: Math.max(80, (fillBlankAnswers[fillKey] || '').length * 9) + 'px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }}
+                                            style={{ border: 'none', background: 'transparent', fontWeight: 700, fontSize: '13px', color: '#166534', width: Math.max(80, (fillBlankAnswers[fillKey] || '').length * 9) + 'px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }}
                                             disabled={challengeSubmitted}
                                         />
                                     ) : editingLabel?.panelIdx === panelIdx && editingLabel?.labelIdx === `user-${uLabel.id}` ? (
@@ -1262,7 +1264,7 @@ Return ONLY valid JSON:
                                             onBlur={(e) => { handleUserLabelTextChange(panelIdx, uLabel.id, e.target.value); setEditingLabel(null); }}
                                             onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
                                             aria-label={`Edit user label on panel ${panelIdx + 1}`}
-                                            style={{ cursor: 'text', border: 'none', background: 'transparent', outline: 'none', fontWeight: 700, fontSize: '13px', color: '#1e1b4b', width: Math.max(50, uLabel.text.length * 9) + 'px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }}
+                                            style={{ cursor: 'text', border: 'none', background: 'transparent', fontWeight: 700, fontSize: '13px', color: '#1e1b4b', width: Math.max(50, uLabel.text.length * 9) + 'px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }}
                                         />
                                     ) : (
                                         <span style={{ pointerEvents: 'none' }}>{uLabel.text}</span>
@@ -1292,13 +1294,13 @@ Return ONLY valid JSON:
                                         padding: "4px 10px", borderRadius: "8px", fontSize: "13px", fontWeight: 700, color: "#1e1b4b" }}
                                 >
                                     {!challengeSubmitted && (
-                                        <button onClick={() => handleDeleteStudentLabel(panelIdx, sLabel.id)} aria-label="Remove student label" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "10px", padding: 0, color: "#475569" }}>✕</button>
+                                        <button type="button" onClick={() => handleDeleteStudentLabel(panelIdx, sLabel.id)} aria-label="Remove student label" style={{ background: "none", border: "none", cursor: "pointer", fontSize: "10px", padding: 0, color: "#475569" }}>✕</button>
                                     )}
                                     {!challengeSubmitted ? (
                                         <input type="text" value={sLabel.text}
                                             onChange={(e) => handleStudentLabelTextChange(panelIdx, sLabel.id, e.target.value)}
                                             aria-label={`Student label on panel ${panelIdx + 1}`}
-                                            style={{ background: "transparent", border: "none", outline: "none", fontWeight: 700, fontSize: "13px", color: "#1e1b4b", width: Math.max(60, sLabel.text.length * 9) + "px", textAlign: "center" }} />
+                                            style={{ background: "transparent", border: "none", fontWeight: 700, fontSize: "13px", color: "#1e1b4b", width: Math.max(60, sLabel.text.length * 9) + "px", textAlign: "center" }} />
                                     ) : (
                                         <span>{sLabel.text}</span>
                                     )}
@@ -1308,14 +1310,14 @@ Return ONLY valid JSON:
                                 </div>
                             ))}
                             <div className="visual-panel-actions">
-                                <button
+                                <button type="button"
                                     aria-label={t('common.refine_this_panel')}
                                     onClick={() => setRefiningPanelIdx(refiningPanelIdx === panelIdx ? null : panelIdx)}
                                     title={'Refine this panel'}
                                 >
                                     ✏️
                                 </button>
-                                <button
+                                <button type="button"
                                     aria-label={isAnimatedPanel(panel) ? (t('common.export_first_frame_as_png') || 'Export first frame as PNG') : t('common.export_panel_as_png')}
                                     onClick={() => handleExportPanel(panelIdx)}
                                     title={isAnimatedPanel(panel) ? (t('common.export_first_frame_as_png_title') || 'Saves the first frame as a PNG. Use 🎞️ to download the full animation.') : t('common.download_annotated_diagram_as_png')}
@@ -1328,7 +1330,7 @@ Return ONLY valid JSON:
                                     imageUrl is a data:image/gif (handles hand-edited frames or
                                     legacy data without a type field). */}
                                 {(panel.type === 'process_animation' || (panel.imageUrl && panel.imageUrl.startsWith && panel.imageUrl.startsWith('data:image/gif'))) && (
-                                    <button
+                                    <button type="button"
                                         aria-label={t('common.download_gif') || 'Download GIF'}
                                         onClick={() => handleDownloadGif(panel, panelIdx)}
                                         title={t('common.download_gif') || 'Download GIF'}
@@ -1337,7 +1339,7 @@ Return ONLY valid JSON:
                                     </button>
                                 )}
                                 {onAnimatePanel && (
-                                    <button
+                                    <button type="button"
                                         aria-label={isAnimatedPanel(panel) ? (t('common.reanimate_panel') || 'Re-animate panel with new motion') : (t('common.animate_this_panel') || 'Animate this panel')}
                                         onClick={() => {
                                             if (animatingPanelIdx === panelIdx) { setAnimatingPanelIdx(null); return; }
@@ -1361,7 +1363,7 @@ Return ONLY valid JSON:
                                             style={{ display: 'none' }}
                                             aria-label={t('common.upload_custom_image')}
                                         />
-                                        <button
+                                        <button type="button"
                                             aria-label={t('common.upload_custom_image')}
                                             onClick={() => fileInputRefs.current[panelIdx]?.click()}
                                             title={t('common.upload_your_own_image_for_this_panel')}
@@ -1369,7 +1371,7 @@ Return ONLY valid JSON:
                                             📷
                                         </button>
                                         {imageOverrides[panelIdx] && (
-                                            <button
+                                            <button type="button"
                                                 aria-label={t('common.remove_custom_image')}
                                                 onClick={() => setImageOverrides(prev => { const next = {...prev}; delete next[panelIdx]; return next; })}
                                                 title={t('common.restore_original_ai_generated_image')}
@@ -1391,7 +1393,7 @@ Return ONLY valid JSON:
                                         onBlur={(e) => { pushVisualSnapshot(); setCaptionOverrides(prev => ({...prev, [panelIdx]: e.target.value})); setEditingCaptionIdx(null); }}
                                         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.target.blur(); }}}
                                         aria-label={`Edit caption for panel ${panelIdx + 1}`}
-                                        style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #c7d2fe', fontSize: '12px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: 'none', resize: 'vertical', minHeight: '40px', textAlign: 'center', color: '#334155', lineHeight: 1.4 }}
+                                        style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #c7d2fe', fontSize: '12px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", resize: 'vertical', minHeight: '40px', textAlign: 'center', color: '#334155', lineHeight: 1.4 }}
                                     />
                                 </div>
                             ) : (
@@ -1417,14 +1419,14 @@ Return ONLY valid JSON:
                                     onKeyDown={(e) => e.key === 'Enter' && handleRefineSubmit(panelIdx)}
                                     autoFocus
                                     aria-label={`Describe changes for Panel ${panelIdx + 1}`}
-                                    style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: 'none' }}
+                                    style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", }}
                                 />
-                                <button
+                                <button type="button"
                                     aria-label={t('common.apply_panel_edit')}
                                     onClick={() => handleRefineSubmit(panelIdx)}
                                     style={{ padding: '6px 14px', borderRadius: 6, background: '#4f46e5', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
                                 >{t("ui_common.apply")}</button>
-                                <button
+                                <button type="button"
                                     aria-label={t('common.cancel')}
                                     onClick={() => setRefiningPanelIdx(null)}
                                     style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
@@ -1446,14 +1448,14 @@ Return ONLY valid JSON:
                                         onKeyDown={(e) => e.key === 'Enter' && handleAnimateSubmit(panelIdx)}
                                         autoFocus
                                         aria-label={t('common.animate_input_aria') || `Motion description for Panel ${panelIdx + 1}`}
-                                        style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: 'none' }}
+                                        style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", }}
                                     />
-                                    <button
+                                    <button type="button"
                                         aria-label={t('common.animate_panel') || 'Animate panel'}
                                         onClick={() => handleAnimateSubmit(panelIdx)}
                                         style={{ padding: '6px 14px', borderRadius: 6, background: '#7c3aed', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
                                     >🎬 {t('common.animate') || 'Animate'}</button>
-                                    <button
+                                    <button type="button"
                                         aria-label={t('common.cancel')}
                                         onClick={() => { setAnimatingPanelIdx(null); setAnimateInput(''); }}
                                         style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
@@ -1484,7 +1486,7 @@ Return ONLY valid JSON:
                                         const isRegenOpen = regenFrame && regenFrame.panelIdx === panelIdx && regenFrame.frameIdx === fIdx;
                                         return (
                                             <div key={fIdx} style={{ position: 'relative', flexShrink: 0 }}>
-                                                <button
+                                                <button type="button"
                                                     onClick={() => {
                                                         if (!onRegenerateFrame) return;
                                                         setRegenFrame({ panelIdx, frameIdx: fIdx });
@@ -1507,7 +1509,7 @@ Return ONLY valid JSON:
                                                     <span style={{ position: 'absolute', bottom: 1, left: 2, fontSize: 9, fontWeight: 700, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{isAnchor ? '⚓' : (fIdx + 1)}</span>
                                                 </button>
                                                 {!isAnchor && onDeleteFrame && (
-                                                    <button
+                                                    <button type="button"
                                                         onClick={() => onDeleteFrame(panelIdx, fIdx)}
                                                         aria-label={t('common.frame_delete_aria') || `Delete frame ${fIdx + 1}`}
                                                         title={t('common.frame_delete_title') || 'Delete this frame'}
@@ -1521,7 +1523,7 @@ Return ONLY valid JSON:
                                                     don't reorder past the last frame. */}
                                                 <div style={{ display: 'flex', gap: 2, marginTop: 2, justifyContent: 'center' }}>
                                                     {onReorderFrame && fIdx > 0 && (
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => onReorderFrame(panelIdx, fIdx, fIdx - 1)}
                                                             aria-label={t('common.frame_move_left_aria') || `Move frame ${fIdx + 1} earlier`}
                                                             title={t('common.frame_move_left_title') || 'Move earlier'}
@@ -1529,7 +1531,7 @@ Return ONLY valid JSON:
                                                         >◀</button>
                                                     )}
                                                     {onDuplicateFrame && (
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => onDuplicateFrame(panelIdx, fIdx)}
                                                             aria-label={t('common.frame_duplicate_aria') || `Duplicate frame ${fIdx + 1}`}
                                                             title={t('common.frame_duplicate_title') || 'Duplicate this frame'}
@@ -1537,7 +1539,7 @@ Return ONLY valid JSON:
                                                         >+</button>
                                                     )}
                                                     {onReorderFrame && fIdx < panel.frames.length - 1 && (
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => onReorderFrame(panelIdx, fIdx, fIdx + 1)}
                                                             aria-label={t('common.frame_move_right_aria') || `Move frame ${fIdx + 1} later`}
                                                             title={t('common.frame_move_right_title') || 'Move later'}
@@ -1587,14 +1589,14 @@ Return ONLY valid JSON:
                                             onKeyDown={(e) => e.key === 'Enter' && handleRegenFrameSubmit()}
                                             autoFocus
                                             aria-label={t('common.regen_frame_aria') || `Describe motion for frame ${regenFrame.frameIdx + 1}`}
-                                            style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: 'none' }}
+                                            style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", }}
                                         />
-                                        <button
+                                        <button type="button"
                                             onClick={handleRegenFrameSubmit}
                                             style={{ padding: '6px 14px', borderRadius: 6, background: '#7c3aed', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
                                             aria-label={t('common.regen_frame_apply') || 'Regenerate frame'}
                                         >↻ {t('common.regenerate') || 'Regenerate'}</button>
-                                        <button
+                                        <button type="button"
                                             onClick={() => { setRegenFrame(null); setRegenInput(''); }}
                                             aria-label={t('common.cancel')}
                                             style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
@@ -1617,7 +1619,7 @@ Return ONLY valid JSON:
         <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', maxWidth: '520px', width: '90%', maxHeight: '80vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.25s ease-out', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' }}>
         <h4 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#166534' }}>🏆 Label Challenge Results</h4>
-        <button onClick={() => setShowComparison(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#6b7280', padding: '4px 8px', borderRadius: '6px', lineHeight: 1 }} aria-label={t('common.close_results')}>✕</button>
+        <button type="button" onClick={() => setShowComparison(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#6b7280', padding: '4px 8px', borderRadius: '6px', lineHeight: 1 }} aria-label={t('common.close_results')}>✕</button>
         </div>
         <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -1653,8 +1655,8 @@ Return ONLY valid JSON:
         )}
         </div>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', padding: '16px 20px', borderTop: '1px solid #e2e8f0', background: '#f8fafc' }}>
-        <button onClick={() => { setLabelsHidden(false); setShowComparison(false); }} style={{ padding: '10px 24px', borderRadius: '10px', border: '1px solid #6366f1', background: '#4f46e5', color: 'white', fontSize: '14px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>👁️ Show Answer Key</button>
-        <button onClick={() => setShowComparison(false)} style={{ padding: '10px 24px', borderRadius: '10px', border: '1px solid #d1d5db', background: 'white', color: '#374151', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>{t("ui_common.close")}</button>
+        <button type="button" onClick={() => { setLabelsHidden(false); setShowComparison(false); }} style={{ padding: '10px 24px', borderRadius: '10px', border: '1px solid #6366f1', background: '#4f46e5', color: 'white', fontSize: '14px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>👁️ Show Answer Key</button>
+        <button type="button" onClick={() => setShowComparison(false)} style={{ padding: '10px 24px', borderRadius: '10px', border: '1px solid #d1d5db', background: 'white', color: '#374151', fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>{t("ui_common.close")}</button>
         </div>
         </div>
         </div>

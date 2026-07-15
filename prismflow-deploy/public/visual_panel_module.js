@@ -743,6 +743,8 @@ Return ONLY valid JSON:
       const cw = img.naturalWidth || 800;
       const ch = img.naturalHeight || 600;
       const canvas = document.createElement("canvas");
+      canvas.setAttribute("role", "img");
+      canvas.setAttribute("aria-label", "Exported visual panel with annotations");
       canvas.width = cw * scale;
       canvas.height = ch * scale;
       const ctx = canvas.getContext("2d");
@@ -1029,6 +1031,7 @@ Return ONLY valid JSON:
   return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { id: "visual-label-move-instructions", className: "sr-only" }, "Use arrow keys to move labels and leader-line anchors. Hold Shift for a larger step."), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, labelMoveStatus), /* @__PURE__ */ React.createElement("div", { className: "visual-grid-controls", style: { display: "flex", flexWrap: "wrap", gap: "6px", padding: "8px 12px", background: "linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%)", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "8px", alignItems: "center" } }, !isStudentChallenge && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.toggle_labels"),
       onClick: () => setLabelsHidden(!labelsHidden),
       className: labelsHidden ? "active" : "",
@@ -1039,6 +1042,7 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.add_label"),
       onClick: () => setAddingLabelPanel(addingLabelPanel !== null ? null : -1),
       className: addingLabelPanel !== null ? "active" : "",
@@ -1046,7 +1050,7 @@ Return ONLY valid JSON:
       style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", background: addingLabelPanel !== null ? "#4f46e5" : "white", color: addingLabelPanel !== null ? "white" : "#475569", fontSize: "12px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }
     },
     "\u2795 Add Label"
-  )), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "2px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { onClick: handleUndo, disabled: labelHistoryIndex <= 0, title: t("common.undo"), "aria-label": t("common.undo"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer", fontSize: "14px", opacity: labelHistoryIndex <= 0 ? 0.4 : 1 } }, "\u21A9\uFE0F"), /* @__PURE__ */ React.createElement("button", { onClick: handleRedo, disabled: labelHistoryIndex >= labelHistory.length - 1, title: t("common.redo"), "aria-label": t("common.redo"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer", fontSize: "14px", opacity: labelHistoryIndex >= labelHistory.length - 1 ? 0.4 : 1 } }, "\u21AA\uFE0F")), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "3px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { onClick: () => setDrawingMode(drawingMode === "freehand" ? null : "freehand"), className: drawingMode === "freehand" ? "active" : "", title: t("common.freehand_draw"), "aria-label": t("common.freehand_draw"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "freehand" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "freehand" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDrawingMode(drawingMode === "arrow" ? null : "arrow"), className: drawingMode === "arrow" ? "active" : "", title: t("common.draw_arrow"), "aria-label": t("common.draw_arrow"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "arrow" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "arrow" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u27A1\uFE0F"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDrawingMode(drawingMode === "circle" ? null : "circle"), className: drawingMode === "circle" ? "active" : "", title: t("common.draw_circle"), "aria-label": t("common.draw_circle"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "circle" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "circle" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u2B55"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDrawingMode(drawingMode === "highlight" ? null : "highlight"), className: drawingMode === "highlight" ? "active" : "", title: t("common.highlighter"), "aria-label": t("common.highlighter"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "highlight" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "highlight" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u{1F58D}\uFE0F")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "3px", alignItems: "center" } }, ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#1e293b"].map((c) => {
+  )), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "2px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleUndo, disabled: labelHistoryIndex <= 0, title: t("common.undo"), "aria-label": t("common.undo"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer", fontSize: "14px", opacity: labelHistoryIndex <= 0 ? 0.4 : 1 } }, "\u21A9\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleRedo, disabled: labelHistoryIndex >= labelHistory.length - 1, title: t("common.redo"), "aria-label": t("common.redo"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer", fontSize: "14px", opacity: labelHistoryIndex >= labelHistory.length - 1 ? 0.4 : 1 } }, "\u21AA\uFE0F")), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "3px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDrawingMode(drawingMode === "freehand" ? null : "freehand"), className: drawingMode === "freehand" ? "active" : "", title: t("common.freehand_draw"), "aria-label": t("common.freehand_draw"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "freehand" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "freehand" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDrawingMode(drawingMode === "arrow" ? null : "arrow"), className: drawingMode === "arrow" ? "active" : "", title: t("common.draw_arrow"), "aria-label": t("common.draw_arrow"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "arrow" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "arrow" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u27A1\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDrawingMode(drawingMode === "circle" ? null : "circle"), className: drawingMode === "circle" ? "active" : "", title: t("common.draw_circle"), "aria-label": t("common.draw_circle"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "circle" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "circle" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u2B55"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDrawingMode(drawingMode === "highlight" ? null : "highlight"), className: drawingMode === "highlight" ? "active" : "", title: t("common.highlighter"), "aria-label": t("common.highlighter"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "highlight" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "highlight" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u{1F58D}\uFE0F")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "3px", alignItems: "center" } }, ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#1e293b"].map((c) => {
     const colorName = { "#ef4444": "Red", "#f59e0b": "Amber", "#22c55e": "Green", "#3b82f6": "Blue", "#8b5cf6": "Purple", "#1e293b": "Dark" }[c] || c;
     return /* @__PURE__ */ React.createElement(
       "div",
@@ -1062,11 +1066,12 @@ Return ONLY valid JSON:
         style: { width: 24, height: 24, borderRadius: "50%", background: c, border: drawingColor === c ? "2px solid #1e293b" : "2px solid transparent", cursor: "pointer", transition: "transform 0.15s", transform: drawingColor === c ? "scale(1.2)" : "scale(1)" }
       }
     );
-  })), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setDrawings({});
   }, title: t("common.clear_drawings"), "aria-label": t("common.clear_all_drawings"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #fecaca", background: "#fff1f2", color: "#ef4444", cursor: "pointer", fontSize: "12px", fontWeight: 600, marginLeft: "auto" } }, "\u{1F5D1}\uFE0F Clear"), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), !isStudentChallenge && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => orderedPanels.forEach((_, i) => setTimeout(() => handleExportPanel(i), i * 500)),
       title: t("common.download_all_panels_as_png_images"),
       "aria-label": t("common.export_all_panels_as_png_images"),
@@ -1076,6 +1081,7 @@ Return ONLY valid JSON:
   ), isTeacherMode && !isStudentChallenge && (challengeMode ? /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => handleToggleChallenge(),
       title: t("common.deactivate_label_challenge"),
       style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #16a34a", background: "#16a34a", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer" }
@@ -1086,6 +1092,7 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setChallengeType(challengeType === "fill-blank" ? "scratch" : "fill-blank"),
       title: t("common.switch_challenge_mode"),
       style: { display: "flex", alignItems: "center", gap: "3px", padding: "5px 10px", borderRadius: "6px", border: "1px solid #d1d5db", background: "white", color: "#475569", fontSize: "11px", fontWeight: 600, cursor: "pointer" }
@@ -1094,6 +1101,7 @@ Return ONLY valid JSON:
   )) : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => handleToggleChallenge("fill-blank"),
       title: t("common.students_fill_in_blank_labels_at_existing_position"),
       style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #86efac", background: "#f0fdf4", color: "#15803d", fontSize: "12px", fontWeight: 700, cursor: "pointer" }
@@ -1102,6 +1110,7 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => handleToggleChallenge("scratch"),
       title: t("common.students_place_labels_from_scratch"),
       "aria-label": t("common.set_label_challenge_mode_from_scratch"),
@@ -1111,6 +1120,7 @@ Return ONLY valid JSON:
   ))), isStudentChallenge && !challengeSubmitted && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, !isFillBlank && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setAddingLabelPanel(addingLabelPanel !== null ? null : -1),
       "aria-label": addingLabelPanel !== null ? "Cancel adding label" : "Add a label to the diagram",
       "aria-pressed": addingLabelPanel !== null,
@@ -1120,12 +1130,13 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleChallengeSubmit,
       disabled: isAnalyzing || (isFillBlank ? Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length === 0 : Object.keys(studentLabels).length === 0),
       style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #4f46e5", background: "#4f46e5", color: "white", fontSize: "12px", fontWeight: 700, cursor: isAnalyzing ? "wait" : "pointer", opacity: (isFillBlank ? Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length === 0 : Object.keys(studentLabels).length === 0) ? 0.5 : 1 }
     },
     isAnalyzing ? "\u23F3 Analyzing..." : "\u2705 Submit Answers"
-  ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#6366f1", fontWeight: 600 } }, isFillBlank ? `${Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length} answer${Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length !== 1 ? "s" : ""} filled` : `${Object.values(studentLabels).flat().length} label${Object.values(studentLabels).flat().length !== 1 ? "s" : ""} placed`)), challengeSubmitted && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowComparison(!showComparison), "aria-label": showComparison ? "Hide label comparison results" : "Show label comparison results", "aria-expanded": showComparison, style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #6366f1", background: showComparison ? "#4f46e5" : "#eef2ff", color: showComparison ? "white" : "#4f46e5", fontSize: "12px", fontWeight: 600, cursor: "pointer" } }, showComparison ? "\u{1F4CB} Hide Comparison" : "\u{1F4CB} Show Comparison"), /* @__PURE__ */ React.createElement("button", { onClick: handleResetChallenge, "aria-label": t("common.reset_the_challenge_and_try_again"), style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#b45309", fontSize: "12px", fontWeight: 600, cursor: "pointer" } }, "\u{1F504} Try Again"), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-label": `Your score is ${challengeResult?.score || 0} percent`, style: { fontSize: "13px", fontWeight: 800, color: challengeResult?.score >= 80 ? "#16a34a" : challengeResult?.score >= 50 ? "#f59e0b" : "#ef4444" } }, "Score: ", challengeResult?.score || 0, "%"))), visualPlan.title && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", margin: "0 0 10px 0", padding: "8px 16px", background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #c7d2fe 100%)", borderRadius: "10px", border: "1px solid rgba(99,102,241,0.2)" } }, /* @__PURE__ */ React.createElement("h3", { style: { fontSize: "15px", fontWeight: 800, color: "#312e81", margin: 0, letterSpacing: "0.02em", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" } }, visualPlan.title), visualPlan.layout && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#6366f1", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" } }, visualPlan.layout.replace("-", " "), " view")), isStudentChallenge && !challengeSubmitted && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "10px 16px", background: isFillBlank ? "linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%)" : "linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)", borderRadius: "10px", border: isFillBlank ? "1px solid #86efac" : "1px solid #93c5fd", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { fontSize: "14px", fontWeight: 700, color: isFillBlank ? "#166534" : "#1e40af" } }, "\u{1F3C6} Label Challenge: ", isFillBlank ? "Fill in the Blanks" : "Label from Scratch"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", color: isFillBlank ? "#16a34a" : "#3b82f6", marginTop: "2px" } }, isFillBlank ? "Type the correct label in each blank field. Use your own words \u2014 synonyms and paraphrases are accepted!" : 'Click "\u2795 Add Label" then click on the diagram to place labels. Edit text by typing in the label.')), /* @__PURE__ */ React.createElement("div", { className: `visual-panel-grid layout-${visualPlan.layout || "single"}`, "data-labels-hidden": labelsHidden ? "true" : void 0 }, orderedPanels.map((panel, panelIdx) => /* @__PURE__ */ React.createElement(React.Fragment, { key: panel.id || panelIdx }, /* @__PURE__ */ React.createElement("figure", { className: "visual-panel", style: { position: "relative" }, "aria-label": `Diagram panel ${panelIdx + 1}${panel.role ? ": " + panel.role : ""}` }, panel.role && /* @__PURE__ */ React.createElement("span", { className: "visual-panel-role", style: { display: "block", textAlign: "center", fontWeight: 800 } }, panel.role === "before" ? "\u2B05\uFE0F Before" : panel.role === "after" ? "\u27A1\uFE0F After" : panel.role === "step" ? `Step ${panelIdx + 1}` : panel.role === "left" || panel.role === "right" ? panel.title || (panel.caption && panel.caption.match(/\*\*(.+?)\*\*/) ? panel.caption.match(/\*\*(.+?)\*\*/)[1] : panel.caption ? panel.caption.replace(/\*\*(.+?)\*\*/g, "$1").split(/\s+/).slice(0, 4).join(" ") : `Panel ${panelIdx + 1}`) : panel.role), /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
+  ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#6366f1", fontWeight: 600 } }, isFillBlank ? `${Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length} answer${Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length !== 1 ? "s" : ""} filled` : `${Object.values(studentLabels).flat().length} label${Object.values(studentLabels).flat().length !== 1 ? "s" : ""} placed`)), challengeSubmitted && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowComparison(!showComparison), "aria-label": showComparison ? "Hide label comparison results" : "Show label comparison results", "aria-expanded": showComparison, style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #6366f1", background: showComparison ? "#4f46e5" : "#eef2ff", color: showComparison ? "white" : "#4f46e5", fontSize: "12px", fontWeight: 600, cursor: "pointer" } }, showComparison ? "\u{1F4CB} Hide Comparison" : "\u{1F4CB} Show Comparison"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleResetChallenge, "aria-label": t("common.reset_the_challenge_and_try_again"), style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#b45309", fontSize: "12px", fontWeight: 600, cursor: "pointer" } }, "\u{1F504} Try Again"), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-label": `Your score is ${challengeResult?.score || 0} percent`, style: { fontSize: "13px", fontWeight: 800, color: challengeResult?.score >= 80 ? "#16a34a" : challengeResult?.score >= 50 ? "#f59e0b" : "#ef4444" } }, "Score: ", challengeResult?.score || 0, "%"))), visualPlan.title && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", margin: "0 0 10px 0", padding: "8px 16px", background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #c7d2fe 100%)", borderRadius: "10px", border: "1px solid rgba(99,102,241,0.2)" } }, /* @__PURE__ */ React.createElement("h3", { style: { fontSize: "15px", fontWeight: 800, color: "#312e81", margin: 0, letterSpacing: "0.02em", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" } }, visualPlan.title), visualPlan.layout && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#6366f1", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" } }, visualPlan.layout.replace("-", " "), " view")), isStudentChallenge && !challengeSubmitted && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "10px 16px", background: isFillBlank ? "linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%)" : "linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)", borderRadius: "10px", border: isFillBlank ? "1px solid #86efac" : "1px solid #93c5fd", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { fontSize: "14px", fontWeight: 700, color: isFillBlank ? "#166534" : "#1e40af" } }, "\u{1F3C6} Label Challenge: ", isFillBlank ? "Fill in the Blanks" : "Label from Scratch"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", color: isFillBlank ? "#16a34a" : "#3b82f6", marginTop: "2px" } }, isFillBlank ? "Type the correct label in each blank field. Use your own words \u2014 synonyms and paraphrases are accepted!" : 'Click "\u2795 Add Label" then click on the diagram to place labels. Edit text by typing in the label.')), /* @__PURE__ */ React.createElement("div", { className: `visual-panel-grid layout-${visualPlan.layout || "single"}`, "data-labels-hidden": labelsHidden ? "true" : void 0 }, orderedPanels.map((panel, panelIdx) => /* @__PURE__ */ React.createElement(React.Fragment, { key: panel.id || panelIdx }, /* @__PURE__ */ React.createElement("figure", { className: "visual-panel", style: { position: "relative" }, "aria-label": `Diagram panel ${panelIdx + 1}${panel.role ? ": " + panel.role : ""}` }, panel.role && /* @__PURE__ */ React.createElement("span", { className: "visual-panel-role", style: { display: "block", textAlign: "center", fontWeight: 800 } }, panel.role === "before" ? "\u2B05\uFE0F Before" : panel.role === "after" ? "\u27A1\uFE0F After" : panel.role === "step" ? `Step ${panelIdx + 1}` : panel.role === "left" || panel.role === "right" ? panel.title || (panel.caption && panel.caption.match(/\*\*(.+?)\*\*/) ? panel.caption.match(/\*\*(.+?)\*\*/)[1] : panel.caption ? panel.caption.replace(/\*\*(.+?)\*\*/g, "$1").split(/\s+/).slice(0, 4).join(" ") : `Panel ${panelIdx + 1}`) : panel.role), /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       e.target.click();
@@ -1142,6 +1153,7 @@ Return ONLY valid JSON:
       return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("img", { src: displayUrl, alt: altText, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } }), paused && /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: (e) => {
             e.stopPropagation();
             togglePlayPause(panelIdx, panel);
@@ -1151,19 +1163,19 @@ Return ONLY valid JSON:
           style: { position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "rgba(15,23,42,0.7)", color: "white", border: "2px solid white", borderRadius: "50%", width: 48, height: 48, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5 }
         },
         "\u25B6"
-      ), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", bottom: 6, left: 6, display: "flex", gap: 2, background: "rgba(15,23,42,0.65)", color: "white", borderRadius: 12, padding: "2px 4px", alignItems: "center", fontSize: 10, fontWeight: 600, zIndex: 5 } }, paused ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+      ), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", bottom: 6, left: 6, display: "flex", gap: 2, background: "rgba(15,23,42,0.65)", color: "white", borderRadius: 12, padding: "2px 4px", alignItems: "center", fontSize: 10, fontWeight: 600, zIndex: 5 } }, paused ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (e) => {
         e.stopPropagation();
         stepFrame(panelIdx, panel, -1);
-      }, "aria-label": t("common.previous_frame") || "Previous frame", title: t("common.previous_frame") || "Previous frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", minWidth: 24, minHeight: 24, padding: "2px 6px", fontSize: 12 } }, "\u25C0"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, frameIdx + 1, "/", panel.frames.length), /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+      }, "aria-label": t("common.previous_frame") || "Previous frame", title: t("common.previous_frame") || "Previous frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", minWidth: 24, minHeight: 24, padding: "2px 6px", fontSize: 12 } }, "\u25C0"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, frameIdx + 1, "/", panel.frames.length), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (e) => {
         e.stopPropagation();
         stepFrame(panelIdx, panel, 1);
-      }, "aria-label": t("common.next_frame") || "Next frame", title: t("common.next_frame") || "Next frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", minWidth: 24, minHeight: 24, padding: "2px 6px", fontSize: 12 } }, "\u25B6")) : /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+      }, "aria-label": t("common.next_frame") || "Next frame", title: t("common.next_frame") || "Next frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", minWidth: 24, minHeight: 24, padding: "2px 6px", fontSize: 12 } }, "\u25B6")) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (e) => {
         e.stopPropagation();
         togglePlayPause(panelIdx, panel);
       }, "aria-label": t("common.pause_animation") || "Pause animation", title: t("common.pause_animation") || "Pause animation", style: { background: "none", border: "none", color: "white", cursor: "pointer", minHeight: 24, padding: "2px 8px", fontSize: 12 } }, "\u23F8 ", panel.frames.length, "f")));
     }
     return /* @__PURE__ */ React.createElement("img", { src: overrideUrl || panel.imageUrl, alt: panel.caption || `Panel ${panelIdx + 1}`, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } });
-  })() : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && panel.labels.map((label, labelIdx) => {
+  })() : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && panel.labels.map((label, labelIdx) => {
     const defaultPos = LABEL_POSITIONS[label.position] || LABEL_POSITIONS["bottom-center"];
     const overridePos = aiLabelPositions[panelIdx + "-" + labelIdx];
     const pos = overridePos ? { position: "absolute", left: overridePos.left, top: overridePos.top } : defaultPos;
@@ -1207,7 +1219,7 @@ Return ONLY valid JSON:
           onChange: (e) => setFillBlankAnswers((prev) => ({ ...prev, [panelIdx + "-" + labelIdx]: e.target.value })),
           onMouseDown: (e) => e.stopPropagation(),
           "aria-label": `Label ${labelIdx + 1} on panel ${panelIdx + 1} \u2014 type your answer`,
-          style: { border: "none", outline: "none", background: "transparent", fontWeight: 700, fontSize: "13px", color: "#166534", width: Math.max(80, (fillBlankAnswers[panelIdx + "-" + labelIdx] || "").length * 9) + "px", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" },
+          style: { border: "none", background: "transparent", fontWeight: 700, fontSize: "13px", color: "#166534", width: Math.max(80, (fillBlankAnswers[panelIdx + "-" + labelIdx] || "").length * 9) + "px", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" },
           disabled: challengeSubmitted
         }
       ) : isEditing ? /* @__PURE__ */ React.createElement(
@@ -1275,7 +1287,7 @@ Return ONLY valid JSON:
           onChange: (e) => setFillBlankAnswers((prev) => ({ ...prev, [fillKey]: e.target.value })),
           onMouseDown: (e) => e.stopPropagation(),
           "aria-label": `Teacher label ${uIdx + 1} on panel ${panelIdx + 1} \u2014 type your answer`,
-          style: { border: "none", outline: "none", background: "transparent", fontWeight: 700, fontSize: "13px", color: "#166534", width: Math.max(80, (fillBlankAnswers[fillKey] || "").length * 9) + "px", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" },
+          style: { border: "none", background: "transparent", fontWeight: 700, fontSize: "13px", color: "#166534", width: Math.max(80, (fillBlankAnswers[fillKey] || "").length * 9) + "px", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" },
           disabled: challengeSubmitted
         }
       ) : editingLabel?.panelIdx === panelIdx && editingLabel?.labelIdx === `user-${uLabel.id}` ? /* @__PURE__ */ React.createElement(
@@ -1290,7 +1302,7 @@ Return ONLY valid JSON:
           },
           onKeyDown: (e) => e.key === "Enter" && e.target.blur(),
           "aria-label": `Edit user label on panel ${panelIdx + 1}`,
-          style: { cursor: "text", border: "none", background: "transparent", outline: "none", fontWeight: 700, fontSize: "13px", color: "#1e1b4b", width: Math.max(50, uLabel.text.length * 9) + "px", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }
+          style: { cursor: "text", border: "none", background: "transparent", fontWeight: 700, fontSize: "13px", color: "#1e1b4b", width: Math.max(50, uLabel.text.length * 9) + "px", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }
         }
       ) : /* @__PURE__ */ React.createElement("span", { style: { pointerEvents: "none" } }, uLabel.text),
       !isUserFillBlank && hoveredLabelKey === "user-" + panelIdx + "-" + uLabel.id && /* @__PURE__ */ React.createElement(
@@ -1328,7 +1340,7 @@ Return ONLY valid JSON:
         color: "#1e1b4b"
       }
     },
-    !challengeSubmitted && /* @__PURE__ */ React.createElement("button", { onClick: () => handleDeleteStudentLabel(panelIdx, sLabel.id), "aria-label": "Remove student label", style: { background: "none", border: "none", cursor: "pointer", fontSize: "10px", padding: 0, color: "#475569" } }, "\u2715"),
+    !challengeSubmitted && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleDeleteStudentLabel(panelIdx, sLabel.id), "aria-label": "Remove student label", style: { background: "none", border: "none", cursor: "pointer", fontSize: "10px", padding: 0, color: "#475569" } }, "\u2715"),
     !challengeSubmitted ? /* @__PURE__ */ React.createElement(
       "input",
       {
@@ -1336,7 +1348,7 @@ Return ONLY valid JSON:
         value: sLabel.text,
         onChange: (e) => handleStudentLabelTextChange(panelIdx, sLabel.id, e.target.value),
         "aria-label": `Student label on panel ${panelIdx + 1}`,
-        style: { background: "transparent", border: "none", outline: "none", fontWeight: 700, fontSize: "13px", color: "#1e1b4b", width: Math.max(60, sLabel.text.length * 9) + "px", textAlign: "center" }
+        style: { background: "transparent", border: "none", fontWeight: 700, fontSize: "13px", color: "#1e1b4b", width: Math.max(60, sLabel.text.length * 9) + "px", textAlign: "center" }
       }
     ) : /* @__PURE__ */ React.createElement("span", null, sLabel.text),
     challengeSubmitted && challengeResult?.labelResults?.find((r) => r.studentLabel === sLabel.text)?.verdict === "correct" && /* @__PURE__ */ React.createElement("span", null, "\u2705"),
@@ -1345,6 +1357,7 @@ Return ONLY valid JSON:
   )), /* @__PURE__ */ React.createElement("div", { className: "visual-panel-actions" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.refine_this_panel"),
       onClick: () => setRefiningPanelIdx(refiningPanelIdx === panelIdx ? null : panelIdx),
       title: "Refine this panel"
@@ -1353,6 +1366,7 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": isAnimatedPanel(panel) ? t("common.export_first_frame_as_png") || "Export first frame as PNG" : t("common.export_panel_as_png"),
       onClick: () => handleExportPanel(panelIdx),
       title: isAnimatedPanel(panel) ? t("common.export_first_frame_as_png_title") || "Saves the first frame as a PNG. Use \u{1F39E}\uFE0F to download the full animation." : t("common.download_annotated_diagram_as_png")
@@ -1361,6 +1375,7 @@ Return ONLY valid JSON:
   ), (panel.type === "process_animation" || panel.imageUrl && panel.imageUrl.startsWith && panel.imageUrl.startsWith("data:image/gif")) && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.download_gif") || "Download GIF",
       onClick: () => handleDownloadGif(panel, panelIdx),
       title: t("common.download_gif") || "Download GIF"
@@ -1369,6 +1384,7 @@ Return ONLY valid JSON:
   ), onAnimatePanel && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": isAnimatedPanel(panel) ? t("common.reanimate_panel") || "Re-animate panel with new motion" : t("common.animate_this_panel") || "Animate this panel",
       onClick: () => {
         if (animatingPanelIdx === panelIdx) {
@@ -1396,6 +1412,7 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.upload_custom_image"),
       onClick: () => fileInputRefs.current[panelIdx]?.click(),
       title: t("common.upload_your_own_image_for_this_panel")
@@ -1404,6 +1421,7 @@ Return ONLY valid JSON:
   ), imageOverrides[panelIdx] && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.remove_custom_image"),
       onClick: () => setImageOverrides((prev) => {
         const next = { ...prev };
@@ -1431,7 +1449,7 @@ Return ONLY valid JSON:
         }
       },
       "aria-label": `Edit caption for panel ${panelIdx + 1}`,
-      style: { width: "100%", padding: "6px 8px", borderRadius: "6px", border: "1px solid #c7d2fe", fontSize: "12px", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: "none", resize: "vertical", minHeight: "40px", textAlign: "center", color: "#334155", lineHeight: 1.4 }
+      style: { width: "100%", padding: "6px 8px", borderRadius: "6px", border: "1px solid #c7d2fe", fontSize: "12px", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", resize: "vertical", minHeight: "40px", textAlign: "center", color: "#334155", lineHeight: 1.4 }
     }
   )) : /* @__PURE__ */ React.createElement(
     "figcaption",
@@ -1458,11 +1476,12 @@ Return ONLY valid JSON:
       onKeyDown: (e) => e.key === "Enter" && handleRefineSubmit(panelIdx),
       autoFocus: true,
       "aria-label": `Describe changes for Panel ${panelIdx + 1}`,
-      style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: "none" }
+      style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.apply_panel_edit"),
       onClick: () => handleRefineSubmit(panelIdx),
       style: { padding: "6px 14px", borderRadius: 6, background: "#4f46e5", color: "white", border: "none", fontWeight: 600, cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }
@@ -1471,6 +1490,7 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.cancel"),
       onClick: () => setRefiningPanelIdx(null),
       style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
@@ -1485,11 +1505,12 @@ Return ONLY valid JSON:
       onKeyDown: (e) => e.key === "Enter" && handleAnimateSubmit(panelIdx),
       autoFocus: true,
       "aria-label": t("common.animate_input_aria") || `Motion description for Panel ${panelIdx + 1}`,
-      style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: "none" }
+      style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.animate_panel") || "Animate panel",
       onClick: () => handleAnimateSubmit(panelIdx),
       style: { padding: "6px 14px", borderRadius: 6, background: "#7c3aed", color: "white", border: "none", fontWeight: 600, cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }
@@ -1499,6 +1520,7 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.cancel"),
       onClick: () => {
         setAnimatingPanelIdx(null);
@@ -1514,6 +1536,7 @@ Return ONLY valid JSON:
     return /* @__PURE__ */ React.createElement("div", { key: fIdx, style: { position: "relative", flexShrink: 0 } }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => {
           if (!onRegenerateFrame) return;
           setRegenFrame({ panelIdx, frameIdx: fIdx });
@@ -1536,6 +1559,7 @@ Return ONLY valid JSON:
     ), !isAnchor && onDeleteFrame && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => onDeleteFrame(panelIdx, fIdx),
         "aria-label": t("common.frame_delete_aria") || `Delete frame ${fIdx + 1}`,
         title: t("common.frame_delete_title") || "Delete this frame",
@@ -1545,6 +1569,7 @@ Return ONLY valid JSON:
     ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 2, marginTop: 2, justifyContent: "center" } }, onReorderFrame && fIdx > 0 && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => onReorderFrame(panelIdx, fIdx, fIdx - 1),
         "aria-label": t("common.frame_move_left_aria") || `Move frame ${fIdx + 1} earlier`,
         title: t("common.frame_move_left_title") || "Move earlier",
@@ -1554,6 +1579,7 @@ Return ONLY valid JSON:
     ), onDuplicateFrame && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => onDuplicateFrame(panelIdx, fIdx),
         "aria-label": t("common.frame_duplicate_aria") || `Duplicate frame ${fIdx + 1}`,
         title: t("common.frame_duplicate_title") || "Duplicate this frame",
@@ -1563,6 +1589,7 @@ Return ONLY valid JSON:
     ), onReorderFrame && fIdx < panel.frames.length - 1 && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => onReorderFrame(panelIdx, fIdx, fIdx + 1),
         "aria-label": t("common.frame_move_right_aria") || `Move frame ${fIdx + 1} later`,
         title: t("common.frame_move_right_title") || "Move later",
@@ -1592,11 +1619,12 @@ Return ONLY valid JSON:
       onKeyDown: (e) => e.key === "Enter" && handleRegenFrameSubmit(),
       autoFocus: true,
       "aria-label": t("common.regen_frame_aria") || `Describe motion for frame ${regenFrame.frameIdx + 1}`,
-      style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", outline: "none" }
+      style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleRegenFrameSubmit,
       style: { padding: "6px 14px", borderRadius: 6, background: "#7c3aed", color: "white", border: "none", fontWeight: 600, cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" },
       "aria-label": t("common.regen_frame_apply") || "Regenerate frame"
@@ -1606,6 +1634,7 @@ Return ONLY valid JSON:
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setRegenFrame(null);
         setRegenInput("");
@@ -1625,10 +1654,10 @@ Return ONLY valid JSON:
       "aria-modal": "true",
       "aria-label": t("common.label_challenge_results")
     },
-    /* @__PURE__ */ React.createElement("div", { style: { background: "white", borderRadius: "16px", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", maxWidth: "520px", width: "90%", maxHeight: "80vh", display: "flex", flexDirection: "column", animation: "slideUp 0.25s ease-out", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "18px", fontWeight: 800, color: "#166534" } }, "\u{1F3C6} Label Challenge Results"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowComparison(false), style: { background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#6b7280", padding: "4px 8px", borderRadius: "6px", lineHeight: 1 }, "aria-label": t("common.close_results") }, "\u2715")), /* @__PURE__ */ React.createElement("div", { style: { padding: "20px", overflowY: "auto", flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: challengeResult.score >= 80 ? "#f0fdf4" : challengeResult.score >= 50 ? "#fffbeb" : "#fef2f2", borderRadius: "12px", border: `2px solid ${challengeResult.score >= 80 ? "#86efac" : challengeResult.score >= 50 ? "#fde68a" : "#fecaca"}`, minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: challengeResult.score >= 80 ? "#16a34a" : challengeResult.score >= 50 ? "#f59e0b" : "#ef4444" } }, challengeResult.score, "%"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, "Score")), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: "#eef2ff", borderRadius: "12px", border: "2px solid #c7d2fe", minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: "#4f46e5" } }, challengeResult.totalCorrect || 0, "/", challengeResult.totalExpected || 0), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, "Correct")), (challengeResult.totalClose || 0) > 0 && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: "#fffbeb", borderRadius: "12px", border: "2px solid #fde68a", minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: "#f59e0b" } }, challengeResult.totalClose), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, "Close"))), /* @__PURE__ */ React.createElement("p", { style: { textAlign: "center", fontSize: "15px", color: "#374151", fontWeight: 500, margin: "0 0 16px 0", fontStyle: "italic", lineHeight: 1.5 } }, challengeResult.feedback), challengeResult.labelResults && challengeResult.labelResults.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gap: "8px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "13px", fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" } }, t("word_sounds.label_details")), challengeResult.labelResults.map((r, ri) => /* @__PURE__ */ React.createElement("div", { key: ri, style: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "10px 14px", background: r.verdict === "correct" ? "#f0fdf4" : r.verdict === "close" ? "#fffbeb" : "#fef2f2", borderRadius: "10px", border: `1px solid ${r.verdict === "correct" ? "#bbf7d0" : r.verdict === "close" ? "#fde68a" : "#fecaca"}`, fontSize: "13px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "18px", flexShrink: 0, marginTop: "1px" } }, r.verdict === "correct" ? "\u2705" : r.verdict === "close" ? "\u{1F7E1}" : "\u274C"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { color: "#1e293b" } }, r.studentLabel), /* @__PURE__ */ React.createElement("div", { style: { color: "#6b7280", marginTop: "2px" } }, r.note)))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", justifyContent: "center", padding: "16px 20px", borderTop: "1px solid #e2e8f0", background: "#f8fafc" } }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    /* @__PURE__ */ React.createElement("div", { style: { background: "white", borderRadius: "16px", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", maxWidth: "520px", width: "90%", maxHeight: "80vh", display: "flex", flexDirection: "column", animation: "slideUp 0.25s ease-out", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "18px", fontWeight: 800, color: "#166534" } }, "\u{1F3C6} Label Challenge Results"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowComparison(false), style: { background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#6b7280", padding: "4px 8px", borderRadius: "6px", lineHeight: 1 }, "aria-label": t("common.close_results") }, "\u2715")), /* @__PURE__ */ React.createElement("div", { style: { padding: "20px", overflowY: "auto", flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: challengeResult.score >= 80 ? "#f0fdf4" : challengeResult.score >= 50 ? "#fffbeb" : "#fef2f2", borderRadius: "12px", border: `2px solid ${challengeResult.score >= 80 ? "#86efac" : challengeResult.score >= 50 ? "#fde68a" : "#fecaca"}`, minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: challengeResult.score >= 80 ? "#16a34a" : challengeResult.score >= 50 ? "#f59e0b" : "#ef4444" } }, challengeResult.score, "%"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, "Score")), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: "#eef2ff", borderRadius: "12px", border: "2px solid #c7d2fe", minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: "#4f46e5" } }, challengeResult.totalCorrect || 0, "/", challengeResult.totalExpected || 0), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, "Correct")), (challengeResult.totalClose || 0) > 0 && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: "#fffbeb", borderRadius: "12px", border: "2px solid #fde68a", minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: "#f59e0b" } }, challengeResult.totalClose), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, "Close"))), /* @__PURE__ */ React.createElement("p", { style: { textAlign: "center", fontSize: "15px", color: "#374151", fontWeight: 500, margin: "0 0 16px 0", fontStyle: "italic", lineHeight: 1.5 } }, challengeResult.feedback), challengeResult.labelResults && challengeResult.labelResults.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gap: "8px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "13px", fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" } }, t("word_sounds.label_details")), challengeResult.labelResults.map((r, ri) => /* @__PURE__ */ React.createElement("div", { key: ri, style: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "10px 14px", background: r.verdict === "correct" ? "#f0fdf4" : r.verdict === "close" ? "#fffbeb" : "#fef2f2", borderRadius: "10px", border: `1px solid ${r.verdict === "correct" ? "#bbf7d0" : r.verdict === "close" ? "#fde68a" : "#fecaca"}`, fontSize: "13px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "18px", flexShrink: 0, marginTop: "1px" } }, r.verdict === "correct" ? "\u2705" : r.verdict === "close" ? "\u{1F7E1}" : "\u274C"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { color: "#1e293b" } }, r.studentLabel), /* @__PURE__ */ React.createElement("div", { style: { color: "#6b7280", marginTop: "2px" } }, r.note)))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", justifyContent: "center", padding: "16px 20px", borderTop: "1px solid #e2e8f0", background: "#f8fafc" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setLabelsHidden(false);
       setShowComparison(false);
-    }, style: { padding: "10px 24px", borderRadius: "10px", border: "1px solid #6366f1", background: "#4f46e5", color: "white", fontSize: "14px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s" } }, "\u{1F441}\uFE0F Show Answer Key"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowComparison(false), style: { padding: "10px 24px", borderRadius: "10px", border: "1px solid #d1d5db", background: "white", color: "#374151", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" } }, t("ui_common.close"))))
+    }, style: { padding: "10px 24px", borderRadius: "10px", border: "1px solid #6366f1", background: "#4f46e5", color: "white", fontSize: "14px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s" } }, "\u{1F441}\uFE0F Show Answer Key"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowComparison(false), style: { padding: "10px 24px", borderRadius: "10px", border: "1px solid #d1d5db", background: "white", color: "#374151", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" } }, t("ui_common.close"))))
   ));
 });
 
