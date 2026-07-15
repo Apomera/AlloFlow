@@ -1,6 +1,6 @@
 # EPPP flashcard review wave 02
 
-Generated: 2026-07-15T03:21:41.888Z
+Generated: 2026-07-15T03:22:07.662Z
 
 Status: **assisted editorial review complete; independent expert validation pending**
 
