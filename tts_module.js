@@ -643,9 +643,7 @@ const createTTS = deps => {
       try {
         return await inFlight;
       } finally {
-        if (callTTSInFlight.get(cacheKey) === inFlight) {
-          callTTSInFlight.delete(cacheKey);
-        }
+        if (callTTSInFlight.get(cacheKey) === inFlight) callTTSInFlight.delete(cacheKey);
       }
     };
     let lastError = null;
@@ -655,9 +653,8 @@ const createTTS = deps => {
         if (!ttsResult) {
           throw new Error("[TTS] fetchTTSBytes returned no audio data");
         }
-        if (state.urlCache.has(cacheKey)) {
-          return state.urlCache.get(cacheKey);
-        }
+        // The owner of a joined request may already have cached its URL.
+        if (state.urlCache.has(cacheKey)) return state.urlCache.get(cacheKey);
         const {
           bytes: pcmBytes
         } = ttsResult;

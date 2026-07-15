@@ -1,5 +1,6 @@
-(function(){"use strict";
-if(window.AlloModules&&window.AlloModules.Personas){console.log("[CDN] Personas already loaded, skipping"); return;}
+(function() {
+'use strict';
+if (window.AlloModules && window.AlloModules.Personas) { console.log('[CDN] Personas already loaded, skipping'); return; }
 // personas_source.jsx — Historical character interview subsystem for AlloFlow
 // Extracted from AlloFlowANTI.txt on 2026-04-24.
 //
@@ -12,62 +13,62 @@ if(window.AlloModules&&window.AlloModules.Personas){console.log("[CDN] Personas 
 // call so they're always fresh. `window.callGemini` / `window.callGeminiImageEdit` are
 // accessed directly to avoid the closure-capture-of-fallback problem when module load
 // order differs from GeminiAPI module.
-const createPersonas = (deps) => {
+const createPersonas = deps => {
+  const {
+    liveRef,
+    // { current: { ...all React state + setters + component helpers } }
+    warnLog,
+    debugLog,
+    cleanJson,
+    safeJsonParse,
+    fisherYatesShuffle,
+    SafetyContentChecker
+  } = deps;
+  const clampInteger = (value, min, max, fallback = 0) => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return fallback;
+    return Math.max(min, Math.min(max, Math.round(numeric)));
+  };
+  const resolvePersonaLanguage = (leveledTextLanguage, selectedLanguages) => {
+    if (leveledTextLanguage === 'All Selected Languages') {
+      return Array.isArray(selectedLanguages) && selectedLanguages.length > 0 ? selectedLanguages[0] : 'English';
+    }
+    return leveledTextLanguage || 'English';
+  };
+
+  // Apply candidate changes against the latest React state and the complete
+  // history item. Async portrait edits can finish after a chat turn or even
+  // after another resource is opened; resourceId prevents those late results
+  // from replacing current content, while functional updates prevent stale
+  // chat/rapport/quest data and item metadata from being erased.
+  const updateStoredPersona = (resourceId, characterName, updateCandidate) => {
     const {
-        liveRef,              // { current: { ...all React state + setters + component helpers } }
-        warnLog, debugLog,
-        cleanJson, safeJsonParse,
-        fisherYatesShuffle,
-        SafetyContentChecker,
-    } = deps;
-
-    const clampInteger = (value, min, max, fallback = 0) => {
-        const numeric = Number(value);
-        if (!Number.isFinite(numeric)) return fallback;
-        return Math.max(min, Math.min(max, Math.round(numeric)));
+      setGeneratedContent,
+      setHistory
+    } = liveRef.current;
+    const updateResource = item => {
+      if (!item || item.type !== 'persona' || item.id !== resourceId || !Array.isArray(item.data)) return item;
+      return {
+        ...item,
+        data: item.data.map(candidate => candidate && candidate.name === characterName ? updateCandidate(candidate) : candidate)
+      };
     };
+    setGeneratedContent(prev => updateResource(prev));
+    setHistory(prev => prev.map(updateResource));
+  };
 
-    const resolvePersonaLanguage = (leveledTextLanguage, selectedLanguages) => {
-        if (leveledTextLanguage === 'All Selected Languages') {
-            return Array.isArray(selectedLanguages) && selectedLanguages.length > 0
-                ? selectedLanguages[0]
-                : 'English';
-        }
-        return leveledTextLanguage || 'English';
-    };
-
-    // Apply candidate changes against the latest React state and the complete
-    // history item. Async portrait edits can finish after a chat turn or even
-    // after another resource is opened; resourceId prevents those late results
-    // from replacing current content, while functional updates prevent stale
-    // chat/rapport/quest data and item metadata from being erased.
-    const updateStoredPersona = (resourceId, characterName, updateCandidate) => {
-        const { setGeneratedContent, setHistory } = liveRef.current;
-        const updateResource = (item) => {
-            if (!item || item.type !== 'persona' || item.id !== resourceId || !Array.isArray(item.data)) return item;
-            return {
-                ...item,
-                data: item.data.map(candidate => (
-                    candidate && candidate.name === characterName
-                        ? updateCandidate(candidate)
-                        : candidate
-                ))
-            };
-        };
-        setGeneratedContent(prev => updateResource(prev));
-        setHistory(prev => prev.map(updateResource));
-    };
-
-    // ─── generateCharacterPortrait ───────────────────────────────────
-    const generateCharacterPortrait = async (visualDescription, artStyle) => {
-        const { callImagen } = liveRef.current;
-        try {
-            const prompt = `Portrait of ${visualDescription}. Style: ${artStyle}. Neutral background, high quality, centered composition. STRICTLY NO TEXT.`;
-            let imageUrl = await callImagen(prompt, 400, 0.9);
-            if (!imageUrl) return null;
-            try {
-                const rawBase64 = imageUrl.split(',')[1];
-                const refinePrompt = `
+  // ─── generateCharacterPortrait ───────────────────────────────────
+  const generateCharacterPortrait = async (visualDescription, artStyle) => {
+    const {
+      callImagen
+    } = liveRef.current;
+    try {
+      const prompt = `Portrait of ${visualDescription}. Style: ${artStyle}. Neutral background, high quality, centered composition. STRICTLY NO TEXT.`;
+      let imageUrl = await callImagen(prompt, 400, 0.9);
+      if (!imageUrl) return null;
+      try {
+        const rawBase64 = imageUrl.split(',')[1];
+        const refinePrompt = `
                   Refine this portrait to strictly match the description: "${visualDescription}".
                   Directives:
                   1. Fix any anachronisms (e.g., ensure clothing buttons, collars, and hairstyles match the era).
@@ -75,99 +76,116 @@ const createPersonas = (deps) => {
                   3. Remove any text, watermarks, or blurry artifacts.
                   4. Keep the composition centered.
                 `;
-                const refinedUrl = await window.callGeminiImageEdit(refinePrompt, rawBase64, 400, 0.9);
-                if (refinedUrl) return refinedUrl;
-            } catch (refineErr) {
-                warnLog("Portrait refinement failed, using original.", refineErr);
-            }
-            return imageUrl;
-        } catch (e) {
-            if (e.message && (e.message.includes("Safety") || e.message.includes("Block"))) {
-                warnLog("Character Portrait blocked by safety filters. Falling back to placeholder icon.");
-                return null;
-            }
-            warnLog("Character Portrait Generation Failed:", e);
-            return null;
-        }
-    };
+        const refinedUrl = await window.callGeminiImageEdit(refinePrompt, rawBase64, 400, 0.9);
+        if (refinedUrl) return refinedUrl;
+      } catch (refineErr) {
+        warnLog("Portrait refinement failed, using original.", refineErr);
+      }
+      return imageUrl;
+    } catch (e) {
+      if (e.message && (e.message.includes("Safety") || e.message.includes("Block"))) {
+        warnLog("Character Portrait blocked by safety filters. Falling back to placeholder icon.");
+        return null;
+      }
+      warnLog("Character Portrait Generation Failed:", e);
+      return null;
+    }
+  };
 
-    // ─── resetPersonaInterviewState ──────────────────────────────────
-    const resetPersonaInterviewState = () => {
-        const {
-            setPersonaState, setPersonaInput, setPersonaReflectionInput,
-            setReflectionFeedback, setIsPersonaDefining, setIsGradingReflection,
-            setIsGeneratingReflectionPrompt, setPanelTtsPending, setShowPersonaHints,
-            setPersonaTurnHintsViewed, setIsPersonaReflectionOpen,
-            lastReadPersonaIndexRef, personaDefinitionCache,
-            setPlayingContentId, setPlaybackState,
-        } = liveRef.current;
-        setPersonaState({
-            mode: 'single',
-            options: [],
-            selectedCharacter: null,
-            selectedCharacters: [],
-            chatHistory: [],
-            isLoading: false,
-            avatarUrl: null,
-            isImageLoading: false,
-            avatarGenerationFailed: false,
-            suggestions: [],
-            panelSuggestions: [],
-            topicSparkCount: 0,
-            showReflection: false,
-            reflectionText: '',
-            reflectionSubmitted: false,
-            harmonyScore: 10,
-            earnedBadges: []
-        });
-        setPersonaInput('');
-        setPersonaReflectionInput('');
-        setReflectionFeedback(null);
-        setIsPersonaDefining(false);
-        setIsGradingReflection(false);
-        setIsGeneratingReflectionPrompt(false);
-        setPanelTtsPending([]);
-        setShowPersonaHints(false);
-        setPersonaTurnHintsViewed(false);
-        setIsPersonaReflectionOpen(false);
-        if (lastReadPersonaIndexRef) lastReadPersonaIndexRef.current = -1;
-        if (personaDefinitionCache && personaDefinitionCache.current && typeof personaDefinitionCache.current.clear === 'function') {
-            personaDefinitionCache.current.clear();
-        }
-        setPlayingContentId(null);
-        setPlaybackState({ sentences: [], currentIdx: -1 });
-    };
+  // ─── resetPersonaInterviewState ──────────────────────────────────
+  const resetPersonaInterviewState = () => {
+    const {
+      setPersonaState,
+      setPersonaInput,
+      setPersonaReflectionInput,
+      setReflectionFeedback,
+      setIsPersonaDefining,
+      setIsGradingReflection,
+      setIsGeneratingReflectionPrompt,
+      setPanelTtsPending,
+      setShowPersonaHints,
+      setPersonaTurnHintsViewed,
+      setIsPersonaReflectionOpen,
+      lastReadPersonaIndexRef,
+      personaDefinitionCache,
+      setPlayingContentId,
+      setPlaybackState
+    } = liveRef.current;
+    setPersonaState({
+      mode: 'single',
+      options: [],
+      selectedCharacter: null,
+      selectedCharacters: [],
+      chatHistory: [],
+      isLoading: false,
+      avatarUrl: null,
+      isImageLoading: false,
+      avatarGenerationFailed: false,
+      suggestions: [],
+      panelSuggestions: [],
+      topicSparkCount: 0,
+      showReflection: false,
+      reflectionText: '',
+      reflectionSubmitted: false,
+      harmonyScore: 10,
+      earnedBadges: []
+    });
+    setPersonaInput('');
+    setPersonaReflectionInput('');
+    setReflectionFeedback(null);
+    setIsPersonaDefining(false);
+    setIsGradingReflection(false);
+    setIsGeneratingReflectionPrompt(false);
+    setPanelTtsPending([]);
+    setShowPersonaHints(false);
+    setPersonaTurnHintsViewed(false);
+    setIsPersonaReflectionOpen(false);
+    if (lastReadPersonaIndexRef) lastReadPersonaIndexRef.current = -1;
+    if (personaDefinitionCache && personaDefinitionCache.current && typeof personaDefinitionCache.current.clear === 'function') {
+      personaDefinitionCache.current.clear();
+    }
+    setPlayingContentId(null);
+    setPlaybackState({
+      sentences: [],
+      currentIdx: -1
+    });
+  };
 
-    // ─── handleGeneratePersonas ──────────────────────────────────────
-    const handleGeneratePersonas = async () => {
-        const {
-            history, inputText, sourceTopic, gradeLevel, personaCustomInstructions,
-            generatedContent, leveledTextLanguage,
-            setIsGeneratingPersona, setGeneratedContent, setHistory, setPersonaState,
-            addToast, t,
-        } = liveRef.current;
-        const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-        const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
-            ? latestAnalysis.data.originalText
-            : inputText;
-        const topic = sourceTopic || "the current lesson topic";
-        if (!sourceText.trim() && !sourceTopic.trim()) return;
-        setIsGeneratingPersona(true);
-        setGeneratedContent(null);
-        resetPersonaInterviewState();
-        try {
-            const customInstructionBlock = personaCustomInstructions
-                ? `IMPORTANT CUSTOM INSTRUCTIONS: ${personaCustomInstructions}\n(Prioritize these instructions when selecting figures).`
-                : "";
-            let languageInstruction = "Language: English.";
-            if (leveledTextLanguage !== 'English') {
-                languageInstruction = `Language: ${leveledTextLanguage}.
+  // ─── handleGeneratePersonas ──────────────────────────────────────
+  const handleGeneratePersonas = async () => {
+    const {
+      history,
+      inputText,
+      sourceTopic,
+      gradeLevel,
+      personaCustomInstructions,
+      generatedContent,
+      leveledTextLanguage,
+      setIsGeneratingPersona,
+      setGeneratedContent,
+      setHistory,
+      setPersonaState,
+      addToast,
+      t
+    } = liveRef.current;
+    const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+    const sourceText = latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText ? latestAnalysis.data.originalText : inputText;
+    const topic = sourceTopic || "the current lesson topic";
+    if (!sourceText.trim() && !sourceTopic.trim()) return;
+    setIsGeneratingPersona(true);
+    setGeneratedContent(null);
+    resetPersonaInterviewState();
+    try {
+      const customInstructionBlock = personaCustomInstructions ? `IMPORTANT CUSTOM INSTRUCTIONS: ${personaCustomInstructions}\n(Prioritize these instructions when selecting figures).` : "";
+      let languageInstruction = "Language: English.";
+      if (leveledTextLanguage !== 'English') {
+        languageInstruction = `Language: ${leveledTextLanguage}.
                 CRITICAL:
                 1. The "greeting", "role", and "context" fields MUST be written in ${leveledTextLanguage}.
                 2. The "name" should remain in its original historical form (e.g. don't translate 'George Washington' to 'Jorge', but do translate 'The Unknown Soldier').
                 3. The "suggestedQuestions" and "quests" text MUST be in ${leveledTextLanguage}.`;
-            }
-            const prompt = `
+      }
+      const prompt = `
               Analyze the following text about "${topic}".
               Source Text:
               "${sourceText.substring(0, 3000)}...",
@@ -245,69 +263,79 @@ const createPersonas = (deps) => {
                   }
               ]
             `;
-            const result = await window.callGemini(prompt, false, true);
-            let textToParse = "";
-            if (typeof result === 'object' && result !== null && result.text) {
-                textToParse = result.text;
-            } else {
-                textToParse = String(result || "");
-            }
-            let parsedOptions = [];
-            if (!textToParse.includes('[') && !textToParse.includes('{')) {
-                warnLog("Persona Gen: No JSON found in response.");
-                addToast(t('toasts.character_data_not_found'), "warning");
-                return;
-            }
-            try {
-                parsedOptions = JSON.parse(cleanJson(textToParse));
-            } catch (e) {
-                warnLog("Standard parse failed. Attempting robust parse...");
-                parsedOptions = safeJsonParse(textToParse);
-            }
-            if (Array.isArray(parsedOptions) && parsedOptions.length > 0) {
-                const isUpdatingExisting = generatedContent && generatedContent.type === 'persona';
-                const newItem = {
-                    id: isUpdatingExisting ? generatedContent.id : Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                    type: 'persona',
-                    title: "Interview Mode Options",
-                    data: parsedOptions,
-                    meta: "Interview Candidates",
-                    timestamp: new Date(),
-                    config: {}
-                };
-                setPersonaState(prev => ({ ...prev, options: parsedOptions }));
-                if (isUpdatingExisting) {
-                    setHistory(prev => prev.map(item => item.id === generatedContent.id ? newItem : item));
-                    addToast(t('toasts.candidates_updated'), "success");
-                } else {
-                    setHistory(prev => [...prev, newItem]);
-                    addToast(t('persona.candidates_found'), "success");
-                }
-                setGeneratedContent(newItem);
-                return;
-            } else {
-                warnLog("Persona Gen: Parsed data was not a valid array.");
-                addToast(t('toasts.ai_format_error'), "error");
-            }
-        } catch (err) {
-            warnLog("Persona Generation Error:", err);
-            addToast(t('toasts.character_generate_failed'), "error");
-        } finally {
-            setIsGeneratingPersona(false);
+      const result = await window.callGemini(prompt, false, true);
+      let textToParse = "";
+      if (typeof result === 'object' && result !== null && result.text) {
+        textToParse = result.text;
+      } else {
+        textToParse = String(result || "");
+      }
+      let parsedOptions = [];
+      if (!textToParse.includes('[') && !textToParse.includes('{')) {
+        warnLog("Persona Gen: No JSON found in response.");
+        addToast(t('toasts.character_data_not_found'), "warning");
+        return;
+      }
+      try {
+        parsedOptions = JSON.parse(cleanJson(textToParse));
+      } catch (e) {
+        warnLog("Standard parse failed. Attempting robust parse...");
+        parsedOptions = safeJsonParse(textToParse);
+      }
+      if (Array.isArray(parsedOptions) && parsedOptions.length > 0) {
+        const isUpdatingExisting = generatedContent && generatedContent.type === 'persona';
+        const newItem = {
+          id: isUpdatingExisting ? generatedContent.id : Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          type: 'persona',
+          title: "Interview Mode Options",
+          data: parsedOptions,
+          meta: "Interview Candidates",
+          timestamp: new Date(),
+          config: {}
+        };
+        setPersonaState(prev => ({
+          ...prev,
+          options: parsedOptions
+        }));
+        if (isUpdatingExisting) {
+          setHistory(prev => prev.map(item => item.id === generatedContent.id ? newItem : item));
+          addToast(t('toasts.candidates_updated'), "success");
+        } else {
+          setHistory(prev => [...prev, newItem]);
+          addToast(t('persona.candidates_found'), "success");
         }
-    };
+        setGeneratedContent(newItem);
+        return;
+      } else {
+        warnLog("Persona Gen: Parsed data was not a valid array.");
+        addToast(t('toasts.ai_format_error'), "error");
+      }
+    } catch (err) {
+      warnLog("Persona Generation Error:", err);
+      addToast(t('toasts.character_generate_failed'), "error");
+    } finally {
+      setIsGeneratingPersona(false);
+    }
+  };
 
-    // ─── updatePersonaReaction ────────────────────────────────────────
-    const updatePersonaReaction = async (visualReaction) => {
-        const { personaState, setPersonaState, generatedContent } = liveRef.current;
-        if (!personaState.avatarUrl || !personaState.selectedCharacter) return;
-        const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
-        const characterName = personaState.selectedCharacter.name;
-        setPersonaState(prev => ({ ...prev, isImageLoading: true }));
-        try {
-            const currentBase64 = personaState.avatarUrl.split(',')[1];
-            const characterDesc = personaState.selectedCharacter.visualDescription || "historical portrait";
-            const editPrompt = `
+  // ─── updatePersonaReaction ────────────────────────────────────────
+  const updatePersonaReaction = async visualReaction => {
+    const {
+      personaState,
+      setPersonaState,
+      generatedContent
+    } = liveRef.current;
+    if (!personaState.avatarUrl || !personaState.selectedCharacter) return;
+    const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
+    const characterName = personaState.selectedCharacter.name;
+    setPersonaState(prev => ({
+      ...prev,
+      isImageLoading: true
+    }));
+    try {
+      const currentBase64 = personaState.avatarUrl.split(',')[1];
+      const characterDesc = personaState.selectedCharacter.visualDescription || "historical portrait";
+      const editPrompt = `
               Edit this character portrait to show them: ${visualReaction}.
               Guidelines:
               1. KEEP IDENTITY: Maintain the exact same character features, clothing style, and historical era (${characterDesc}).
@@ -315,217 +343,289 @@ const createPersonas = (deps) => {
               3. OBJECTS: If an object is mentioned (e.g. map, book), render it realistically in their hands or nearby.
               4. NEGATIVE CONSTRAINTS: STRICTLY NO TEXT. No letters, no words, no speech bubbles, no watermarks. The image must be purely visual.
             `;
-            const newImageUrl = await window.callGeminiImageEdit(editPrompt, currentBase64, 400, 0.85);
-            if (newImageUrl) {
-                setPersonaState(prev => ({
-                    ...prev,
-                    avatarUrl: newImageUrl,
-                    isImageLoading: false,
-                    selectedCharacter: prev.selectedCharacter?.name === characterName
-                        ? { ...prev.selectedCharacter, avatarUrl: newImageUrl }
-                        : prev.selectedCharacter
-                }));
-                if (resourceId) updateStoredPersona(resourceId, characterName, candidate => ({ ...candidate, avatarUrl: newImageUrl }));
-            } else {
-                setPersonaState(prev => ({ ...prev, isImageLoading: false }));
-            }
-        } catch (e) {
-            warnLog("Persona reaction update failed", e);
-            setPersonaState(prev => ({ ...prev, isImageLoading: false }));
-        }
-    };
+      const newImageUrl = await window.callGeminiImageEdit(editPrompt, currentBase64, 400, 0.85);
+      if (newImageUrl) {
+        setPersonaState(prev => ({
+          ...prev,
+          avatarUrl: newImageUrl,
+          isImageLoading: false,
+          selectedCharacter: prev.selectedCharacter?.name === characterName ? {
+            ...prev.selectedCharacter,
+            avatarUrl: newImageUrl
+          } : prev.selectedCharacter
+        }));
+        if (resourceId) updateStoredPersona(resourceId, characterName, candidate => ({
+          ...candidate,
+          avatarUrl: newImageUrl
+        }));
+      } else {
+        setPersonaState(prev => ({
+          ...prev,
+          isImageLoading: false
+        }));
+      }
+    } catch (e) {
+      warnLog("Persona reaction update failed", e);
+      setPersonaState(prev => ({
+        ...prev,
+        isImageLoading: false
+      }));
+    }
+  };
 
-    // ─── handleRetryPortraitGeneration ────────────────────────────────
-    const handleRetryPortraitGeneration = async (character, charIndex = null) => {
-        const { personaState, setPersonaState, generatedContent, addToast, t } = liveRef.current;
-        const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
-        try {
-            if (!character) {
-                warnLog("handleRetryPortraitGeneration called with no character");
-                return;
-            }
-            debugLog("🖼️ Starting portrait regeneration flow for:", character.name);
-            let effectiveCharIndex = charIndex;
-            const isPanelMode = personaState.mode === 'panel' && personaState.selectedCharacters?.length > 0;
-            if (isPanelMode && effectiveCharIndex === null) {
-                effectiveCharIndex = personaState.selectedCharacters.findIndex(c => c.name === character.name);
-                if (effectiveCharIndex === -1) effectiveCharIndex = null;
-            }
-            if (isPanelMode && effectiveCharIndex !== null) {
-                setPersonaState(prev => ({
-                    ...prev,
-                    selectedCharacters: prev.selectedCharacters.map((c, i) =>
-                        i === effectiveCharIndex ? { ...c, isImageLoading: true, isUpdating: true } : c
-                    )
-                }));
-            } else {
-                setPersonaState(prev => ({
-                    ...prev,
-                    isImageLoading: true,
-                    avatarGenerationFailed: false
-                }));
-            }
-            const description = character.visualDescription || `Portrait of ${character.name}`;
-            const style = character.artStyle || "Oil painting, museum quality";
-            let imageUrl = null;
-            let attempts = 0;
-            const maxAttempts = 5;
-            const getPromptForAttempt = (attemptNum) => {
-                const name = character.name || 'Unknown';
-                const role = character.role || 'person';
-                const era = character.era || character.timePeriod || '';
-                const visualDesc = character.visualDescription || '';
-                switch (attemptNum) {
-                    case 1: return description;
-                    case 2: return `Portrait of ${name}, a notable ${role}. Dignified pose, neutral background.`;
-                    case 3: return `Professional portrait of ${name}. Academic or scholarly appearance. High quality.`;
-                    case 4:
-                        warnLog(`Attempt ${attemptNum}: Trying role-based prompt without specific name...`);
-                        const eraDesc = era ? `from the ${era}` : 'historical';
-                        return `Portrait of a distinguished ${role} ${eraDesc}. Intelligent, thoughtful expression. Classical painting style.`;
-                    case 5:
-                    default:
-                        warnLog(`Attempt ${attemptNum}: Final fallback - fully anonymized description...`);
-                        const hasBeard = visualDesc.toLowerCase().includes('beard') || name.toLowerCase().includes('freud');
-                        const isElderly = visualDesc.toLowerCase().includes('elderly') || visualDesc.toLowerCase().includes('old');
-                        const gender = visualDesc.toLowerCase().includes('woman') ? 'woman' : 'man';
-                        let anonymousDesc = `Portrait of a distinguished ${isElderly ? 'elderly ' : ''}${gender}`;
-                        if (hasBeard && gender === 'man') anonymousDesc += ' with a neatly trimmed beard';
-                        anonymousDesc += `. ${role ? 'Scholarly, intellectual appearance.' : ''} Classical painting style, museum quality.`;
-                        return anonymousDesc;
-                }
-            };
-            while (attempts < maxAttempts && !imageUrl) {
-                attempts++;
-                try {
-                    const prompt = getPromptForAttempt(attempts);
-                    debugLog(`🖼️ Portrait Generation Attempt ${attempts}/${maxAttempts}...`);
-                    imageUrl = await generateCharacterPortrait(prompt, style);
-                    if (!imageUrl) throw new Error("API returned null image URL");
-                } catch (err) {
-                    warnLog(`Portrait attempt ${attempts} failed:`, err);
-                }
-            }
-            if (imageUrl) {
-                if (effectiveCharIndex !== null) {
-                    setPersonaState(prev => ({
-                        ...prev,
-                        selectedCharacters: prev.selectedCharacters.map((c, i) =>
-                            i === effectiveCharIndex ? { ...c, avatarUrl: imageUrl, isImageLoading: false, isUpdating: false } : c
-                        )
-                    }));
-                } else {
-                    setPersonaState(prev => ({
-                        ...prev,
-                        avatarUrl: imageUrl,
-                        isImageLoading: false,
-                        avatarGenerationFailed: false,
-                        selectedCharacter: prev.selectedCharacter?.name === character.name
-                            ? { ...prev.selectedCharacter, avatarUrl: imageUrl }
-                            : prev.selectedCharacter
-                    }));
-                }
-                if (resourceId) updateStoredPersona(resourceId, character.name, candidate => ({ ...candidate, avatarUrl: imageUrl }));
-                addToast(t('toasts.portrait_generated'), "success");
-            } else {
-                throw new Error(`Failed to generate image after ${maxAttempts} attempts.`);
-            }
-        } catch (error) {
-            warnLog("Portrait regeneration error (Final):", error);
-            setPersonaState(prev => ({
-                ...prev,
-                isImageLoading: false,
-                selectedCharacters: prev.selectedCharacters ? prev.selectedCharacters.map(c => ({
-                    ...c,
-                    isImageLoading: false,
-                    isUpdating: false,
-                    avatarGenerationFailed: (c.name === character.name)
-                })) : [],
-                avatarGenerationFailed: true
-            }));
-            addToast("Failed to regenerate portrait. Please try again.", "error");
+  // ─── handleRetryPortraitGeneration ────────────────────────────────
+  const handleRetryPortraitGeneration = async (character, charIndex = null) => {
+    const {
+      personaState,
+      setPersonaState,
+      generatedContent,
+      addToast,
+      t
+    } = liveRef.current;
+    const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
+    try {
+      if (!character) {
+        warnLog("handleRetryPortraitGeneration called with no character");
+        return;
+      }
+      debugLog("🖼️ Starting portrait regeneration flow for:", character.name);
+      let effectiveCharIndex = charIndex;
+      const isPanelMode = personaState.mode === 'panel' && personaState.selectedCharacters?.length > 0;
+      if (isPanelMode && effectiveCharIndex === null) {
+        effectiveCharIndex = personaState.selectedCharacters.findIndex(c => c.name === character.name);
+        if (effectiveCharIndex === -1) effectiveCharIndex = null;
+      }
+      if (isPanelMode && effectiveCharIndex !== null) {
+        setPersonaState(prev => ({
+          ...prev,
+          selectedCharacters: prev.selectedCharacters.map((c, i) => i === effectiveCharIndex ? {
+            ...c,
+            isImageLoading: true,
+            isUpdating: true
+          } : c)
+        }));
+      } else {
+        setPersonaState(prev => ({
+          ...prev,
+          isImageLoading: true,
+          avatarGenerationFailed: false
+        }));
+      }
+      const description = character.visualDescription || `Portrait of ${character.name}`;
+      const style = character.artStyle || "Oil painting, museum quality";
+      let imageUrl = null;
+      let attempts = 0;
+      const maxAttempts = 5;
+      const getPromptForAttempt = attemptNum => {
+        const name = character.name || 'Unknown';
+        const role = character.role || 'person';
+        const era = character.era || character.timePeriod || '';
+        const visualDesc = character.visualDescription || '';
+        switch (attemptNum) {
+          case 1:
+            return description;
+          case 2:
+            return `Portrait of ${name}, a notable ${role}. Dignified pose, neutral background.`;
+          case 3:
+            return `Professional portrait of ${name}. Academic or scholarly appearance. High quality.`;
+          case 4:
+            warnLog(`Attempt ${attemptNum}: Trying role-based prompt without specific name...`);
+            const eraDesc = era ? `from the ${era}` : 'historical';
+            return `Portrait of a distinguished ${role} ${eraDesc}. Intelligent, thoughtful expression. Classical painting style.`;
+          case 5:
+          default:
+            warnLog(`Attempt ${attemptNum}: Final fallback - fully anonymized description...`);
+            const hasBeard = visualDesc.toLowerCase().includes('beard') || name.toLowerCase().includes('freud');
+            const isElderly = visualDesc.toLowerCase().includes('elderly') || visualDesc.toLowerCase().includes('old');
+            const gender = visualDesc.toLowerCase().includes('woman') ? 'woman' : 'man';
+            let anonymousDesc = `Portrait of a distinguished ${isElderly ? 'elderly ' : ''}${gender}`;
+            if (hasBeard && gender === 'man') anonymousDesc += ' with a neatly trimmed beard';
+            anonymousDesc += `. ${role ? 'Scholarly, intellectual appearance.' : ''} Classical painting style, museum quality.`;
+            return anonymousDesc;
         }
-    };
-
-    // ─── updatePanelCharacterReaction ─────────────────────────────────
-    const updatePanelCharacterReaction = async (charIndex, visualReaction) => {
-        const { personaState, setPersonaState, generatedContent } = liveRef.current;
-        const targetChar = personaState.selectedCharacters[charIndex];
-        const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
-        if (!targetChar || !targetChar.avatarUrl) return;
-        setPersonaState(prev => {
-            const newChars = [...prev.selectedCharacters];
-            newChars[charIndex] = { ...newChars[charIndex], isUpdating: true };
-            return { ...prev, selectedCharacters: newChars };
-        });
+      };
+      while (attempts < maxAttempts && !imageUrl) {
+        attempts++;
         try {
-            const currentBase64 = targetChar.avatarUrl.split(',')[1];
-            const characterDesc = targetChar.visualDescription || "historical portrait";
-            const editPrompt = `
+          const prompt = getPromptForAttempt(attempts);
+          debugLog(`🖼️ Portrait Generation Attempt ${attempts}/${maxAttempts}...`);
+          imageUrl = await generateCharacterPortrait(prompt, style);
+          if (!imageUrl) throw new Error("API returned null image URL");
+        } catch (err) {
+          warnLog(`Portrait attempt ${attempts} failed:`, err);
+        }
+      }
+      if (imageUrl) {
+        if (effectiveCharIndex !== null) {
+          setPersonaState(prev => ({
+            ...prev,
+            selectedCharacters: prev.selectedCharacters.map((c, i) => i === effectiveCharIndex ? {
+              ...c,
+              avatarUrl: imageUrl,
+              isImageLoading: false,
+              isUpdating: false
+            } : c)
+          }));
+        } else {
+          setPersonaState(prev => ({
+            ...prev,
+            avatarUrl: imageUrl,
+            isImageLoading: false,
+            avatarGenerationFailed: false,
+            selectedCharacter: prev.selectedCharacter?.name === character.name ? {
+              ...prev.selectedCharacter,
+              avatarUrl: imageUrl
+            } : prev.selectedCharacter
+          }));
+        }
+        if (resourceId) updateStoredPersona(resourceId, character.name, candidate => ({
+          ...candidate,
+          avatarUrl: imageUrl
+        }));
+        addToast(t('toasts.portrait_generated'), "success");
+      } else {
+        throw new Error(`Failed to generate image after ${maxAttempts} attempts.`);
+      }
+    } catch (error) {
+      warnLog("Portrait regeneration error (Final):", error);
+      setPersonaState(prev => ({
+        ...prev,
+        isImageLoading: false,
+        selectedCharacters: prev.selectedCharacters ? prev.selectedCharacters.map(c => ({
+          ...c,
+          isImageLoading: false,
+          isUpdating: false,
+          avatarGenerationFailed: c.name === character.name
+        })) : [],
+        avatarGenerationFailed: true
+      }));
+      addToast("Failed to regenerate portrait. Please try again.", "error");
+    }
+  };
+
+  // ─── updatePanelCharacterReaction ─────────────────────────────────
+  const updatePanelCharacterReaction = async (charIndex, visualReaction) => {
+    const {
+      personaState,
+      setPersonaState,
+      generatedContent
+    } = liveRef.current;
+    const targetChar = personaState.selectedCharacters[charIndex];
+    const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
+    if (!targetChar || !targetChar.avatarUrl) return;
+    setPersonaState(prev => {
+      const newChars = [...prev.selectedCharacters];
+      newChars[charIndex] = {
+        ...newChars[charIndex],
+        isUpdating: true
+      };
+      return {
+        ...prev,
+        selectedCharacters: newChars
+      };
+    });
+    try {
+      const currentBase64 = targetChar.avatarUrl.split(',')[1];
+      const characterDesc = targetChar.visualDescription || "historical portrait";
+      const editPrompt = `
               Edit this character portrait to show them: ${visualReaction}.
               Guidelines:
               1. KEEP IDENTITY: Maintain the exact same character features, clothing style, and historical era (${characterDesc}).
               2. ALLOW ACTION: Change the pose, facial expression, or hand gestures to match: "${visualReaction}".
               3. NEGATIVE CONSTRAINTS: STRICTLY NO TEXT. No speech bubbles.
             `;
-            const newImageUrl = await window.callGeminiImageEdit(editPrompt, currentBase64, 400, 0.85);
-            if (newImageUrl) {
-                setPersonaState(prev => {
-                    const newChars = [...prev.selectedCharacters];
-                    newChars[charIndex] = { ...newChars[charIndex], avatarUrl: newImageUrl, isUpdating: false };
-                    return { ...prev, selectedCharacters: newChars };
-                });
-                if (resourceId) updateStoredPersona(resourceId, targetChar.name, candidate => ({ ...candidate, avatarUrl: newImageUrl }));
-            } else {
-                setPersonaState(prev => {
-                    const newChars = [...prev.selectedCharacters];
-                    newChars[charIndex] = { ...newChars[charIndex], isUpdating: false };
-                    return { ...prev, selectedCharacters: newChars };
-                });
-            }
-        } catch (e) {
-            warnLog(`Panel char ${charIndex} update failed`, e);
-            setPersonaState(prev => {
-                const newChars = [...prev.selectedCharacters];
-                newChars[charIndex] = { ...newChars[charIndex], isUpdating: false };
-                return { ...prev, selectedCharacters: newChars };
-            });
-        }
-    };
+      const newImageUrl = await window.callGeminiImageEdit(editPrompt, currentBase64, 400, 0.85);
+      if (newImageUrl) {
+        setPersonaState(prev => {
+          const newChars = [...prev.selectedCharacters];
+          newChars[charIndex] = {
+            ...newChars[charIndex],
+            avatarUrl: newImageUrl,
+            isUpdating: false
+          };
+          return {
+            ...prev,
+            selectedCharacters: newChars
+          };
+        });
+        if (resourceId) updateStoredPersona(resourceId, targetChar.name, candidate => ({
+          ...candidate,
+          avatarUrl: newImageUrl
+        }));
+      } else {
+        setPersonaState(prev => {
+          const newChars = [...prev.selectedCharacters];
+          newChars[charIndex] = {
+            ...newChars[charIndex],
+            isUpdating: false
+          };
+          return {
+            ...prev,
+            selectedCharacters: newChars
+          };
+        });
+      }
+    } catch (e) {
+      warnLog(`Panel char ${charIndex} update failed`, e);
+      setPersonaState(prev => {
+        const newChars = [...prev.selectedCharacters];
+        newChars[charIndex] = {
+          ...newChars[charIndex],
+          isUpdating: false
+        };
+        return {
+          ...prev,
+          selectedCharacters: newChars
+        };
+      });
+    }
+  };
 
-    // ─── generatePersonaFollowUps ─────────────────────────────────────
-    const generatePersonaFollowUps = async (history, character, count = 2) => {
-        const { setPersonaState, leveledTextLanguage, selectedLanguages } = liveRef.current;
-        const targetLang = resolvePersonaLanguage(leveledTextLanguage, selectedLanguages);
-        try {
-            const historyStr = history.slice(-4).map(m => `${m.role === 'user' ? 'Student' : character.name}: ${m.text}`).join('\n');
-            const prompt = `
+  // ─── generatePersonaFollowUps ─────────────────────────────────────
+  const generatePersonaFollowUps = async (history, character, count = 2) => {
+    const {
+      setPersonaState,
+      leveledTextLanguage,
+      selectedLanguages
+    } = liveRef.current;
+    const targetLang = resolvePersonaLanguage(leveledTextLanguage, selectedLanguages);
+    try {
+      const historyStr = history.slice(-4).map(m => `${m.role === 'user' ? 'Student' : character.name}: ${m.text}`).join('\n');
+      const prompt = `
               Based on this conversation with ${character.name} (${character.role}, ${character.year}), suggest ${count} distinct, relevant responses or questions the student could say next to deepen the conversation.
               Write every suggested option entirely in ${targetLang}.
               Conversation:
               ${historyStr}
-              Return ONLY a JSON array of strings: ${JSON.stringify(Array.from({length: count}, (_, i) => `Option ${i+1}`))}
+              Return ONLY a JSON array of strings: ${JSON.stringify(Array.from({
+        length: count
+      }, (_, i) => `Option ${i + 1}`))}
             `;
-            const result = await window.callGemini(prompt, true);
-            const suggestions = JSON.parse(cleanJson(result));
-            if (Array.isArray(suggestions)) {
-                setPersonaState(prev => ({ ...prev, suggestions: suggestions }));
-            }
-        } catch (e) {
-            warnLog("Follow-up generation failed", e);
-        }
-    };
+      const result = await window.callGemini(prompt, true);
+      const suggestions = JSON.parse(cleanJson(result));
+      if (Array.isArray(suggestions)) {
+        setPersonaState(prev => ({
+          ...prev,
+          suggestions: suggestions
+        }));
+      }
+    } catch (e) {
+      warnLog("Follow-up generation failed", e);
+    }
+  };
 
-    // ─── generatePanelFollowUps ───────────────────────────────────────
-    const generatePanelFollowUps = async (history, charA, charB) => {
-        const { setPersonaState, resilientJsonParse, leveledTextLanguage, selectedLanguages } = liveRef.current;
-        const targetLang = resolvePersonaLanguage(leveledTextLanguage, selectedLanguages);
-        if (!charA || !charB) return;
-        try {
-            const historyStr = history.slice(-4).map(m =>
-                `${m.role === 'user' ? 'Student Moderator' : (m.speakerName || 'Character')}: ${m.text}`
-            ).join('\n');
-            const prompt = `
+  // ─── generatePanelFollowUps ───────────────────────────────────────
+  const generatePanelFollowUps = async (history, charA, charB) => {
+    const {
+      setPersonaState,
+      resilientJsonParse,
+      leveledTextLanguage,
+      selectedLanguages
+    } = liveRef.current;
+    const targetLang = resolvePersonaLanguage(leveledTextLanguage, selectedLanguages);
+    if (!charA || !charB) return;
+    try {
+      const historyStr = history.slice(-4).map(m => `${m.role === 'user' ? 'Student Moderator' : m.speakerName || 'Character'}: ${m.text}`).join('\n');
+      const prompt = `
               You are helping a student moderate a debate between two historical figures:
               - ${charA.name} (${charA.role})
               - ${charB.name} (${charB.role})
@@ -548,261 +648,286 @@ const createPersonas = (deps) => {
                 {"text": "...", "tier": "poor"}
               ]
             `;
-            const result = await window.callGemini(prompt, true);
-            const parsed = await resilientJsonParse(result);
-            if (Array.isArray(parsed) && parsed.length >= 6) {
-                const shuffled = fisherYatesShuffle(parsed);
-                setPersonaState(prev => ({ ...prev, panelSuggestions: shuffled.slice(0, 6) }));
-            }
-        } catch (e) {
-            warnLog("Panel follow-up generation failed", e);
-        }
-    };
-
-    // ─── handleTogglePanelSelection ───────────────────────────────────
-    const handleTogglePanelSelection = (character) => {
-        const { setPersonaState, addToast, t } = liveRef.current;
-        setPersonaState(prev => {
-            const isSelected = prev.selectedCharacters.some(c => c.name === character.name);
-            let newSelection;
-            if (isSelected) {
-                newSelection = prev.selectedCharacters.filter(c => c.name !== character.name);
-            } else {
-                if (prev.selectedCharacters.length >= 2) {
-                    addToast(t('toasts.panel_full'), "warning");
-                    return prev;
-                }
-                newSelection = [...prev.selectedCharacters, character];
-            }
-            return { ...prev, selectedCharacters: newSelection };
-        });
-    };
-
-    // ─── handleStartPanelChat ─────────────────────────────────────────
-    const handleStartPanelChat = async () => {
-        const {
-            personaState, setPersonaState,
-            setIsPersonaChatOpen, setIsProcessing,
-            isPersonaFreeResponse,
-            addToast, t,
-        } = liveRef.current;
-        if (personaState.selectedCharacters.length !== 2) return;
-        const charA = personaState.selectedCharacters[0];
-        const charB = personaState.selectedCharacters[1];
-        const ensureImage = async (char) => {
-            if (char.avatarUrl) return char;
-            const desc = char.visualDescription || `Portrait of ${char.name}`;
-            const style = char.artStyle || "Oil painting";
-            let url = await generateCharacterPortrait(desc, style);
-            if (!url) {
-                warnLog(`Retrying portrait for ${char.name} with simplified prompt...`);
-                const simpleDesc = `Historical portrait of ${char.name} (${char.role}).`;
-                url = await generateCharacterPortrait(simpleDesc, style);
-            }
-            return { ...char, avatarUrl: url };
-        };
-        setIsProcessing(true);
-        addToast(t('toasts.preparing_panel'), "info");
-        try {
-            const [updatedA, updatedB] = await Promise.all([
-                ensureImage(charA),
-                ensureImage(charB)
-            ]);
-            const canResumePanel = updatedA.panelPartner === updatedB.name
-                && updatedB.panelPartner === updatedA.name;
-            const savedPanelHistory = canResumePanel
-                ? [updatedA.chatHistory, updatedB.chatHistory]
-                    .filter(history => Array.isArray(history))
-                    .sort((a, b) => b.length - a.length)[0]
-                : null;
-            const initialHistory = savedPanelHistory?.length
-                ? savedPanelHistory
-                : [
-                    {
-                        role: 'model',
-                        text: updatedA.greeting || updatedA.name,
-                        speakerName: updatedA.name
-                    },
-                    {
-                        role: 'model',
-                        text: updatedB.greeting || updatedB.name,
-                        speakerName: updatedB.name
-                    }
-                ];
-            setPersonaState(prev => ({
-                ...prev,
-                selectedCharacters: [updatedA, updatedB],
-                selectedCharacter: updatedA,
-                avatarUrl: updatedA.avatarUrl,
-                mode: 'panel',
-                chatHistory: initialHistory,
-                suggestions: [],
-                panelSuggestions: [],
-                harmonyScore: canResumePanel ? clampInteger(updatedA.panelHarmonyScore ?? updatedB.panelHarmonyScore, 0, 100, 10) : 10,
-                earnedBadges: canResumePanel ? [...(updatedA.panelEarnedBadges || updatedB.panelEarnedBadges || [])] : [],
-                isLoading: false
-            }));
-            setIsPersonaChatOpen(true);
-            if (!isPersonaFreeResponse) {
-                generatePanelFollowUps(initialHistory, updatedA, updatedB);
-            }
-        } catch (e) {
-            warnLog("Panel start failed", e);
-            addToast(t('toasts.panel_start_failed'), "error");
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    // ─── handleClosePersonaChat ───────────────────────────────────────
-    const handleClosePersonaChat = () => {
-        const {
-            personaState, setPersonaState, setPersonaInput,
-            generatedContent, setIsPersonaChatOpen,
-            stopPlayback, setPersonaAutoRead, setPanelTtsPending,
-        } = liveRef.current;
-        const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
-        if (resourceId && personaState.chatHistory.length > 0) {
-            const isPanelMode = personaState.mode === 'panel' && personaState.selectedCharacters?.length === 2;
-            if (isPanelMode) {
-                const [charA, charB] = personaState.selectedCharacters;
-                [charA, charB].forEach((liveCharacter, index) => {
-                    const partner = index === 0 ? charB : charA;
-                    updateStoredPersona(resourceId, liveCharacter.name, candidate => ({
-                        ...candidate,
-                        avatarUrl: liveCharacter.avatarUrl || candidate.avatarUrl || null,
-                        chatHistory: personaState.chatHistory,
-                        savedDialogue: personaState.chatHistory,
-                        rapport: liveCharacter.rapport ?? candidate.rapport ?? candidate.initialRapport,
-                        quests: Array.isArray(liveCharacter.quests) ? liveCharacter.quests : (candidate.quests || []),
-                        accumulatedXP: liveCharacter.accumulatedXP ?? candidate.accumulatedXP ?? 0,
-                        reflectionText: personaState.reflectionText || candidate.reflectionText || '',
-                        panelPartner: partner?.name || null,
-                        panelHarmonyScore: clampInteger(personaState.harmonyScore, 0, 100, 10),
-                        panelEarnedBadges: [...(personaState.earnedBadges || [])],
-                        lastInterviewDate: new Date().toISOString()
-                    }));
-                });
-            } else if (personaState.selectedCharacter) {
-                const liveCharacter = personaState.selectedCharacter;
-                updateStoredPersona(resourceId, liveCharacter.name, candidate => ({
-                    ...candidate,
-                    avatarUrl: liveCharacter.avatarUrl || personaState.avatarUrl || candidate.avatarUrl || null,
-                    chatHistory: personaState.chatHistory,
-                    savedDialogue: personaState.chatHistory,
-                    rapport: liveCharacter.rapport ?? candidate.rapport ?? candidate.initialRapport,
-                    quests: Array.isArray(liveCharacter.quests) ? liveCharacter.quests : (candidate.quests || []),
-                    accumulatedXP: liveCharacter.accumulatedXP ?? candidate.accumulatedXP ?? 0,
-                    reflectionText: personaState.reflectionText || candidate.reflectionText || '',
-                    lastInterviewDate: new Date().toISOString()
-                }));
-            }
-        }
-        if (typeof stopPlayback === 'function') stopPlayback();
-        if (typeof setPersonaAutoRead === 'function') setPersonaAutoRead(false);
-        if (typeof setPanelTtsPending === 'function') setPanelTtsPending([]);
-        if (typeof setPersonaInput === 'function') setPersonaInput('');
+      const result = await window.callGemini(prompt, true);
+      const parsed = await resilientJsonParse(result);
+      if (Array.isArray(parsed) && parsed.length >= 6) {
+        const shuffled = fisherYatesShuffle(parsed);
         setPersonaState(prev => ({
-            ...prev,
-            isLoading: false,
-            suggestions: [],
-            panelSuggestions: [],
-            showReflection: false,
-            reflectionText: '',
-            reflectionSubmitted: false
+          ...prev,
+          panelSuggestions: shuffled.slice(0, 6)
         }));
-        setIsPersonaChatOpen(false);
-    };
+      }
+    } catch (e) {
+      warnLog("Panel follow-up generation failed", e);
+    }
+  };
 
-    // ─── handleSelectPersona ──────────────────────────────────────────
-    const handleSelectPersona = async (character) => {
-        const {
-            personaState, setPersonaState,
-            generatedContent,
-            setIsPersonaChatOpen,
-            alloBotRef, t,
-        } = liveRef.current;
-        const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
-        try {
-            if (alloBotRef && alloBotRef.current) {
-                alloBotRef.current.speak(t('bot_events.feedback_persona_start', { name: character.name }), 'happy');
-            }
-            const existingImage = character.avatarUrl;
-            const existingChat = character.chatHistory;
-            const description = character.visualDescription || `Portrait of ${character.name}`;
-            const style = character.artStyle || "Oil painting, museum quality";
-            const initialHistory = Array.isArray(existingChat) && existingChat.length > 0 ? existingChat : [{
-                role: 'model',
-                text: character.greeting || character.name
-            }];
-            const preservedOptions = personaState.options;
-            const preservedMode = personaState.mode;
-            const preservedSelectedCharacters = personaState.selectedCharacters;
-            resetPersonaInterviewState();
-            setPersonaState(prev => ({
-                ...prev,
-                mode: preservedMode,
-                options: preservedOptions,
-                selectedCharacters: preservedSelectedCharacters,
-                selectedCharacter: character,
-                chatHistory: initialHistory,
-                suggestions: character.suggestedQuestions || [],
-                isImageLoading: !existingImage,
-                avatarUrl: existingImage || null,
-                topicSparkCount: 0
-            }));
-            setIsPersonaChatOpen(true);
-            if (!character.suggestedQuestions || character.suggestedQuestions.length === 0) {
-                generatePersonaFollowUps(initialHistory, character, 3);
-            }
-            if (existingImage) return;
-            const imageUrl = await generateCharacterPortrait(description, style);
-            if (imageUrl) {
-                setPersonaState(prev => ({
-                    ...prev,
-                    avatarUrl: imageUrl,
-                    isImageLoading: false,
-                    selectedCharacter: prev.selectedCharacter?.name === character.name
-                        ? { ...prev.selectedCharacter, avatarUrl: imageUrl }
-                        : prev.selectedCharacter
-                }));
-                if (resourceId) {
-                    updateStoredPersona(resourceId, character.name, candidate => ({ ...candidate, avatarUrl: imageUrl }));
-                }
-            } else {
-                setPersonaState(prev => ({ ...prev, isImageLoading: false }));
-            }
-        } catch (e) { warnLog("Unhandled error in handleSelectPersona:", e); }
-    };
-
-    // ─── handlePersonaTopicSpark ──────────────────────────────────────
-    const handlePersonaTopicSpark = async () => {
-        const {
-            personaState, setPersonaState, setPersonaInput,
-            addToast, t,
-        } = liveRef.current;
-        if (!personaState.selectedCharacter) return;
-        if ((personaState.topicSparkCount || 0) >= 2) {
-            addToast(t('persona.spark_limit_reached'), "info");
-            return;
+  // ─── handleTogglePanelSelection ───────────────────────────────────
+  const handleTogglePanelSelection = character => {
+    const {
+      setPersonaState,
+      addToast,
+      t
+    } = liveRef.current;
+    setPersonaState(prev => {
+      const isSelected = prev.selectedCharacters.some(c => c.name === character.name);
+      let newSelection;
+      if (isSelected) {
+        newSelection = prev.selectedCharacters.filter(c => c.name !== character.name);
+      } else {
+        if (prev.selectedCharacters.length >= 2) {
+          addToast(t('toasts.panel_full'), "warning");
+          return prev;
         }
-        setPersonaState(prev => ({ ...prev, isLoading: true }));
-        try {
-            // Panel mode: label each line with its actual speaker and frame the
-            // spark as a MODERATOR question to both figures — the single-mode
-            // prompt attributed every model line to Character A and aimed the
-            // question at A alone.
-            const isPanelSpark = personaState.mode === 'panel' && (personaState.selectedCharacters || []).length === 2;
-            const historyStr = personaState.chatHistory.map(m => `${m.role === 'user' ? 'Student' : (m.speakerName || personaState.selectedCharacter.name)}: ${m.text}`).join('\n');
-            const prompt = isPanelSpark
-                ? `
+        newSelection = [...prev.selectedCharacters, character];
+      }
+      return {
+        ...prev,
+        selectedCharacters: newSelection
+      };
+    });
+  };
+
+  // ─── handleStartPanelChat ─────────────────────────────────────────
+  const handleStartPanelChat = async () => {
+    const {
+      personaState,
+      setPersonaState,
+      setIsPersonaChatOpen,
+      setIsProcessing,
+      isPersonaFreeResponse,
+      addToast,
+      t
+    } = liveRef.current;
+    if (personaState.selectedCharacters.length !== 2) return;
+    const charA = personaState.selectedCharacters[0];
+    const charB = personaState.selectedCharacters[1];
+    const ensureImage = async char => {
+      if (char.avatarUrl) return char;
+      const desc = char.visualDescription || `Portrait of ${char.name}`;
+      const style = char.artStyle || "Oil painting";
+      let url = await generateCharacterPortrait(desc, style);
+      if (!url) {
+        warnLog(`Retrying portrait for ${char.name} with simplified prompt...`);
+        const simpleDesc = `Historical portrait of ${char.name} (${char.role}).`;
+        url = await generateCharacterPortrait(simpleDesc, style);
+      }
+      return {
+        ...char,
+        avatarUrl: url
+      };
+    };
+    setIsProcessing(true);
+    addToast(t('toasts.preparing_panel'), "info");
+    try {
+      const [updatedA, updatedB] = await Promise.all([ensureImage(charA), ensureImage(charB)]);
+      const canResumePanel = updatedA.panelPartner === updatedB.name && updatedB.panelPartner === updatedA.name;
+      const savedPanelHistory = canResumePanel ? [updatedA.chatHistory, updatedB.chatHistory].filter(history => Array.isArray(history)).sort((a, b) => b.length - a.length)[0] : null;
+      const initialHistory = savedPanelHistory?.length ? savedPanelHistory : [{
+        role: 'model',
+        text: updatedA.greeting || updatedA.name,
+        speakerName: updatedA.name
+      }, {
+        role: 'model',
+        text: updatedB.greeting || updatedB.name,
+        speakerName: updatedB.name
+      }];
+      setPersonaState(prev => ({
+        ...prev,
+        selectedCharacters: [updatedA, updatedB],
+        selectedCharacter: updatedA,
+        avatarUrl: updatedA.avatarUrl,
+        mode: 'panel',
+        chatHistory: initialHistory,
+        suggestions: [],
+        panelSuggestions: [],
+        harmonyScore: canResumePanel ? clampInteger(updatedA.panelHarmonyScore ?? updatedB.panelHarmonyScore, 0, 100, 10) : 10,
+        earnedBadges: canResumePanel ? [...(updatedA.panelEarnedBadges || updatedB.panelEarnedBadges || [])] : [],
+        isLoading: false
+      }));
+      setIsPersonaChatOpen(true);
+      if (!isPersonaFreeResponse) {
+        generatePanelFollowUps(initialHistory, updatedA, updatedB);
+      }
+    } catch (e) {
+      warnLog("Panel start failed", e);
+      addToast(t('toasts.panel_start_failed'), "error");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // ─── handleClosePersonaChat ───────────────────────────────────────
+  const handleClosePersonaChat = () => {
+    const {
+      personaState,
+      setPersonaState,
+      setPersonaInput,
+      generatedContent,
+      setIsPersonaChatOpen,
+      stopPlayback,
+      setPersonaAutoRead,
+      setPanelTtsPending
+    } = liveRef.current;
+    const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
+    if (resourceId && personaState.chatHistory.length > 0) {
+      const isPanelMode = personaState.mode === 'panel' && personaState.selectedCharacters?.length === 2;
+      if (isPanelMode) {
+        const [charA, charB] = personaState.selectedCharacters;
+        [charA, charB].forEach((liveCharacter, index) => {
+          const partner = index === 0 ? charB : charA;
+          updateStoredPersona(resourceId, liveCharacter.name, candidate => ({
+            ...candidate,
+            avatarUrl: liveCharacter.avatarUrl || candidate.avatarUrl || null,
+            chatHistory: personaState.chatHistory,
+            savedDialogue: personaState.chatHistory,
+            rapport: liveCharacter.rapport ?? candidate.rapport ?? candidate.initialRapport,
+            quests: Array.isArray(liveCharacter.quests) ? liveCharacter.quests : candidate.quests || [],
+            accumulatedXP: liveCharacter.accumulatedXP ?? candidate.accumulatedXP ?? 0,
+            reflectionText: personaState.reflectionText || candidate.reflectionText || '',
+            panelPartner: partner?.name || null,
+            panelHarmonyScore: clampInteger(personaState.harmonyScore, 0, 100, 10),
+            panelEarnedBadges: [...(personaState.earnedBadges || [])],
+            lastInterviewDate: new Date().toISOString()
+          }));
+        });
+      } else if (personaState.selectedCharacter) {
+        const liveCharacter = personaState.selectedCharacter;
+        updateStoredPersona(resourceId, liveCharacter.name, candidate => ({
+          ...candidate,
+          avatarUrl: liveCharacter.avatarUrl || personaState.avatarUrl || candidate.avatarUrl || null,
+          chatHistory: personaState.chatHistory,
+          savedDialogue: personaState.chatHistory,
+          rapport: liveCharacter.rapport ?? candidate.rapport ?? candidate.initialRapport,
+          quests: Array.isArray(liveCharacter.quests) ? liveCharacter.quests : candidate.quests || [],
+          accumulatedXP: liveCharacter.accumulatedXP ?? candidate.accumulatedXP ?? 0,
+          reflectionText: personaState.reflectionText || candidate.reflectionText || '',
+          lastInterviewDate: new Date().toISOString()
+        }));
+      }
+    }
+    if (typeof stopPlayback === 'function') stopPlayback();
+    if (typeof setPersonaAutoRead === 'function') setPersonaAutoRead(false);
+    if (typeof setPanelTtsPending === 'function') setPanelTtsPending([]);
+    if (typeof setPersonaInput === 'function') setPersonaInput('');
+    setPersonaState(prev => ({
+      ...prev,
+      isLoading: false,
+      suggestions: [],
+      panelSuggestions: [],
+      showReflection: false,
+      reflectionText: '',
+      reflectionSubmitted: false
+    }));
+    setIsPersonaChatOpen(false);
+  };
+
+  // ─── handleSelectPersona ──────────────────────────────────────────
+  const handleSelectPersona = async character => {
+    const {
+      personaState,
+      setPersonaState,
+      generatedContent,
+      setIsPersonaChatOpen,
+      alloBotRef,
+      t
+    } = liveRef.current;
+    const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
+    try {
+      if (alloBotRef && alloBotRef.current) {
+        alloBotRef.current.speak(t('bot_events.feedback_persona_start', {
+          name: character.name
+        }), 'happy');
+      }
+      const existingImage = character.avatarUrl;
+      const existingChat = character.chatHistory;
+      const description = character.visualDescription || `Portrait of ${character.name}`;
+      const style = character.artStyle || "Oil painting, museum quality";
+      const initialHistory = Array.isArray(existingChat) && existingChat.length > 0 ? existingChat : [{
+        role: 'model',
+        text: character.greeting || character.name
+      }];
+      const preservedOptions = personaState.options;
+      const preservedMode = personaState.mode;
+      const preservedSelectedCharacters = personaState.selectedCharacters;
+      resetPersonaInterviewState();
+      setPersonaState(prev => ({
+        ...prev,
+        mode: preservedMode,
+        options: preservedOptions,
+        selectedCharacters: preservedSelectedCharacters,
+        selectedCharacter: character,
+        chatHistory: initialHistory,
+        suggestions: character.suggestedQuestions || [],
+        isImageLoading: !existingImage,
+        avatarUrl: existingImage || null,
+        topicSparkCount: 0
+      }));
+      setIsPersonaChatOpen(true);
+      if (!character.suggestedQuestions || character.suggestedQuestions.length === 0) {
+        generatePersonaFollowUps(initialHistory, character, 3);
+      }
+      if (existingImage) return;
+      const imageUrl = await generateCharacterPortrait(description, style);
+      if (imageUrl) {
+        setPersonaState(prev => ({
+          ...prev,
+          avatarUrl: imageUrl,
+          isImageLoading: false,
+          selectedCharacter: prev.selectedCharacter?.name === character.name ? {
+            ...prev.selectedCharacter,
+            avatarUrl: imageUrl
+          } : prev.selectedCharacter
+        }));
+        if (resourceId) {
+          updateStoredPersona(resourceId, character.name, candidate => ({
+            ...candidate,
+            avatarUrl: imageUrl
+          }));
+        }
+      } else {
+        setPersonaState(prev => ({
+          ...prev,
+          isImageLoading: false
+        }));
+      }
+    } catch (e) {
+      warnLog("Unhandled error in handleSelectPersona:", e);
+    }
+  };
+
+  // ─── handlePersonaTopicSpark ──────────────────────────────────────
+  const handlePersonaTopicSpark = async () => {
+    const {
+      personaState,
+      setPersonaState,
+      setPersonaInput,
+      addToast,
+      t
+    } = liveRef.current;
+    if (!personaState.selectedCharacter) return;
+    if ((personaState.topicSparkCount || 0) >= 2) {
+      addToast(t('persona.spark_limit_reached'), "info");
+      return;
+    }
+    setPersonaState(prev => ({
+      ...prev,
+      isLoading: true
+    }));
+    try {
+      // Panel mode: label each line with its actual speaker and frame the
+      // spark as a MODERATOR question to both figures — the single-mode
+      // prompt attributed every model line to Character A and aimed the
+      // question at A alone.
+      const isPanelSpark = personaState.mode === 'panel' && (personaState.selectedCharacters || []).length === 2;
+      const historyStr = personaState.chatHistory.map(m => `${m.role === 'user' ? 'Student' : m.speakerName || personaState.selectedCharacter.name}: ${m.text}`).join('\n');
+      const prompt = isPanelSpark ? `
               You are coaching a student who is moderating a debate between ${personaState.selectedCharacters[0].name} (${personaState.selectedCharacters[0].role}) and ${personaState.selectedCharacters[1].name} (${personaState.selectedCharacters[1].role}).
               Debate so far:
               ${historyStr}
               Task: Suggest ONE deep, specific question the student moderator could pose to BOTH figures right now — ideally one that surfaces a real disagreement between them or pushes them toward common ground.
               Return ONLY the raw text of the question.
-            `
-                : `
+            ` : `
               You are roleplaying as ${personaState.selectedCharacter.name} (${personaState.selectedCharacter.role}, ${personaState.selectedCharacter.year}).
               Conversation Context:
               ${historyStr}
@@ -810,52 +935,61 @@ const createPersonas = (deps) => {
               The question should provoke a detailed historical insight or personal reflection from your character.
               Return ONLY the raw text of the question.
             `;
-            const result = await window.callGemini(prompt);
-            setPersonaInput(result.trim().replace(/^"|"$/g, ''));
-            setPersonaState(prev => ({
-                ...prev,
-                topicSparkCount: (prev.topicSparkCount || 0) + 1
-            }));
-        } catch (e) {
-            warnLog("Topic Spark Error", e);
-            setPersonaInput(`What is the most important thing you want people to remember about you?`);
-        } finally {
-            setPersonaState(prev => ({ ...prev, isLoading: false }));
-        }
-    };
+      const result = await window.callGemini(prompt);
+      setPersonaInput(result.trim().replace(/^"|"$/g, ''));
+      setPersonaState(prev => ({
+        ...prev,
+        topicSparkCount: (prev.topicSparkCount || 0) + 1
+      }));
+    } catch (e) {
+      warnLog("Topic Spark Error", e);
+      setPersonaInput(`What is the most important thing you want people to remember about you?`);
+    } finally {
+      setPersonaState(prev => ({
+        ...prev,
+        isLoading: false
+      }));
+    }
+  };
 
-    // ─── handlePanelChatSubmit ────────────────────────────────────────
-    const handlePanelChatSubmit = async (userText) => {
-        const {
-            personaState, setPersonaState, setPersonaInput,
-            sourceTopic, leveledTextLanguage, selectedLanguages,
-            generatedContent,
-            isPersonaFreeResponse,
-            apiKey, handleAiSafetyFlag,
-            addToast, t,
-            handleScoreUpdate, playSound,
-        } = liveRef.current;
-        if (!userText || !userText.trim() || (personaState.selectedCharacters || []).length < 2) return;
-        // Re-entry guard: the send button disables on isLoading but Enter,
-        // suggestion chips, and auto-send can still fire mid-request.
-        if (personaState.isLoading) return;
-        SafetyContentChecker.aiCheck(userText, 'persona-panel', apiKey, handleAiSafetyFlag);
-        const charA = personaState.selectedCharacters[0];
-        const charB = personaState.selectedCharacters[1];
-        const targetLang = resolvePersonaLanguage(leveledTextLanguage, selectedLanguages);
-        const panelTranslationInstruction = targetLang === 'English'
-            ? 'Set each dialogue turn translation field to null.'
-            : `Write every dialogue text entirely in ${targetLang}. Put a complete English translation in each turn's separate translation field; do not mix English into text.`;
-        setPersonaInput('');
-        setPersonaState(prev => ({
-            ...prev,
-            chatHistory: [...prev.chatHistory, { role: 'user', text: userText }],
-            isLoading: true
-        }));
-        const historyContext = personaState.chatHistory.map(m =>
-            `${m.role === 'user' ? 'Student' : (m.speakerName || 'Character')}: ${m.text}`
-        ).join('\n');
-        const prompt = `
+  // ─── handlePanelChatSubmit ────────────────────────────────────────
+  const handlePanelChatSubmit = async userText => {
+    const {
+      personaState,
+      setPersonaState,
+      setPersonaInput,
+      sourceTopic,
+      leveledTextLanguage,
+      selectedLanguages,
+      generatedContent,
+      isPersonaFreeResponse,
+      apiKey,
+      handleAiSafetyFlag,
+      addToast,
+      t,
+      handleScoreUpdate,
+      playSound
+    } = liveRef.current;
+    if (!userText || !userText.trim() || (personaState.selectedCharacters || []).length < 2) return;
+    // Re-entry guard: the send button disables on isLoading but Enter,
+    // suggestion chips, and auto-send can still fire mid-request.
+    if (personaState.isLoading) return;
+    SafetyContentChecker.aiCheck(userText, 'persona-panel', apiKey, handleAiSafetyFlag);
+    const charA = personaState.selectedCharacters[0];
+    const charB = personaState.selectedCharacters[1];
+    const targetLang = resolvePersonaLanguage(leveledTextLanguage, selectedLanguages);
+    const panelTranslationInstruction = targetLang === 'English' ? 'Set each dialogue turn translation field to null.' : `Write every dialogue text entirely in ${targetLang}. Put a complete English translation in each turn's separate translation field; do not mix English into text.`;
+    setPersonaInput('');
+    setPersonaState(prev => ({
+      ...prev,
+      chatHistory: [...prev.chatHistory, {
+        role: 'user',
+        text: userText
+      }],
+      isLoading: true
+    }));
+    const historyContext = personaState.chatHistory.map(m => `${m.role === 'user' ? 'Student' : m.speakerName || 'Character'}: ${m.text}`).join('\n');
+    const prompt = `
           You are a Debate Moderator simulating a discussion between two historical figures.
           Character A: ${charA.name} (${charA.role}).
           - Current Rapport: ${charA.rapport ?? charA.initialRapport ?? 30}/100.
@@ -889,149 +1023,176 @@ const createPersonas = (deps) => {
               }
           }
         `;
-        try {
-            const resultRaw = await window.callGemini(prompt, true);
-            const data = JSON.parse(cleanJson(resultRaw));
-            const deltaA = clampInteger(data.updates?.charA?.rapportChange, -20, 20);
-            const deltaB = clampInteger(data.updates?.charB?.rapportChange, -20, 20);
-            const harmonyDelta = clampInteger(data.updates?.harmony?.scoreChange, -20, 20);
-            const rawXpA = (deltaA > 0 ? deltaA * 2 : 0) + (harmonyDelta > 0 ? Math.floor(harmonyDelta * 2.5) : 0);
-            const rawXpB = (deltaB > 0 ? deltaB * 2 : 0) + (harmonyDelta > 0 ? Math.ceil(harmonyDelta * 2.5) : 0);
-            const xpA = Math.min(rawXpA, Math.max(0, 300 - (charA.accumulatedXP || 0)));
-            const xpB = Math.min(rawXpB, Math.max(0, 300 - (charB.accumulatedXP || 0)));
-            const xpEarned = xpA + xpB;
-            if (xpEarned > 0) {
-                handleScoreUpdate(xpEarned, "Panel Debate Insight", generatedContent?.id);
+    try {
+      const resultRaw = await window.callGemini(prompt, true);
+      const data = JSON.parse(cleanJson(resultRaw));
+      const deltaA = clampInteger(data.updates?.charA?.rapportChange, -20, 20);
+      const deltaB = clampInteger(data.updates?.charB?.rapportChange, -20, 20);
+      const harmonyDelta = clampInteger(data.updates?.harmony?.scoreChange, -20, 20);
+      const rawXpA = (deltaA > 0 ? deltaA * 2 : 0) + (harmonyDelta > 0 ? Math.floor(harmonyDelta * 2.5) : 0);
+      const rawXpB = (deltaB > 0 ? deltaB * 2 : 0) + (harmonyDelta > 0 ? Math.ceil(harmonyDelta * 2.5) : 0);
+      const xpA = Math.min(rawXpA, Math.max(0, 300 - (charA.accumulatedXP || 0)));
+      const xpB = Math.min(rawXpB, Math.max(0, 300 - (charB.accumulatedXP || 0)));
+      const xpEarned = xpA + xpB;
+      if (xpEarned > 0) {
+        handleScoreUpdate(xpEarned, "Panel Debate Insight", generatedContent?.id);
+      }
+      // Side effects (image-edit API calls, toasts, sounds) run OUTSIDE
+      // the state updater: React may invoke updaters more than once
+      // (StrictMode double-render), which double-fired all of them.
+      const newHarmonyPreview = Math.max(0, Math.min(100, (personaState.harmonyScore ?? 10) + harmonyDelta));
+      const earnsHarmonizer = newHarmonyPreview >= 50 && !(personaState.earnedBadges || []).includes('harmonizer');
+      if (data.dialogue && Array.isArray(data.dialogue)) {
+        data.dialogue.forEach(turn => {
+          if (turn.visualReaction && turn.speaker) {
+            const charIndex = personaState.selectedCharacters.findIndex(c => c.name === turn.speaker);
+            if (charIndex !== -1) {
+              updatePanelCharacterReaction(charIndex, turn.visualReaction);
             }
-            // Side effects (image-edit API calls, toasts, sounds) run OUTSIDE
-            // the state updater: React may invoke updaters more than once
-            // (StrictMode double-render), which double-fired all of them.
-            const newHarmonyPreview = Math.max(0, Math.min(100, (personaState.harmonyScore ?? 10) + harmonyDelta));
-            const earnsHarmonizer = newHarmonyPreview >= 50 && !(personaState.earnedBadges || []).includes('harmonizer');
-            if (data.dialogue && Array.isArray(data.dialogue)) {
-                data.dialogue.forEach(turn => {
-                    if (turn.visualReaction && turn.speaker) {
-                        const charIndex = personaState.selectedCharacters.findIndex(c => c.name === turn.speaker);
-                        if (charIndex !== -1) {
-                            updatePanelCharacterReaction(charIndex, turn.visualReaction);
-                        }
-                    }
-                });
+          }
+        });
+      }
+      setPersonaState(prev => {
+        const currentA = prev.selectedCharacters[0];
+        const currentB = prev.selectedCharacters[1];
+        const updates = data.updates || {};
+        const updateChar = (char, up, charXpReward, rapportDelta) => {
+          const currentRapport = char.rapport ?? char.initialRapport ?? 30;
+          const newRapport = Math.max(0, Math.min(100, currentRapport + rapportDelta));
+          const requestedQuestId = up?.completedQuestId || null;
+          const updatedQuests = (char.quests || []).map(q => {
+            if (!q.isCompleted && requestedQuestId && q.id === requestedQuestId) {
+              const difficulty = clampInteger(q.difficulty, 0, 100);
+              if (newRapport >= difficulty) return {
+                ...q,
+                isCompleted: true
+              };
             }
-            setPersonaState(prev => {
-                const currentA = prev.selectedCharacters[0];
-                const currentB = prev.selectedCharacters[1];
-                const updates = data.updates || {};
-                const updateChar = (char, up, charXpReward, rapportDelta) => {
-                    const currentRapport = char.rapport ?? char.initialRapport ?? 30;
-                    const newRapport = Math.max(0, Math.min(100, currentRapport + rapportDelta));
-                    const requestedQuestId = up?.completedQuestId || null;
-                    const updatedQuests = (char.quests || []).map(q => {
-                        if (!q.isCompleted && requestedQuestId && q.id === requestedQuestId) {
-                            const difficulty = clampInteger(q.difficulty, 0, 100);
-                            if (newRapport >= difficulty) return { ...q, isCompleted: true };
-                        }
-                        return q;
-                    });
-                    return {
-                        ...char,
-                        rapport: newRapport,
-                        quests: updatedQuests,
-                        accumulatedXP: Math.min(300, (char.accumulatedXP || 0) + charXpReward)
-                    };
-                };
-                const newA = updateChar(currentA, updates.charA, xpA, deltaA);
-                const newB = updateChar(currentB, updates.charB, xpB, deltaB);
-                const currentHarmony = prev.harmonyScore ?? 10;
-                const newHarmony = Math.max(0, Math.min(100, currentHarmony + harmonyDelta));
-                const newMessages = (data.dialogue || []).map(turn => ({
-                    role: 'model',
-                    text: turn.text,
-                    ...(typeof turn.translation === 'string' && turn.translation.trim() ? { translation: turn.translation.trim() } : {}),
-                    speakerName: turn.speaker,
-                    visualReaction: turn.visualReaction
-                }));
-                const newBadges = [...(prev.earnedBadges || [])];
-                if (newHarmony >= 50 && !newBadges.includes('harmonizer')) {
-                    newBadges.push('harmonizer');
-                }
-                return {
-                    ...prev,
-                    selectedCharacters: [newA, newB],
-                    harmonyScore: newHarmony,
-                    chatHistory: [...prev.chatHistory, ...newMessages],
-                    isLoading: false,
-                    earnedBadges: newBadges
-                };
-            });
-            if (earnsHarmonizer) {
-                addToast(`🤝 ${t('persona.badges.harmonizer')}!`, "success");
-                playSound('correct');
-            }
-            if (harmonyDelta > 0) {
-                addToast(`Synthesis! Harmony +${harmonyDelta}`, "success");
-                playSound('correct');
-            }
-            if (!isPersonaFreeResponse) {
-                const updatedHistory = [...personaState.chatHistory, { role: 'user', text: userText }, ...(data.dialogue || []).map(turn => ({
-                    role: 'model', text: turn.text, ...(turn.translation ? { translation: turn.translation } : {}), speakerName: turn.speaker
-                }))];
-                generatePanelFollowUps(updatedHistory, charA, charB);
-            }
-        } catch (e) {
-            warnLog("Panel Error", e);
-            setPersonaState(prev => ({ ...prev, isLoading: false }));
-            addToast(t('toasts.debate_stalled'), "error");
-        }
-    };
-
-    // ─── handlePersonaChatSubmit ──────────────────────────────────────
-    const handlePersonaChatSubmit = async (overrideInput = null) => {
-        const {
-            personaState, setPersonaState, personaInput, setPersonaInput,
-            generatedContent,
-            apiKey, handleAiSafetyFlag,
-            gradeLevel, leveledTextLanguage, selectedLanguages,
-            personaTurnHintsViewed, setPersonaTurnHintsViewed, showPersonaHintsRef,
-            isPersonaFreeResponse,
-            addToast, t,
-            handleScoreUpdate, playSound,
-        } = liveRef.current;
-        const textToSend = overrideInput || personaInput;
-        if (!textToSend || !textToSend.trim()) return;
-        if (personaState.isLoading) return;
-        if (personaState.mode === 'panel' && personaState.selectedCharacters.length === 2) {
-            return handlePanelChatSubmit(textToSend);
-        }
-        if (!personaState.selectedCharacter) return;
-        const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
-        SafetyContentChecker.aiCheck(textToSend, 'persona', apiKey, handleAiSafetyFlag);
-        const hintsWereViewed = personaTurnHintsViewed;
-        setPersonaInput('');
-        const historyContextForPrompt = [...personaState.chatHistory];
-        setPersonaState(prev => ({
-            ...prev,
-            chatHistory: [...prev.chatHistory, { role: 'user', text: textToSend }],
-            suggestions: [],
-            isLoading: true
+            return q;
+          });
+          return {
+            ...char,
+            rapport: newRapport,
+            quests: updatedQuests,
+            accumulatedXP: Math.min(300, (char.accumulatedXP || 0) + charXpReward)
+          };
+        };
+        const newA = updateChar(currentA, updates.charA, xpA, deltaA);
+        const newB = updateChar(currentB, updates.charB, xpB, deltaB);
+        const currentHarmony = prev.harmonyScore ?? 10;
+        const newHarmony = Math.max(0, Math.min(100, currentHarmony + harmonyDelta));
+        const newMessages = (data.dialogue || []).map(turn => ({
+          role: 'model',
+          text: turn.text,
+          ...(typeof turn.translation === 'string' && turn.translation.trim() ? {
+            translation: turn.translation.trim()
+          } : {}),
+          speakerName: turn.speaker,
+          visualReaction: turn.visualReaction
         }));
-        try {
-            const historyStr = historyContextForPrompt.map(m => `${m.role === 'user' ? 'Student' : personaState.selectedCharacter.name}: ${m.text}`).join('\n');
-            const currentRapport = personaState.selectedCharacter.rapport !== undefined
-                ? personaState.selectedCharacter.rapport
-                : (personaState.selectedCharacter.initialRapport || 10);
-            const activeQuests = (personaState.selectedCharacter.quests || []).filter(q => !q.isCompleted);
-            let langInstruction = "Language: English.";
-            let translationInstruction = "";
-            const targetLang = resolvePersonaLanguage(leveledTextLanguage, selectedLanguages);
-            if (targetLang !== 'English') {
-                langInstruction = `Language: ${targetLang}.`;
-                // Translation goes in its OWN JSON field — embedding it in
-                // "response" made TTS read both languages back-to-back and
-                // mixed languages inside one voice-consistent chunk.
-                translationInstruction = `Write your conversational response entirely in ${targetLang} in the "response" field. Put a complete English translation of it in the separate "translation" field. Do NOT include any English text or translation inside "response".`;
-            }
-            const prompt = `
+        const newBadges = [...(prev.earnedBadges || [])];
+        if (newHarmony >= 50 && !newBadges.includes('harmonizer')) {
+          newBadges.push('harmonizer');
+        }
+        return {
+          ...prev,
+          selectedCharacters: [newA, newB],
+          harmonyScore: newHarmony,
+          chatHistory: [...prev.chatHistory, ...newMessages],
+          isLoading: false,
+          earnedBadges: newBadges
+        };
+      });
+      if (earnsHarmonizer) {
+        addToast(`🤝 ${t('persona.badges.harmonizer')}!`, "success");
+        playSound('correct');
+      }
+      if (harmonyDelta > 0) {
+        addToast(`Synthesis! Harmony +${harmonyDelta}`, "success");
+        playSound('correct');
+      }
+      if (!isPersonaFreeResponse) {
+        const updatedHistory = [...personaState.chatHistory, {
+          role: 'user',
+          text: userText
+        }, ...(data.dialogue || []).map(turn => ({
+          role: 'model',
+          text: turn.text,
+          ...(turn.translation ? {
+            translation: turn.translation
+          } : {}),
+          speakerName: turn.speaker
+        }))];
+        generatePanelFollowUps(updatedHistory, charA, charB);
+      }
+    } catch (e) {
+      warnLog("Panel Error", e);
+      setPersonaState(prev => ({
+        ...prev,
+        isLoading: false
+      }));
+      addToast(t('toasts.debate_stalled'), "error");
+    }
+  };
+
+  // ─── handlePersonaChatSubmit ──────────────────────────────────────
+  const handlePersonaChatSubmit = async (overrideInput = null) => {
+    const {
+      personaState,
+      setPersonaState,
+      personaInput,
+      setPersonaInput,
+      generatedContent,
+      apiKey,
+      handleAiSafetyFlag,
+      gradeLevel,
+      leveledTextLanguage,
+      selectedLanguages,
+      personaTurnHintsViewed,
+      setPersonaTurnHintsViewed,
+      showPersonaHintsRef,
+      isPersonaFreeResponse,
+      addToast,
+      t,
+      handleScoreUpdate,
+      playSound
+    } = liveRef.current;
+    const textToSend = overrideInput || personaInput;
+    if (!textToSend || !textToSend.trim()) return;
+    if (personaState.isLoading) return;
+    if (personaState.mode === 'panel' && personaState.selectedCharacters.length === 2) {
+      return handlePanelChatSubmit(textToSend);
+    }
+    if (!personaState.selectedCharacter) return;
+    const resourceId = generatedContent?.type === 'persona' ? generatedContent.id : null;
+    SafetyContentChecker.aiCheck(textToSend, 'persona', apiKey, handleAiSafetyFlag);
+    const hintsWereViewed = personaTurnHintsViewed;
+    setPersonaInput('');
+    const historyContextForPrompt = [...personaState.chatHistory];
+    setPersonaState(prev => ({
+      ...prev,
+      chatHistory: [...prev.chatHistory, {
+        role: 'user',
+        text: textToSend
+      }],
+      suggestions: [],
+      isLoading: true
+    }));
+    try {
+      const historyStr = historyContextForPrompt.map(m => `${m.role === 'user' ? 'Student' : personaState.selectedCharacter.name}: ${m.text}`).join('\n');
+      const currentRapport = personaState.selectedCharacter.rapport !== undefined ? personaState.selectedCharacter.rapport : personaState.selectedCharacter.initialRapport || 10;
+      const activeQuests = (personaState.selectedCharacter.quests || []).filter(q => !q.isCompleted);
+      let langInstruction = "Language: English.";
+      let translationInstruction = "";
+      const targetLang = resolvePersonaLanguage(leveledTextLanguage, selectedLanguages);
+      if (targetLang !== 'English') {
+        langInstruction = `Language: ${targetLang}.`;
+        // Translation goes in its OWN JSON field — embedding it in
+        // "response" made TTS read both languages back-to-back and
+        // mixed languages inside one voice-consistent chunk.
+        translationInstruction = `Write your conversational response entirely in ${targetLang} in the "response" field. Put a complete English translation of it in the separate "translation" field. Do NOT include any English text or translation inside "response".`;
+      }
+      const prompt = `
               You are roleplaying as ${personaState.selectedCharacter.name} (${personaState.selectedCharacter.role}, ${personaState.selectedCharacter.year}).
               Stay in character.
               --- SOCIAL MECHANICS ---
@@ -1068,196 +1229,220 @@ const createPersonas = (deps) => {
                   "questBlockedReason": "string" (if they asked but rapport was too low)
               }
             `;
-            const resultRaw = await window.callGemini(prompt, true);
-            let resultParsed = null;
-            try {
-                resultParsed = JSON.parse(cleanJson(resultRaw));
-            } catch (parseErr) {
-                try { resultParsed = safeJsonParse(resultRaw); } catch (_) {}
-            }
-            if (!resultParsed || typeof resultParsed !== 'object' || Array.isArray(resultParsed) || typeof resultParsed.response !== 'string' || !resultParsed.response.trim()) {
-                // Model drifted from the JSON contract — salvage the reply as
-                // plain text (no rapport/quest updates) rather than dropping
-                // the whole turn with a "figure went silent" error.
-                const salvaged = String(resultRaw || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-                if (!salvaged) throw new Error('Empty persona response');
-                resultParsed = { response: salvaged, rapportChange: 0, completedQuestId: null };
-            }
-            const responseText = resultParsed.response;
-            const translationText = (typeof resultParsed.translation === 'string' && resultParsed.translation.trim()) ? resultParsed.translation.trim() : null;
-            const finalHistory = [...historyContextForPrompt, { role: 'user', text: textToSend }, { role: 'model', text: responseText, ...(translationText ? { translation: translationText } : {}) }];
-            const delta = clampInteger(resultParsed.rapportChange, -20, 20);
-            const newRapportPreview = Math.max(0, Math.min(100, currentRapport + delta));
-            const requestedQuestId = resultParsed.completedQuestId == null ? null : String(resultParsed.completedQuestId);
-            const validQuest = requestedQuestId
-                ? activeQuests.find(q => String(q.id) === requestedQuestId && newRapportPreview >= clampInteger(q.difficulty, 0, 100))
-                : null;
-            const completedQuestId = validQuest?.id || null;
-            const questWasBlocked = Boolean(requestedQuestId && !completedQuestId);
-            const PERSONA_XP_CAP = 300;
-            const currentAccumulated = personaState.selectedCharacter.accumulatedXP || 0;
-            let remainingXp = Math.max(0, PERSONA_XP_CAP - currentAccumulated);
-            let actualReward = 0;
-            let questReward = 0;
-            let bonusLabel = "";
-            if (delta > 0) {
-                let multiplier = 1;
-                if (isPersonaFreeResponse && !overrideInput) {
-                    if (!hintsWereViewed) {
-                        multiplier = 2;
-                        bonusLabel = " (Hard Mode Bonus!)";
-                    } else {
-                        multiplier = 1.5;
-                        bonusLabel = " (Typing Bonus)";
-                    }
-                }
-                const xpReward = Math.round(delta * 2 * multiplier);
-                actualReward = Math.min(xpReward, remainingXp);
-                remainingXp -= actualReward;
-                if (actualReward > 0) {
-                    handleScoreUpdate(actualReward, "Rapport Building", resourceId);
-                    addToast(`Rapport Increased (+${delta}) | +${actualReward} XP${bonusLabel}`, "success");
-                    playSound('click');
-                } else {
-                    addToast(`Rapport Increased (+${delta}) | XP Cap Reached`, "info");
-                }
-            } else if (delta < 0) {
-                addToast(`Rapport Decreased (${delta})`, "error");
-            }
-            if (completedQuestId) {
-                questReward = Math.min(50, remainingXp);
-            }
-            const totalReward = actualReward + questReward;
-            // Badge toasts/sounds fire OUTSIDE the updater — React may invoke
-            // updaters more than once (StrictMode double-render).
-            const closureBadges = personaState.earnedBadges || [];
-            const earnsFirstInsight = delta >= 5 && !closureBadges.includes('first_insight');
-            const earnsRapportBuilder = newRapportPreview >= 50 && !closureBadges.includes('rapport_builder');
-            setPersonaState(prev => {
-                const newRapport = Math.max(0, Math.min(100, currentRapport + delta));
-                const updatedQuests = (prev.selectedCharacter.quests || []).map(q => {
-                    if (completedQuestId === q.id) {
-                        return { ...q, isCompleted: true };
-                    }
-                    return q;
-                });
-                const newBadges = [...(prev.earnedBadges || [])];
-                if (delta >= 5 && !newBadges.includes('first_insight')) {
-                    newBadges.push('first_insight');
-                }
-                if (newRapport >= 50 && !newBadges.includes('rapport_builder')) {
-                    newBadges.push('rapport_builder');
-                }
-                return {
-                    ...prev,
-                    chatHistory: finalHistory,
-                    isLoading: false,
-                    earnedBadges: newBadges,
-                    selectedCharacter: {
-                        ...prev.selectedCharacter,
-                        rapport: newRapport,
-                        quests: updatedQuests,
-                        accumulatedXP: Math.min(PERSONA_XP_CAP, (prev.selectedCharacter.accumulatedXP || 0) + totalReward)
-                    }
-                };
-            });
-            if (earnsFirstInsight) {
-                addToast(`🎯 ${t('persona.badges.first_insight')}!`, "success");
-                playSound('correct');
-            }
-            if (earnsRapportBuilder) {
-                addToast(`💡 ${t('persona.badges.rapport_builder')}!`, "success");
-                playSound('correct');
-            }
-            if (completedQuestId) {
-                addToast(t('persona.toasts.secret_unlocked'), "success");
-                playSound('correct');
-                if (questReward > 0) {
-                    handleScoreUpdate(questReward, "Persona Secret Unlocked", resourceId);
-                }
-            }
-            if (resultParsed.questBlockedReason || questWasBlocked) {
-                addToast(t('persona.toasts.trust_too_low'), "warning");
-            }
-            const suggestionCount = isPersonaFreeResponse ? 2 : 6;
-            generatePersonaFollowUps(finalHistory, personaState.selectedCharacter, suggestionCount);
-            if (resultParsed.visualReaction) {
-                updatePersonaReaction(resultParsed.visualReaction);
-            } else if (resultParsed.emotion) {
-                updatePersonaReaction(resultParsed.emotion);
-            }
-            if (showPersonaHintsRef) setPersonaTurnHintsViewed(showPersonaHintsRef.current);
-            if (resourceId) {
-                updateStoredPersona(resourceId, personaState.selectedCharacter.name, candidate => ({
-                    ...candidate,
-                    avatarUrl: personaState.avatarUrl || personaState.selectedCharacter.avatarUrl || candidate.avatarUrl || null,
-                    chatHistory: finalHistory,
-                    savedDialogue: finalHistory,
-                    rapport: newRapportPreview,
-                    quests: (candidate.quests || []).map(q => completedQuestId === q.id ? { ...q, isCompleted: true } : q),
-                    accumulatedXP: Math.min(PERSONA_XP_CAP, (candidate.accumulatedXP || 0) + totalReward),
-                    lastInterviewDate: new Date().toISOString()
-                }));
-            }
-        } catch (e) {
-            warnLog("Persona Chat Error", e);
-            addToast(t('toasts.figure_silent'), "error");
-            setPersonaState(prev => ({ ...prev, isLoading: false }));
-        }
-    };
-
-    // ─── handleSavePersonaChat ────────────────────────────────────────
-    const handleSavePersonaChat = () => {
-        const { personaState, setHistory, addToast, t } = liveRef.current;
-        if (personaState.chatHistory.length === 0 || !personaState.selectedCharacter) return;
-        // Panel messages carry speakerName — honor it so Character B's lines
-        // aren't attributed to Character A in the saved transcript.
-        const chatLog = personaState.chatHistory.map(m => `**${m.role === 'user' ? 'Student' : (m.speakerName || personaState.selectedCharacter.name)}:**\n${m.text}${m.translation ? `\n\n> *English translation:* ${m.translation}` : ''}`).join('\n\n---\n\n');
-        const isPanelSave = personaState.mode === 'panel' && (personaState.selectedCharacters || []).length === 2;
-        const saveTitle = isPanelSave
-            ? `Interview: ${personaState.selectedCharacters[0].name} & ${personaState.selectedCharacters[1].name}`
-            : `Interview: ${personaState.selectedCharacter.name}`;
-        const newItem = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            type: 'persona-transcript',
-            data: chatLog,
-            meta: `Historical Interview (${personaState.selectedCharacter.year})`,
-            title: saveTitle,
-            timestamp: new Date(),
-            config: {}
+      const resultRaw = await window.callGemini(prompt, true);
+      let resultParsed = null;
+      try {
+        resultParsed = JSON.parse(cleanJson(resultRaw));
+      } catch (parseErr) {
+        try {
+          resultParsed = safeJsonParse(resultRaw);
+        } catch (_) {}
+      }
+      if (!resultParsed || typeof resultParsed !== 'object' || Array.isArray(resultParsed) || typeof resultParsed.response !== 'string' || !resultParsed.response.trim()) {
+        // Model drifted from the JSON contract — salvage the reply as
+        // plain text (no rapport/quest updates) rather than dropping
+        // the whole turn with a "figure went silent" error.
+        const salvaged = String(resultRaw || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+        if (!salvaged) throw new Error('Empty persona response');
+        resultParsed = {
+          response: salvaged,
+          rapportChange: 0,
+          completedQuestId: null
         };
-        setHistory(prev => [...prev, newItem]);
-        addToast(t('toasts.transcript_saved'), "success");
-    };
+      }
+      const responseText = resultParsed.response;
+      const translationText = typeof resultParsed.translation === 'string' && resultParsed.translation.trim() ? resultParsed.translation.trim() : null;
+      const finalHistory = [...historyContextForPrompt, {
+        role: 'user',
+        text: textToSend
+      }, {
+        role: 'model',
+        text: responseText,
+        ...(translationText ? {
+          translation: translationText
+        } : {})
+      }];
+      const delta = clampInteger(resultParsed.rapportChange, -20, 20);
+      const newRapportPreview = Math.max(0, Math.min(100, currentRapport + delta));
+      const requestedQuestId = resultParsed.completedQuestId == null ? null : String(resultParsed.completedQuestId);
+      const validQuest = requestedQuestId ? activeQuests.find(q => String(q.id) === requestedQuestId && newRapportPreview >= clampInteger(q.difficulty, 0, 100)) : null;
+      const completedQuestId = validQuest?.id || null;
+      const questWasBlocked = Boolean(requestedQuestId && !completedQuestId);
+      const PERSONA_XP_CAP = 300;
+      const currentAccumulated = personaState.selectedCharacter.accumulatedXP || 0;
+      let remainingXp = Math.max(0, PERSONA_XP_CAP - currentAccumulated);
+      let actualReward = 0;
+      let questReward = 0;
+      let bonusLabel = "";
+      if (delta > 0) {
+        let multiplier = 1;
+        if (isPersonaFreeResponse && !overrideInput) {
+          if (!hintsWereViewed) {
+            multiplier = 2;
+            bonusLabel = " (Hard Mode Bonus!)";
+          } else {
+            multiplier = 1.5;
+            bonusLabel = " (Typing Bonus)";
+          }
+        }
+        const xpReward = Math.round(delta * 2 * multiplier);
+        actualReward = Math.min(xpReward, remainingXp);
+        remainingXp -= actualReward;
+        if (actualReward > 0) {
+          handleScoreUpdate(actualReward, "Rapport Building", resourceId);
+          addToast(`Rapport Increased (+${delta}) | +${actualReward} XP${bonusLabel}`, "success");
+          playSound('click');
+        } else {
+          addToast(`Rapport Increased (+${delta}) | XP Cap Reached`, "info");
+        }
+      } else if (delta < 0) {
+        addToast(`Rapport Decreased (${delta})`, "error");
+      }
+      if (completedQuestId) {
+        questReward = Math.min(50, remainingXp);
+      }
+      const totalReward = actualReward + questReward;
+      // Badge toasts/sounds fire OUTSIDE the updater — React may invoke
+      // updaters more than once (StrictMode double-render).
+      const closureBadges = personaState.earnedBadges || [];
+      const earnsFirstInsight = delta >= 5 && !closureBadges.includes('first_insight');
+      const earnsRapportBuilder = newRapportPreview >= 50 && !closureBadges.includes('rapport_builder');
+      setPersonaState(prev => {
+        const newRapport = Math.max(0, Math.min(100, currentRapport + delta));
+        const updatedQuests = (prev.selectedCharacter.quests || []).map(q => {
+          if (completedQuestId === q.id) {
+            return {
+              ...q,
+              isCompleted: true
+            };
+          }
+          return q;
+        });
+        const newBadges = [...(prev.earnedBadges || [])];
+        if (delta >= 5 && !newBadges.includes('first_insight')) {
+          newBadges.push('first_insight');
+        }
+        if (newRapport >= 50 && !newBadges.includes('rapport_builder')) {
+          newBadges.push('rapport_builder');
+        }
+        return {
+          ...prev,
+          chatHistory: finalHistory,
+          isLoading: false,
+          earnedBadges: newBadges,
+          selectedCharacter: {
+            ...prev.selectedCharacter,
+            rapport: newRapport,
+            quests: updatedQuests,
+            accumulatedXP: Math.min(PERSONA_XP_CAP, (prev.selectedCharacter.accumulatedXP || 0) + totalReward)
+          }
+        };
+      });
+      if (earnsFirstInsight) {
+        addToast(`🎯 ${t('persona.badges.first_insight')}!`, "success");
+        playSound('correct');
+      }
+      if (earnsRapportBuilder) {
+        addToast(`💡 ${t('persona.badges.rapport_builder')}!`, "success");
+        playSound('correct');
+      }
+      if (completedQuestId) {
+        addToast(t('persona.toasts.secret_unlocked'), "success");
+        playSound('correct');
+        if (questReward > 0) {
+          handleScoreUpdate(questReward, "Persona Secret Unlocked", resourceId);
+        }
+      }
+      if (resultParsed.questBlockedReason || questWasBlocked) {
+        addToast(t('persona.toasts.trust_too_low'), "warning");
+      }
+      const suggestionCount = isPersonaFreeResponse ? 2 : 6;
+      generatePersonaFollowUps(finalHistory, personaState.selectedCharacter, suggestionCount);
+      if (resultParsed.visualReaction) {
+        updatePersonaReaction(resultParsed.visualReaction);
+      } else if (resultParsed.emotion) {
+        updatePersonaReaction(resultParsed.emotion);
+      }
+      if (showPersonaHintsRef) setPersonaTurnHintsViewed(showPersonaHintsRef.current);
+      if (resourceId) {
+        updateStoredPersona(resourceId, personaState.selectedCharacter.name, candidate => ({
+          ...candidate,
+          avatarUrl: personaState.avatarUrl || personaState.selectedCharacter.avatarUrl || candidate.avatarUrl || null,
+          chatHistory: finalHistory,
+          savedDialogue: finalHistory,
+          rapport: newRapportPreview,
+          quests: (candidate.quests || []).map(q => completedQuestId === q.id ? {
+            ...q,
+            isCompleted: true
+          } : q),
+          accumulatedXP: Math.min(PERSONA_XP_CAP, (candidate.accumulatedXP || 0) + totalReward),
+          lastInterviewDate: new Date().toISOString()
+        }));
+      }
+    } catch (e) {
+      warnLog("Persona Chat Error", e);
+      addToast(t('toasts.figure_silent'), "error");
+      setPersonaState(prev => ({
+        ...prev,
+        isLoading: false
+      }));
+    }
+  };
 
-    return {
-        resetPersonaInterviewState,
-        generateCharacterPortrait,
-        handleGeneratePersonas,
-        updatePersonaReaction,
-        handleRetryPortraitGeneration,
-        updatePanelCharacterReaction,
-        generatePersonaFollowUps,
-        generatePanelFollowUps,
-        handleTogglePanelSelection,
-        handleStartPanelChat,
-        handleClosePersonaChat,
-        handleSelectPersona,
-        handlePersonaTopicSpark,
-        handlePanelChatSubmit,
-        handlePersonaChatSubmit,
-        handleSavePersonaChat,
+  // ─── handleSavePersonaChat ────────────────────────────────────────
+  const handleSavePersonaChat = () => {
+    const {
+      personaState,
+      setHistory,
+      addToast,
+      t
+    } = liveRef.current;
+    if (personaState.chatHistory.length === 0 || !personaState.selectedCharacter) return;
+    // Panel messages carry speakerName — honor it so Character B's lines
+    // aren't attributed to Character A in the saved transcript.
+    const chatLog = personaState.chatHistory.map(m => `**${m.role === 'user' ? 'Student' : m.speakerName || personaState.selectedCharacter.name}:**\n${m.text}${m.translation ? `\n\n> *English translation:* ${m.translation}` : ''}`).join('\n\n---\n\n');
+    const isPanelSave = personaState.mode === 'panel' && (personaState.selectedCharacters || []).length === 2;
+    const saveTitle = isPanelSave ? `Interview: ${personaState.selectedCharacters[0].name} & ${personaState.selectedCharacters[1].name}` : `Interview: ${personaState.selectedCharacter.name}`;
+    const newItem = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      type: 'persona-transcript',
+      data: chatLog,
+      meta: `Historical Interview (${personaState.selectedCharacter.year})`,
+      title: saveTitle,
+      timestamp: new Date(),
+      config: {}
     };
+    setHistory(prev => [...prev, newItem]);
+    addToast(t('toasts.transcript_saved'), "success");
+  };
+  return {
+    resetPersonaInterviewState,
+    generateCharacterPortrait,
+    handleGeneratePersonas,
+    updatePersonaReaction,
+    handleRetryPortraitGeneration,
+    updatePanelCharacterReaction,
+    generatePersonaFollowUps,
+    generatePanelFollowUps,
+    handleTogglePanelSelection,
+    handleStartPanelChat,
+    handleClosePersonaChat,
+    handleSelectPersona,
+    handlePersonaTopicSpark,
+    handlePanelChatSubmit,
+    handlePersonaChatSubmit,
+    handleSavePersonaChat
+  };
 };
 
 // Registration shim — attach factory + trigger monolith's _upgradePersonas().
 if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
-    window.AlloModules.createPersonas = createPersonas;
-    window.AlloModules.Personas = true;
-    console.log('[Personas] Factory registered');
-    if (typeof window._upgradePersonas === 'function') {
-        window._upgradePersonas();
-    }
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.createPersonas = createPersonas;
+  window.AlloModules.Personas = true;
+  console.log('[Personas] Factory registered');
+  if (typeof window._upgradePersonas === 'function') {
+    window._upgradePersonas();
+  }
 }
 })();
