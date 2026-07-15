@@ -6,7 +6,8 @@ const source = readFileSync('word_sounds_setup_source.jsx', 'utf8');
 describe('Word Sounds review-row actions', () => {
   it('does not wrap native image actions in an inert simulated button', () => {
     expect(source).not.toContain('<div role="button" tabIndex={0} className="relative group/img"');
-    expect(source).toContain('<div className="relative group/img" onClick={(e) => e.stopPropagation()}>');
+    expect(source).toContain('<div className="relative group/img">');
+    expect(source).not.toContain('className="relative group/img" onClick=');
   });
 
   it('gives audio actions word-specific names and large visible focus targets', () => {
