@@ -14,6 +14,11 @@ const SPEECH_LANGUAGE_PATHOLOGY_5331_PACK_SOURCE = path.join(ROOT, 'test_prep', 
 const AUDIOLOGY_5343_PACK_SOURCE = path.join(ROOT, 'test_prep', 'audiology_5343_pack.json');
 const READING_SPECIALIST_5302_PACK_SOURCE = path.join(ROOT, 'test_prep', 'reading_specialist_5302_pack.json');
 const EDUCATIONAL_LEADERSHIP_5412_PACK_SOURCE = path.join(ROOT, 'test_prep', 'educational_leadership_5412_pack.json');
+const PLT_K6_5622_PACK_SOURCE = path.join(ROOT, 'test_prep', 'plt_k6_5622_pack.json');
+const PRAXIS_CORE_5752_PACK_SOURCE = path.join(ROOT, 'test_prep', 'praxis_core_5752_pack.json');
+const ESOL_5362_PACK_SOURCE = path.join(ROOT, 'test_prep', 'esol_5362_pack.json');
+const TEACHING_READING_5205_PACK_SOURCE = path.join(ROOT, 'test_prep', 'teaching_reading_5205_pack.json');
+const EARLY_CHILDHOOD_5025_PACK_SOURCE = path.join(ROOT, 'test_prep', 'early_childhood_5025_pack.json');
 const OUTPUT = path.join(ROOT, 'test_prep_hub_module.js');
 const DEPLOY_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const TMP = path.join(ROOT, '_tmp_test_prep_hub_entry.jsx');
@@ -61,6 +66,24 @@ const EDUCATIONAL_LEADERSHIP_5412_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'b
 const EDUCATIONAL_LEADERSHIP_5412_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_educational_leadership_5412_learning_library.cjs');
 const EDUCATIONAL_LEADERSHIP_5412_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_educational_leadership_5412_learning_library.cjs');
 const EDUCATIONAL_LEADERSHIP_5412_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_educational_leadership_5412_pack.cjs');
+const PLT_K6_5622_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_plt_k6_5622_pack.cjs');
+const PLT_K6_5622_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_plt_k6_5622_learning_library.cjs');
+const PLT_K6_5622_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_plt_k6_5622_learning_library.cjs');
+const PLT_K6_5622_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_plt_k6_5622_pack.cjs');
+const PRAXIS_CORE_5752_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_praxis_core_5752_pack.cjs');
+const PRAXIS_CORE_5752_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_praxis_core_5752_learning_library.cjs');
+const PRAXIS_CORE_5752_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_praxis_core_5752_learning_library.cjs');
+const PRAXIS_CORE_5752_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_praxis_core_5752_pack.cjs');
+const ESOL_5362_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_esol_5362_pack.cjs');
+const ESOL_5362_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_esol_5362_learning_library.cjs');
+const ESOL_5362_LIBRARY_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_esol_5362_learning_library.cjs');
+const ESOL_5362_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_esol_5362_pack.cjs');
+const TEACHING_READING_5205_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_teaching_reading_5205_pack.cjs');
+const TEACHING_READING_5205_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_teaching_reading_5205_learning_library.cjs');
+const TEACHING_READING_5205_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_teaching_reading_5205.cjs');
+const EARLY_CHILDHOOD_5025_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_early_childhood_5025_pack.cjs');
+const EARLY_CHILDHOOD_5025_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_early_childhood_5025_learning_library.cjs');
+const EARLY_CHILDHOOD_5025_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_early_childhood_5025.cjs');
 const skipEpppRefresh = process.argv.includes('--skip-eppp-refresh');
 
 if (!fs.existsSync(SOURCE)) {
@@ -103,6 +126,24 @@ execSync(`node "${EDUCATIONAL_LEADERSHIP_5412_BUILD_SCRIPT}"`, { cwd: ROOT, stdi
 execSync(`node "${EDUCATIONAL_LEADERSHIP_5412_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${EDUCATIONAL_LEADERSHIP_5412_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${EDUCATIONAL_LEADERSHIP_5412_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PLT_K6_5622_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PLT_K6_5622_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PLT_K6_5622_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PLT_K6_5622_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PRAXIS_CORE_5752_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PRAXIS_CORE_5752_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PRAXIS_CORE_5752_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${PRAXIS_CORE_5752_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${ESOL_5362_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${ESOL_5362_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${ESOL_5362_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${ESOL_5362_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${TEACHING_READING_5205_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${TEACHING_READING_5205_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${TEACHING_READING_5205_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${EARLY_CHILDHOOD_5025_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${EARLY_CHILDHOOD_5025_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${EARLY_CHILDHOOD_5025_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 if (!Array.isArray(bank) || !bank.length) throw new Error('EPPP native item bank is empty or invalid.');
 const paraProPack = JSON.parse(fs.readFileSync(PARAPRO_PACK_SOURCE, 'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 200) {
@@ -136,6 +177,22 @@ const educationalLeadership5412Pack = JSON.parse(fs.readFileSync(EDUCATIONAL_LEA
 if (!educationalLeadership5412Pack || educationalLeadership5412Pack.id !== 'praxis-educational-leadership-5412' || educationalLeadership5412Pack.batchSize !== 100 || !Array.isArray(educationalLeadership5412Pack.items) || educationalLeadership5412Pack.items.length !== 200) {
   throw new Error('Praxis Educational Leadership 5412 release pack is empty or invalid.');
 }
+const pltK65622Pack = JSON.parse(fs.readFileSync(PLT_K6_5622_PACK_SOURCE, 'utf8'));
+if (!pltK65622Pack || pltK65622Pack.id !== 'praxis-plt-k6-5622' || pltK65622Pack.batchSize !== 100 || !Array.isArray(pltK65622Pack.items) || pltK65622Pack.items.length !== 200) {
+  throw new Error('Praxis PLT K?6 5622 release pack is empty or invalid.');
+}
+const praxisCore5752Pack = JSON.parse(fs.readFileSync(PRAXIS_CORE_5752_PACK_SOURCE, 'utf8'));
+if (!praxisCore5752Pack || praxisCore5752Pack.id !== 'praxis-core-5752' || praxisCore5752Pack.batchSize !== 100 || !Array.isArray(praxisCore5752Pack.items) || praxisCore5752Pack.items.length !== 200) {
+  throw new Error('Praxis Core 5752 release pack is empty or invalid.');
+}
+const esol5362Pack = JSON.parse(fs.readFileSync(ESOL_5362_PACK_SOURCE, 'utf8'));
+if (!esol5362Pack || esol5362Pack.id !== 'praxis-esol-5362' || esol5362Pack.batchSize !== 100 || !Array.isArray(esol5362Pack.items) || esol5362Pack.items.length !== 200) {
+  throw new Error('Praxis ESOL 5362 release pack is empty or invalid.');
+}
+const teachingReading5205Pack = JSON.parse(fs.readFileSync(TEACHING_READING_5205_PACK_SOURCE, 'utf8'));
+if (!teachingReading5205Pack || teachingReading5205Pack.id !== 'praxis-teaching-reading-5205' || teachingReading5205Pack.batchSize !== 100 || teachingReading5205Pack.items?.length !== 200) throw new Error('Teaching Reading 5205 release pack is invalid.');
+const earlyChildhood5025Pack=JSON.parse(fs.readFileSync(EARLY_CHILDHOOD_5025_PACK_SOURCE,'utf8'));
+if(earlyChildhood5025Pack.items?.length!==200) throw new Error('Early Childhood 5025 pack invalid.');
 const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
@@ -144,7 +201,12 @@ const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n
   + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(speechLanguagePathology5331Pack) + ';\n\n'
   + 'const AUDIOLOGY_5343_PRACTICE_PACK = ' + JSON.stringify(audiology5343Pack) + ';\n\n'
   + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + JSON.stringify(readingSpecialist5302Pack) + ';\n\n'
-  + 'const EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK = ' + JSON.stringify(educationalLeadership5412Pack) + ';\n\n';
+  + 'const EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK = ' + JSON.stringify(educationalLeadership5412Pack) + ';\n\n'
+  + 'const PLT_K6_5622_PRACTICE_PACK = ' + JSON.stringify(pltK65622Pack) + ';\n\n'
+  + 'const PRAXIS_CORE_5752_PRACTICE_PACK = ' + JSON.stringify(praxisCore5752Pack) + ';\n\n'
+  + 'const ESOL_5362_PRACTICE_PACK = ' + JSON.stringify(esol5362Pack) + ';\n\n'
+  + 'const TEACHING_READING_5205_PRACTICE_PACK = ' + JSON.stringify(teachingReading5205Pack) + ';\n\n'
+  + 'const EARLY_CHILDHOOD_5025_PRACTICE_PACK = ' + JSON.stringify(earlyChildhood5025Pack) + ';\n\n';
 fs.writeFileSync(TMP, '/* global React */\n\n' + bankPrelude + source + '\n', 'utf8');
 
 try {

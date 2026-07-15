@@ -41,6 +41,9 @@ beforeAll(() => {
   const audiology5343LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/audiology_5343_learning_library.json'), 'utf8'));
   const readingSpecialist5302LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/reading_specialist_5302_learning_library.json'), 'utf8'));
   const educationalLeadership5412LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/educational_leadership_5412_learning_library.json'), 'utf8'));
+  const pltK65622LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/plt_k6_5622_learning_library.json'), 'utf8'));
+  const praxisCore5752LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/praxis_core_5752_learning_library.json'), 'utf8'));
+  const esol5362LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/esol_5362_learning_library.json'), 'utf8'));
   const reportFetch = async (url) => {
     if (String(url).includes('content_audit.json')) return { ok: true, json: async () => auditFixture };
     if (String(url).includes('content_inventory.json')) return { ok: true, json: async () => inventoryFixture };
@@ -53,6 +56,9 @@ beforeAll(() => {
     if (String(url).includes('audiology_5343_learning_library.json')) return { ok: true, json: async () => audiology5343LibraryFixture };
     if (String(url).includes('reading_specialist_5302_learning_library.json')) return { ok: true, json: async () => readingSpecialist5302LibraryFixture };
     if (String(url).includes('educational_leadership_5412_learning_library.json')) return { ok: true, json: async () => educationalLeadership5412LibraryFixture };
+    if (String(url).includes('plt_k6_5622_learning_library.json')) return { ok: true, json: async () => pltK65622LibraryFixture };
+    if (String(url).includes('praxis_core_5752_learning_library.json')) return { ok: true, json: async () => praxisCore5752LibraryFixture };
+    if (String(url).includes('esol_5362_learning_library.json')) return { ok: true, json: async () => esol5362LibraryFixture };
     return { ok: false, json: async () => ({}) };
   };
   global.fetch = window.fetch = reportFetch;
@@ -708,6 +714,185 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Practice this skill');
     expect(host.textContent).toContain('Targeted practice: Mission, Vision, Goals, and Core Values');
+    expect(host.textContent).toContain('Question 1 of 18');
+  }, 30_000);
+
+
+  it('uses 5622 diagnostics, selected-response pacing, case workshops, and native K-6 learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Principles of Learning and Teaching: Grades') && article.textContent.includes('(5622)'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('70 questions');
+    expect(host.textContent).toContain('70 minutes');
+    expect(host.textContent).toContain('four constructed-response questions');
+    expect(host.textContent).toContain('120-minute session');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-plt-k6-5622');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('70-question selected-response pacing simulation');
+    expect(host.textContent).toContain('Question 1 of 70');
+    expect(host.textContent).toContain('Time remaining 70:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Principles of Learning and Teaching: Grades');
+    await waitForText('(5622) learning library');
+    expect(host.textContent).toContain('Response workshops');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+    await clickButton('Written-response workshops');
+    expect(host.textContent).toContain('(5622) application practice');
+    expect(host.textContent).toContain('Case A1: Analyze Learner Development and Motivation');
+    expect(host.textContent).toContain('Case D2: Apply Ethical, Legal, and Safety Boundaries');
+    expect(host.textContent).toContain('AlloFlow does not score written responses');
+    await expectNoAxeViolations('5622 case-analysis workshops');
+
+    await clickButton('Chapters');
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Learning Theory, Cognition, and Transfer'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Knowledge construction, schema, and information processing');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('A fourth-grade class holds persistent misconceptions before a science unit'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('Schema influences');
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Learning Theory, Cognition, and Transfer');
+    expect(host.textContent).toContain('Question 1 of 16');
+  }, 30_000);
+
+
+  it('uses 5752 combined diagnostics, full selected-response pacing, essay workshops, and native learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Core Academic Skills for Educators: Combined') && article.textContent.includes('(5752)'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('152 questions');
+    expect(host.textContent).toContain('215 minutes');
+    expect(host.textContent).toContain('two essay sections');
+    expect(host.textContent).toContain('total 275 minutes');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-core-5752');
+    expect(pack.officialSubtests).toHaveLength(3);
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('152-question combined selected-response pacing simulation');
+    expect(host.textContent).toContain('Question 1 of 152');
+    expect(host.textContent).toContain('Time remaining 215:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Praxis Core Academic Skills for Educators: Combined (5752) learning library');
+    expect(host.textContent).toContain('Response workshops');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+    await clickButton('Written-response workshops');
+    expect(host.textContent).toContain('Praxis Core (5752) application practice');
+    expect(host.textContent).toContain('Access and flexibility in public services');
+    expect(host.textContent).toContain('Reading averages with context');
+    expect(host.textContent).toContain('AlloFlow does not score written responses');
+    await expectNoAxeViolations('5752 essay workshops');
+
+    await clickButton('Chapters');
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Main Ideas, Supporting Details, and Inferences'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Main idea and primary purpose');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('After the town converted an unused rail corridor'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    expect(firstCheck.textContent).toContain('best main idea');
+    await expectNoAxeViolations('5752 native chapter');
+
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Main Ideas, Details, and Inferences');
+    expect(host.textContent).toContain('Question 1 of 20');
+  }, 30_000);
+
+
+  it('uses 5362 diagnostics, exact pacing, applied transcript workshops, and native learning', async () => {
+    await mount();
+    const suiteCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('English to Speakers of Other Languages') && article.textContent.includes('(5362)'));
+    expect(suiteCard).toBeTruthy();
+    await act(async () => { suiteCard.querySelector('button').click(); });
+    await waitForText('Choose a study mode');
+
+    expect(host.textContent).toContain('Start Practice Bank 1');
+    expect(host.textContent).toContain('Start Practice Bank 2');
+    expect(host.textContent).toContain('120 questions');
+    expect(host.textContent).toContain('120 minutes');
+    expect(host.textContent).toContain('may include audio');
+
+    const pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-esol-5362');
+    await clickButton('Start Practice Bank 2');
+    expect(host.textContent).toContain('Practice Bank 2 of 2');
+    expect(host.textContent).toContain('Question 1 of 100');
+    expect(host.textContent).toContain(pack.items[100].prompt);
+
+    await clickButton('Practice options');
+    await waitForText('Resume saved practice');
+    await clickButton('Start timed simulation');
+    expect(host.textContent).toContain('120-question ESOL pacing simulation');
+    expect(host.textContent).toContain('Question 1 of 120');
+    expect(host.textContent).toContain('Time remaining 120:00');
+    expect(findButton('Check answer')).toBeFalsy();
+    expect(findButton('Save answer and continue')).toBeTruthy();
+
+    await clickButton('Practice options');
+    await clickButton('Learning library');
+    await waitForText('Praxis English to Speakers of Other Languages (5362) learning library');
+    expect(host.textContent).toContain('Response workshops');
+    expect(host.textContent).toContain('75');
+    expect(host.textContent).toContain('20');
+    await clickButton('Audio and classroom-analysis workshops');
+    expect(host.textContent).toContain('Praxis ESOL (5362) application practice');
+    expect(host.textContent).toContain('Reduced speech in a classroom announcement');
+    expect(host.textContent).toContain('Evaluating access beyond language-growth scores');
+    expect(host.textContent).toContain('do not reproduce ETS recordings');
+    await expectNoAxeViolations('5362 applied workshops');
+
+    await clickButton('Chapters');
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Phonology, Morphology, Syntax, and Language Structure'));
+    expect(chapterCard).toBeTruthy();
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    expect(host.textContent).toContain('Phonetics, phonology, and intelligibility');
+    const firstCheck = Array.from(host.querySelectorAll('fieldset')).find((field) => field.textContent.includes('A learner says "sip" for "ship"'));
+    expect(firstCheck).toBeTruthy();
+    await act(async () => { firstCheck.querySelector('input[type="radio"]').click(); });
+    await act(async () => { firstCheck.querySelector('button').click(); });
+    expect(firstCheck.textContent).toContain('Correct');
+    await clickButton('Practice this skill');
+    expect(host.textContent).toContain('Targeted practice: Phonology, Morphology, Syntax, and Language Structure');
     expect(host.textContent).toContain('Question 1 of 18');
   }, 30_000);
 

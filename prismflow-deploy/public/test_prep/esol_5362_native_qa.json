@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T00:51:24.854Z",
+  "packId": "praxis-esol-5362",
+  "standard": {
+    "label": "AlloFlow independent Praxis ESOL 5362 source, structure, feedback, originality, safety, and linkage QA v1",
+    "meaning": "A pass confirms the specified inventory, blueprint allocations, feedback, authoritative-source allowlist, safeguards, and native learning links.",
+    "limitation": "This is not ETS, TESOL, WIDA, NCELA, or U.S. Department of Education approval; independent ESOL educator, multilingual-family, accessibility, linguistic, civil-rights, and psychometric validation remain pending."
+  },
+  "summary": {
+    "totalItems": 200,
+    "passedItems": 200,
+    "diagnosticBanks": 2,
+    "bankSize": 100,
+    "simulationItems": 120,
+    "findings": [],
+    "status": "pass"
+  }
+}

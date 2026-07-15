@@ -378,6 +378,21 @@ function normalizeTestPrepPack(pack) {
   }));
   const items = (Array.isArray(input.items) ? input.items : []).slice(0, 10000)
     .map((item, index) => normalizeTestPrepItem(item, index, domainIds));
+  const officialSubtests = (Array.isArray(input.officialSubtests) ? input.officialSubtests : []).slice(0, 12).map((subtest, index) => {
+    const entry = subtest && typeof subtest === 'object' && !Array.isArray(subtest) ? subtest : {};
+    const normalized = {
+      code: String(entry.code || index + 1).trim().slice(0, 20),
+      label: String(entry.label || 'Subtest ' + (index + 1)).trim().slice(0, 120),
+      questions: Math.max(0, Math.min(500, Math.round(testPrepFinite(entry.questions, 0)))),
+      timeMinutes: Math.max(0, Math.min(600, Math.round(testPrepFinite(entry.timeMinutes, 0)))),
+    };
+    const essayCount = Math.max(0, Math.min(20, Math.round(testPrepFinite(entry.essayCount, 0))));
+    if (essayCount) {
+      normalized.essayCount = essayCount;
+      normalized.essayMinutesEach = Math.max(0, Math.min(180, Math.round(testPrepFinite(entry.essayMinutesEach, 0))));
+    }
+    return normalized;
+  });
   return {
     schemaVersion: Math.floor(testPrepFinite(input.schemaVersion, TEST_PREP_SCHEMA_VERSION)),
     id: testPrepSlug(input.id || input.title, 'exam-pack'),
@@ -397,6 +412,8 @@ function normalizeTestPrepPack(pack) {
     simulationNote: String(input.simulationNote || '').trim().slice(0, 600),
     officialSelectedResponseCount: Math.max(0, Math.min(500, Math.round(testPrepFinite(input.officialSelectedResponseCount, 0)))),
     officialConstructedResponseCount: Math.max(0, Math.min(50, Math.round(testPrepFinite(input.officialConstructedResponseCount, 0)))),
+    officialTotalTimeMinutes: Math.max(0, Math.min(1000, Math.round(testPrepFinite(input.officialTotalTimeMinutes, 0)))),
+    officialSubtests,
     legacyUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyUrl || '').trim()) && !String(input.legacyUrl || '').includes('..') ? String(input.legacyUrl).trim() : '',
     legacyAuditUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyAuditUrl || '').trim()) && !String(input.legacyAuditUrl || '').includes('..') ? String(input.legacyAuditUrl).trim() : '',
     legacyInventoryUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyInventoryUrl || '').trim()) && !String(input.legacyInventoryUrl || '').includes('..') ? String(input.legacyInventoryUrl).trim() : '',
@@ -1307,6 +1324,11 @@ registerTestPrepPack(SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK);
 registerTestPrepPack(AUDIOLOGY_5343_PRACTICE_PACK);
 registerTestPrepPack(READING_SPECIALIST_5302_PRACTICE_PACK);
 registerTestPrepPack(EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK);
+registerTestPrepPack(PLT_K6_5622_PRACTICE_PACK);
+registerTestPrepPack(PRAXIS_CORE_5752_PRACTICE_PACK);
+registerTestPrepPack(ESOL_5362_PRACTICE_PACK);
+registerTestPrepPack(TEACHING_READING_5205_PRACTICE_PACK);
+registerTestPrepPack(EARLY_CHILDHOOD_5025_PRACTICE_PACK);
 
 function TestPrepStatusBadge({ status }) {
   const styles = status === 'ready'
@@ -2382,7 +2404,7 @@ function TestPrepHub(props) {
               </div>
 
               <nav className="flex flex-wrap gap-2" aria-label="Learning library modes">
-                {([['search', 'Search all'], ['chapters', 'Chapters'], ['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']].concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [['constructed-response', 'Written-response workshops']] : [])).map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:outline-none focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
+                {([['search', 'Search all'], ['chapters', 'Chapters'], ['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']].concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [['constructed-response', learningLibrary.workshopLabel || 'Written-response workshops']] : [])).map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:outline-none focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
               </nav>
 
               {learningLibraryStatus === 'loading' && <p className="rounded-xl border border-indigo-200 bg-white p-5 text-sm font-bold text-indigo-900" role="status">Loading the learning library…</p>}
@@ -2486,9 +2508,9 @@ function TestPrepHub(props) {
                 const workshops = Array.isArray(learningLibrary.constructedResponseWorkshops) ? learningLibrary.constructedResponseWorkshops : [];
                 return <section className="space-y-5" aria-labelledby="written-response-workshops-title">
                   <header className="rounded-xl border border-sky-300 bg-sky-50 p-5">
-                    <p className="text-xs font-black uppercase tracking-wider text-sky-800">Praxis 5302 application practice</p>
-                    <h4 id="written-response-workshops-title" className="mt-1 text-xl font-black text-slate-900">Written-response workshops</h4>
-                    <p className="mt-2 max-w-4xl text-sm leading-relaxed text-sky-950">Plan a complete response, then compare your reasoning with transparent self-check criteria and a sample outline. AlloFlow does not score written responses, and these independent workshops are not official ETS prompts, rubrics, scores, or predictions.</p>
+                    <p className="text-xs font-black uppercase tracking-wider text-sky-800">{selectedPack.shortTitle} application practice</p>
+                    <h4 id="written-response-workshops-title" className="mt-1 text-xl font-black text-slate-900">{learningLibrary.workshopLabel || 'Written-response workshops'}</h4>
+                    <p className="mt-2 max-w-4xl text-sm leading-relaxed text-sky-950">{learningLibrary.workshopPracticeNote || 'Plan a complete response, then compare your reasoning with transparent self-check criteria and a sample outline. AlloFlow does not score written responses, and these independent workshops are not official ETS prompts, rubrics, scores, or predictions.'}</p>
                   </header>
                   <div className="space-y-5">
                     {workshops.map((workshop, workshopIndex) => <article key={workshop.id} className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-7">

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T00:51:24.535Z",
+  "libraryId": "praxis-esol-5362-learning-library",
+  "packId": "praxis-esol-5362",
+  "standard": {
+    "label": "AlloFlow Praxis ESOL 5362 learning-library QA v1",
+    "meaning": "A pass confirms complete learning and applied-workshop inventories, substantive lessons and checks, authoritative references, stable links, and explicit format and decision boundaries.",
+    "limitation": "This is not ETS, TESOL, WIDA, NCELA, or U.S. Department of Education approval, official audio delivery or scoring, a scaled score, pass prediction, licensure decision, language-proficiency decision, disability decision, or independent subject-matter, family, accessibility, linguistic, civil-rights, or psychometric validation."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "constructedResponseWorkshops": 8,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "sourceReviewedConstructedResponseWorkshops": 8,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  }
+}
