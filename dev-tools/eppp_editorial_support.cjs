@@ -60,6 +60,12 @@ const SOURCES = {
     'https://openstax.org/books/psychology-2e/pages/9-introduction',
     'OpenStax is Rice University\'s nonprofit educational publisher. This expert-reviewed chapter provides a broad lifespan framework for cognitive, social, emotional, and physical development without serving as an individual diagnostic rule.'
   ),
+  health: source(
+    'Psychology 2e, Chapter 14: Stress, Lifestyle, and Health',
+    'OpenStax, Rice University (second edition)',
+    'https://openstax.org/books/psychology-2e/pages/14-introduction',
+    'OpenStax is Rice University\'s nonprofit educational publisher. This expert-authored and peer-reviewed psychology chapter covers integrated biological, psychological, behavioral, and social perspectives on stress, health, coping, and health-related behavior.'
+  ),
   mmpi: source(
     'Minnesota Multiphasic Personality Inventory-3 (MMPI-3)',
     'University of Minnesota Press, Test Division, official MMPI publisher',
@@ -138,6 +144,12 @@ const SOURCES = {
     'https://dictionary.apa.org/evidence-based-practice',
     'The American Psychological Association defines evidence-based practice for psychology and anchors it in the integration of research evidence, clinical expertise, and patient characteristics, culture, values, and preferences.'
   ),
+  supervision: source(
+    'Guidelines for Clinical Supervision in Health Service Psychology',
+    'American Psychological Association (2014)',
+    'https://www.apa.org/about/policy/guidelines-supervision.pdf',
+    'The American Psychological Association adopted these professional guidelines to describe competency-based clinical supervision, the supervisory relationship, assessment, feedback, diversity, ethical responsibilities, and documentation in health service psychology.'
+  ),
   ethics: source(
     'Ethical Principles of Psychologists and Code of Conduct',
     'American Psychological Association, current published Ethics Code and amendments',
@@ -148,11 +160,14 @@ const SOURCES = {
 
 function sourceFor(domainId, value) {
   const text = normalize(value);
-  if (domainId === 1) return /\b(?:neurotrans\w*|dopamin\w*|seroton\w*|gaba\w*|acetyl\w*|receptors?|agonists?|antagonists?|synap\w*|drugs?|medicat\w*|benzodia\w*|antipsych\w*|antidepress\w*)\b/.test(text) ? SOURCES.neurochemistry : SOURCES.neuroanatomy;
+  if (domainId === 1) {
+    if (/biopsychosocial|health behavior|stress and health/.test(text)) return SOURCES.health;
+    return /\b(?:neurotrans\w*|dopamin\w*|seroton\w*|gaba\w*|acetyl\w*|receptors?|agonists?|antagonists?|synap\w*|drugs?|medicat\w*|benzodia\w*|antipsych\w*|antidepress\w*)\b/.test(text) ? SOURCES.neurochemistry : SOURCES.neuroanatomy;
+  }
   if (domainId === 2) {
-    if (/memory|recall|recognition|encoding|retrieval|forget|amnesia|interference|rehearsal/.test(text)) return SOURCES.memory;
+    if (/memory|recall|recognition|encoding|retrieval|forget|amnesia|interference|rehearsal|misinformation|serial position|generation effect|spacing effect/.test(text)) return SOURCES.memory;
     if (/conditioning|reinforcement|punishment|extinction|learning|schedule|shaping|modeling/.test(text)) return SOURCES.learning;
-    if (/emotion|motivation|drive|arousal|hunger|attribution of emotion/.test(text)) return SOURCES.motivation;
+    if (/emotion|motivation|drive|arousal|hunger|attribution of emotion|overjustification|schachter/.test(text)) return SOURCES.motivation;
     return SOURCES.cognition;
   }
   if (domainId === 3) return SOURCES.social;
@@ -163,11 +178,13 @@ function sourceFor(domainId, value) {
     if (/wechsler|wisc|wais|wppsi/.test(text)) return SOURCES.wechsler;
     if (/rorschach/.test(text)) return SOURCES.rorschach;
     if (/halstead|reitan|neuropsych/.test(text)) return SOURCES.neuropsychAssessment;
-    return /reliab|valid|score|norm|test|assessment|item|factor|intelligence/.test(text) ? SOURCES.testing : SOURCES.disorders;
+    if (/\b(?:disorder|syndrome|diagnos|psychopatholog|symptom)\b/.test(text)) return SOURCES.disorders;
+    return SOURCES.testing;
   }
   if (domainId === 6) return /medicat|drug|antidepress|antipsych|benzodia|maoi|ssri|lithium|stimulant|clozapine/.test(text) ? SOURCES.medications : SOURCES.therapy;
-  if (domainId === 7) return /belmont|human subject|informed consent|irb|research ethics|debrief|deception/.test(text) ? SOURCES.belmont : (/mean|median|mode|variance|deviation|correl|regress|probab|alpha|power|signific|distribution|anova|chi.square|t.test|sampling/.test(text) ? SOURCES.statistics : SOURCES.research);
+  if (domainId === 7) return /belmont|human subject|informed consent|irb|research ethics|debrief|deception/.test(text) ? SOURCES.belmont : (/mean|median|mode|variance|deviation|correl|regress|probab|alpha|power|signific|distribution|anova|chi.square|t.test|effect size|cohen|type i|type ii/.test(text) ? SOURCES.statistics : SOURCES.research);
   if (/evidence based practice/.test(text)) return SOURCES.ebpp;
+  if (/supervision/.test(text)) return SOURCES.supervision;
   return SOURCES.ethics;
 }
 
