@@ -19,8 +19,22 @@ describe('SEL-PRIV-7 — clear-my-SEL-data affordance', () => {
     expect(HUB).toMatch(/onClick: clearAllSelData/);
   });
 
-  it('is confirm-gated (destructive, cannot be undone)', () => {
-    expect(HUB).toMatch(/window\.confirm/);
+  it('is confirm-gated by an accessible in-app dialog (destructive, cannot be undone)', () => {
+    // SEL-PRIV-7: the destructive delete requires explicit confirmation. The gate is an
+    // ACCESSIBLE in-app confirm dialog, NOT window.confirm — that was intentionally
+    // removed (5e0f7ecdf "confirm SEL data deletion accessibly") because a native
+    // window.confirm is not reliably announced by screen readers and cannot be
+    // theme/contrast-styled. This asserts the real gate flow, which is stronger.
+    // 1. The trigger button only OPENS the dialog — it never deletes directly.
+    expect(HUB).toMatch(/id: 'sel-clear-all-data-button',[\s\S]{0,80}setShowClearSelConfirm\(true\)/);
+    // 2. The dialog renders only while the confirm state is open, is an accessible
+    //    labelled dialog, and the real deletion (clearAllSelData) is wired ONLY to
+    //    its confirm button.
+    expect(HUB).toMatch(/showClearSelConfirm && h\('div'/);
+    expect(HUB).toMatch(/id: 'sel-clear-data-confirm-modal'/);
+    expect(HUB).toMatch(/'aria-labelledby': 'sel-clear-data-confirm-title'/);
+    expect(HUB).toMatch(/onClick: clearAllSelData/);
+    // 3. The irreversibility is stated to the user.
     expect(HUB).toMatch(/cannot be undone/i);
   });
 
