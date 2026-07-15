@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T01:07:04.480Z",
+  "libraryId": "praxis-plt-early-childhood-5621-learning-library",
+  "packId": "praxis-plt-early-childhood-5621",
+  "standard": {
+    "label": "AlloFlow PLT Early Childhood 5621 source, structure, feedback, case-practice, and linkage QA v1",
+    "limitation": "Not ETS, CCSSO, or NAEYC approval; independent early-childhood educator, family, accessibility, legal, and psychometric validation remain pending."
+  },
+  "summary": {
+    "chapters": 12,
+    "sections": 48,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "knowledgeChecks": 60,
+    "flashcards": 75,
+    "memoryAids": 20,
+    "constructedResponseWorkshops": 8,
+    "sourceReviewedChapters": 12,
+    "sourceReviewedFlashcards": 75,
+    "sourceReviewedMemoryAids": 20,
+    "sourceReviewedConstructedResponseWorkshops": 8,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "findings": [],
+    "status": "pass"
+  }
+}

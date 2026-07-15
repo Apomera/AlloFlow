@@ -1329,6 +1329,8 @@ registerTestPrepPack(PRAXIS_CORE_5752_PRACTICE_PACK);
 registerTestPrepPack(ESOL_5362_PRACTICE_PACK);
 registerTestPrepPack(TEACHING_READING_5205_PRACTICE_PACK);
 registerTestPrepPack(EARLY_CHILDHOOD_5025_PRACTICE_PACK);
+registerTestPrepPack(PLT_EARLY_CHILDHOOD_5621_PRACTICE_PACK);
+registerTestPrepPack(SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK);
 
 function TestPrepStatusBadge({ status }) {
   const styles = status === 'ready'
