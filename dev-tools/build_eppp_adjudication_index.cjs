@@ -8,14 +8,21 @@ const root = path.resolve(__dirname, '..');
 const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
 const deployRoot = path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'eppp_legacy');
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
-const batchNumbers = ['01', '02', '03', '04', '05'];
+const batchNumbers = fs.readdirSync(sourceRoot)
+  .map((file) => file.match(/^adjudication_batch_(\d{2})\.json$/)?.[1])
+  .filter(Boolean)
+  .sort();
+if (!batchNumbers.length) throw new Error('No adjudication batch reports were found.');
 const reports = batchNumbers.map((number) => readJson(path.join(sourceRoot, `adjudication_batch_${number}.json`)));
 const allItems = reports.flatMap((report, reportIndex) => report.items.map((item) => ({ ...item, batchId: `batch-${batchNumbers[reportIndex]}` })));
 const ids = allItems.map((item) => item.legacyId);
 
 if (reports.some((report) => report.status !== 'editorial-adjudication-complete-still-quarantined')) throw new Error('Every included batch must remain quarantined.');
-if (ids.length !== 50 || new Set(ids).size !== ids.length) throw new Error(`Expected 50 unique adjudicated candidates; received ${ids.length} items and ${new Set(ids).size} unique IDs.`);
+if (reports.some((report) => report.items.length !== 10 || report.summary.adjudicatedCandidates !== report.items.length)) throw new Error('Every batch must contain and summarize exactly ten candidates.');
+if (new Set(ids).size !== ids.length) throw new Error(`Expected unique adjudicated candidates; received ${ids.length} items and ${new Set(ids).size} unique IDs.`);
 if (allItems.some((item) => item.workflowStage !== 'editorial-adjudicated-quarantine' || item.learnerVisibleInNativeBank !== false || item.independentExpertStatus !== 'not-started' || item.productionStatus !== 'not-production-validated')) throw new Error('An indexed candidate does not satisfy the quarantine gates.');
+const sourceReviewDates = reports.map((report) => report.currentSourceReviewDate).filter(Boolean).sort();
+if (!sourceReviewDates.length) throw new Error('No batch provides a current source-review date.');
 
 const domains = [...new Set(allItems.map((item) => item.domainId))];
 const domainDistribution = Object.fromEntries(domains.map((domain) => [domain, allItems.filter((item) => item.domainId === domain).length]));
@@ -54,7 +61,7 @@ const items = allItems.map((item) => ({
 const report = {
   schemaVersion: 1,
   generatedAt: new Date().toISOString(),
-  currentSourceReviewDate: '2026-07-14',
+  currentSourceReviewDate: sourceReviewDates.at(-1),
   status: 'editorial-adjudication-index-all-candidates-quarantined',
   purpose: 'Provide a single machine-readable inventory of all claim-level EPPP legacy adjudications while preserving the release, expert-review, and production-validation gates.',
   summary,

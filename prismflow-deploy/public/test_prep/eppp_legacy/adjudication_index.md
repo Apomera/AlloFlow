@@ -1,16 +1,16 @@
 # EPPP legacy adjudication index
 
-Generated: 2026-07-15T00:01:49.620Z
+Generated: 2026-07-15T00:28:00.996Z
 
-**Status: all 50 indexed candidates remain quarantined and learner-invisible.**
+**Status: all 60 indexed candidates remain quarantined and learner-invisible.**
 
 This is an inventory, not a release manifest. Independent qualified review and production validation remain pending for every candidate.
 
 ## Cumulative outcome
 
-- 5 adjudication batches.
-- 50 unique legacy candidates reviewed.
-- 19 minor revisions and 31 major rewrites.
+- 6 adjudication batches.
+- 60 unique legacy candidates reviewed.
+- 21 minor revisions and 39 major rewrites.
 - 0 promoted to the learner-facing bank.
 - 0 independently expert validated.
 
@@ -21,6 +21,7 @@ This is an inventory, not a release manifest. Independent qualified review and p
 | batch-03 | 10 | 4 | 6 | undefined |
 | batch-04 | 10 | 3 | 7 | 2026-07-14 |
 | batch-05 | 10 | 4 | 6 | 2026-07-14 |
+| batch-06 | 10 | 2 | 8 | 2026-07-14 |
 
 ## Candidate inventory
 
@@ -76,5 +77,15 @@ This is an inventory, not a release manifest. Independent qualified review and p
 | batch-05 | legacy-21cf3c9af24c7ff4 | intervention | major-rewrite | 1 |
 | batch-05 | legacy-fb6bdf4e261c6e69 | research | minor-revision | 1 |
 | batch-05 | legacy-6e7af3c7afe10e96 | professional | major-rewrite | 2 |
+| batch-06 | legacy-da4ef0734ff60e5b | biological | major-rewrite | 2 |
+| batch-06 | legacy-b00109d3a7aa27f5 | cognitive-affective | major-rewrite | 2 |
+| batch-06 | legacy-accd00488c78c4e4 | social-cultural | major-rewrite | 2 |
+| batch-06 | legacy-e9a4afe155c89b97 | lifespan | minor-revision | 1 |
+| batch-06 | legacy-4cb1b02fed1d4884 | assessment | major-rewrite | 2 |
+| batch-06 | legacy-16804bc7e333c706 | assessment | major-rewrite | 1 |
+| batch-06 | legacy-da2f10ad0c34a4ca | intervention | major-rewrite | 1 |
+| batch-06 | legacy-94395834fab90351 | intervention | minor-revision | 1 |
+| batch-06 | legacy-b5947a089621a3e7 | research | major-rewrite | 1 |
+| batch-06 | legacy-e6e3e5b4bbadaedb | professional | major-rewrite | 2 |
 
 The individual batch JSON files retain each original item, detailed findings, proposed revision, option-by-option feedback, and full provenance.
