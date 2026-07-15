@@ -40,8 +40,10 @@ const crypto = require('crypto');
 
 const Contracts = require(path.join(__dirname, '..', '..', 'agent_core_contracts_module.js'));
 const BlueprintServiceModule = require(path.join(__dirname, '..', '..', 'agent_core_blueprint_service_module.js'));
+const MediaContracts = require(path.join(__dirname, '..', '..', 'agent_core_media_contracts_module.js'));
+const MediaPlanner = require(path.join(__dirname, '..', '..', 'agent_core_media_planner_module.js'));
 
-const SERVER_INFO = { name: 'alloflow-agent-core', title: 'AlloFlow Agent Core (local)', version: '0.2.0' };
+const SERVER_INFO = { name: 'alloflow-agent-core', title: 'AlloFlow Agent Core (local)', version: '0.3.0' };
 const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const MAX_LINE_CHARS = 4000000;
 const MAX_JOBS = 256;
@@ -84,6 +86,20 @@ function loadManifest() {
 }
 
 const MANIFEST = loadManifest();
+
+function emptyMediaInventory() { return { schemaVersion: MediaContracts.SCHEMA_VERSION, providers: [] }; }
+function loadMediaInventory() {
+  const fallback = MediaContracts.validateProviderInventory(emptyMediaInventory()).value;
+  const p = process.env.ALLOFLOW_MCP_MEDIA_INVENTORY_PATH;
+  if (!p) return fallback;
+  try {
+    const report = MediaContracts.validateProviderInventory(JSON.parse(fs.readFileSync(p, 'utf-8')));
+    if (report.ok) { log('media inventory loaded from ' + path.basename(p)); return report.value; }
+    log('media inventory failed validation (' + report.errors.map((e) => e.code).join(', ') + '); using empty inventory');
+  } catch (e) { log('media inventory unreadable (' + e.message + '); using empty inventory'); }
+  return fallback;
+}
+const MEDIA_INVENTORY = loadMediaInventory();
 
 const BLUEPRINT_SERVICE = BlueprintServiceModule.createBlueprintService({ contracts: Contracts });
 const JOBS = new Map();
@@ -302,6 +318,63 @@ const REVISION_INPUT_SCHEMA = {
 
 const JOB_ID_INPUT_SCHEMA = { type: 'object', required: ['jobId'], properties: { jobId: { type: 'string', minLength: 1, maxLength: 200 } }, additionalProperties: false };
 
+const PROVIDER_POLICY_INPUT_SCHEMA = {
+  type: 'object',
+  properties: {
+    mode: { type: 'string', enum: ['deployment-default', 'allow-listed'] },
+    allowedProviders: { type: 'array', items: { type: 'string' } },
+    allowedModels: { type: 'array', items: { type: 'string' } },
+    preferredProvider: { type: 'string' }, preferredModel: { type: 'string' },
+    allowMeteredUsage: { type: 'boolean' },
+    maxCostUsd: { type: 'number', minimum: 0, maximum: 100000 },
+    maxOperations: { type: 'integer', minimum: 1, maximum: 10000 }
+  }, additionalProperties: false
+};
+const ASSET_REF_INPUT_SCHEMA = {
+  type: 'object', required: ['handle'],
+  properties: {
+    handle: { type: 'string', pattern: '^asset_[A-Za-z0-9_-]{8,128}$' },
+    mimeType: { type: 'string', enum: ['image/png', 'image/jpeg', 'image/webp'] }
+  }, additionalProperties: false
+};
+const MEDIA_REQUEST_INPUT_SCHEMA = {
+  type: 'object', required: ['schemaVersion', 'requestId', 'operation', 'prompt', 'providerPolicy'],
+  properties: {
+    schemaVersion: { type: 'string', const: MediaContracts.SCHEMA_VERSION },
+    requestId: { type: 'string', minLength: 1, maxLength: 128 },
+    operation: { type: 'string', enum: ['generate', 'edit'] },
+    prompt: { type: 'string', minLength: 1, maxLength: 8000 }, purpose: { type: 'string', maxLength: 200 },
+    sourceAsset: ASSET_REF_INPUT_SCHEMA,
+    referenceAssets: { type: 'array', maxItems: 4, items: ASSET_REF_INPUT_SCHEMA },
+    output: {
+      type: 'object',
+      properties: {
+        width: { type: 'integer', minimum: 256, maximum: 4096 },
+        height: { type: 'integer', minimum: 256, maximum: 4096 },
+        mimeType: { type: 'string', enum: ['image/png', 'image/jpeg', 'image/webp'] },
+        quality: { type: 'string', enum: ['draft', 'standard', 'high'] }
+      }, additionalProperties: false
+    },
+    accessibility: { type: 'object', properties: { altTextRequired: { type: 'boolean' } }, additionalProperties: false },
+    providerPolicy: PROVIDER_POLICY_INPUT_SCHEMA
+  }, additionalProperties: false
+};
+const MEDIA_BATCH_INPUT_SCHEMA = {
+  type: 'object', required: ['schemaVersion', 'planId', 'requests', 'batchPolicy'],
+  properties: {
+    schemaVersion: { type: 'string', const: MediaContracts.SCHEMA_VERSION },
+    planId: { type: 'string', minLength: 1, maxLength: 128 },
+    requests: { type: 'array', minItems: 1, maxItems: MediaPlanner.MAX_ITEMS, items: MEDIA_REQUEST_INPUT_SCHEMA },
+    batchPolicy: {
+      type: 'object', required: ['maxCostUsd', 'maxOperations'],
+      properties: {
+        maxCostUsd: { type: 'number', minimum: 0, maximum: 100000 },
+        maxOperations: { type: 'integer', minimum: 1, maximum: 10000 }
+      }, additionalProperties: false
+    }
+  }, additionalProperties: false
+};
+
 const TOOLS = [
   toolEntry(
     'capabilities',
@@ -332,6 +405,11 @@ const TOOLS = [
     'blueprint_preview',
     'Preview ordered Blueprint steps and missing local capabilities without executing or generating anything. Returns a completed local job; call job_get_result for the preview.',
     { type: 'object', properties: { blueprint: BLUEPRINT_INPUT_SCHEMA }, required: ['blueprint'], additionalProperties: false }
+  ),
+  toolEntry(
+    'media_plan',
+    'Create a capability-aware dry-run plan for bounded image generation or editing requests. Uses only the runtime-configured credential-free media inventory, never accepts pricing or credentials from the agent, performs no provider call, writes no asset, and always leaves execution unauthorized.',
+    { type: 'object', properties: { batch: MEDIA_BATCH_INPUT_SCHEMA }, required: ['batch'], additionalProperties: false }
   ),
   toolEntry('job_get', 'Read status metadata for a local in-process Agent Core job. Jobs do not survive connector restart.', JOB_ID_INPUT_SCHEMA),
   toolEntry('job_cancel', 'Request cancellation of a queued, running, or input-required local job. Current deterministic draft jobs normally complete immediately and therefore cannot be cancelled.', JOB_ID_INPUT_SCHEMA),
@@ -388,6 +466,11 @@ const TOOL_HANDLERS = {
     const job = createCompletedJob(report.value.blueprintId);
     storeJob({ job, operation: 'blueprint_preview', result: { kind: 'preview', preview } });
     return { job: copyValue(job), resultAvailable: true };
+  },
+  media_plan(args) {
+    assertAllowedKeys(args, ['batch'], 'arguments');
+    assertObject(args.batch, 'arguments.batch');
+    return MediaPlanner.planMediaBatch(args.batch, MEDIA_INVENTORY, {}, MediaContracts);
   },
   job_get(args) { const jobId = requireJobId(args); const record = JOBS.get(jobId); return record ? { ok: true, job: copyValue(record.job) } : notFound(jobId); },
   job_cancel(args) {
@@ -455,7 +538,7 @@ async function handleRequest(msg) {
         protocolVersion,
         capabilities: { tools: { listChanged: false } },
         serverInfo: SERVER_INFO,
-        instructions: 'AlloFlow Agent Core local connector. Call `capabilities` first; validate or create, revise, and preview deterministic Blueprint drafts through local jobs. Draft calls do not invoke AI or spend quota. `blueprint_execute` is intentionally unavailable.'
+        instructions: 'AlloFlow Agent Core local connector. Call `capabilities` first; validate or create, revise, and preview deterministic Blueprint drafts, or use `media_plan` for a read-only provider-aware media dry run. These calls do not invoke AI or spend quota. Execution tools are intentionally unavailable.'
       });
       return;
     }

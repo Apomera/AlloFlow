@@ -11,11 +11,14 @@ Claude Code, and other MCP-compatible tools) talk to the AlloFlow Agent Core.
 | `blueprint_create` | Create a deterministic draft from an explicit plan | draft-writing |
 | `blueprint_revise` | Apply explicit pure changes to a draft | draft-writing |
 | `blueprint_preview` | Preview ordered steps and missing capabilities | read-only |
+| `media_plan` | Plan bounded media operations against configured provider capabilities | read-only |
 | `job_get` | Read local job status | read-only |
 | `job_cancel` | Request cancellation of an unfinished job | external-effect |
 | `job_get_result` | Read a completed job result | read-only |
 
-The connector has no network listener and makes no outbound request. The Task C
+The connector has no network listener and makes no outbound request. `media_plan`
+uses a separately configured, credential-free ProviderInventory and never executes
+its result or accepts agent-supplied pricing. The Task C
 draft operations use the deterministic headless service: they do not invoke a
 model, analyze source text, spend quota, or execute artifacts. `blueprint_execute`
 is deliberately not registered pending permission-model review.
@@ -72,6 +75,13 @@ To advertise what your machine actually provides, point
 
 An invalid manifest falls back to the empty one (fail closed). Manifests are
 contract-validated and can never contain secret-like fields.
+
+For the read-only media planner, set 'ALLOFLOW_MCP_MEDIA_INVENTORY_PATH' to a
+ProviderInventory 1.0 JSON file. It advertises only provider/model ids,
+transport, billing mode, enabled state, and modalities; it cannot contain
+credentials or endpoints. Missing or invalid inventory becomes an empty
+inventory. Metered selections remain 'input_required' because this MCP phase
+does not accept pricing claims from the calling agent.
 
 ## Jobs and audit trail
 

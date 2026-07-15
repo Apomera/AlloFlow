@@ -37,6 +37,7 @@ describe('tool classification table', () => {
       readOnlyHint: true,
       destructiveHint: false,
     });
+    expect(C.getMcpAnnotations('media_plan').readOnlyHint).toBe(true);
     expect(C.getMcpAnnotations('blueprint_execute').readOnlyHint).toBe(false);
     expect(C.getMcpAnnotations('nope_not_a_tool')).toBe(null);
   });

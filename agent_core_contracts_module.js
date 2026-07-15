@@ -66,6 +66,7 @@
     { name: 'blueprint_revise', title: 'Revise a Blueprint draft', kind: 'draft-writing' },
     { name: 'blueprint_validate', title: 'Validate a Blueprint', kind: 'read-only' },
     { name: 'blueprint_preview', title: 'Preview a Blueprint plan', kind: 'read-only' },
+    { name: 'media_plan', title: 'Plan media operations', kind: 'read-only' },
     { name: 'blueprint_execute', title: 'Execute an approved Blueprint', kind: 'external-effect' },
     { name: 'job_get', title: 'Read job status', kind: 'read-only' },
     { name: 'job_cancel', title: 'Cancel a running job', kind: 'external-effect' },

@@ -67,7 +67,7 @@ beforeAll(() => {
   child = spawn(process.execPath, [SERVER], {
     cwd: process.cwd(),
     stdio: ['pipe', 'pipe', 'pipe'],
-    env: { ...process.env, ALLOFLOW_MCP_DATA_DIR: auditHome },
+    env: { ...process.env, ALLOFLOW_MCP_DATA_DIR: auditHome, ALLOFLOW_MCP_MEDIA_INVENTORY_PATH: resolve(process.cwd(), 'test_data/agent_core/mcp_media_inventory.json') },
   });
   child.stdout.setEncoding('utf-8');
   child.stdout.on('data', onStdout);
@@ -100,13 +100,13 @@ describe('MCP stdio local connector', () => {
   it('lists the validation and Task C job slice with correct annotations', async () => {
     const res = await request('tools/list', {});
     const tools = res.result.tools;
-    expect(tools.map((t) => t.name).sort()).toEqual(['artifact_validate', 'blueprint_create', 'blueprint_preview', 'blueprint_revise', 'blueprint_validate', 'capabilities', 'job_cancel', 'job_get', 'job_get_result']);
+    expect(tools.map((t) => t.name).sort()).toEqual(['artifact_validate', 'blueprint_create', 'blueprint_preview', 'blueprint_revise', 'blueprint_validate', 'capabilities', 'job_cancel', 'job_get', 'job_get_result', 'media_plan']);
     expect(tools.map((t) => t.name)).not.toContain('blueprint_execute');
     for (const t of tools) {
       expect(t.name).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
       expect(t.name).not.toContain('.');
       expect(t.annotations.title).toBeTruthy();
-      const isReadOnly = ['capabilities', 'blueprint_validate', 'blueprint_preview', 'job_get', 'job_get_result', 'artifact_validate'].includes(t.name);
+      const isReadOnly = ['capabilities', 'blueprint_validate', 'blueprint_preview', 'media_plan', 'job_get', 'job_get_result', 'artifact_validate'].includes(t.name);
       expect(t.annotations.readOnlyHint).toBe(isReadOnly);
       expect(t.annotations.destructiveHint).toBe(false);
       expect(t.inputSchema.type).toBe('object');
@@ -177,6 +177,49 @@ describe('MCP stdio local connector', () => {
     const malformedCodes = malformed.structuredContent.errors.map((e) => e.code);
     expect(malformedCodes).toContain('invalid-plan-item');
     expect(malformedCodes).not.toContain('empty-plan');
+  });
+
+  it('media_plan performs a credential-free included-provider dry run', async () => {
+    const batch = {
+      schemaVersion: '1.0', planId: 'mcp-media-plan',
+      requests: [{
+        schemaVersion: '1.0', requestId: 'mcp-media-1', operation: 'generate',
+        prompt: 'Create a clear instructional illustration of evaporation.',
+        accessibility: { altTextRequired: true },
+        providerPolicy: { mode: 'deployment-default', allowMeteredUsage: false, maxCostUsd: 0, maxOperations: 2 }
+      }],
+      batchPolicy: { maxCostUsd: 0, maxOperations: 2 }
+    };
+    const result = await callTool('media_plan', { batch });
+    expect(result.isError).toBe(false);
+    expect(result.structuredContent).toMatchObject({
+      status: 'ready', ready: true, executionAuthorized: false,
+      estimate: { upperBoundUsd: 0, operations: 2 },
+      items: [{ selections: { image: { provider: 'gemini-canvas' }, altText: { provider: 'gemini-canvas' } } }]
+    });
+
+    const leaky = structuredClone(batch);
+    leaky.apiKey = 'sentinel-media-secret';
+    const rejected = await callTool('media_plan', { batch: leaky });
+    expect(rejected.structuredContent.status).toBe('invalid');
+    expect(rejected.structuredContent.errors.some((e) => e.code === 'secret-like-field')).toBe(true);
+    expect(JSON.stringify(rejected)).not.toContain('sentinel-media-secret');
+
+    const metered = structuredClone(batch);
+    metered.requests[0].providerPolicy = {
+      mode: 'allow-listed', allowedProviders: ['openai-api'],
+      allowedModels: ['gpt-image-2', 'gpt-vision'], allowMeteredUsage: true,
+      maxCostUsd: 1, maxOperations: 2
+    };
+    metered.batchPolicy.maxCostUsd = 1;
+    const pricingRequired = await callTool('media_plan', { batch: metered });
+    expect(pricingRequired.structuredContent.status).toBe('input_required');
+    expect(pricingRequired.structuredContent.executionAuthorized).toBe(false);
+
+    const injectedInventory = await request('tools/call', {
+      name: 'media_plan', arguments: { batch, inventory: { schemaVersion: '1.0', providers: [] } }
+    });
+    expect(injectedInventory.error.code).toBe(-32602);
   });
 
   it('artifact_validate works end to end', async () => {

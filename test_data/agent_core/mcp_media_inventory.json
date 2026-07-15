@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "providers": [
+    {
+      "id": "gemini-canvas",
+      "displayName": "Gemini Canvas",
+      "transport": "host-subscription",
+      "billing": "included",
+      "models": [
+        {
+          "id": "canvas-image",
+          "modalities": ["imageGeneration", "imageEditing"]
+        },
+        {
+          "id": "canvas-vision",
+          "modalities": ["vision", "text"]
+        }
+      ]
+    },
+    {
+      "id": "openai-api",
+      "displayName": "OpenAI API",
+      "transport": "api",
+      "billing": "metered",
+      "models": [
+        {
+          "id": "gpt-image-2",
+          "modalities": ["imageGeneration", "imageEditing"]
+        },
+        {
+          "id": "gpt-vision",
+          "modalities": ["vision", "text"]
+        }
+      ]
+    }
+  ]
+}
