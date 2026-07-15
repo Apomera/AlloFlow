@@ -4640,7 +4640,7 @@ main{display:block}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
 <a class="skip-link" href="#story-content">${escapeHtml(t("ui_common.skip_to_story"))}</a>
-<button class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">ðŸ–¨ï¸ Print</button>
+<button type="button" class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">ðŸ–¨ï¸ Print</button>
 <header class="cover" role="banner">
   ${coverArt ? `<img src="${escapeHtml(coverArt)}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
@@ -4739,7 +4739,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
 *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#111827;max-width:900px;margin:0 auto;padding:32px 20px;background:#f8fafc}h1{font-size:2rem;margin:0 0 4px}.meta{color:#475569;font-size:.9rem;margin-bottom:24px}.continuity-sheet,.page-plan{background:#f5f3ff;border:2px solid #c4b5fd;border-radius:8px;margin:16px 0 20px;overflow:hidden}.continuity-sheet h2,.page-plan h2{font-size:1rem;margin:0;padding:8px 12px;background:#4c1d95;color:white}.page-row{display:grid;grid-template-columns:90px 1fr 1.2fr;gap:8px;padding:8px 12px;border-top:1px solid #ddd6fe;background:white}.page-row strong{color:#111827}.page-row span{color:#1d4ed8;font-weight:800}.page-row em{font-style:normal}.script-panel{background:white;border:2px solid #111827;border-radius:8px;margin:16px 0;break-inside:avoid;overflow:hidden}.script-panel header{display:flex;align-items:center;justify-content:space-between;background:#111827;color:white;padding:8px 12px}.script-panel h2{font-size:1rem;margin:0}.script-panel header span{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#fde68a}dl{display:grid;grid-template-columns:120px 1fr;margin:0}dt{font-weight:800;background:#f1f5f9;border-top:1px solid #e2e8f0;padding:8px 10px}dd{margin:0;border-top:1px solid #e2e8f0;padding:8px 10px}em{color:#64748b}.print-btn{position:fixed;top:16px;right:16px;padding:8px 16px;background:#111827;color:white;border:0;border-radius:8px;font-weight:800;cursor:pointer}@media print{body{background:white}.print-btn{display:none}.script-panel,.continuity-sheet,.page-plan{break-inside:avoid}}
 .page-plan-row{display:grid;grid-template-columns:90px 1fr 110px 1.4fr;gap:8px;align-items:start;border:1px solid #dbeafe;background:#eff6ff;border-radius:8px;padding:9px 10px;margin:8px 0}.page-plan-row strong{color:#0f172a}.page-plan-row span{font-weight:800;color:#1d4ed8}.page-plan-row em{font-style:normal;color:#475569}@media(max-width:760px){.page-plan-row{grid-template-columns:1fr}}
 </style></head><body>
-<button class="print-btn" onclick="window.print()">Print</button>
+<button type="button" class="print-btn" onclick="window.print()">Print</button>
 <h1>${title}</h1>
 <div class="meta">Comic script by ${author} Â· Layout: ${layoutLabel} Â· Pages: ${escapeHtml(scriptPages.length || 1)} Â· Print: ${escapeHtml(getComicPrintFormatLabel(scriptPrintSafety.format))} Â· ${escapeHtml(getComicReadingOrderLabel(comicLayout))} Â· ${escapeHtml(new Date().toLocaleDateString())}</div>
 ${continuityHtml}
@@ -4882,7 +4882,7 @@ ${panelsHtml}
 *{box-sizing:border-box}body{font-family:Inter,Arial,Helvetica,sans-serif;line-height:1.45;color:#0f172a;max-width:1100px;margin:0 auto;padding:32px 20px;background:#f8fafc}h1{font-size:2rem;margin:0 0 6px}.meta{color:#475569;font-size:.92rem;margin-bottom:22px}.print-btn{position:fixed;top:16px;right:16px;padding:8px 16px;background:#0f172a;color:white;border:0;border-radius:8px;font-weight:800;cursor:pointer;z-index:10}.pack-section{background:white;border:2px solid #e2e8f0;border-radius:10px;margin:16px 0;padding:16px;break-inside:avoid}.pack-section h2{font-size:1rem;text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px;color:#1d4ed8}.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.metric{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px}.metric strong{display:block;font-size:1.45rem;color:#1e40af}.metric span{font-size:.78rem;color:#475569;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.field{border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#f8fafc}.field strong{display:block;margin-bottom:5px}.field.missing span{color:#991b1b;font-style:italic}.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.check{border-radius:8px;padding:10px;border:1px solid #e2e8f0;background:#f8fafc}.check strong{display:block}.check span{font-weight:900;color:#0f172a}.check p{margin:5px 0 0;color:#475569;font-size:.86rem}.check.strong{border-color:#86efac;background:#f0fdf4}.check.watch{border-color:#fcd34d;background:#fffbeb}.check.needs-work{border-color:#fca5a5;background:#fef2f2}ul{margin:0;padding-left:20px}li{margin:7px 0}li span{display:block;color:#475569}.panel-card{background:white;border:2px solid #0f172a;border-radius:10px;margin:16px 0;overflow:hidden;break-inside:avoid}.panel-card header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#0f172a;color:white;padding:10px 14px}.panel-card h2{font-size:1rem;margin:0}.beat{display:inline-block;color:#fde68a;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}.status{font-size:.75rem;font-weight:900;border-radius:999px;padding:4px 10px;background:#e2e8f0;color:#0f172a}.status.ready{background:#bbf7d0;color:#14532d}.status.needs{background:#fed7aa;color:#7c2d12}.panel-grid{display:grid;grid-template-columns:220px 1fr;gap:0}.thumb{background:#f1f5f9;min-height:180px;display:flex;align-items:center;justify-content:center;border-right:1px solid #e2e8f0}.thumb img{width:100%;height:100%;max-height:260px;object-fit:cover;display:block}.empty-art{color:#64748b;font-weight:800;text-transform:uppercase;font-size:.8rem}dl{display:grid;grid-template-columns:120px 1fr;margin:0}dt{font-weight:900;background:#f8fafc;border-top:1px solid #e2e8f0;padding:8px 10px}dd{margin:0;border-top:1px solid #e2e8f0;padding:8px 10px}.dir-chip{display:inline-block;margin:0 5px 5px 0;padding:3px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:.78rem;font-weight:800}em{color:#64748b}.footer{color:#64748b;text-align:center;font-size:.8rem;margin:28px 0 4px}@media(max-width:760px){.panel-grid{grid-template-columns:1fr}.thumb{border-right:0;border-bottom:1px solid #e2e8f0}.panel-card header{align-items:flex-start;flex-direction:column}dl{grid-template-columns:1fr}dt{padding-bottom:2px}dd{padding-top:2px}}@media print{body{background:white}.print-btn{display:none}.pack-section,.panel-card{break-inside:avoid}}
 </style></head><body>
 <style>.page-plan-row{display:grid;grid-template-columns:90px 1fr 110px 1.4fr;gap:8px;align-items:start;border:1px solid #dbeafe;background:#eff6ff;border-radius:8px;padding:9px 10px;margin:8px 0}.page-plan-row strong{color:#0f172a}.page-plan-row span{font-weight:800;color:#1d4ed8}.page-plan-row em{font-style:normal;color:#475569}@media(max-width:760px){.page-plan-row{grid-template-columns:1fr}}</style>
-<button class="print-btn" onclick="window.print()">Print</button>
+<button type="button" class="print-btn" onclick="window.print()">Print</button>
 <h1>${title}</h1>
 <div class="meta">Comic production pack by ${author} - Layout: ${escapeHtml(layoutLabel)} - Pages: ${escapeHtml(packPages.length || 1)} - Print: ${escapeHtml(getComicPrintFormatLabel(packPrintSafety.format))} - ${escapeHtml(getComicReadingOrderLabel(comicLayout))} - ${escapeHtml(new Date().toLocaleDateString())}</div>
 <section class="pack-section">
@@ -5018,8 +5018,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;
 </style></head><body>
 ${slidesHtml}
 <div class="nav">
-  <button class="prev" onclick="go(-1)">â† Back</button>
-  <button class="next" onclick="go(1)">Next â†’</button>
+  <button type="button" class="prev" onclick="go(-1)">â† Back</button>
+  <button type="button" class="next" onclick="go(1)">Next â†’</button>
 </div>
 <script>
 var slides=document.querySelectorAll('.slide'),idx=0;
@@ -5394,7 +5394,7 @@ show();
           <div className="flex items-center justify-between mt-1">
             <div className="flex gap-0.5">
               {['ðŸ’¥', 'â¤ï¸', 'â­', 'ðŸ˜‚', 'ðŸ˜±', 'ðŸ”¥', 'ðŸ’€', 'ðŸŒŸ'].map(emoji => (
-                <button key={emoji} onClick={() => setPanelStickers(prev => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji }))} className={`text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? 'scale-125' : 'opacity-50 hover:opacity-100'}`} title={`Add ${emoji} sticker`}>{emoji}</button>
+                <button type="button" key={emoji} onClick={() => setPanelStickers(prev => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji }))} className={`text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? 'scale-125' : 'opacity-50 hover:opacity-100'}`} title={`Add ${emoji} sticker`}>{emoji}</button>
               ))}
             </div>
             <span className="text-[11px] text-slate-500 font-bold">Panel {idx + 1}</span>
@@ -5470,8 +5470,8 @@ show();
             <h3 id="sf-restore-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.continue_where_left")}</h3>
             <p className="text-sm text-slate-600 mb-4">A saved draft was found. Would you like to restore it?</p>
             <div className="flex gap-3 justify-center">
-              <button data-sf-focusable onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.start_fresh")}</button>
-              <button data-sf-focusable onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">{t("ui_common.restore_draft")}</button>
+              <button type="button" data-sf-focusable onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.start_fresh")}</button>
+              <button type="button" data-sf-focusable onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">{t("ui_common.restore_draft")}</button>
             </div>
           </div>
         </div>
@@ -5485,9 +5485,9 @@ show();
             <h3 id="sf-close-confirm-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.unsaved_changes")}</h3>
             <p className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
             <div className="flex gap-3 justify-center">
-              <button data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
-              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.setItem(SAVE_KEY, JSON.stringify(createDraftSnapshot())); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">{t("ui_common.save_draft_close")}</button>
-              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.removeItem(SAVE_KEY); } catch(e) {} onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">{t("ui_common.close_anyway")}</button>
+              <button type="button" data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
+              <button type="button" data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.setItem(SAVE_KEY, JSON.stringify(createDraftSnapshot())); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">{t("ui_common.save_draft_close")}</button>
+              <button type="button" data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.removeItem(SAVE_KEY); } catch(e) {} onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">{t("ui_common.close_anyway")}</button>
             </div>
           </div>
         </div>
@@ -5535,7 +5535,7 @@ show();
               {readingLevel && <><span>Â·</span><span>Grade {readingLevel.grade}</span></>}
             </div>
           )}
-          <button
+          <button type="button"
             data-sf-focusable
             onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
             className="hover:bg-white/20 p-2 rounded-full transition-colors flex items-center gap-1"
@@ -5544,7 +5544,7 @@ show();
           >
             <span className="text-sm">{(() => { try { return document.querySelector('.theme-contrast') ? '\uD83D\uDC41' : document.querySelector('.theme-dark') ? '\uD83C\uDF19' : '\u2600\uFE0F'; } catch(e) { return '\u2600\uFE0F'; } })()}</span>
           </button>
-          <button data-sf-focusable onClick={safeClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label={t("a11y.close_story_forge")}>
+          <button type="button" data-sf-focusable onClick={safeClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label={t("a11y.close_story_forge")}>
             <X size={24} />
           </button>
         </div>
@@ -5559,7 +5559,7 @@ show();
           return (
             <React.Fragment key={p}>
               {i > 0 && <div className={`w-8 h-0.5 ${isDone ? 'bg-rose-400' : 'bg-slate-200'}`} aria-hidden="true" />}
-              <button
+              <button type="button"
                 data-sf-focusable
                 onClick={() => { if (isDone || isCurrent) changePhase(p); }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
@@ -5590,11 +5590,11 @@ show();
                 <h3 className="text-2xl font-black text-slate-800">{t("ui_common.set_up_story")}</h3>
                 <p className="text-slate-600 text-sm mt-1">Name your story, choose a genre, and set your vocabulary ingredients</p>
                 <div className="flex gap-2 justify-center mt-2 flex-wrap">
-                  <button onClick={importDraftJSON} className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1">
+                  <button type="button" onClick={importDraftJSON} className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1">
                     <Plus size={10} /> Import classmate's draft
                   </button>
                   {onSaveConfig && (
-                    <button onClick={saveAsConfig} disabled={vocabTerms.length === 0} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-[11px] font-bold hover:bg-indigo-200 transition-colors inline-flex items-center gap-1 disabled:opacity-40">
+                    <button type="button" onClick={saveAsConfig} disabled={vocabTerms.length === 0} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-[11px] font-bold hover:bg-indigo-200 transition-colors inline-flex items-center gap-1 disabled:opacity-40">
                       <Download size={10} /> Save as Assignment
                     </button>
                   )}
@@ -5609,7 +5609,7 @@ show();
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {lessonResources.filter(r => ['glossary', 'simplified', 'sentence-frames', 'lesson-plan', 'timeline'].includes(r.type)).map((r, ri) => (
-                      <button
+                      <button type="button"
                         key={ri}
                         onClick={() => importFromResource(r)}
                         className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors flex items-center gap-1.5"
@@ -5652,7 +5652,7 @@ show();
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {Object.entries(GENRE_TEMPLATES).map(([key, g]) => (
-                    <button
+                    <button type="button"
                       key={key}
                       onClick={() => setGenre(key)}
                       className={`p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${
@@ -5753,7 +5753,7 @@ show();
                   {vocabTerms.map((v, i) => (
                     <div key={i} className="bg-rose-50 border border-rose-200 rounded-full px-3 py-1 text-sm font-bold text-rose-800 flex items-center gap-2 group">
                       <span>{v.term}</span>
-                      <button onClick={() => removeVocabTerm(i)} className="text-rose-700 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={`Remove ${v.term}`}>
+                      <button type="button" onClick={() => removeVocabTerm(i)} className="text-rose-700 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={`Remove ${v.term}`}>
                         <X size={12} />
                       </button>
                     </div>
@@ -5777,14 +5777,14 @@ show();
                     aria-label={t("a11y.term_definition")}
                     className="flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300"
                   />
-                  <button onClick={addVocabTerm} disabled={!newTerm.trim()} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center gap-1">
+                  <button type="button" onClick={addVocabTerm} disabled={!newTerm.trim()} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center gap-1">
                     <Plus size={14} /> Add
                   </button>
                 </div>
               </div>
 
               {/* Advanced Settings Toggle */}
-              <button
+              <button type="button"
                 onClick={() => setShowAdvancedConfig(prev => !prev)}
                 className="w-full flex items-center justify-between px-5 py-3 bg-slate-50 border-2 border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors"
                 aria-expanded={showAdvancedConfig}
@@ -5803,7 +5803,7 @@ show();
                 </h4>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                   {Object.keys(ART_STYLE_MAP).map(style => (
-                    <button
+                    <button type="button"
                       key={style}
                       onClick={() => setArtStyle(style)}
                       className={`p-3 rounded-xl border-2 text-center text-xs font-bold capitalize transition-all ${
@@ -5813,7 +5813,7 @@ show();
                       {style === 'storybook' ? 'ðŸ“š' : style === 'pixel' ? 'ðŸ‘¾' : style === 'cinematic' ? 'ðŸŽ¬' : style === 'anime' ? 'âœ¨' : 'ðŸ–ï¸'}<br/>{style}
                     </button>
                   ))}
-                  <button
+                  <button type="button"
                     onClick={() => setArtStyle('custom')}
                     className={`p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${
                       artStyle === 'custom' ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-purple-300'
@@ -5839,7 +5839,7 @@ show();
                 </h4>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                   {LANG_OPTIONS.map(l => (
-                    <button
+                    <button type="button"
                       key={l.code}
                       onClick={() => setLanguage(l.code)}
                       className={`p-2.5 rounded-xl border-2 text-center text-xs font-bold transition-all ${
@@ -5879,7 +5879,7 @@ show();
                     <div className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2">ðŸ’¡ {GENRE_TEMPLATES[genre]?.label} Story Starters â€” click to use</div>
                     <div className="space-y-2">
                       {STORY_STARTERS[genre].map((starter, si) => (
-                        <button
+                        <button type="button"
                           key={si}
                           onClick={() => setStoryPrompt(starter)}
                           className={`w-full text-left text-xs p-2.5 rounded-lg border transition-all ${
@@ -5931,12 +5931,12 @@ show();
                   {timerActive ? (
                     <div className="flex items-center gap-2 bg-rose-100 border border-rose-300 rounded-full px-3 py-1">
                       <span className={`text-xs font-black tabular-nums ${timerDuration - timerSeconds <= 30 ? 'text-red-600 animate-pulse motion-reduce:animate-none' : 'text-rose-700'}`}>{formatTime(timerSeconds)}</span>
-                      <button onClick={() => { setTimerActive(false); clearTimeout(timerRef.current); }} className="text-[11px] font-bold text-rose-500 hover:text-rose-700">{t("ui_common.stop")}</button>
+                      <button type="button" onClick={() => { setTimerActive(false); clearTimeout(timerRef.current); }} className="text-[11px] font-bold text-rose-500 hover:text-rose-700">{t("ui_common.stop")}</button>
                     </div>
                   ) : (
                     <div className="flex bg-slate-100 rounded-full p-0.5">
                       {[3, 5, 10].map(min => (
-                        <button key={min} onClick={() => startTimer(min)} className="px-2 py-1 rounded-full text-[11px] font-bold text-slate-600 hover:text-rose-600 hover:bg-white transition-all" title={`${min}-minute writing sprint`}>
+                        <button type="button" key={min} onClick={() => startTimer(min)} className="px-2 py-1 rounded-full text-[11px] font-bold text-slate-600 hover:text-rose-600 hover:bg-white transition-all" title={`${min}-minute writing sprint`}>
                           {min}m
                         </button>
                       ))}
@@ -5945,7 +5945,7 @@ show();
                   {/* Layout toggle */}
                   <div className="flex bg-slate-100 rounded-full p-0.5">
                     {Object.entries(LAYOUT_MODES).map(([key, m]) => (
-                      <button
+                      <button type="button"
                         key={key}
                         onClick={() => setLayoutMode(key)}
                         className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
@@ -5959,7 +5959,7 @@ show();
                     ))}
                   </div>
                   {layoutMode === 'comic' && onCallGemini && (
-                    <button
+                    <button type="button"
                       onClick={() => draftComicBubbles()}
                       disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
                       className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -5969,7 +5969,7 @@ show();
                     </button>
                   )}
                   {layoutMode === 'comic' && onCallGemini && (
-                    <button
+                    <button type="button"
                       onClick={() => draftComicCameraPass()}
                       disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
                       className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -5979,7 +5979,7 @@ show();
                     </button>
                   )}
                   {layoutMode === 'comic' && onCallGemini && (
-                    <button
+                    <button type="button"
                       onClick={() => draftComicThumbnailPass()}
                       disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
                       className="px-4 py-2 bg-teal-100 text-teal-700 rounded-full text-xs font-bold hover:bg-teal-200 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -5989,7 +5989,7 @@ show();
                     </button>
                   )}
                   {layoutMode === 'comic' && onCallGemini && (
-                    <button
+                    <button type="button"
                       onClick={() => tightenComicBubbles()}
                       disabled={isProcessing || !paragraphs.some(p => getComicLetteringStats(panelDialogue[p.id] || {}).words > COMIC_BUBBLE_WORD_WARNING)}
                       className="px-4 py-2 bg-amber-100 text-amber-700 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -5998,7 +5998,7 @@ show();
                       <Sparkles size={14} /> Tighten Bubbles
                     </button>
                   )}
-                  <button
+                  <button type="button"
                     onClick={generateScaffolds}
                     disabled={isProcessing}
                     className="px-4 py-2 bg-rose-100 text-rose-700 rounded-full text-xs font-bold hover:bg-rose-200 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -6008,7 +6008,7 @@ show();
                       : (scaffoldsGenerated ? 'Regenerate Scaffolds' : 'Generate Scaffolds')}
                   </button>
                   {/* Focus Mode Toggle â€” write one paragraph at a time */}
-                  <button
+                  <button type="button"
                     onClick={() => { setFocusMode(!focusMode); setFocusParagraphIdx(0); }}
                     className={`px-4 py-2 rounded-full text-xs font-bold transition-colors flex items-center gap-2 ${
                       focusMode ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'
@@ -6018,7 +6018,7 @@ show();
                     <Target size={14} /> {focusMode ? 'Focus ON' : 'Focus Mode'}
                   </button>
                   {totalWords >= 30 && (
-                    <button
+                    <button type="button"
                       onClick={checkGrammarAndStyle}
                       disabled={grammarLoading || isProcessing}
                       className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -6037,7 +6037,7 @@ show();
                     <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">{t("ui_common.writing_coach_tip")}</div>
                     <p className="text-xs text-emerald-800 mt-0.5">{grammarResults._overallTip}</p>
                   </div>
-                  <button onClick={() => setGrammarResults({})} className="text-emerald-700 hover:text-emerald-600 ml-auto shrink-0"><X size={14} /></button>
+                  <button type="button" onClick={() => setGrammarResults({})} className="text-emerald-700 hover:text-emerald-600 ml-auto shrink-0"><X size={14} /></button>
                 </div>
               )}
 
@@ -6172,7 +6172,7 @@ show();
               {/* Focus Mode Navigation Bar */}
               {focusMode && (
                 <div className="flex items-center justify-between bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3">
-                  <button
+                  <button type="button"
                     onClick={() => setFocusParagraphIdx(Math.max(0, focusParagraphIdx - 1))}
                     disabled={focusParagraphIdx === 0}
                     className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 disabled:opacity-30 transition-colors flex items-center gap-1"
@@ -6187,7 +6187,7 @@ show();
                     {/* Mini progress dots */}
                     <div className="flex justify-center gap-1 mt-1.5">
                       {paragraphs.map((pp, pi) => (
-                        <button
+                        <button type="button"
                           key={pi}
                           onClick={() => setFocusParagraphIdx(pi)}
                           className={`w-2 h-2 rounded-full transition-all ${
@@ -6200,7 +6200,7 @@ show();
                       ))}
                     </div>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       if (focusParagraphIdx >= paragraphs.length - 1) {
                         // Add new paragraph if at end
@@ -6231,12 +6231,12 @@ show();
                       <span className="text-xs font-bold text-slate-600">Paragraph {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_up")} title={t("ui_common.move_up")}>â–²</button>
-                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_down")} title={t("ui_common.move_down")}>â–¼</button>
+                        <button type="button" onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_up")} title={t("ui_common.move_up")}>â–²</button>
+                        <button type="button" onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_down")} title={t("ui_common.move_down")}>â–¼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button
+                      <button type="button"
                         onClick={() => toggleDictation(idx)}
                         disabled={language === 'other'}
                         title={language === 'other' ? 'Voice typing works only with the listed languages (it would otherwise transcribe in English). Pick a language from the list to use it.' : 'Start dictation'}
@@ -6251,7 +6251,7 @@ show();
                       >
                         <Mic size={10} /> {dictation.isDictating && dictatingParagraphIdx === idx ? 'Stop' : 'Dictate'}
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => helpMeWrite(idx)}
                         disabled={isProcessing}
                         className="text-amber-500 hover:text-amber-700 text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200/50 transition-colors disabled:opacity-40"
@@ -6260,7 +6260,7 @@ show();
                         <Sparkles size={10} /> Help Me
                       </button>
                       {paragraphs.length > 1 && (
-                        <button onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove paragraph ${idx + 1}`}>
+                        <button type="button" onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove paragraph ${idx + 1}`}>
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -6305,7 +6305,7 @@ show();
                           </div>
                         ))}
                       </div>
-                      <button onClick={() => { setHelpMeParagraphIdx(-1); setHelpMeResult(null); }} className="mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold">{t("ui_common.dismiss")}</button>
+                      <button type="button" onClick={() => { setHelpMeParagraphIdx(-1); setHelpMeResult(null); }} className="mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold">{t("ui_common.dismiss")}</button>
                     </div>
                   )}
                   {layoutMode === 'comic' ? (
@@ -6558,7 +6558,7 @@ show();
                         {hwLoading && hwTargetParagraph === idx ? <span className="animate-spin motion-reduce:animate-none">â³</span> : 'ðŸ“·'}
                         {hwLoading && hwTargetParagraph === idx ? ' Reading...' : ' Snap Your Writing'}
                       </label>
-                      <button
+                      <button type="button"
                         onClick={() => setHwPenmanshipOn(!hwPenmanshipOn)}
                         aria-label={`${hwPenmanshipOn ? 'Disable' : 'Enable'} penmanship feedback`}
                         aria-pressed={hwPenmanshipOn}
@@ -6602,7 +6602,7 @@ show();
                       {pm.strengths && <p className="text-xs text-green-700 font-medium mb-1">ðŸ’ª {pm.strengths}</p>}
                       {pm.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>ðŸ’¡ {pm.tips}</p>}
                       <p className="text-[10px] text-slate-500 italic mt-1">Formative AI feedback to guide practice â€” not a graded or normed score.</p>
-                      <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1" aria-label={t("a11y.dismiss_penmanship_feedback")}>{t("ui_common.dismiss")}</button>
+                      <button type="button" onClick={() => setHwResult(null)} className="text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1" aria-label={t("a11y.dismiss_penmanship_feedback")}>{t("ui_common.dismiss")}</button>
                     </div>
                     );
                   })()}
@@ -6636,7 +6636,7 @@ show();
                         <span className="font-bold">Still needed: </span>
                         {unused.map((v, vi) => (
                           <span key={vi}>
-                            <button
+                            <button type="button"
                               onClick={async () => {
                                 if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually â€” clipboard unavailable`, 'error'); return; }
                                 try { const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false; if (!ok) throw new Error('copy unavailable'); if (addToast) addToast(`"${v.term}" copied!`, 'success'); }
@@ -6677,7 +6677,7 @@ show();
                 {/* Transition suggestion */}
                 {idx < paragraphs.length - 1 && suggestTransition(idx + 1) && (
                   <div className="flex items-center justify-center py-1">
-                    <button
+                    <button type="button"
                       onClick={() => updateParagraph(idx + 1, suggestTransition(idx + 1) + ' ')}
                       className="text-[11px] text-indigo-600 hover:text-indigo-700 font-medium hover:bg-indigo-50 px-3 py-1 rounded-full transition-colors"
                       title={t("ui_common.click_to_insert")}
@@ -6690,7 +6690,7 @@ show();
               ))}
 
               {!focusMode && paragraphs.length < maxParagraphs && (
-                <button onClick={addParagraph} className="w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2">
+                <button type="button" onClick={addParagraph} className="w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2">
                   <Plus size={16} /> Add Paragraph
                 </button>
               )}
@@ -6706,7 +6706,7 @@ show();
                   <p className="text-slate-600 text-sm mt-1">{layoutMode === 'comic' ? 'AI will create consistent artwork for each panel' : 'AI will create artwork for each paragraph'}</p>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-end">
-                  <button
+                  <button type="button"
                     onClick={generateCoverArt}
                     disabled={isProcessing || coverArtLoading}
                     className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-200 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -6714,7 +6714,7 @@ show();
                     <Sparkles size={14} /> {coverArtLoading ? 'Generating...' : coverArt ? 'Redo Cover' : 'Cover Art'}
                   </button>
                   {layoutMode === 'comic' && onCallGemini && (
-                    <button
+                    <button type="button"
                       onClick={() => draftComicArtPrompts()}
                       disabled={isProcessing || !paragraphs.some(p => getIllustrationSourceText(p).trim().length >= 20)}
                       className="px-4 py-2 bg-fuchsia-100 text-fuchsia-700 rounded-full text-xs font-bold hover:bg-fuchsia-200 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -6723,7 +6723,7 @@ show();
                       <Sparkles size={14} /> Art Prompt Pass
                     </button>
                   )}
-                  <button
+                  <button type="button"
                     onClick={illustrateAll}
                     disabled={isProcessing}
                     className="px-4 py-2 bg-purple-600 text-white rounded-full text-xs font-bold hover:bg-purple-700 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -6752,7 +6752,7 @@ show();
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="text-[11px] font-bold text-purple-600 uppercase tracking-widest">Comic Continuity</div>
                     {onCallGemini && (
-                      <button
+                      <button type="button"
                         onClick={draftComicContinuity}
                         disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
                         className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px] font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1"
@@ -6797,10 +6797,10 @@ show();
                     aria-label={t("a11y.image_gen_prompt")}
                   />
                   <div className="flex gap-2 mt-3">
-                    <button onClick={() => confirmIllustration()} className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors flex items-center gap-2">
+                    <button type="button" onClick={() => confirmIllustration()} className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors flex items-center gap-2">
                       <ImageIcon size={14} /> Generate Image
                     </button>
-                    <button onClick={() => setPromptPreview(null)} className="px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors">
+                    <button type="button" onClick={() => setPromptPreview(null)} className="px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors">
                       Cancel
                     </button>
                   </div>
@@ -6841,7 +6841,7 @@ show();
                           <img src={illustrations[p.id].imageUrl} alt={`Illustration ${idx + 1}`} className="w-48 rounded-xl shadow-md border border-purple-100" />
                           <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             {illustrations[p.id]?.previousImageUrl && (
-                              <button
+                              <button type="button"
                                 onClick={() => undoIllustration(p.id)}
                                 className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-amber-100"
                                 title={t("tooltips.undo_illustration")}
@@ -6850,7 +6850,7 @@ show();
                                 <ArrowLeft size={12} className="text-amber-600" />
                               </button>
                             )}
-                            <button
+                            <button type="button"
                               onClick={() => setImageEditState({ paragraphId: p.id, prompt: '' })}
                               className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-teal-100"
                               title={t("ui_common.edit_illustration")}
@@ -6858,7 +6858,7 @@ show();
                             >
                               <Sparkles size={12} className="text-teal-600" />
                             </button>
-                            <button
+                            <button type="button"
                               onClick={() => regenerateIllustration(p.id, getIllustrationSourceText(p), idx)}
                               disabled={isProcessing}
                               className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-purple-100"
@@ -6882,8 +6882,8 @@ show();
                                 autoFocus
                               />
                               <div className="flex gap-1 mt-1">
-                                <button onClick={() => { if (imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }} disabled={!imageEditState.prompt.trim()} className="flex-1 text-[11px] font-bold bg-teal-600 text-white rounded py-1 hover:bg-teal-700 disabled:opacity-40">{t("ui_common.apply")}</button>
-                                <button onClick={() => setImageEditState(null)} className="text-[11px] font-bold bg-slate-200 text-slate-600 rounded py-1 px-2 hover:bg-slate-300">{t("ui_common.cancel")}</button>
+                                <button type="button" onClick={() => { if (imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }} disabled={!imageEditState.prompt.trim()} className="flex-1 text-[11px] font-bold bg-teal-600 text-white rounded py-1 hover:bg-teal-700 disabled:opacity-40">{t("ui_common.apply")}</button>
+                                <button type="button" onClick={() => setImageEditState(null)} className="text-[11px] font-bold bg-slate-200 text-slate-600 rounded py-1 px-2 hover:bg-slate-300">{t("ui_common.cancel")}</button>
                               </div>
                             </div>
                           )}
@@ -6892,7 +6892,7 @@ show();
                         <div className="w-48 h-28 bg-red-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-red-200 gap-1">
                           <span className="text-red-600 text-lg">{'\u26A0\uFE0F'}</span>
                           <span className="text-[11px] font-bold text-red-500">{t("ui_common.generation_failed")}</span>
-                          <button
+                          <button type="button"
                             onClick={() => { setIllustrations(prev => ({ ...prev, [p.id]: {} })); illustrateParagraph(p.id, getIllustrationSourceText(p), idx); }}
                             disabled={isProcessing}
                             className="text-[11px] font-bold text-red-600 hover:text-red-800 underline disabled:opacity-40"
@@ -6902,7 +6902,7 @@ show();
                         </div>
                       ) : (
                         <div className="flex flex-col gap-1">
-                          <button
+                          <button type="button"
                             onClick={() => illustrateParagraph(p.id, getIllustrationSourceText(p), idx)}
                             disabled={getIllustrationSourceText(p).trim().length < 20 || isProcessing}
                             className="w-48 h-28 bg-purple-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-colors disabled:opacity-40 cursor-pointer"
@@ -6910,7 +6910,7 @@ show();
                             <ImageIcon size={24} className="text-purple-700 mb-1" />
                             <span className="text-xs font-bold text-purple-500">Auto-Generate</span>
                           </button>
-                          <button
+                          <button type="button"
                             onClick={() => generateImagePrompt(p.id, getIllustrationSourceText(p), idx)}
                             disabled={getIllustrationSourceText(p).trim().length < 20 || isProcessing}
                             className="w-48 py-1.5 bg-purple-100 rounded-lg text-[11px] font-bold text-purple-600 hover:bg-purple-200 transition-colors disabled:opacity-40 flex items-center justify-center gap-1"
@@ -6948,14 +6948,14 @@ show();
                     </select>
                   </div>
                   {characters.length === 0 && (
-                    <button onClick={detectCharacters} disabled={isProcessing} className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-200 transition-colors disabled:opacity-50 flex items-center gap-2">
+                    <button type="button" onClick={detectCharacters} disabled={isProcessing} className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-200 transition-colors disabled:opacity-50 flex items-center gap-2">
                       <Eye size={14} /> Detect Characters
                     </button>
                   )}
-                  <button onClick={narrateAll} disabled={isProcessing} className="px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2">
+                  <button type="button" onClick={narrateAll} disabled={isProcessing} className="px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2">
                     <Volume2 size={14} /> {isProcessing ? 'Narrating...' : 'Narrate All'}
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => { if (playbackIdx === -1) { setSentenceIdx(0); setPlaybackIdx(0); } else { setPlaybackIdx(-1); setSentenceIdx(0); } }}
                     className="px-4 py-2 bg-green-600 text-white rounded-full text-xs font-bold hover:bg-green-700 transition-colors flex items-center gap-2"
                   >
@@ -6995,13 +6995,13 @@ show();
                         ) : seg?.aiLoading ? (
                           <span className="text-xs text-indigo-400 flex items-center gap-1"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> Generating...</span>
                         ) : (
-                          <button onClick={() => narrateParagraph(p.id, p.text)} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                          <button type="button" onClick={() => narrateParagraph(p.id, p.text)} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
                             <Volume2 size={12} /> Narrate
                           </button>
                         )}
                         {/* Play this paragraph */}
                         {hasSentenceAudio && (
-                          <button
+                          <button type="button"
                             onClick={() => {
                               if (isCurrentPlayback) { setPlaybackIdx(-1); setSentenceIdx(0); }
                               else { setPlaybackIdx(idx); setSentenceIdx(0); }
@@ -7012,7 +7012,7 @@ show();
                           </button>
                         )}
                         {/* Record button */}
-                        <button
+                        <button type="button"
                           onClick={() => recordingParagraphId === p.id ? stopRecordingParagraph() : startRecordingParagraph(p.id)}
                           className={`text-xs font-bold flex items-center gap-1 transition-colors ${
                             recordingParagraphId === p.id ? 'text-red-600 animate-pulse motion-reduce:animate-none' : 'text-rose-500 hover:text-rose-700'
@@ -7022,7 +7022,7 @@ show();
                         </button>
                         {/* ORF Fluency Reading button */}
                         {onAnalyzeFluency && (
-                          <button
+                          <button type="button"
                             onClick={() => fluencyReadingId === p.id ? stopFluencyReading(p.id, p.text) : startFluencyReading(p.id)}
                             className={`text-xs font-bold flex items-center gap-1 transition-colors ${
                               fluencyReadingId === p.id && fluencyRecording ? 'text-orange-600 animate-pulse motion-reduce:animate-none' : 'text-teal-500 hover:text-teal-700'
@@ -7115,7 +7115,7 @@ show();
                         {fluencyResult.feedback && (
                           <div className="mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200">{fluencyResult.feedback}</div>
                         )}
-                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[11px] text-slate-500 hover:text-slate-600 font-bold">{t("ui_common.dismiss")}</button>
+                        <button type="button" onClick={() => setFluencyResult(null)} className="mt-2 text-[11px] text-slate-500 hover:text-slate-600 font-bold">{t("ui_common.dismiss")}</button>
                       </div>
                     )}
                   </div>
@@ -7134,47 +7134,47 @@ show();
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {!gradingResult && (
-                    <button onClick={checkSenses} disabled={sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
+                    <button type="button" onClick={checkSenses} disabled={sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
                       ðŸŒˆ {sensesLoading ? 'Checking...' : 'Senses Check'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button onClick={findMentorStory} disabled={mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title={t("tooltips.find_mentor_story")}>
+                    <button type="button" onClick={findMentorStory} disabled={mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title={t("tooltips.find_mentor_story")}>
                       ðŸŽ“ {mentorLoading ? 'Searching...' : (mentorMatch && !mentorMatch.error ? 'Find another' : 'Mentor Match')}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button onClick={analyzeShowTell} disabled={showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title={t("tooltips.find_telling_sentences")}>
+                    <button type="button" onClick={analyzeShowTell} disabled={showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title={t("tooltips.find_telling_sentences")}>
                       ðŸŽ­ {showTellLoading ? 'Analyzing...' : 'Show vs Tell'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button onClick={analyzeCharacterArcs} disabled={arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title={t("tooltips.audit_character_arc")}>
+                    <button type="button" onClick={analyzeCharacterArcs} disabled={arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title={t("tooltips.audit_character_arc")}>
                       ðŸŽ¬ {arcLoading ? 'Analyzing...' : 'Character Arcs'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button onClick={analyzeDialogue} disabled={dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title={t("tooltips.tune_dialogue")}>
+                    <button type="button" onClick={analyzeDialogue} disabled={dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title={t("tooltips.tune_dialogue")}>
                       ðŸ’¬ {dialogueLoading ? 'Analyzing...' : 'Dialogue Tune-Up'}
                     </button>
                   )}
                   {!gradingResult && layoutMode === 'comic' && (
-                    <button onClick={analyzeComicFlow} disabled={comicFlowLoading || isProcessing} className="px-4 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-blue-200" title="Audit comic pacing, shot variety, lettering load, and production readiness">
+                    <button type="button" onClick={analyzeComicFlow} disabled={comicFlowLoading || isProcessing} className="px-4 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-blue-200" title="Audit comic pacing, shot variety, lettering load, and production readiness">
                       <Eye size={14} /> {comicFlowLoading ? 'Auditing...' : 'Comic Flow'}
                     </button>
                   )}
                   {!gradingResult && helpersAvailableForPlan() && (
-                    <button onClick={synthesizeRevisionPlan} disabled={revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title={t("tooltips.synthesize_revision_plan")}>
+                    <button type="button" onClick={synthesizeRevisionPlan} disabled={revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title={t("tooltips.synthesize_revision_plan")}>
                       ðŸ—ºï¸ {revisionPlanLoading ? 'Synthesizing...' : 'Revision Plan'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
+                    <button type="button" onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {isProcessing ? 'Grading...' : 'Get Feedback'}
                     </button>
                   )}
                   {gradingResult && (
-                    <button onClick={reviseStory} className="px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2">
+                    <button type="button" onClick={reviseStory} className="px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2">
                       <RefreshCw size={16} /> Revise Story
                     </button>
                   )}
@@ -7191,7 +7191,7 @@ show();
                       </h4>
                       <p className="text-xs text-violet-700 mt-1">Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.</p>
                     </div>
-                    <button
+                    <button type="button"
                       onClick={() => { setSelfAssessmentSubmitted(true); sfAnnounce('Self-assessment skipped. AI grading is now available.'); }}
                       className="text-[11px] text-violet-500 hover:text-violet-700 font-bold underline shrink-0"
                     >
@@ -7216,7 +7216,7 @@ show();
                       </div>
                     ))}
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       // Fill any unset criteria with 3 (the slider's visual default) so comparison works.
                       const filled = {};
@@ -7238,7 +7238,7 @@ show();
                 <div className="bg-white border-2 border-rose-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-rose-700 uppercase tracking-wider flex items-center gap-2">ðŸŒˆ Senses & Imagery</h4>
-                    <button onClick={() => setSensesResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_senses_result")}>{t("ui_common.dismiss")}</button>
+                    <button type="button" onClick={() => setSensesResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_senses_result")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {(() => {
                     const counts = sensesResult.counts || {};
@@ -7279,7 +7279,7 @@ show();
                 <div role="region" aria-label={t("a11y.mentor_story_analysis")} className="bg-white border-2 border-fuchsia-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-fuchsia-700 uppercase tracking-wider flex items-center gap-2">ðŸŽ“ Mentor Match</h4>
-                    <button onClick={() => setMentorMatch(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_mentor_match")}>{t("ui_common.dismiss")}</button>
+                    <button type="button" onClick={() => setMentorMatch(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_mentor_match")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {mentorMatch.error && (
                     <p className="text-xs text-red-600 italic">{mentorMatch.error}</p>
@@ -7340,7 +7340,7 @@ show();
                 <div className="bg-white border-2 border-emerald-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-2">ðŸŽ­ Show vs Tell</h4>
-                    <button onClick={() => setShowTellResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_show_vs_tell")}>{t("ui_common.dismiss")}</button>
+                    <button type="button" onClick={() => setShowTellResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_show_vs_tell")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {showTellResult.summary && (
                     <p className="text-xs text-emerald-800 italic mb-3 leading-relaxed">{showTellResult.summary}</p>
@@ -7372,7 +7372,7 @@ show();
                 <div className="bg-white border-2 border-sky-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-sky-700 uppercase tracking-wider flex items-center gap-2">ðŸŽ¬ Character Arcs</h4>
-                    <button onClick={() => setArcReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_character_arcs")}>{t("ui_common.dismiss")}</button>
+                    <button type="button" onClick={() => setArcReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_character_arcs")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {arcReport.summary && (
                     <p className="text-xs text-sky-800 italic mb-3 leading-relaxed">{arcReport.summary}</p>
@@ -7435,7 +7435,7 @@ show();
                 <div className="bg-white border-2 border-orange-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-orange-700 uppercase tracking-wider flex items-center gap-2">ðŸ’¬ Dialogue Tune-Up</h4>
-                    <button onClick={() => setDialogueReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_dialogue_tuneup")}>{t("ui_common.dismiss")}</button>
+                    <button type="button" onClick={() => setDialogueReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_dialogue_tuneup")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {dialogueReport.summary && (
                     <p className="text-xs text-orange-800 italic mb-3 leading-relaxed">{dialogueReport.summary}</p>
@@ -7500,7 +7500,7 @@ show();
                 <div className="bg-white border-2 border-blue-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2"><Eye size={14} /> Comic Flow Audit</h4>
-                    <button onClick={() => setComicFlowReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss comic flow audit">{t("ui_common.dismiss")}</button>
+                    <button type="button" onClick={() => setComicFlowReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss comic flow audit">{t("ui_common.dismiss")}</button>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-4 mb-4">
                     <div className="shrink-0 w-24 h-24 rounded-2xl bg-blue-600 text-white flex flex-col items-center justify-center shadow-md">
@@ -7586,7 +7586,7 @@ show();
                 <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-base font-black text-purple-800 flex items-center gap-2">ðŸ—ºï¸ Your Revision Plan</h4>
-                    <button onClick={() => setRevisionPlan(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_revision_plan")}>{t("ui_common.dismiss")}</button>
+                    <button type="button" onClick={() => setRevisionPlan(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label={t("a11y.dismiss_revision_plan")}>{t("ui_common.dismiss")}</button>
                   </div>
                   {revisionPlan.encouragement && (
                     <div className="bg-white border border-green-200 rounded-xl p-3 mb-4 text-xs text-green-900 leading-relaxed">
@@ -7901,7 +7901,7 @@ show();
               {/* Layout Toggle */}
               <div className="flex justify-center gap-2 mb-4">
                 {Object.entries(LAYOUT_MODES).map(([key, m]) => (
-                  <button
+                  <button type="button"
                     key={key}
                     onClick={() => setLayoutMode(key)}
                     className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
@@ -7915,7 +7915,7 @@ show();
               {layoutMode === 'comic' && (
                 <div className="flex flex-wrap justify-center gap-2 mb-4">
                   {Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => (
-                    <button
+                    <button type="button"
                       key={key}
                       onClick={() => setComicPageLayout(key)}
                       title={item.desc}
@@ -8352,14 +8352,14 @@ show();
 
               {/* Export Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-                <button
+                <button type="button"
                   onClick={exportStorybook}
                   className="px-8 py-4 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-2xl text-lg font-black hover:from-rose-700 hover:to-pink-700 transition-all shadow-lg shadow-rose-200 hover:shadow-xl hover:scale-105 active:scale-95 flex items-center gap-3"
                 >
                   <Download size={24} /> Export Storybook
                 </button>
                 {layoutMode === 'comic' && (
-                  <button
+                  <button type="button"
                     onClick={exportComicScript}
                     className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
                   >
@@ -8367,21 +8367,21 @@ show();
                   </button>
                 )}
                 {layoutMode === 'comic' && (
-                  <button
+                  <button type="button"
                     onClick={exportComicProductionPack}
                     className="px-6 py-3 bg-blue-700 text-white rounded-2xl text-sm font-bold hover:bg-blue-800 transition-all shadow-lg shadow-blue-200 flex items-center gap-2"
                   >
                     <Download size={18} /> Production Pack
                   </button>
                 )}
-                <button
+                <button type="button"
                   onClick={exportSlideshow}
                   className="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
                 >
                   <Play size={18} /> Slideshow
                 </button>
                 {liveSession && !isCanvasEnv && (
-                  <button
+                  <button type="button"
                     onClick={shareToSession}
                     className="px-6 py-3 bg-green-600 text-white rounded-2xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2"
                   >
@@ -8389,7 +8389,7 @@ show();
                   </button>
                 )}
                 {onSaveSubmission && (
-                  <button
+                  <button type="button"
                     onClick={saveAsSubmission}
                     className="px-6 py-3 bg-amber-600 text-white rounded-2xl text-sm font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-200 flex items-center gap-2"
                   >
@@ -8406,7 +8406,7 @@ show();
                     <Eye size={16} /> Class Portfolio
                   </h4>
                   <p className="text-xs text-slate-600 mb-3">Share your storybook to the class gallery so your teacher and classmates can view it. Teacher sees all shared stories as a gallery wall.</p>
-                  <button
+                  <button type="button"
                     onClick={shareToSession}
                     className="px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-2"
                   >
@@ -8423,10 +8423,10 @@ show();
                 </h4>
                 <p className="text-xs text-slate-600 mb-3">Export your draft as a file and share it with a classmate â€” they can continue where you left off!</p>
                 <div className="flex gap-3">
-                  <button onClick={exportDraftJSON} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2">
+                  <button type="button" onClick={exportDraftJSON} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2">
                     <Download size={14} /> Export Draft (.json)
                   </button>
-                  <button onClick={importDraftJSON} className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2">
+                  <button type="button" onClick={importDraftJSON} className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2">
                     <Plus size={14} /> Import Classmate's Draft
                   </button>
                 </div>
@@ -8438,7 +8438,7 @@ show();
 
       {/* â”€â”€ Footer Navigation â”€â”€ */}
       <div className="bg-white border-t border-slate-200 p-4 flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <button
+        <button type="button"
           onClick={goBack}
           disabled={phaseIdx === 0}
           className="px-5 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-30 flex items-center gap-2"
@@ -8449,7 +8449,7 @@ show();
           {PHASE_LABELS[phaseIdx]} Â· Step {phaseIdx + 1} of {PHASES.length}
         </div>
         {phaseIdx < PHASES.length - 1 ? (
-          <button
+          <button type="button"
             onClick={goNext}
             disabled={!canGoNext()}
             className="px-5 py-2.5 rounded-full text-sm font-bold bg-rose-600 text-white hover:bg-rose-700 transition-colors disabled:opacity-40 flex items-center gap-2 shadow-lg shadow-rose-200"
@@ -8457,7 +8457,7 @@ show();
             Next <ArrowRight size={16} />
           </button>
         ) : (
-          <button onClick={safeClose} className="px-5 py-2.5 rounded-full text-sm font-bold bg-slate-600 text-white hover:bg-slate-700 transition-colors flex items-center gap-2">
+          <button type="button" onClick={safeClose} className="px-5 py-2.5 rounded-full text-sm font-bold bg-slate-600 text-white hover:bg-slate-700 transition-colors flex items-center gap-2">
             Done <CheckCircle2 size={16} />
           </button>
         )}
