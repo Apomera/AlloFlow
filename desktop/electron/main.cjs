@@ -2,7 +2,8 @@
 
 const path = require('path');
 const fs = require('fs');
-const { app, BrowserWindow, ipcMain, safeStorage, shell } = require('electron');
+const os = require('os');
+const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron');
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
 const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
 
@@ -410,6 +411,10 @@ function createMainWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      // Run the preload in the same-origin #app-frame iframe too, so the web
+      // app sees window.alloAPI (save-to-folder bridge). IPC handlers still
+      // verify the sender frame's origin via assertTrustedIpcSender.
+      nodeIntegrationInSubFrames: true,
     },
   });
 
@@ -422,6 +427,12 @@ function createMainWindow() {
   mainWindow.on('leave-full-screen', () => notifyFullScreenChange(false));
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // In-app popup views (accessibility reports, print previews, export
+    // windows) open via window.open with about:blank/blob:/data: URLs —
+    // allow those as child windows; real external links open in the browser.
+    if (url === 'about:blank' || url.startsWith('blob:') || url.startsWith('data:')) {
+      return { action: 'allow' };
+    }
     openExternalIfSafe(url);
     return { action: 'deny' };
   });
@@ -529,6 +540,59 @@ handleTrustedIpc('alloflow-desktop:set-full-screen', async (_event, enabled) => 
 handleTrustedIpc('alloflow-desktop:is-full-screen', async () => (
   mainWindow ? mainWindow.isFullScreen() : false
 ));
+
+// ── Save remediated documents to a local folder ─────────────────────────────
+// Ported from the AlloFlow Admin app (the doc pipeline's batch export checks
+// window.alloAPI.remediation.saveFiles and prefers a folder of files over a
+// browser ZIP download when the bridge exists — see doc_pipeline_source.jsx).
+// payload = { folderName?: string, files: [{ name, data, encoding: 'base64'|'utf8' }] }
+// Returns { canceled } | { folder, saved } | { error }.
+handleTrustedIpc('remediation:save-files', async (_event, payload) => {
+  try {
+    const files = (payload && Array.isArray(payload.files)) ? payload.files : [];
+    if (files.length === 0) return { error: 'No files to save' };
+
+    const result = await dialog.showOpenDialog(mainWindow, {
+      defaultPath: os.homedir(),
+      properties: ['openDirectory', 'createDirectory'],
+      title: 'Choose where to save the files',
+      buttonLabel: 'Save Here',
+    });
+    if (result.canceled || !result.filePaths[0]) return { canceled: true };
+
+    const rawName = (payload && payload.folderName) || 'AlloFlow_Export';
+    const folderName = String(rawName).replace(/[\\/:*?"<>|]/g, '_').slice(0, 120) || 'AlloFlow_Export';
+    const baseDir = path.join(result.filePaths[0], folderName);
+    fs.mkdirSync(baseDir, { recursive: true });
+
+    let saved = 0;
+    for (const f of files) {
+      if (!f || !f.name || typeof f.data !== 'string') continue;
+      const safe = String(f.name).replace(/[\\/:*?"<>|]/g, '_');
+      const buf = f.encoding === 'utf8' ? Buffer.from(f.data, 'utf8') : Buffer.from(f.data, 'base64');
+      fs.writeFileSync(path.join(baseDir, safe), buf);
+      saved++;
+    }
+
+    logLine(`Saved ${saved} file(s) to ${baseDir}`);
+    return { canceled: false, folder: baseDir, saved };
+  } catch (error) {
+    return { error: String((error && error.message) || error) };
+  }
+});
+
+// Reveal a saved folder/file in the OS file manager.
+handleTrustedIpc('remediation:reveal-path', async (_event, targetPath) => {
+  try {
+    if (typeof targetPath !== 'string' || !fs.existsSync(targetPath)) {
+      return { error: 'Path not found' };
+    }
+    await shell.openPath(targetPath);
+    return { success: true };
+  } catch (error) {
+    return { error: String((error && error.message) || error) };
+  }
+});
 
 app.whenReady().then(async () => {
   configureDesktopSecretStorage();

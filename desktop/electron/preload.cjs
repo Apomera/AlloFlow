@@ -24,3 +24,14 @@ contextBridge.exposeInMainWorld('alloflowDesktop', {
     return () => ipcRenderer.removeListener('alloflow-desktop:update-status', listener);
   },
 });
+
+// Ported from the AlloFlow Admin app: the doc pipeline's batch export checks
+// window.alloAPI.remediation.saveFiles and, when present, saves the artifact
+// set to a user-chosen local folder instead of a browser ZIP download.
+// Runs in the same-origin #app-frame too (nodeIntegrationInSubFrames).
+contextBridge.exposeInMainWorld('alloAPI', {
+  remediation: {
+    saveFiles: (payload) => ipcRenderer.invoke('remediation:save-files', payload),
+    revealPath: (p) => ipcRenderer.invoke('remediation:reveal-path', p),
+  },
+});

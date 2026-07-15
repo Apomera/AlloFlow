@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Cpu, Settings as SettingsIcon, Server, Wrench, Trash2, Users } from 'lucide-react';
-import SetupWizard from './pages/SetupWizard';
 import RemediationSetup from './pages/RemediationSetup';
 import Dashboard from './pages/Dashboard';
 import Models from './pages/Models';
@@ -267,9 +266,31 @@ function App() {
     );
   }
 
-  // Show setup wizard if not installed
+  // Full-edition setup is retired: local installs are now handled by the
+  // standalone AlloFlow Desktop app (desktop/), which packages its own setup,
+  // provider config, and services in the command center. This screen remains
+  // only so an already-installed admin instance keeps managing its services;
+  // fresh installs are pointed at AlloFlow Desktop instead of SetupWizard.
+  // (The remediation edition above is unaffected — it has its own setup.)
   if (!setupState.installed) {
-    return <SetupWizard onComplete={handleSetupComplete} />;
+    return (
+      <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif', background: 'linear-gradient(135deg,#f1f5f9 0%,#e2e8f0 100%)' }}>
+        <div style={{ maxWidth: '540px', background: '#fff', borderRadius: '18px', boxShadow: '0 10px 40px rgba(15,23,42,0.12)', padding: '36px', textAlign: 'center' }}>
+          <div style={{ fontSize: '40px', marginBottom: '8px' }}>🖥️</div>
+          <h1 style={{ margin: '0 0 10px', fontSize: '22px', color: '#0f172a' }}>Setup has moved to AlloFlow Desktop</h1>
+          <p style={{ color: '#475569', fontSize: '14.5px', lineHeight: 1.7, margin: '0 0 18px' }}>
+            Local installation, AI provider configuration, and service management now live in the
+            standalone <strong>AlloFlow Desktop</strong> app, which bundles everything (including
+            offline classroom tools) in one installer. This admin console no longer performs
+            first-time setup.
+          </p>
+          <p style={{ color: '#64748b', fontSize: '12.5px' }}>
+            Install <code>AlloFlow-Desktop-*-setup.exe</code> (built from <code>desktop/</code>), or run
+            <code> npm run package:win</code> in the <code>desktop</code> directory to build it.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // If installed, show admin shell with sidebar navigation
