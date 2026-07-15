@@ -82,6 +82,8 @@ const learningSummary = learningQa && learningQa.summary ? learningQa.summary : 
 const reviewedChapters = Number(learningSummary.sourceReviewedChapters || 0);
 const reviewedFlashcards = Number(learningSummary.sourceReviewedFlashcards || 0);
 const reviewedMemoryAids = Number(learningSummary.sourceReviewedMemoryAids || 0);
+const retainedReviewedFlashcards = Number(learningSummary.retainedReviewedFlashcards || 0);
+const retiredRedundantFlashcards = Number(learningSummary.retiredRedundantFlashcards || 0);
 const editorialMemoryAids = Number(learningSummary.editorialReviewedSourcePendingMemoryAids || 0);
 const navigationPages = Array.from(html.matchAll(/class=["'][^"']*nav-item[^"']*["'][^>]*data-page=["']([^"']+)["']/gi), (match) => match[1]);
 const learnerModes = [...new Set(navigationPages)].filter((page) => !['dashboard', 'settings', 'about'].includes(page));
@@ -128,6 +130,8 @@ const report = {
     sourceReviewedChapters: reviewedChapters,
     sourceReviewedFlashcards: reviewedFlashcards,
     sourceReviewedMemoryAids: reviewedMemoryAids,
+    retainedReviewedFlashcards,
+    retiredRedundantFlashcards,
     editorialReviewedSourcePendingMemoryAids: editorialMemoryAids,
     learnerModes: learnerModes.length,
   },
@@ -138,7 +142,7 @@ const report = {
     { contentType: 'legacy questions', count: legacyAudit.summary.totalItems, status: 'active-full-review', nextGate: 're-author or correct, source QA, item-writing QA, accessibility, independent expert validation' },
     { contentType: 'textbook chapters', count: chapters.length, status: reviewedChapters ? 'review-in-progress' : 'legacy-preserved-review-not-started', reviewedCount: reviewedChapters, nextGate: `${chapters.length - reviewedChapters} chapters still need claim-level source audit and editorial review; all chapters still require independent expert review` },
     { contentType: 'interactive diagrams', count: Object.keys(diagrams).length, status: 'legacy-preserved-review-not-started', nextGate: 'concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review' },
-    { contentType: 'flashcards', count: flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0), status: reviewedFlashcards ? 'review-in-progress' : 'legacy-preserved-review-not-started', reviewedCount: reviewedFlashcards, nextGate: 'remaining cards need deduplication, atomic-answer review, source support and clue checks' },
+    { contentType: 'flashcards', count: flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0), status: reviewedFlashcards === flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0) ? 'first-pass-complete-expert-pending' : (reviewedFlashcards ? 'review-in-progress' : 'legacy-preserved-review-not-started'), reviewedCount: reviewedFlashcards, retainedCount: retainedReviewedFlashcards, retiredRedundantCount: retiredRedundantFlashcards, nextGate: reviewedFlashcards === flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0) ? 'independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded' : 'remaining cards need deduplication, atomic-answer review, source support and clue checks' },
     { contentType: 'memory aids', count: memoryAids.length, status: (reviewedMemoryAids || editorialMemoryAids) ? 'review-in-progress' : 'legacy-preserved-review-not-started', reviewedCount: reviewedMemoryAids, editorialSourcePendingCount: editorialMemoryAids, nextGate: 'remaining aids need oversimplification, outdated-guidance, bias, and source review' },
     { contentType: 'term definitions', count: Object.keys(termDefinitions).length, status: 'legacy-preserved-review-not-started', nextGate: 'definition/source/version audit and cross-link review' },
   ],

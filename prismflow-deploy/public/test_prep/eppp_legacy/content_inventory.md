@@ -1,6 +1,6 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-15T05:09:51.719Z
+Generated: 2026-07-15T13:35:21.093Z
 
 ## Inventory
 
@@ -74,7 +74,7 @@ Recommended release gates: 100-question foundation, 300-question alpha, 1,000-qu
 | legacy questions | 2933 | active-full-review | re-author or correct, source QA, item-writing QA, accessibility, independent expert validation |
 | textbook chapters | 49 | review-in-progress | 0 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
 | interactive diagrams | 25 | legacy-preserved-review-not-started | concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review |
-| flashcards | 415 | review-in-progress | remaining cards need deduplication, atomic-answer review, source support and clue checks |
+| flashcards | 415 | first-pass-complete-expert-pending | independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded |
 | memory aids | 255 | review-in-progress | remaining aids need oversimplification, outdated-guidance, bias, and source review |
 | term definitions | 1583 | legacy-preserved-review-not-started | definition/source/version audit and cross-link review |
 

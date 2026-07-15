@@ -246,6 +246,54 @@ const SOURCES = {
     'https://dictionary.apa.org/alexithymia',
     'The APA Dictionary of Psychology is an expert-edited professional reference maintained by the American Psychological Association. It supplies the field-specific definition and appropriately broad clinical context for alexithymia.'
   ),
+  tarasoff: source(
+    'Tarasoff v. Regents of the University of California, 17 Cal. 3d 425 (1976)',
+    'Supreme Court of California opinion archive reproduced by Justia',
+    'https://law.justia.com/cases/california/supreme-court/3d/17/425.html',
+    'This is the full published California Supreme Court opinion with its official reporter citation. It is the primary case text for the historical holding, while current duties still require jurisdiction-specific statutory and case-law review.'
+  ),
+  dusky: source(
+    'Dusky v. United States, 362 U.S. 402 (1960)',
+    'Supreme Court of the United States opinion reproduced by Cornell Legal Information Institute',
+    'https://www.law.cornell.edu/supremecourt/text/362/402',
+    'Cornell Law School\'s Legal Information Institute reproduces the complete U.S. Supreme Court opinion and official citation. The short per curiam opinion is the primary source for the federal trial-competence wording.'
+  ),
+  insanityDefense: source(
+    'Insanity Defense',
+    'Cornell Law School Legal Information Institute, Wex legal encyclopedia',
+    'https://www.law.cornell.edu/wex/insanity_defense',
+    'Cornell Law School\'s expert-edited Wex resource summarizes major insanity-defense formulations and, critically, their jurisdictional variation. It is a reputable legal orientation source rather than a substitute for controlling local law.'
+  ),
+  mandatoryReporting: source(
+    'Mandatory Reporting of Child Abuse and Neglect: State Statutes',
+    'Child Welfare Information Gateway, Children\'s Bureau, Administration for Children and Families, U.S. Department of Health and Human Services',
+    'https://www.childwelfare.gov/resources/mandatory-reporting-child-abuse-and-neglect/',
+    'Child Welfare Information Gateway is the federal Children\'s Bureau information service. Its state-statute summaries document that reporter categories, thresholds, timing, and procedures are jurisdiction-specific and require current verification.'
+  ),
+  goldwater: source(
+    'American Psychiatric Association Ethics Committee Opinion: The Goldwater Rule',
+    'American Psychiatric Association Ethics Committee',
+    'https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/Ethics/APA-Ethics-Committee-Goldwater-Opinion.pdf',
+    'This is the issuing organization\'s official Ethics Committee opinion interpreting Section 7.3 for psychiatrists. It directly prevents the common error of attributing the Goldwater Rule to the American Psychological Association.'
+  ),
+  oconnorDonaldson: source(
+    'O\'Connor v. Donaldson, 422 U.S. 563 (1975)',
+    'Supreme Court of the United States opinion reproduced by Cornell Legal Information Institute',
+    'https://www.law.cornell.edu/supremecourt/text/422/563',
+    'Cornell Law School\'s Legal Information Institute reproduces the complete U.S. Supreme Court opinion and official citation. The opinion is the primary source for the bounded constitutional holding on confinement.'
+  ),
+  wyatt: source(
+    'Wyatt v. Stickney, 325 F. Supp. 781 (M.D. Ala. 1971)',
+    'United States District Court opinion archive reproduced by Justia',
+    'https://law.justia.com/cases/federal/district-courts/FSupp/325/781/2594259/',
+    'This is the full federal district-court opinion with its official reporter citation. Reading the case itself supports its historical importance while avoiding the inaccurate claim that it is a nationwide Supreme Court rule.'
+  ),
+  psypact: source(
+    'About the Psychology Interjurisdictional Compact (PSYPACT)',
+    'Psychology Interjurisdictional Compact Commission, official compact governing body',
+    'https://psypact.gov/page/About',
+    'The PSYPACT Commission is the compact\'s official governing body and grants interjurisdictional authorizations. Its current materials are the primary source for compact purpose, APIT authorization, temporary practice, and participation rules.'
+  ),
 };
 
 function sourceFor(domainId, value) {
@@ -271,6 +319,8 @@ function sourceFor(domainId, value) {
     if (/racial identity|acculturation|intersectionality|implicit bias|power and privilege|multicultural counseling/.test(text)) return SOURCES.multicultural;
     if (/herzberg|performance appraisal|organizational justice|job characteristics|leadership|role ambiguity|role conflict/.test(text)) return SOURCES.industrialOrganizational;
     if (/consultation|supervision/.test(text)) return SOURCES.supervision;
+    if (/dusky|competency/.test(text)) return SOURCES.dusky;
+    if (/insanity/.test(text)) return SOURCES.insanityDefense;
     return /program evaluation|ecological momentary/.test(text) ? SOURCES.research : SOURCES.social;
   }
   if (domainId === 4) return SOURCES.development;
@@ -291,6 +341,14 @@ function sourceFor(domainId, value) {
   if (domainId === 6) return /medicat|drug|antidepress|antipsych|benzodia|maoi|ssri|lithium|stimulant|clozapine/.test(text) ? SOURCES.medications : SOURCES.therapy;
   if (domainId === 7) return /belmont|human subject|informed consent|irb|research ethics|debrief|deception/.test(text) ? SOURCES.belmont : (/mean|median|mode|variance|deviation|correl|regress|probab|alpha|power|signific|distribution|anova|chi.square|t.test|effect size|cohen|type i|type ii|bayesian|frequentist|multicollinearity|mediation|moderation|normal distribution|parametric|non parametric|propensity|item response theory|irt|structural equation|sem/.test(text) ? SOURCES.statistics : SOURCES.research);
   if (/evidence based practice/.test(text)) return SOURCES.ebpp;
+  if (/tarasoff/.test(text)) return SOURCES.tarasoff;
+  if (/dusky|competency to stand trial/.test(text)) return SOURCES.dusky;
+  if (/insanity defense/.test(text)) return SOURCES.insanityDefense;
+  if (/mandatory reporting|duty to report|child abuse/.test(text)) return SOURCES.mandatoryReporting;
+  if (/goldwater/.test(text)) return SOURCES.goldwater;
+  if (/o connor|donaldson/.test(text)) return SOURCES.oconnorDonaldson;
+  if (/wyatt|stickney/.test(text)) return SOURCES.wyatt;
+  if (/psypact/.test(text)) return SOURCES.psypact;
   if (/supervision/.test(text)) return SOURCES.supervision;
   if (/telehealth|telepsychology/.test(text)) return SOURCES.telepsychology;
   if (/hipaa|insurance company|protected health|psychotherapy notes/.test(text)) return SOURCES.hipaa;

@@ -145,6 +145,12 @@ for (const domain of domains) {
       reviewDate: cleanText(override.reviewDate),
       reviewArtifact: cleanText(waveOverride.reviewArtifact),
       sourceDetails: Array.isArray(override.sourceDetails) ? override.sourceDetails : [],
+      contentDisposition: cleanText(override.contentDisposition) || 'retain-after-rewrite',
+      independentExpertStatus: cleanText(override.independentExpertStatus) || 'not-started',
+      productionStatus: cleanText(override.productionStatus) || 'not-production-validated',
+      learnerVisible: override.learnerVisible === true,
+    } : override.reviewStatus === 'source-reviewed-editorial-pass' ? {
+      contentDisposition: cleanText(override.contentDisposition) || 'retain-after-rewrite',
       independentExpertStatus: cleanText(override.independentExpertStatus) || 'not-started',
       productionStatus: cleanText(override.productionStatus) || 'not-production-validated',
       learnerVisible: override.learnerVisible === true,
@@ -222,6 +228,8 @@ const catalog = {
     sourceReviewedChapters: chapterRecords.filter((chapter) => chapter.reviewStatus === 'source-reviewed-editorial-pass').length,
     qaPassedFlashcards: flashcards.filter((card) => card.reviewStatus === 'qa-passed').length,
     sourceReviewedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass').length,
+    retainedReviewedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').length,
+    retiredRedundantFlashcards: flashcards.filter((card) => card.contentDisposition === 'retire-redundant').length,
     qaPassedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'qa-passed').length,
     sourceReviewedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').length,
     editorialReviewedSourcePendingMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending').length,
@@ -243,6 +251,7 @@ const report = {
     'Legacy content is preserved but is not automatically approved for native publication.',
     'Shared renderer accessibility controls are implemented; each diagram still needs concept and label review.',
     `${catalog.summary.sourceReviewedFlashcards} of ${catalog.summary.flashcards} flashcards have source-review records; ${catalog.summary.flashcards - catalog.summary.sourceReviewedFlashcards} remain in first-pass review, and independent qualified expert validation is still pending.`,
+    `${catalog.summary.retiredRedundantFlashcards} source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.`,
   ],
 };
 

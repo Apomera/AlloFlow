@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T05:09:51.389Z",
+  "generatedAt": "2026-07-15T13:35:20.673Z",
   "libraryId": "eppp-learning-library",
   "standard": {
     "checks": [
@@ -25,7 +25,9 @@
     "qaPassedChapters": 0,
     "sourceReviewedChapters": 49,
     "qaPassedFlashcards": 0,
-    "sourceReviewedFlashcards": 309,
+    "sourceReviewedFlashcards": 415,
+    "retainedReviewedFlashcards": 336,
+    "retiredRedundantFlashcards": 79,
     "qaPassedMemoryAids": 0,
     "sourceReviewedMemoryAids": 8,
     "editorialReviewedSourcePendingMemoryAids": 2
@@ -34,6 +36,7 @@
   "findings": [
     "Legacy content is preserved but is not automatically approved for native publication.",
     "Shared renderer accessibility controls are implemented; each diagram still needs concept and label review.",
-    "309 of 415 flashcards have source-review records; 106 remain in first-pass review, and independent qualified expert validation is still pending."
+    "415 of 415 flashcards have source-review records; 0 remain in first-pass review, and independent qualified expert validation is still pending.",
+    "79 source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets."
   ]
 }

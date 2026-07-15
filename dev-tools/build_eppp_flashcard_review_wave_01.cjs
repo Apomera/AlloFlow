@@ -5,12 +5,15 @@ const fs = require('fs');
 const path = require('path');
 const { clean, normalize, sourceFor } = require('./eppp_editorial_support.cjs');
 const waveNumber = String(process.env.EPPP_FLASHCARD_REVIEW_WAVE || '01').padStart(2, '0');
-if (!['01', '02', '03'].includes(waveNumber)) throw new Error(`Unsupported EPPP flashcard review wave: ${waveNumber}`);
+if (!['01', '02', '03', '04'].includes(waveNumber)) throw new Error(`Unsupported EPPP flashcard review wave: ${waveNumber}`);
 const isWave02 = waveNumber === '02';
 const isWave03 = waveNumber === '03';
-const baseRevisions = require(isWave03
-  ? './eppp_flashcard_revisions_wave_03_data.cjs'
-  : (isWave02 ? './eppp_flashcard_revisions_wave_02.cjs' : './eppp_flashcard_revisions.cjs'));
+const isWave04 = waveNumber === '04';
+const isExplicitWave = isWave03 || isWave04;
+const baseRevisions = require(isWave04
+  ? './eppp_flashcard_revisions_wave_04_data.cjs'
+  : (isWave03 ? './eppp_flashcard_revisions_wave_03_data.cjs'
+    : (isWave02 ? './eppp_flashcard_revisions_wave_02.cjs' : './eppp_flashcard_revisions.cjs')));
 const supplementalRevisions = isWave02 ? require('./eppp_flashcard_revisions_wave_02_data.cjs') : new Map();
 const revisions = new Map([...baseRevisions, ...supplementalRevisions]);
 
@@ -20,10 +23,13 @@ const overridesPath = path.join(root, 'test_prep', 'eppp_learning_review_overrid
 const outputName = `eppp_flashcard_review_wave_${waveNumber}.json`;
 const markdownName = `eppp_flashcard_review_wave_${waveNumber}.md`;
 const waveId = `eppp-flashcard-review-wave-${waveNumber}`;
-const reviewDate = isWave03 ? '2026-07-15' : '2026-07-14';
-const quotas = new Map(isWave03
-  ? [[1, 16], [2, 8], [3, 15], [4, 5], [5, 22], [6, 14], [7, 5], [8, 15]]
-  : (isWave02 ? [[1, 10], [2, 19], [3, 12], [4, 13], [5, 10], [6, 10], [7, 20], [8, 6]] : [[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]]));
+const reviewDate = isExplicitWave ? '2026-07-15' : '2026-07-14';
+const quotas = new Map(isWave04
+  ? [[1, 14], [2, 13], [3, 8], [4, 18], [5, 7], [6, 13], [7, 10], [8, 23]]
+  : (isWave03
+    ? [[1, 16], [2, 8], [3, 15], [4, 5], [5, 22], [6, 14], [7, 5], [8, 15]]
+    : (isWave02 ? [[1, 10], [2, 19], [3, 12], [4, 13], [5, 10], [6, 10], [7, 20], [8, 6]] : [[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]])));
+const expectedCount = [...quotas.values()].reduce((sum, value) => sum + value, 0);
 
 if (!fs.existsSync(sourcePath)) throw new Error('Build eppp_learning_library.json before creating a flashcard review wave.');
 const library = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
@@ -166,14 +172,14 @@ for (const [domainId, quota] of quotas) {
   const pool = candidateCards
     .filter((card) => Number(card.domainId) === domainId)
     .filter((card) => card.reviewStatus !== 'source-reviewed-editorial-pass')
-    .filter((card) => !isWave03 || revisions.has(card.front))
-    .filter((card) => isWave03 || !existingReviewedFronts.has(normalize(card.front)))
+    .filter((card) => !isExplicitWave || revisions.has(card.front))
+    .filter((card) => isExplicitWave || !existingReviewedFronts.has(normalize(card.front)))
     .filter((card) => card.front.length >= 8 && card.front.length <= 220)
     .filter((card) => card.back.length >= 20 && card.back.length <= 700)
-    .filter((card) => isWave03 || (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !unstableClaim.test(`${card.front} ${card.back}`))
-    .filter((card) => isWave03 || !overclaim.test(`${card.front} ${card.back}`))
+    .filter((card) => isExplicitWave || (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !unstableClaim.test(`${card.front} ${card.back}`))
+    .filter((card) => isExplicitWave || !overclaim.test(`${card.front} ${card.back}`))
     .filter((card) => !malformed.test(`${card.front} ${card.back}`))
-    .filter((card) => isWave03 || (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !(excludedByDomain.get(domainId) || /$a/).test(`${card.front} ${card.back}`))
+    .filter((card) => isExplicitWave || (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !(excludedByDomain.get(domainId) || /$a/).test(`${card.front} ${card.back}`))
     .sort((left, right) => candidateScore(left) - candidateScore(right) || left.id.localeCompare(right.id));
 
   const domainSelected = [];
@@ -182,8 +188,8 @@ for (const [domainId, quota] of quotas) {
     const cardTokens = tokens(card.front);
     const concept = topicKey(card);
     const isNearDuplicate = selectedTokens.some((entry) => entry.domainId === domainId && jaccard(cardTokens, entry.tokens) >= 0.5);
-    if (!isWave03 && concept && domainTopics.has(concept)) continue;
-    if (!isWave03 && isNearDuplicate) continue;
+    if (!isExplicitWave && concept && domainTopics.has(concept)) continue;
+    if (!isExplicitWave && isNearDuplicate) continue;
     domainSelected.push(card);
     selectedTokens.push({ domainId, tokens: cardTokens });
     if (concept) domainTopics.add(concept);
@@ -214,6 +220,7 @@ const items = selected.map((card, index) => {
     back,
     revisionApplied,
     revisionReason: clean(revision.reason),
+    contentDisposition: clean(revision.disposition || 'retain-after-rewrite'),
     reviewStatus: 'source-reviewed-editorial-pass',
     reviewMode: 'assisted-flashcard-editorial-review',
     reviewWave: waveId,
@@ -252,7 +259,7 @@ const report = {
   status: 'assisted-editorial-review-complete-expert-pending',
   standard: {
     meaning: 'This wave records an assisted editorial and source-alignment pass. It does not constitute independent expert validation, psychometric evidence, or authorization for learner release.',
-    selection: 'Readable, nonduplicate foundational cards were selected across all eight domains. Time-sensitive, legal, diagnostic-criteria, medication, numeric-frequency, malformed, and absolute claims were excluded or rewritten out of the reviewed form.',
+    selection: isWave04 ? 'Every remaining legacy card was reviewed across all eight domains. Distinct supportable targets were retained after rewrite; duplicate targets were accuracy-corrected for provenance and explicitly retired from future learner release.' : 'Readable, nonduplicate foundational cards were selected across all eight domains. Time-sensitive, legal, diagnostic-criteria, medication, numeric-frequency, malformed, and absolute claims were excluded or rewritten out of the reviewed form.',
     checks: ['atomic-answer', 'source-support', 'duplicate-screen', 'accessibility-structure', 'accuracy-and-currency-risk', 'bias-and-context-risk', 'independent-expert-review'],
   },
   summary: {
@@ -266,18 +273,20 @@ const report = {
     previouslySourceReviewed,
     sourceReviewedAfterIntegration: previouslySourceReviewed + items.length,
     remainingFirstPass: library.flashcards.length - previouslySourceReviewed - items.length,
+    retainedAfterReview: items.filter((item) => item.contentDisposition === 'retain-after-rewrite').length,
+    retiredAsRedundant: items.filter((item) => item.contentDisposition === 'retire-redundant').length,
   },
   domainBreakdown,
   sources: [...distinctSources.values()],
   items,
 };
 
-if (items.length !== 100 || new Set(items.map((item) => item.id)).size !== 100) throw new Error('Flashcard wave must contain exactly 100 unique cards.');
+if (items.length !== expectedCount || new Set(items.map((item) => item.id)).size !== expectedCount) throw new Error(`Flashcard wave must contain exactly ${expectedCount} unique cards.`);
 
 const markdown = `# EPPP flashcard review wave ${waveNumber}\n\n` +
   `Generated: ${report.generatedAt}\n\n` +
   `Status: **assisted editorial review complete; independent expert validation pending**\n\n` +
-  `This wave reviews ${report.summary.reviewedFlashcards} foundational legacy flashcards across all eight domains. Time-sensitive, legal, diagnostic-criteria, medication, numeric-frequency, malformed, and absolute claims were excluded or rewritten out of the reviewed form. No card in this artifact is learner-visible solely because it passed this review.\n\n` +
+  `${isWave04 ? 'This final first-pass wave reviews every remaining legacy flashcard and records whether each target should be retained after rewrite or retired as redundant.' : `This wave reviews ${report.summary.reviewedFlashcards} foundational legacy flashcards across all eight domains. Time-sensitive, legal, diagnostic-criteria, medication, numeric-frequency, malformed, and absolute claims were excluded or rewritten out of the reviewed form.`} No card in this artifact is learner-visible solely because it passed this review.\n\n` +
   `## Progress\n\n` +
   `- Previously source-reviewed: ${report.summary.previouslySourceReviewed}\n` +
   `- Reviewed in this wave: ${report.summary.reviewedFlashcards}\n` +
@@ -285,10 +294,12 @@ const markdown = `# EPPP flashcard review wave ${waveNumber}\n\n` +
   `- Source-reviewed after integration: ${report.summary.sourceReviewedAfterIntegration} of ${report.summary.legacyFlashcards}\n` +
   `- Remaining first-pass review: ${report.summary.remainingFirstPass}\n` +
   `- Independent expert validated: ${report.summary.independentExpertValidated}\n\n` +
+  `- Retained after rewrite: ${report.summary.retainedAfterReview}\n` +
+  `- Retired as redundant: ${report.summary.retiredAsRedundant}\n` +
   `## Domain distribution\n\n| Domain | Cards |\n| --- | ---: |\n` +
   Object.values(domainBreakdown).map((entry) => `| ${entry.domain} | ${entry.reviewed} |`).join('\n') +
   `\n\n## Named sources\n\n` + [...distinctSources.values()].map((entry) => `- [${entry.title}](${entry.url}) — ${entry.organization}. ${entry.credibility}`).join('\n') +
-  `\n\n## Reviewed cards\n\n` + items.map((item) => `### ${item.sequence}. ${item.front}\n\n${item.back}\n\nSource: [${item.sourceDetails[0].title}](${item.sourceDetails[0].url}) (${item.sourceDetails[0].organization})\n\n${item.revisionApplied ? `Revision: ${item.revisionReason}\n\n` : ''}Review note: ${item.reviewNote}`).join('\n\n');
+  `\n\n## Reviewed cards\n\n` + items.map((item) => `### ${item.sequence}. ${item.front}\n\n${item.back}\n\nDisposition: ${item.contentDisposition}\n\nSource: [${item.sourceDetails[0].title}](${item.sourceDetails[0].url}) (${item.sourceDetails[0].organization})\n\n${item.revisionApplied ? `Revision: ${item.revisionReason}\n\n` : ''}Review note: ${item.reviewNote}`).join('\n\n');
 
 for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });

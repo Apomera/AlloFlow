@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T05:09:51.719Z",
+  "generatedAt": "2026-07-15T13:35:21.093Z",
   "summary": {
     "legacyQuestions": 2933,
     "nativeQaQuestions": 1500,
@@ -20,8 +20,10 @@
     "chapterReferences": 383,
     "aiReflectiveCodas": 49,
     "sourceReviewedChapters": 49,
-    "sourceReviewedFlashcards": 309,
+    "sourceReviewedFlashcards": 415,
     "sourceReviewedMemoryAids": 8,
+    "retainedReviewedFlashcards": 336,
+    "retiredRedundantFlashcards": 79,
     "editorialReviewedSourcePendingMemoryAids": 2,
     "learnerModes": 14
   },
@@ -136,9 +138,11 @@
     {
       "contentType": "flashcards",
       "count": 415,
-      "status": "review-in-progress",
-      "reviewedCount": 309,
-      "nextGate": "remaining cards need deduplication, atomic-answer review, source support and clue checks"
+      "status": "first-pass-complete-expert-pending",
+      "reviewedCount": 415,
+      "retainedCount": 336,
+      "retiredRedundantCount": 79,
+      "nextGate": "independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded"
     },
     {
       "contentType": "memory aids",

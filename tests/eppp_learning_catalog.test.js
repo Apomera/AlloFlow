@@ -32,8 +32,10 @@ describe('EPPP native learning-library catalog', () => {
     expect(psychometrics.sections.filter((section) => section.hasKnowledgeCheck)).toHaveLength(2);
     expect(catalog.chapters.flatMap((chapter) => chapter.sections)).toHaveLength(278);
     expect(catalog.flashcards.every((card) => card.front && card.back && ['review-required', 'source-reviewed-editorial-pass'].includes(card.reviewStatus))).toBe(true);
-    expect(catalog.flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(309);
-    expect(catalog.flashcards.filter((card) => card.reviewStatus === 'review-required')).toHaveLength(106);
+    expect(catalog.flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(415);
+    expect(catalog.flashcards.filter((card) => card.reviewStatus === 'review-required')).toHaveLength(0);
+    expect(catalog.flashcards.filter((card) => card.contentDisposition === 'retain-after-rewrite')).toHaveLength(336);
+    expect(catalog.flashcards.filter((card) => card.contentDisposition === 'retire-redundant')).toHaveLength(79);
     expect(catalog.memoryAids.every((aid) => aid.title && aid.content && ['review-required', 'source-reviewed-editorial-pass', 'editorial-reviewed-source-pending'].includes(aid.reviewStatus))).toBe(true);
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(8);
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending')).toHaveLength(2);
