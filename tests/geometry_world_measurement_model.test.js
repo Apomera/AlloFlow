@@ -60,6 +60,12 @@ describe('Geometry World measurement model', () => {
     const legacy = math.compareMeasurementRecords({ vol: '1 1/2' }, { vol: '2' });
     expect(legacy).toMatchObject({ previousVolume: 1.5, latestVolume: 2, volumeDifference: 0.5 });
   });
+  it('marks capped measurements incomplete and excludes them from comparisons', () => {
+    const incomplete = math.enrichMeasurement({ count: 1500, totalVolume: 1500, boundingVolume: 1500, hasFractions: false, shapeCounts: { cube: 1500 }, blocks: [{ x: 0, y: 0, z: 0 }], isComplete: false });
+    expect(incomplete).toMatchObject({ isComplete: false, isSolidPrism: false, surfaceAreaExact: false, exposedSurfaceArea: null, exposedFaces: null });
+    expect(math.compareMeasurementRecords(incomplete, { occupiedVolume: 10, surfaceArea: 20, isComplete: true })).toBeNull();
+  });
+
 
   it('keeps ground, lesson, and student blocks in separate measurement layers', () => {
     const student = { blockType: 'stone', _measurementLayer: 'student' };
@@ -96,12 +102,16 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain("'Bounding box ' + measureResult.boundingVolume");
     expect(SOURCE).toContain("'aria-label': 'Predicted volume in cubic units'");
     expect(SOURCE).toContain("'data-geometry-prediction-result': 'true'");
-    expect(SOURCE).toContain('var mobilePrediction = compareVolumePrediction');
+    expect(SOURCE).toContain('var mobilePrediction = m.isComplete === false ? null : compareVolumePrediction');
     expect(SOURCE).toContain("if (!nm.isSolidPrism) {");
     expect(SOURCE).toContain("'data-geometry-surface-area': measureResult.surfaceAreaExact ? 'exact' : 'partial'");
     expect(SOURCE).toContain('hasFractions: hasPartialShapes');
     expect(SOURCE).toContain("'data-geometry-measurement-comparison': 'true'");
     expect(SOURCE).toContain("_measurementLayer: engine._measurementLayer || (engine._placingLessonBlocks ? 'lesson' : 'student')");
     expect(SOURCE).toContain('belongsToMeasuredComponent(seedData, mesh.userData, blockType)');
+    expect(SOURCE).toContain('MEASUREMENT_BLOCK_LIMIT = MAX_BLOCKS');
+    expect(SOURCE).toContain("'data-geometry-measurement-incomplete': 'true'");
+    expect(SOURCE).toContain('queue[queueIndex++]');
+    expect(SOURCE).not.toContain('result.length < 500');
   });
 });

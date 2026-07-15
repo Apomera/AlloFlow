@@ -226,6 +226,35 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).toContain('.brainatlas-overview-toggle{display:inline-flex;');
   });
 
+  it('provides bounded diagram zoom without changing logical canvas dimensions', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const defaultHtml = render({ view: 'lateral' });
+    const enlarged = render({ view: 'lateral', canvasZoom: 1.5 });
+    const clamped = render({ view: 'lateral', canvasZoom: 9 });
+
+    expect(defaultHtml).toContain('data-brainatlas-zoom-controls="true"');
+    expect(defaultHtml).toContain('data-brainatlas-zoom-out="true"');
+    expect(defaultHtml).toContain('data-brainatlas-zoom-level="true"');
+    expect(defaultHtml).toContain('data-brainatlas-zoom-in="true"');
+    expect(defaultHtml).toContain('data-brainatlas-canvas-zoom-frame="true"');
+    expect(defaultHtml).toContain('data-brainatlas-zoom="1.00"');
+    expect(defaultHtml).toMatch(/>100%<\/button>/);
+    expect(defaultHtml).toContain('width="840"');
+    expect(defaultHtml).toContain('height="640"');
+
+    expect(enlarged).toContain('data-brainatlas-zoom="1.50"');
+    expect(enlarged).toMatch(/>150%<\/button>/);
+    expect(enlarged).toContain('width:150%');
+    expect(enlarged).toContain('max-width:1740px');
+    expect(clamped).toContain('data-brainatlas-zoom="1.50"');
+
+    expect(src).toContain('function setBrainAtlasZoom(nextZoom)');
+    expect(src).toContain('.brainatlas-canvas-stage{display:flex;flex:1 1 auto;min-height:0;align-items:center;justify-content:flex-start;overflow:auto;');
+    expect(src).toContain('.brainatlas-canvas-zoom-frame .brainatlas-canvas{max-width:none!important;}');
+    expect(src).toContain('.brainatlas-canvas-shell:fullscreen .brainatlas-zoom-controls');
+  });
+
 
 
 

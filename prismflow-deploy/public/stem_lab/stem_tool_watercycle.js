@@ -4454,6 +4454,36 @@ const d = labToolData.waterCycle || {};
             }));
             world3d.add(riverFlow3d);
 
+            var riverTurbidityMat3d = new THREE.MeshBasicMaterial({
+              color: 0xb7794f, transparent: true, opacity: 0,
+              depthWrite: false, side: THREE.DoubleSide
+            });
+            var riverTurbidity3d = new THREE.Mesh(
+              new THREE.TubeGeometry(riverCurve, 64, 0.252, 12, false),
+              riverTurbidityMat3d
+            );
+            riverTurbidity3d.visible = false;
+            world3d.add(riverTurbidity3d);
+            var suspendedSedimentCount3d = 56;
+            var suspendedSedimentSeeds3d = new Float32Array(suspendedSedimentCount3d * 3);
+            var suspendedSedimentGeometry3d = new THREE.BufferGeometry();
+            suspendedSedimentGeometry3d.setAttribute('position',
+              new THREE.BufferAttribute(new Float32Array(suspendedSedimentCount3d * 3), 3));
+            for (var sedimentSeedIndex3d = 0; sedimentSeedIndex3d < suspendedSedimentCount3d; sedimentSeedIndex3d++) {
+              suspendedSedimentSeeds3d[sedimentSeedIndex3d * 3] =
+                (sedimentSeedIndex3d * 0.61803398875) % 1;
+              suspendedSedimentSeeds3d[sedimentSeedIndex3d * 3 + 1] =
+                ((sedimentSeedIndex3d * 13) % 37) / 37;
+              suspendedSedimentSeeds3d[sedimentSeedIndex3d * 3 + 2] =
+                ((sedimentSeedIndex3d * 19) % 41) / 41;
+            }
+            var suspendedSediment3d = new THREE.Points(suspendedSedimentGeometry3d, new THREE.PointsMaterial({
+              color: 0xf0c27b, size: 0.055, transparent: true, opacity: 0,
+              depthWrite: false
+            }));
+            suspendedSediment3d.visible = false;
+            world3d.add(suspendedSediment3d);
+
             var oceanCurrentGroup3d = new THREE.Group();
             var oceanCurrentCurves3d = [
               makeJourneyCurve3d([[-0.25,-1.12,1.6],[-1.3,-1.11,2.45],[-3.15,-1.13,2.35],[-4.5,-1.12,1.15],[-3.25,-1.13,-0.2],[-1.25,-1.12,0.15]], true),
@@ -4533,6 +4563,15 @@ const d = labToolData.waterCycle || {};
             estuaryMixingRibbon3d.userData.salinityProbe = true;
             estuaryMixingRibbon3d.visible = false;
             world3d.add(estuaryMixingRibbon3d);
+            var sedimentPlumeMat3d = new THREE.MeshBasicMaterial({
+              color: 0xb7794f, transparent: true, opacity: 0,
+              side: THREE.DoubleSide, depthWrite: false
+            });
+            var sedimentPlume3d = new THREE.Mesh(estuaryMixingRibbonGeometry3d.clone(), sedimentPlumeMat3d);
+            sedimentPlume3d.rotation.x = -Math.PI / 2;
+            sedimentPlume3d.position.set(-0.25, -1.108, 1.6);
+            sedimentPlume3d.visible = false;
+            world3d.add(sedimentPlume3d);
 
             var estuarySalinityProbeMat3d = new THREE.MeshBasicMaterial({
               color: 0xe0f7ff, transparent: true, opacity: 0,
@@ -5658,6 +5697,14 @@ const d = labToolData.waterCycle || {};
               waterTableLabel3d.scale.set(1.6, 0.4, 1);
               waterTableLabel3d.visible = false;
             }
+            var sedimentTransportLabel3d = makeProcessLabel3d(
+              'sediment_transport', 'Suspended sediment', '#f0c27b', [2.0, -0.15, 1.0]
+            );
+            if (sedimentTransportLabel3d) {
+              delete processLabels3d.sediment_transport;
+              sedimentTransportLabel3d.scale.set(2.05, 0.51, 1);
+              sedimentTransportLabel3d.visible = false;
+            }
             var snowStorageLabelCanvas3d = document.createElement('canvas');
             snowStorageLabelCanvas3d.width = 512;
             snowStorageLabelCanvas3d.height = 160;
@@ -6719,6 +6766,54 @@ const d = labToolData.waterCycle || {};
                 riverMarkerPosition3d.setXYZ(riverMarkerIndex3d, riverMarkerPoint3d.x, riverMarkerPoint3d.y, riverMarkerPoint3d.z);
               }
               riverMarkerPosition3d.needsUpdate = true;
+
+              var sedimentCoverFactor3d = coverVisual3d === 'urban' ? 1 :
+                (coverVisual3d === 'forest' ? 0.38 : 0.72);
+              var sedimentStrength3d = runoffRouteActive3d ?
+                Math.min(1, effectiveRunoff3d / 100 * sedimentCoverFactor3d * 1.15) : 0;
+              var sedimentTransportVisible3d = runoffRouteActive3d && sedimentStrength3d > 0.025;
+              riverTurbidity3d.visible = sedimentTransportVisible3d;
+              riverTurbidityMat3d.opacity = sedimentTransportVisible3d ?
+                0.025 + sedimentStrength3d * 0.26 : 0;
+              suspendedSediment3d.visible = sedimentTransportVisible3d;
+              suspendedSedimentGeometry3d.setDrawRange(0, Math.max(1,
+                Math.floor(suspendedSedimentCount3d * (0.22 + sedimentStrength3d * 0.78))));
+              suspendedSediment3d.material.opacity = sedimentTransportVisible3d ?
+                0.16 + sedimentStrength3d * 0.74 : 0;
+              suspendedSediment3d.material.size = 0.042 + sedimentStrength3d * 0.045;
+              var suspendedSedimentPosition3d = suspendedSedimentGeometry3d.attributes.position;
+              for (var sedimentIndex3d = 0; sedimentIndex3d < suspendedSedimentCount3d; sedimentIndex3d++) {
+                var sedimentPhase3d = (suspendedSedimentSeeds3d[sedimentIndex3d * 3] +
+                  visualTime3d * (0.025 + effectiveRunoff3d * 0.0015)) % 1;
+                var sedimentCrossStream3d = suspendedSedimentSeeds3d[sedimentIndex3d * 3 + 1] - 0.5;
+                var sedimentDepthSeed3d = suspendedSedimentSeeds3d[sedimentIndex3d * 3 + 2] - 0.5;
+                if (sedimentPhase3d < 0.72) {
+                  var sedimentRiverT3d = sedimentPhase3d / 0.72;
+                  var sedimentRiverPoint3d = riverCurve.getPointAt(sedimentRiverT3d);
+                  suspendedSedimentPosition3d.setXYZ(sedimentIndex3d,
+                    sedimentRiverPoint3d.x + Math.sin(sedimentRiverT3d * 18 + sedimentIndex3d) * 0.035,
+                    sedimentRiverPoint3d.y + sedimentDepthSeed3d * 0.13,
+                    sedimentRiverPoint3d.z + sedimentCrossStream3d * 0.18);
+                } else {
+                  var sedimentPlumeT3d = (sedimentPhase3d - 0.72) / 0.28;
+                  suspendedSedimentPosition3d.setXYZ(sedimentIndex3d,
+                    -0.3 - sedimentPlumeT3d * (0.65 + sedimentStrength3d * 0.85),
+                    -1.12 - sedimentPlumeT3d * 0.04 + sedimentDepthSeed3d * 0.08,
+                    1.6 + sedimentCrossStream3d *
+                      (0.15 + sedimentPlumeT3d * (0.32 + sedimentStrength3d * 0.3)));
+                }
+              }
+              suspendedSedimentPosition3d.needsUpdate = true;
+              sedimentPlume3d.visible = sedimentTransportVisible3d;
+              sedimentPlumeMat3d.opacity = sedimentTransportVisible3d ?
+                0.025 + sedimentStrength3d * 0.18 : 0;
+              sedimentPlume3d.scale.set(0.48 + sedimentStrength3d * 0.62,
+                0.68 + sedimentStrength3d * 0.32, 1);
+              if (sedimentTransportLabel3d) sedimentTransportLabel3d.visible = sedimentTransportVisible3d;
+              var riverTurbidityBand3d = sedimentStrength3d > 0.65 ? 'high' :
+                (sedimentStrength3d > 0.3 ? 'moderate' : 'low');
+              canvasEl.dataset.sedimentTransport = sedimentTransportVisible3d ? 'river-to-estuary' : 'hidden';
+              canvasEl.dataset.riverTurbidity = sedimentTransportVisible3d ? riverTurbidityBand3d : 'clear';
 
               aquiferFlow3d.visible = infiltrationFlowActive3d;
               aquiferFlow3d.material.opacity = Math.min(0.94, 0.3 + infiltrationVisual3d / 145);
@@ -7944,11 +8039,15 @@ const d = labToolData.waterCycle || {};
                 id: "wcJourney3dGroundwaterInstructions", className: "sr-only"
               }, "In the underground cutaway, the luminous water table rises during recharge and recedes slowly afterward; upward particles show the capillary fringe. Its level is a schematic storage indicator, not a measured depth."
               ),
+              journeyView === '3d' && React.createElement("p", {
+                id: "wcJourney3dSedimentInstructions", className: "sr-only"
+              }, "During river runoff, tan particles show a relative suspended-sediment signal moving into the estuary. Stronger runoff raises the cue while forest cover buffers it; this is not a concentration or pollutant model."
+              ),
               journeyView === '3d' && React.createElement("canvas", {
                 role: "img",
                 tabIndex: 0,
                 "aria-label": "Three-dimensional tracked water parcel in the " + immersiveStageLabel + " stage. Drag or use arrow keys to explore the scene.",
-                "aria-describedby": "wcJourney3dInstructions wcJourney3dUrbanInstructions wcJourney3dGrassInstructions wcJourney3dRouteBalanceInstructions wcJourney3dGroundwaterInstructions",
+                "aria-describedby": "wcJourney3dInstructions wcJourney3dUrbanInstructions wcJourney3dGrassInstructions wcJourney3dRouteBalanceInstructions wcJourney3dGroundwaterInstructions wcJourney3dSedimentInstructions",
                 onKeyDown: handleJourney3dKey,
                 onClick: handleJourney3dSceneClick,
                 ref: journey3dRef,

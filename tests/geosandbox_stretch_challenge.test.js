@@ -421,6 +421,22 @@ describe('square-pyramid mesh dimensions', () => {
   });
 });
 
+describe('geoNormalizeShapeDims', () => {
+  it('keeps a torus in the non-self-intersecting ring range without mutating input', () => {
+    const input = { r: 0.8, tube: 2, segs: 31 };
+    const dims = P.geoNormalizeShapeDims('torus', input);
+    expect(dims.r).toBe(0.8);
+    expect(dims.tube).toBeCloseTo(0.7, 8);
+    expect(input.tube).toBe(2);
+  });
+  it('repairs non-finite and out-of-range active dimensions', () => {
+    const dims = P.geoNormalizeShapeDims('box', { w: NaN, h: -4, d: 99 });
+    expect(dims.w).toBe(3);
+    expect(dims.h).toBe(0.5);
+    expect(dims.d).toBe(10);
+  });
+});
+
 describe('geoChallengeAnswerCorrect', () => {
   it('accepts full shape names and intentional aliases, but rejects arbitrary fragments', () => {
     const challenge = { type: 'identify', answer: 'Rectangular Prism' };

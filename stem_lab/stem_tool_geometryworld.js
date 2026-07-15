@@ -320,6 +320,12 @@
       m.exposedSurfaceArea = m.surfaceAreaExact ? exposedFaces.surfaceArea : null;
       m.exposedFaces = m.surfaceAreaExact ? exposedFaces : null;
     }
+    if (m.isComplete === false) {
+      m.isSolidPrism = false;
+      m.surfaceAreaExact = false;
+      m.exposedSurfaceArea = null;
+      m.exposedFaces = null;
+    }
     return m;
   }
 
@@ -385,7 +391,7 @@
   }
 
   function compareMeasurementRecords(previous, latest) {
-    if (!previous || !latest) return null;
+    if (!previous || !latest || previous.isComplete === false || latest.isComplete === false) return null;
     var previousVolume = typeof previous.occupiedVolume === 'number' ? previous.occupiedVolume : parseVolumePrediction(previous.vol);
     var latestVolume = typeof latest.occupiedVolume === 'number' ? latest.occupiedVolume : parseVolumePrediction(latest.vol);
     if (previousVolume === null || latestVolume === null) return null;
@@ -417,7 +423,7 @@
     return !!candidateData && candidateData.blockType === blockType && measurementLayerFor(candidateData) === measurementLayerFor(seedData);
   }
   var ACHIEVEMENTS = [
-    { id: 'first_measure', name: 'First Measurement', icon: '\uD83D\uDCCF', desc: 'Measured your first structure', check: function(log) { return log.some(function(e) { return e.type === 'measurement'; }); } },
+    { id: 'first_measure', name: 'First Measurement', icon: '\uD83D\uDCCF', desc: 'Measured your first structure', check: function(log) { return log.some(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }); } },
     { id: 'first_correct', name: 'Right Answer!', icon: '\u2705', desc: 'Answered your first NPC question correctly', check: function(log) { return log.some(function(e) { return e.type === 'answer_correct'; }); } },
     { id: 'lesson_complete', name: 'Lesson Master', icon: '\uD83C\uDFC6', desc: 'Completed an entire lesson', check: function(log) { return log.some(function(e) { return e.type === 'lesson_complete'; }); } },
     { id: 'builder_10', name: 'Builder', icon: '\uD83E\uDDF1', desc: 'Placed 10 blocks', check: function(log) { return log.filter(function(e) { return e.type === 'block_place'; }).length >= 10; } },
@@ -1101,6 +1107,7 @@
 
   var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
   var MAX_BLOCKS = 1500; // Performance safety limit
+  var MEASUREMENT_BLOCK_LIMIT = MAX_BLOCKS;
 
   // Stable chat-key derivation — used by both the read site in engine.loadLesson
   // and the write site in the NPC chat callback. Returning the same key from both
@@ -2464,11 +2471,11 @@
           if (!seedMesh || !seedMesh.userData) return null;
           var seedData = seedMesh.userData;
           blockType = blockType || seedData.blockType;
-          var visited = {}; var result = []; var queue = [{ x: startX, y: startY, z: startZ }];
+          var visited = {}; var result = []; var queue = [{ x: startX, y: startY, z: startZ }]; var queueIndex = 0;
           var totalVolume = 0;
           var shapeCounts = {};
-          while (queue.length > 0 && result.length < 500) {
-            var pos = queue.shift(); var key = pos.x + ',' + pos.y + ',' + pos.z;
+          while (queueIndex < queue.length && result.length < MEASUREMENT_BLOCK_LIMIT) {
+            var pos = queue[queueIndex++]; var key = pos.x + ',' + pos.y + ',' + pos.z;
             if (visited[key]) continue; visited[key] = true;
             var mesh = engine.blocks[key];
             if (!mesh || !belongsToMeasuredComponent(seedData, mesh.userData, blockType)) continue;
@@ -2482,6 +2489,17 @@
               if (!visited[nk]) queue.push({ x: pos.x+dir[0], y: pos.y+dir[1], z: pos.z+dir[2] });
             });
           }
+          var measurementTruncated = false;
+          if (result.length >= MEASUREMENT_BLOCK_LIMIT) {
+            for (var remaining = queueIndex; remaining < queue.length; remaining++) {
+              var pending = queue[remaining];
+              var pendingKey = pending.x + ',' + pending.y + ',' + pending.z;
+              if (visited[pendingKey]) continue;
+              var pendingMesh = engine.blocks[pendingKey];
+              if (pendingMesh && belongsToMeasuredComponent(seedData, pendingMesh.userData, blockType)) { measurementTruncated = true; break; }
+            }
+          }
+
           if (result.length === 0) return null;
           var mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity,mnZ=Infinity,mxZ=-Infinity;
           result.forEach(function(b) { mnX=Math.min(mnX,b.x);mxX=Math.max(mxX,b.x);mnY=Math.min(mnY,b.y);mxY=Math.max(mxY,b.y);mnZ=Math.min(mnZ,b.z);mxZ=Math.max(mxZ,b.z); });
@@ -2499,6 +2517,8 @@
             surfaceAreaExact: !hasPartialShapes,
             exposedSurfaceArea: hasPartialShapes ? null : exposedFaces.surfaceArea,
             exposedFaces: hasPartialShapes ? null : exposedFaces,
+            isComplete: !measurementTruncated,
+            measurementLimit: MEASUREMENT_BLOCK_LIMIT,
             blocks: result // list of {x,y,z} for selection glow
           });
         };
@@ -2770,29 +2790,37 @@
                 if (m) {
                   sfxMeasure();
                   // Save to measurement history (last 10)
-                  var predictionComparison = compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
-                  var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, isSolidPrism: m.isSolidPrism, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, t: Date.now() }]);
+                  var predictionComparison = m.isComplete === false ? null : compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
+                  var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, t: Date.now() }]);
                   if (mh.length > 10) mh = mh.slice(-10);
-                  var measurementFeedback = m.isSolidPrism
-                    ? m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
-                    : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
+                  var measurementFeedback = m.isComplete === false
+                    ? 'Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
+                    : m.isSolidPrism
+                      ? m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
+                      : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
                   upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, actionFeedback: '\uD83D\uDCCF Measured: ' + measurementFeedback + (predictionComparison ? ' \u2022 ' + predictionComparison.accuracyLabel : '') });
-                  announceToSR((m.isSolidPrism
+                  announceToSR((m.isComplete === false
+                    ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete'
+                    : m.isSolidPrism
                     ? 'Measured solid rectangular prism: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + m.formattedOccupiedVolume + ' cubic units'
                     : 'Measured composite structure: ' + m.formattedOccupiedVolume + ' cubic units occupied, ' + formatVolume(m.missingVolume) + ' cubic units empty inside a ' + m.boundingVolume + ' cubic unit bounding box') + (predictionComparison ? '. Your prediction was ' + formatVolume(predictionComparison.prediction) + '. ' + predictionComparison.accuracyLabel : ''));
                   setTimeout(function() { upd('actionFeedback', ''); }, 2500);
                   // Show 3D dimension lines + selection glow around the measured structure
+                  if (m.isComplete !== false) {
                   if (engine._dimTimer) clearTimeout(engine._dimTimer);
                   showDimLines(m, m.minX, m.minY, m.minZ);
                   if (m.blocks) showSelectionGlow(m.blocks);
                   // Measurement sparkle particles at structure center
                   var mcx = m.minX + m.L / 2, mcy = m.minY + m.H / 2 + 0.5, mcz = m.minZ + m.W / 2;
                   for (var sp = 0; sp < 8; sp++) spawnPlaceParticles(engine, mcx + (Math.random() - 0.5) * m.L, mcy + (Math.random() - 0.5) * m.H, mcz + (Math.random() - 0.5) * m.W);
-                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, isSolidPrism: m.isSolidPrism, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, blocks: m.count });
-                  var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement'; }).length;
+                  }
+                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, blocks: m.count });
+                  var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }).length;
+                  if (m.isComplete !== false) {
                   if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
                   var ts2 = engine._tutorialState || {}; if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);
                   setTimeout(runAchievementCheck, 100);
+                  }
                 }
               }
               break;
@@ -2946,6 +2974,14 @@
                 var ngp = nHits[0].object.userData.gridPos;
                 var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z, nHits[0].object.userData.blockType);
                 if (nm) {
+                  if (nm.isComplete === false) {
+                    var incompleteSurfaceMessage = 'Measurement limit reached. Surface area and a net are unavailable until the full structure is measured.';
+                    upd('actionFeedback', '\uD83D\uDCCB ' + incompleteSurfaceMessage);
+                    announceToSR(incompleteSurfaceMessage);
+                    if (engine.logEvent) engine.logEvent('surface_analysis', { shape: 'incomplete', surfaceArea: null, blocks: nm.count, measurementLimit: nm.measurementLimit });
+                    setTimeout(function() { upd('actionFeedback', ''); }, 5500);
+                    break;
+                  }
                   if (!nm.isSolidPrism) {
                     if (engine._netHelpers) {
                       engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
@@ -4738,18 +4774,25 @@
             el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } }, 'cu')
           ),
           measureResult && el('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
-            el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF ' + (measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
-            el('div', null, 'L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H),
+            el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure ? incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
+            measureResult.isComplete === false && el('div', { role: 'alert', 'data-geometry-measurement-incomplete': 'true',
+              style: { margin: '2px 0', padding: '4px 6px', borderRadius: '4px', background: '#7f1d1d', color: '#fecaca', fontWeight: 700 } },
+              'Measurement limit reached. At least ' + measureResult.count + ' connected blocks were found; volume, dimensions, and surface area below are partial and not exact.'),
+            measureResult.isComplete !== false && el('div', null, 'L=' + measureResult.L + ' W=' + measureResult.W + ' H=' + measureResult.H),
             el('div', { style: { fontFamily: 'monospace', color: measureResult.isSolidPrism ? '#4ade80' : '#fbbf24' } },
-              measureResult.isSolidPrism
+              measureResult.isComplete === false
+                ? 'Counted at least ' + measureResult.count + ' cubic units'
+                : measureResult.isSolidPrism
                 ? 'V = ' + measureResult.L + ' \u00d7 ' + measureResult.W + ' \u00d7 ' + measureResult.H + ' = ' + measureResult.formattedOccupiedVolume
                 : 'Occupied volume = ' + measureResult.formattedOccupiedVolume + ' cubic units'
             ),
-            !measureResult.isSolidPrism && el('div', { style: { fontSize: '10px', color: '#fde68a' } },
+            measureResult.isComplete !== false && !measureResult.isSolidPrism && el('div', { style: { fontSize: '10px', color: '#fde68a' } },
               'Bounding box ' + measureResult.boundingVolume + ' \u2212 empty ' + formatVolume(measureResult.missingVolume) + ' = ' + measureResult.formattedOccupiedVolume + ' (' + measureResult.fillPercent + '% filled)'
             ),
             el('div', { 'data-geometry-surface-area': measureResult.surfaceAreaExact ? 'exact' : 'partial', style: { fontSize: '10px', color: measureResult.surfaceAreaExact ? '#86efac' : '#cbd5e1' } },
-              measureResult.surfaceAreaExact ? 'Exposed surface area = ' + measureResult.exposedSurfaceArea + ' square units' : 'Surface area needs partial-face analysis (press N)'),
+              measureResult.isComplete === false
+                ? 'Surface area unavailable until the full structure is measured'
+                : measureResult.surfaceAreaExact ? 'Exposed surface area = ' + measureResult.exposedSurfaceArea + ' square units' : 'Surface area needs partial-face analysis (press N)'),
             predictionResult && el('div', { 'data-geometry-prediction-result': 'true', style: { marginTop: '2px', padding: '3px 5px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
               el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px' } }, 'Prediction ' + formatVolume(predictionResult.prediction) + ' \u2192 Actual ' + formatVolume(predictionResult.actual)),
               el('div', { style: { color: predictionResult.percentError <= 10 ? '#86efac' : '#fde68a', fontSize: '10px', fontWeight: 700 } }, predictionResult.accuracyLabel + (predictionResult.relation === 'exact' ? '' : ' (' + predictionResult.percentError + '% ' + predictionResult.relation + 'estimate)'))
@@ -4763,7 +4806,7 @@
                   }).join(' + ') + ')'
                 : measureResult.isSolidPrism ? ' \u2713' : ' (count the occupied cubes)')
             ),
-            el('button', {
+            measureResult.isComplete !== false && el('button', {
               onClick: function() {
                 var card = generateManipulativeCard(measureResult, currentLesson.title);
                 var win = window.open('', '_blank');
@@ -6002,16 +6045,18 @@
                   var m = engine.measureStructure(gp.x, gp.y, gp.z, h2[0].object.userData.blockType);
                   if (m) {
                     sfxMeasure();
-                    var mobilePrediction = compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
-                    var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, isSolidPrism: m.isSolidPrism, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, t: Date.now() }]);
+                    var mobilePrediction = m.isComplete === false ? null : compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
+                    var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, t: Date.now() }]);
                     if (mobileHistory.length > 10) mobileHistory = mobileHistory.slice(-10);
-                    upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, actionFeedback: (m.isSolidPrism
+                    upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, actionFeedback: (m.isComplete === false
+                      ? '\uD83D\uDCCF Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
+                      : m.isSolidPrism
                       ? '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
                       : '\uD83D\uDCCF Occupied volume: ' + m.formattedOccupiedVolume + ' (' + m.fillPercent + '% filled)') + (mobilePrediction ? ' \u2022 ' + mobilePrediction.accuracyLabel : '') });
-                    announceToSR('Measured ' + m.formattedOccupiedVolume + ' cubic units' + (m.isSolidPrism ? ' in a solid rectangular prism' : ' in a composite structure') + (mobilePrediction ? '. Your prediction was ' + formatVolume(mobilePrediction.prediction) + '. ' + mobilePrediction.accuracyLabel : ''));
-                    if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, isSolidPrism: m.isSolidPrism, prediction: mobilePrediction ? mobilePrediction.prediction : null, predictionPercentError: mobilePrediction ? mobilePrediction.percentError : null, blocks: m.count, input: 'touch' });
+                    announceToSR(m.isComplete === false ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete.' : 'Measured ' + m.formattedOccupiedVolume + ' cubic units' + (m.isSolidPrism ? ' in a solid rectangular prism' : ' in a composite structure') + (mobilePrediction ? '. Your prediction was ' + formatVolume(mobilePrediction.prediction) + '. ' + mobilePrediction.accuracyLabel : ''));
+                    if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: mobilePrediction ? mobilePrediction.prediction : null, predictionPercentError: mobilePrediction ? mobilePrediction.percentError : null, blocks: m.count, input: 'touch' });
                     setTimeout(function() { upd('actionFeedback', ''); }, 2500);
-                    setTimeout(runAchievementCheck, 100);
+                    if (m.isComplete !== false) setTimeout(runAchievementCheck, 100);
                   }
                 }
               },
