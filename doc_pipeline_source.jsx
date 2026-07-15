@@ -3861,6 +3861,56 @@ var createDocPipeline = function(deps) {
   // so a failure can be attributed ("Stage 2: generate accessible HTML") in the
   // run-history + the download toast instead of a bare error message.
   var _PIPE_STEP_LABELS = { 1: 'extract text', 2: 'generate accessible HTML', 3: 'audit (axe + AI)', 4: 'auto-fix loop' };
+  // Run-scoped, UI-facing progress. The legacy string callback remains the source of
+  // backwards compatibility; this event adds honest numeric/sub-step telemetry without
+  // making callers parse human copy. A runId guard prevents a late zombie run from
+  // overwriting the trace for a newer remediation.
+  var _activeRemediationProgress = null;
+  var _PROGRESS_BANDS = { 1: [5, 30], 2: [30, 62], 3: [62, 78], 4: [78, 98] };
+  var _deriveProgress = function(step, detail) {
+    var band = _PROGRESS_BANDS[step] || [2, 98];
+    var text = String(detail || '');
+    var match = text.match(/(?:page|section|chunk|batch|pass|round|image)\s+(\d+)\s*(?:\/|of)\s*(\d+)/i)
+      || text.match(/(\d+)\s*\/\s*(\d+)\s*(?:pages?|sections?|chunks?|batches?|passes?|rounds?|images?)/i);
+    var subprogress = null;
+    var percent = band[0] + 2;
+    if (match) {
+      var current = Math.max(0, Number(match[1]) || 0);
+      var total = Math.max(1, Number(match[2]) || 1);
+      var ratio = Math.min(1, current / total);
+      percent = band[0] + Math.round((band[1] - band[0]) * 0.9 * ratio);
+      subprogress = { current: current, total: total };
+    }
+    if (_activeRemediationProgress && _activeRemediationProgress.step === step) {
+      percent = Math.max(percent, _activeRemediationProgress.overallPercent || band[0]);
+    }
+    return { overallPercent: Math.min(band[1], percent), subprogress: subprogress };
+  };
+  var _emitRemediationProgress = function(runId, patch) {
+    try {
+      if (_activeRemediationProgress && runId && _activeRemediationProgress.runId !== runId) return;
+      var stats = {
+        apiCalls: _pipelineStats.apiCalls || 0,
+        visionCalls: _pipelineStats.visionCalls || 0,
+        transportRetries: _pipelineStats.transportRetries || 0,
+        recoveredRetries: _pipelineStats.recoveredRetries || 0,
+        terminalFailures: _pipelineStats.terminalFailures || 0,
+        authThrottles: _pipelineStats.authThrottles || 0,
+        totalApiMs: Math.round(_pipelineStats.totalApiMs || 0),
+      };
+      var next = Object.assign({}, _activeRemediationProgress || {}, patch || {}, {
+        version: 1,
+        runId: runId || (_activeRemediationProgress && _activeRemediationProgress.runId) || null,
+        elapsedMs: _pipelineStats.startTime ? Math.round(performance.now() - _pipelineStats.startTime) : 0,
+        stats: stats,
+        timestamp: Date.now(),
+      });
+      _activeRemediationProgress = next;
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('alloflow:remediation-progress', { detail: next }));
+      }
+    } catch (_) { /* visibility is best-effort and must never block remediation */ }
+  };
   // The current run's alt-text-edit listener, kept module-side so each run can
   // remove the PRIOR run's listener before installing its own (was a leak: every
   // run added a handler that kept firing on that run's stale extractedImages).
@@ -3883,7 +3933,7 @@ var createDocPipeline = function(deps) {
     // Canvas-visible emission.
     try {
       if (typeof window !== 'undefined') {
-        var entry = { ts: Date.now(), elapsed: elapsed, tag: tag, msg: msg, data: data || null };
+        var entry = { ts: Date.now(), elapsed: elapsed, tag: tag, msg: msg, data: data || null, runId: _pipelineStats.runId || null };
         if (window._alloflowPipelineWarnings) {
           window._alloflowPipelineWarnings.push(entry);
           // Cap the buffer so long sessions don't leak memory.
@@ -3891,6 +3941,12 @@ var createDocPipeline = function(deps) {
         }
         if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
           window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: entry }));
+        }
+        if (_activeRemediationProgress && _activeRemediationProgress.runId === entry.runId) {
+          _emitRemediationProgress(entry.runId, {
+            status: tag === 'Throttle' ? 'throttled' : (_activeRemediationProgress.status === 'throttled' ? 'running' : _activeRemediationProgress.status),
+            activity: { tag: tag, message: String(msg || '').slice(0, 500), timestamp: entry.ts },
+          });
         }
       }
     } catch(e) { /* canvas sink is best-effort; never block the pipeline */ }
@@ -4353,7 +4409,14 @@ var createDocPipeline = function(deps) {
   // "8 min of silence" and CLEARED a slow-but-progressing run (looked like a premature bail). Emit a
   // heartbeat on each retry so the watchdog fires only on TRUE inactivity. (2026-06-21, fix A)
   var _pulsePipelineWatchdog = function () {
-    try { if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: { ts: (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0, tag: 'Throttle', msg: 'retry/cooldown — pipeline alive' } })); } catch (_) {}
+    try {
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: { ts: Date.now(), tag: 'Throttle', msg: 'retry/cooldown — pipeline alive' } }));
+      var ts = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+      var runId = _pipelineStats.runId || null;
+      if (_activeRemediationProgress && _activeRemediationProgress.runId === runId) {
+        _emitRemediationProgress(runId, { status: 'throttled', activity: { tag: 'Throttle', message: 'Rate-limit cooldown in progress — the pipeline is still active.', timestamp: ts } });
+      }
+    } catch (_) {}
   };
   // Quota-class errors reach the pipeline REWRITTEN by gemini_api's _throwClassified: the message
   // becomes the 'API_QUOTA_EXHAUSTED' sentinel (raw body text survives only in err.originalMessage,
@@ -16250,6 +16313,19 @@ Return ONLY the complete fixed HTML.`, true);
             }
           } catch(e) { /* non-blocking */ }
 
+          // Metadata-only lifecycle stream for the optional Live Agent Trace. It
+          // intentionally never includes unaccepted model HTML: partial HTML may be
+          // malformed or unsafe to render, and it has not passed preservation gates.
+          const emitChunkProgress = (index, phase, label, extra) => {
+            try {
+              if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+                window.dispatchEvent(new CustomEvent('alloflow:chunk-progress', {
+                  detail: Object.assign({ index, total: bodyChunks.length, phase, label, timestamp: Date.now() }, extra || {})
+                }));
+              }
+            } catch (_) { /* observer only */ }
+          };
+
           // Per-chunk SOURCE fingerprint — lets resume verify a saved fixed-chunk actually
           // corresponds to the current document's chunk at the same index (audit #6).
           const _chunkSourceDigests = await Promise.all(bodyChunks.map(async (chunk) => {
@@ -16342,6 +16418,8 @@ Return ONLY the complete fixed HTML.`, true);
             } catch(e) { /* non-blocking */ }
 
             // ══════════════════════════════════════════════════════════════
+            emitChunkProgress(chi, 'rules', 'Applying safe rule-based fixes');
+
             // PRE-AI PASS: Deterministic fixes + surgical micro-tools
             // These are free, instant, and reliable — run BEFORE Gemini
             // ══════════════════════════════════════════════════════════════
@@ -16380,6 +16458,7 @@ Return ONLY the complete fixed HTML.`, true);
 
             // Step 0d: Surgical AI-diagnosed micro-tools (1 Gemini call → deterministic execution)
             let surgicalFixCount = 0;
+            emitChunkProgress(chi, 'diagnosing', 'Finding targeted accessibility repairs', { deterministicFixCount });
             try {
               // Build a concise violation summary for this chunk
               const chunkTextPreview = preFixedChunk.substring(0, 5000);
@@ -16432,6 +16511,7 @@ Return ONLY the complete fixed HTML.`, true);
             for (let attempt = 0; attempt < 2; attempt++) {
               const isRetry = attempt === 1;
               if (isRetry) wasRetried = true;
+              emitChunkProgress(chi, isRetry ? 'retrying' : 'proposing', isRetry ? 'Retrying a rejected proposal' : 'Building an accessible HTML proposal', { attempt: attempt + 1, deterministicFixCount, surgicalFixCount });
               setPdfFixStep(`${isRetry ? 'Retrying' : 'AI fixing'} section ${chi + 1}/${bodyChunks.length} (${Math.round(chunk.length / 1000)}KB)...`);
 
               try {
@@ -16502,6 +16582,7 @@ Return the fixed section content only — raw HTML, no JSON wrapping.`;
                 } catch(postDetErr) { /* non-blocking */ }
 
                 // ── Step A: Local integrity check (fast, no API) ──
+                emitChunkProgress(chi, 'integrity', 'Checking structure and content overlap', { attempt: attempt + 1 });
                 const integrity = verifyChunkIntegrity(originalChunk, cleaned);
 
                 if (!integrity.passed) {
@@ -16517,6 +16598,7 @@ Return the fixed section content only — raw HTML, no JSON wrapping.`;
                 // refuses to over-claim verification. Confidence threshold lowered to 40
                 // so lower-confidence content-loss reports still block.
                 setPdfFixStep(`Verifying section ${chi + 1}/${bodyChunks.length} content integrity...`);
+                emitChunkProgress(chi, 'verifying', 'Verifying that readable content was preserved', { attempt: attempt + 1, integrityPassed: true });
                 let aiVerified = true;
                 let aiVerifierRan = true; // honest-disclosure (2026-06-20): did the verifier produce a USABLE verdict? false on parse-fail-twice / throw — we still proceed (local check passed) but must NOT record the chunk as AI-verified.
                 let aiVerifyDetail = '';
@@ -16575,6 +16657,7 @@ Respond with ONLY a JSON object (no markdown, no explanation):
 
                 // ── Step C: AI accessibility audit (Gemini call #3 — scores the fixed chunk) ──
                 setPdfFixStep(`Scoring section ${chi + 1}/${bodyChunks.length} accessibility...`);
+                emitChunkProgress(chi, 'scoring', 'Auditing the accepted candidate for WCAG issues', { attempt: attempt + 1, integrityPassed: true, aiVerified: aiVerified && aiVerifierRan });
                 let aiScore = scoreChunkLocally(cleaned); // Start with local score as baseline
                 try {
                   const auditResult = await callGemini(`You are a WCAG 2.2 AA accessibility auditor. Score this HTML section for accessibility compliance.
@@ -16622,6 +16705,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             }
 
             chunkResults.push(accepted);
+            emitChunkProgress(chi, accepted.usedOriginal ? 'fallback' : 'accepted', accepted.usedOriginal ? 'AI proposal rejected — keeping rule-based repairs' : 'Proposal accepted after validation', {
+              integrityPassed: !!(accepted.integrityCheck && accepted.integrityCheck.passed),
+              aiVerified: !!accepted.aiVerified,
+              usedOriginal: !!accepted.usedOriginal,
+              score: accepted.score,
+              deterministicFixCount: accepted.deterministicFixCount || 0,
+              surgicalFixCount: accepted.surgicalFixCount || 0,
+            });
 
             // ── Audio cue: per-chunk completion tick (debounced internally to 150ms) ──
             try {
@@ -18233,6 +18324,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     _pipelineStats.runId = _runId;
     _pipelineStats.startTime = performance.now(); _pipelineStats.stepTimes = {};
     _pipelineStats.lastOpenStep = null; _pipelineStats.lastOpenStepLabel = '';
+    _activeRemediationProgress = {
+      version: 1, runId: _runId, status: 'running', step: 0, totalSteps: 4,
+      stepName: 'Preparing remediation', detail: 'Preparing document and accessibility settings...',
+      message: 'Preparing document and accessibility settings...', overallPercent: 2,
+      subprogress: null, startedAt: _startTime,
+    };
+    _emitRemediationProgress(_runId, _activeRemediationProgress);
     // CB-1 (2026-06-21): clear the Gemini circuit-breaker so a storm from a PREVIOUS document in this
     // session (the pipeline is a singleton) doesn't start THIS run already throttled to 1 concurrent with
     // a stale cooldown + stale "rate-limiting" message. The current run earns its own storm signal.
@@ -18380,6 +18478,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         ? ` (${pageCount} of ${fullPageCount} pages)`
         : (pageCount > 1 ? ` (${pageCount} pages)` : '');
       const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name}${pageNote} — ${detail}  (typically ${label.est})`;
+      const derived = _deriveProgress(step, detail);
+      _emitRemediationProgress(_runId, {
+        status: 'running', step, totalSteps, stepName: label.name, detail,
+        message: msg, overallPercent: derived.overallPercent, subprogress: derived.subprogress,
+      });
       if (_silentMode) { _onProgress(step, msg); } else { setPdfFixStep(msg); }
     };
 
@@ -21890,6 +21993,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         axeViolations: axeResults ? axeResults.totalViolations : null,
         htmlSize: Math.round(accessibleHtml.length / 1000) + 'KB',
       });
+      _emitRemediationProgress(_runId, {
+        status: 'complete', step: 4, totalSteps: 4, stepName: 'Complete',
+        detail: 'Remediation complete', message: 'Remediation complete', overallPercent: 100, subprogress: null,
+      });
 
       // Silent mode (multi-file batch with onProgress): return without
       // touching React state — caller is managing UI. Partial single-file
@@ -22041,6 +22148,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } catch(logErr) { /* non-blocking */ }
     } catch (err) {
       warnLog('[PDF Fix] Error:', err);
+      _emitRemediationProgress(_runId, {
+        status: 'failed', stepName: 'Remediation stopped',
+        detail: (err && err.message) ? String(err.message).slice(0, 240) : 'Unknown error',
+        message: 'Remediation stopped before completion',
+      });
       // Resumable incomplete project (2026-06-20): if extraction already produced
       // usable text before the failure, bank it so the host can save a .alloflow.json
       // the teacher can "Continue a previous session" from — instead of scrapping the

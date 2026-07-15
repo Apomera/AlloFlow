@@ -2681,6 +2681,62 @@ function PdfAuditView(props) {
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
     pdfRunHistory, setPdfRunHistory
   } = props;
+  const [remediationProgress, setRemediationProgress] = useState(null);
+  const [showAgentTrace, setShowAgentTrace] = useState(false);
+  const [liveChunkTrace, setLiveChunkTrace] = useState({});
+  useEffect(() => {
+    const appendTrace = (detail) => {
+      if (!detail || !Number.isInteger(detail.index)) return;
+      const safe = {
+        index: detail.index,
+        phase: String(detail.phase || 'working'),
+        label: String(detail.label || 'Working...').slice(0, 160),
+        timestamp: detail.timestamp || Date.now(),
+        attempt: detail.attempt || null,
+        integrityPassed: detail.integrityPassed === true,
+        aiVerified: detail.aiVerified === true,
+        usedOriginal: detail.usedOriginal === true,
+      };
+      setLiveChunkTrace(prev => {
+        const prior = prev[safe.index] || { history: [] };
+        const history = (prior.history || []).slice();
+        if (!history.length || history[history.length - 1].phase !== safe.phase || history[history.length - 1].label !== safe.label) history.push(safe);
+        return { ...prev, [safe.index]: { ...safe, history: history.slice(-8) } };
+      });
+    };
+    const onProgress = (e) => { if (e && e.detail && e.detail.version === 1) setRemediationProgress(e.detail); };
+    const onChunkSessionStart = () => setLiveChunkTrace({});
+    const onChunkProgress = (e) => appendTrace(e && e.detail);
+    const onChunkFixed = (e) => {
+      const d = (e && e.detail) || {};
+      appendTrace({
+        index: d.index,
+        phase: d.usedOriginal ? 'fallback' : 'accepted',
+        label: d.usedOriginal ? 'AI proposal rejected — rule-based repairs kept' : 'Accepted after integrity and accessibility checks',
+        timestamp: d.timestamp,
+        integrityPassed: d.integrityPassed,
+        aiVerified: d.aiVerified,
+        usedOriginal: d.usedOriginal,
+      });
+    };
+    window.addEventListener('alloflow:remediation-progress', onProgress);
+    window.addEventListener('alloflow:chunk-session-start', onChunkSessionStart);
+    window.addEventListener('alloflow:chunk-progress', onChunkProgress);
+    window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
+    return () => {
+      window.removeEventListener('alloflow:remediation-progress', onProgress);
+      window.removeEventListener('alloflow:chunk-session-start', onChunkSessionStart);
+      window.removeEventListener('alloflow:chunk-progress', onChunkProgress);
+      window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);
+    };
+  }, []);
+  const _legacyProgressPercent = pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : (pdfFixStep.includes('Auto-fix') || pdfFixStep.includes('Auto-continue')) ? 96 : 5;
+  const _remediationPercent = remediationProgress && typeof remediationProgress.overallPercent === 'number' ? Math.max(0, Math.min(100, remediationProgress.overallPercent)) : _legacyProgressPercent;
+  const _progressStats = (remediationProgress && remediationProgress.stats) || {};
+  const _formatElapsed = (ms) => {
+    const seconds = Math.max(0, Math.round((Number(ms) || 0) / 1000));
+    return seconds < 60 ? seconds + 's' : Math.floor(seconds / 60) + 'm ' + (seconds % 60) + 's';
+  };
   const _captureAsyncHtmlToken = () => {
     if (typeof capturePdfHtmlCommitToken === 'function') return capturePdfHtmlCommitToken();
     const current = pdfFixResultRef && pdfFixResultRef.current;
@@ -7432,11 +7488,34 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </button>
                     )}
                     {pdfFixLoading && (
-                      <div className="basis-full mt-1" role="status" aria-live="polite">
-                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.fix_pass.progress_aria') || 'Fix and verify progress'} aria-valuenow={pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : pdfFixStep.includes('Auto-fix') ? 96 : 5} aria-valuemin={0} aria-valuemax={100}>
-                          <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full" style={{ width: pdfFixStep.includes('Step 1') ? '15%' : pdfFixStep.includes('Step 2') ? '50%' : pdfFixStep.includes('Step 3') ? '80%' : pdfFixStep.includes('Step 4') ? '92%' : (pdfFixStep.includes('Auto-fix') || pdfFixStep.includes('Auto-continue')) ? '96%' : '5%' }}></div>
+                      <div className="basis-full mt-1" role="region" aria-label="Detailed remediation progress">
+                        <div className="flex items-center justify-between gap-3 mb-1 text-[11px] text-slate-600">
+                          <span className="font-bold">{Math.round(_remediationPercent)}% estimated</span>
+                          <span>{_formatElapsed(remediationProgress?.elapsedMs)} elapsed</span>
                         </div>
-                        <div className="text-xs text-slate-700 mt-0.5 text-center" role="status" aria-live="polite">{pdfFixStep}</div>
+                        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.fix_pass.progress_aria') || 'Fix and verify progress'} aria-valuenow={Math.round(_remediationPercent)} aria-valuemin={0} aria-valuemax={100}>
+                          <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full" style={{ width: _remediationPercent + '%' }}></div>
+                        </div>
+                        <div className="text-xs text-slate-700 mt-1 text-center font-semibold" role="status" aria-live="polite" aria-atomic="true">{remediationProgress?.detail || pdfFixStep}</div>
+                        <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[10px]">
+                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">AI calls {_progressStats.apiCalls || 0}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Vision {_progressStats.visionCalls || 0}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Retries {_progressStats.transportRetries || 0}</span>
+                          {!!_progressStats.recoveredRetries && <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Recovered {_progressStats.recoveredRetries}</span>}
+                          {!!_progressStats.authThrottles && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Throttle signals {_progressStats.authThrottles}</span>}
+                        </div>
+                        {remediationProgress?.activity?.message && (
+                          <div className={'mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] ' + (remediationProgress.status === 'throttled' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-700')}>
+                            <span className="font-bold">{remediationProgress.status === 'throttled' ? 'Waiting safely: ' : 'Current activity: '}</span>
+                            {remediationProgress.activity.message}
+                          </div>
+                        )}
+                        <div className="mt-2 flex items-center justify-center">
+                          <button type="button" onClick={() => setShowAgentTrace(v => !v)} aria-pressed={showAgentTrace} className="text-[11px] font-bold px-3 py-1 rounded-full border border-indigo-300 bg-indigo-50 text-indigo-800 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400">
+                            {showAgentTrace ? 'Hide live agent trace' : 'Show live agent trace'}
+                          </button>
+                        </div>
+                        {showAgentTrace && <div className="mt-1 text-[10px] text-center text-slate-600">Read-only safety view: intermediate AI HTML is isolated; code appears only after validation.</div>}
 
                         {/* ── Pipeline Step Tracker — always visible during processing ── */}
                         {/* ── Pipeline Step Tracker with contextual explanation ── */}
@@ -7563,6 +7642,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {liveChunkStream.map((chunk, ci) => {
                                 const isWorking = chunk.status === 'working';
                                 const totalFixes = (chunk.deterministicFixCount || 0) + (chunk.surgicalFixCount || 0);
+                                const trace = liveChunkTrace[chunk.index];
                                 // (2026-06-20) A section whose audit didn't return a number (AI throttled) must
                                 // NOT be painted red 0 — that reads as "scored zero / broken" when it's just "not
                                 // scored yet". Render it neutral slate with an honest "not scored" label.
@@ -7597,7 +7677,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       {chunk.aiVerified && !chunk.usedOriginal && <span className="text-emerald-700" title={t('pdf_audit.live_chunk.content_verified_title') || "AI content-preservation check passed — the section's text content was preserved through the rewrite."}>✓ content verified</span>}
                                       {chunk.usedOriginal && <span className="text-red-700 font-bold" title={t('pdf_audit.live_chunk.ai_skipped_long_title') || 'AI rewrite failed or was rejected for this section — only deterministic (rule-based) fixes were applied. The section is still more accessible than the original, just less so than successfully AI-fixed sections.'}>{t('pdf_audit.live_chunk.ai_skipped_rule_only') || 'AI skipped · rule-based only'}</span>}
                                     </>}
-                                    {isWorking && <span className="ml-auto text-indigo-600 font-bold">Fixing...</span>}
+                                    {isWorking && <span className="ml-auto text-indigo-600 font-bold">{trace?.label || 'Fixing...'}</span>}
+                                    {showAgentTrace && trace?.history?.length > 0 && (
+                                      <div className="basis-full mt-1 flex flex-wrap gap-1" aria-label={'Agent trace for section ' + ((chunk.index || ci) + 1)}>
+                                        {trace.history.map((item, ti) => <span key={ti} className={'px-1.5 py-0.5 rounded border ' + (item.phase === 'accepted' ? 'bg-emerald-100 border-emerald-200 text-emerald-800' : item.phase === 'fallback' ? 'bg-amber-100 border-amber-200 text-amber-800' : 'bg-white border-indigo-200 text-indigo-700')}>{item.label}</span>)}
+                                      </div>
+                                    )}
                                   </div>
                                 );
                               })}
@@ -8776,8 +8861,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="text-xs text-indigo-700">{t('pdf_audit.live_chunk.review_subhead') || 'Watch each section get fixed in real time — reject or re-fix anything that looks wrong'}</div>
                           </div>
                         </div>
-                        <div className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" role="status" aria-live="polite" aria-atomic="true">
-                          {liveChunkStream.filter(c => c.status === 'complete').length}/{liveChunkStream.length} complete
+                        <div className="flex items-center gap-2">
+                          <button type="button" onClick={() => setShowAgentTrace(v => !v)} aria-pressed={showAgentTrace} className="text-[10px] font-bold px-2 py-1 rounded-full border border-indigo-300 bg-white text-indigo-800 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-400">
+                            {showAgentTrace ? 'Hide trace' : 'Show agent trace'}
+                          </button>
+                          <div className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" role="status" aria-live="polite" aria-atomic="true">
+                            {liveChunkStream.filter(c => c.status === 'complete').length}/{liveChunkStream.length} complete
+                          </div>
                         </div>
                       </div>
 
@@ -8792,6 +8882,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const isWorking = chunk.status === 'working';
                           const isRejected = !!liveChunkRejected[chunk.index];
                           const isExpanded = !!liveChunkExpanded[chunk.index];
+                          const trace = liveChunkTrace[chunk.index];
                           // (2026-06-22) A section whose per-chunk audit didn't return a number (AI throttled /
                           // partial coverage → score NULLED) must NOT render as a blank red "/100" — that reads
                           // as "scored zero / broken" when it's just "not scored". Mirror the sister list view
@@ -8813,7 +8904,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="text-[11px] font-bold text-slate-700">Section {chunk.index + 1}</span>
                                     <span className="text-[11px] text-slate-600">{chunk.sizeKB || '?'}KB</span>
-                                    {isWorking && <span className="text-[11px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold animate-pulse">Fixing...</span>}
+                                    {isWorking && <span className="text-[11px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold animate-pulse">{trace?.label || 'Fixing...'}</span>}
                                     {!isWorking && (chunk.deterministicFixCount > 0) && <span className="text-[11px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.rule_based_title') || 'Rule-based (deterministic) regex fixes applied — always safe, no AI involved'}>{chunk.deterministicFixCount} rule-based</span>}
                                     {!isWorking && (chunk.surgicalFixCount > 0) && <span className="text-[11px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.targeted_title') || 'AI-diagnosed targeted micro-fixes applied via deterministic tools (content-preserving)'}>{chunk.surgicalFixCount} targeted</span>}
                                     {!isWorking && chunk.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold" title={t('pdf_audit.live_chunk.ai_skipped_short_title') || 'AI rewrite failed or was rejected for this section — only rule-based fixes were applied. Still more accessible than the original.'}>{t('pdf_audit.live_chunk.ai_skipped_short') || 'AI skipped'}</span>}
@@ -8832,6 +8923,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   </div>
                                 )}
                               </div>
+                              {showAgentTrace && trace?.history?.length > 0 && (
+                                <div className="px-2 pb-2">
+                                  <div className="rounded-lg border border-indigo-200 bg-white/80 p-2">
+                                    <div className="text-[10px] font-black uppercase tracking-wide text-indigo-700 mb-1">Read-only agent trace</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {trace.history.map((item, ti) => <span key={ti} className={'text-[10px] px-1.5 py-0.5 rounded border ' + (item.phase === 'accepted' ? 'bg-emerald-100 border-emerald-200 text-emerald-800' : item.phase === 'fallback' ? 'bg-amber-100 border-amber-200 text-amber-800' : 'bg-indigo-50 border-indigo-200 text-indigo-700')}>{item.label}</span>)}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
 
                               {/* Action buttons — only shown after chunk is complete */}
                               {!isWorking && (
