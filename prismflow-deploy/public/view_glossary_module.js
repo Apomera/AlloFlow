@@ -137,7 +137,7 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, setFlashcardDic
     },
     onMouseDown: stopCardControlEvent,
     onKeyDown: stopCardControlEvent,
-    className: 'mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-900 bg-blue-50 hover:bg-white border border-blue-200 rounded-full px-2.5 py-1 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600' + (isAudioPlaying ? ' ring-2 ring-white bg-white shadow-lg shadow-blue-950/20' : ''),
+    className: 'mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-900 bg-blue-50 hover:bg-white border border-blue-200 rounded-full px-2.5 py-1 transition-all motion-reduce:transition-none  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600' + (isAudioPlaying ? ' ring-2 ring-white bg-white shadow-lg shadow-blue-950/20' : ''),
     'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording'
   }, React.createElement(Volume2, {
     size: 12,
@@ -432,7 +432,7 @@ function GlossaryView(props) {
     }
     if (e.key !== 'Tab' || !container || typeof container.querySelectorAll !== 'function') return;
     var focusable = Array.prototype.slice.call(container.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
-      return el && !el.hidden && el.getAttribute('aria-hidden') !== 'true';
+      return el && !el.hidden && el.getAttribute('aria-hidden') !== 'true' && el.getClientRects().length > 0;
     });
     if (!focusable.length) {
       e.preventDefault();
@@ -441,7 +441,10 @@ function GlossaryView(props) {
     }
     var first = focusable[0];
     var last = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
+    if (document.activeElement === container) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+    } else if (e.shiftKey && document.activeElement === first) {
       e.preventDefault();
       last.focus();
     } else if (!e.shiftKey && document.activeElement === last) {
@@ -457,7 +460,7 @@ function GlossaryView(props) {
     }, 0);
     return function () {
       clearTimeout(timer);
-      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      if (previouslyFocused?.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [isInteractiveFlashcards]);
   React.useEffect(function () {
@@ -468,7 +471,7 @@ function GlossaryView(props) {
     }, 0);
     return function () {
       clearTimeout(timer);
-      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      if (previouslyFocused?.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [!!phonicsData, activeView]);
   function closeScreenerResults(e) {
@@ -485,7 +488,7 @@ function GlossaryView(props) {
     }, 0);
     return function () {
       clearTimeout(timer);
-      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      if (previouslyFocused?.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [screenerSession && screenerSession.status]);
   var flashcardDeck = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
@@ -643,12 +646,15 @@ function GlossaryView(props) {
     var drawer = flashcardEditDrawerRef.current;
     if (!drawer || typeof drawer.querySelectorAll !== 'function') return;
     var focusable = Array.prototype.slice.call(drawer.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
-      return el && el.offsetParent !== null;
+      return el && el.getAttribute('aria-hidden') !== 'true' && el.getClientRects().length > 0;
     });
     if (!focusable.length) return;
     var first = focusable[0];
     var last = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
+    if (document.activeElement === drawer) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+    } else if (e.shiftKey && document.activeElement === first) {
       e.preventDefault();
       last.focus();
     } else if (!e.shiftKey && document.activeElement === last) {
@@ -693,7 +699,7 @@ function GlossaryView(props) {
         onClick: function (e) {
           handleProgressDotClick(idx, e);
         },
-        className: `h-9 w-9 rounded-full shrink-0 flex items-center justify-center transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isCurrent ? 'bg-white/15 ring-2 ring-white shadow-lg' : 'hover:bg-white/15'}`,
+        className: `h-9 w-9 rounded-full shrink-0 flex items-center justify-center transition-all motion-reduce:transition-none  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isCurrent ? 'bg-white/15 ring-2 ring-white shadow-lg' : 'hover:bg-white/15'}`,
         "aria-current": isCurrent ? 'step' : undefined,
         "aria-label": `Go to flashcard ${idx + 1}: ${item?.term || 'card'}, ${statusLabel}`,
         title: `${item?.term || `Card ${idx + 1}`} - ${statusLabel}`
@@ -711,7 +717,7 @@ function GlossaryView(props) {
   function renderFlashcardActionBar() {
     var audioActive = isPlaying && playingContentId === 'flashcard-sequence';
     var nextDisabled = flashcardIndex === flashcardDeck.length - 1 && flashcardRetryQueue.length === 0;
-    var focusClass = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950';
+    var focusClass = ' focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950';
     return /*#__PURE__*/React.createElement("div", {
       className: "sticky bottom-0 z-40 -mx-4 mt-5 border-t border-white/10 bg-slate-950/90 backdrop-blur-xl px-3 py-3 shadow-2xl pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
     }, /*#__PURE__*/React.createElement("div", {
@@ -799,8 +805,8 @@ function GlossaryView(props) {
   }
   function renderFlashcardEditDrawer() {
     if (!isTeacherMode || !isFlashcardEditDrawerOpen || !currentFlashcardItem) return null;
-    var fieldClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 resize-y';
-    var drawerButtonFocus = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2';
+    var fieldClass = 'w-full rounded-lg border border-slate-300 px-3 py-2  focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 resize-y';
+    var drawerButtonFocus = ' focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2';
     return /*#__PURE__*/React.createElement("div", {
       className: "fixed inset-0 z-[130] pointer-events-none"
     }, /*#__PURE__*/React.createElement("button", {
@@ -862,7 +868,7 @@ function GlossaryView(props) {
     }, "Tier"), /*#__PURE__*/React.createElement("select", {
       value: currentFlashcardItem.tier || '',
       onChange: e => handleGlossaryChange(flashcardIndex, 'tier', e.target.value),
-      className: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-white"
+      className: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold  focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-white"
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
     }, "No tier"), /*#__PURE__*/React.createElement("option", {
@@ -955,7 +961,7 @@ function GlossaryView(props) {
         generateWordSearch(e.target.value);
       }
     },
-    className: "text-xs font-bold text-teal-700 bg-transparent border-r border-teal-600 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer hover:bg-teal-100 rounded-l-full",
+    className: "text-xs font-bold text-teal-700 bg-transparent border-r border-teal-600 px-3 py-1.5  focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer hover:bg-teal-100 rounded-l-full",
     title: t('glossary.tooltips.select_puzzle_lang')
   }, /*#__PURE__*/React.createElement("option", {
     value: "English"
@@ -1070,7 +1076,7 @@ function GlossaryView(props) {
     placeholder: t('glossary.search_placeholder'),
     value: glossarySearchTerm,
     onChange: e => setGlossarySearchTerm(e.target.value),
-    className: "pl-8 pr-3 py-1.5 text-sm border border-blue-600 rounded focus:outline-none focus:ring-2 focus:ring-indigo-200 w-full"
+    className: "pl-8 pr-3 py-1.5 text-sm border border-blue-600 rounded  focus:ring-2 focus:ring-indigo-200 w-full"
   }), glossarySearchTerm && /*#__PURE__*/React.createElement("button", {
     onClick: handleSetGlossarySearchTermConst,
     className: "absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-700 hover:text-blue-900",
@@ -1093,7 +1099,7 @@ function GlossaryView(props) {
     title: "Analyze glossary quality, grade level, and accuracy"
   }, isRunningHealthCheck ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: " motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement("span", null, "📊"), isRunningHealthCheck ? 'Analyzing...' : glossaryHealthCheck ? 'Re-run Health Check' : 'Health Check')))), isInteractiveFlashcards && Array.isArray(generatedContent?.data) && generatedContent.data.length > 0 && /*#__PURE__*/React.createElement("div", {
     ref: flashcardDialogRef,
     role: "dialog",
@@ -1106,7 +1112,7 @@ function GlossaryView(props) {
     ref: flashcardCloseRef,
     type: "button",
     onClick: closeInteractiveFlashcards,
-    className: "absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+    className: "absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 32,
@@ -1122,7 +1128,7 @@ function GlossaryView(props) {
     type: "button",
     "aria-pressed": showFlashcardImages,
     onClick: handleToggleShowFlashcardImages,
-    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${showFlashcardImages ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
+    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${showFlashcardImages ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
     title: t('flashcards.tooltip_toggle_images'),
     "aria-label": showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images')
   }, /*#__PURE__*/React.createElement(ImageIcon, {
@@ -1139,7 +1145,7 @@ function GlossaryView(props) {
       setFlashcardOptions([]);
       setFlashcardFeedback(null);
     },
-    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 text-indigo-900 border-yellow-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
+    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 text-indigo-900 border-yellow-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
     title: t('flashcards.tooltip_toggle_quiz'),
     "aria-label": isFlashcardQuizMode ? "Disable Quiz Mode" : "Enable Quiz Mode"
   }, isFlashcardQuizMode ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -1154,7 +1160,7 @@ function GlossaryView(props) {
     "aria-label": t('common.selection'),
     value: standardDeckLang,
     onChange: e => setStandardDeckLang(e.target.value),
-    className: "bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none shadow-lg"
+    className: "bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500  shadow-lg"
   }, /*#__PURE__*/React.createElement("option", {
     value: "English Only"
   }, t('languages.english_only')), selectedLanguages.map(l => /*#__PURE__*/React.createElement("option", {
@@ -1166,7 +1172,7 @@ function GlossaryView(props) {
     "aria-label": t('common.selection'),
     value: flashcardLang,
     onChange: e => setFlashcardLang(e.target.value),
-    className: "bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+    className: "bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 "
   }, selectedLanguages.map(l => /*#__PURE__*/React.createElement("option", {
     key: l,
     value: l
@@ -1199,7 +1205,7 @@ function GlossaryView(props) {
     "aria-pressed": showFlashcardImages,
     "aria-label": showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images'),
     onClick: handleToggleShowFlashcardImages,
-    className: `min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${showFlashcardImages ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`
+    className: `min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${showFlashcardImages ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`
   }, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 16,
     "aria-hidden": "true"
@@ -1212,7 +1218,7 @@ function GlossaryView(props) {
       setFlashcardOptions([]);
       setFlashcardFeedback(null);
     },
-    className: `min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-300'}`
+    className: `min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-300'}`
   }, /*#__PURE__*/React.createElement(Brain, {
     size: 16,
     "aria-hidden": "true"
@@ -1244,7 +1250,7 @@ function GlossaryView(props) {
     },
     "aria-label": `Read term: ${generatedContent?.data[flashcardIndex].term}`,
     title: t('flashcards.tooltip_audio'),
-    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, generatedContent?.data[flashcardIndex].term)), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-4 border-t border-slate-100 w-2/3 animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
@@ -1261,7 +1267,7 @@ function GlossaryView(props) {
     },
     disabled: !((generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "").includes(":") && (generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "").split(":")[0].trim()),
     "aria-label": `${t('common.click_read_aloud')}: ${standardDeckLang}`,
-    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, (() => {
     const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
     if (fullTrans.includes(":")) {
@@ -1289,7 +1295,7 @@ function GlossaryView(props) {
       handleSpeak(generatedContent?.data[flashcardIndex].term, 'fc-front-term');
     },
     "aria-label": `Read term: ${generatedContent?.data[flashcardIndex].term}`,
-    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, generatedContent?.data[flashcardIndex].term)), /*#__PURE__*/React.createElement("p", {
     className: `${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-lg' : 'text-2xl'} text-slate-600 leading-relaxed max-w-2xl hover:text-indigo-500 transition-colors line-clamp-4`
   }, /*#__PURE__*/React.createElement("button", {
@@ -1299,7 +1305,7 @@ function GlossaryView(props) {
       handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-front-def');
     },
     "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition`,
-    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, generatedContent?.data[flashcardIndex].def))), /*#__PURE__*/React.createElement("div", {
     className: "absolute bottom-6 text-slate-600 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse motion-reduce:animate-none"
   }, t('flashcards.flip_hint'), " ", /*#__PURE__*/React.createElement(RefreshCw, {
@@ -1373,7 +1379,7 @@ function GlossaryView(props) {
     },
     "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition`,
     title: t('flashcards.tooltip_audio'),
-    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
   }, generatedContent?.data[flashcardIndex].def)), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[11px] leading-snug text-blue-50"
   }, "Provenance: generated from this lesson's source text and selected grade level.")), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
@@ -1391,7 +1397,7 @@ function GlossaryView(props) {
       handleSpeak(def, `fc-back-def-${standardDeckLang}`);
     },
     "aria-label": `${t('common.read_translated_definition')}: ${standardDeckLang}`,
-    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
   }, (() => {
     const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "Translation not available";
     if (fullTrans.includes(":")) {
@@ -1411,7 +1417,7 @@ function GlossaryView(props) {
       handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym');
     },
     "aria-label": `${t('common.click_read_aloud')}: ${t('glossary.etymology_label') || 'Word roots'}`,
-    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
+    className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
   }, generatedContent.data[flashcardIndex].etymology))), renderFlashcardDictBack(generatedContent.data[flashcardIndex], t, flashcardDictAudioKey, setFlashcardDictAudioKey))) : (() => {
     const fullTrans = generatedContent?.data[flashcardIndex].translations?.[flashcardLang] || "Translation not available";
     let transTerm = "";
@@ -1434,7 +1440,7 @@ function GlossaryView(props) {
         handleSpeak(transTerm, 'fc-back-term');
       },
       "aria-label": `Read ${flashcardLang} term`,
-      className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
+      className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
     }, transTerm)), /*#__PURE__*/React.createElement("p", {
       className: "text-xl md:text-2xl text-indigo-100 leading-relaxed font-serif italic hover:text-white transition-colors cursor-pointer"
     }, /*#__PURE__*/React.createElement("button", {
@@ -1444,7 +1450,7 @@ function GlossaryView(props) {
         handleSpeak(transDef, 'fc-back-def');
       },
       "aria-label": `${t('common.read_translated_definition')}: ${flashcardLang}`,
-      className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
+      className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
     }, transDef)));
   })()))), renderFlashcardActionBar(), renderFlashcardEditDrawer())), isMemoryGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Memory Game encountered an error."
@@ -1606,7 +1612,7 @@ function GlossaryView(props) {
     onClick: exportScreeningCSV,
     className: "w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
   }, "📊 Export Screening CSV"))), gameMode === 'wordsearch' && gameData && /*#__PURE__*/React.createElement("div", {
-    className: "mb-6 bg-white p-6 rounded-xl border-2 border-teal-200 shadow-md animate-in fade-in slide-in-from-top-4"
+    className: "mb-6 bg-white p-6 rounded-xl border-2 border-teal-200 shadow-md animate-in motion-reduce:animate-none fade-in slide-in-from-top-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-4 border-b border-slate-100 pb-2"
   }, /*#__PURE__*/React.createElement("h3", {
@@ -1661,7 +1667,7 @@ function GlossaryView(props) {
       },
       "aria-pressed": selectedLetters.has(`${r}-${c}`),
       "aria-label": `${t('glossary.word_search_cell_aria') || 'Cell'} ${r + 1}-${c + 1}: ${char}`,
-      className: `w-8 h-8 sm:w-9 sm:h-9 border border-slate-400 flex items-center justify-center font-mono text-sm sm:text-base font-bold cursor-pointer select-none transition-colors grid-cell focus:outline-none focus:ring-2 focus:ring-teal-500 focus:z-10 ${highlightClass}`
+      className: `w-8 h-8 sm:w-9 sm:h-9 border border-slate-400 flex items-center justify-center font-mono text-sm sm:text-base font-bold cursor-pointer select-none transition-colors grid-cell  focus:ring-2 focus:ring-teal-500 focus:z-10 ${highlightClass}`
     }, char);
   })))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6 w-full max-w-md"
@@ -1683,7 +1689,7 @@ function GlossaryView(props) {
     }), word);
   }))))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     "data-help-key": "glossary_add_term",
-    className: "flex gap-2 mb-4 bg-white p-3 rounded-lg border border-slate-400 shadow-sm items-center animate-in fade-in slide-in-from-top-2"
+    className: "flex gap-2 mb-4 bg-white p-3 rounded-lg border border-slate-400 shadow-sm items-center animate-in motion-reduce:animate-none fade-in slide-in-from-top-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-100 p-2 rounded-full text-indigo-600"
   }, /*#__PURE__*/React.createElement(Plus, {
@@ -1695,7 +1701,7 @@ function GlossaryView(props) {
     value: glossaryImageStyle,
     onChange: e => setGlossaryImageStyle(e.target.value),
     placeholder: t('glossary.style_placeholder'),
-    className: "w-1/3 text-sm border-r border-slate-200 pr-2 mr-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded px-2",
+    className: "w-1/3 text-sm border-r border-slate-200 pr-2 mr-2  focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded px-2",
     disabled: isAddingTerm
   }), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_new_glossary_term'),
@@ -1704,7 +1710,7 @@ function GlossaryView(props) {
     onChange: e => setNewGlossaryTerm(e.target.value),
     onKeyDown: e => e.key === 'Enter' && handleAddGlossaryTerm(),
     placeholder: t('glossary.add_term_placeholder'),
-    className: "flex-grow text-sm border-none outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded px-2",
+    className: "flex-grow text-sm border-none  focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded px-2",
     disabled: isAddingTerm
   }), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add_glossary_term'),
@@ -1713,7 +1719,7 @@ function GlossaryView(props) {
     className: "text-xs font-bold bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
   }, isAddingTerm ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 12,
     className: "text-yellow-700 fill-current"
@@ -1727,7 +1733,7 @@ function GlossaryView(props) {
     onClick: handleToggleShowHealthCheckPanel,
     "aria-expanded": showHealthCheckPanel,
     "aria-controls": "glossary-health-check-details",
-    className: "min-h-11 min-w-0 flex flex-1 items-center justify-between gap-2 rounded-md px-2 text-left hover:bg-amber-100/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"
+    className: "min-h-11 min-w-0 flex flex-1 items-center justify-between gap-2 rounded-md px-2 text-left hover:bg-amber-100/50 transition-colors  focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "flex min-w-0 flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
@@ -1758,7 +1764,7 @@ function GlossaryView(props) {
       }
     },
     disabled: isRunningHealthCheck,
-    className: "min-h-11 px-3 text-xs font-bold text-amber-700 hover:text-amber-900 bg-amber-200/50 hover:bg-amber-300/50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
+    className: "min-h-11 px-3 text-xs font-bold text-amber-700 hover:text-amber-900 bg-amber-200/50 hover:bg-amber-300/50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1  focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
     title: t('common.re_run_analysis')
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
@@ -1770,7 +1776,7 @@ function GlossaryView(props) {
       setGlossaryHealthCheck(null);
       setShowHealthCheckPanel(false);
     },
-    className: "min-h-11 min-w-11 text-amber-700 hover:text-amber-900 rounded-full hover:bg-amber-200/50 transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
+    className: "min-h-11 min-w-11 text-amber-700 hover:text-amber-900 rounded-full hover:bg-amber-200/50 transition-colors inline-flex items-center justify-center  focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
     title: t('common.dismiss_analysis')
   }, /*#__PURE__*/React.createElement(X, {
     size: 16,
@@ -1945,7 +1951,7 @@ function GlossaryView(props) {
       "aria-label": t('common.selection'),
       value: item.tier || '',
       onChange: e => handleGlossaryChange(idx, 'tier', e.target.value),
-      className: "text-[11px] font-bold uppercase tracking-wider w-full border border-slate-400 rounded px-1 py-1 outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50 text-slate-600",
+      className: "text-[11px] font-bold uppercase tracking-wider w-full border border-slate-400 rounded px-1 py-1  focus:ring-1 focus:ring-indigo-500 bg-slate-50 text-slate-600",
       "data-help-key": "glossary_edit_tier"
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
@@ -1960,7 +1966,7 @@ function GlossaryView(props) {
       value: item.term,
       onChange: e => handleGlossaryChange(idx, 'term', e.target.value),
       rows: getRows(item.term, 25),
-      className: "w-full bg-white border border-blue-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200 resize-y text-sm font-bold text-center"
+      className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm font-bold text-center"
     }), /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.delete'),
       onClick: () => handleDeleteGlossaryItem(idx),
@@ -1998,7 +2004,7 @@ function GlossaryView(props) {
       "data-help-key": "glossary_regen_image"
     }, isGeneratingTermImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12
     })), /*#__PURE__*/React.createElement("button", {
@@ -2010,7 +2016,7 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement(Trash2, {
       size: 12
     })))), isEditingGlossary && /*#__PURE__*/React.createElement("div", {
-      className: "animate-in slide-in-from-top-2 mt-1"
+      className: "animate-in motion-reduce:animate-none slide-in-from-top-2 mt-1"
     }, /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.refresh'),
       onClick: () => handleRefineGlossaryImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
@@ -2020,7 +2026,7 @@ function GlossaryView(props) {
       "data-help-key": "glossary_remove_words"
     }, isGeneratingTermImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Ban, {
       size: 10
     }), " ", t('glossary.remove_words_btn')), /*#__PURE__*/React.createElement("div", {
@@ -2034,7 +2040,7 @@ function GlossaryView(props) {
         [idx]: e.target.value
       })),
       placeholder: t('glossary.custom_edit_placeholder'),
-      className: "text-[11px] border border-yellow-300 rounded px-1 py-0.5 w-20 focus:w-full transition-all focus:outline-none focus:ring-1 focus:ring-yellow-400",
+      className: "text-[11px] border border-yellow-300 rounded px-1 py-0.5 w-20 focus:w-full transition-all  focus:ring-1 focus:ring-yellow-400",
       onKeyDown: e => e.key === 'Enter' && handleRefineGlossaryImage(idx)
     }), /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.refresh'),
@@ -2044,7 +2050,7 @@ function GlossaryView(props) {
       title: t('glossary.tooltips.apply_edit')
     }, isGeneratingTermImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Send, {
       size: 10
     }))), /*#__PURE__*/React.createElement("span", {
@@ -2057,7 +2063,7 @@ function GlossaryView(props) {
       title: t('glossary.tooltips.generate_icon')
     }, isGeneratingTermImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(ImageIcon, {
       size: 10
     }), isGeneratingTermImage[idx] ? t('glossary.creating_icon') : t('glossary.create_icon'))), /*#__PURE__*/React.createElement("div", {
@@ -2069,7 +2075,7 @@ function GlossaryView(props) {
       "data-help-key": "glossary_speak_term"
     }, playingContentId === `term-${idx}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : playingContentId === `term-${idx}` ? /*#__PURE__*/React.createElement(StopCircle, {
       size: 14
     }) : /*#__PURE__*/React.createElement(Volume2, {
@@ -2091,7 +2097,7 @@ function GlossaryView(props) {
       "data-help-key": "glossary_download_audio"
     }, downloadingContentId === `dl-term-${idx}` ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Download, {
       size: 14
     }))))), /*#__PURE__*/React.createElement("td", {
@@ -2103,7 +2109,7 @@ function GlossaryView(props) {
       value: item.def,
       onChange: e => handleGlossaryChange(idx, 'def', e.target.value),
       rows: getRows(item.def, 45),
-      className: "w-full bg-white border border-blue-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200 resize-y text-sm text-center"
+      className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm text-center"
     }) : /*#__PURE__*/React.createElement("div", {
       className: "px-2 py-1 text-slate-600 whitespace-pre-wrap"
     }, currentUiLanguage !== 'English' && /*#__PURE__*/React.createElement("span", {
@@ -2116,7 +2122,7 @@ function GlossaryView(props) {
       className: `p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`
     }, playingContentId === `def-${idx}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : playingContentId === `def-${idx}` ? /*#__PURE__*/React.createElement(StopCircle, {
       size: 14
     }) : /*#__PURE__*/React.createElement(Volume2, {
@@ -2127,7 +2133,7 @@ function GlossaryView(props) {
       className: "text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors"
     }, downloadingContentId === `dl-def-${idx}` ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Download, {
       size: 14
     }))), item.etymology ? /*#__PURE__*/React.createElement("details", {
@@ -2154,7 +2160,7 @@ function GlossaryView(props) {
         "aria-label": t('glossary.etymology_label') || 'Word roots'
       }, playingContentId === `etym-${idx}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
-        className: "animate-spin"
+        className: "animate-spin motion-reduce:animate-none"
       }) : /*#__PURE__*/React.createElement(Volume2, {
         size: 12
       }))), (() => {
@@ -2217,7 +2223,7 @@ function GlossaryView(props) {
       title: t('glossary.etymology_label') || 'Word roots'
     }, isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }), " ", t('glossary.actions.generating_etymology') || 'Finding roots…') : /*#__PURE__*/React.createElement(React.Fragment, null, "📜 ", t('glossary.actions.show_etymology') || 'Show word roots')) : null)), displayLanguages.map(lang => /*#__PURE__*/React.createElement("td", {
       key: lang,
       className: "p-4 text-slate-600 italic border-l border-slate-50 align-top"
@@ -2229,7 +2235,7 @@ function GlossaryView(props) {
       value: item.translations?.[lang] || "",
       onChange: e => handleGlossaryChange(idx, 'translations', e.target.value, lang),
       rows: getRows(item.translations?.[lang], 30),
-      className: "w-full bg-white border border-blue-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200 resize-y text-sm italic text-center"
+      className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm italic text-center"
     }) : /*#__PURE__*/React.createElement("div", {
       className: "px-2 py-1 text-slate-600 italic whitespace-pre-wrap text-center"
     }, item.translations?.[lang] || ""), item.translations?.[lang] && /*#__PURE__*/React.createElement("div", {
@@ -2241,7 +2247,7 @@ function GlossaryView(props) {
       className: `p-1 rounded-full transition-colors flex-shrink-0 ${playingContentId === `trans-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`
     }, playingContentId === `trans-${idx}-${lang}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : playingContentId === `trans-${idx}-${lang}` ? /*#__PURE__*/React.createElement(StopCircle, {
       size: 14
     }) : /*#__PURE__*/React.createElement(Volume2, {
@@ -2252,7 +2258,7 @@ function GlossaryView(props) {
       className: "text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors"
     }, downloadingContentId === `dl-trans-${idx}-${lang}` ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Download, {
       size: 14
     }))), item.translations?.[lang] && (() => {
@@ -2665,7 +2671,7 @@ function GlossaryView(props) {
           "aria-label": rootsLabel
         }, playingContentId === `etym-${idx}-${lang}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
           size: 12,
-          className: "animate-spin"
+          className: "animate-spin motion-reduce:animate-none"
         }) : /*#__PURE__*/React.createElement(Volume2, {
           size: 12
         }))), validRootsL.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -2757,7 +2763,7 @@ function GlossaryView(props) {
           title: rootsLabel
         }, isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
           size: 10,
-          className: "animate-spin"
+          className: "animate-spin motion-reduce:animate-none"
         }), " ", loadingLabel) : /*#__PURE__*/React.createElement(React.Fragment, null, "+ ", showLabel))));
       }
       if (includeEtymology || hasEnglishEty) {
@@ -2770,7 +2776,7 @@ function GlossaryView(props) {
           dir: isRtlLang(lang) ? 'rtl' : 'ltr'
         }, isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
           size: 12,
-          className: "animate-spin"
+          className: "animate-spin motion-reduce:animate-none"
         }), " ", loadingLabel) : /*#__PURE__*/React.createElement(React.Fragment, null, "📜 ", showLabel));
       }
       return null;
