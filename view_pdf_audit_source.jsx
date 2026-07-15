@@ -2687,7 +2687,7 @@ function PdfAuditView(props) {
   const [pdfConfirmRequest, setPdfConfirmRequest] = useState(null);
   const pdfConfirmResolveRef = useRef(null);
   const pdfConfirmCancelRef = useRef(null);
-  const askPdfConfirmation = useCallback((options) => new Promise((resolve) => {
+  const askPdfConfirmation = React.useCallback((options) => new Promise((resolve) => {
     if (pdfConfirmResolveRef.current) pdfConfirmResolveRef.current(false);
     pdfConfirmResolveRef.current = resolve;
     setPdfConfirmRequest({
@@ -2699,7 +2699,7 @@ function PdfAuditView(props) {
       tone: options && options.tone === 'danger' ? 'danger' : 'primary',
     });
   }), []);
-  const settlePdfConfirmation = useCallback((result) => {
+  const settlePdfConfirmation = React.useCallback((result) => {
     const resolve = pdfConfirmResolveRef.current;
     pdfConfirmResolveRef.current = null;
     setPdfConfirmRequest(null);
