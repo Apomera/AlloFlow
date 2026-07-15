@@ -1,6 +1,6 @@
 # EPPP flashcard review wave 02
 
-Generated: 2026-07-15T03:22:07.662Z
+Generated: 2026-07-15T03:37:20.549Z
 
 Status: **assisted editorial review complete; independent expert validation pending**
 
@@ -10,7 +10,7 @@ This wave reviews 100 foundational legacy flashcards across all eight domains. T
 
 - Previously source-reviewed: 109
 - Reviewed in this wave: 100
-- Legacy wordings revised: 4
+- Legacy wordings revised: 5
 - Source-reviewed after integration: 209 of 415
 - Remaining first-pass review: 206
 - Independent expert validated: 0
@@ -25,8 +25,8 @@ This wave reviews 100 foundational legacy flashcards across all eight domains. T
 | Growth & Lifespan Development | 13 |
 | Assessment & Diagnosis | 10 |
 | Treatment, Intervention & Prevention | 10 |
-| Research Methods & Statistics | 21 |
-| Ethical, Legal & Professional Issues | 5 |
+| Research Methods & Statistics | 20 |
+| Ethical, Legal & Professional Issues | 6 |
 
 ## Named sources
 
@@ -795,15 +795,7 @@ Source: [NIST/SEMATECH e-Handbook of Statistical Methods](https://www.itl.nist.g
 
 Review note: Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with NIST/SEMATECH e-Handbook of Statistical Methods. Independent qualified expert validation remains pending.
 
-### 94. Ethical principles in research (Belmont Report)
-
-Three core principles: (1) Respect for persons — informed consent, protect autonomy. (2) Beneficence — maximize benefits, minimize harm, risk-benefit analysis. (3) Justice — fair selection of participants, equitable distribution of research burdens and benefits.
-
-Source: [The Belmont Report: Ethical Principles and Guidelines for the Protection of Human Subjects of Research](https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html) (U.S. Department of Health and Human Services, Office for Human Research Protections)
-
-Review note: Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with The Belmont Report: Ethical Principles and Guidelines for the Protection of Human Subjects of Research. Independent qualified expert validation remains pending.
-
-### 95. Statistical tests: when to use which?
+### 94. Statistical tests: when to use which?
 
 t-test: compare 2 group means. ANOVA: 3+ group means. Chi-square: categorical/frequency data. Pearson r: two continuous variables correlation. Regression: prediction. MANOVA: 2+ DVs. ANCOVA: controlling covariates. Factor analysis: identify latent constructs.
 
@@ -811,7 +803,7 @@ Source: [Psychology 2e, Chapter 2: Psychological Research](https://openstax.org/
 
 Review note: Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Psychology 2e, Chapter 2: Psychological Research. Independent qualified expert validation remains pending.
 
-### 96. Risk management vs. ethics
+### 95. Risk management vs. ethics
 
 Risk management focuses on reducing foreseeable legal and practice risks; professional ethics focuses on principles and conduct standards. They often overlap, but neither substitutes for context-sensitive ethical reasoning, consultation, and documentation.
 
@@ -821,7 +813,7 @@ Revision: Removed a categorical legal-risk claim and made the relationship betwe
 
 Review note: Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.
 
-### 97. Ethical issues in forensic assessment
+### 96. Ethical issues in forensic assessment
 
 Forensic assessment requires clear roles and confidentiality limits, methods suited to the referral question, sufficient data, careful separation of observations from professional opinions, disclosure of limitations, and avoidance of conflicting roles.
 
@@ -831,7 +823,7 @@ Revision: Condensed the legacy list into stable assessment safeguards without ty
 
 Review note: Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.
 
-### 98. Ethical decision-making models
+### 97. Ethical decision-making models
 
 Steps: (1) Identify ethical issue. (2) Consult APA Ethics Code. (3) Consider applicable laws/regulations. (4) Seek consultation. (5) Consider all stakeholders. (6) Generate options. (7) Evaluate consequences. (8) Choose action. (9) Document. (10) Reflect/evaluate outcome.
 
@@ -839,7 +831,7 @@ Source: [Ethical Principles of Psychologists and Code of Conduct](https://www.ap
 
 Review note: Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.
 
-### 99. Cultural competence in ethics
+### 98. Cultural competence in ethics
 
 Ethical culturally responsive practice includes examining one's assumptions, attending to cultural and contextual differences, considering power and access, and adapting communication and services without stereotyping.
 
@@ -849,12 +841,22 @@ Revision: Removed dated citations and an absolute obligation claim while retaini
 
 Review note: Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.
 
-### 100. Forensic psychology ethical guidelines
+### 99. Forensic psychology ethical guidelines
 
 Common professional safeguards in forensic practice include clarifying the evaluator's role and confidentiality limits, avoiding conflicting roles, basing opinions on sufficient data, separating observations from opinions, and stating important limitations.
 
 Source: [Ethical Principles of Psychologists and Code of Conduct](https://www.apa.org/ethics/code) (American Psychological Association, current published Ethics Code and amendments)
 
 Revision: Removed a dated guideline citation and reframed the card around stable professional safeguards.
+
+Review note: Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.
+
+### 100. What principles guide culturally responsive psychological practice?
+
+Culturally responsive practice treats identity as dynamic and intersectional, examines power and context, uses cultural humility, adapts methods collaboratively, and requires continued learning rather than treating competence as a completed status.
+
+Source: [Ethical Principles of Psychologists and Code of Conduct](https://www.apa.org/ethics/code) (American Psychological Association, current published Ethics Code and amendments)
+
+Revision: Removed the edition-specific title and reframed the answer around stable culturally responsive practice principles.
 
 Review note: Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.

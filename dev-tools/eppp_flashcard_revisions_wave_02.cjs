@@ -17,4 +17,9 @@ module.exports = new Map([
     back: 'Risk management focuses on reducing foreseeable legal and practice risks; professional ethics focuses on principles and conduct standards. They often overlap, but neither substitutes for context-sensitive ethical reasoning, consultation, and documentation.',
     reason: 'Removed a categorical legal-risk claim and made the relationship between risk management and ethics more precise.',
   }],
+  ['APA multicultural guidelines (2017)', {
+    front: 'What principles guide culturally responsive psychological practice?',
+    back: 'Culturally responsive practice treats identity as dynamic and intersectional, examines power and context, uses cultural humility, adapts methods collaboratively, and requires continued learning rather than treating competence as a completed status.',
+    reason: 'Removed the edition-specific title and reframed the answer around stable culturally responsive practice principles.',
+  }],
 ]);

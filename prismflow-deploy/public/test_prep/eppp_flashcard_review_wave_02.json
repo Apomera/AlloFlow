@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T03:22:07.662Z",
+  "generatedAt": "2026-07-15T03:37:20.549Z",
   "waveId": "eppp-flashcard-review-wave-02",
   "reviewDate": "2026-07-14",
   "status": "assisted-editorial-review-complete-expert-pending",
@@ -21,7 +21,7 @@
     "reviewedFlashcards": 100,
     "domainsRepresented": 8,
     "distinctNamedSources": 18,
-    "revisedFlashcards": 4,
+    "revisedFlashcards": 5,
     "independentExpertValidated": 0,
     "learnerVisible": 0,
     "legacyFlashcards": 415,
@@ -56,11 +56,11 @@
     },
     "7": {
       "domain": "Research Methods & Statistics",
-      "reviewed": 21
+      "reviewed": 20
     },
     "8": {
       "domain": "Ethical, Legal & Professional Issues",
-      "reviewed": 5
+      "reviewed": 6
     }
   },
   "sources": [
@@ -3803,45 +3803,6 @@
     },
     {
       "sequence": 94,
-      "id": "flashcard-e180fcd467d4c72c",
-      "domainId": 7,
-      "domain": "Research Methods & Statistics",
-      "legacyFront": "Ethical principles in research (Belmont Report)",
-      "legacyBack": "Three core principles: (1) Respect for persons — informed consent, protect autonomy. (2) Beneficence — maximize benefits, minimize harm, risk-benefit analysis. (3) Justice — fair selection of participants, equitable distribution of research burdens and benefits.",
-      "front": "Ethical principles in research (Belmont Report)",
-      "back": "Three core principles: (1) Respect for persons — informed consent, protect autonomy. (2) Beneficence — maximize benefits, minimize harm, risk-benefit analysis. (3) Justice — fair selection of participants, equitable distribution of research burdens and benefits.",
-      "revisionApplied": false,
-      "revisionReason": "",
-      "reviewStatus": "source-reviewed-editorial-pass",
-      "reviewMode": "assisted-flashcard-editorial-review",
-      "reviewWave": "eppp-flashcard-review-wave-02",
-      "reviewDate": "2026-07-14",
-      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with The Belmont Report: Ethical Principles and Guidelines for the Protection of Human Subjects of Research. Independent qualified expert validation remains pending.",
-      "references": [
-        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html"
-      ],
-      "sourceDetails": [
-        {
-          "title": "The Belmont Report: Ethical Principles and Guidelines for the Protection of Human Subjects of Research",
-          "organization": "U.S. Department of Health and Human Services, Office for Human Research Protections",
-          "url": "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html",
-          "credibility": "HHS Office for Human Research Protections is the federal authority responsible for human-subject protections. This is the primary federal source for respect for persons, beneficence, justice, and their applications."
-        }
-      ],
-      "checks": {
-        "atomicAnswer": "editorial-pass",
-        "sourceSupport": "topically-aligned-reputable-source",
-        "duplication": "editorial-pass",
-        "accessibility": "structure-pass",
-        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
-        "biasAndContext": "assisted-review-pass-expert-pending"
-      },
-      "independentExpertStatus": "not-started",
-      "productionStatus": "not-production-validated",
-      "learnerVisible": false
-    },
-    {
-      "sequence": 95,
       "id": "flashcard-d3b66e510c46b581",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3880,7 +3841,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 96,
+      "sequence": 95,
       "id": "flashcard-fa12244880e4c40d",
       "domainId": 8,
       "domain": "Ethical, Legal & Professional Issues",
@@ -3919,7 +3880,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 97,
+      "sequence": 96,
       "id": "flashcard-3fb8fbd84515aa6d",
       "domainId": 8,
       "domain": "Ethical, Legal & Professional Issues",
@@ -3958,7 +3919,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 98,
+      "sequence": 97,
       "id": "flashcard-58d3721d6beca912",
       "domainId": 8,
       "domain": "Ethical, Legal & Professional Issues",
@@ -3997,7 +3958,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 99,
+      "sequence": 98,
       "id": "flashcard-653e4dda8bb5a064",
       "domainId": 8,
       "domain": "Ethical, Legal & Professional Issues",
@@ -4036,7 +3997,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 100,
+      "sequence": 99,
       "id": "flashcard-f85a222ad99bd278",
       "domainId": 8,
       "domain": "Ethical, Legal & Professional Issues",
@@ -4046,6 +4007,45 @@
       "back": "Common professional safeguards in forensic practice include clarifying the evaluator's role and confidentiality limits, avoiding conflicting roles, basing opinions on sufficient data, separating observations from opinions, and stating important limitations.",
       "revisionApplied": true,
       "revisionReason": "Removed a dated guideline citation and reframed the card around stable professional safeguards.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewMode": "assisted-flashcard-editorial-review",
+      "reviewWave": "eppp-flashcard-review-wave-02",
+      "reviewDate": "2026-07-14",
+      "reviewNote": "Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association, current published Ethics Code and amendments",
+          "url": "https://www.apa.org/ethics/code",
+          "credibility": "The American Psychological Association publishes the profession's Ethics Code. It is the primary source for the Code's General Principles and enforceable standards, while jurisdiction-specific law still requires separate review."
+        }
+      ],
+      "checks": {
+        "atomicAnswer": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "duplication": "editorial-pass",
+        "accessibility": "structure-pass",
+        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
+        "biasAndContext": "assisted-review-pass-expert-pending"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "learnerVisible": false
+    },
+    {
+      "sequence": 100,
+      "id": "flashcard-7049f20032f8c5af",
+      "domainId": 8,
+      "domain": "Ethical, Legal & Professional Issues",
+      "legacyFront": "APA multicultural guidelines (2017)",
+      "legacyBack": "10 guidelines replacing 2003 version. Key themes: recognize identity as dynamic and intersectional; understand power, privilege, and oppression; aspire to cultural humility; integrate multicultural competence across all professional activities. Inclusive of all diversity dimensions, not just race/ethnicity.",
+      "front": "What principles guide culturally responsive psychological practice?",
+      "back": "Culturally responsive practice treats identity as dynamic and intersectional, examines power and context, uses cultural humility, adapts methods collaboratively, and requires continued learning rather than treating competence as a completed status.",
+      "revisionApplied": true,
+      "revisionReason": "Removed the edition-specific title and reframed the answer around stable culturally responsive practice principles.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "reviewMode": "assisted-flashcard-editorial-review",
       "reviewWave": "eppp-flashcard-review-wave-02",

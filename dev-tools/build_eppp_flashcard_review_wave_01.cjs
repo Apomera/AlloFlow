@@ -16,7 +16,7 @@ const outputName = `eppp_flashcard_review_wave_${waveNumber}.json`;
 const markdownName = `eppp_flashcard_review_wave_${waveNumber}.md`;
 const waveId = `eppp-flashcard-review-wave-${waveNumber}`;
 const reviewDate = '2026-07-14';
-const quotas = new Map(isWave02 ? [[1, 10], [2, 19], [3, 12], [4, 13], [5, 10], [6, 10], [7, 21], [8, 5]] : [[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]]);
+const quotas = new Map(isWave02 ? [[1, 10], [2, 19], [3, 12], [4, 13], [5, 10], [6, 10], [7, 20], [8, 6]] : [[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]]);
 
 if (!fs.existsSync(sourcePath)) throw new Error('Build eppp_learning_library.json before creating a flashcard review wave.');
 const library = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
@@ -110,6 +110,7 @@ const topicPatterns = [
   /dodo bird|common factors/i,
   /type i|type ii/i,
   /anova|t-test/i,
+  /belmont/i,
   /meta-analysis/i,
   /factorial design/i,
   /internal validity|threats to internal/i,
