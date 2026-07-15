@@ -200,6 +200,33 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     expect(out.clean.findings.length).toBe(0);
   });
 
+  test('clean rebuilt tagged PDF contains no executable source actions or attachments', async () => {
+    const out = await page.evaluate(async () => {
+      const w = window as any;
+      const NS = w.PDFLib;
+      const generated = await w.__pipeline.createTypesetTaggedPdf({
+        accessibleHtml: '<!doctype html><html lang="en"><head><title>Safe copy</title></head><body><h1>Safe copy</h1><p>Remediated classroom content.</p></body></html>',
+      }, { title: 'Safe copy', lang: 'en', subject: 'Clean rebuild test' });
+      const doc = await NS.PDFDocument.load(generated.bytes, { updateMetadata: false });
+      const nm = (name: string) => NS.PDFName.of(name);
+      const resolve = (obj: any) => obj && obj.constructor && obj.constructor.name === 'PDFRef' ? doc.context.lookup(obj) : obj;
+      const names = resolve(doc.catalog.get(nm('Names')));
+      const pageHasAA = doc.getPages().some((p: any) => !!p.node.get(nm('AA')));
+      return {
+        openAction: !!doc.catalog.get(nm('OpenAction')),
+        catalogAA: !!doc.catalog.get(nm('AA')),
+        pageAA: pageHasAA,
+        javascriptTree: !!(names && names.get && names.get(nm('JavaScript'))),
+        embeddedFilesTree: !!(names && names.get && names.get(nm('EmbeddedFiles'))),
+        bytes: generated.bytes.length,
+        roundTripOk: generated.roundTrip && generated.roundTrip.ok,
+      };
+    });
+    expect(out.bytes).toBeGreaterThan(100);
+    expect(out.roundTripOk).toBe(true);
+    expect(out).toMatchObject({ openAction: false, catalogAA: false, pageAA: false, javascriptTree: false, embeddedFilesTree: false });
+  });
+
   test('real committed fixtures audit end-to-end (multi-column sample + scrambled)', async () => {
     const out = await page.evaluate(async (fx: any) => {
       const w = window as any;

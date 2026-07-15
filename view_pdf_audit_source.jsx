@@ -41,6 +41,33 @@ const OCR_LANG_OPTIONS = [
 ];
 
 // ── Accessible Word (.docx) export ──────────────────────────────────────────
+// Keep the UI's delivery decision aligned with the document pipeline. A
+// generated file is "verified" only when both saved-byte checks affirmatively
+// pass; null/missing/error routes to an explicitly marked unverified choice.
+function _alloTaggedPdfDeliveryVerdict(result) {
+  const roundTrip = result && result.roundTrip;
+  if (!roundTrip) return { ok: false, code: 'roundtrip-unavailable', reason: 'post-save structure verification was unavailable' };
+  if (roundTrip.ok !== true) {
+    const rtFails = (roundTrip.checks || []).filter((c) => c && c.status === 'fail').map((c) => c.rule);
+    const rtWarnings = (roundTrip.warnings || []).filter(Boolean);
+    return { ok: false, code: roundTrip.ok === false ? 'roundtrip-failed' : 'roundtrip-unavailable', reason: rtFails.join('; ') || rtWarnings.join('; ') || 'post-save structure verification did not complete successfully' };
+  }
+  const validator = result && result.postExportValidator;
+  if (!validator) return { ok: false, code: 'validator-unavailable', reason: 'byte-level exported-PDF validation was unavailable' };
+  if (validator.error) return { ok: false, code: 'validator-error', reason: 'byte-level exported-PDF validation failed to run: ' + validator.error };
+  const summary = validator.summary;
+  if (!summary || summary.overall !== 'PASS') {
+    const byteFails = (validator.checks || []).filter((c) => c && c.status === 'fail').map((c) => c.rule || c.label).filter(Boolean);
+    return { ok: false, code: 'validator-failed', reason: byteFails.join('; ') || 'byte-level exported-PDF validation did not pass' };
+  }
+  return { ok: true, code: 'verified', reason: '' };
+}
+
+function _alloExecutableActiveContentFindings(result) {
+  const findings = result && result.activeContent && Array.isArray(result.activeContent.findings) ? result.activeContent.findings : [];
+  const executable = { 'open-action': true, javascript: true, launch: true, 'additional-actions': true };
+  return findings.filter((finding) => finding && executable[finding.type]);
+}
 // _ensureDocxLib: lazy-load the docx UMD build (window.docx). Mirror chain —
 // cdnjs does NOT carry the docx UMD build, so two verified mirrors only.
 function _ensureDocxLib() {
@@ -2132,6 +2159,46 @@ const DOC_MODES = {
   chicago: { id: 'chicago', label: 'Chicago', icon: '📚', blurb: 'Chicago (notes–bibliography): Times New Roman 12pt, double-spaced, footnotes, hanging-indent Bibliography.', academic: true, refHeading: 'Bibliography', citation: '¹', css: _DOC_MODE_CSS_BASE + 'main h1{text-align:center}.allo-references h2{text-align:center}' },
 };
 
+async function _buildAccessibleOfficeExport({ html, title, format }) {
+  if (!html || typeof html !== 'string') throw new Error('No document content is available.');
+  const safeTitle = String(title || 'AlloFlow Document').replace(/[\\/:*?"<>|]+/g, '-').trim().substring(0, 100) || 'AlloFlow Document';
+  if (format === 'docx') {
+    const d = await _ensureDocxLib();
+    if (!d) throw new Error('The Word export library could not load. Check the connection and try again.');
+    const spec = _htmlToDocxSpec(html);
+    const blob = await _buildDocxBlobFromSpec(spec, d, DOC_MODES.standard);
+    return {
+      blob,
+      fileName: safeTitle + '-accessible.docx',
+      message: 'Accessible Word file downloaded. Verify it in Word: Review > Check Accessibility.',
+      counts: spec.counts,
+    };
+  }
+  if (format !== 'odt') throw new Error('Unsupported Office export format.');
+  if (!window.JSZip) throw new Error('The compression library is still loading.');
+  const zip = new window.JSZip();
+  const odtParts = _htmlToOdtPackageParts(html);
+  zip.file('mimetype', 'application/vnd.oasis.opendocument.text', { compression: 'STORE' });
+  zip.file('META-INF/manifest.xml', _buildOdtManifestXml(odtParts.images));
+  zip.file('content.xml', odtParts.contentXml);
+  odtParts.images.forEach((image) => zip.file(image.path, image.base64, { base64: true }));
+  const lang = ((html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en').trim();
+  const langParts = lang.split(/[-_]/);
+  const language = (langParts[0] || 'en').toLowerCase();
+  const country = langParts[1] ? langParts[1].toUpperCase() : 'none';
+  const rtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
+  let styles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" fo:language="' + language + '" fo:country="' + country + '"/>');
+  if (rtl) styles = styles.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>');
+  zip.file('styles.xml', styles);
+  zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(safeTitle) + '</dc:title><dc:language>' + _expXmlEsc(lang) + '</dc:language></office:meta></office:document-meta>');
+  const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.oasis.opendocument.text' });
+  return {
+    blob,
+    fileName: safeTitle + '-accessible.odt',
+    message: 'Accessible OpenDocument file downloaded. Verify it in LibreOffice or Word before distributing.',
+  };
+}
+
 // Footnote renumber engine (2026-06-13): keeps superscript anchors, the notes
 // list, ids, and back-references in sync after any insert/delete/reorder. Each
 // ref↔note pair shares a stable data-fn-uid; numbers come from document order
@@ -2668,6 +2735,8 @@ function PdfAuditView(props) {
   // load Office zip containers, so the tagged buttons are gated on this.
   // 'JVBER' is base64 of '%PDF'.
   const _inputIsPdf = !!((pendingPdfFile && (pendingPdfFile.type === 'application/pdf' || /\.pdf$/i.test(pendingPdfFile.name || ''))) || (typeof pendingPdfBase64 === 'string' && pendingPdfBase64.slice(0, 5) === 'JVBER'));
+  const _executableActiveContentFindings = _alloExecutableActiveContentFindings((pdfFixResult && pdfFixResult.activeContent) ? pdfFixResult : pdfAuditResult);
+  const _hasExecutableActiveContent = _executableActiveContentFindings.length > 0;
   // Tier 4: surface "resume previous batch" banner when an interrupted batch
   // is found in IndexedDB. Hooks must run unconditionally before any early
   // return — keep this above the !pdfAuditResult guard.
@@ -2788,6 +2857,7 @@ function PdfAuditView(props) {
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => { try { return localStorage.getItem('alloflow_pdf_auto_verapdf') !== 'false'; } catch (_) { return true; } });
   React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_verapdf', String(pdfAutoVeraPdf)); } catch (_) {} }, [pdfAutoVeraPdf]);
   const _lastTaggedBytesRef = useRef(null);                   // shipped tagged-PDF bytes, for on-demand veraPDF validation
+  const _activeContentFidelityOverrideRef = useRef(false); // one-shot advanced override; reset when the export starts
   const _taggedArtifactGenerationRef = useRef(0);
   const _veraPdfValidationGenerationRef = useRef(0);
   const _selectTaggedArtifact = (bytes) => {
@@ -2898,10 +2968,13 @@ function PdfAuditView(props) {
         return;
       }
       setLastTaggedValidation(_viewAttachTaggedArtifactProof(_typesetValidation, _typesetArtifact));
-      const _rt = (_result && _result.roundTrip) || null;
-      if (_rt && _rt.ok === false) {
-        _lastTaggedDeliveryRef.current = { withheld: true, reason: 'typeset post-save structure check failed' }; // M14
-        addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check — use the Word or HTML download instead.'), 'error');
+      const _typesetVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+      if (!_typesetVerdict.ok) {
+        const _typesetUnverifiedName = (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + (_sanitized ? '-tagged-clean-UNVERIFIED.pdf' : '-tagged-typeset-UNVERIFIED.pdf');
+        _taggedGateBytesRef.current = { bytes: taggedBytes, fileName: _typesetUnverifiedName };
+        _lastTaggedDeliveryRef.current = { withheld: true, reason: 'typeset verification unavailable/failed (' + _typesetVerdict.reason + ')' }; // M14
+        setTaggedGateIssue('Generated-layout export: ' + _typesetVerdict.reason);
+        addToast('The generated-layout tagged PDF could not be verified. An explicitly marked download option is pinned in the Downloads section.', 'warning');
         return;
       }
       safeDownloadBlob(new Blob([taggedBytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + (_sanitized ? '-tagged-clean.pdf' : '-tagged-typeset.pdf'));
@@ -4445,7 +4518,7 @@ function PdfAuditView(props) {
   // "Re-run with restoration" UI. PREFER the tagged-PDF round-trip snapshot (tokens lost in PDF tagging)
   // when it's fresh; otherwise — e.g. after the auto-continue loop, which updates the document but never
   // refreshes lastTaggedValidation — FALL BACK to a fresh source-vs-final-text diff (tokens lost in
-  // remediation) so Recovery is runnable any time after remediation, not only right after a Tagged PDF
+  // the remediated HTML rather than only during PDF tagging) so restoration can run before the next
   // export. Pure (no closure deps) → testable. Returns { missingTokens, residual, freshMode }.
   const _recoveryResidualSource = (td, sourceText, finalText) => {
     const _normTokenForDiff = _normTokenForDiffShared; // S7: single-sourced from the pipeline
@@ -5953,6 +6026,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button
                           onClick={async () => {
                             try {
+                              const _quickExec = _alloExecutableActiveContentFindings(pdfAuditResult);
+                              if (_quickExec.length > 0) {
+                                addToast('Quick original-byte tagging is disabled because this PDF contains executable actions. Run Make Accessible, then use the clean tagged-PDF export.', 'warning');
+                                return;
+                              }
                               const freshBase64 = await ensurePdfBase64();
                               if (!freshBase64) return;
                               const ok = await _ensurePdfLib();
@@ -5983,10 +6061,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               setVeraPdfResult(null);
                               // Parity with the main tagged-download path: never hand over
                               // a baseline file whose structure failed the post-save check.
-                              const _blRoundTrip = (_result && _result.roundTrip) || null;
-                              if (_blRoundTrip && _blRoundTrip.ok === false) {
-                                const _blFails = (_blRoundTrip.checks || []).filter(c => c && c.status === 'fail').map(c => c.rule);
-                                const _blMsg = _blFails.length ? _blFails.join('; ') : ((_blRoundTrip.warnings || []).join('; ') || 'structure may not have survived serialization');
+                              const _blVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+                              if (!_blVerdict.ok) {
+                                const _blFails = [];
+                                const _blMsg = _blVerdict.reason;
                                 addToast('⚠ Baseline post-save structure check FAILED: ' + _blMsg + '.', 'error');
                                 const _blProceed = (typeof window !== 'undefined' && typeof window.confirm === 'function')
                                   ? window.confirm('The baseline tagged PDF FAILED its post-save structure check:\n\n' + _blMsg + '\n\nDownload the unverified file anyway?')
@@ -10887,6 +10965,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           id="allo-tagged-pdf-btn"
                           onClick={async () => {
                             try {
+                              const _fidelityOverride = _activeContentFidelityOverrideRef.current === true;
+                              _activeContentFidelityOverrideRef.current = false;
+                              if (_hasExecutableActiveContent && !_fidelityOverride) {
+                                await _runTypesetExport({ sanitized: true });
+                                return;
+                              }
+                              if (_hasExecutableActiveContent) addToast('Advanced fidelity export enabled: the original executable actions and visual layout will be preserved. Redistribute only after a security review.', 'warning');
                               const freshBase64 = await ensurePdfBase64();
                               if (!freshBase64) return;
                               const ok = await _ensurePdfLib();
@@ -10932,7 +11017,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     const _r2 = await createTaggedPdf(bytes, _fr2, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(_fr2) });
                                     const _td2 = _r2 && _r2.roundTrip && _r2.roundTrip.textDiff;
                                     const _res2 = _td2 && typeof _td2.residualMissingCount === 'number' ? _td2.residualMissingCount : null;
-                                    if (_r2 && _r2.bytes && !(_r2.roundTrip && _r2.roundTrip.ok === false) && _res2 != null && _res2 <= _res0) {
+                                    if (_r2 && _r2.bytes && _alloTaggedPdfDeliveryVerdict(_r2).ok && _res2 != null && _res2 <= _res0) {
                                       const _pre = pdfFixResult.accessibleHtml;
                                       setPdfFixResult(prev => prev ? _viewEnforceVerificationHtmlBinding({ ...prev, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt, _preCmdHtml: _pre }, 'content-modified-pending-reverification', _docPipeline) : prev);
                                       _tagSourceHtml = _h;
@@ -11018,13 +11103,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               }
                               // ── Gate the download on the post-save structural self-check ──
                               // createTaggedPdf re-parses the SHIPPED bytes; if the tag tree / MarkInfo /
-                              // language didn't survive serialization (roundTrip.ok === false), do NOT
+                              // verification did not affirmatively complete (roundTrip.ok !== true), do NOT
                               // silently hand over a broken tagged PDF. Previously a passed and a failed
                               // verification produced the identical download with only an after-the-fact
                               // toast; now a hard fail requires an explicit "download anyway" opt-in.
-                              if (roundTrip && roundTrip.ok === false) {
-                                const _rtFails = (roundTrip.checks || []).filter(c => c && c.status === 'fail').map(c => c.rule);
-                                const _rtMsg = _rtFails.length ? _rtFails.join('; ') : ((roundTrip.warnings || []).join('; ') || 'structure may not have survived serialization');
+                              const _deliveryVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+                              if (!_deliveryVerdict.ok) {
+                                const _rtFails = [];
+                                const _rtMsg = _deliveryVerdict.reason;
                                 // Inline decision panel instead of a blocking window.confirm
                                 // (2026-06-12): confirm() is unreliable in the Canvas sandbox
                                 // and a modal dead-end was the worst ending the hands-free
@@ -11058,7 +11144,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if ((ocrTextLayer.pagesIncomplete || 0) > 0) _bits.push(ocrTextLayer.pagesIncomplete + ' got only partial text');
                                 _rpt.push({ tone: 'warn', text: 'Per-page OCR: of ' + _pw + ' scanned page(s), ' + _bits.join(' and ') + ' — those page(s) will not be fully searchable or read aloud; verify them against the original.' });
                               }
-                              if (roundTrip && roundTrip.ok !== false && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
+                              if (roundTrip && roundTrip.ok === true && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
                                 _rpt.push({ tone: 'warn', text: 'Structure self-check notes: ' + roundTrip.warnings.join('; ') });
                               }
                               if (postExportValidator && postExportValidator.summary) {
@@ -11124,10 +11210,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               addToast(t('toasts.tagged_pdf_failed') + (err?.message || 'unknown error') + '. Try PDF (from HTML) as a fallback.', 'error');
                             }
                           }}
-                          className="px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5"
-                          title={t('pdf_audit.tagged_pdf.title') || "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."}
+                          className={_hasExecutableActiveContent ? "px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors flex items-center gap-1.5" : "px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5"}
+                          title={_hasExecutableActiveContent ? 'Recommended: rebuild a clean tagged PDF from the remediated content. Executable actions from the source PDF are removed; the visual layout is regenerated.' : (t('pdf_audit.tagged_pdf.title') || "Preserve the original PDF's visual layout and inject accessibility tags into its structure tree. Best for trusted textbooks, multi-column documents, and branded PDFs where visual fidelity matters.")}
                         >
-                          📄 Tagged PDF
+                          {_hasExecutableActiveContent ? '🧼 Clean tagged PDF (recommended)' : '📄 Tagged PDF'}
                         </button>
                         ) : (
                         <button
@@ -11145,16 +11231,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             embedded scripts/actions/attachments the source carried); this offers the
                             SAME typeset rebuild the non-PDF path uses as an explicit "clean" alternative
                             that drops all original active content. Secondary styling so the fidelity-
-                            preserving Tagged PDF stays the default choice. */}
+                            preserving export is available only as an explicit advanced override when executable actions were detected. */}
                         {_inputIsPdf && (
                         <button
                           id="allo-tagged-pdf-clean-btn"
                           data-help-key="pdf_audit_view_sanitized_rebuild_btn"
-                          onClick={() => _runTypesetExport({ sanitized: true })}
-                          className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
-                          title={t('pdf_audit.tagged_pdf.sanitized_title') || "Rebuild a CLEAN tagged PDF from the remediated content instead of tagging the original file. Because it regenerates the PDF, it drops any embedded JavaScript, open/launch actions, file attachments, and original metadata the source carried — a safer file to redistribute, at the cost of the original visual design. Use this when the source PDF is from an untrusted or unknown origin."}
+                          onClick={() => {
+                            if (_hasExecutableActiveContent) {
+                              _activeContentFidelityOverrideRef.current = true;
+                              const fidelityButton = document.getElementById('allo-tagged-pdf-btn');
+                              if (fidelityButton) fidelityButton.click();
+                              return;
+                            }
+                            _runTypesetExport({ sanitized: true });
+                          }}
+                          className={_hasExecutableActiveContent ? "px-4 py-2.5 bg-amber-50 text-amber-800 border border-amber-400 rounded-xl font-bold text-sm hover:bg-amber-100 transition-colors flex items-center gap-1.5" : "px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5"}
+                          title={_hasExecutableActiveContent ? 'Advanced: preserve the original PDF layout and its executable actions. Use only after a security review; the clean tagged PDF is the recommended distributable copy.' : (t('pdf_audit.tagged_pdf.sanitized_title') || "Rebuild a CLEAN tagged PDF from the remediated content instead of tagging the original file. Because it regenerates the PDF, it drops embedded JavaScript, open/launch actions, file attachments, and original metadata.")}
                         >
-                          🧼 {t('pdf_audit.tagged_pdf.sanitized_label') || 'Rebuild clean (drops embedded scripts)'}
+                          {_hasExecutableActiveContent ? '⚠ Preserve source actions (advanced)' : ('🧼 ' + (t('pdf_audit.tagged_pdf.sanitized_label') || 'Rebuild clean (drops embedded scripts)'))}
                         </button>
                         )}
                         <button onClick={async () => {
@@ -12952,8 +13046,14 @@ const _downloadBRF = (brf) => {
                                   const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._translation.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (' + pdfFixResult._translation.lang + ')', lang: pdfFixResult._translation.langCode || 'en' });
                                   const _bytes = _result && _result.bytes ? _result.bytes : _result;
                                   if (!_bytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
-                                  const _rt = _result && _result.roundTrip;
-                                  if (_rt && _rt.ok === false) { addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check.'), 'error'); return; }
+                                  const _translatedVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+                                  if (!_translatedVerdict.ok) {
+                                    const _translatedName = (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-' + (pdfFixResult._translation.langCode || 'translated') + '-tagged-UNVERIFIED.pdf';
+                                    _taggedGateBytesRef.current = { bytes: _bytes, fileName: _translatedName };
+                                    setTaggedGateIssue('Translated export: ' + _translatedVerdict.reason);
+                                    addToast('The translated tagged PDF could not be verified. An explicitly marked download option is pinned in the Downloads section.', 'warning');
+                                    return;
+                                  }
                                   safeDownloadBlob(new Blob([_bytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-' + (pdfFixResult._translation.langCode || 'translated') + '-tagged.pdf');
                                   const _s = (_result && _result.summary) || {};
                                   if (_s.unicodeTypesetWarning) addToast('⚠ ' + _s.unicodeTypesetWarning.advice, 'warning');
@@ -13041,8 +13141,14 @@ const _downloadBRF = (brf) => {
                                   const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._plainLanguage.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (plain language)', lang: _deriveDocMeta(pdfFixResult._plainLanguage.html, pendingPdfFile?.name).lang });
                                   const _bytes = _result && _result.bytes ? _result.bytes : _result;
                                   if (!_bytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
-                                  const _rt = _result && _result.roundTrip;
-                                  if (_rt && _rt.ok === false) { addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check.'), 'error'); return; }
+                                  const _plainVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+                                  if (!_plainVerdict.ok) {
+                                    const _plainName = (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-plain-language-tagged-UNVERIFIED.pdf';
+                                    _taggedGateBytesRef.current = { bytes: _bytes, fileName: _plainName };
+                                    setTaggedGateIssue('Plain-language export: ' + _plainVerdict.reason);
+                                    addToast('The plain-language tagged PDF could not be verified. An explicitly marked download option is pinned in the Downloads section.', 'warning');
+                                    return;
+                                  }
                                   safeDownloadBlob(new Blob([_bytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-plain-language-tagged.pdf');
                                   const _s = (_result && _result.summary) || {};
                                   addToast((_s.uaDeclared ? '✅ ' : '📄 ') + (t('toasts.plain_tagged_done') || 'Plain-language tagged PDF ready') + (_s.uaDeclared ? ' — PDF/UA declared.' : '.'), 'success');
@@ -16269,6 +16375,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </div>
                     <div className="px-4 py-3 border-t border-slate-200 flex items-center gap-2">
                       <button onClick={async () => {
+                        if (_hasExecutableActiveContent) {
+                          addToast('Original-layout fillable export is disabled because this PDF contains executable actions. Use the clean tagged PDF, or remove the actions in a trusted PDF editor first.', 'warning');
+                          return;
+                        }
                         setPdfFieldBusy(true);
                         try {
                           const b64 = await ensurePdfBase64();
@@ -16279,8 +16389,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           try {
                             const tagged = await createTaggedPdf(fielded.bytes, pdfFixResult, _dm);
                             const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
-                            const rt = tagged && tagged.roundTrip;
-                            if (tBytes && !(rt && rt.ok === false)) {
+                            const _fillableVerdict = _alloTaggedPdfDeliveryVerdict(tagged);
+                            if (tBytes && _fillableVerdict.ok) {
                               outBytes = tBytes;
                               const _s = (tagged && tagged.summary) || {};
                               tagNote = _s.uaDeclared ? (t('toasts.fillable_pdf_ua') || ' Tagged — PDF/UA declared.') : (t('toasts.fillable_pdf_tagged') || ' Tagged (declaration withheld — see verification).');

@@ -29,6 +29,36 @@ var PIPELINE_DEFAULTS = { targetScore: 95 };
 // PAGES_PER_CHUNK is sized to output tokens per PAGE, not chars.)
 var GEMINI_CHUNK_CHARS = 16000;
 
+// Canonical delivery verdict for generated tagged PDFs. "Verified" is an
+// affirmative state, never the absence of a known failure: both the core
+// round-trip reparse and the byte-level validator must complete successfully.
+// Callers may still offer an explicitly marked UNVERIFIED download, but batch
+// and automatic paths must not silently treat null/missing/error as a pass.
+function _alloTaggedPdfDeliveryVerdict(result) {
+  var roundTrip = result && result.roundTrip;
+  if (!roundTrip) return { ok: false, code: 'roundtrip-unavailable', reason: 'post-save structure verification was unavailable' };
+  if (roundTrip.ok !== true) {
+    var rtFails = (roundTrip.checks || []).filter(function (c) { return c && c.status === 'fail'; }).map(function (c) { return c.rule; });
+    var rtWarnings = (roundTrip.warnings || []).filter(Boolean);
+    return { ok: false, code: roundTrip.ok === false ? 'roundtrip-failed' : 'roundtrip-unavailable', reason: rtFails.join('; ') || rtWarnings.join('; ') || 'post-save structure verification did not complete successfully' };
+  }
+  var validator = result && result.postExportValidator;
+  if (!validator) return { ok: false, code: 'validator-unavailable', reason: 'byte-level exported-PDF validation was unavailable' };
+  if (validator.error) return { ok: false, code: 'validator-error', reason: 'byte-level exported-PDF validation failed to run: ' + validator.error };
+  var summary = validator.summary;
+  if (!summary || summary.overall !== 'PASS') {
+    var byteFails = (validator.checks || []).filter(function (c) { return c && c.status === 'fail'; }).map(function (c) { return c.rule || c.label; }).filter(Boolean);
+    return { ok: false, code: 'validator-failed', reason: byteFails.join('; ') || 'byte-level exported-PDF validation did not pass' };
+  }
+  return { ok: true, code: 'verified', reason: '' };
+}
+
+function _alloExecutableActiveContentFindings(result) {
+  var findings = result && result.activeContent && Array.isArray(result.activeContent.findings) ? result.activeContent.findings : [];
+  var executable = { 'open-action': 1, javascript: 1, launch: 1, 'additional-actions': 1 };
+  return findings.filter(function (finding) { return finding && executable[finding.type]; });
+}
+
 // Canonical WCAG verification-state policy. Every remediation surface (single-file,
 // batch, exports, and secondary lanes) should derive its claims from this pure helper
 // instead of independently interpreting score presence as conformance evidence.
@@ -12708,9 +12738,9 @@ Return ONLY valid JSON:
             try { setPdfBatchStep('Typesetting ' + f.fileName + '…'); } catch (_) {}
             const _ts = await createTypesetTaggedPdf(f.result, { title: f.fileName.replace(/\.(md|markdown|csv|tsv|xlsx|xls|xlsb|ods|txt)$/i, ''), lang: 'en', subject: 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
             const _tsBytes = _ts && _ts.bytes ? _ts.bytes : _ts;
-            const _tsRt = _ts && _ts.roundTrip;
             if (!_tsBytes) { _taggedNotes.set(f.id, 'typeset failed (no bytes returned)'); continue; }
-            if (_tsRt && _tsRt.ok === false) { _taggedNotes.set(f.id, 'EXCLUDED (typeset failed post-save verification)'); continue; }
+            const _tsVerdict = _alloTaggedPdfDeliveryVerdict(_ts);
+            if (!_tsVerdict.ok) { _taggedNotes.set(f.id, 'EXCLUDED (typeset verification unavailable/failed: ' + _tsVerdict.reason + ')'); continue; }
             zip.file(`${safeName}_typeset_tagged.pdf`, _tsBytes);
             _taggedCount++;
             const _tsS = _ts && _ts.summary;
@@ -12722,15 +12752,34 @@ Return ONLY valid JSON:
           _taggedNotes.set(f.id, 'n/a (Office input — no tagged PDF; use the accessible HTML artifact in the ZIP)'); // M10: only <name>_accessible.html is written per Office file — no Word artifact exists
           continue;
         }
+        // Executable source actions are never carried into an unattended ZIP.
+        // Rebuild from the remediated HTML instead; attachments-only findings
+        // remain disclosed but do not force the visual-fidelity tradeoff.
+        const _execFindings = _alloExecutableActiveContentFindings(f.result);
+        if (_execFindings.length > 0) {
+          try { setPdfBatchStep('Rebuilding a clean tagged PDF for ' + f.fileName + '...'); } catch (_) {}
+          const _safe = await createTypesetTaggedPdf(f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: 'en', subject: 'Clean rebuilt and tagged for accessibility by AlloFlow (executable source actions removed)' });
+          const _safeBytes = _safe && _safe.bytes ? _safe.bytes : _safe;
+          if (!_safeBytes) { _taggedNotes.set(f.id, 'EXCLUDED (clean rebuild returned no bytes)'); continue; }
+          const _safeVerdict = _alloTaggedPdfDeliveryVerdict(_safe);
+          if (!_safeVerdict.ok) { _taggedNotes.set(f.id, 'EXCLUDED (clean rebuild verification unavailable/failed: ' + _safeVerdict.reason + ')'); continue; }
+          zip.file(`${safeName}_typeset_tagged.pdf`, _safeBytes);
+          _taggedCount++;
+          const _safeNote = 'yes (clean rebuild; executable source actions removed)';
+          _taggedNotes.set(f.id, _safeNote);
+          _batchTaggedCachePut(f.id, { stamp: _tagStamp, bytes: _safeBytes, note: _safeNote, entryName: `${safeName}_typeset_tagged.pdf` });
+          continue;
+        }
+
         try { setPdfBatchStep('Tagging ' + f.fileName + '…'); } catch (_) {}
         const binStr = atob(f.base64);
         const bytes = new Uint8Array(binStr.length);
         for (let bi = 0; bi < binStr.length; bi++) bytes[bi] = binStr.charCodeAt(bi);
         const tagged = await createTaggedPdf(bytes, f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: 'en', subject: 'Remediated for accessibility by AlloFlow (batch)' });
         const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
-        const rt = tagged && tagged.roundTrip;
         if (!tBytes) { _taggedNotes.set(f.id, 'failed (no bytes returned)'); continue; }
-        if (rt && rt.ok === false) { _taggedNotes.set(f.id, 'EXCLUDED (failed post-save structure verification)'); continue; }
+        const _taggedVerdict = _alloTaggedPdfDeliveryVerdict(tagged);
+        if (!_taggedVerdict.ok) { _taggedNotes.set(f.id, 'EXCLUDED (verification unavailable/failed: ' + _taggedVerdict.reason + ')'); continue; }
         zip.file(`${safeName}_tagged.pdf`, tBytes);
         _taggedCount++;
         const s = tagged && tagged.summary;

@@ -84,6 +84,7 @@ var X = _lazyIcon('X');
 ${compiled}
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.PdfAuditView = (typeof PdfAuditView !== 'undefined') ? PdfAuditView : null;
+window.AlloModules.AccessibleOfficeExport = { build: _buildAccessibleOfficeExport };
 window.AlloModules.ViewPdfAuditModule = true;
 console.log('[CDN] ViewPdfAuditModule loaded — PdfAuditView registered');
 })();
