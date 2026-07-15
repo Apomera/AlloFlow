@@ -4,6 +4,11 @@ const fs=require('fs'),path=require('path'),root=path.resolve(__dirname,'..');
 const bankPath=path.join(root,'test_prep','eppp_native_items.json');
 const auditPath=path.join(root,'test_prep','eppp_legacy','content_audit.json');
 const outputAudit=path.join(root,'test_prep','eppp_native_expansion_1500_audit.json');
+const reservedReviewPaths=[
+  path.join(root,'test_prep','eppp_legacy','next_review_docket.json'),
+  path.join(root,'test_prep','eppp_legacy','bulk_review_wave_01.json'),
+  path.join(root,'test_prep','eppp_legacy','adjudication_index.json'),
+];
 const deployAudit=path.join(root,'prismflow-deploy','public','test_prep','eppp_native_expansion_1500_audit.json');
 const reviewedAt='2026-07-14',batchId='native-1001-1500';
 const domains=[{number:1,id:'biological',quota:50},{number:2,id:'cognitive-affective',quota:65},{number:3,id:'social-cultural',quota:55},{number:4,id:'lifespan',quota:60},{number:5,id:'assessment',quota:80},{number:6,id:'intervention',quota:75},{number:7,id:'research',quota:35},{number:8,id:'professional',quota:80}];
@@ -20,6 +25,8 @@ const sourceFromLegacy=x=>{const approved=new Set(['apa.org','www.apa.org','cdc.
 const bank=JSON.parse(fs.readFileSync(bankPath,'utf8')),base=bank.filter(x=>x.expansionBatch!==batchId);
 if(base.length!==1000)throw new Error('The 1,500 expansion builder requires the validated 1,000-item base.');
 const legacy=JSON.parse(fs.readFileSync(auditPath,'utf8')),usedIds=new Set(base.map(x=>x.legacySourceId).filter(Boolean)),usedPrompts=new Set(base.map(x=>norm(x.prompt)));
+const reservedLegacyIds=new Set();for(const reviewPath of reservedReviewPaths){if(!fs.existsSync(reviewPath))continue;const artifact=JSON.parse(fs.readFileSync(reviewPath,'utf8'));for(const item of Array.isArray(artifact.items)?artifact.items:[])if(item&&item.legacyId)reservedLegacyIds.add(String(item.legacyId));}
+for(const id of reservedLegacyIds)usedIds.add(id);
 const anchors=base.filter(x=>Array.isArray(x.sourceDetails)&&x.sourceDetails.length&&Array.isArray(x.references)&&x.references.length);
 if(!anchors.length)throw new Error('No source-reviewed anchor items are available.');
 const catalogEntry=(url,title,credibility)=>({references:[url],sourceDetails:[{url,title,credibility}]});
@@ -92,4 +99,5 @@ const all=base.concat(expansion),ids=new Set(all.map(x=>x.id)),prompts=new Set(a
 const domainCounts=Object.fromEntries(domains.map(d=>[d.id,all.filter(x=>x.domainId===d.id).length]));fs.writeFileSync(bankPath,JSON.stringify(all,null,2)+'\n','utf8');
 const report={schemaVersion:1,generatedAt:new Date().toISOString(),expansionId:batchId,scope:'Five additional independently selectable 100-question EPPP practice banks',selectionPolicy:{legacyUniverse:legacy.summary.totalItems,baseItems:base.length,excludedAlreadyMigrated:true,excludedJurisdictionSpecificLegalAndLicensingClaims:true,timeSensitiveException:'Stable APA Ethics Code concepts only; Tarasoff, HIPAA, licensure, court, subpoena, reporting, abuse, and Goldwater claims remain quarantined.',duplicateNormalizedPromptsPermitted:false,answerLengthPolicy:'Severe clues were excluded outside the professional quota; retained professional concepts were re-authored with parallel response framing.'},summary:{addedItems:500,totalItems:1500,addedItemsPassingBuilderChecks:500,addedItemsWithFourChoiceRationales:500,addedItemsWithFullSourceDetails:500,parsedLegacyOptionFeedback:parsedCount,lengthClueSetsReauthored:paddedCount,directLegacyCitationSources:directSourceCount,domainTopicAuthoritativeSources:500-directSourceCount,status:'builder-pass'},domainCounts,addedDomainCounts:Object.fromEntries(domains.map(d=>[d.id,d.quota])),practiceBanks:Array.from({length:5},(_,i)=>({bankNumber:i+11,items:100,answerPositions:{A:bankKeyCounts[i][0],B:bankKeyCounts[i][1],C:bankKeyCounts[i][2],D:bankKeyCounts[i][3]}})),limitations:['Editorial and automated review are not psychometric calibration.','Independent licensed-psychologist validation remains pending.','Topic-matched authoritative sources require continued human review when source guidance changes.'],items:itemAudit};
 for(const out of [outputAudit,deployAudit]){fs.mkdirSync(path.dirname(out),{recursive:true});fs.writeFileSync(out,JSON.stringify(report,null,2)+'\n','utf8');}
+require('./repair_eppp_native_quality_wave_01.cjs');
 console.log('Built EPPP expansion '+batchId+': 500 items; total 1,500; parsed option feedback '+parsedCount+'; re-authored length-clue sets '+paddedCount+'.');

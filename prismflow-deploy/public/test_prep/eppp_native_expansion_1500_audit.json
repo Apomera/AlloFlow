@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T03:14:23.431Z",
+  "generatedAt": "2026-07-15T14:09:07.115Z",
   "expansionId": "native-1001-1500",
   "scope": "Five additional independently selectable 100-question EPPP practice banks",
   "selectionPolicy": {
@@ -18,8 +18,8 @@
     "addedItemsPassingBuilderChecks": 500,
     "addedItemsWithFourChoiceRationales": 500,
     "addedItemsWithFullSourceDetails": 500,
-    "parsedLegacyOptionFeedback": 185,
-    "lengthClueSetsReauthored": 115,
+    "parsedLegacyOptionFeedback": 186,
+    "lengthClueSetsReauthored": 116,
     "directLegacyCitationSources": 57,
     "domainTopicAuthoritativeSources": 443,
     "status": "builder-pass"
@@ -464,18 +464,6 @@
     },
     {
       "id": "eppp-v3-biological-031",
-      "legacySourceId": "legacy-aa17f085d32a2e05",
-      "authoredSourceId": null,
-      "domainId": "biological",
-      "practiceBank": 14,
-      "sourceMethod": "domain-topic-authoritative-source",
-      "sourceAnchorItemId": "eppp-v2-biological-045",
-      "sourceMatchScore": 0.422,
-      "parsedOptionFeedback": false,
-      "lengthClueReauthored": false
-    },
-    {
-      "id": "eppp-v3-biological-032",
       "legacySourceId": "legacy-cc97026367f4f8aa",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -487,7 +475,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-033",
+      "id": "eppp-v3-biological-032",
       "legacySourceId": "legacy-f56fbac191ccab72",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -499,19 +487,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-034",
-      "legacySourceId": "legacy-c901ad37cfe94a48",
-      "authoredSourceId": null,
-      "domainId": "biological",
-      "practiceBank": 14,
-      "sourceMethod": "domain-topic-authoritative-source",
-      "sourceAnchorItemId": "eppp-v2-biological-017",
-      "sourceMatchScore": 0.407,
-      "parsedOptionFeedback": false,
-      "lengthClueReauthored": false
-    },
-    {
-      "id": "eppp-v3-biological-035",
+      "id": "eppp-v3-biological-033",
       "legacySourceId": "legacy-530cc7f22674e891",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -523,7 +499,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-036",
+      "id": "eppp-v3-biological-034",
       "legacySourceId": "legacy-7d5071a87e3997d0",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -535,7 +511,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-037",
+      "id": "eppp-v3-biological-035",
       "legacySourceId": "legacy-6d8e35870f4e32a5",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -547,7 +523,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-038",
+      "id": "eppp-v3-biological-036",
       "legacySourceId": "legacy-12ba62f39917919f",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -559,7 +535,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-039",
+      "id": "eppp-v3-biological-037",
       "legacySourceId": "legacy-8e0c92aa95e75443",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -571,7 +547,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-040",
+      "id": "eppp-v3-biological-038",
       "legacySourceId": "legacy-bcbc7b2a87e88a96",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -583,11 +559,11 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-041",
+      "id": "eppp-v3-biological-039",
       "legacySourceId": "legacy-63774c157aa62cd3",
       "authoredSourceId": null,
       "domainId": "biological",
-      "practiceBank": 15,
+      "practiceBank": 14,
       "sourceMethod": "domain-topic-authoritative-source",
       "sourceAnchorItemId": "eppp-v2-biological-040",
       "sourceMatchScore": 0.315,
@@ -595,7 +571,19 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-042",
+      "id": "eppp-v3-biological-040",
+      "legacySourceId": "legacy-c901ad37cfe94a48",
+      "authoredSourceId": null,
+      "domainId": "biological",
+      "practiceBank": 14,
+      "sourceMethod": "domain-topic-authoritative-source",
+      "sourceAnchorItemId": "eppp-v2-biological-040",
+      "sourceMatchScore": 0.311,
+      "parsedOptionFeedback": false,
+      "lengthClueReauthored": false
+    },
+    {
+      "id": "eppp-v3-biological-041",
       "legacySourceId": "legacy-3b7720f86e4452a6",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -607,7 +595,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-043",
+      "id": "eppp-v3-biological-042",
       "legacySourceId": "legacy-35169e8c157061ad",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -619,7 +607,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-044",
+      "id": "eppp-v3-biological-043",
       "legacySourceId": "legacy-333c53905fccf8ad",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -631,7 +619,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-045",
+      "id": "eppp-v3-biological-044",
       "legacySourceId": "legacy-48daa5dedea2de55",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -643,7 +631,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-046",
+      "id": "eppp-v3-biological-045",
       "legacySourceId": "legacy-22feab5b09893e7c",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -655,7 +643,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-biological-047",
+      "id": "eppp-v3-biological-046",
       "legacySourceId": "legacy-f76e34ec2c422e9b",
       "authoredSourceId": null,
       "domainId": "biological",
@@ -664,6 +652,18 @@
       "sourceAnchorItemId": "eppp-v2-biological-010",
       "sourceMatchScore": 0.289,
       "parsedOptionFeedback": false,
+      "lengthClueReauthored": false
+    },
+    {
+      "id": "eppp-v3-biological-047",
+      "legacySourceId": "legacy-54b08a6f8ea8c16a",
+      "authoredSourceId": null,
+      "domainId": "biological",
+      "practiceBank": 15,
+      "sourceMethod": "domain-topic-authoritative-source",
+      "sourceAnchorItemId": "eppp-v2-biological-045",
+      "sourceMatchScore": 0.286,
+      "parsedOptionFeedback": true,
       "lengthClueReauthored": false
     },
     {
@@ -2168,18 +2168,6 @@
     },
     {
       "id": "eppp-v3-lifespan-003",
-      "legacySourceId": "legacy-0d7d10aa72e196db",
-      "authoredSourceId": null,
-      "domainId": "lifespan",
-      "practiceBank": 11,
-      "sourceMethod": "domain-topic-authoritative-source",
-      "sourceAnchorItemId": "eppp-v2-lifespan-009",
-      "sourceMatchScore": 0.712,
-      "parsedOptionFeedback": false,
-      "lengthClueReauthored": false
-    },
-    {
-      "id": "eppp-v3-lifespan-004",
       "legacySourceId": "legacy-46f28cfb784b9281",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2191,7 +2179,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-005",
+      "id": "eppp-v3-lifespan-004",
       "legacySourceId": "legacy-09befcfe31fbf8e5",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2203,7 +2191,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-006",
+      "id": "eppp-v3-lifespan-005",
       "legacySourceId": "legacy-3dccf6d7e9ad7c79",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2215,7 +2203,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-007",
+      "id": "eppp-v3-lifespan-006",
       "legacySourceId": "legacy-459b4f5585f74a03",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2227,7 +2215,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-008",
+      "id": "eppp-v3-lifespan-007",
       "legacySourceId": "legacy-8122414962e71330",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2239,7 +2227,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-009",
+      "id": "eppp-v3-lifespan-008",
       "legacySourceId": "legacy-7299a08ed16c6aa5",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2251,7 +2239,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-010",
+      "id": "eppp-v3-lifespan-009",
       "legacySourceId": "legacy-1c1d965332608103",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2263,7 +2251,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-011",
+      "id": "eppp-v3-lifespan-010",
       "legacySourceId": "legacy-f99f9a9785703b5b",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2275,7 +2263,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-012",
+      "id": "eppp-v3-lifespan-011",
       "legacySourceId": "legacy-76a6501560c3f05c",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2287,11 +2275,11 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-013",
+      "id": "eppp-v3-lifespan-012",
       "legacySourceId": "legacy-52706dea7f25107a",
       "authoredSourceId": null,
       "domainId": "lifespan",
-      "practiceBank": 12,
+      "practiceBank": 11,
       "sourceMethod": "domain-topic-authoritative-source",
       "sourceAnchorItemId": "eppp-v2-lifespan-031",
       "sourceMatchScore": 0.544,
@@ -2299,7 +2287,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-014",
+      "id": "eppp-v3-lifespan-013",
       "legacySourceId": "legacy-94e08df38c2d9951",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2311,7 +2299,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-015",
+      "id": "eppp-v3-lifespan-014",
       "legacySourceId": "legacy-a0c48b7978c6f92c",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2323,7 +2311,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-016",
+      "id": "eppp-v3-lifespan-015",
       "legacySourceId": "legacy-ebdd95e3a3042208",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2335,7 +2323,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-017",
+      "id": "eppp-v3-lifespan-016",
       "legacySourceId": "legacy-03e247ee7543f835",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2347,7 +2335,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-018",
+      "id": "eppp-v3-lifespan-017",
       "legacySourceId": "legacy-0dfe6889aa771a4e",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2359,7 +2347,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-019",
+      "id": "eppp-v3-lifespan-018",
       "legacySourceId": "legacy-04197a29c2cad7e3",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2371,7 +2359,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-020",
+      "id": "eppp-v3-lifespan-019",
       "legacySourceId": "legacy-8239324419f3475d",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2383,7 +2371,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-021",
+      "id": "eppp-v3-lifespan-020",
       "legacySourceId": "legacy-8655f52ae55d340b",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2395,7 +2383,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-022",
+      "id": "eppp-v3-lifespan-021",
       "legacySourceId": "legacy-8a575be988c27b8a",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2407,7 +2395,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-023",
+      "id": "eppp-v3-lifespan-022",
       "legacySourceId": "legacy-fddea9ab2c07075c",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2419,7 +2407,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-024",
+      "id": "eppp-v3-lifespan-023",
       "legacySourceId": "legacy-ae55e30a1379e48b",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2431,14 +2419,26 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-025",
+      "id": "eppp-v3-lifespan-024",
       "legacySourceId": "legacy-6beab01002820dd2",
+      "authoredSourceId": null,
+      "domainId": "lifespan",
+      "practiceBank": 12,
+      "sourceMethod": "domain-topic-authoritative-source",
+      "sourceAnchorItemId": "eppp-v2-lifespan-026",
+      "sourceMatchScore": 0.392,
+      "parsedOptionFeedback": false,
+      "lengthClueReauthored": false
+    },
+    {
+      "id": "eppp-v3-lifespan-025",
+      "legacySourceId": "legacy-0d7d10aa72e196db",
       "authoredSourceId": null,
       "domainId": "lifespan",
       "practiceBank": 13,
       "sourceMethod": "domain-topic-authoritative-source",
-      "sourceAnchorItemId": "eppp-v2-lifespan-026",
-      "sourceMatchScore": 0.392,
+      "sourceAnchorItemId": "eppp-v2-lifespan-009",
+      "sourceMatchScore": 0.379,
       "parsedOptionFeedback": false,
       "lengthClueReauthored": false
     },
@@ -2576,18 +2576,6 @@
     },
     {
       "id": "eppp-v3-lifespan-037",
-      "legacySourceId": "legacy-fd5b1d083153aa4a",
-      "authoredSourceId": null,
-      "domainId": "lifespan",
-      "practiceBank": 14,
-      "sourceMethod": "domain-topic-authoritative-source",
-      "sourceAnchorItemId": "eppp-v2-lifespan-009",
-      "sourceMatchScore": 0.266,
-      "parsedOptionFeedback": false,
-      "lengthClueReauthored": false
-    },
-    {
-      "id": "eppp-v3-lifespan-038",
       "legacySourceId": "legacy-f55e06e128d33675",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2599,7 +2587,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-039",
+      "id": "eppp-v3-lifespan-038",
       "legacySourceId": "legacy-9bd1d924c06607de",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2611,7 +2599,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-040",
+      "id": "eppp-v3-lifespan-039",
       "legacySourceId": "legacy-a59186858114b3e4",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2623,7 +2611,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-041",
+      "id": "eppp-v3-lifespan-040",
       "legacySourceId": "legacy-641a5342a7875038",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2635,7 +2623,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-042",
+      "id": "eppp-v3-lifespan-041",
       "legacySourceId": "legacy-5c924e69d29846b8",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2647,7 +2635,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-043",
+      "id": "eppp-v3-lifespan-042",
       "legacySourceId": "legacy-e2d36e00fc978474",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2659,7 +2647,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-044",
+      "id": "eppp-v3-lifespan-043",
       "legacySourceId": "legacy-5c5e2852f5dba2c6",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2671,7 +2659,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-045",
+      "id": "eppp-v3-lifespan-044",
       "legacySourceId": "legacy-c498dcb7a94fcaf6",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2683,7 +2671,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-046",
+      "id": "eppp-v3-lifespan-045",
       "legacySourceId": "legacy-76813d5977ae40e6",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2695,7 +2683,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-047",
+      "id": "eppp-v3-lifespan-046",
       "legacySourceId": "legacy-5b35714a9545a8df",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2707,7 +2695,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-048",
+      "id": "eppp-v3-lifespan-047",
       "legacySourceId": "legacy-47b6dd365761a57f",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2719,11 +2707,11 @@
       "lengthClueReauthored": true
     },
     {
-      "id": "eppp-v3-lifespan-049",
+      "id": "eppp-v3-lifespan-048",
       "legacySourceId": "legacy-a9fbeba173f649e5",
       "authoredSourceId": null,
       "domainId": "lifespan",
-      "practiceBank": 15,
+      "practiceBank": 14,
       "sourceMethod": "legacy-citation-url-reviewed",
       "sourceAnchorItemId": null,
       "sourceMatchScore": 1,
@@ -2731,7 +2719,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-050",
+      "id": "eppp-v3-lifespan-049",
       "legacySourceId": "legacy-6287e825837f7ddd",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2743,7 +2731,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-051",
+      "id": "eppp-v3-lifespan-050",
       "legacySourceId": "legacy-1c87efd6da9ba9f9",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2755,7 +2743,7 @@
       "lengthClueReauthored": true
     },
     {
-      "id": "eppp-v3-lifespan-052",
+      "id": "eppp-v3-lifespan-051",
       "legacySourceId": "legacy-93f95bf82de4d952",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2767,7 +2755,7 @@
       "lengthClueReauthored": true
     },
     {
-      "id": "eppp-v3-lifespan-053",
+      "id": "eppp-v3-lifespan-052",
       "legacySourceId": "legacy-bd5fa9d99e3eec61",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2779,7 +2767,7 @@
       "lengthClueReauthored": true
     },
     {
-      "id": "eppp-v3-lifespan-054",
+      "id": "eppp-v3-lifespan-053",
       "legacySourceId": "legacy-53540871acea365d",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2791,7 +2779,7 @@
       "lengthClueReauthored": true
     },
     {
-      "id": "eppp-v3-lifespan-055",
+      "id": "eppp-v3-lifespan-054",
       "legacySourceId": "legacy-342441d12ca1823f",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2803,7 +2791,7 @@
       "lengthClueReauthored": true
     },
     {
-      "id": "eppp-v3-lifespan-056",
+      "id": "eppp-v3-lifespan-055",
       "legacySourceId": "legacy-107cf4544bd931df",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2815,7 +2803,7 @@
       "lengthClueReauthored": true
     },
     {
-      "id": "eppp-v3-lifespan-057",
+      "id": "eppp-v3-lifespan-056",
       "legacySourceId": "legacy-3565e7b00b8c08d3",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2827,7 +2815,7 @@
       "lengthClueReauthored": true
     },
     {
-      "id": "eppp-v3-lifespan-058",
+      "id": "eppp-v3-lifespan-057",
       "legacySourceId": "legacy-05000f9804fde2bd",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2839,7 +2827,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-lifespan-059",
+      "id": "eppp-v3-lifespan-058",
       "legacySourceId": "legacy-35519d990ceb9731",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2851,7 +2839,7 @@
       "lengthClueReauthored": true
     },
     {
-      "id": "eppp-v3-lifespan-060",
+      "id": "eppp-v3-lifespan-059",
       "legacySourceId": "legacy-92f2b2c95a3d738f",
       "authoredSourceId": null,
       "domainId": "lifespan",
@@ -2859,6 +2847,18 @@
       "sourceMethod": "domain-topic-authoritative-source",
       "sourceAnchorItemId": "eppp-v2-lifespan-042",
       "sourceMatchScore": 0.464,
+      "parsedOptionFeedback": false,
+      "lengthClueReauthored": true
+    },
+    {
+      "id": "eppp-v3-lifespan-060",
+      "legacySourceId": "legacy-e32b63da60933cf4",
+      "authoredSourceId": null,
+      "domainId": "lifespan",
+      "practiceBank": 15,
+      "sourceMethod": "domain-topic-authoritative-source",
+      "sourceAnchorItemId": "eppp-v2-lifespan-046",
+      "sourceMatchScore": 0.462,
       "parsedOptionFeedback": false,
       "lengthClueReauthored": true
     },
@@ -2912,18 +2912,6 @@
     },
     {
       "id": "eppp-v3-assessment-005",
-      "legacySourceId": "legacy-489827b34ccb0ada",
-      "authoredSourceId": null,
-      "domainId": "assessment",
-      "practiceBank": 11,
-      "sourceMethod": "domain-topic-authoritative-source",
-      "sourceAnchorItemId": "eppp-v2-assessment-002",
-      "sourceMatchScore": 0.577,
-      "parsedOptionFeedback": false,
-      "lengthClueReauthored": false
-    },
-    {
-      "id": "eppp-v3-assessment-006",
       "legacySourceId": "legacy-6e98b2af35f03469",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -2935,7 +2923,31 @@
       "lengthClueReauthored": false
     },
     {
+      "id": "eppp-v3-assessment-006",
+      "legacySourceId": "legacy-489827b34ccb0ada",
+      "authoredSourceId": null,
+      "domainId": "assessment",
+      "practiceBank": 11,
+      "sourceMethod": "domain-topic-authoritative-source",
+      "sourceAnchorItemId": "eppp-v2-assessment-002",
+      "sourceMatchScore": 0.548,
+      "parsedOptionFeedback": false,
+      "lengthClueReauthored": false
+    },
+    {
       "id": "eppp-v3-assessment-007",
+      "legacySourceId": "legacy-d62c34b87311f360",
+      "authoredSourceId": null,
+      "domainId": "assessment",
+      "practiceBank": 11,
+      "sourceMethod": "domain-topic-authoritative-source",
+      "sourceAnchorItemId": "eppp-v2-assessment-002",
+      "sourceMatchScore": 0.53,
+      "parsedOptionFeedback": false,
+      "lengthClueReauthored": false
+    },
+    {
+      "id": "eppp-v3-assessment-008",
       "legacySourceId": "legacy-6f3a60de9a71021c",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -2947,7 +2959,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-008",
+      "id": "eppp-v3-assessment-009",
       "legacySourceId": "legacy-f2cd68a3e2332a7a",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -2959,7 +2971,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-009",
+      "id": "eppp-v3-assessment-010",
       "legacySourceId": "legacy-165519506abdfef8",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -2971,7 +2983,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-010",
+      "id": "eppp-v3-assessment-011",
       "legacySourceId": "legacy-ed43e6d61a28eeb4",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -2983,7 +2995,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-011",
+      "id": "eppp-v3-assessment-012",
       "legacySourceId": "legacy-9e4587b1efa3e9a8",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -2995,7 +3007,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-012",
+      "id": "eppp-v3-assessment-013",
       "legacySourceId": "legacy-b4408322d1aeab37",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3007,7 +3019,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-013",
+      "id": "eppp-v3-assessment-014",
       "legacySourceId": "legacy-23738b32efcaf0b2",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3019,7 +3031,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-014",
+      "id": "eppp-v3-assessment-015",
       "legacySourceId": "legacy-47a90e423bbd7d81",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3031,7 +3043,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-015",
+      "id": "eppp-v3-assessment-016",
       "legacySourceId": "legacy-92cdfcf99b336c19",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3043,11 +3055,11 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-016",
+      "id": "eppp-v3-assessment-017",
       "legacySourceId": "legacy-4c8ce63cce136734",
       "authoredSourceId": null,
       "domainId": "assessment",
-      "practiceBank": 11,
+      "practiceBank": 12,
       "sourceMethod": "domain-topic-authoritative-source",
       "sourceAnchorItemId": "eppp-v2-assessment-007",
       "sourceMatchScore": 0.447,
@@ -3055,7 +3067,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-017",
+      "id": "eppp-v3-assessment-018",
       "legacySourceId": "legacy-524ee5894b97c3f6",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3067,7 +3079,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-018",
+      "id": "eppp-v3-assessment-019",
       "legacySourceId": "legacy-b80203a88a0c208d",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3079,7 +3091,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-019",
+      "id": "eppp-v3-assessment-020",
       "legacySourceId": "legacy-1e309b15b3931587",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3091,7 +3103,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-020",
+      "id": "eppp-v3-assessment-021",
       "legacySourceId": "legacy-eaff8849df83c580",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3100,18 +3112,6 @@
       "sourceAnchorItemId": "eppp-v2-assessment-051",
       "sourceMatchScore": 0.395,
       "parsedOptionFeedback": true,
-      "lengthClueReauthored": false
-    },
-    {
-      "id": "eppp-v3-assessment-021",
-      "legacySourceId": "legacy-d62c34b87311f360",
-      "authoredSourceId": null,
-      "domainId": "assessment",
-      "practiceBank": 12,
-      "sourceMethod": "domain-topic-authoritative-source",
-      "sourceAnchorItemId": "eppp-v2-assessment-002",
-      "sourceMatchScore": 0.391,
-      "parsedOptionFeedback": false,
       "lengthClueReauthored": false
     },
     {
@@ -3164,18 +3164,6 @@
     },
     {
       "id": "eppp-v3-assessment-026",
-      "legacySourceId": "legacy-00baa467653b528e",
-      "authoredSourceId": null,
-      "domainId": "assessment",
-      "practiceBank": 12,
-      "sourceMethod": "domain-topic-authoritative-source",
-      "sourceAnchorItemId": "eppp-v2-assessment-019",
-      "sourceMatchScore": 0.37,
-      "parsedOptionFeedback": true,
-      "lengthClueReauthored": false
-    },
-    {
-      "id": "eppp-v3-assessment-027",
       "legacySourceId": "legacy-e2fb973b9cbde758",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3187,7 +3175,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-028",
+      "id": "eppp-v3-assessment-027",
       "legacySourceId": "legacy-424bc519f1325d9d",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3199,7 +3187,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-029",
+      "id": "eppp-v3-assessment-028",
       "legacySourceId": "legacy-2976ee9e769d1bb8",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3211,7 +3199,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-030",
+      "id": "eppp-v3-assessment-029",
       "legacySourceId": "legacy-835134dd41a49971",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3223,7 +3211,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-031",
+      "id": "eppp-v3-assessment-030",
       "legacySourceId": "legacy-2e949311913fe04a",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3235,7 +3223,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-032",
+      "id": "eppp-v3-assessment-031",
       "legacySourceId": "legacy-eb73ca1fae66e422",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3247,11 +3235,11 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-033",
+      "id": "eppp-v3-assessment-032",
       "legacySourceId": "legacy-7926a8fe8d7ceca7",
       "authoredSourceId": null,
       "domainId": "assessment",
-      "practiceBank": 13,
+      "practiceBank": 12,
       "sourceMethod": "domain-topic-authoritative-source",
       "sourceAnchorItemId": "eppp-v2-assessment-057",
       "sourceMatchScore": 0.344,
@@ -3259,7 +3247,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-034",
+      "id": "eppp-v3-assessment-033",
       "legacySourceId": "legacy-8606bbaa74cbf752",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3271,7 +3259,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-035",
+      "id": "eppp-v3-assessment-034",
       "legacySourceId": "legacy-afa1db7555a378e7",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3283,7 +3271,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-036",
+      "id": "eppp-v3-assessment-035",
       "legacySourceId": "legacy-c063f16472d4a133",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3295,7 +3283,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-037",
+      "id": "eppp-v3-assessment-036",
       "legacySourceId": "legacy-167619b555626def",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3307,7 +3295,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-038",
+      "id": "eppp-v3-assessment-037",
       "legacySourceId": "legacy-81483952d9c8d5d1",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3319,7 +3307,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-039",
+      "id": "eppp-v3-assessment-038",
       "legacySourceId": "legacy-3665fc4413f23a64",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3331,7 +3319,7 @@
       "lengthClueReauthored": false
     },
     {
-      "id": "eppp-v3-assessment-040",
+      "id": "eppp-v3-assessment-039",
       "legacySourceId": "legacy-e78da4fc9dc8eb3a",
       "authoredSourceId": null,
       "domainId": "assessment",
@@ -3339,6 +3327,18 @@
       "sourceMethod": "domain-topic-authoritative-source",
       "sourceAnchorItemId": "eppp-v2-assessment-003",
       "sourceMatchScore": 0.257,
+      "parsedOptionFeedback": true,
+      "lengthClueReauthored": false
+    },
+    {
+      "id": "eppp-v3-assessment-040",
+      "legacySourceId": "legacy-00baa467653b528e",
+      "authoredSourceId": null,
+      "domainId": "assessment",
+      "practiceBank": 13,
+      "sourceMethod": "domain-topic-authoritative-source",
+      "sourceAnchorItemId": "eppp-v2-assessment-019",
+      "sourceMatchScore": 0.245,
       "parsedOptionFeedback": true,
       "lengthClueReauthored": false
     },
@@ -4442,7 +4442,7 @@
       "practiceBank": 14,
       "sourceMethod": "domain-topic-authoritative-source",
       "sourceAnchorItemId": "eppp-v2-intervention-014",
-      "sourceMatchScore": 0.18,
+      "sourceMatchScore": 0.186,
       "parsedOptionFeedback": true,
       "lengthClueReauthored": false
     },

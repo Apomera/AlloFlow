@@ -28,6 +28,8 @@ describe('EPPP native content QA gate', () => {
       'authoritative-source',
       'one-best-answer',
       'distractor-quality',
+      'natural-language-quality',
+      'text-encoding',
       'clue-resistance',
       'rationale-quality',
       'template-completeness',
