@@ -29,18 +29,19 @@
   var spotlightMessage = props.spotlightMessage;
   var spotlightOpenTimeRef = props.spotlightOpenTimeRef;
   var setIsSpotlightMode = props.setIsSpotlightMode;
-  // Move focus onto the popup when it opens so screen-reader and keyboard users land on the
-  // help/tour text (the panel has role=dialog + aria-label). On close, return focus to the
-  // control that opened it (standard dialog pattern). Escape is handled by the host.
+  // Move focus to the popup's Close action so keyboard users land on a visible focus target.
+  // The popup intentionally remains non-modal so the highlighted control is still operable.
+  // On close, return focus to the control that opened it. Escape is handled by the host.
   var panelRef = React.useRef(null);
+  var closeButtonRef = React.useRef(null);
   React.useEffect(function () {
     var prevFocus = typeof document !== 'undefined' ? document.activeElement : null;
     try {
-      if (panelRef.current) panelRef.current.focus();
+      if (closeButtonRef.current) closeButtonRef.current.focus();
     } catch (e) {}
     return function () {
       try {
-        if (prevFocus && prevFocus.focus && document.contains(prevFocus)) prevFocus.focus();
+        if (prevFocus && prevFocus.isConnected && typeof prevFocus.focus === 'function') prevFocus.focus();
       } catch (e) {}
     };
   }, []);
@@ -169,7 +170,16 @@
       });
     });
   };
+  var viewportWidth = typeof window !== 'undefined' && window.innerWidth || 1024;
+  var viewportHeight = typeof window !== 'undefined' && window.innerHeight || 768;
+  var popupWidth = Math.max(0, Math.min(380, viewportWidth - 32));
+  var preferredLeft = tourRect.left > viewportWidth / 2 ? tourRect.left - popupWidth - 24 : tourRect.right + 24;
+  var popupLeft = Math.max(16, Math.min(Math.max(16, viewportWidth - popupWidth - 16), preferredLeft));
+  var estimatedHeight = Math.min(400, Math.max(0, viewportHeight - 32));
+  var popupTop = Math.max(16, Math.min(Math.max(16, viewportHeight - estimatedHeight - 16), tourRect.top));
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    role: "presentation",
+    "aria-hidden": "true",
     "data-help-ignore": "true",
     className: "fixed inset-0 z-[10998] pointer-events-none bg-black/5",
     onPointerDown: e => e.stopPropagation(),
@@ -182,46 +192,51 @@
       setIsSpotlightMode(false);
     }
   }), /*#__PURE__*/React.createElement("div", {
-    className: "fixed z-[11000] animate-in fade-in zoom-in-95 duration-200",
+    className: "fixed z-[11000] animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none",
     style: {
-      top: Math.max(20, Math.min(window.innerHeight - 400, tourRect.top)),
-      left: tourRect.left > window.innerWidth / 2 ? 'auto' : tourRect.right + 24 + 'px',
-      right: tourRect.left > window.innerWidth / 2 ? window.innerWidth - tourRect.left + 24 + 'px' : 'auto',
-      width: '380px'
+      top: popupTop + 'px',
+      left: popupLeft + 'px',
+      right: 'auto',
+      width: popupWidth + 'px'
     }
   }, /*#__PURE__*/React.createElement("div", {
     id: "spotlight-message-panel",
     ref: panelRef,
-    tabIndex: -1,
     role: "dialog",
     "aria-modal": "false",
-    "aria-label": spotlightMessage && spotlightMessage.title || 'Help',
-    className: "bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] focus:outline-none"
+    "aria-labelledby": "spotlight-message-title",
+    "aria-describedby": "spotlight-message-body",
+    className: "bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse"
+    className: "absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse motion-reduce:animate-none"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse",
+    className: "absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse motion-reduce:animate-none",
     style: {
       animationDelay: '1s'
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex items-start justify-between mb-4 relative z-10"
   }, /*#__PURE__*/React.createElement("h3", {
-    className: `font-bold text-white flex items-center gap-3 text-lg tracking-tight rounded-xl transition-colors duration-300 ${_isReadingTitle ? 'bg-amber-300/15 ring-1 ring-amber-300/30 px-2 py-1 -mx-2' : ''}`
+    id: "spotlight-message-title",
+    className: `font-bold text-white flex items-center gap-3 text-lg tracking-tight rounded-xl transition-colors duration-300 motion-reduce:transition-none ${_isReadingTitle ? 'bg-amber-300/15 ring-1 ring-amber-300/30 px-2 py-1 -mx-2' : ''}`
   }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
     className: "p-2 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg shadow-lg shadow-violet-500/20"
   }, /*#__PURE__*/React.createElement(Sparkles, {
+    "aria-hidden": "true",
     size: 18,
     className: "text-white fill-white/20"
   })), spotlightMessage.title || 'Help'), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 shrink-0"
   }, typeof window !== 'undefined' && typeof window.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.preventDefault();
       e.stopPropagation();
       playAloud();
     },
     disabled: ttsState === 'loading',
+    "aria-busy": ttsState === 'loading',
     "data-help-ignore": "true",
     "aria-label": ttsState === 'playing' ? t('common.stop_reading', {
       defaultValue: 'Stop reading aloud'
@@ -233,7 +248,7 @@
     }) : t('common.read_aloud', {
       defaultValue: 'Read this aloud'
     }),
-    className: `p-2 rounded-full transition-colors ${ttsState === 'playing' ? 'text-white bg-violet-600/40 hover:bg-violet-600/60' : 'text-white/50 hover:text-white hover:bg-white/10'} ${ttsState === 'loading' ? 'cursor-wait opacity-70' : ''}`
+    className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${ttsState === 'playing' ? 'text-white bg-violet-600/40 hover:bg-violet-600/60' : 'text-white/60 hover:text-white hover:bg-white/10'} ${ttsState === 'loading' ? 'cursor-wait opacity-70' : ''}`
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
     style: {
@@ -244,16 +259,20 @@
       height: 20
     }
   }, ttsState === 'loading' ? '⏳' : ttsState === 'playing' ? '⏹' : '🔊')), /*#__PURE__*/React.createElement("button", {
+    ref: closeButtonRef,
+    type: "button",
     "aria-label": t('common.close'),
     onClick: e => {
       e.stopPropagation();
       setIsSpotlightMode(false);
     },
     "data-help-ignore": "true",
-    className: "text-white/40 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors"
+    className: "text-white/60 hover:text-white hover:bg-white/10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
   }, /*#__PURE__*/React.createElement(X, {
+    "aria-hidden": "true",
     size: 20
   })))), /*#__PURE__*/React.createElement("div", {
+    id: "spotlight-message-body",
     className: "text-slate-200 text-sm leading-relaxed space-y-3 relative z-10 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar-dark"
   }, (spotlightMessage.text || '').split(/\r?\n/).map((line, i) => {
     const cleanLine = line.trim();
@@ -288,7 +307,7 @@
       const headerText = cleanLine.replace(/^###\s*/, '').trim();
       return /*#__PURE__*/React.createElement("h5", {
         key: i,
-        className: `text-violet-200 font-bold uppercase text-xs mt-4 mb-2 tracking-widest flex items-center gap-2 border-b border-white/10 pb-1 rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 ${readLineClass}`
+        className: `text-violet-200 font-bold uppercase text-xs mt-4 mb-2 tracking-widest flex items-center gap-2 border-b border-white/10 pb-1 rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 motion-reduce:transition-none ${readLineClass}`
       }, formatText(headerText));
     }
     const isBullet = cleanLine.startsWith('•') || cleanLine.startsWith('-') || cleanLine.startsWith('* ');
@@ -297,7 +316,7 @@
       const bulletText = cleanLine.substring(bulletMarker.length).trim();
       return /*#__PURE__*/React.createElement("div", {
         key: i,
-        className: `grid grid-cols-[16px_1fr] gap-2 mb-1.5 items-start rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 ${readLineClass}`
+        className: `grid grid-cols-[16px_1fr] gap-2 mb-1.5 items-start rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 motion-reduce:transition-none ${readLineClass}`
       }, /*#__PURE__*/React.createElement("div", {
         className: "mt-2 h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.6)] mx-auto shrink-0"
       }), /*#__PURE__*/React.createElement("span", {
@@ -306,7 +325,7 @@
     }
     return /*#__PURE__*/React.createElement("p", {
       key: i,
-      className: `text-slate-200 text-sm leading-relaxed rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 ${readLineClass}`
+      className: `text-slate-200 text-sm leading-relaxed rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 motion-reduce:transition-none ${readLineClass}`
     }, formatText(cleanLine));
   })), /*#__PURE__*/React.createElement("svg", {
     className: "absolute w-8 h-8 pointer-events-none text-slate-900/95 filter drop-shadow opacity-95",
@@ -321,7 +340,8 @@
   }, /*#__PURE__*/React.createElement("path", {
     d: "M12 21l-12-18h24z"
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "fixed pointer-events-none z-[10999]",
+    "aria-hidden": "true",
+    className: "fixed pointer-events-none z-[10999] motion-reduce:!animate-none",
     style: {
       top: tourRect.top - 6,
       left: tourRect.left - 6,
