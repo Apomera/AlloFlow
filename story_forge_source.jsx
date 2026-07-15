@@ -5411,7 +5411,8 @@ show();
       <div id="allo-live-storyforge" aria-live="polite" aria-atomic="true" className="sr-only" />
       {/* WCAG 2.3.3 â€” reduced-motion safety net: kills persistent animations within StoryForge under prefers-reduced-motion */}
       <style>{`
-        @media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce{animation:none!important} }
+        .sf-modal-root button{min-width:24px;min-height:24px}
+        @media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce,.sf-modal-root .animate-in{animation:none!important}.sf-modal-root [class*="transition-"]{transition:none!important} }
         .sf-modal-root.theme-dark .sf-dialog-card{background:#1e293b!important;color:#e2e8f0!important;border:1px solid #475569}
         .sf-modal-root.theme-dark .sf-dialog-card h3,.sf-modal-root.theme-dark .sf-dialog-card p{color:#e2e8f0!important}
         .sf-modal-root.theme-dark .sf-comic-preview-shell{background:#0f172a!important;border-color:#475569!important}
