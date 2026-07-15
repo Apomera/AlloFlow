@@ -72,14 +72,14 @@
   }
 
   function selectPane(name, focusTab = false) {
-    $('.tab').forEach((tab) => {
+    $$('.tab').forEach((tab) => {
       const selected = tab.dataset.tab === name;
       tab.classList.toggle('active', selected);
       tab.setAttribute('aria-selected', String(selected));
       tab.tabIndex = selected ? 0 : -1;
       if (selected && focusTab) tab.focus();
     });
-    $('.pane').forEach((pane) => {
+    $$('.pane').forEach((pane) => {
       const selected = pane.id === 'pane-' + name;
       pane.classList.toggle('active', selected);
       pane.hidden = !selected;
@@ -1745,7 +1745,7 @@
   }
 
   function bindEvents() {
-    const tabs = $('.tab');
+    const tabs = $$('.tab');
     tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => selectPane(tab.dataset.tab));
       tab.addEventListener('keydown', (event) => {
