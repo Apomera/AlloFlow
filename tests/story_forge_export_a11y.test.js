@@ -24,9 +24,10 @@ describe('Story Forge export accessibility', () => {
     expect(source).toContain('role="alertdialog"');
     expect(source).toContain('aria-labelledby="sf-export-consent-title"');
     expect(source).toContain('aria-describedby="sf-export-consent-message"');
-    expect(source).toContain('ref={exportConsentCancelRef}');
-    expect(source).toContain('exportConsentCancelRef.current?.focus()');
-    expect(source).toContain("if (event.key === 'Escape') { event.preventDefault(); finishExportConsent(false);");
+    expect(source).toContain('ref={exportConsentDialogRef}');
+    expect(source).toContain('_storyForgeUseFocusTrap(exportConsentDialogRef, !!exportConsent');
+    expect(source).toContain('() => finishExportConsent(false)');
+    expect(source).not.toContain('handleExportConsentKeyDown');
   });
 
   it('names the programmatically created draft file picker', () => {

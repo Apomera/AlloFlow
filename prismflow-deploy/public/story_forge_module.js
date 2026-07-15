@@ -1024,6 +1024,8 @@ const LANG_OPTIONS = [
   { code: "th", label: "\xE0\xB9\u201E\xE0\xB8\u2014\xE0\xB8\xA2", bcp47: "th-TH" },
   { code: "other", label: "Other\xE2\u20AC\xA6", bcp47: "en-US" }
 ];
+const _storyForgeUseFocusTrap = typeof window !== "undefined" && window.__alloHooks && window.__alloHooks.useFocusTrap || function() {
+};
 const StoryForge = React.memo(({
   isOpen,
   onClose,
@@ -1632,9 +1634,11 @@ const StoryForge = React.memo(({
   };
   const [isDirty, setIsDirty] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const closeConfirmDialogRef = useRef(null);
+  const restorePromptDialogRef = useRef(null);
+  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
   const [exportConsent, setExportConsent] = useState(null);
   const exportConsentDialogRef = useRef(null);
-  const exportConsentCancelRef = useRef(null);
   const exportConsentResolveRef = useRef(null);
   const requestExportConsent = (options) => new Promise((resolve) => {
     exportConsentResolveRef.current = resolve;
@@ -1646,39 +1650,6 @@ const StoryForge = React.memo(({
     setExportConsent(null);
     if (resolve) resolve(accepted);
   };
-  const handleExportConsentKeyDown = (event) => {
-    if (!event || !exportConsentDialogRef.current) return;
-    event.stopPropagation();
-    if (event.key === "Escape") {
-      event.preventDefault();
-      finishExportConsent(false);
-      return;
-    }
-    if (event.key !== "Tab") return;
-    const focusable = Array.from(exportConsentDialogRef.current.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
-    if (!focusable.length) {
-      event.preventDefault();
-      exportConsentDialogRef.current.focus();
-      return;
-    }
-    const first = focusable[0], last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  };
-  useEffect(() => {
-    if (!exportConsent) return void 0;
-    const previouslyFocused = document.activeElement;
-    const timer = setTimeout(() => exportConsentCancelRef.current?.focus(), 0);
-    return () => {
-      clearTimeout(timer);
-      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
-    };
-  }, [!!exportConsent]);
   const safeClose = () => {
     if (isDirty && paragraphs.some((p) => p.text.trim().length > 0)) {
       setShowCloseConfirm(true);
@@ -1880,6 +1851,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     const handler = (e) => {
       if (e.key === "Escape" && isOpen) {
         if (exportConsent) finishExportConsent(false);
+        else if (showCloseConfirm) setShowCloseConfirm(false);
+        else if (showRestorePrompt) setShowRestorePrompt(false);
         else safeClose();
         e.preventDefault();
       }
@@ -1897,7 +1870,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, exportConsent, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
+  }, [isOpen, exportConsent, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
   useEffect(() => {
     if (!isOpen) return void 0;
     const root = modalRootRef.current;
@@ -1959,8 +1932,10 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
   }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
-  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
   const savedDraftRef = useRef(null);
+  _storyForgeUseFocusTrap(restorePromptDialogRef, showRestorePrompt, () => setShowRestorePrompt(false));
+  _storyForgeUseFocusTrap(closeConfirmDialogRef, showCloseConfirm, () => setShowCloseConfirm(false));
+  _storyForgeUseFocusTrap(exportConsentDialogRef, !!exportConsent, () => finishExportConsent(false));
   useEffect(() => {
     try {
       const saved = localStorage.getItem(SAVE_KEY);
@@ -5166,7 +5141,7 @@ show();
         .sf-modal-root.theme-contrast .sf-comic-action,.sf-modal-root.theme-contrast .sf-comic-frame-choice,.sf-modal-root.theme-contrast .sf-resize-handle,.sf-modal-root.theme-contrast .sf-bubble-drag-handle{background:#000!important;color:#0f0!important;border-color:#0f0!important;box-shadow:none!important}
         .sf-modal-root.theme-contrast .sf-comic-status-pill,.sf-modal-root.theme-contrast .sf-comic-frame-choice-active{background:#000!important;color:#ff0!important;border-color:#ff0!important}
         .sf-modal-root.theme-contrast .sf-bubble-width-slider{accent-color:#0f0}
-      `), showRestorePrompt && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-restore-title" }, /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3", "aria-hidden": "true" }, "\xF0\u0178\u201C\u2013"), /* @__PURE__ */ React.createElement("h3", { id: "sf-restore-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.continue_where_left")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "A saved draft was found. Would you like to restore it?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: discardDraft, className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.start_fresh")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: restoreDraft, className: "px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors" }, t("ui_common.restore_draft"))))), showCloseConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-close-confirm-title" }, /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("h3", { id: "sf-close-confirm-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.unsaved_changes")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "Your story progress hasn't been exported or saved. Are you sure you want to close?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => setShowCloseConfirm(false), className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.keep_working")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => {
+      `), showRestorePrompt && /* @__PURE__ */ React.createElement("div", { ref: restorePromptDialogRef, tabIndex: -1, className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-restore-title", "aria-describedby": "sf-restore-description" }, /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3", "aria-hidden": "true" }, "\xF0\u0178\u201C\u2013"), /* @__PURE__ */ React.createElement("h3", { id: "sf-restore-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.continue_where_left")), /* @__PURE__ */ React.createElement("p", { id: "sf-restore-description", className: "text-sm text-slate-600 mb-4" }, "A saved draft was found. Would you like to restore it?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: discardDraft, className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.start_fresh")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: restoreDraft, className: "px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors" }, t("ui_common.restore_draft"))))), showCloseConfirm && /* @__PURE__ */ React.createElement("div", { ref: closeConfirmDialogRef, tabIndex: -1, className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-close-confirm-title", "aria-describedby": "sf-close-confirm-description" }, /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("h3", { id: "sf-close-confirm-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.unsaved_changes")), /* @__PURE__ */ React.createElement("p", { id: "sf-close-confirm-description", className: "text-sm text-slate-600 mb-4" }, "Your story progress hasn't been exported or saved. Are you sure you want to close?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => setShowCloseConfirm(false), className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.keep_working")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => {
     setShowCloseConfirm(false);
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(createDraftSnapshot()));
@@ -5180,7 +5155,7 @@ show();
     } catch (e) {
     }
     onClose();
-  }, className: "px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors" }, t("ui_common.close_anyway"))))), exportConsent && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: exportConsentDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-export-consent-title", "aria-describedby": "sf-export-consent-message", tabIndex: -1, onKeyDown: handleExportConsentKeyDown, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "sf-export-consent-title", className: "text-lg font-black text-slate-900" }, exportConsent.title), /* @__PURE__ */ React.createElement("p", { id: "sf-export-consent-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, exportConsent.message), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { ref: exportConsentCancelRef, type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(true), className: "rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800" }, exportConsent.confirmLabel || "Export file")))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-600 to-pink-600 p-4 text-white flex justify-between items-center shadow-lg shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-black" }, t("headings.story_forge")), /* @__PURE__ */ React.createElement("p", { className: "text-rose-200 text-xs font-medium" }, t("ui_common.creative_writing_studio")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2", title: `${xpData.totalXP} XP \xC2\xB7 ${currentLevel.name}${xpData.streak > 1 ? ` \xC2\xB7 ${xpData.streak}-day streak` : ""}` }, /* @__PURE__ */ React.createElement("span", null, currentLevel.emoji, " ", currentLevel.name), /* @__PURE__ */ React.createElement("span", { className: "text-rose-200" }, xpData.totalXP, " XP"), xpData.streak > 1 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "\xF0\u0178\u201D\xA5", xpData.streak), nextLevel && /* @__PURE__ */ React.createElement("div", { className: "w-12 h-1.5 bg-white/20 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-300 rounded-full transition-all", style: { width: `${Math.min(100, (xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min) * 100)}%` } }))), totalWords > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, totalWords, " words"), /* @__PURE__ */ React.createElement("span", null, "\xC2\xB7"), /* @__PURE__ */ React.createElement("span", null, vocabUsedCount, "/", vocabTerms.length, " terms"), readingLevel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\xC2\xB7"), /* @__PURE__ */ React.createElement("span", null, "Grade ", readingLevel.grade))), /* @__PURE__ */ React.createElement(
+  }, className: "px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors" }, t("ui_common.close_anyway"))))), exportConsent && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: exportConsentDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-export-consent-title", "aria-describedby": "sf-export-consent-message", tabIndex: -1, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "sf-export-consent-title", className: "text-lg font-black text-slate-900" }, exportConsent.title), /* @__PURE__ */ React.createElement("p", { id: "sf-export-consent-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, exportConsent.message), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(true), className: "rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800" }, exportConsent.confirmLabel || "Export file")))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-600 to-pink-600 p-4 text-white flex justify-between items-center shadow-lg shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-black" }, t("headings.story_forge")), /* @__PURE__ */ React.createElement("p", { className: "text-rose-200 text-xs font-medium" }, t("ui_common.creative_writing_studio")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2", title: `${xpData.totalXP} XP \xC2\xB7 ${currentLevel.name}${xpData.streak > 1 ? ` \xC2\xB7 ${xpData.streak}-day streak` : ""}` }, /* @__PURE__ */ React.createElement("span", null, currentLevel.emoji, " ", currentLevel.name), /* @__PURE__ */ React.createElement("span", { className: "text-rose-200" }, xpData.totalXP, " XP"), xpData.streak > 1 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "\xF0\u0178\u201D\xA5", xpData.streak), nextLevel && /* @__PURE__ */ React.createElement("div", { className: "w-12 h-1.5 bg-white/20 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-300 rounded-full transition-all", style: { width: `${Math.min(100, (xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min) * 100)}%` } }))), totalWords > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, totalWords, " words"), /* @__PURE__ */ React.createElement("span", null, "\xC2\xB7"), /* @__PURE__ */ React.createElement("span", null, vocabUsedCount, "/", vocabTerms.length, " terms"), readingLevel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\xC2\xB7"), /* @__PURE__ */ React.createElement("span", null, "Grade ", readingLevel.grade))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

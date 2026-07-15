@@ -1058,6 +1058,8 @@ const LANG_OPTIONS = [
 // MAIN COMPONENT
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
+const _storyForgeUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
+
 const StoryForge = React.memo(({
   isOpen,
   onClose,
@@ -1708,9 +1710,11 @@ const StoryForge = React.memo(({
   // â”€â”€ Unsaved changes guard â”€â”€
   const [isDirty, setIsDirty] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const closeConfirmDialogRef = useRef(null);
+  const restorePromptDialogRef = useRef(null);
+  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
   const [exportConsent, setExportConsent] = useState(null);
   const exportConsentDialogRef = useRef(null);
-  const exportConsentCancelRef = useRef(null);
   const exportConsentResolveRef = useRef(null);
   const requestExportConsent = (options) => new Promise(resolve => {
     exportConsentResolveRef.current = resolve;
@@ -1722,27 +1726,6 @@ const StoryForge = React.memo(({
     setExportConsent(null);
     if (resolve) resolve(accepted);
   };
-  const handleExportConsentKeyDown = (event) => {
-    if (!event || !exportConsentDialogRef.current) return;
-    event.stopPropagation();
-    if (event.key === 'Escape') { event.preventDefault(); finishExportConsent(false); return; }
-    if (event.key !== 'Tab') return;
-    const focusable = Array.from(exportConsentDialogRef.current.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
-    if (!focusable.length) { event.preventDefault(); exportConsentDialogRef.current.focus(); return; }
-    const first = focusable[0], last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-  };
-  useEffect(() => {
-    if (!exportConsent) return undefined;
-    const previouslyFocused = document.activeElement;
-    const timer = setTimeout(() => exportConsentCancelRef.current?.focus(), 0);
-    return () => {
-      clearTimeout(timer);
-      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
-    };
-  }, [!!exportConsent]);
-
   const safeClose = () => {
     if (isDirty && paragraphs.some(p => p.text.trim().length > 0)) {
       setShowCloseConfirm(true);
@@ -1993,6 +1976,8 @@ const StoryForge = React.memo(({
     const handler = (e) => {
       if (e.key === 'Escape' && isOpen) {
         if (exportConsent) finishExportConsent(false);
+        else if (showCloseConfirm) setShowCloseConfirm(false);
+        else if (showRestorePrompt) setShowRestorePrompt(false);
         else safeClose();
         e.preventDefault();
       }
@@ -2010,7 +1995,7 @@ const StoryForge = React.memo(({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, exportConsent, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
+  }, [isOpen, exportConsent, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
 
   // â”€â”€ Focus management: move focus into the dialog on open, trap Tab inside it, and
   //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). â”€â”€
@@ -2065,8 +2050,10 @@ const StoryForge = React.memo(({
   }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
 
   // â”€â”€ Load saved draft on mount â”€â”€
-  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
   const savedDraftRef = useRef(null);
+  _storyForgeUseFocusTrap(restorePromptDialogRef, showRestorePrompt, () => setShowRestorePrompt(false));
+  _storyForgeUseFocusTrap(closeConfirmDialogRef, showCloseConfirm, () => setShowCloseConfirm(false));
+  _storyForgeUseFocusTrap(exportConsentDialogRef, !!exportConsent, () => finishExportConsent(false));
   useEffect(() => {
     try {
       const saved = localStorage.getItem(SAVE_KEY);
@@ -5464,11 +5451,11 @@ show();
 
       {/* â”€â”€ Restore Draft Prompt â”€â”€ */}
       {showRestorePrompt && (
-        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-restore-title">
+        <div ref={restorePromptDialogRef} tabIndex={-1} className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-restore-title" aria-describedby="sf-restore-description">
           <div className="sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
             <div className="text-3xl mb-3" aria-hidden="true">ðŸ“–</div>
             <h3 id="sf-restore-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.continue_where_left")}</h3>
-            <p className="text-sm text-slate-600 mb-4">A saved draft was found. Would you like to restore it?</p>
+            <p id="sf-restore-description" className="text-sm text-slate-600 mb-4">A saved draft was found. Would you like to restore it?</p>
             <div className="flex gap-3 justify-center">
               <button type="button" data-sf-focusable onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.start_fresh")}</button>
               <button type="button" data-sf-focusable onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">{t("ui_common.restore_draft")}</button>
@@ -5479,11 +5466,11 @@ show();
 
       {/* â”€â”€ Unsaved changes confirmation â”€â”€ */}
       {showCloseConfirm && (
-        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-close-confirm-title">
+        <div ref={closeConfirmDialogRef} tabIndex={-1} className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-close-confirm-title" aria-describedby="sf-close-confirm-description">
           <div className="sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
             <div className="text-3xl mb-3">{'\u270F\uFE0F'}</div>
             <h3 id="sf-close-confirm-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.unsaved_changes")}</h3>
-            <p className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
+            <p id="sf-close-confirm-description" className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
             <div className="flex gap-3 justify-center">
               <button type="button" data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
               <button type="button" data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.setItem(SAVE_KEY, JSON.stringify(createDraftSnapshot())); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">{t("ui_common.save_draft_close")}</button>
@@ -5496,11 +5483,11 @@ show();
       {/* Accessible export consent */}
       {exportConsent && (
         <div role="presentation" className="fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4">
-          <div ref={exportConsentDialogRef} role="alertdialog" aria-modal="true" aria-labelledby="sf-export-consent-title" aria-describedby="sf-export-consent-message" tabIndex={-1} onKeyDown={handleExportConsentKeyDown} className="sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl">
+          <div ref={exportConsentDialogRef} role="alertdialog" aria-modal="true" aria-labelledby="sf-export-consent-title" aria-describedby="sf-export-consent-message" tabIndex={-1} className="sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl">
             <h3 id="sf-export-consent-title" className="text-lg font-black text-slate-900">{exportConsent.title}</h3>
             <p id="sf-export-consent-message" className="mt-2 text-sm leading-relaxed text-slate-700">{exportConsent.message}</p>
             <div className="mt-5 flex flex-wrap justify-end gap-3">
-              <button ref={exportConsentCancelRef} type="button" data-sf-focusable onClick={() => finishExportConsent(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
+              <button type="button" data-sf-focusable onClick={() => finishExportConsent(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
               <button type="button" data-sf-focusable onClick={() => finishExportConsent(true)} className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800">{exportConsent.confirmLabel || 'Export file'}</button>
             </div>
           </div>
