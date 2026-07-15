@@ -16,9 +16,12 @@ describe('Global level-up modal accessibility', () => {
   it('contains focus, closes with Escape, and restores the launcher', () => {
     expect(source).toContain("if (event.key === 'Escape')");
     expect(source).toContain("if (event.key !== 'Tab') return;");
-    expect(source).toContain("dialog.addEventListener('keydown', handleKeyDown)");
-    expect(source).toContain("dialog.removeEventListener('keydown', handleKeyDown)");
-    expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();");
+    expect(source).toContain('window.__alloFocusTrapStack');
+    expect(source).toContain('if (!isTopTrap()) return');
+    expect(source).toContain("document.addEventListener('keydown', handleKeyDown)");
+    expect(source).toContain("document.removeEventListener('keydown', handleKeyDown)");
+    expect(source).toContain("element.closest('[hidden], [inert], [aria-hidden=\"true\"]')");
+    expect(source).toContain('previousFocus.isConnected');
     expect(source).toContain('(continueButtonRef.current || dialog).focus();');
   });
 
