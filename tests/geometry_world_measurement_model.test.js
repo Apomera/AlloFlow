@@ -7,7 +7,7 @@ function loadMeasurementMath() {
   const start = SOURCE.indexOf('  function formatVolume(vol)');
   const end = SOURCE.indexOf('  var ACHIEVEMENTS = [', start);
   const body = SOURCE.slice(start, end);
-  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, countExposedCubeFaces, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
+  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
 }
 
 describe('Geometry World measurement model', () => {
@@ -66,17 +66,30 @@ describe('Geometry World measurement model', () => {
     expect(math.compareMeasurementRecords(incomplete, { occupiedVolume: 10, surfaceArea: 20, isComplete: true })).toBeNull();
   });
 
+  it('retains incomplete scans but skips them when selecting complete history', () => {
+    const records = [{ id: 'first' }, { id: 'capped', isComplete: false }, { id: 'latest', isComplete: true }];
+    expect(math.completeMeasurementRecords(records).map((record) => record.id)).toEqual(['first', 'latest']);
+    expect(math.completeMeasurementRecords(null)).toEqual([]);
+  });
 
-  it('keeps ground, lesson, and student blocks in separate measurement layers', () => {
+  it('summarizes actual prediction quality instead of cube shape', () => {
+    const summary = math.summarizePredictionAccuracy([{ data: { predictionPercentError: 0 } }, { data: { predictionPercentError: 5 } }, { percentError: 25 }, { data: { predictionPercentError: null } }]);
+    expect(summary).toEqual({ predictionsMade: 3, exactPredictions: 1, predictionsWithin10Percent: 2, averagePredictionPercentError: 10, measurementsWithoutPrediction: 1 });
+  });
+
+
+
+
+  it('keeps world layers separate while combining connected student materials', () => {
     const student = { blockType: 'stone', _measurementLayer: 'student' };
     const anotherStudent = { blockType: 'stone', _measurementLayer: 'student' };
     const ground = { blockType: 'stone', _measurementLayer: 'ground', _lessonBlock: true };
     const lesson = { blockType: 'stone', _measurementLayer: 'lesson', _lessonBlock: true };
     expect(math.measurementLayerFor({ blockType: 'stone' })).toBe('student');
-    expect(math.belongsToMeasuredComponent(student, anotherStudent, 'stone')).toBe(true);
-    expect(math.belongsToMeasuredComponent(student, ground, 'stone')).toBe(false);
-    expect(math.belongsToMeasuredComponent(lesson, ground, 'stone')).toBe(false);
-    expect(math.belongsToMeasuredComponent(student, { blockType: 'gold', _measurementLayer: 'student' }, 'stone')).toBe(false);
+    expect(math.belongsToMeasuredComponent(student, anotherStudent)).toBe(true);
+    expect(math.belongsToMeasuredComponent(student, ground)).toBe(false);
+    expect(math.belongsToMeasuredComponent(lesson, ground)).toBe(false);
+    expect(math.belongsToMeasuredComponent(student, { blockType: 'gold', _measurementLayer: 'student' })).toBe(true);
   });
 
   it('parses decimal, simple-fraction, and mixed-number predictions', () => {
@@ -108,10 +121,19 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('hasFractions: hasPartialShapes');
     expect(SOURCE).toContain("'data-geometry-measurement-comparison': 'true'");
     expect(SOURCE).toContain("_measurementLayer: engine._measurementLayer || (engine._placingLessonBlocks ? 'lesson' : 'student')");
-    expect(SOURCE).toContain('belongsToMeasuredComponent(seedData, mesh.userData, blockType)');
+    expect(SOURCE).toContain('belongsToMeasuredComponent(seedData, mesh.userData)');
+    expect(SOURCE).toContain("'data-geometry-material-breakdown': 'true'");
+    expect(SOURCE).not.toContain('candidateData.blockType === blockType');
     expect(SOURCE).toContain('MEASUREMENT_BLOCK_LIMIT = MAX_BLOCKS');
     expect(SOURCE).toContain("'data-geometry-measurement-incomplete': 'true'");
     expect(SOURCE).toContain('queue[queueIndex++]');
     expect(SOURCE).not.toContain('result.length < 500');
+    expect(SOURCE).toContain('COMPARE LATEST TWO COMPLETE');
+    expect(SOURCE).toContain('incompleteMeasurementAttempts: allMeasurements.length - measurements.length');
+    expect(SOURCE).toContain("completedMeasurements.length + ' complete measurements taken'");
+    expect(SOURCE).toContain('correctMeasurements: predictionSummary.predictionsWithin10Percent');
+    expect(SOURCE).toContain('Predictions within 10%');
+    expect(SOURCE).toContain('Avg prediction error');
+    expect(SOURCE).not.toContain('m.data.blocks === m.data.volume');
   });
 });

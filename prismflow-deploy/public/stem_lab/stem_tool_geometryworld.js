@@ -354,8 +354,8 @@
     var relation = difference === 0 ? 'exact' : (difference > 0 ? 'over' : 'under');
     var accuracyLabel;
     if (relation === 'exact') accuracyLabel = 'Exact match!';
-    else if (percentError <= 10) accuracyLabel = 'Very close ? within 10%';
-    else if (percentError <= 25) accuracyLabel = 'Close ? within 25%';
+    else if (percentError <= 10) accuracyLabel = 'Very close - within 10%';
+    else if (percentError <= 25) accuracyLabel = 'Close - within 25%';
     else accuracyLabel = 'Use the dimensions to revise your estimate';
     return {
       prediction: predicted,
@@ -390,6 +390,28 @@
     };
   }
 
+  function completeMeasurementRecords(history) {
+    return (history || []).filter(function(record) { return record && record.isComplete !== false; });
+  }
+
+  function summarizePredictionAccuracy(measurements) {
+    var errors = [];
+    (measurements || []).forEach(function(record) {
+      var data = record && record.data ? record.data : record;
+      if (!data) return;
+      var error = typeof data.predictionPercentError === 'number' ? data.predictionPercentError : data.percentError;
+      if (typeof error === 'number' && Number.isFinite(error) && error >= 0) errors.push(error);
+    });
+    var totalError = errors.reduce(function(sum, error) { return sum + error; }, 0);
+    return {
+      predictionsMade: errors.length,
+      exactPredictions: errors.filter(function(error) { return error === 0; }).length,
+      predictionsWithin10Percent: errors.filter(function(error) { return error <= 10; }).length,
+      averagePredictionPercentError: errors.length ? Math.round(totalError / errors.length) : null,
+      measurementsWithoutPrediction: Math.max(0, (measurements || []).length - errors.length)
+    };
+  }
+
   function compareMeasurementRecords(previous, latest) {
     if (!previous || !latest || previous.isComplete === false || latest.isComplete === false) return null;
     var previousVolume = typeof previous.occupiedVolume === 'number' ? previous.occupiedVolume : parseVolumePrediction(previous.vol);
@@ -419,8 +441,8 @@
     return blockData && blockData._lessonBlock ? 'lesson' : 'student';
   }
 
-  function belongsToMeasuredComponent(seedData, candidateData, blockType) {
-    return !!candidateData && candidateData.blockType === blockType && measurementLayerFor(candidateData) === measurementLayerFor(seedData);
+  function belongsToMeasuredComponent(seedData, candidateData) {
+    return !!candidateData && measurementLayerFor(candidateData) === measurementLayerFor(seedData);
   }
   var ACHIEVEMENTS = [
     { id: 'first_measure', name: 'First Measurement', icon: '\uD83D\uDCCF', desc: 'Measured your first structure', check: function(log) { return log.some(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }); } },
@@ -1284,6 +1306,7 @@
   function generateManipulativeCard(measurement, lessonTitle) {
     var m = enrichMeasurement(measurement);
     var physicalPieces = m.hasFractions ? m.formattedOccupiedVolume + ' cubic units of pieces' : m.count + ' unit cubes';
+    var materialPieces = Object.keys(m.materialCounts || {}).map(function(type) { return m.materialCounts[type] + ' ' + type; }).join(', ');
     var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Build This! \u2014 Physical Manipulative Card</title>'
       + '<style>'
       + 'body{font-family:Arial,sans-serif;max-width:500px;margin:24px auto;color:#1a1a1a}'
@@ -1317,6 +1340,7 @@
 
     h += '<div class="steps"><strong>\uD83D\uDCD0 Build Steps:</strong><ol>';
     h += '<li>Get <strong>' + physicalPieces + '</strong> (or snap cubes)</li>';
+    if (Object.keys(m.materialCounts || {}).length > 1) h += '<li>Match the digital color key: <strong>' + materialPieces + '</strong></li>';
     if (m.isSolidPrism) {
       h += '<li>Build the <strong>bottom layer</strong>: ' + m.L + ' blocks long \u00d7 ' + m.W + ' blocks wide = <strong>' + (m.L * m.W) + ' cubes</strong></li>';
       h += '<li>Stack <strong>' + m.H + ' complete layers</strong> on top of each other</li>';
@@ -1517,7 +1541,8 @@
       var selectedShape = d.selectedShape || 0; // index into BLOCK_SHAPES
       var blockRotation = d.blockRotation || 0; // 0-3 = 0°, 90°, 180°, 270° around Y axis
       var measureHistory = d.measureHistory || []; // past measurements
-      var measurementComparison = measureHistory.length >= 2 ? compareMeasurementRecords(measureHistory[measureHistory.length - 2], measureHistory[measureHistory.length - 1]) : null;
+      var completedMeasurements = completeMeasurementRecords(measureHistory);
+      var measurementComparison = completedMeasurements.length >= 2 ? compareMeasurementRecords(completedMeasurements[completedMeasurements.length - 2], completedMeasurements[completedMeasurements.length - 1]) : null;
       var actionFeedback = d.actionFeedback || ''; // brief key action text
       var homeLang = d.homeLang || 'en';
       var npcTranslations = d.npcTranslations || {};
@@ -2465,25 +2490,28 @@
           engine._progressKey = progressKey;
         };
 
-        // Measure connected blocks
-        engine.measureStructure = function(startX, startY, startZ, blockType) {
+        // Measure all face-connected blocks in the same logical layer, even when
+        // students use multiple materials to color-code one geometric structure.
+        engine.measureStructure = function(startX, startY, startZ) {
           var seedMesh = engine.blocks[startX + ',' + startY + ',' + startZ];
           if (!seedMesh || !seedMesh.userData) return null;
           var seedData = seedMesh.userData;
-          blockType = blockType || seedData.blockType;
           var visited = {}; var result = []; var queue = [{ x: startX, y: startY, z: startZ }]; var queueIndex = 0;
           var totalVolume = 0;
           var shapeCounts = {};
+          var materialCounts = {};
           while (queueIndex < queue.length && result.length < MEASUREMENT_BLOCK_LIMIT) {
             var pos = queue[queueIndex++]; var key = pos.x + ',' + pos.y + ',' + pos.z;
             if (visited[key]) continue; visited[key] = true;
             var mesh = engine.blocks[key];
-            if (!mesh || !belongsToMeasuredComponent(seedData, mesh.userData, blockType)) continue;
+            if (!mesh || !belongsToMeasuredComponent(seedData, mesh.userData)) continue;
             result.push(pos);
             var vol = mesh.userData.volume || 1;
             totalVolume += vol;
             var shp = mesh.userData.shape || 'cube';
             shapeCounts[shp] = (shapeCounts[shp] || 0) + 1;
+            var material = mesh.userData.blockType || 'unknown';
+            materialCounts[material] = (materialCounts[material] || 0) + 1;
             [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(function(dir) {
               var nk = (pos.x+dir[0])+','+(pos.y+dir[1])+','+(pos.z+dir[2]);
               if (!visited[nk]) queue.push({ x: pos.x+dir[0], y: pos.y+dir[1], z: pos.z+dir[2] });
@@ -2496,7 +2524,7 @@
               var pendingKey = pending.x + ',' + pending.y + ',' + pending.z;
               if (visited[pendingKey]) continue;
               var pendingMesh = engine.blocks[pendingKey];
-              if (pendingMesh && belongsToMeasuredComponent(seedData, pendingMesh.userData, blockType)) { measurementTruncated = true; break; }
+              if (pendingMesh && belongsToMeasuredComponent(seedData, pendingMesh.userData)) { measurementTruncated = true; break; }
             }
           }
 
@@ -2514,6 +2542,7 @@
             hasFractions: hasPartialShapes,
             shapeCounts: shapeCounts,
             formattedVolume: formatVolume(totalVolume),
+            materialCounts: materialCounts,
             surfaceAreaExact: !hasPartialShapes,
             exposedSurfaceArea: hasPartialShapes ? null : exposedFaces.surfaceArea,
             exposedFaces: hasPartialShapes ? null : exposedFaces,
@@ -2786,12 +2815,12 @@
               var hits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
               if (hits.length > 0 && hits[0].object.userData.gridPos) {
                 var gp = hits[0].object.userData.gridPos;
-                var m = engine.measureStructure(gp.x, gp.y, gp.z, hits[0].object.userData.blockType);
+                var m = engine.measureStructure(gp.x, gp.y, gp.z);
                 if (m) {
                   sfxMeasure();
                   // Save to measurement history (last 10)
                   var predictionComparison = m.isComplete === false ? null : compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
-                  var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, t: Date.now() }]);
+                  var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, t: Date.now() }]);
                   if (mh.length > 10) mh = mh.slice(-10);
                   var measurementFeedback = m.isComplete === false
                     ? 'Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
@@ -2814,7 +2843,7 @@
                   var mcx = m.minX + m.L / 2, mcy = m.minY + m.H / 2 + 0.5, mcz = m.minZ + m.W / 2;
                   for (var sp = 0; sp < 8; sp++) spawnPlaceParticles(engine, mcx + (Math.random() - 0.5) * m.L, mcy + (Math.random() - 0.5) * m.H, mcz + (Math.random() - 0.5) * m.W);
                   }
-                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, blocks: m.count });
+                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, blocks: m.count });
                   var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }).length;
                   if (m.isComplete !== false) {
                   if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
@@ -2972,7 +3001,7 @@
               var nHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
               if (nHits.length > 0 && nHits[0].object.userData.gridPos) {
                 var ngp = nHits[0].object.userData.gridPos;
-                var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z, nHits[0].object.userData.blockType);
+                var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z);
                 if (nm) {
                   if (nm.isComplete === false) {
                     var incompleteSurfaceMessage = 'Measurement limit reached. Surface area and a net are unavailable until the full structure is measured.';
@@ -4105,7 +4134,8 @@
           var log = engine.sessionLog;
           var correct = log.filter(function(e) { return e.type === 'answer_correct'; });
           var wrong = log.filter(function(e) { return e.type === 'answer_wrong'; });
-          var measurements = log.filter(function(e) { return e.type === 'measurement'; });
+          var allMeasurements = log.filter(function(e) { return e.type === 'measurement'; });
+          var measurements = allMeasurements.filter(function(e) { return !e.data || e.data.isComplete !== false; });
           var blocksPlaced = log.filter(function(e) { return e.type === 'block_place'; });
           var completions = log.filter(function(e) { return e.type === 'lesson_complete'; });
           var lessons = log.filter(function(e) { return e.type === 'lesson_load'; });
@@ -4118,9 +4148,7 @@
           var questionsPerMinute = sessionDuration > 60 ? (correct.length / (sessionDuration / 60)).toFixed(2) : 'N/A (session < 1 min)';
 
           // Measurement accuracy — how many measurements matched expected volumes
-          var correctMeasurements = measurements.filter(function(m) {
-            return m.data.blocks === m.data.volume; // rectangular (blocks = bounding volume)
-          }).length;
+          var predictionSummary = summarizePredictionAccuracy(measurements);
 
           // RTI Tier suggestion based on accuracy
           var rtiTier = accuracy >= 80 ? 'Tier 1 (Benchmark)' : accuracy >= 50 ? 'Tier 2 (Strategic)' : 'Tier 3 (Intensive)';
@@ -4141,7 +4169,14 @@
 
             // Skill indicators
             measurementsTaken: measurements.length,
-            correctMeasurements: correctMeasurements,
+            incompleteMeasurementAttempts: allMeasurements.length - measurements.length,
+            predictionsMade: predictionSummary.predictionsMade,
+            exactPredictions: predictionSummary.exactPredictions,
+            predictionsWithin10Percent: predictionSummary.predictionsWithin10Percent,
+            averagePredictionPercentError: predictionSummary.averagePredictionPercentError,
+            measurementsWithoutPrediction: predictionSummary.measurementsWithoutPrediction,
+            // Backward-compatible field for existing longitudinal exports.
+            correctMeasurements: predictionSummary.predictionsWithin10Percent,
             blocksPlaced: blocksPlaced.length,
 
             // RTI classification
@@ -4205,6 +4240,9 @@
           h += '<div class="metric"><div class="val">' + r.questionsCorrect + '/' + r.totalAttempts + '</div><div class="lbl">Correct</div></div>';
           h += '<div class="metric"><div class="val">' + r.questionsPerMinute + '</div><div class="lbl">Q/min</div></div>';
           h += '<div class="metric"><div class="val">' + r.measurementsTaken + '</div><div class="lbl">Measurements</div></div>';
+          h += '<div class="metric"><div class="val">' + (r.predictionsMade ? r.predictionsWithin10Percent + '/' + r.predictionsMade : '&mdash;') + '</div><div class="lbl">Predictions within 10%</div></div>';
+          h += '<div class="metric"><div class="val">' + (r.averagePredictionPercentError === null ? '&mdash;' : r.averagePredictionPercentError + '%') + '</div><div class="lbl">Avg prediction error</div></div>';
+          if (r.incompleteMeasurementAttempts > 0) h += '<div class="metric"><div class="val">' + r.incompleteMeasurementAttempts + '</div><div class="lbl">Incomplete scans</div></div>';
           h += '<div class="metric"><div class="val">' + r.blocksPlaced + '</div><div class="lbl">Blocks Placed</div></div>';
           h += '<div class="metric"><div class="val">' + r.lessonsCompleted + '/' + r.lessonsAttempted + '</div><div class="lbl">Lessons Done</div></div>';
           h += '</div>';
@@ -4774,7 +4812,7 @@
             el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } }, 'cu')
           ),
           measureResult && el('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
-            el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure ? incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
+            el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
             measureResult.isComplete === false && el('div', { role: 'alert', 'data-geometry-measurement-incomplete': 'true',
               style: { margin: '2px 0', padding: '4px 6px', borderRadius: '4px', background: '#7f1d1d', color: '#fecaca', fontWeight: 700 } },
               'Measurement limit reached. At least ' + measureResult.count + ' connected blocks were found; volume, dimensions, and surface area below are partial and not exact.'),
@@ -4805,6 +4843,9 @@
                     return measureResult.shapeCounts[s] + '\u00d7' + (sd ? sd.fraction : '1');
                   }).join(' + ') + ')'
                 : measureResult.isSolidPrism ? ' \u2713' : ' (count the occupied cubes)')
+            ),
+            Object.keys(measureResult.materialCounts || {}).length > 1 && el('div', { 'data-geometry-material-breakdown': 'true', style: { fontSize: '10px', color: '#bfdbfe' } },
+              'Materials: ' + Object.keys(measureResult.materialCounts).map(function(type) { return measureResult.materialCounts[type] + ' ' + type; }).join(', ')
             ),
             measureResult.isComplete !== false && el('button', {
               onClick: function() {
@@ -5289,14 +5330,14 @@
                 var done = false;
                 if (/answer|talk|ask|speak/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length >= totalQ;
                 else if (/build|place|construct|create|make|stack/i.test(text)) done = ((engine && engine.blocksPlaced) || 0) >= 1;
-                else if (/measure|ruler|volume/i.test(text)) done = (measureHistory && measureHistory.length > 0);
+                else if (/measure|ruler|volume/i.test(text)) done = completedMeasurements.length > 0;
                 else if (/explore|find|locate|visit/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length > 0;
                 objectives.push({ text: text, done: done });
               });
             } else {
               // 2. Fallback auto-generated objectives from lesson shape
               if (totalQ > 0) objectives.push({ text: 'Answer all ' + totalQ + ' NPC question' + (totalQ === 1 ? '' : 's'), done: Object.keys(answeredNpcs).length >= totalQ });
-              if (currentLesson.structures && currentLesson.structures.length > 0) objectives.push({ text: 'Explore the ' + currentLesson.structures.length + ' structures', done: (measureHistory && measureHistory.length > 0) });
+              if (currentLesson.structures && currentLesson.structures.length > 0) objectives.push({ text: 'Explore the ' + currentLesson.structures.length + ' structures', done: completedMeasurements.length > 0 });
               objectives.push({ text: __alloT('stem.geometryworld.place_at_least_5_blocks', 'Place at least 5 blocks'), done: ((engine && engine.blocksPlaced) || 0) >= 5 });
             }
             var allDone = objectives.length > 0 && objectives.every(function(o) { return o.done; });
@@ -6042,11 +6083,11 @@
                 var h2 = engine.raycaster.intersectObjects(Object.values(engine.blocks));
                 if (h2.length > 0 && h2[0].object.userData.gridPos) {
                   var gp = h2[0].object.userData.gridPos;
-                  var m = engine.measureStructure(gp.x, gp.y, gp.z, h2[0].object.userData.blockType);
+                  var m = engine.measureStructure(gp.x, gp.y, gp.z);
                   if (m) {
                     sfxMeasure();
                     var mobilePrediction = m.isComplete === false ? null : compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
-                    var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, t: Date.now() }]);
+                    var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, t: Date.now() }]);
                     if (mobileHistory.length > 10) mobileHistory = mobileHistory.slice(-10);
                     upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, actionFeedback: (m.isComplete === false
                       ? '\uD83D\uDCCF Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
@@ -6054,7 +6095,7 @@
                       ? '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
                       : '\uD83D\uDCCF Occupied volume: ' + m.formattedOccupiedVolume + ' (' + m.fillPercent + '% filled)') + (mobilePrediction ? ' \u2022 ' + mobilePrediction.accuracyLabel : '') });
                     announceToSR(m.isComplete === false ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete.' : 'Measured ' + m.formattedOccupiedVolume + ' cubic units' + (m.isSolidPrism ? ' in a solid rectangular prism' : ' in a composite structure') + (mobilePrediction ? '. Your prediction was ' + formatVolume(mobilePrediction.prediction) + '. ' + mobilePrediction.accuracyLabel : ''));
-                    if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: mobilePrediction ? mobilePrediction.prediction : null, predictionPercentError: mobilePrediction ? mobilePrediction.percentError : null, blocks: m.count, input: 'touch' });
+                    if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: mobilePrediction ? mobilePrediction.prediction : null, predictionPercentError: mobilePrediction ? mobilePrediction.percentError : null, blocks: m.count, input: 'touch' });
                     setTimeout(function() { upd('actionFeedback', ''); }, 2500);
                     if (m.isComplete !== false) setTimeout(runAchievementCheck, 100);
                   }
@@ -6117,16 +6158,16 @@
             background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '8px',
             padding: '6px 8px', fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '150px' }
         },
-          el('div', { style: { fontWeight: 700, fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS'),
+          el('div', { style: { fontWeight: 700, fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS - ' + completedMeasurements.length + '/' + measureHistory.length + ' complete'),
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
             return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#94a3b8', fontWeight: mi === 0 ? 600 : 400 } },
-              el('span', null, mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
-              el('span', { style: { color: mi === 0 ? '#fbbf24' : '#94a3b8' } }, '=' + mh.vol),
+              el('span', null, mh.isComplete === false ? 'Incomplete scan' : mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
+              el('span', { style: { color: mh.isComplete === false ? '#fca5a5' : mi === 0 ? '#fbbf24' : '#94a3b8' } }, mh.isComplete === false ? '\u2265' + mh.blocks : '=' + mh.vol),
               mh.prediction != null && el('span', { title: 'Predicted ' + formatVolume(mh.prediction) + '; ' + mh.percentError + '% off', style: { color: mh.percentError <= 10 ? '#86efac' : '#cbd5e1', fontSize: '8px' } }, 'P:' + formatVolume(mh.prediction) + ' (' + mh.percentError + '%)')
             );
           }),
           measurementComparison && el('div', { role: 'status', 'data-geometry-measurement-comparison': 'true', style: { marginTop: '5px', paddingTop: '5px', borderTop: '1px solid rgba(167,139,250,0.35)', lineHeight: 1.35 } },
-            el('div', { style: { color: '#c4b5fd', fontWeight: 800, fontSize: '8px', letterSpacing: '0.4px' } }, 'COMPARE LATEST TWO'),
+            el('div', { style: { color: '#c4b5fd', fontWeight: 800, fontSize: '8px', letterSpacing: '0.4px' } }, 'COMPARE LATEST TWO COMPLETE'),
             el('div', { style: { color: '#e2e8f0' } }, 'Volume: ' + formatVolume(measurementComparison.previousVolume) + ' \u2192 ' + formatVolume(measurementComparison.latestVolume) + (measurementComparison.sameVolume ? ' (same)' : ' (change ' + formatVolume(Math.abs(measurementComparison.volumeDifference)) + ')')),
             measurementComparison.surfaceAreaDifference !== null && el('div', { style: { color: '#86efac' } }, 'Surface area: ' + measurementComparison.previousSurfaceArea + ' \u2192 ' + measurementComparison.latestSurfaceArea + ' square units'),
             measurementComparison.moreSurfaceEfficient && el('div', { style: { color: '#fde68a', fontWeight: 700 } }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' shape uses ' + Math.abs(measurementComparison.surfaceAreaDifference) + ' fewer square units for the same volume.'),
@@ -6311,7 +6352,7 @@
             currentLesson.title + ' \u2014 ' + score + '/' + totalQ + ' questions answered'),
           el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '16px' } },
             (engine ? (engine.blocksPlaced || 0) : 0) + ' blocks placed \u2022 ' +
-            measureHistory.length + ' measurements taken'),
+            completedMeasurements.length + ' complete measurements taken'),
           // Next Lesson button
           (function() {
             var curIdx = LESSON_ORDER.indexOf(activeLesson);
@@ -6347,8 +6388,8 @@
                     el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#fbbf24' } }, String(engine ? engine.blocksPlaced || 0 : 0)),
                     'blocks placed'),
                   el('div', { style: { background: 'rgba(34,197,94,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
-                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#22c55e' } }, String(measureHistory.length)),
-                    'measurements'),
+                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#22c55e' } }, String(completedMeasurements.length)),
+                    'complete measurements'),
                   el('div', { style: { background: 'rgba(59,130,246,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
                     el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#3b82f6' } }, String(score)),
                     'questions answered')
