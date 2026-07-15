@@ -4438,24 +4438,51 @@ const StudentSubmitModal = React.memo((props) => {
 //               keyboard (WCAG 2.1.2 No Keyboard Trap). If omitted, Escape
 //               passes through to the component's own onKeyDown handler.
 const useFocusTrap = (ref, isOpen, onEscape) => {
+  const onEscapeRef = useRef(onEscape);
+  onEscapeRef.current = onEscape;
   useEffect(() => {
     if (!isOpen || !ref.current) return;
+    const root = ref.current;
     const previouslyFocused = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const hadTabIndex = root.hasAttribute('tabindex');
+    if (!hadTabIndex) root.setAttribute('tabindex', '-1');
+    const getFocusableElements = () => Array.from(root.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+    });
     const handleKeyDown = (e) => {
+      // Only the topmost dialog owns keyboard focus. This prevents a parent
+      // modal from fighting a nested modal's Tab/Escape handling.
+      if (!isTopTrap()) return;
       if (e.key === 'Escape') {
-        if (typeof onEscape === 'function') {
+        if (typeof onEscapeRef.current === 'function') {
           e.preventDefault();
-          try { onEscape(); } catch (_) {}
+          e.stopPropagation();
+          try { onEscapeRef.current(); } catch (_) {}
         }
         return;
       }
       if (e.key !== 'Tab') return;
-      const focusableElements = ref.current.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusableElements.length === 0) return;
+      const focusableElements = getFocusableElements();
+      if (focusableElements.length === 0) {
+        e.preventDefault();
+        try { root.focus(); } catch (_) {}
+        return;
+      }
       const firstElement = focusableElements[0];
       const lastElement = focusableElements[focusableElements.length - 1];
+      if (!root.contains(document.activeElement)) {
+        e.preventDefault();
+        (e.shiftKey ? lastElement : firstElement).focus();
+        return;
+      }
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
           e.preventDefault();
@@ -4470,15 +4497,15 @@ const useFocusTrap = (ref, isOpen, onEscape) => {
       }
     };
     document.addEventListener('keydown', handleKeyDown);
-    const focusableElements = ref.current.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    if (focusableElements.length > 0) {
-        focusableElements[0].focus();
-    }
+    const focusableElements = getFocusableElements();
+    try { (focusableElements[0] || root).focus(); } catch (_) {}
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (!hadTabIndex && root.isConnected) root.removeAttribute('tabindex');
+      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
         try { previouslyFocused.focus(); } catch(e) {}
       }
     };
