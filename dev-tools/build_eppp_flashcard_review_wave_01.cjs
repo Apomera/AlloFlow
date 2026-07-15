@@ -4,16 +4,19 @@
 const fs = require('fs');
 const path = require('path');
 const { clean, normalize, sourceFor } = require('./eppp_editorial_support.cjs');
-const revisions = require('./eppp_flashcard_revisions.cjs');
+const waveNumber = String(process.env.EPPP_FLASHCARD_REVIEW_WAVE || '01').padStart(2, '0');
+if (!['01', '02'].includes(waveNumber)) throw new Error(`Unsupported EPPP flashcard review wave: ${waveNumber}`);
+const isWave02 = waveNumber === '02';
+const revisions = require(isWave02 ? './eppp_flashcard_revisions_wave_02.cjs' : './eppp_flashcard_revisions.cjs');
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep', 'eppp_learning_library.json');
 const overridesPath = path.join(root, 'test_prep', 'eppp_learning_review_overrides.json');
-const outputName = 'eppp_flashcard_review_wave_01.json';
-const markdownName = 'eppp_flashcard_review_wave_01.md';
-const waveId = 'eppp-flashcard-review-wave-01';
+const outputName = `eppp_flashcard_review_wave_${waveNumber}.json`;
+const markdownName = `eppp_flashcard_review_wave_${waveNumber}.md`;
+const waveId = `eppp-flashcard-review-wave-${waveNumber}`;
 const reviewDate = '2026-07-14';
-const quotas = new Map([[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]]);
+const quotas = new Map(isWave02 ? [[1, 10], [2, 19], [3, 12], [4, 13], [5, 10], [6, 10], [7, 24], [8, 2]] : [[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]]);
 
 if (!fs.existsSync(sourcePath)) throw new Error('Build eppp_learning_library.json before creating a flashcard review wave.');
 const library = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
@@ -24,20 +27,48 @@ const candidateCards = library.flashcards.map((card) => card.reviewWave === wave
   ...card, front: card.legacyFront, back: card.legacyBack, reviewStatus: 'review-required',
 } : card);
 
-const unstableClaim = /\b(?:dsm(?:-|\s)?(?:iv|5|v)(?:-|\s)?tr|current(?:ly)?|latest|today|now|law|legal|statute|regulation|mandat(?:e|ed|ory)|duty to warn|reporting|licens(?:e|ing)|ethics code|apa code|medication|drug|dosage|dose|side effects?|black box|fda|pregnan\w*|suicid\w*|diagnos(?:is|tic)|prevalence|incidence|\d+\s*(?:mg|%|years?|months?|weeks?))\b/i;
+const unstableClaim = isWave02
+  ? /\b(?:dsm(?:-|\s)?(?:iv|5|v)(?:-|\s)?tr|current(?:ly)?|latest|today|now|law|legal|statute|regulation|mandat(?:e|ed|ory)|duty to warn|reporting|licens(?:e|ing)|dosage|dose|side effects?|black box|fda|pregnan\w*|suicid\w*|diagnos(?:is|tic)|prevalence|incidence|\d+\s*(?:mg|%))\b/i
+  : /\b(?:dsm(?:-|\s)?(?:iv|5|v)(?:-|\s)?tr|current(?:ly)?|latest|today|now|law|legal|statute|regulation|mandat(?:e|ed|ory)|duty to warn|reporting|licens(?:e|ing)|ethics code|apa code|medication|drug|dosage|dose|side effects?|black box|fda|pregnan\w*|suicid\w*|diagnos(?:is|tic)|prevalence|incidence|\d+\s*(?:mg|%|years?|months?|weeks?))\b/i;
 const overclaim = /\b(?:always|never|guarantees?|proves?|gold standard|the neural basis|all people|no one)\b/i;
 const malformed = /(?:\u00C3[\u0080-\u00FF]|\u00E2\u20AC|\uFFFD|<\/?(?:script|style|svg)\b)/i;
 const excludedByDomain = new Map([
-  [1, /\b(?:antipsychotic|antidepressant|anxiolytic|mood stabilizers?|stimulant|ssri\w*|maoi|lithium|benzodiazepine|buspirone|medications?|drugs?|parkinson|alzheimer|autism|seizure|wernicke-korsakoff|diathesis|health belief|alexithymia|mental illness|summary)\b/i],
-  [2, /\b(?:cognitive distortions|depression)\b/i],
-  [3, /\b(?:dusky|insanity defense|competency|performance appraisal|consultation|supervision|program evaluation|helms|nigrescence|zimbardo|berry|acculturation)\b/i],
-  [4, /\b(?:dsm|diagnos|milestone|teratogen|prenatal|retirement adjustment|core knowledge|dynamic systems|scaffolding theory|dual-process model of grief)\b/i],
-  [5, /\b(?:dsm|disorder|ptsd|autism|adhd|mood|eating|substance|trauma|treatment|therapy|beck scales|conners|flynn effect|malingering|mmpi|wais|wisc|wcst|rorschach|\btat\b|\bpai\b|stanford-binet|neuropsych|clinical vs\. actuarial)\b/i],
-  [6, /\b(?:first-line|treatment-resistant|dose-effect|evidence-based treatments?|treatment of|therapeutic window|harm reduction|feedback-informed|gottman)\b/i],
-  [7, /\b(?:belmont|human subjects?|research ethics|mixed methods|this maid)\b/i],
-  [8, /\b(?:tarasoff|dusky|subpoena|court|goldwater|psypact|telehealth|telepsychology|hipaa|jaffee|o'connor|wyatt|mandat|reporting|record|retention|duty to|confidentiality|privilege|informed consent|competency|insanity|suicid|child abuse|custody|insurance|end-of-life|fee-related|forensic psychology ethical guidelines)\b/i],
+  ...(isWave02 ? [
+    [1, /\b(?:complete list|complete comparison|monitor(?:ing)?|first-line|cholinesterase|anticonvulsants?|lithium|autism|seizure types?|treatments?)\b/i],
+    [2, /\b(?:cognitive distortions|depression)\b/i],
+    [3, /\b(?:dusky|insanity defense|competency|performance appraisal|consultation|supervision|program evaluation|organizational justice|job characteristics|leadership|role ambiguity|ecological momentary)\b/i],
+    [4, /\b(?:dsm|diagnos)\b/i],
+    [5, /\b(?:dsm|disorder|ptsd|autism|adhd|mood disorders?|eating disorders?|substance use|trauma|treatment|therapy|complex ptsd)\b/i],
+    [6, /\b(?:first-line|treatment-resistant|evidence-based treatments?|treatment of|therapeutic window|harm reduction|feedback-informed)\b/i],
+    [7, /$a/],
+    [8, /\b(?:tarasoff|dusky|subpoena|court|goldwater|psypact|telehealth|telepsychology|hipaa|jaffee|o'connor|wyatt|mandat|reporting|record|retention|duty to|confidentiality|privilege|informed consent|competency|insanity|suicid|child abuse|custody|insurance|end-of-life|fee-related)\b/i],
+  ] : [
+    [1, /\b(?:antipsychotic|antidepressant|anxiolytic|mood stabilizers?|stimulant|ssri\w*|maoi|lithium|benzodiazepine|buspirone|medications?|drugs?|parkinson|alzheimer|autism|seizure|wernicke-korsakoff|diathesis|health belief|alexithymia|mental illness|summary)\b/i],
+    [2, /\b(?:cognitive distortions|depression)\b/i],
+    [3, /\b(?:dusky|insanity defense|competency|performance appraisal|consultation|supervision|program evaluation|helms|nigrescence|zimbardo|berry|acculturation)\b/i],
+    [4, /\b(?:dsm|diagnos|milestone|teratogen|prenatal|retirement adjustment|core knowledge|dynamic systems|scaffolding theory|dual-process model of grief)\b/i],
+    [5, /\b(?:dsm|disorder|ptsd|autism|adhd|mood|eating|substance|trauma|treatment|therapy|beck scales|conners|flynn effect|malingering|mmpi|wais|wisc|wcst|rorschach|\btat\b|\bpai\b|stanford-binet|neuropsych|clinical vs\. actuarial)\b/i],
+    [6, /\b(?:first-line|treatment-resistant|dose-effect|evidence-based treatments?|treatment of|therapeutic window|harm reduction|feedback-informed|gottman)\b/i],
+    [7, /\b(?:belmont|human subjects?|research ethics|mixed methods|this maid)\b/i],
+    [8, /\b(?:tarasoff|dusky|subpoena|court|goldwater|psypact|telehealth|telepsychology|hipaa|jaffee|o'connor|wyatt|mandat|reporting|record|retention|duty to|confidentiality|privilege|informed consent|competency|insanity|suicid|child abuse|custody|insurance|end-of-life|fee-related|forensic psychology ethical guidelines)\b/i],
+  ]),
 ]);
 const topicPatterns = [
+  /ssri|serotonin reuptake/i,
+  /bandura|bobo doll|observational learning/i,
+  /dual-process theory|system 1|system 2/i,
+  /diathesis-stress/i,
+  /health belief/i,
+  /parkinson/i,
+  /sympathetic|parasympathetic/i,
+  /sleep stages/i,
+  /neurotransmitter pathways/i,
+  /neurotransmitter imbalance/i,
+  /benzodiazepine|buspirone/i,
+  /standard scores|t-scores|z-scores/i,
+  /effect size|cohen/i,
+  /aba design|single-subject/i,
+  /apa ethics code structure|general principles/i,
   /broca|wernicke|aphasia/i,
   /hippocamp|memory consolidation/i,
   /amygdala/i,
@@ -136,7 +167,7 @@ for (const [domainId, quota] of quotas) {
     .sort((left, right) => candidateScore(left) - candidateScore(right) || left.id.localeCompare(right.id));
 
   const domainSelected = [];
-  const domainTopics = new Set();
+  const domainTopics = new Set(isWave02 ? library.flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.reviewWave !== waveId).map(topicKey).filter(Boolean) : []);
   for (const card of pool) {
     const cardTokens = tokens(card.front);
     const concept = topicKey(card);
@@ -229,7 +260,7 @@ const report = {
 
 if (items.length !== 100 || new Set(items.map((item) => item.id)).size !== 100) throw new Error('Flashcard wave must contain exactly 100 unique cards.');
 
-const markdown = `# EPPP flashcard review wave 01\n\n` +
+const markdown = `# EPPP flashcard review wave ${waveNumber}\n\n` +
   `Generated: ${report.generatedAt}\n\n` +
   `Status: **assisted editorial review complete; independent expert validation pending**\n\n` +
   `This wave reviews ${report.summary.reviewedFlashcards} foundational legacy flashcards across all eight domains. Time-sensitive, legal, diagnostic-criteria, medication, numeric-frequency, malformed, and absolute claims were excluded or rewritten out of the reviewed form. No card in this artifact is learner-visible solely because it passed this review.\n\n` +
@@ -251,4 +282,4 @@ for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismfl
   fs.writeFileSync(path.join(outputRoot, markdownName), markdown + '\n');
 }
 
-console.log(`EPPP flashcard review wave 01: ${items.length} cards, ${distinctSources.size} named sources, ${report.summary.remainingFirstPass} cards remain for first-pass review.`);
+console.log(`EPPP flashcard review wave ${waveNumber}: ${items.length} cards, ${distinctSources.size} named sources, ${report.summary.remainingFirstPass} cards remain for first-pass review.`);
