@@ -22,20 +22,40 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
-    const getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
+    const getFocusable = function () {
+      return Array.from(dialog.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      )).filter(function (element) {
+        if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      });
+    };
     const first = getFocusable()[0];
     (first || dialog).focus();
     const onKeyDown = function (event) {
-      if (event.key === 'Escape') { event.preventDefault(); setShowKokoroOfferModal(false); return; }
+      if (!isTopTrap()) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setShowKokoroOfferModal(false); return; }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
       else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
     };
-    dialog.addEventListener('keydown', onKeyDown);
-    return function () { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
+    document.addEventListener('keydown', onKeyDown);
+    return function () {
+      document.removeEventListener('keydown', onKeyDown);
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
   }, [setShowKokoroOfferModal]);
   return (
     <div className="fixed inset-0 z-[9998] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" role="presentation" onClick={() => setShowKokoroOfferModal(false)}>
@@ -54,10 +74,10 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
           Note: In this environment, the download won't persist between sessions.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button onClick={() => { setShowKokoroOfferModal(false); window.__kokoroOfferDeclined = true; }} className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">
+          <button type="button" onClick={() => { setShowKokoroOfferModal(false); window.__kokoroOfferDeclined = true; }} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-600 transition-colors text-sm">
             No Thanks
           </button>
-          <button onClick={() => {
+          <button type="button" onClick={() => {
             setShowKokoroOfferModal(false);
             if (typeof window.__loadKokoroTTS !== 'function') {
               addToast('Offline voice loader is unavailable. Please try again later.', 'error');
@@ -73,7 +93,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
               window.__kokoroTTSDownloading = false;
               addToast('Download failed; please try again later.', 'error');
             });
-          }} className="flex-1 py-2.5 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors text-sm">
+          }} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 transition-colors text-sm">
             Download Voice
           </button>
         </div>
