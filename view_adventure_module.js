@@ -263,7 +263,7 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     ref: ledgerDialogRef,
     tabIndex: -1,
-    className: "bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none focus:outline-none",
+    className: "bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "adventure-ledger-title",
@@ -399,7 +399,7 @@ function AdventureView(props) {
     "aria-valuenow": energyValue
   }, /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true",
-    className: `h-full transition-all duration-500 motion-reduce:transition-none ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : adventureState.energy < 20 || adventureEffects.energy < 0 ? 'bg-red-500 animate-pulse' : 'bg-yellow-400'}`,
+    className: `h-full transition-all duration-500 motion-reduce:transition-none ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : adventureState.energy < 20 || adventureEffects.energy < 0 ? 'bg-red-500 animate-pulse motion-reduce:animate-none' : 'bg-yellow-400'}`,
     style: {
       width: energyValue + '%'
     }
@@ -714,7 +714,7 @@ function AdventureView(props) {
   }, t('adventure.settings.modifiers')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`
+    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     "data-help-key": "adventure_setup_chk_freeresponse",
@@ -727,7 +727,7 @@ function AdventureView(props) {
   }, t('adventure.free_response_label')), /*#__PURE__*/React.createElement("span", {
     className: "block text-[11px] text-slate-700"
   }, t('adventure.free_response_desc')))), /*#__PURE__*/React.createElement("label", {
-    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
+    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     "data-help-key": "adventure_setup_chk_chance",
@@ -740,7 +740,7 @@ function AdventureView(props) {
   }, t('adventure.chance_mode_label')), /*#__PURE__*/React.createElement("span", {
     className: "block text-[11px] text-slate-700"
   }, t('adventure.chance_mode_desc')))), /*#__PURE__*/React.createElement("label", {
-    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${isAdventureStoryMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
+    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${isAdventureStoryMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     "data-help-key": "adventure_setup_chk_story",
@@ -753,7 +753,7 @@ function AdventureView(props) {
   }, t('adventure.story_mode_label')), /*#__PURE__*/React.createElement("span", {
     className: "block text-[11px] text-slate-700"
   }, t('adventure.story_mode_desc')))), /*#__PURE__*/React.createElement("label", {
-    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureConsistentCharacters ? 'bg-violet-50 border-violet-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
+    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureConsistentCharacters ? 'bg-violet-50 border-violet-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     "data-help-key": "adventure_setup_chk_consistent_characters",
@@ -798,7 +798,7 @@ function AdventureView(props) {
     placeholder: t('adventure.custom_art_style_placeholder') || 'Describe your art style...',
     className: "mt-1 min-h-11 w-full text-xs px-2 py-2 border border-indigo-600 rounded-lg bg-white focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 focus:outline-none"
   }))), /*#__PURE__*/React.createElement("label", {
-    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`
+    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     "data-help-key": "adventure_setup_chk_lowqual",
@@ -811,7 +811,7 @@ function AdventureView(props) {
   }, t('adventure.low_quality_label')), /*#__PURE__*/React.createElement("span", {
     className: "block text-[11px] text-slate-700"
   }, t('adventure.low_quality_desc')))), adventureInputMode === 'system' && /*#__PURE__*/React.createElement("label", {
-    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${enableFactionResources ? 'bg-amber-50 border-amber-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
+    className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${enableFactionResources ? 'bg-amber-50 border-amber-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: enableFactionResources,
@@ -835,7 +835,7 @@ function AdventureView(props) {
     className: "flex items-center justify-between mb-2"
   }, /*#__PURE__*/React.createElement("label", {
     htmlFor: "setupAutoClimax",
-    className: "min-h-11 text-xs font-bold text-slate-700 cursor-pointer select-none flex items-center gap-2 rounded-lg focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2"
+    className: "min-h-11 text-xs font-bold text-slate-700 cursor-pointer select-none flex items-center gap-2 rounded-lg focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2"
   }, /*#__PURE__*/React.createElement("input", {
     id: "setupAutoClimax",
     type: "checkbox",
@@ -888,7 +888,7 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), t('adventure.start'))))), adventureState.history.map((entry, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
-    className: `animate-in fade-in slide-in-from-bottom-2 duration-500 ${entry.type === 'choice' ? 'flex justify-end' : 'flex justify-start'}`
+    className: `animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500 ${entry.type === 'choice' ? 'flex justify-end' : 'flex justify-start'}`
   }, /*#__PURE__*/React.createElement("div", {
     className: `max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${entry.type === 'choice' ? 'bg-indigo-600 text-white rounded-br-none' : entry.type === 'feedback' ? 'bg-green-50 border border-green-200 text-green-800 italic text-xs' : 'bg-white text-slate-800 border border-slate-400 rounded-bl-none font-serif'}`
   }, entry.type === 'choice' && /*#__PURE__*/React.createElement("span", {
@@ -1308,7 +1308,7 @@ function AdventureView(props) {
     size: 14,
     "aria-hidden": "true"
   }), immersiveShowChoices ? t('adventure.return_to_story') : t('adventure.make_a_choice'))), immersiveShowChoices ? /*#__PURE__*/React.createElement("div", {
-    className: "animate-in fade-in slide-in-from-bottom-4 duration-300"
+    className: "animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
   }, failedAdventureAction ? /*#__PURE__*/React.createElement("div", {
     role: "alert",
     "aria-atomic": "true",
@@ -1415,7 +1415,7 @@ function AdventureView(props) {
       })))));
     });
   })()))) : /*#__PURE__*/React.createElement("div", {
-    className: "animate-in fade-in slide-in-from-bottom-4 duration-300"
+    className: "animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
   }, adventureState.pendingChoice && adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
@@ -1496,7 +1496,7 @@ function AdventureView(props) {
   }, adventureState.currentScene && !adventureState.isGameOver ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, adventureInputMode === 'debate' && adventureState.debatePhase === 'setup' && /*#__PURE__*/React.createElement("div", {
-    className: "text-center mb-2 animate-in slide-in-from-top-2"
+    className: "text-center mb-2 animate-in motion-reduce:animate-none slide-in-from-top-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "bg-teal-100 text-teal-800 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-teal-200 shadow-sm flex items-center justify-center gap-2 w-fit mx-auto"
   }, /*#__PURE__*/React.createElement(Scale, {
@@ -1523,7 +1523,7 @@ function AdventureView(props) {
     size: 18,
     "aria-hidden": "true"
   }), " ", t('adventure.retry_action'))) : isEditingOptions ? /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 mb-4 animate-in fade-in"
+    className: "flex flex-col gap-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 mb-4 animate-in motion-reduce:animate-none fade-in"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-2"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -1608,7 +1608,7 @@ function AdventureView(props) {
       }));
     });
   })()) : /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2 animate-in fade-in slide-in-from-bottom-2"
+    className: "flex gap-2 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("button", {
     "aria-label": isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start'),
     "aria-pressed": isDictationMode,
@@ -1674,7 +1674,7 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     ref: inventoryDialogRef,
     tabIndex: -1,
-    className: "bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-sm w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none focus:outline-none",
+    className: "bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-sm w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "adventure-inventory-item-title",

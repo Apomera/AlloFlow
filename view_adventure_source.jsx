@@ -180,7 +180,7 @@ function AdventureView(props) {
                       )}
                       {showLedger && (
                         <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetShowLedgerToFalse}>
-                            <div ref={ledgerDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-ledger-title" aria-describedby="adventure-ledger-subtitle" onClick={e => e.stopPropagation()}>
+                            <div ref={ledgerDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none" role="dialog" aria-modal="true" aria-labelledby="adventure-ledger-title" aria-describedby="adventure-ledger-subtitle" onClick={e => e.stopPropagation()}>
                                 <button type="button" onClick={handleSetShowLedgerToFalse} className="absolute top-2 right-2 sm:top-3 sm:right-3 min-w-11 min-h-11 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={20} aria-hidden="true"/></button>
                                 <div className="flex flex-col items-center text-center mb-4">
                                     <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-2">
@@ -278,7 +278,7 @@ function AdventureView(props) {
                                                 adventureInputMode === 'system'
                                                     ? 'bg-gradient-to-r from-amber-400 to-amber-600'
                                                     : adventureState.energy < 20 || adventureEffects.energy < 0
-                                                        ? 'bg-red-500 animate-pulse'
+                                                        ? 'bg-red-500 animate-pulse motion-reduce:animate-none'
                                                         : 'bg-yellow-400'
                                             }`}
                                             style={{ width: energyValue + '%' }}
@@ -548,7 +548,7 @@ function AdventureView(props) {
                                                     <div role="group" aria-labelledby="adventure-setup-modifiers-heading" className="space-y-4">
                                                         <h4 id="adventure-setup-modifiers-heading" className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.modifiers')}</h4>
                                                         <div className="grid grid-cols-1 gap-2">
-                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                                 <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_freeresponse" checked={adventureFreeResponseEnabled}
@@ -561,7 +561,7 @@ function AdventureView(props) {
                                                                     <span className="block text-[11px] text-slate-700">{t('adventure.free_response_desc')}</span>
                                                                 </div>
                                                             </label>
-                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                                 <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_chance" checked={adventureChanceMode}
@@ -574,7 +574,7 @@ function AdventureView(props) {
                                                                     <span className="block text-[11px] text-slate-700">{t('adventure.chance_mode_desc')}</span>
                                                                 </div>
                                                             </label>
-                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${isAdventureStoryMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${isAdventureStoryMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                                 <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_story" checked={isAdventureStoryMode}
@@ -587,7 +587,7 @@ function AdventureView(props) {
                                                                     <span className="block text-[11px] text-slate-700">{t('adventure.story_mode_desc')}</span>
                                                                 </div>
                                                             </label>
-                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureConsistentCharacters ? 'bg-violet-50 border-violet-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureConsistentCharacters ? 'bg-violet-50 border-violet-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                                 <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_consistent_characters" checked={adventureConsistentCharacters}
@@ -617,7 +617,7 @@ function AdventureView(props) {
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                                 <input
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_lowqual" checked={useLowQualityVisuals}
@@ -631,7 +631,7 @@ function AdventureView(props) {
                                                                 </div>
                                                             </label>
                                                             {adventureInputMode === 'system' && (
-                                                                <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${enableFactionResources ? 'bg-amber-50 border-amber-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                                <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${enableFactionResources ? 'bg-amber-50 border-amber-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                                     <input
                                                                         type="checkbox"
                                                                         checked={enableFactionResources}
@@ -651,7 +651,7 @@ function AdventureView(props) {
                                                         <h4 id="adventure-setup-customization-heading" className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.customization')}</h4>
                                                         <div className={`bg-indigo-50 p-3 rounded-lg border border-indigo-100 ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                             <div className="flex items-center justify-between mb-2">
-                                                                <label htmlFor="setupAutoClimax" className="min-h-11 text-xs font-bold text-slate-700 cursor-pointer select-none flex items-center gap-2 rounded-lg focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2">
+                                                                <label htmlFor="setupAutoClimax" className="min-h-11 text-xs font-bold text-slate-700 cursor-pointer select-none flex items-center gap-2 rounded-lg focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2">
                                                                     <input
                                                                         id="setupAutoClimax"
                                                                         type="checkbox"
@@ -714,7 +714,7 @@ function AdventureView(props) {
                                 </div>
                             )}
                             {adventureState.history.map((entry, i) => (
-                                <div key={i} className={`animate-in fade-in slide-in-from-bottom-2 duration-500 ${entry.type === 'choice' ? 'flex justify-end' : 'flex justify-start'}`}>
+                                <div key={i} className={`animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500 ${entry.type === 'choice' ? 'flex justify-end' : 'flex justify-start'}`}>
                                     <div className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${
                                         entry.type === 'choice'
                                         ? 'bg-indigo-600 text-white rounded-br-none'
@@ -1075,7 +1075,7 @@ function AdventureView(props) {
                                              </button>
                                         </div>
                                         {immersiveShowChoices ? (
-                                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                            <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
                                                 {failedAdventureAction ? (
                                                     <div role="alert" aria-atomic="true" className="w-full bg-red-900/90 border-2 border-red-500 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none backdrop-blur-sm">
                                                         <div className="bg-red-500 p-3 rounded-full mb-3 text-white">
@@ -1182,7 +1182,7 @@ function AdventureView(props) {
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                            <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
                                                 {adventureState.pendingChoice && adventureState.isLoading && (
                                                     <div role="status" aria-live="polite" aria-atomic="true" className="mb-4 animate-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none">
                                                         <div className="bg-amber-900/80 backdrop-blur-sm border border-amber-500/50 rounded-xl p-4 shadow-lg">
@@ -1275,7 +1275,7 @@ function AdventureView(props) {
                             {adventureState.currentScene && !adventureState.isGameOver ? (
                                 <div className="space-y-3">
                                     {adventureInputMode === 'debate' && adventureState.debatePhase === 'setup' && (
-                                        <div className="text-center mb-2 animate-in slide-in-from-top-2">
+                                        <div className="text-center mb-2 animate-in motion-reduce:animate-none slide-in-from-top-2">
                                              <span className="bg-teal-100 text-teal-800 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-teal-200 shadow-sm flex items-center justify-center gap-2 w-fit mx-auto">
                                                 <Scale size={12} /> {t('adventure.debate_stance')}
                                              </span>
@@ -1298,7 +1298,7 @@ function AdventureView(props) {
                                             </button>
                                         </div>
                                     ) : isEditingOptions ? (
-                                        <div className="flex flex-col gap-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 mb-4 animate-in fade-in">
+                                        <div className="flex flex-col gap-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 mb-4 animate-in motion-reduce:animate-none fade-in">
                                             <div className="flex justify-between items-center mb-2">
                                                 <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('adventure.editing_header')}</h4>
                                                 <div className="text-[11px] text-indigo-600 italic">{t('adventure.editing_subtext')}</div>
@@ -1382,7 +1382,7 @@ function AdventureView(props) {
                                             })()}
                                         </div>
                                     ) : (
-                                        <div className="flex gap-2 animate-in fade-in slide-in-from-bottom-2">
+                                        <div className="flex gap-2 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2">
                                             <button
                                                 aria-label={isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start')} aria-pressed={isDictationMode}
                                                 type="button"
@@ -1448,7 +1448,7 @@ function AdventureView(props) {
                     </div>
                     {selectedInventoryItem && (
                         <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetSelectedInventoryItemToNull}>
-                            <div ref={inventoryDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-sm w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-inventory-item-title" aria-describedby="adventure-inventory-item-description" onClick={e => e.stopPropagation()}>
+                            <div ref={inventoryDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-sm w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none" role="dialog" aria-modal="true" aria-labelledby="adventure-inventory-item-title" aria-describedby="adventure-inventory-item-description" onClick={e => e.stopPropagation()}>
                                 <button type="button" onClick={handleSetSelectedInventoryItemToNull} className="absolute top-2 right-2 sm:top-3 sm:right-3 min-w-11 min-h-11 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={20} aria-hidden="true"/></button>
                                 <div className="flex flex-col items-center text-center">
                                     <div className="w-24 h-24 bg-indigo-50 rounded-xl border-2 border-indigo-100 flex items-center justify-center mb-4 shadow-inner relative overflow-hidden group">
