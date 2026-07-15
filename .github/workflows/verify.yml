@@ -185,7 +185,7 @@ jobs:
       - name: Install veraPDF (official greenfield CLI, headless auto-install)
         run: |
           set -euo pipefail
-          python3 -c "import xml.etree.ElementTree as ET; ET.parse('dev-tools/verapdf_ci_autoinstall.xml')"
+          python3 -c "from pathlib import Path; import re, xml.etree.ElementTree as ET; p=Path('dev-tools/verapdf_ci_autoinstall.xml'); s=p.read_text(encoding='utf-8'); assert not any('--' in body for body in re.findall(r'<!--(.*?)-->', s, re.S)), 'XML comments may not contain --'; ET.parse(p)"
           curl -fsSL -o "$RUNNER_TEMP/verapdf-installer.zip" https://software.verapdf.org/releases/verapdf-installer.zip
           unzip -q "$RUNNER_TEMP/verapdf-installer.zip" -d "$RUNNER_TEMP/verapdf-installer"
           INSTALLER_JAR="$(find "$RUNNER_TEMP/verapdf-installer" -name 'verapdf-izpack-installer-*.jar' | head -1)"
