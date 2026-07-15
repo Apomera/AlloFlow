@@ -31,7 +31,10 @@ function XPModal({
 }) {
   const Trophy = window.Trophy || (() => null);
   const X = window.X || (() => null);
-  const History = window.History || (() => null);
+  const browserHistoryConstructor = window.history && Object.getPrototypeOf(window.history)?.constructor;
+  const HistoryIcon = window.History && window.History !== browserHistoryConstructor
+    ? window.History
+    : (() => null);
   const dialogRef = React.useRef(null);
   const progressPercent = Math.max(0, Math.min(100, Math.round(Number(globalProgress) || 0)));
 
@@ -39,29 +42,46 @@ function XPModal({
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+    });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') { event.preventDefault(); handleSetShowXPModalToFalse(); return; }
+      if (!isTopTrap()) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); handleSetShowXPModalToFalse(); return; }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
-    dialog.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      dialog.removeEventListener('keydown', onKeyDown);
-      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      document.removeEventListener('keydown', onKeyDown);
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
   }, [handleSetShowXPModalToFalse]);
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetShowXPModalToFalse} role="presentation">
-      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-yellow-400 transition-all animate-in zoom-in-95 motion-reduce:animate-none motion-reduce:transition-none" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="xp-modal-title">
-        <button onClick={handleSetShowXPModalToFalse} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 hover:bg-slate-200 bg-slate-100 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16} aria-hidden="true"/></button>
+      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto relative border-4 border-yellow-400 transition-all animate-in zoom-in-95 motion-reduce:animate-none motion-reduce:transition-none" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="xp-modal-title">
+        <button type="button" onClick={handleSetShowXPModalToFalse} className="absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 bg-slate-100 rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600" aria-label={t?.('common.close') || 'Close'}><X size={16} aria-hidden="true"/></button>
         <div className="text-center mb-6 relative">
           <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-indigo-900 shadow-lg relative">
             <Trophy size={40} className="text-indigo-900 fill-current" aria-hidden="true" />
@@ -92,7 +112,7 @@ function XPModal({
         </div>
         <div className="border-t border-slate-100 pt-4">
           <h3 id="xp-history-title" className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
-            <History size={12} aria-hidden="true"/> Recent History
+            <HistoryIcon size={12} aria-hidden="true"/> Recent History
           </h3>
           <ul className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1" aria-labelledby="xp-history-title" tabIndex={pointHistory.length > 0 ? 0 : undefined}>
             {pointHistory.length === 0 ? (

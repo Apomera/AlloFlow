@@ -7,9 +7,13 @@ describe('XP modal accessibility', () => {
   it('manages initial focus, containment, Escape, and focus return', () => {
     expect(source).toContain('ref={dialogRef} tabIndex={-1}');
     expect(source).toContain('(getFocusable()[0] || dialog).focus()');
+    expect(source).toContain('window.__alloFocusTrapStack');
+    expect(source).toContain('if (!isTopTrap()) return');
+    expect(source).toContain("document.addEventListener('keydown', onKeyDown)");
+    expect(source).toContain("element.closest('[hidden], [inert], [aria-hidden=\"true\"]')");
     expect(source).toContain("if (event.key === 'Escape')");
     expect(source).toContain("if (event.key !== 'Tab') return");
-    expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()");
+    expect(source).toContain('previousFocus.isConnected');
   });
 
   it('exposes the visual XP meter as a named progressbar', () => {
@@ -23,6 +27,8 @@ describe('XP modal accessibility', () => {
 
   it('uses semantic, keyboard-reachable history with a logical heading level', () => {
     expect(source).toContain('<h3 id="xp-history-title"');
+    expect(source).toContain('window.History !== browserHistoryConstructor');
+    expect(source).toContain('<HistoryIcon size={12} aria-hidden="true"/>');
     expect(source).toContain('<ul className=');
     expect(source).toContain('aria-labelledby="xp-history-title"');
     expect(source).toContain('tabIndex={pointHistory.length > 0 ? 0 : undefined}');
@@ -36,6 +42,10 @@ describe('XP modal accessibility', () => {
     expect(source).toContain('text-green-700');
     expect(source).toContain('motion-reduce:animate-none');
     expect(source).toContain('motion-reduce:transition-none');
+    expect(source).toContain('max-h-[calc(100vh-2rem)] overflow-y-auto');
+    expect(source).toContain('type="button"');
+    expect(source).toContain('min-w-11 min-h-11');
+    expect(source).toContain('focus-visible:ring-2');
   });
 
   it('synchronizes the deployable module', () => {
