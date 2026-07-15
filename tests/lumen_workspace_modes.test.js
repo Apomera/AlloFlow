@@ -61,6 +61,7 @@ describe('Lumen evidence-workspace modes', () => {
     const html = render({ mode: 'data' });
     expect(html).toContain('Analyze Data');
     expect(html).toContain('Switch to Study Sources');
-    expect(html).toContain('Use sample data');
+    // Wave-era onboarding CTA (the stale pre-wave base said 'Use sample data').
+    expect(html).toContain('Try a sample');
   });
 });
