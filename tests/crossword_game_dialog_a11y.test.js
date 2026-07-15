@@ -24,6 +24,17 @@ describe('Crossword dialog accessibility', () => {
     expect(source).not.toContain('pointer-events-none focus:outline-none');
   });
 
+  it('exposes a complete active-descendant grid structure', () => {
+    expect(component).toContain('aria-rowcount={grid.length}');
+    expect(component).toContain('aria-colcount={grid.length}');
+    expect(component).toContain('aria-activedescendant={selectedCell ?');
+    expect(component).toContain('role="row" className="contents"');
+    expect(component).toContain('id={`crossword-cell-${r}-${c}`}');
+    expect(component).toContain('aria-rowindex={r + 1}');
+    expect(component).toContain('aria-colindex={c + 1}');
+    expect(component).toContain('aria-disabled="true"');
+  });
+
   it('uses native clue buttons with separate speech controls and returns focus to the grid', () => {
     expect(component).toContain('selectCrosswordClue');
     expect(component).toContain("onClick={() => selectCrosswordClue(c, 'across')}");

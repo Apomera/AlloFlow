@@ -4820,6 +4820,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
               tabIndex={0}
               role="grid"
               aria-label={t('games.crossword.grid_capture_aria')}
+              aria-rowcount={grid.length}
+              aria-colcount={grid.length}
+              aria-activedescendant={selectedCell ? `crossword-cell-${selectedCell.r}-${selectedCell.c}` : undefined}
               onKeyDown={handleKeyDown}
               className="grid gap-px bg-slate-300 border-2 border-slate-400 p-1 shadow-xl focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2"
               style={{
@@ -4829,8 +4832,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
               data-help-key="crossword_grid"
             >
                {grid.map((row, r) => (
-                  row.map((cell, c) => {
-                     if (!cell) return <div key={`${r}-${c}`} className="w-8 h-8 sm:w-10 sm:h-10 bg-transparent"></div>;
+                  <div key={`crossword-row-${r}`} role="row" className="contents">
+                  {row.map((cell, c) => {
+                     if (!cell) return <div key={`${r}-${c}`} role="gridcell" aria-disabled="true" aria-rowindex={r + 1} aria-colindex={c + 1} aria-label={t('games.crossword.blocked_square') || 'Blocked square'} className="w-8 h-8 sm:w-10 sm:h-10 bg-transparent"></div>;
                      const isSelected = selectedCell?.r === r && selectedCell?.c === c;
                      const isActiveWord = selectedCell && (
                         (direction === 'across' && selectedCell.r === r) ||
@@ -4842,6 +4846,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                      return (
                         <div
                           key={`${r}-${c}`}
+                          id={`crossword-cell-${r}-${c}`}
                           onClick={() => handleCellClick(r, c)}
                           className={`
                              w-8 h-8 sm:w-10 sm:h-10 bg-white relative flex items-center justify-center text-lg font-bold uppercase cursor-pointer select-none
@@ -4850,6 +4855,8 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                              ${isError ? 'text-red-500 bg-red-50' : isCorrect ? 'text-green-600' : 'text-slate-800'}
                           `}
                           role="gridcell"
+                          aria-rowindex={r + 1}
+                          aria-colindex={c + 1}
                           aria-selected={isSelected}
                           aria-label={`Row ${r+1} Column ${c+1} ${cell.number ? 'Clue ' + cell.number : ''} ${userChar ? 'Value ' + userChar : 'Empty'}`}
                         >
@@ -4857,7 +4864,8 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                            {userChar && <span key={userChar} className="inline-block animate-in motion-reduce:animate-none zoom-in duration-200">{userChar}</span>}
                         </div>
                      );
-                  })
+                  })}
+                  </div>
                ))}
             </div>
          </div>
