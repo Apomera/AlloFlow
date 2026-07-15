@@ -5,9 +5,12 @@ const fs = require('fs');
 const path = require('path');
 const { clean, normalize, sourceFor } = require('./eppp_editorial_support.cjs');
 const waveNumber = String(process.env.EPPP_FLASHCARD_REVIEW_WAVE || '01').padStart(2, '0');
-if (!['01', '02'].includes(waveNumber)) throw new Error(`Unsupported EPPP flashcard review wave: ${waveNumber}`);
+if (!['01', '02', '03'].includes(waveNumber)) throw new Error(`Unsupported EPPP flashcard review wave: ${waveNumber}`);
 const isWave02 = waveNumber === '02';
-const baseRevisions = require(isWave02 ? './eppp_flashcard_revisions_wave_02.cjs' : './eppp_flashcard_revisions.cjs');
+const isWave03 = waveNumber === '03';
+const baseRevisions = require(isWave03
+  ? './eppp_flashcard_revisions_wave_03_data.cjs'
+  : (isWave02 ? './eppp_flashcard_revisions_wave_02.cjs' : './eppp_flashcard_revisions.cjs'));
 const supplementalRevisions = isWave02 ? require('./eppp_flashcard_revisions_wave_02_data.cjs') : new Map();
 const revisions = new Map([...baseRevisions, ...supplementalRevisions]);
 
@@ -17,8 +20,10 @@ const overridesPath = path.join(root, 'test_prep', 'eppp_learning_review_overrid
 const outputName = `eppp_flashcard_review_wave_${waveNumber}.json`;
 const markdownName = `eppp_flashcard_review_wave_${waveNumber}.md`;
 const waveId = `eppp-flashcard-review-wave-${waveNumber}`;
-const reviewDate = '2026-07-14';
-const quotas = new Map(isWave02 ? [[1, 10], [2, 19], [3, 12], [4, 13], [5, 10], [6, 10], [7, 20], [8, 6]] : [[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]]);
+const reviewDate = isWave03 ? '2026-07-15' : '2026-07-14';
+const quotas = new Map(isWave03
+  ? [[1, 16], [2, 8], [3, 15], [4, 5], [5, 22], [6, 14], [7, 5], [8, 15]]
+  : (isWave02 ? [[1, 10], [2, 19], [3, 12], [4, 13], [5, 10], [6, 10], [7, 20], [8, 6]] : [[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]]));
 
 if (!fs.existsSync(sourcePath)) throw new Error('Build eppp_learning_library.json before creating a flashcard review wave.');
 const library = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
@@ -161,13 +166,14 @@ for (const [domainId, quota] of quotas) {
   const pool = candidateCards
     .filter((card) => Number(card.domainId) === domainId)
     .filter((card) => card.reviewStatus !== 'source-reviewed-editorial-pass')
-    .filter((card) => !existingReviewedFronts.has(normalize(card.front)))
+    .filter((card) => !isWave03 || revisions.has(card.front))
+    .filter((card) => isWave03 || !existingReviewedFronts.has(normalize(card.front)))
     .filter((card) => card.front.length >= 8 && card.front.length <= 220)
     .filter((card) => card.back.length >= 20 && card.back.length <= 700)
-    .filter((card) => (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !unstableClaim.test(`${card.front} ${card.back}`))
-    .filter((card) => !overclaim.test(`${card.front} ${card.back}`))
+    .filter((card) => isWave03 || (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !unstableClaim.test(`${card.front} ${card.back}`))
+    .filter((card) => isWave03 || !overclaim.test(`${card.front} ${card.back}`))
     .filter((card) => !malformed.test(`${card.front} ${card.back}`))
-    .filter((card) => (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !(excludedByDomain.get(domainId) || /$a/).test(`${card.front} ${card.back}`))
+    .filter((card) => isWave03 || (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !(excludedByDomain.get(domainId) || /$a/).test(`${card.front} ${card.back}`))
     .sort((left, right) => candidateScore(left) - candidateScore(right) || left.id.localeCompare(right.id));
 
   const domainSelected = [];
@@ -176,8 +182,8 @@ for (const [domainId, quota] of quotas) {
     const cardTokens = tokens(card.front);
     const concept = topicKey(card);
     const isNearDuplicate = selectedTokens.some((entry) => entry.domainId === domainId && jaccard(cardTokens, entry.tokens) >= 0.5);
-    if (concept && domainTopics.has(concept)) continue;
-    if (isNearDuplicate) continue;
+    if (!isWave03 && concept && domainTopics.has(concept)) continue;
+    if (!isWave03 && isNearDuplicate) continue;
     domainSelected.push(card);
     selectedTokens.push({ domainId, tokens: cardTokens });
     if (concept) domainTopics.add(concept);

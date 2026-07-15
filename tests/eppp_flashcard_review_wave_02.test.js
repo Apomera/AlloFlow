@@ -71,8 +71,8 @@ describe('EPPP flashcard review wave 02', () => {
     const cardsById = new Map(library.flashcards.map((card) => [card.id, card]));
 
     expect(library.summary.flashcards).toBe(415);
-    expect(library.summary.sourceReviewedFlashcards).toBe(209);
-    expect(library.flashcards.filter((card) => card.reviewStatus === 'review-required')).toHaveLength(206);
+    expect(library.summary.sourceReviewedFlashcards).toBe(309);
+    expect(library.flashcards.filter((card) => card.reviewStatus === 'review-required')).toHaveLength(106);
     for (const item of wave.items) {
       const card = cardsById.get(item.id);
       expect(card).toBeTruthy();

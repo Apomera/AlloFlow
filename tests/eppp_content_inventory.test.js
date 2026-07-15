@@ -22,7 +22,7 @@ describe('EPPP learning-library inventory and full-review program', () => {
       termDefinitions: 1583,
       chapterReferences: 383,
       sourceReviewedChapters: 49,
-      sourceReviewedFlashcards: 209,
+      sourceReviewedFlashcards: 309,
       sourceReviewedMemoryAids: 8,
       editorialReviewedSourcePendingMemoryAids: 2,
       aiReflectiveCodas: 49,
@@ -32,7 +32,7 @@ describe('EPPP learning-library inventory and full-review program', () => {
     expect(report.migrationTracks).toHaveLength(6);
     expect(report.migrationTracks.find((track) => track.contentType === 'legacy questions')).toMatchObject({ count: 2933, status: 'active-full-review' });
     expect(report.migrationTracks.find((track) => track.contentType === 'textbook chapters')).toMatchObject({ status: 'review-in-progress', reviewedCount: 49 });
-    expect(report.migrationTracks.find((track) => track.contentType === 'flashcards')).toMatchObject({ status: 'review-in-progress', reviewedCount: 209 });
+    expect(report.migrationTracks.find((track) => track.contentType === 'flashcards')).toMatchObject({ status: 'review-in-progress', reviewedCount: 309 });
     expect(report.migrationTracks.find((track) => track.contentType === 'memory aids')).toMatchObject({ status: 'review-in-progress', reviewedCount: 8, editorialSourcePendingCount: 2 });
     expect(report.migrationTracks.filter((track) => ['interactive diagrams', 'term definitions'].includes(track.contentType)).every((track) => track.status === 'legacy-preserved-review-not-started')).toBe(true);
   });

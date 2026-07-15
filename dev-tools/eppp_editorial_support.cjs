@@ -60,6 +60,12 @@ const SOURCES = {
     'https://openstax.org/books/psychology-2e/pages/12-introduction',
     'OpenStax is Rice University\'s nonprofit educational publisher. This expert-reviewed chapter covers attribution, attitudes, persuasion, conformity, group processes, prejudice, aggression, and prosocial behavior.'
   ),
+  industrialOrganizational: source(
+    'Psychology 2e, Chapter 13: Industrial-Organizational Psychology',
+    'OpenStax, Rice University (second edition)',
+    'https://openstax.org/books/psychology-2e/pages/13-introduction',
+    'OpenStax is Rice University\'s nonprofit educational publisher. This expert-authored and peer-reviewed chapter covers personnel assessment, appraisal, motivation, job design, leadership, organizational culture, and workplace behavior.'
+  ),
   development: source(
     'Psychology 2e, Chapter 9: Lifespan Development',
     'OpenStax, Rice University (second edition)',
@@ -192,13 +198,66 @@ const SOURCES = {
     'https://www.apa.org/ethics/code',
     'The American Psychological Association publishes the profession\'s Ethics Code. It is the primary source for the Code\'s General Principles and enforceable standards, while jurisdiction-specific law still requires separate review.'
   ),
+  telepsychology: source(
+    'Guidelines for the Practice of Telepsychology',
+    'American Psychological Association, approved by the Council of Representatives in August 2024',
+    'https://www.apa.org/about/policy/telepsychology-revisions',
+    'The American Psychological Association adopted these guidelines through professional expert and governance review. They are the current APA guidance on competence, consent, security, equity, emergencies, and technology-mediated psychological services.'
+  ),
+  hipaa: source(
+    'HIPAA for Professionals: Privacy, Security, and Breach Notification Rules',
+    'U.S. Department of Health and Human Services, Office for Civil Rights',
+    'https://www.hhs.gov/hipaa/for-professionals/index.html',
+    'HHS Office for Civil Rights administers and enforces the federal HIPAA Privacy, Security, and Breach Notification Rules. Its official materials are the primary federal source for scope, safeguards, disclosures, and psychotherapy-note protections.'
+  ),
+  jaffee: source(
+    'Jaffee v. Redmond, 518 U.S. 1 (1996), Opinion of the Court',
+    'Supreme Court of the United States',
+    'https://www.supremecourt.gov/opinions/boundvolumes/518bv.pdf',
+    'The bound-volume opinion published by the Supreme Court is the primary federal source for the holding recognizing psychotherapist-patient privilege in federal proceedings and for the scope of what the Court actually decided.'
+  ),
+  longTermPotentiation: source(
+    'Neuroscience, 2nd edition: Long-Term Synaptic Potentiation',
+    'National Center for Biotechnology Information Bookshelf, U.S. National Library of Medicine',
+    'https://www.ncbi.nlm.nih.gov/books/NBK10878/',
+    'NCBI Bookshelf is maintained by the U.S. National Library of Medicine and preserves expert-authored biomedical texts. This chapter directly defines LTP, its synaptic properties, and the evidence connecting it with memory mechanisms.'
+  ),
+  epilepsy: source(
+    'Epilepsy and Seizures',
+    'National Institute of Neurological Disorders and Stroke, National Institutes of Health (2024)',
+    'https://www.ninds.nih.gov/publications/epilepsy-and-seizures',
+    'NINDS is the lead U.S. federal institute for brain and nervous-system research. Its official publication reviews seizure diversity, diagnosis, treatment, safety, and current evidence without reducing seizure type to a single medication.'
+  ),
+  endocrine: source(
+    'Psychology 2e, Section 3.5: The Endocrine System',
+    'OpenStax, Rice University (second edition)',
+    'https://openstax.org/books/psychology-2e/pages/3-5-the-endocrine-system',
+    'OpenStax is Rice University\'s nonprofit educational publisher. This expert-authored and peer-reviewed section directly explains endocrine glands, hormones, hypothalamic-pituitary regulation, and their relationships with behavior.'
+  ),
+  wernickeKorsakoff: source(
+    'Wernicke Encephalopathy',
+    'StatPearls, NCBI Bookshelf, U.S. National Library of Medicine (updated 2026)',
+    'https://www.ncbi.nlm.nih.gov/books/NBK470344/',
+    'This clinician-authored and medically reviewed NCBI Bookshelf chapter directly covers thiamine deficiency, non-alcohol causes, variable presentation, urgency, and the relationship between Wernicke encephalopathy and Korsakoff syndrome.'
+  ),
+  alexithymia: source(
+    'Alexithymia — APA Dictionary of Psychology',
+    'American Psychological Association Dictionary of Psychology',
+    'https://dictionary.apa.org/alexithymia',
+    'The APA Dictionary of Psychology is an expert-edited professional reference maintained by the American Psychological Association. It supplies the field-specific definition and appropriately broad clinical context for alexithymia.'
+  ),
 };
 
 function sourceFor(domainId, value) {
   const text = normalize(value);
   if (domainId === 1) {
     if (/biopsychosocial|health behavior|stress and health|diathesis|health belief/.test(text)) return SOURCES.health;
-    if (/ssri|benzodia|buspirone|medicat/.test(text)) return SOURCES.medications;
+    if (/long term potentiation|\bltp\b/.test(text)) return SOURCES.longTermPotentiation;
+    if (/seizure/.test(text)) return SOURCES.epilepsy;
+    if (/endocrine/.test(text)) return SOURCES.endocrine;
+    if (/wernicke korsakoff/.test(text)) return SOURCES.wernickeKorsakoff;
+    if (/alexithymia/.test(text)) return SOURCES.alexithymia;
+    if (/ssri|benzodia|buspirone|medicat|lithium|antipsych|antidepress|anxiolytic|mood stabilizer|adhd medications|anticonvulsant|cholinesterase/.test(text)) return SOURCES.medications;
     return /\b(?:neurotrans\w*|dopamin\w*|seroton\w*|gaba\w*|acetyl\w*|receptors?|agonists?|antagonists?|synap\w*|drugs?|parkinson|antipsych\w*|antidepress\w*)\b/.test(text) ? SOURCES.neurochemistry : SOURCES.neuroanatomy;
   }
   if (domainId === 2) {
@@ -208,7 +267,12 @@ function sourceFor(domainId, value) {
     if (/emotion|motivation|drive|arousal|hunger|attribution of emotion|overjustification|schachter/.test(text)) return SOURCES.motivation;
     return SOURCES.cognition;
   }
-  if (domainId === 3) return /racial identity|acculturation|intersectionality|implicit bias|power and privilege/.test(text) ? SOURCES.multicultural : SOURCES.social;
+  if (domainId === 3) {
+    if (/racial identity|acculturation|intersectionality|implicit bias|power and privilege|multicultural counseling/.test(text)) return SOURCES.multicultural;
+    if (/herzberg|performance appraisal|organizational justice|job characteristics|leadership|role ambiguity|role conflict/.test(text)) return SOURCES.industrialOrganizational;
+    if (/consultation|supervision/.test(text)) return SOURCES.supervision;
+    return /program evaluation|ecological momentary/.test(text) ? SOURCES.research : SOURCES.social;
+  }
   if (domainId === 4) return SOURCES.development;
   if (domainId === 5) {
     if (/mmpi 2/.test(text)) return SOURCES.mmpi2;
@@ -220,12 +284,18 @@ function sourceFor(domainId, value) {
     if (/thematic apperception|\btat\b/.test(text)) return SOURCES.tat;
     if (/halstead|reitan|neuropsych/.test(text)) return SOURCES.neuropsychAssessment;
     if (/\b(?:disorder|syndrome|diagnos|psychopatholog|symptom)\b/.test(text)) return SOURCES.disorders;
+    if (/prolonged exposure|cognitive processing therapy|trauma informed care/.test(text)) return SOURCES.therapy;
+    if (/adhd|autism|substance use|eating|dissociative|mood|ocd|ptsd|acute stress|complex ptsd|somatic symptom|illness anxiety|factitious/.test(text)) return SOURCES.disorders;
     return SOURCES.testing;
   }
   if (domainId === 6) return /medicat|drug|antidepress|antipsych|benzodia|maoi|ssri|lithium|stimulant|clozapine/.test(text) ? SOURCES.medications : SOURCES.therapy;
-  if (domainId === 7) return /belmont|human subject|informed consent|irb|research ethics|debrief|deception/.test(text) ? SOURCES.belmont : (/mean|median|mode|variance|deviation|correl|regress|probab|alpha|power|signific|distribution|anova|chi.square|t.test|effect size|cohen|type i|type ii|bayesian|frequentist|multicollinearity|mediation|moderation|normal distribution|parametric|non parametric|propensity|item response theory|irt/.test(text) ? SOURCES.statistics : SOURCES.research);
+  if (domainId === 7) return /belmont|human subject|informed consent|irb|research ethics|debrief|deception/.test(text) ? SOURCES.belmont : (/mean|median|mode|variance|deviation|correl|regress|probab|alpha|power|signific|distribution|anova|chi.square|t.test|effect size|cohen|type i|type ii|bayesian|frequentist|multicollinearity|mediation|moderation|normal distribution|parametric|non parametric|propensity|item response theory|irt|structural equation|sem/.test(text) ? SOURCES.statistics : SOURCES.research);
   if (/evidence based practice/.test(text)) return SOURCES.ebpp;
   if (/supervision/.test(text)) return SOURCES.supervision;
+  if (/telehealth|telepsychology/.test(text)) return SOURCES.telepsychology;
+  if (/hipaa|insurance company|protected health|psychotherapy notes/.test(text)) return SOURCES.hipaa;
+  if (/jaffee/.test(text)) return SOURCES.jaffee;
+  if (/child custody/.test(text)) return SOURCES.forensic;
   if (/forensic/.test(text)) return SOURCES.forensic;
   if (/multicultural|cultural competence|culturally responsive/.test(text)) return SOURCES.multicultural;
   return SOURCES.ethics;
