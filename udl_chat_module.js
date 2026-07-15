@@ -58,6 +58,42 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
   // Phase E hotfix: surface real errors to console so we can debug missing deps
   // instead of silently degrading to "Sorry, something went wrong".
   const _DEBUG_UDL_CHAT = true;
+  const _getAgentCoreUIAdapter = () => {
+      const AdapterModule = window.AlloModules && window.AlloModules.AgentCoreUIAdapter;
+      if (!AdapterModule || typeof AdapterModule.createUIAdapter !== 'function') {
+          throw new Error('[AgentCoreUIAdapter] module not loaded - reload the page');
+      }
+      const knownTools = Array.isArray(window.TOOL_CATALOG)
+          ? window.TOOL_CATALOG.map(item => item && item.id).filter(Boolean)
+          : undefined;
+      return AdapterModule.createUIAdapter({
+          knownTools,
+          autoConfigure: (request) => autoConfigureSettings(
+              request.sourceText,
+              request.gradeLevel,
+              request.standards,
+              request.language,
+              request.guidance,
+              request.existingResources || [],
+              request.targetCount || 'Auto'
+          ),
+          modifyBlueprint: (legacyConfig, instruction) => modifyBlueprintWithAI(legacyConfig, instruction),
+      });
+  };
+  const _agentCoreContext = () => ({
+      gradeLevel,
+      language: leveledTextLanguage,
+      standards: standardsInput,
+      interests: studentInterests,
+  });
+  const _createAgentCoreLegacyDraft = async (request) => {
+      const result = await _getAgentCoreUIAdapter().createDraft(request);
+      return result.legacyConfig;
+  };
+  const _reviseAgentCoreLegacyBlueprint = async (legacyConfig, instruction) => {
+      const result = await _getAgentCoreUIAdapter().reviseLegacy(legacyConfig, instruction, _agentCoreContext());
+      return result.legacyConfig;
+  };
   // Builds the Step-by-Step vs Full Pack chooser (rendered as buttons by
   // UDLGuideModal). `stage` names the guided-flow stage that consumes the
   // answer; `keywords` keeps typed replies (incl. localized) working.
@@ -206,15 +242,16 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      const generateBlueprint = async (countPreference, context = "") => {
                          setIsChatProcessing(true);
                          try {
-                             const config = await autoConfigureSettings(
-                                 inputText || sourceTopic,
+                             const config = await _createAgentCoreLegacyDraft({
+                                 sourceText: inputText || sourceTopic,
                                  gradeLevel,
-                                 standardsInput,
-                                 leveledTextLanguage,
-                                 context,
-                                 history.map(h => h.type),
-                                 countPreference
-                             );
+                                 standards: standardsInput,
+                                 language: leveledTextLanguage,
+                                 guidance: context,
+                                 existingResources: history.map(h => h.type),
+                                 targetCount: countPreference,
+                                 interests: studentInterests,
+                             });
                             setActiveBlueprint(config);
                              setUdlMessages(prev => [...prev, {
                                  role: 'model',
@@ -258,15 +295,16 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      sendBotMsg(t('chat_guide.pack.designing', { count: countDisplay }));
                      setIsChatProcessing(true);
                      try {
-                         const config = await autoConfigureSettings(
-                             inputText || sourceTopic,
+                         const config = await _createAgentCoreLegacyDraft({
+                             sourceText: inputText || sourceTopic,
                              gradeLevel,
-                             standardsInput,
-                             leveledTextLanguage,
-                             blueprintContext,
-                             history.map(h => h.type),
-                             targetCount
-                        );
+                             standards: standardsInput,
+                             language: leveledTextLanguage,
+                             guidance: blueprintContext,
+                             existingResources: history.map(h => h.type),
+                             targetCount,
+                             interests: studentInterests,
+                         });
                         setActiveBlueprint(config);
                         setUdlMessages(prev => [...prev, {
                              role: 'model',
@@ -297,7 +335,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          setIsChatProcessing(true);
                          sendBotMsg(t('common.adjusting') + "...");
                          try {
-                            const updatedConfig = await modifyBlueprintWithAI(activeBlueprint, textToSend);
+                            const updatedConfig = await _reviseAgentCoreLegacyBlueprint(activeBlueprint, textToSend);
                             setActiveBlueprint(updatedConfig);
                             sendBotMsg(t('chat_guide.blueprint.updated'));
                          } catch (e) {

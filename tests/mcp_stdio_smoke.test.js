@@ -1,18 +1,18 @@
-// Protocol smoke test for the local stdio MCP proof of concept
-// (desktop/mcp/alloflow-mcp-stdio.cjs — Task 4 of the federated-agent
-// handoff). Spawns the real server process and speaks newline-delimited
-// JSON-RPC 2.0 over stdio, pinning the acceptance criteria: initialize
-// handshake, first-slice tools only (all read-only, directory-legal names +
-// annotations), contract validation through tools/call, honest empty default
-// manifest with no secrets, and clean protocol errors for unknown
-// methods/tools and malformed JSON. stdout must carry ONLY protocol messages.
+// Protocol smoke test for the local stdio MCP connector.
+// Spawns the real server and speaks newline-delimited JSON-RPC 2.0 over
+// stdio, pinning initialization, Task C tool schemas/annotations and jobs,
+// contract validation, redacted append-only auditing, honest capabilities,
+// clean protocol errors, and protocol-only stdout.
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 const SERVER = resolve(process.cwd(), 'desktop/mcp/alloflow-mcp-stdio.cjs');
+const auditHome = mkdtempSync(join(tmpdir(), 'alloflow-mcp-task-c-'));
+const auditPath = join(auditHome, 'agent-core', 'mcp-audit.jsonl');
 const fixture = (name) =>
   JSON.parse(readFileSync(resolve(process.cwd(), 'test_data/agent_core', name), 'utf-8'));
 
@@ -64,17 +64,25 @@ function expectNullIdError() {
 const callTool = async (name, args) => (await request('tools/call', { name, arguments: args })).result;
 
 beforeAll(() => {
-  child = spawn(process.execPath, [SERVER], { cwd: process.cwd(), stdio: ['pipe', 'pipe', 'pipe'] });
+  child = spawn(process.execPath, [SERVER], {
+    cwd: process.cwd(),
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env: { ...process.env, ALLOFLOW_MCP_DATA_DIR: auditHome },
+  });
   child.stdout.setEncoding('utf-8');
   child.stdout.on('data', onStdout);
 });
 
 afterAll(() => {
   if (child) child.kill();
+  rmSync(auditHome, { recursive: true, force: true });
 });
 
-describe('MCP stdio proof of concept', () => {
-  it('completes the initialize handshake and echoes a supported protocol version', async () => {
+describe('MCP stdio local connector', () => {
+  it('rejects tool requests before initialization, then completes the handshake', async () => {
+    const early = await request('tools/list', {});
+    expect(early.error.code).toBe(-32002);
+
     const res = await request('initialize', {
       protocolVersion: '2025-06-18',
       capabilities: {},
@@ -89,19 +97,39 @@ describe('MCP stdio proof of concept', () => {
     expect(ping.result).toEqual({});
   });
 
-  it('lists exactly the read-only first slice with directory-legal names and annotations', async () => {
+  it('lists the validation and Task C job slice with correct annotations', async () => {
     const res = await request('tools/list', {});
     const tools = res.result.tools;
-    expect(tools.map((t) => t.name).sort()).toEqual(['artifact_validate', 'blueprint_validate', 'capabilities']);
+    expect(tools.map((t) => t.name).sort()).toEqual(['artifact_validate', 'blueprint_create', 'blueprint_preview', 'blueprint_revise', 'blueprint_validate', 'capabilities', 'job_cancel', 'job_get', 'job_get_result']);
+    expect(tools.map((t) => t.name)).not.toContain('blueprint_execute');
     for (const t of tools) {
       expect(t.name).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
       expect(t.name).not.toContain('.');
       expect(t.annotations.title).toBeTruthy();
-      expect(t.annotations.readOnlyHint).toBe(true);
+      const isReadOnly = ['capabilities', 'blueprint_validate', 'blueprint_preview', 'job_get', 'job_get_result', 'artifact_validate'].includes(t.name);
+      expect(t.annotations.readOnlyHint).toBe(isReadOnly);
       expect(t.annotations.destructiveHint).toBe(false);
       expect(t.inputSchema.type).toBe('object');
       expect(t.description.length).toBeGreaterThan(20);
     }
+  });
+
+  it('advertises canonical nested Blueprint and structural Artifact schemas', async () => {
+    const res = await request('tools/list', {});
+    const blueprintTool = res.result.tools.find((t) => t.name === 'blueprint_validate');
+    const blueprintSchema = blueprintTool.inputSchema.properties.blueprint;
+    expect(blueprintSchema.required).toEqual(expect.arrayContaining(['schemaVersion', 'blueprintId', 'plan']));
+    expect(blueprintSchema.properties.plan.minItems).toBe(1);
+    expect(blueprintSchema.properties.plan.items.required).toContain('tool');
+    expect(blueprintSchema.properties.plan.items.properties.tool.enum).toContain('analysis');
+    expect(blueprintSchema.properties.plan.items.additionalProperties).toBe(false);
+
+    const artifactTool = res.result.tools.find((t) => t.name === 'artifact_validate');
+    const artifactSchema = artifactTool.inputSchema.properties.artifact;
+    expect(artifactSchema.required).toEqual(expect.arrayContaining(['schemaVersion', 'artifactId', 'type']));
+    expect(artifactSchema.properties.type.enum).toContain('allopack');
+    expect(artifactTool.description).toMatch(/structurally validate/i);
+    expect(artifactTool.description).toMatch(/does not assess content quality or pedagogical completeness/i);
   });
 
   it('capabilities returns the honest empty desktop-local manifest with no secret fields', async () => {
@@ -142,6 +170,13 @@ describe('MCP stdio proof of concept', () => {
     const codes = bad.structuredContent.errors.map((e) => e.code);
     expect(codes).toContain('unknown-tool');
     expect(codes).toContain('secret-like-field');
+
+    const malformed = await callTool('blueprint_validate', {
+      blueprint: { schemaVersion: '1.0', blueprintId: 'bp-step', plan: [{ step: 'analysis' }] },
+    });
+    const malformedCodes = malformed.structuredContent.errors.map((e) => e.code);
+    expect(malformedCodes).toContain('invalid-plan-item');
+    expect(malformedCodes).not.toContain('empty-plan');
   });
 
   it('artifact_validate works end to end', async () => {
@@ -155,6 +190,54 @@ describe('MCP stdio proof of concept', () => {
     expect(bad.structuredContent.ok).toBe(false);
   });
 
+
+  it('runs create, revise, preview, and job tools with redacted append-only audit records', async () => {
+    const created = await callTool('blueprint_create', {
+      request: { blueprintId: 'bp-task-c', gradeLevel: '5th Grade', standards: 'NGSS 5-ESS2-1', plan: ['analysis', 'quiz', 'lesson-plan'] },
+    });
+    expect(created.isError).toBe(false);
+    expect(created.structuredContent.job.status).toBe('completed');
+    const createJobId = created.structuredContent.job.jobId;
+
+    const createStatus = await callTool('job_get', { jobId: createJobId });
+    expect(createStatus.structuredContent).toMatchObject({ ok: true, job: { blueprintId: "bp-task-c", progress: 1 } });
+    const missingStatus = await callTool('job_get', { jobId: 'job-missing' });
+    expect(missingStatus.structuredContent.errors[0].code).toBe('job-not-found');
+    const createResult = await callTool('job_get_result', { jobId: createJobId });
+    expect(createResult.structuredContent.result.kind).toBe('blueprint');
+    const blueprint = createResult.structuredContent.result.blueprint;
+    expect(blueprint.plan.map((step) => step.tool)).toEqual(['analysis', 'quiz', 'lesson-plan']);
+
+    const revised = await callTool('blueprint_revise', { blueprint, changes: { addTools: ['glossary'], setDirectives: { quiz: 'Use DOK 3' } } });
+    const revisedResult = await callTool('job_get_result', { jobId: revised.structuredContent.job.jobId });
+    const revisedBlueprint = revisedResult.structuredContent.result.blueprint;
+    expect(revisedBlueprint.review.state).toBe('draft');
+    expect(revisedBlueprint.plan.map((step) => step.tool)).toEqual(['analysis', 'quiz', 'glossary', 'lesson-plan']);
+    expect(revisedBlueprint.plan.find((step) => step.tool === 'quiz').directive).toBe('Use DOK 3');
+
+    const previewed = await callTool('blueprint_preview', { blueprint: revisedBlueprint });
+    const previewResult = await callTool('job_get_result', { jobId: previewed.structuredContent.job.jobId });
+    expect(previewResult.structuredContent.result.kind).toBe('preview');
+    expect(previewResult.structuredContent.result.preview.approvalRequired).toBe(true);
+    expect(previewResult.structuredContent.result.preview.missingCapabilities).toEqual(['text']);
+
+    const cancel = await callTool('job_cancel', { jobId: createJobId });
+    expect(cancel.structuredContent.errors[0].code).toBe('job-not-cancellable');
+    const rejected = await request('tools/call', { name: 'blueprint_create', arguments: { request: { blueprintId: 'bp-rejected', plan: [{ tool: 'analysis', apiKey: 'sentinel-secret' }] } } });
+    expect(rejected.error.code).toBe(-32602);
+
+    const lines = readFileSync(auditPath, 'utf8').trim().split('\n').map((line) => JSON.parse(line));
+    expect(lines.map((entry) => [entry.tool, entry.outcome])).toEqual([['blueprint_create', 'succeeded'], ['blueprint_revise', 'succeeded'], ['job_cancel', 'rejected'], ['blueprint_create', 'rejected']]);
+    expect(lines[0]).toMatchObject({ schemaVersion: '1.0', classification: 'draft-writing', jobId: createJobId });
+    expect(lines[0].blueprintRef).toMatch(/^sha256:[a-f0-9]{16}$/);
+    expect(lines[2]).toMatchObject({ classification: 'external-effect', errorCode: 'job-not-cancellable' });
+    expect(lines[3]).toMatchObject({ errorCode: 'invalid-params' });
+    expect(lines[3].blueprintRef).toMatch(/^sha256:[a-f0-9]{16}$/);
+    expect(readFileSync(auditPath, 'utf8')).not.toContain('sentinel-secret');
+    for (const entry of lines) {
+      expect(Object.keys(entry).every((key) => ['schemaVersion', 'eventId', 'recordedAt', 'tool', 'classification', 'outcome', 'jobId', 'blueprintRef', 'errorCode'].includes(key))).toBe(true);
+    }
+  });
   it('returns clean protocol errors for unknown methods, unknown tools, and bad params', async () => {
     const noMethod = await request('resources/list', {});
     expect(noMethod.error.code).toBe(-32601);

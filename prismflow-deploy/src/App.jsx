@@ -7796,6 +7796,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PromptsLibraryModule', './prompts_library_module.js');
     loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
     loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
     loadModule('UdlChatModule', './udl_chat_module.js');
     loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
     loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
@@ -29528,6 +29531,26 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       }
   };
   const handleExecuteBlueprint = async () => {
+    const _adapterModule = window.AlloModules && window.AlloModules.AgentCoreUIAdapter;
+    if (!_adapterModule || typeof _adapterModule.createUIAdapter !== 'function') {
+      throw new Error('[AgentCoreUIAdapter] module not loaded - reload the page');
+    }
+    const _knownTools = Array.isArray(window.TOOL_CATALOG)
+      ? window.TOOL_CATALOG.map(item => item && item.id).filter(Boolean)
+      : undefined;
+    const _uiAdapter = _adapterModule.createUIAdapter({ knownTools: _knownTools });
+    const _prepared = _uiAdapter.prepareExecution(activeBlueprint, {
+      gradeLevel,
+      language: leveledTextLanguage,
+      standards: standardsInput,
+      interests: studentInterests,
+    }, 'ui-confirmation');
+    if (!_prepared.ok) {
+      const _approvalError = new Error((_prepared.errors && _prepared.errors[0] && _prepared.errors[0].message) || 'Blueprint approval failed');
+      _approvalError.report = _prepared;
+      throw _approvalError;
+    }
+    const _executionBlueprint = _prepared.legacyConfig;
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
     if (_m && typeof _m.handleExecuteBlueprint === "function") return _m.handleExecuteBlueprint({
         gradeLevel,
@@ -29573,7 +29596,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         aiStandardQuery,
         aiStandardRegion,
         imageRefinementInput,
-        activeBlueprint,
+        activeBlueprint: _executionBlueprint,
         ai,
         alloBotRef,
         pdfPreviewRef,

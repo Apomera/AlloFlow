@@ -9,7 +9,7 @@
 
 ## What is already DONE (do not redo)
 
-Two local commits on `main` (not pushed, not deployed):
+The incoming handoff began from two local commits on `main` (not pushed or deployed):
 
 **`31546a70b`** — Phase 0 contracts + headless Blueprint service:
 - `agent_core_contracts_module.js` (`window.AlloModules.AgentCoreContracts`, dual-mode `module.exports`) — versioned (`"1.0"`) validators for CapabilityManifest, Blueprint, Job, Provenance; MCP tool-classification table emitting `title` + `readOnlyHint`/`destructiveHint`; `fromLegacyConfig`/`toLegacyConfig` round-tripping the live Auto-Fill config shape; fail-closed on unknown versions/tools/modes; secret-like field names and absolute paths rejected; demo mode cannot advertise privileged capabilities; unknown fields dropped-with-warning.
@@ -27,10 +27,14 @@ Two local commits on `main` (not pushed, not deployed):
 **Verify before building anything:**
 
 ```powershell
-npx vitest run tests/agent_core_contracts.test.js tests/agent_core_blueprint_service.test.js tests/mcp_stdio_smoke.test.js
+npx vitest run tests/agent_core_contracts.test.js tests/agent_core_blueprint_service.test.js tests/agent_core_ui_adapter.test.js tests/mcp_stdio_smoke.test.js
 ```
 
-Expected: 3 files, 40 tests, all passing. Also `node --check` both `agent_core_*.js` files and `desktop/mcp/alloflow-mcp-stdio.cjs` after any edit.
+Expected: 4 files, 50 tests, all passing. Also `node --check` all three `agent_core_*_module.js` files and `desktop/mcp/alloflow-mcp-stdio.cjs` after any edit.
+
+**ChatGPT hardening follow-up (2026-07-14):** Blueprint and artifact provenance now use the dedicated normalizer; all POSIX absolute paths and payloads deeper than eight levels fail closed; AI revisions preserve non-legacy audience/source context; MCP tools reject pre-initialization calls; and the connector privacy policy distinguishes local connector networking from the selected MCP host/model provider.
+
+**Live-client usability follow-up (2026-07-14):** The real Claude Code run is documented in [MCP_LIVE_CLIENT_FINDINGS_2026-07-14.md](MCP_LIVE_CLIENT_FINDINGS_2026-07-14.md). The MCP server now advertises canonical nested Blueprint/Artifact schemas, malformed plan entries return `invalid-plan-item`, and artifact validation explicitly describes its structural-only scope.
 
 ## Settled decisions — do not relitigate
 
@@ -50,19 +54,22 @@ The repository has MANY uncommitted changes belonging to other active work. Befo
 - NEVER run `git reset`, `git checkout --`, `git stash`, `git clean`, or a bare `git add -A` / `git commit -a`.
 - Commit ONLY with explicit pathspecs: `git add <your files> && git commit -m "..." -- <same files>`.
 - Do not touch `AlloFlowANTI.txt`, `prismflow-deploy/`, built `*_module.js` files you didn't author, or anything you didn't change.
-- The two `agent_core_*_module.js` files are HAND-WRITTEN (no `_source.jsx`, no build step) — edit them directly. Everything else with a `*_source.jsx` twin is generated; don't hand-edit generated output.
+- The three `agent_core_*_module.js` files are HAND-WRITTEN (no `_source.jsx`, no build step) — edit them directly. Everything else with a `*_source.jsx` twin is generated; don't hand-edit generated output.
 - Do not push or deploy. Everything stays local for the maintainer (Aaron) to review.
 
 ## Next tasks, in order (stop for review between each)
 
-### Task A: Live-client demo (no code)
+### Task A: Live-client demo - COMPLETE (2026-07-14)
+**Result:** Completed with Claude Code 2.1.207. All three tools were called; the run exposed Blueprint input-schema friction. See [MCP_LIVE_CLIENT_FINDINGS_2026-07-14.md](MCP_LIVE_CLIENT_FINDINGS_2026-07-14.md).
+
 Connect the PoC to one real client and record what happens:
 ```bash
 claude mcp add alloflow -- node desktop/mcp/alloflow-mcp-stdio.cjs
 ```
 (or Claude Desktop config per `desktop/mcp/README.md`). Have the client call all three tools; note schema friction, confusing errors, and description quality. Deliverable: a short findings note in `docs/`.
 
-### Task B: UI adapter for the headless service (the parity step)
+### Task B: UI adapter for the headless service - COMPLETE (2026-07-14)
+**Result:** Complete locally with 100/100 focused tests passing. See [AGENT_CORE_UI_ADAPTER_TASK_B_2026-07-14.md](AGENT_CORE_UI_ADAPTER_TASK_B_2026-07-14.md). Canvas re-paste and CDN publication are required before Canvas use; nothing was deployed.
 Wire the live Auto-Fill path through `AgentCoreBlueprintService` WITHOUT changing user-visible behavior:
 - The seam: `udl_chat_source.jsx` (~line 203 calls `autoConfigureSettings`, ~282 approval/revision recognition) and `AlloFlowANTI.txt` ~29199 (`modifyBlueprintWithAI`) / ~29661 (`handleExecuteBlueprint` delegating to `PhaseOHandlers`).
 - Inject the existing functions as the service's `autoConfigure`/`modifyBlueprint` deps; represent `activeBlueprint` via `fromLegacyConfig`/`toLegacyConfig` at the boundary.
@@ -70,8 +77,8 @@ Wire the live Auto-Fill path through `AgentCoreBlueprintService` WITHOUT changin
 - Acceptance: existing Auto-Fill UX byte-identical; `tests/allo_commands_plan.test.js` and all agent-core suites stay green; add a parity test proving UI-created and service-created Blueprints validate identically.
 - WARNING: ANTI edits require re-pasting into Gemini Canvas (maintainer workflow) — keep the ANTI diff minimal and flag it clearly in your report.
 
-### Task C: Second-slice MCP tools (only after A+B review)
-`blueprint_create`, `blueprint_revise`, `blueprint_preview`, `job_get`, `job_cancel`, `job_get_result` — draft-writing tools need an audit entry per call (append-only JSONL under the desktop data dir is fine). `blueprint_execute` stays OUT until the permission model is reviewed with the maintainer.
+### Task C: Second-slice MCP tools - COMPLETE (2026-07-14)
+**Result:** The six local tools are implemented with bounded in-process jobs and redacted append-only JSONL auditing under the desktop data directory. Deterministic draft calls perform no AI inference or network request. `blueprint_execute` remains OUT. See [AGENT_CORE_MCP_TASK_C_2026-07-14.md](AGENT_CORE_MCP_TASK_C_2026-07-14.md).
 
 ### Deferred (do not start)
 Cloudflare catalog MCP, district remote MCP/OAuth, MCPB packaging submission, computer control, connector-directory submission.
@@ -84,4 +91,4 @@ Cloudflare catalog MCP, district remote MCP/OAuth, MCPB packaging submission, co
 
 ## Context that explains "why now"
 
-Claude for Teachers launched 2026-07-14: verified US K-12 teachers get a free year of premium Claude including Claude Code and Cowork, nine education connectors, and the Learning Commons Knowledge Graph connector. Teachers therefore already hold agentic clients that can call AlloFlow the moment adapters exist — which is why the skill + local MCP path was prioritized over remote infrastructure. AlloFlow's differentiation is the open artifact layer, student-data locality, and institution-owned deployment — not being another AI provider.
+Claude for Teachers launched 2026-07-14: verified US K-12 teachers get a free year of premium Claude including Claude Code and Cowork, nine education connectors, and the Learning Commons Knowledge Graph connector. Teachers therefore already hold agentic clients that can call AlloFlow the moment adapters exist — which is why the skill + local MCP path was prioritized over remote infrastructure. AlloFlow's differentiation is the open artifact layer, institution-controlled deployment and data pathways, and provider choice, not being another AI provider. Local connector operation does not by itself make a cloud MCP host or model local; districts must approve the complete configuration used with student information.

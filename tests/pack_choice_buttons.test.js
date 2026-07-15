@@ -17,6 +17,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
+loadAlloModule('agent_core_contracts_module.js');
+loadAlloModule('agent_core_blueprint_service_module.js');
+loadAlloModule('agent_core_ui_adapter_module.js');
 loadAlloModule('udl_chat_module.js');
 const handleSendUDLMessage = window.AlloModules.UdlChat.handleSendUDLMessage;
 

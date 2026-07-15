@@ -143,6 +143,21 @@ describe('Blueprint contract + legacy round-trip', () => {
     expect(empty.errors.some((e) => e.code === 'empty-plan')).toBe(true);
   });
 
+  it('distinguishes malformed plan items from a genuinely empty plan', () => {
+    const malformed = C.validateBlueprint({
+      schemaVersion: '1.0',
+      blueprintId: 'bp-malformed-plan',
+      plan: [{ step: 'analysis', directive: 'Analyze the source' }],
+    });
+    expect(malformed.ok).toBe(false);
+    expect(malformed.errors.some((e) => e.code === 'invalid-plan-item' && e.path === 'plan[0]')).toBe(true);
+    expect(malformed.errors.some((e) => e.code === 'empty-plan')).toBe(false);
+
+    const wrongType = C.validateBlueprint({ schemaVersion: '1.0', blueprintId: 'bp-object-plan', plan: {} });
+    expect(wrongType.errors.some((e) => e.code === 'bad-plan')).toBe(true);
+    expect(wrongType.errors.some((e) => e.code === 'empty-plan')).toBe(false);
+  });
+
   it('accepts an injected knownTools list (ToolCatalog is the live source)', () => {
     const bp = C.fromLegacyConfig({ recommendedResources: ['custom-tool'] }, { blueprintId: 'bp-c' });
     expect(C.validateBlueprint(bp).ok).toBe(false);
@@ -155,6 +170,34 @@ describe('Blueprint contract + legacy round-trip', () => {
     const r = C.validateBlueprint(bp);
     expect(r.ok).toBe(false);
     expect(r.errors.some((e) => e.code === 'unsafe-path-value')).toBe(true);
+
+    bp.sourcePolicy = { kind: 'file', ref: '/tmp/roster.csv' };
+    const posix = C.validateBlueprint(bp);
+    expect(posix.ok).toBe(false);
+    expect(posix.errors.some((e) => e.code === 'unsafe-path-value')).toBe(true);
+  });
+
+  it('fails closed when a payload exceeds the safety scanner nesting limit', () => {
+    const bp = C.fromLegacyConfig(fixture('legacy_config.json'), { blueprintId: 'bp-deep' });
+    let cursor = bp.configs;
+    for (let i = 0; i < 10; i += 1) {
+      cursor.next = {};
+      cursor = cursor.next;
+    }
+    cursor.apiKey = 'must-not-escape-the-scan';
+    const r = C.validateBlueprint(bp);
+    expect(r.ok).toBe(false);
+    expect(r.errors.some((e) => e.code === 'payload-too-deep')).toBe(true);
+  });
+
+  it('applies the provenance contract to Blueprints', () => {
+    const bp = C.fromLegacyConfig(fixture('legacy_config.json'), {
+      blueprintId: 'bp-prov',
+      provenance: { provider: 'gemini', prompt: 'hidden prompt' },
+    });
+    const r = C.validateBlueprint(bp);
+    expect(r.ok).toBe(false);
+    expect(r.errors.some((e) => e.code === 'forbidden-provenance-field')).toBe(true);
   });
 });
 
@@ -186,6 +229,17 @@ describe('Artifact contract', () => {
     });
     expect(r.ok).toBe(false);
     expect(r.errors.some((e) => e.code === 'forbidden-provenance-field')).toBe(true);
+  });
+
+  it('returns only normalized provenance fields', () => {
+    const r = C.validateArtifact({
+      schemaVersion: '1.0', artifactId: 'a-normalized', type: 'quiz',
+      provenance: { provider: 'gemini', rawConversation: 'must be dropped' },
+    });
+    expect(r.ok).toBe(true);
+    expect(r.value.provenance.provider).toBe('gemini');
+    expect(r.value.provenance.rawConversation).toBeUndefined();
+    expect(r.value.provenance.contractVersion).toBe('1.0');
   });
 });
 

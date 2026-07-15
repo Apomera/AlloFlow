@@ -44,9 +44,10 @@ describe('createDraft', () => {
 
   it('builds a deterministic offline draft without any AI dependency', async () => {
     const svc = mkService();
-    const bp = await svc.createDraft({ blueprintId: 'bp-offline', gradeLevel: '3rd Grade', plan: ['analysis', 'glossary'] });
+    const bp = await svc.createDraft({ blueprintId: 'bp-offline', gradeLevel: '3rd Grade', plan: ['analysis', 'glossary'], globalSettings: { theme: 'high-contrast' } });
     expect(bp.plan.map((r) => r.tool)).toEqual(['analysis', 'glossary']);
     expect(bp.audience.gradeLevel).toBe('3rd Grade');
+    expect(bp.globalSettings).toMatchObject({ gradeLevel: '3rd Grade', theme: 'high-contrast' });
   });
 
   it('rejects an AI result that fails the contract (fail closed, no partial value)', async () => {
@@ -92,11 +93,18 @@ describe('reviseWithAI', () => {
         return { ...legacy, recommendedResources: [...legacy.recommendedResources, 'timeline'], resourcePlan: null };
       },
     });
-    const bp = await svc.createDraft({ blueprintId: 'bp-ai-rev', plan: ['analysis', 'lesson-plan'] });
+    const bp = await svc.createDraft({
+      blueprintId: 'bp-ai-rev',
+      plan: ['analysis', 'lesson-plan'],
+      interests: 'space exploration',
+    });
+    bp.sourcePolicy = { kind: 'workspace-source', ref: 'source-42' };
     const next = await svc.reviseWithAI(bp, 'add a timeline');
     expect(seenLegacy.legacy.recommendedResources).toEqual(['analysis', 'lesson-plan']);
     expect(seenLegacy.instruction).toBe('add a timeline');
     expect(next.plan.map((r) => r.tool)).toEqual(['analysis', 'timeline', 'lesson-plan']);
+    expect(next.audience.interests).toBe('space exploration');
+    expect(next.sourcePolicy).toEqual({ kind: 'workspace-source', ref: 'source-42' });
     expect(next.review.state).toBe('draft');
   });
 
