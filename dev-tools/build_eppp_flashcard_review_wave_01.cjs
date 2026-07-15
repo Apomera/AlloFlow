@@ -16,7 +16,7 @@ const outputName = `eppp_flashcard_review_wave_${waveNumber}.json`;
 const markdownName = `eppp_flashcard_review_wave_${waveNumber}.md`;
 const waveId = `eppp-flashcard-review-wave-${waveNumber}`;
 const reviewDate = '2026-07-14';
-const quotas = new Map(isWave02 ? [[1, 10], [2, 19], [3, 12], [4, 13], [5, 10], [6, 10], [7, 24], [8, 2]] : [[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]]);
+const quotas = new Map(isWave02 ? [[1, 10], [2, 19], [3, 12], [4, 13], [5, 10], [6, 10], [7, 21], [8, 5]] : [[1, 14], [2, 14], [3, 13], [4, 13], [5, 12], [6, 13], [7, 14], [8, 7]]);
 
 if (!fs.existsSync(sourcePath)) throw new Error('Build eppp_learning_library.json before creating a flashcard review wave.');
 const library = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
@@ -32,6 +32,7 @@ const unstableClaim = isWave02
   : /\b(?:dsm(?:-|\s)?(?:iv|5|v)(?:-|\s)?tr|current(?:ly)?|latest|today|now|law|legal|statute|regulation|mandat(?:e|ed|ory)|duty to warn|reporting|licens(?:e|ing)|ethics code|apa code|medication|drug|dosage|dose|side effects?|black box|fda|pregnan\w*|suicid\w*|diagnos(?:is|tic)|prevalence|incidence|\d+\s*(?:mg|%|years?|months?|weeks?))\b/i;
 const overclaim = /\b(?:always|never|guarantees?|proves?|gold standard|the neural basis|all people|no one)\b/i;
 const malformed = /(?:\u00C3[\u0080-\u00FF]|\u00E2\u20AC|\uFFFD|<\/?(?:script|style|svg)\b)/i;
+const wave02ProfessionalRewrite = /^(?:cultural competence in ethics|apa multicultural guidelines(?: \(2017\))?|risk management vs\. ethics|ethical issues in forensic assessment|forensic psychology ethical guidelines)$/i;
 const excludedByDomain = new Map([
   ...(isWave02 ? [
     [1, /\b(?:complete list|complete comparison|monitor(?:ing)?|first-line|cholinesterase|anticonvulsants?|lithium|autism|seizure types?|treatments?)\b/i],
@@ -160,10 +161,10 @@ for (const [domainId, quota] of quotas) {
     .filter((card) => !existingReviewedFronts.has(normalize(card.front)))
     .filter((card) => card.front.length >= 8 && card.front.length <= 220)
     .filter((card) => card.back.length >= 20 && card.back.length <= 700)
-    .filter((card) => !unstableClaim.test(`${card.front} ${card.back}`))
+    .filter((card) => (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !unstableClaim.test(`${card.front} ${card.back}`))
     .filter((card) => !overclaim.test(`${card.front} ${card.back}`))
     .filter((card) => !malformed.test(`${card.front} ${card.back}`))
-    .filter((card) => !(excludedByDomain.get(domainId) || /$a/).test(`${card.front} ${card.back}`))
+    .filter((card) => (isWave02 && Number(card.domainId) === 8 && wave02ProfessionalRewrite.test(card.front)) || !(excludedByDomain.get(domainId) || /$a/).test(`${card.front} ${card.back}`))
     .sort((left, right) => candidateScore(left) - candidateScore(right) || left.id.localeCompare(right.id));
 
   const domainSelected = [];

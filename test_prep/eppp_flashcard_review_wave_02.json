@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T03:11:34.961Z",
+  "generatedAt": "2026-07-15T03:21:41.888Z",
   "waveId": "eppp-flashcard-review-wave-02",
   "reviewDate": "2026-07-14",
   "status": "assisted-editorial-review-complete-expert-pending",
@@ -21,7 +21,7 @@
     "reviewedFlashcards": 100,
     "domainsRepresented": 8,
     "distinctNamedSources": 18,
-    "revisedFlashcards": 0,
+    "revisedFlashcards": 4,
     "independentExpertValidated": 0,
     "learnerVisible": 0,
     "legacyFlashcards": 415,
@@ -32,11 +32,11 @@
   "domainBreakdown": {
     "1": {
       "domain": "Biological Bases of Behavior",
-      "reviewed": 11
+      "reviewed": 10
     },
     "2": {
       "domain": "Cognitive-Affective Bases of Behavior",
-      "reviewed": 20
+      "reviewed": 19
     },
     "3": {
       "domain": "Social & Cultural Bases of Behavior",
@@ -48,7 +48,7 @@
     },
     "5": {
       "domain": "Assessment & Diagnosis",
-      "reviewed": 11
+      "reviewed": 10
     },
     "6": {
       "domain": "Treatment, Intervention & Prevention",
@@ -60,7 +60,7 @@
     },
     "8": {
       "domain": "Ethical, Legal & Professional Issues",
-      "reviewed": 2
+      "reviewed": 5
     }
   },
   "sources": [
@@ -293,45 +293,6 @@
     },
     {
       "sequence": 4,
-      "id": "flashcard-4fa587ca9f010f5a",
-      "domainId": 1,
-      "domain": "Biological Bases of Behavior",
-      "legacyFront": "SSRI mechanism of action",
-      "legacyBack": "Selective Serotonin Reuptake Inhibitors block the serotonin transporter (SERT), preventing reuptake into the presynaptic neuron. Increases serotonin availability in the synaptic cleft. Examples: fluoxetine (Prozac), sertraline (Zoloft), escitalopram (Lexapro).",
-      "front": "SSRI mechanism of action",
-      "back": "Selective Serotonin Reuptake Inhibitors block the serotonin transporter (SERT), preventing reuptake into the presynaptic neuron. Increases serotonin availability in the synaptic cleft. Examples: fluoxetine (Prozac), sertraline (Zoloft), escitalopram (Lexapro).",
-      "revisionApplied": false,
-      "revisionReason": "",
-      "reviewStatus": "source-reviewed-editorial-pass",
-      "reviewMode": "assisted-flashcard-editorial-review",
-      "reviewWave": "eppp-flashcard-review-wave-02",
-      "reviewDate": "2026-07-14",
-      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Introduction to Behavioral Neuroscience, Chapter 1: Building a Nervous System. Independent qualified expert validation remains pending.",
-      "references": [
-        "https://openstax.org/books/introduction-behavioral-neuroscience/pages/1-introduction"
-      ],
-      "sourceDetails": [
-        {
-          "title": "Introduction to Behavioral Neuroscience, Chapter 1: Building a Nervous System",
-          "organization": "Irina Calin-Jageman and OpenStax, Rice University (2024)",
-          "url": "https://openstax.org/books/introduction-behavioral-neuroscience/pages/1-introduction",
-          "credibility": "OpenStax is Rice University's nonprofit educational publisher. This openly available text was written by neuroscientists, peer reviewed, and designed to teach foundational nervous-system structure and function."
-        }
-      ],
-      "checks": {
-        "atomicAnswer": "editorial-pass",
-        "sourceSupport": "topically-aligned-reputable-source",
-        "duplication": "editorial-pass",
-        "accessibility": "structure-pass",
-        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
-        "biasAndContext": "assisted-review-pass-expert-pending"
-      },
-      "independentExpertStatus": "not-started",
-      "productionStatus": "not-production-validated",
-      "learnerVisible": false
-    },
-    {
-      "sequence": 5,
       "id": "flashcard-009c8331ced2065b",
       "domainId": 1,
       "domain": "Biological Bases of Behavior",
@@ -370,7 +331,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 6,
+      "sequence": 5,
       "id": "flashcard-f898b8e44f160191",
       "domainId": 1,
       "domain": "Biological Bases of Behavior",
@@ -409,7 +370,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 7,
+      "sequence": 6,
       "id": "flashcard-3bc80587f13f1843",
       "domainId": 1,
       "domain": "Biological Bases of Behavior",
@@ -448,7 +409,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 8,
+      "sequence": 7,
       "id": "flashcard-ecbccb7819e9bbb5",
       "domainId": 1,
       "domain": "Biological Bases of Behavior",
@@ -487,7 +448,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 9,
+      "sequence": 8,
       "id": "flashcard-db2dd8ed7fea08b1",
       "domainId": 1,
       "domain": "Biological Bases of Behavior",
@@ -526,7 +487,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 10,
+      "sequence": 9,
       "id": "flashcard-1771c8e1b9a75822",
       "domainId": 1,
       "domain": "Biological Bases of Behavior",
@@ -565,7 +526,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 11,
+      "sequence": 10,
       "id": "flashcard-c2cb6ba5ffc557c9",
       "domainId": 1,
       "domain": "Biological Bases of Behavior",
@@ -604,7 +565,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 12,
+      "sequence": 11,
       "id": "flashcard-73930dd3c8618083",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -643,7 +604,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 13,
+      "sequence": 12,
       "id": "flashcard-bdcd01ca9566c788",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -682,7 +643,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 14,
+      "sequence": 13,
       "id": "flashcard-d4c0b788f1c8f3a1",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -721,7 +682,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 15,
+      "sequence": 14,
       "id": "flashcard-02e7ca256b3e635f",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -760,7 +721,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 16,
+      "sequence": 15,
       "id": "flashcard-54473593254c06a6",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -799,7 +760,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 17,
+      "sequence": 16,
       "id": "flashcard-d80b5119450d32d7",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -838,7 +799,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 18,
+      "sequence": 17,
       "id": "flashcard-2bdc5edb023c9b54",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -877,7 +838,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 19,
+      "sequence": 18,
       "id": "flashcard-789bcd1c451a6e63",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -916,46 +877,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 20,
-      "id": "flashcard-3896737e576eed03",
-      "domainId": 2,
-      "domain": "Cognitive-Affective Bases of Behavior",
-      "legacyFront": "Bandura's Bobo doll experiment",
-      "legacyBack": "Children who observed adults acting aggressively toward a Bobo doll later imitated the aggression — even without reinforcement. Demonstrated observational learning (modeling). Key factors: attention, retention, reproduction, motivation. Challenged purely behaviorist views.",
-      "front": "Bandura's Bobo doll experiment",
-      "back": "Children who observed adults acting aggressively toward a Bobo doll later imitated the aggression — even without reinforcement. Demonstrated observational learning (modeling). Key factors: attention, retention, reproduction, motivation. Challenged purely behaviorist views.",
-      "revisionApplied": false,
-      "revisionReason": "",
-      "reviewStatus": "source-reviewed-editorial-pass",
-      "reviewMode": "assisted-flashcard-editorial-review",
-      "reviewWave": "eppp-flashcard-review-wave-02",
-      "reviewDate": "2026-07-14",
-      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Psychology 2e, Chapter 7: Thinking and Intelligence. Independent qualified expert validation remains pending.",
-      "references": [
-        "https://openstax.org/books/psychology-2e/pages/7-introduction"
-      ],
-      "sourceDetails": [
-        {
-          "title": "Psychology 2e, Chapter 7: Thinking and Intelligence",
-          "organization": "OpenStax, Rice University (second edition)",
-          "url": "https://openstax.org/books/psychology-2e/pages/7-introduction",
-          "credibility": "OpenStax is Rice University's nonprofit educational publisher. This expert-reviewed chapter directly addresses reasoning, concepts, problem solving, judgment, decision making, language, and intelligence."
-        }
-      ],
-      "checks": {
-        "atomicAnswer": "editorial-pass",
-        "sourceSupport": "topically-aligned-reputable-source",
-        "duplication": "editorial-pass",
-        "accessibility": "structure-pass",
-        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
-        "biasAndContext": "assisted-review-pass-expert-pending"
-      },
-      "independentExpertStatus": "not-started",
-      "productionStatus": "not-production-validated",
-      "learnerVisible": false
-    },
-    {
-      "sequence": 21,
+      "sequence": 19,
       "id": "flashcard-1bf5e09af1e31f56",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -994,46 +916,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 22,
-      "id": "flashcard-8c2513b960517023",
-      "domainId": 2,
-      "domain": "Cognitive-Affective Bases of Behavior",
-      "legacyFront": "What is cognitive dissonance?",
-      "legacyBack": "Psychological discomfort from holding contradictory beliefs/attitudes. People reduce it through attitude change, behavior change, or rationalization (Festinger, 1957).",
-      "front": "What is cognitive dissonance?",
-      "back": "Psychological discomfort from holding contradictory beliefs/attitudes. People reduce it through attitude change, behavior change, or rationalization (Festinger, 1957).",
-      "revisionApplied": false,
-      "revisionReason": "",
-      "reviewStatus": "source-reviewed-editorial-pass",
-      "reviewMode": "assisted-flashcard-editorial-review",
-      "reviewWave": "eppp-flashcard-review-wave-02",
-      "reviewDate": "2026-07-14",
-      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Psychology 2e, Chapter 7: Thinking and Intelligence. Independent qualified expert validation remains pending.",
-      "references": [
-        "https://openstax.org/books/psychology-2e/pages/7-introduction"
-      ],
-      "sourceDetails": [
-        {
-          "title": "Psychology 2e, Chapter 7: Thinking and Intelligence",
-          "organization": "OpenStax, Rice University (second edition)",
-          "url": "https://openstax.org/books/psychology-2e/pages/7-introduction",
-          "credibility": "OpenStax is Rice University's nonprofit educational publisher. This expert-reviewed chapter directly addresses reasoning, concepts, problem solving, judgment, decision making, language, and intelligence."
-        }
-      ],
-      "checks": {
-        "atomicAnswer": "editorial-pass",
-        "sourceSupport": "topically-aligned-reputable-source",
-        "duplication": "editorial-pass",
-        "accessibility": "structure-pass",
-        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
-        "biasAndContext": "assisted-review-pass-expert-pending"
-      },
-      "independentExpertStatus": "not-started",
-      "productionStatus": "not-production-validated",
-      "learnerVisible": false
-    },
-    {
-      "sequence": 23,
+      "sequence": 20,
       "id": "flashcard-8961b44b87292acb",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -1072,7 +955,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 24,
+      "sequence": 21,
       "id": "flashcard-28eadd6da59a1e98",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -1111,46 +994,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 25,
-      "id": "flashcard-90f268d96ded1bdd",
-      "domainId": 2,
-      "domain": "Cognitive-Affective Bases of Behavior",
-      "legacyFront": "Dual-process theory (System 1 & 2)",
-      "legacyBack": "Kahneman: System 1 = fast, automatic, intuitive, effortless, prone to biases. System 2 = slow, deliberate, analytical, effortful, logical. Most daily decisions use System 1. System 2 activated when System 1 encounters difficulty. Explains many cognitive biases and heuristic errors.",
-      "front": "Dual-process theory (System 1 & 2)",
-      "back": "Kahneman: System 1 = fast, automatic, intuitive, effortless, prone to biases. System 2 = slow, deliberate, analytical, effortful, logical. Most daily decisions use System 1. System 2 activated when System 1 encounters difficulty. Explains many cognitive biases and heuristic errors.",
-      "revisionApplied": false,
-      "revisionReason": "",
-      "reviewStatus": "source-reviewed-editorial-pass",
-      "reviewMode": "assisted-flashcard-editorial-review",
-      "reviewWave": "eppp-flashcard-review-wave-02",
-      "reviewDate": "2026-07-14",
-      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Psychology 2e, Chapter 7: Thinking and Intelligence. Independent qualified expert validation remains pending.",
-      "references": [
-        "https://openstax.org/books/psychology-2e/pages/7-introduction"
-      ],
-      "sourceDetails": [
-        {
-          "title": "Psychology 2e, Chapter 7: Thinking and Intelligence",
-          "organization": "OpenStax, Rice University (second edition)",
-          "url": "https://openstax.org/books/psychology-2e/pages/7-introduction",
-          "credibility": "OpenStax is Rice University's nonprofit educational publisher. This expert-reviewed chapter directly addresses reasoning, concepts, problem solving, judgment, decision making, language, and intelligence."
-        }
-      ],
-      "checks": {
-        "atomicAnswer": "editorial-pass",
-        "sourceSupport": "topically-aligned-reputable-source",
-        "duplication": "editorial-pass",
-        "accessibility": "structure-pass",
-        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
-        "biasAndContext": "assisted-review-pass-expert-pending"
-      },
-      "independentExpertStatus": "not-started",
-      "productionStatus": "not-production-validated",
-      "learnerVisible": false
-    },
-    {
-      "sequence": 26,
+      "sequence": 22,
       "id": "flashcard-8d6a4aedf2cbde5b",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -1189,7 +1033,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 27,
+      "sequence": 23,
       "id": "flashcard-e654015ef5c14afc",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -1228,7 +1072,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 28,
+      "sequence": 24,
       "id": "flashcard-8c5bec532bf4b69d",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -1267,7 +1111,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 29,
+      "sequence": 25,
       "id": "flashcard-20e7874cde129361",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -1306,7 +1150,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 30,
+      "sequence": 26,
       "id": "flashcard-700cf1c758003432",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
@@ -1345,14 +1189,14 @@
       "learnerVisible": false
     },
     {
-      "sequence": 31,
-      "id": "flashcard-7362aa99a91a11c5",
+      "sequence": 27,
+      "id": "flashcard-461b5e633fb6442d",
       "domainId": 2,
       "domain": "Cognitive-Affective Bases of Behavior",
-      "legacyFront": "Fluid vs. crystallized intelligence",
-      "legacyBack": "Fluid (Gf): novel problem-solving, pattern recognition, abstract reasoning. Peaks ~25, declines with age. Crystallized (Gc): acquired knowledge, vocabulary, learned skills. Increases throughout life. Cattell-Horn model. Gf predicts learning speed; Gc predicts knowledge breadth.",
-      "front": "Fluid vs. crystallized intelligence",
-      "back": "Fluid (Gf): novel problem-solving, pattern recognition, abstract reasoning. Peaks ~25, declines with age. Crystallized (Gc): acquired knowledge, vocabulary, learned skills. Increases throughout life. Cattell-Horn model. Gf predicts learning speed; Gc predicts knowledge breadth.",
+      "legacyFront": "Explain the levels of processing framework",
+      "legacyBack": "Craik & Lockhart (1972): Memory depends on depth of encoding, not rehearsal time. Shallow = structural (font, UPPERCASE). Intermediate = phonemic (rhymes with...). Deep = semantic (meaning-based). Deeper processing → better long-term retention. Self-reference effect = deepest.",
+      "front": "Explain the levels of processing framework",
+      "back": "Craik & Lockhart (1972): Memory depends on depth of encoding, not rehearsal time. Shallow = structural (font, UPPERCASE). Intermediate = phonemic (rhymes with...). Deep = semantic (meaning-based). Deeper processing → better long-term retention. Self-reference effect = deepest.",
       "revisionApplied": false,
       "revisionReason": "",
       "reviewStatus": "source-reviewed-editorial-pass",
@@ -1384,7 +1228,85 @@
       "learnerVisible": false
     },
     {
-      "sequence": 32,
+      "sequence": 28,
+      "id": "flashcard-178cd9df8e8e2625",
+      "domainId": 2,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "legacyFront": "Classical conditioning: higher-order conditioning",
+      "legacyBack": "After CS1 → US pairing is established, CS1 can serve as an effective US for a new CS2 → CS1 pairing. E.g., bell (CS1) paired with food (US); then, light (CS2) paired with bell (CS1). Usually weaker and more fragile than first-order conditioning.",
+      "front": "Classical conditioning: higher-order conditioning",
+      "back": "After CS1 → US pairing is established, CS1 can serve as an effective US for a new CS2 → CS1 pairing. E.g., bell (CS1) paired with food (US); then, light (CS2) paired with bell (CS1). Usually weaker and more fragile than first-order conditioning.",
+      "revisionApplied": false,
+      "revisionReason": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewMode": "assisted-flashcard-editorial-review",
+      "reviewWave": "eppp-flashcard-review-wave-02",
+      "reviewDate": "2026-07-14",
+      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Psychology 2e, Chapter 6: Learning. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 6: Learning",
+          "organization": "OpenStax, Rice University (second edition)",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-introduction",
+          "credibility": "OpenStax is Rice University's nonprofit educational publisher. This expert-reviewed chapter covers classical conditioning, operant conditioning, observational learning, and the core learning distinctions used by these items."
+        }
+      ],
+      "checks": {
+        "atomicAnswer": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "duplication": "editorial-pass",
+        "accessibility": "structure-pass",
+        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
+        "biasAndContext": "assisted-review-pass-expert-pending"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "learnerVisible": false
+    },
+    {
+      "sequence": 29,
+      "id": "flashcard-c942f6b9a9e27def",
+      "domainId": 2,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "legacyFront": "Classical conditioning: delay vs. trace vs. simultaneous",
+      "legacyBack": "Delay (best): CS starts before US, overlaps until US. Trace: CS ends before US starts (gap makes learning harder). Simultaneous: CS and US at same time (poor learning). Backward: US before CS (worst/no learning). Optimal CS-US interval: ~0.5 seconds.",
+      "front": "Classical conditioning: delay vs. trace vs. simultaneous",
+      "back": "Delay (best): CS starts before US, overlaps until US. Trace: CS ends before US starts (gap makes learning harder). Simultaneous: CS and US at same time (poor learning). Backward: US before CS (worst/no learning). Optimal CS-US interval: ~0.5 seconds.",
+      "revisionApplied": false,
+      "revisionReason": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewMode": "assisted-flashcard-editorial-review",
+      "reviewWave": "eppp-flashcard-review-wave-02",
+      "reviewDate": "2026-07-14",
+      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Psychology 2e, Chapter 6: Learning. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 6: Learning",
+          "organization": "OpenStax, Rice University (second edition)",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-introduction",
+          "credibility": "OpenStax is Rice University's nonprofit educational publisher. This expert-reviewed chapter covers classical conditioning, operant conditioning, observational learning, and the core learning distinctions used by these items."
+        }
+      ],
+      "checks": {
+        "atomicAnswer": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "duplication": "editorial-pass",
+        "accessibility": "structure-pass",
+        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
+        "biasAndContext": "assisted-review-pass-expert-pending"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "learnerVisible": false
+    },
+    {
+      "sequence": 30,
       "id": "flashcard-ab9e4fa6ad88d33d",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1423,7 +1345,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 33,
+      "sequence": 31,
       "id": "flashcard-c9802e54115c65d7",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1462,7 +1384,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 34,
+      "sequence": 32,
       "id": "flashcard-fe01cc9af140d479",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1501,7 +1423,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 35,
+      "sequence": 33,
       "id": "flashcard-4a2e306a26caf9a4",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1540,7 +1462,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 36,
+      "sequence": 34,
       "id": "flashcard-8fb61eb4454f45f3",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1579,7 +1501,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 37,
+      "sequence": 35,
       "id": "flashcard-6060e49cc6f6fe04",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1618,7 +1540,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 38,
+      "sequence": 36,
       "id": "flashcard-3bcf6419f329d516",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1657,7 +1579,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 39,
+      "sequence": 37,
       "id": "flashcard-acbcf6258d673613",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1696,7 +1618,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 40,
+      "sequence": 38,
       "id": "flashcard-5b53343bdff32825",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1735,7 +1657,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 41,
+      "sequence": 39,
       "id": "flashcard-1bdbedb71087a830",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1774,7 +1696,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 42,
+      "sequence": 40,
       "id": "flashcard-340918453f5ee7dd",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1813,7 +1735,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 43,
+      "sequence": 41,
       "id": "flashcard-60e709ecf37ff338",
       "domainId": 3,
       "domain": "Social & Cultural Bases of Behavior",
@@ -1852,7 +1774,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 44,
+      "sequence": 42,
       "id": "flashcard-f907866621025f19",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -1891,7 +1813,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 45,
+      "sequence": 43,
       "id": "flashcard-bc546fab976ab3bb",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -1930,7 +1852,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 46,
+      "sequence": 44,
       "id": "flashcard-cf5f3d88d7e4a18f",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -1969,7 +1891,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 47,
+      "sequence": 45,
       "id": "flashcard-61ac7ad490191ca2",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2008,7 +1930,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 48,
+      "sequence": 46,
       "id": "flashcard-a12a54a4ee445e37",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2047,7 +1969,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 49,
+      "sequence": 47,
       "id": "flashcard-b01f5d047fb76df3",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2086,7 +2008,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 50,
+      "sequence": 48,
       "id": "flashcard-335d2357dd79bec9",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2125,7 +2047,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 51,
+      "sequence": 49,
       "id": "flashcard-44470825f6497751",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2164,7 +2086,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 52,
+      "sequence": 50,
       "id": "flashcard-96f8ecc6072e9e17",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2203,7 +2125,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 53,
+      "sequence": 51,
       "id": "flashcard-be1ec104465a00ee",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2242,7 +2164,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 54,
+      "sequence": 52,
       "id": "flashcard-6cd3dabae4c65fe9",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2281,7 +2203,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 55,
+      "sequence": 53,
       "id": "flashcard-e8de5f487a6070e5",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2320,7 +2242,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 56,
+      "sequence": 54,
       "id": "flashcard-d1ab764737847418",
       "domainId": 4,
       "domain": "Growth & Lifespan Development",
@@ -2359,7 +2281,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 57,
+      "sequence": 55,
       "id": "flashcard-7d8b5c0ee1658485",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2398,7 +2320,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 58,
+      "sequence": 56,
       "id": "flashcard-1a894e0bf8403d51",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2437,7 +2359,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 59,
+      "sequence": 57,
       "id": "flashcard-e64ce986230feae7",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2476,46 +2398,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 60,
-      "id": "flashcard-66b074abe9ef281e",
-      "domainId": 5,
-      "domain": "Assessment & Diagnosis",
-      "legacyFront": "T-scores and z-scores",
-      "legacyBack": "z-score: M=0, SD=1. T-score: M=50, SD=10. A T-score of 70 = 2 SDs above mean ≈ 98th percentile. Clinical cutoff on MMPI-2 is typically T ≥ 65.",
-      "front": "T-scores and z-scores",
-      "back": "z-score: M=0, SD=1. T-score: M=50, SD=10. A T-score of 70 = 2 SDs above mean ≈ 98th percentile. Clinical cutoff on MMPI-2 is typically T ≥ 65.",
-      "revisionApplied": false,
-      "revisionReason": "",
-      "reviewStatus": "source-reviewed-editorial-pass",
-      "reviewMode": "assisted-flashcard-editorial-review",
-      "reviewWave": "eppp-flashcard-review-wave-02",
-      "reviewDate": "2026-07-14",
-      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Standards for Educational and Psychological Testing. Independent qualified expert validation remains pending.",
-      "references": [
-        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
-      ],
-      "sourceDetails": [
-        {
-          "title": "Standards for Educational and Psychological Testing",
-          "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education (2014)",
-          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
-          "credibility": "These jointly published professional standards are the principal U.S. consensus framework for validity, reliability, fairness, accessibility, administration, scoring, and responsible interpretation of tests."
-        }
-      ],
-      "checks": {
-        "atomicAnswer": "editorial-pass",
-        "sourceSupport": "topically-aligned-reputable-source",
-        "duplication": "editorial-pass",
-        "accessibility": "structure-pass",
-        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
-        "biasAndContext": "assisted-review-pass-expert-pending"
-      },
-      "independentExpertStatus": "not-started",
-      "productionStatus": "not-production-validated",
-      "learnerVisible": false
-    },
-    {
-      "sequence": 61,
+      "sequence": 58,
       "id": "flashcard-f5340ec0137c7472",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2554,7 +2437,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 62,
+      "sequence": 59,
       "id": "flashcard-4ec49e98b329da0a",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2593,7 +2476,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 63,
+      "sequence": 60,
       "id": "flashcard-1dd355cd4f665d73",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2632,7 +2515,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 64,
+      "sequence": 61,
       "id": "flashcard-32800488c8d3c55a",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2671,7 +2554,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 65,
+      "sequence": 62,
       "id": "flashcard-52605258ef793c11",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2710,7 +2593,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 66,
+      "sequence": 63,
       "id": "flashcard-bfe4a969b34563ce",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2749,7 +2632,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 67,
+      "sequence": 64,
       "id": "flashcard-fefcfcb26a3a5929",
       "domainId": 5,
       "domain": "Assessment & Diagnosis",
@@ -2788,7 +2671,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 68,
+      "sequence": 65,
       "id": "flashcard-031d42ca8bb3920a",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -2827,7 +2710,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 69,
+      "sequence": 66,
       "id": "flashcard-ba48e97d1cf7faf2",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -2866,7 +2749,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 70,
+      "sequence": 67,
       "id": "flashcard-7ff30c0a626d54aa",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -2905,7 +2788,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 71,
+      "sequence": 68,
       "id": "flashcard-f6b77d298d436992",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -2944,7 +2827,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 72,
+      "sequence": 69,
       "id": "flashcard-73a9b234cd868b86",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -2983,7 +2866,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 73,
+      "sequence": 70,
       "id": "flashcard-0adbccfb23c0f163",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -3022,7 +2905,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 74,
+      "sequence": 71,
       "id": "flashcard-20fb7d1d4e17f653",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -3061,7 +2944,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 75,
+      "sequence": 72,
       "id": "flashcard-10f6939b9f4a1993",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -3100,7 +2983,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 76,
+      "sequence": 73,
       "id": "flashcard-c275d12cdc6afc64",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -3139,7 +3022,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 77,
+      "sequence": 74,
       "id": "flashcard-969000f13eb54a36",
       "domainId": 6,
       "domain": "Treatment, Intervention & Prevention",
@@ -3178,7 +3061,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 78,
+      "sequence": 75,
       "id": "flashcard-5eb5ce9a34b08b70",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3217,7 +3100,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 79,
+      "sequence": 76,
       "id": "flashcard-683a7c88ac17d094",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3256,7 +3139,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 80,
+      "sequence": 77,
       "id": "flashcard-7d6f6e5b08c13304",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3295,7 +3178,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 81,
+      "sequence": 78,
       "id": "flashcard-e885ca43b996e3e1",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3334,46 +3217,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 82,
-      "id": "flashcard-c1bbe1c773a6f0ca",
-      "domainId": 7,
-      "domain": "Research Methods & Statistics",
-      "legacyFront": "What is effect size?",
-      "legacyBack": "Quantifies practical significance (p-value only tells statistical significance). Cohen's d: small = 0.2, medium = 0.5, large = 0.8. Pearson r: small = .10, medium = .30, large = .50. Effect size is independent of sample size — a tiny effect can be 'significant' with large N.",
-      "front": "What is effect size?",
-      "back": "Quantifies practical significance (p-value only tells statistical significance). Cohen's d: small = 0.2, medium = 0.5, large = 0.8. Pearson r: small = .10, medium = .30, large = .50. Effect size is independent of sample size — a tiny effect can be 'significant' with large N.",
-      "revisionApplied": false,
-      "revisionReason": "",
-      "reviewStatus": "source-reviewed-editorial-pass",
-      "reviewMode": "assisted-flashcard-editorial-review",
-      "reviewWave": "eppp-flashcard-review-wave-02",
-      "reviewDate": "2026-07-14",
-      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with NIST/SEMATECH e-Handbook of Statistical Methods. Independent qualified expert validation remains pending.",
-      "references": [
-        "https://www.itl.nist.gov/div898/handbook/"
-      ],
-      "sourceDetails": [
-        {
-          "title": "NIST/SEMATECH e-Handbook of Statistical Methods",
-          "organization": "National Institute of Standards and Technology, Statistical Engineering Division, and SEMATECH",
-          "url": "https://www.itl.nist.gov/div898/handbook/",
-          "credibility": "NIST is the U.S. federal measurement-science agency. Its technically edited statistical handbook provides authoritative definitions, methods, assumptions, and examples for distributions, estimation, testing, regression, and experimental design."
-        }
-      ],
-      "checks": {
-        "atomicAnswer": "editorial-pass",
-        "sourceSupport": "topically-aligned-reputable-source",
-        "duplication": "editorial-pass",
-        "accessibility": "structure-pass",
-        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
-        "biasAndContext": "assisted-review-pass-expert-pending"
-      },
-      "independentExpertStatus": "not-started",
-      "productionStatus": "not-production-validated",
-      "learnerVisible": false
-    },
-    {
-      "sequence": 83,
+      "sequence": 79,
       "id": "flashcard-1895059bc0e92675",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3412,7 +3256,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 84,
+      "sequence": 80,
       "id": "flashcard-f8d9fe0791f28a2f",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3451,7 +3295,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 85,
+      "sequence": 81,
       "id": "flashcard-c9fbab9717ce0a4e",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3490,7 +3334,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 86,
+      "sequence": 82,
       "id": "flashcard-fbef838ceb824015",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3529,46 +3373,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 87,
-      "id": "flashcard-880a69d151e55794",
-      "domainId": 7,
-      "domain": "Research Methods & Statistics",
-      "legacyFront": "Single-subject research designs",
-      "legacyBack": "ABA (withdrawal/reversal): baseline → treatment → withdraw → (re-treat). Multiple baseline: across subjects, settings, or behaviors. Changing criterion: incrementally adjust performance criteria. Used in behavioral research when group designs aren't feasible.",
-      "front": "Single-subject research designs",
-      "back": "ABA (withdrawal/reversal): baseline → treatment → withdraw → (re-treat). Multiple baseline: across subjects, settings, or behaviors. Changing criterion: incrementally adjust performance criteria. Used in behavioral research when group designs aren't feasible.",
-      "revisionApplied": false,
-      "revisionReason": "",
-      "reviewStatus": "source-reviewed-editorial-pass",
-      "reviewMode": "assisted-flashcard-editorial-review",
-      "reviewWave": "eppp-flashcard-review-wave-02",
-      "reviewDate": "2026-07-14",
-      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Psychology 2e, Chapter 2: Psychological Research. Independent qualified expert validation remains pending.",
-      "references": [
-        "https://openstax.org/books/psychology-2e/pages/2-introduction"
-      ],
-      "sourceDetails": [
-        {
-          "title": "Psychology 2e, Chapter 2: Psychological Research",
-          "organization": "OpenStax, Rice University (second edition)",
-          "url": "https://openstax.org/books/psychology-2e/pages/2-introduction",
-          "credibility": "OpenStax is Rice University's nonprofit educational publisher. This expert-reviewed chapter covers hypotheses, operational definitions, sampling, experiments, correlation, ethics, replication, and limits on causal inference."
-        }
-      ],
-      "checks": {
-        "atomicAnswer": "editorial-pass",
-        "sourceSupport": "topically-aligned-reputable-source",
-        "duplication": "editorial-pass",
-        "accessibility": "structure-pass",
-        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
-        "biasAndContext": "assisted-review-pass-expert-pending"
-      },
-      "independentExpertStatus": "not-started",
-      "productionStatus": "not-production-validated",
-      "learnerVisible": false
-    },
-    {
-      "sequence": 88,
+      "sequence": 83,
       "id": "flashcard-43b655eedcc86a5a",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3607,7 +3412,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 89,
+      "sequence": 84,
       "id": "flashcard-3bda57362b313f41",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3646,7 +3451,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 90,
+      "sequence": 85,
       "id": "flashcard-bdae237234cd5f78",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3685,7 +3490,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 91,
+      "sequence": 86,
       "id": "flashcard-f8944de259ac0a20",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3724,7 +3529,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 92,
+      "sequence": 87,
       "id": "flashcard-b09595363a5b6298",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3763,7 +3568,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 93,
+      "sequence": 88,
       "id": "flashcard-f474520715a272cf",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3802,7 +3607,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 94,
+      "sequence": 89,
       "id": "flashcard-60ee3a258bd0e552",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3841,7 +3646,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 95,
+      "sequence": 90,
       "id": "flashcard-15889cb8b6be9a11",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3880,7 +3685,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 96,
+      "sequence": 91,
       "id": "flashcard-5ea97fcb5dee1535",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3919,7 +3724,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 97,
+      "sequence": 92,
       "id": "flashcard-285dca1bef149c1e",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3958,7 +3763,7 @@
       "learnerVisible": false
     },
     {
-      "sequence": 98,
+      "sequence": 93,
       "id": "flashcard-90076808071c4880",
       "domainId": 7,
       "domain": "Research Methods & Statistics",
@@ -3997,14 +3802,170 @@
       "learnerVisible": false
     },
     {
-      "sequence": 99,
-      "id": "flashcard-166f6987bfb73d9b",
+      "sequence": 94,
+      "id": "flashcard-e180fcd467d4c72c",
+      "domainId": 7,
+      "domain": "Research Methods & Statistics",
+      "legacyFront": "Ethical principles in research (Belmont Report)",
+      "legacyBack": "Three core principles: (1) Respect for persons — informed consent, protect autonomy. (2) Beneficence — maximize benefits, minimize harm, risk-benefit analysis. (3) Justice — fair selection of participants, equitable distribution of research burdens and benefits.",
+      "front": "Ethical principles in research (Belmont Report)",
+      "back": "Three core principles: (1) Respect for persons — informed consent, protect autonomy. (2) Beneficence — maximize benefits, minimize harm, risk-benefit analysis. (3) Justice — fair selection of participants, equitable distribution of research burdens and benefits.",
+      "revisionApplied": false,
+      "revisionReason": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewMode": "assisted-flashcard-editorial-review",
+      "reviewWave": "eppp-flashcard-review-wave-02",
+      "reviewDate": "2026-07-14",
+      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with The Belmont Report: Ethical Principles and Guidelines for the Protection of Human Subjects of Research. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Belmont Report: Ethical Principles and Guidelines for the Protection of Human Subjects of Research",
+          "organization": "U.S. Department of Health and Human Services, Office for Human Research Protections",
+          "url": "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html",
+          "credibility": "HHS Office for Human Research Protections is the federal authority responsible for human-subject protections. This is the primary federal source for respect for persons, beneficence, justice, and their applications."
+        }
+      ],
+      "checks": {
+        "atomicAnswer": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "duplication": "editorial-pass",
+        "accessibility": "structure-pass",
+        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
+        "biasAndContext": "assisted-review-pass-expert-pending"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "learnerVisible": false
+    },
+    {
+      "sequence": 95,
+      "id": "flashcard-d3b66e510c46b581",
+      "domainId": 7,
+      "domain": "Research Methods & Statistics",
+      "legacyFront": "Statistical tests: when to use which?",
+      "legacyBack": "t-test: compare 2 group means. ANOVA: 3+ group means. Chi-square: categorical/frequency data. Pearson r: two continuous variables correlation. Regression: prediction. MANOVA: 2+ DVs. ANCOVA: controlling covariates. Factor analysis: identify latent constructs.",
+      "front": "Statistical tests: when to use which?",
+      "back": "t-test: compare 2 group means. ANOVA: 3+ group means. Chi-square: categorical/frequency data. Pearson r: two continuous variables correlation. Regression: prediction. MANOVA: 2+ DVs. ANCOVA: controlling covariates. Factor analysis: identify latent constructs.",
+      "revisionApplied": false,
+      "revisionReason": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewMode": "assisted-flashcard-editorial-review",
+      "reviewWave": "eppp-flashcard-review-wave-02",
+      "reviewDate": "2026-07-14",
+      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Psychology 2e, Chapter 2: Psychological Research. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/2-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 2: Psychological Research",
+          "organization": "OpenStax, Rice University (second edition)",
+          "url": "https://openstax.org/books/psychology-2e/pages/2-introduction",
+          "credibility": "OpenStax is Rice University's nonprofit educational publisher. This expert-reviewed chapter covers hypotheses, operational definitions, sampling, experiments, correlation, ethics, replication, and limits on causal inference."
+        }
+      ],
+      "checks": {
+        "atomicAnswer": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "duplication": "editorial-pass",
+        "accessibility": "structure-pass",
+        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
+        "biasAndContext": "assisted-review-pass-expert-pending"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "learnerVisible": false
+    },
+    {
+      "sequence": 96,
+      "id": "flashcard-fa12244880e4c40d",
       "domainId": 8,
       "domain": "Ethical, Legal & Professional Issues",
-      "legacyFront": "APA Ethics Code structure",
-      "legacyBack": "Five General Principles (aspirational, not enforceable): Beneficence/Nonmaleficence, Fidelity/Responsibility, Integrity, Justice, Respect for Rights/Dignity. Ten Ethical Standards (enforceable): covering competence, relationships, privacy, records, fees, education, research, assessment, therapy, etc.",
-      "front": "APA Ethics Code structure",
-      "back": "Five General Principles (aspirational, not enforceable): Beneficence/Nonmaleficence, Fidelity/Responsibility, Integrity, Justice, Respect for Rights/Dignity. Ten Ethical Standards (enforceable): covering competence, relationships, privacy, records, fees, education, research, assessment, therapy, etc.",
+      "legacyFront": "Risk management vs. ethics",
+      "legacyBack": "Risk management: actions to minimize legal liability (documentation, informed consent, consultation). Ethics: aspirational principles and enforceable standards for professional conduct. Often overlap but can diverge — the ethically right thing may increase legal risk. Best practice: integrate both.",
+      "front": "Risk management vs. ethics",
+      "back": "Risk management focuses on reducing foreseeable legal and practice risks; professional ethics focuses on principles and conduct standards. They often overlap, but neither substitutes for context-sensitive ethical reasoning, consultation, and documentation.",
+      "revisionApplied": true,
+      "revisionReason": "Removed a categorical legal-risk claim and made the relationship between risk management and ethics more precise.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewMode": "assisted-flashcard-editorial-review",
+      "reviewWave": "eppp-flashcard-review-wave-02",
+      "reviewDate": "2026-07-14",
+      "reviewNote": "Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association, current published Ethics Code and amendments",
+          "url": "https://www.apa.org/ethics/code",
+          "credibility": "The American Psychological Association publishes the profession's Ethics Code. It is the primary source for the Code's General Principles and enforceable standards, while jurisdiction-specific law still requires separate review."
+        }
+      ],
+      "checks": {
+        "atomicAnswer": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "duplication": "editorial-pass",
+        "accessibility": "structure-pass",
+        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
+        "biasAndContext": "assisted-review-pass-expert-pending"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "learnerVisible": false
+    },
+    {
+      "sequence": 97,
+      "id": "flashcard-3fb8fbd84515aa6d",
+      "domainId": 8,
+      "domain": "Ethical, Legal & Professional Issues",
+      "legacyFront": "Ethical issues in forensic assessment",
+      "legacyBack": "Clarify role and who the client is (court, attorney, examinee). Informed consent about limits of confidentiality. Use appropriate instruments for forensic questions. Base opinions on adequate data. Distinguish facts from clinical opinion. Acknowledge limitations. Avoid dual role (treating + evaluating).",
+      "front": "Ethical issues in forensic assessment",
+      "back": "Forensic assessment requires clear roles and confidentiality limits, methods suited to the referral question, sufficient data, careful separation of observations from professional opinions, disclosure of limitations, and avoidance of conflicting roles.",
+      "revisionApplied": true,
+      "revisionReason": "Condensed the legacy list into stable assessment safeguards without tying it to a particular code edition.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewMode": "assisted-flashcard-editorial-review",
+      "reviewWave": "eppp-flashcard-review-wave-02",
+      "reviewDate": "2026-07-14",
+      "reviewNote": "Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association, current published Ethics Code and amendments",
+          "url": "https://www.apa.org/ethics/code",
+          "credibility": "The American Psychological Association publishes the profession's Ethics Code. It is the primary source for the Code's General Principles and enforceable standards, while jurisdiction-specific law still requires separate review."
+        }
+      ],
+      "checks": {
+        "atomicAnswer": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "duplication": "editorial-pass",
+        "accessibility": "structure-pass",
+        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
+        "biasAndContext": "assisted-review-pass-expert-pending"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "learnerVisible": false
+    },
+    {
+      "sequence": 98,
+      "id": "flashcard-58d3721d6beca912",
+      "domainId": 8,
+      "domain": "Ethical, Legal & Professional Issues",
+      "legacyFront": "Ethical decision-making models",
+      "legacyBack": "Steps: (1) Identify ethical issue. (2) Consult APA Ethics Code. (3) Consider applicable laws/regulations. (4) Seek consultation. (5) Consider all stakeholders. (6) Generate options. (7) Evaluate consequences. (8) Choose action. (9) Document. (10) Reflect/evaluate outcome.",
+      "front": "Ethical decision-making models",
+      "back": "Steps: (1) Identify ethical issue. (2) Consult APA Ethics Code. (3) Consider applicable laws/regulations. (4) Seek consultation. (5) Consider all stakeholders. (6) Generate options. (7) Evaluate consequences. (8) Choose action. (9) Document. (10) Reflect/evaluate outcome.",
       "revisionApplied": false,
       "revisionReason": "",
       "reviewStatus": "source-reviewed-editorial-pass",
@@ -4036,21 +3997,60 @@
       "learnerVisible": false
     },
     {
-      "sequence": 100,
-      "id": "flashcard-58d3721d6beca912",
+      "sequence": 99,
+      "id": "flashcard-653e4dda8bb5a064",
       "domainId": 8,
       "domain": "Ethical, Legal & Professional Issues",
-      "legacyFront": "Ethical decision-making models",
-      "legacyBack": "Steps: (1) Identify ethical issue. (2) Consult APA Ethics Code. (3) Consider applicable laws/regulations. (4) Seek consultation. (5) Consider all stakeholders. (6) Generate options. (7) Evaluate consequences. (8) Choose action. (9) Document. (10) Reflect/evaluate outcome.",
-      "front": "Ethical decision-making models",
-      "back": "Steps: (1) Identify ethical issue. (2) Consult APA Ethics Code. (3) Consider applicable laws/regulations. (4) Seek consultation. (5) Consider all stakeholders. (6) Generate options. (7) Evaluate consequences. (8) Choose action. (9) Document. (10) Reflect/evaluate outcome.",
-      "revisionApplied": false,
-      "revisionReason": "",
+      "legacyFront": "Cultural competence in ethics",
+      "legacyBack": "APA Principle E: awareness of cultural, individual, role differences. Multicultural Guidelines (2017): aspire to understand diverse worldviews, recognize power/privilege, develop culturally appropriate interventions. Not optional — ethical obligation. Self-awareness of biases essential.",
+      "front": "Cultural competence in ethics",
+      "back": "Ethical culturally responsive practice includes examining one's assumptions, attending to cultural and contextual differences, considering power and access, and adapting communication and services without stereotyping.",
+      "revisionApplied": true,
+      "revisionReason": "Removed dated citations and an absolute obligation claim while retaining the stable ethical practice principle.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "reviewMode": "assisted-flashcard-editorial-review",
       "reviewWave": "eppp-flashcard-review-wave-02",
       "reviewDate": "2026-07-14",
-      "reviewNote": "Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.",
+      "reviewNote": "Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association, current published Ethics Code and amendments",
+          "url": "https://www.apa.org/ethics/code",
+          "credibility": "The American Psychological Association publishes the profession's Ethics Code. It is the primary source for the Code's General Principles and enforceable standards, while jurisdiction-specific law still requires separate review."
+        }
+      ],
+      "checks": {
+        "atomicAnswer": "editorial-pass",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "duplication": "editorial-pass",
+        "accessibility": "structure-pass",
+        "accuracyAndCurrency": "assisted-review-pass-expert-pending",
+        "biasAndContext": "assisted-review-pass-expert-pending"
+      },
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated",
+      "learnerVisible": false
+    },
+    {
+      "sequence": 100,
+      "id": "flashcard-f85a222ad99bd278",
+      "domainId": 8,
+      "domain": "Ethical, Legal & Professional Issues",
+      "legacyFront": "Forensic psychology ethical guidelines",
+      "legacyBack": "APA Specialty Guidelines (2013): clarify role (evaluator vs. therapist — avoid dual roles), inform about limits of confidentiality in forensic context, base opinions on adequate data, distinguish facts from opinions, avoid bias, acknowledge limitations of conclusions.",
+      "front": "Forensic psychology ethical guidelines",
+      "back": "Common professional safeguards in forensic practice include clarifying the evaluator's role and confidentiality limits, avoiding conflicting roles, basing opinions on sufficient data, separating observations from opinions, and stating important limitations.",
+      "revisionApplied": true,
+      "revisionReason": "Removed a dated guideline citation and reframed the card around stable professional safeguards.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewMode": "assisted-flashcard-editorial-review",
+      "reviewWave": "eppp-flashcard-review-wave-02",
+      "reviewDate": "2026-07-14",
+      "reviewNote": "Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.",
       "references": [
         "https://www.apa.org/ethics/code"
       ],
