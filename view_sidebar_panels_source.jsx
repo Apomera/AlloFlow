@@ -26,6 +26,8 @@ function AdventurePanel(props) {
     t, useLowQualityVisuals
   } = props;
   if (!expandedTools || !expandedTools.includes('adventure')) return null;
+  const adventurePermissions = studentProjectSettings.adventurePermissions || {};
+  const lockAllAdventureSettings = !isTeacherMode && !!adventurePermissions.lockAllSettings;
   return (
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div className="p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3">
@@ -62,6 +64,7 @@ function AdventurePanel(props) {
                                 <select aria-label={t('common.selection')}
                                     data-help-key="adventure_setup_input_mode" value={adventureInputMode}
                                     onChange={(e) => setAdventureInputMode(e.target.value)}
+                                    disabled={!isTeacherMode && (!adventurePermissions.allowModeSwitch || adventurePermissions.lockAllSettings)}
                                     className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
                                 >
                                     <option value="choice">{t('adventure.mode_choice')}</option>
@@ -79,6 +82,7 @@ function AdventurePanel(props) {
                                 <select aria-label={t('common.selection')}
                                     data-help-key="adventure_setup_difficulty" value={adventureDifficulty}
                                     onChange={(e) => setAdventureDifficulty(e.target.value)}
+                                    disabled={!isTeacherMode && (!adventurePermissions.allowDifficultySwitch || adventurePermissions.lockAllSettings)}
                                     className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
                                 >
                                     <option value="Story">{t('adventure.diff_story_option')}</option>
@@ -98,7 +102,7 @@ function AdventurePanel(props) {
                                 <select aria-label={t('common.selection')}
                                     data-help-key="adventure_setup_language" value={adventureLanguageMode}
                                     onChange={(e) => setAdventureLanguageMode(e.target.value)}
-                                    disabled={!isTeacherMode && !studentProjectSettings.adventurePermissions?.allowLanguageSwitch}
+                                    disabled={!isTeacherMode && (!adventurePermissions.allowLanguageSwitch || adventurePermissions.lockAllSettings)}
                                     className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
                                 >
                                     <option value="English">{t('adventure.lang_options.english_only')}</option>
@@ -129,6 +133,7 @@ function AdventurePanel(props) {
                                     value={adventureCustomInstructions}
                                     onChange={(e) => setAdventureCustomInstructions(e.target.value)}
                                     placeholder={t('common.adventure_instructions_placeholder')}
+                                    disabled={!isTeacherMode && (!adventurePermissions.allowCustomInstructions || adventurePermissions.lockAllSettings)}
                                     className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 resize-none h-16 transition-shadow motion-reduce:transition-none duration-300"
                                 />
                             </div>
@@ -138,6 +143,7 @@ function AdventurePanel(props) {
                                     type="checkbox"
                                     data-help-key="adventure_setup_chk_freeresponse" checked={adventureFreeResponseEnabled}
                                     onChange={(e) => setAdventureFreeResponseEnabled(e.target.checked)}
+                                    disabled={!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || adventurePermissions.lockAllSettings)}
                                     className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                                 />
                                 <label htmlFor="freeResponseMode" className="text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2">
@@ -150,6 +156,7 @@ function AdventurePanel(props) {
                                     type="checkbox"
                                     data-help-key="adventure_setup_chk_chance" checked={adventureChanceMode}
                                     onChange={(e) => setAdventureChanceMode(e.target.checked)}
+                                    disabled={lockAllAdventureSettings}
                                     className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                                 />
                                 <label htmlFor="chanceMode" className="text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2">
@@ -163,6 +170,7 @@ function AdventurePanel(props) {
                                         type="checkbox"
                                         checked={isSocialStoryMode}
                                         onChange={(e) => setIsSocialStoryMode(e.target.checked)}
+                                        disabled={lockAllAdventureSettings}
                                         className="w-4 h-4 text-pink-600 border-slate-300 rounded focus:ring-pink-500 cursor-pointer"
                                     />
                                     <label htmlFor="socialStoryMode" className="text-xs font-bold text-pink-800 cursor-pointer select-none flex items-center gap-2">
@@ -178,6 +186,7 @@ function AdventurePanel(props) {
                                             value={socialStoryFocus}
                                             onChange={(e) => setSocialStoryFocus(e.target.value)}
                                             placeholder={t('adventure.social_story_focus_placeholder') || "e.g., Sharing toys, Dealing with frustration"}
+                                            disabled={lockAllAdventureSettings}
                                             className="w-full text-xs p-1.5 border border-pink-300 rounded focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-pink-900 placeholder:text-pink-300"
                                         />
                                     </div>
@@ -191,6 +200,7 @@ function AdventurePanel(props) {
                                             type="checkbox"
                                             checked={enableFactionResources}
                                             onChange={(e) => setEnableFactionResources(e.target.checked)}
+                                            disabled={lockAllAdventureSettings}
                                             className="w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500 cursor-pointer"
                                         />
                                         <label htmlFor="enableFactionResources" className="text-xs font-bold text-amber-800 cursor-pointer select-none flex items-center gap-2">
@@ -205,6 +215,7 @@ function AdventurePanel(props) {
                                                 <div role="group" aria-labelledby="adventure-system-state-mode-label" className="flex gap-2">
                                                     <button type="button"
                                                         aria-pressed={factionResourceMode === 'ai'} onClick={handleSetFactionResourceModeToAi}
+                                                        disabled={lockAllAdventureSettings}
                                                         className={`px-2 py-1 text-xs rounded-full font-medium transition-all motion-reduce:transition-none ${
                                                             factionResourceMode === 'ai'
                                                                 ? 'bg-amber-700 text-white'
@@ -215,6 +226,7 @@ function AdventurePanel(props) {
                                                     </button>
                                                     <button type="button"
                                                         aria-pressed={factionResourceMode === 'manual'} onClick={handleSetFactionResourceModeToManual}
+                                                        disabled={lockAllAdventureSettings}
                                                         className={`px-2 py-1 text-xs rounded-full font-medium transition-all motion-reduce:transition-none ${
                                                             factionResourceMode === 'manual'
                                                                 ? 'bg-amber-700 text-white'
@@ -238,6 +250,7 @@ function AdventurePanel(props) {
                                                             <input aria-label={t('common.enter_resource')}
                                                                 type="text"
                                                                 value={resource.icon}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onChange={(e) => {
                                                                     const updated = [...(adventureState.systemResources || [])];
                                                                     updated[idx] = { ...updated[idx], icon: e.target.value };
@@ -249,6 +262,7 @@ function AdventurePanel(props) {
                                                             <input aria-label="🔹"
                                                                 type="text"
                                                                 value={resource.name}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onChange={(e) => {
                                                                     const updated = [...(adventureState.systemResources || [])];
                                                                     updated[idx] = { ...updated[idx], name: e.target.value };
@@ -260,6 +274,7 @@ function AdventurePanel(props) {
                                                             <input aria-label={t('common.state_variable')}
                                                                 type="number"
                                                                 value={resource.quantity}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onChange={(e) => {
                                                                     const updated = [...(adventureState.systemResources || [])];
                                                                     updated[idx] = { ...updated[idx], quantity: parseInt(e.target.value) || 0 };
@@ -271,6 +286,7 @@ function AdventurePanel(props) {
                                                             <input aria-label={t('common.enter_resource')}
                                                                 type="text"
                                                                 value={resource.unit || ''}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onChange={(e) => {
                                                                     const updated = [...(adventureState.systemResources || [])];
                                                                     updated[idx] = { ...updated[idx], unit: e.target.value };
@@ -282,6 +298,7 @@ function AdventurePanel(props) {
                                                             />
                                                             <button type="button"
                                                                 aria-label={t('common.remove')}
+                                                                disabled={lockAllAdventureSettings}
                                                                 onClick={() => {
                                                                     const updated = (adventureState.systemResources || []).filter((_, i) => i !== idx);
                                                                     setAdventureState(prev => ({ ...prev, systemResources: updated }));
@@ -295,6 +312,7 @@ function AdventurePanel(props) {
                                                     ))}
                                                     <button type="button"
                                                         aria-label={t('common.add')}
+                                                        disabled={lockAllAdventureSettings}
                                                         onClick={() => {
                                                             const updated = [...(adventureState.systemResources || []), { name: '', icon: '🔹', quantity: 50, unit: '%', type: 'strategic' }];
                                                             setAdventureState(prev => ({ ...prev, systemResources: updated }));
@@ -315,6 +333,7 @@ function AdventurePanel(props) {
                                     type="checkbox"
                                     data-help-key="adventure_setup_chk_story" checked={isAdventureStoryMode}
                                     onChange={(e) => setIsAdventureStoryMode(e.target.checked)}
+                                    disabled={lockAllAdventureSettings}
                                     className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                                 />
 <label htmlFor="storyMode" className="text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2">
@@ -328,7 +347,7 @@ function AdventurePanel(props) {
                                     type="checkbox"
                                     data-help-key="adventure_setup_chk_consistent_characters" checked={adventureConsistentCharacters}
                                     onChange={(e) => setAdventureConsistentCharacters(e.target.checked)}
-                                    disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+                                    disabled={lockAllAdventureSettings}
                                     className="w-4 h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
                                 />
                                 <label htmlFor="advConsistentChars" className="text-xs font-bold text-violet-800 cursor-pointer select-none flex items-center gap-2">
@@ -347,7 +366,7 @@ function AdventurePanel(props) {
                                         <label htmlFor="advArtStyle" className="text-xs font-bold text-indigo-800 cursor-pointer select-none flex items-center gap-2 whitespace-nowrap">
                                             🎨 {t('adventure.art_style_label') || 'Art Style'}
                                         </label>
-                                        <select id="advArtStyle" value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} className="flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 cursor-pointer">
+                                        <select id="advArtStyle" value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} disabled={lockAllAdventureSettings || (!isTeacherMode && adventurePermissions.allowVisualsToggle === false)} className="flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 cursor-pointer">
                                             <option value="auto">🎨 {t('adventure.art_auto') || 'Auto (default)'}</option>
                                             <option value="storybook">📚 {t('adventure.art_storybook') || 'Storybook'}</option>
                                             <option value="pixel">🎮 {t('adventure.art_pixel') || 'Pixel Art'}</option>
@@ -358,7 +377,7 @@ function AdventurePanel(props) {
                                         </select>
                                     </div>
                                     {adventureArtStyle === 'custom' && (
-                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} className="w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400"/>
+                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} disabled={lockAllAdventureSettings || (!isTeacherMode && adventurePermissions.allowVisualsToggle === false)} className="w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400"/>
                                     )}
                                     <div className="flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200" data-help-key="adventure_low_quality">
                                         <input aria-label={t('common.toggle_use_low_quality_visuals')}
@@ -366,6 +385,7 @@ function AdventurePanel(props) {
                                             type="checkbox"
                                             data-help-key="adventure_setup_chk_lowqual" checked={useLowQualityVisuals}
                                             onChange={(e) => setUseLowQualityVisuals(e.target.checked)}
+                                            disabled={lockAllAdventureSettings || (!isTeacherMode && adventurePermissions.allowVisualsToggle === false)}
                                             className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                                         />
                                         <label htmlFor="advLowQuality" className="text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2">

@@ -15,6 +15,11 @@ const handleDiceRollComplete = (deps) => {
           return;
       }
       const data = pendingAdventureUpdate;
+      if (!data.scene || typeof data.scene !== 'object') {
+          data.scene = { text: t('adventure.status_messages.continue') || 'The adventure continues.', options: [] };
+      }
+      data.scene.text = String(data.scene.text || (t('adventure.status_messages.continue') || 'The adventure continues.'));
+      if (!Array.isArray(data.scene.options)) data.scene.options = [];
       playAdventureEventSound('transition');
       setAdventureState(prev => {
           const currentStats = prev.stats || { successes: 0, failures: 0, decisions: 0, conceptsFound: [] };
@@ -74,6 +79,8 @@ const handleDiceRollComplete = (deps) => {
           if (data.resetDebate) {
               newMomentum = 50;
               nextDebatePhase = 'setup';
+          } else if (adventureInputMode === 'debate' && nextDebatePhase === 'setup') {
+              nextDebatePhase = 'active';
           }
           const xpMult = prev.activeXpMultiplier || 1;
           const goldBuffTurns = prev.activeGoldBuffTurns || 0;
@@ -289,12 +296,13 @@ const handleDiceRollComplete = (deps) => {
               extraInfo.push(goldStr);
           }
           feedbackText += ` (${extraInfo.join(', ')})`;
+          const resolvedChoice = prev.pendingChoice || data.pendingChoice || '';
           if (finalResult === 'victory') {
               const victoryHistory = [
                   ...prev.history,
-                  { type: 'scene', text: adventureState.currentScene.text },
-                  { type: 'choice', text: choice, source: data.choiceSource || 'option' },
-                  { type: 'feedback', text: data.feedback }
+                  { type: 'scene', text: prev.currentScene?.text || '' },
+                  { type: 'choice', text: resolvedChoice, source: data.choiceSource || 'option' },
+                  { type: 'feedback', text: data.feedback || data.evaluation || '' }
               ];
               generateNarrativeLedger(victoryHistory, deps);
               addToast(t('adventure.status_messages.log_updated'), "info");
@@ -306,8 +314,8 @@ const handleDiceRollComplete = (deps) => {
               }, 0);
               return {
                   ...prev,
-                  isGameOver: false,
-                  history: [...prev.history, { type: 'feedback', text: data.feedback }],
+                  isGameOver: true,
+                  history: [...prev.history, { type: 'feedback', text: data.feedback || data.evaluation || '' }],
                   currentScene: data.scene, pendingChoice: null,
                   climax: { ...updatedClimax, isActive: false, masteryScore: 100 },
                   canStartSequel: true,
@@ -316,10 +324,10 @@ const handleDiceRollComplete = (deps) => {
               };
           } else if (finalResult === 'failure') {
               const failureHistory = [
-                  ...adventureState.history,
-                  { type: 'scene', text: adventureState.currentScene.text },
-                  { type: 'choice', text: choice, source: data.choiceSource || 'option' },
-                  { type: 'feedback', text: data.feedback }
+                  ...prev.history,
+                  { type: 'scene', text: prev.currentScene?.text || '' },
+                  { type: 'choice', text: resolvedChoice, source: data.choiceSource || 'option' },
+                  { type: 'feedback', text: data.feedback || data.evaluation || '' }
               ];
               generateNarrativeLedger(failureHistory, deps);
               addToast(t('adventure.status_messages.log_updated'), "info");
@@ -412,7 +420,10 @@ const handleDiceRollComplete = (deps) => {
                       }));
                   });
               });
-              if (data.scene.options.length !== 0 && newEnergy > 0) {
+              const shouldContinue = newEnergy > 0
+                  && !data.isTerminalTurn
+                  && (adventureFreeResponseEnabled || data.scene.options.length !== 0);
+              if (shouldContinue) {
                   generateAdventureImage(data.scene.text, nextTurn, deps);
               }
               if (nextTurn % 5 === 0) {
@@ -429,7 +440,9 @@ const handleDiceRollComplete = (deps) => {
               currentScene: { ...data.scene, charactersInScene: data.charactersInScene || [] }, pendingChoice: null,
               isLoading: false,
               turnCount: nextTurn,
-              isGameOver: data.scene.options.length === 0 || newEnergy <= 0,
+              isGameOver: newEnergy <= 0
+                  || !!data.isTerminalTurn
+                  || (!adventureFreeResponseEnabled && data.scene.options.length === 0),
               level: newLevel,
               xp: newXp,
               xpToNextLevel: newXpToNext,
@@ -462,7 +475,9 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
       try {
           let characterContext = "";
           if (adventureConsistentCharacters && adventureState.characters?.length > 0) {
-              const sceneChars = adventureState.currentScene?.charactersInScene;
+              const sceneChars = pendingAdventureUpdate?.charactersInScene
+                  || pendingAdventureUpdate?.scene?.charactersInScene
+                  || adventureState.currentScene?.charactersInScene;
               let relevantChars;
               if (sceneChars && Array.isArray(sceneChars) && sceneChars.length > 0) {
                   relevantChars = adventureState.characters.filter(c =>
@@ -519,7 +534,9 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
                  }
               }
           }
-          const isSocialMode = adventureInputMode === 'social_story' || (adventureState?.meta?.includes('Social Story'));
+          const isSocialMode = isSocialStoryMode
+              || adventureInputMode === 'social_story'
+              || (adventureState?.meta?.includes('Social Story'));
           const ART_STYLE_MAP = {
               'auto': null,
               'storybook': 'Soft watercolor storybook illustration, rounded shapes, warm palette, family-friendly, whimsical',
@@ -603,7 +620,7 @@ const generateAdventureImage = async (sceneText, targetTurn, deps) => {
           setAdventureState(prev => {
               if (prev.turnCount === targetTurn) {
                   const newCacheEntry = { turn: targetTurn, image: imageUrl };
-                  const updatedCache = [...prev.imageCache, newCacheEntry].slice(-5);
+                  const updatedCache = [...(prev.imageCache || []), newCacheEntry].slice(-5);
                   adventureImageDB.storeImage(targetTurn, imageUrl);
                   return { ...prev, sceneImage: imageUrl, isImageLoading: false, imageCache: updatedCache };
               }

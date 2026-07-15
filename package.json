@@ -4,6 +4,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "build:adventure": "node _build_adventure_module.js",
+    "verify:adventure-build": "node _build_adventure_module.js --check",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",

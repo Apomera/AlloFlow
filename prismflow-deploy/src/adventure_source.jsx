@@ -5,7 +5,7 @@ if (typeof ADVENTURE_SHOP_ITEMS === 'undefined') {
   var ADVENTURE_SHOP_ITEMS = window.ADVENTURE_SHOP_ITEMS || [
     { id: 'ration', name: 'Emergency Ration', cost: 50, description: 'Restores 20 Energy.', effectType: 'energy', effectValue: 20, icon: '🍎' },
     { id: 'feast', name: 'Field Feast', cost: 120, description: 'Fully restores energy.', effectType: 'energy', effectValue: 100, icon: '🍱' },
-    { id: 'hint', name: 'Oracle Whisper', cost: 75, description: 'Reveals a hint.', effectType: 'hint', effectValue: 1, icon: '🔮' },
+    { id: 'hint', name: 'Oracle Whisper', cost: 75, description: 'Rewinds your previous turn.', effectType: 'hint', effectValue: 1, icon: '🔮' },
     { id: 'charm', name: 'Luck Charm', cost: 100, description: '+5 to next roll.', effectType: 'modifier', effectValue: 5, icon: '🍀' },
     { id: 'journal', name: "Scholar's Journal", cost: 100, description: 'Double XP next turn.', effectType: 'xp_boost', effectValue: 2, icon: '📔' },
     { id: 'detector', name: 'Metal Detector', cost: 50, description: 'More gold for 3 scenes.', effectType: 'gold_boost', effectValue: 3, icon: '💰' },
@@ -643,6 +643,10 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
   const diceRef = useRef(null);
   const reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   useFocusTrap(diceRef, true, onComplete);
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
   const [currentRotation, setCurrentRotation] = useState(() => {
       const rX = Math.floor(Math.random() * 360);
       const rY = Math.floor(Math.random() * 360);
@@ -655,12 +659,12 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
     const rollTimer = setTimeout(() => {
         setCurrentRotation(targetRotation);
     }, reduceMotion ? 0 : 50);
-    const endTimer = setTimeout(() => onComplete(), reduceMotion ? 1000 : 3500);
+    const endTimer = setTimeout(() => onCompleteRef.current(), reduceMotion ? 1000 : 3500);
     return () => {
       clearTimeout(rollTimer);
       clearTimeout(endTimer);
     };
-  }, [onComplete, reduceMotion, result]);
+  }, [reduceMotion, result]);
   return (
     <div
       ref={diceRef}

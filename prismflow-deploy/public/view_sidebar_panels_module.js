@@ -107,6 +107,8 @@ function AdventurePanel(props) {
     useLowQualityVisuals
   } = props;
   if (!expandedTools || !expandedTools.includes("adventure")) return null;
+  const adventurePermissions = studentProjectSettings.adventurePermissions || {};
+  const lockAllAdventureSettings = !isTeacherMode && !!adventurePermissions.lockAllSettings;
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3" }, hasSavedAdventure && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -132,6 +134,7 @@ function AdventurePanel(props) {
       "data-help-key": "adventure_setup_input_mode",
       value: adventureInputMode,
       onChange: (e) => setAdventureInputMode(e.target.value),
+      disabled: !isTeacherMode && (!adventurePermissions.allowModeSwitch || adventurePermissions.lockAllSettings),
       className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
     },
     /* @__PURE__ */ React.createElement("option", { value: "choice" }, t("adventure.mode_choice")),
@@ -144,6 +147,7 @@ function AdventurePanel(props) {
       "data-help-key": "adventure_setup_difficulty",
       value: adventureDifficulty,
       onChange: (e) => setAdventureDifficulty(e.target.value),
+      disabled: !isTeacherMode && (!adventurePermissions.allowDifficultySwitch || adventurePermissions.lockAllSettings),
       className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
     },
     /* @__PURE__ */ React.createElement("option", { value: "Story" }, t("adventure.diff_story_option")),
@@ -157,7 +161,7 @@ function AdventurePanel(props) {
       "data-help-key": "adventure_setup_language",
       value: adventureLanguageMode,
       onChange: (e) => setAdventureLanguageMode(e.target.value),
-      disabled: !isTeacherMode && !studentProjectSettings.adventurePermissions?.allowLanguageSwitch,
+      disabled: !isTeacherMode && (!adventurePermissions.allowLanguageSwitch || adventurePermissions.lockAllSettings),
       className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
     },
     /* @__PURE__ */ React.createElement("option", { value: "English" }, t("adventure.lang_options.english_only")),
@@ -170,6 +174,7 @@ function AdventurePanel(props) {
       value: adventureCustomInstructions,
       onChange: (e) => setAdventureCustomInstructions(e.target.value),
       placeholder: t("common.adventure_instructions_placeholder"),
+      disabled: !isTeacherMode && (!adventurePermissions.allowCustomInstructions || adventurePermissions.lockAllSettings),
       className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 resize-none h-16 transition-shadow motion-reduce:transition-none duration-300"
     }
   )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_free_response" }, /* @__PURE__ */ React.createElement(
@@ -181,6 +186,7 @@ function AdventurePanel(props) {
       "data-help-key": "adventure_setup_chk_freeresponse",
       checked: adventureFreeResponseEnabled,
       onChange: (e) => setAdventureFreeResponseEnabled(e.target.checked),
+      disabled: !isTeacherMode && (studentProjectSettings.allowFreeResponse === false || adventurePermissions.lockAllSettings),
       className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "freeResponseMode", className: "text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(PenTool, { size: 14, className: "text-purple-600" }), " ", t("adventure.free_response_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal opacity-80" }, t("adventure.free_response_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_chance_mode" }, /* @__PURE__ */ React.createElement(
@@ -192,6 +198,7 @@ function AdventurePanel(props) {
       "data-help-key": "adventure_setup_chk_chance",
       checked: adventureChanceMode,
       onChange: (e) => setAdventureChanceMode(e.target.checked),
+      disabled: lockAllAdventureSettings,
       className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "chanceMode", className: "text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Octagon, { size: 14, className: "text-purple-600" }), " ", t("adventure.chance_mode_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal opacity-80" }, t("adventure.chance_mode_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 bg-pink-50 p-2 rounded border border-pink-200", "data-help-key": "adventure_social_story" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
@@ -202,6 +209,7 @@ function AdventurePanel(props) {
       type: "checkbox",
       checked: isSocialStoryMode,
       onChange: (e) => setIsSocialStoryMode(e.target.checked),
+      disabled: lockAllAdventureSettings,
       className: "w-4 h-4 text-pink-600 border-slate-300 rounded focus:ring-pink-500 cursor-pointer"
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "socialStoryMode", className: "text-xs font-bold text-pink-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Heart, { size: 14, className: "text-pink-600" }), " ", t("adventure.social_story_mode_label") || "Social Story Mode (SEL)", /* @__PURE__ */ React.createElement("span", { className: "font-normal opacity-80" }, t("adventure.social_story_mode_desc") || "Focus on social skills"))), isSocialStoryMode && /* @__PURE__ */ React.createElement("div", { className: "pl-6 animate-in motion-reduce:animate-none slide-in-from-top-1" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] text-pink-700 font-bold mb-1 uppercase opacity-80" }, t("adventure.social_story_focus_label") || "Target Social Skill / Focus:"), /* @__PURE__ */ React.createElement(
@@ -212,6 +220,7 @@ function AdventurePanel(props) {
       value: socialStoryFocus,
       onChange: (e) => setSocialStoryFocus(e.target.value),
       placeholder: t("adventure.social_story_focus_placeholder") || "e.g., Sharing toys, Dealing with frustration",
+      disabled: lockAllAdventureSettings,
       className: "w-full text-xs p-1.5 border border-pink-300 rounded focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-pink-900 placeholder:text-pink-300"
     }
   ))), adventureInputMode === "system" && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 p-2 rounded border border-amber-200 space-y-2", "data-help-key": "adventure_system_state" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
@@ -222,6 +231,7 @@ function AdventurePanel(props) {
       type: "checkbox",
       checked: enableFactionResources,
       onChange: (e) => setEnableFactionResources(e.target.checked),
+      disabled: lockAllAdventureSettings,
       className: "w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500 cursor-pointer"
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "enableFactionResources", className: "text-xs font-bold text-amber-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Package, { size: 14, className: "text-amber-600" }), " ", t("adventure.system_state_label"), /* @__PURE__ */ React.createElement("span", { className: "font-normal opacity-80" }, t("adventure.system_state_desc")))), enableFactionResources && /* @__PURE__ */ React.createElement("div", { className: "pl-6 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { id: "adventure-system-state-mode-label", className: "text-xs text-amber-700 font-medium" }, t("adventure.system_state_mode_label"), ":"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "adventure-system-state-mode-label", className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
@@ -230,6 +240,7 @@ function AdventurePanel(props) {
       type: "button",
       "aria-pressed": factionResourceMode === "ai",
       onClick: handleSetFactionResourceModeToAi,
+      disabled: lockAllAdventureSettings,
       className: `px-2 py-1 text-xs rounded-full font-medium transition-all motion-reduce:transition-none ${factionResourceMode === "ai" ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`
     },
     "\u{1F916} ",
@@ -240,6 +251,7 @@ function AdventurePanel(props) {
       type: "button",
       "aria-pressed": factionResourceMode === "manual",
       onClick: handleSetFactionResourceModeToManual,
+      disabled: lockAllAdventureSettings,
       className: `px-2 py-1 text-xs rounded-full font-medium transition-all motion-reduce:transition-none ${factionResourceMode === "manual" ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`
     },
     "\u270F\uFE0F ",
@@ -250,6 +262,7 @@ function AdventurePanel(props) {
       "aria-label": t("common.enter_resource"),
       type: "text",
       value: resource.icon,
+      disabled: lockAllAdventureSettings,
       onChange: (e) => {
         const updated = [...adventureState.systemResources || []];
         updated[idx] = { ...updated[idx], icon: e.target.value };
@@ -264,6 +277,7 @@ function AdventurePanel(props) {
       "aria-label": "\u{1F539}",
       type: "text",
       value: resource.name,
+      disabled: lockAllAdventureSettings,
       onChange: (e) => {
         const updated = [...adventureState.systemResources || []];
         updated[idx] = { ...updated[idx], name: e.target.value };
@@ -278,6 +292,7 @@ function AdventurePanel(props) {
       "aria-label": t("common.state_variable"),
       type: "number",
       value: resource.quantity,
+      disabled: lockAllAdventureSettings,
       onChange: (e) => {
         const updated = [...adventureState.systemResources || []];
         updated[idx] = { ...updated[idx], quantity: parseInt(e.target.value) || 0 };
@@ -292,6 +307,7 @@ function AdventurePanel(props) {
       "aria-label": t("common.enter_resource"),
       type: "text",
       value: resource.unit || "",
+      disabled: lockAllAdventureSettings,
       onChange: (e) => {
         const updated = [...adventureState.systemResources || []];
         updated[idx] = { ...updated[idx], unit: e.target.value };
@@ -306,6 +322,7 @@ function AdventurePanel(props) {
     {
       type: "button",
       "aria-label": t("common.remove"),
+      disabled: lockAllAdventureSettings,
       onClick: () => {
         const updated = (adventureState.systemResources || []).filter((_, i) => i !== idx);
         setAdventureState((prev) => ({ ...prev, systemResources: updated }));
@@ -319,6 +336,7 @@ function AdventurePanel(props) {
     {
       type: "button",
       "aria-label": t("common.add"),
+      disabled: lockAllAdventureSettings,
       onClick: () => {
         const updated = [...adventureState.systemResources || [], { name: "", icon: "\u{1F539}", quantity: 50, unit: "%", type: "strategic" }];
         setAdventureState((prev) => ({ ...prev, systemResources: updated }));
@@ -337,6 +355,7 @@ function AdventurePanel(props) {
       "data-help-key": "adventure_setup_chk_story",
       checked: isAdventureStoryMode,
       onChange: (e) => setIsAdventureStoryMode(e.target.checked),
+      disabled: lockAllAdventureSettings,
       className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "storyMode", className: "text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14, className: "text-purple-600" }), " ", t("adventure.story_mode_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70 hidden sm:inline" }, t("adventure.story_mode_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-violet-100/50 p-2 rounded border border-violet-200", "data-help-key": "adventure_consistent_characters" }, /* @__PURE__ */ React.createElement(
@@ -348,10 +367,10 @@ function AdventurePanel(props) {
       "data-help-key": "adventure_setup_chk_consistent_characters",
       checked: adventureConsistentCharacters,
       onChange: (e) => setAdventureConsistentCharacters(e.target.checked),
-      disabled: !isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings,
+      disabled: lockAllAdventureSettings,
       className: "w-4 h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "advConsistentChars", className: "text-xs font-bold text-violet-800 cursor-pointer select-none flex items-center gap-2" }, "\u{1F3AD} ", t("adventure.consistent_characters_label") || "Consistent Characters", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70 hidden sm:inline" }, t("adventure.consistent_characters_desc") || "Persistent visual cast across scenes"))), /* @__PURE__ */ React.createElement("details", { className: "group/adv-settings" }, /* @__PURE__ */ React.createElement("summary", { className: "flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-400 cursor-pointer select-none hover:bg-slate-100 transition-colors motion-reduce:transition-none list-none" }, /* @__PURE__ */ React.createElement(Settings, { size: 14, className: "text-slate-600" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\u2699\uFE0F ", t("adventure.advanced_settings") || "Advanced Settings"), /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, className: "text-slate-600 ml-auto transition-transform motion-reduce:transition-none group-open/adv-settings:rotate-180" })), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 pl-1 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200", "data-help-key": "adventure_art_style" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "advArtStyle", className: "text-xs font-bold text-indigo-800 cursor-pointer select-none flex items-center gap-2 whitespace-nowrap" }, "\u{1F3A8} ", t("adventure.art_style_label") || "Art Style"), /* @__PURE__ */ React.createElement("select", { id: "advArtStyle", value: adventureArtStyle, onChange: (e) => setAdventureArtStyle(e.target.value), className: "flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 cursor-pointer" }, /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F3A8} ", t("adventure.art_auto") || "Auto (default)"), /* @__PURE__ */ React.createElement("option", { value: "storybook" }, "\u{1F4DA} ", t("adventure.art_storybook") || "Storybook"), /* @__PURE__ */ React.createElement("option", { value: "pixel" }, "\u{1F3AE} ", t("adventure.art_pixel") || "Pixel Art"), /* @__PURE__ */ React.createElement("option", { value: "cinematic" }, "\u{1F3AC} ", t("adventure.art_cinematic") || "Cinematic"), /* @__PURE__ */ React.createElement("option", { value: "anime" }, "\u{1F3A8} ", t("adventure.art_anime") || "Anime"), /* @__PURE__ */ React.createElement("option", { value: "crayon" }, "\u{1F58D}\uFE0F ", t("adventure.art_crayon") || "Hand-drawn"), /* @__PURE__ */ React.createElement("option", { value: "custom" }, "\u270F\uFE0F ", t("adventure.art_custom") || "Custom..."))), adventureArtStyle === "custom" && /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.custom_art_style_placeholder") || "Custom art style", value: adventureCustomArtStyle, onChange: (e) => setAdventureCustomArtStyle(e.target.value), placeholder: t("adventure.custom_art_style_placeholder") || "Describe your art style...", className: "w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_low_quality" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "advConsistentChars", className: "text-xs font-bold text-violet-800 cursor-pointer select-none flex items-center gap-2" }, "\u{1F3AD} ", t("adventure.consistent_characters_label") || "Consistent Characters", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70 hidden sm:inline" }, t("adventure.consistent_characters_desc") || "Persistent visual cast across scenes"))), /* @__PURE__ */ React.createElement("details", { className: "group/adv-settings" }, /* @__PURE__ */ React.createElement("summary", { className: "flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-400 cursor-pointer select-none hover:bg-slate-100 transition-colors motion-reduce:transition-none list-none" }, /* @__PURE__ */ React.createElement(Settings, { size: 14, className: "text-slate-600" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\u2699\uFE0F ", t("adventure.advanced_settings") || "Advanced Settings"), /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, className: "text-slate-600 ml-auto transition-transform motion-reduce:transition-none group-open/adv-settings:rotate-180" })), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 pl-1 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200", "data-help-key": "adventure_art_style" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "advArtStyle", className: "text-xs font-bold text-indigo-800 cursor-pointer select-none flex items-center gap-2 whitespace-nowrap" }, "\u{1F3A8} ", t("adventure.art_style_label") || "Art Style"), /* @__PURE__ */ React.createElement("select", { id: "advArtStyle", value: adventureArtStyle, onChange: (e) => setAdventureArtStyle(e.target.value), disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false, className: "flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 cursor-pointer" }, /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F3A8} ", t("adventure.art_auto") || "Auto (default)"), /* @__PURE__ */ React.createElement("option", { value: "storybook" }, "\u{1F4DA} ", t("adventure.art_storybook") || "Storybook"), /* @__PURE__ */ React.createElement("option", { value: "pixel" }, "\u{1F3AE} ", t("adventure.art_pixel") || "Pixel Art"), /* @__PURE__ */ React.createElement("option", { value: "cinematic" }, "\u{1F3AC} ", t("adventure.art_cinematic") || "Cinematic"), /* @__PURE__ */ React.createElement("option", { value: "anime" }, "\u{1F3A8} ", t("adventure.art_anime") || "Anime"), /* @__PURE__ */ React.createElement("option", { value: "crayon" }, "\u{1F58D}\uFE0F ", t("adventure.art_crayon") || "Hand-drawn"), /* @__PURE__ */ React.createElement("option", { value: "custom" }, "\u270F\uFE0F ", t("adventure.art_custom") || "Custom..."))), adventureArtStyle === "custom" && /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.custom_art_style_placeholder") || "Custom art style", value: adventureCustomArtStyle, onChange: (e) => setAdventureCustomArtStyle(e.target.value), placeholder: t("adventure.custom_art_style_placeholder") || "Describe your art style...", disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false, className: "w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_low_quality" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_use_low_quality_visuals"),
@@ -360,6 +379,7 @@ function AdventurePanel(props) {
       "data-help-key": "adventure_setup_chk_lowqual",
       checked: useLowQualityVisuals,
       onChange: (e) => setUseLowQualityVisuals(e.target.checked),
+      disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false,
       className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
     }
   ), /* @__PURE__ */ React.createElement("label", { htmlFor: "advLowQuality", className: "text-xs font-bold text-purple-800 cursor-pointer select-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 14, className: "text-purple-600" }), " ", t("adventure.low_quality_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70" }, t("adventure.low_quality_desc")))), (isTeacherMode || studentProjectSettings.adventurePermissions?.allowCloudImageStorage !== false) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-green-100/50 p-2 rounded border border-green-200", "data-help-key": "adventure_cloud_storage" }, /* @__PURE__ */ React.createElement(

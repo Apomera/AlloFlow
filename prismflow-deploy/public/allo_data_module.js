@@ -637,7 +637,7 @@ const ADVENTURE_SHOP_ITEMS = [
     id: 'hint',
     name: 'Oracle Whisper',
     cost: 75,
-    description: 'Reveals a hint about the best choice.',
+    description: 'Rewinds your previous turn so you can choose again.',
     effectType: 'hint',
     effectValue: 1,
     icon: '🔮',

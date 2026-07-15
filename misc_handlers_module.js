@@ -273,7 +273,7 @@ const handleFileUpload = async (e, deps) => {
 };
 
 const handleLoadProject = (e, deps) => {
-  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery } = deps;
+  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleLoadProject fired"); } catch(_) {}
     const file = e.target.files[0];
     if (!file) return;
@@ -368,8 +368,17 @@ const handleLoadProject = (e, deps) => {
                         if (defs.mode) setAdventureInputMode(defs.mode);
                         if (defs.language) setAdventureLanguageMode(defs.language);
                         if (defs.instructions) setAdventureCustomInstructions(defs.instructions);
-                        if (defs.chanceMode !== undefined) setAdventureChanceMode(defs.chanceMode);
-                        if (defs.freeResponse !== undefined) setAdventureFreeResponseEnabled(defs.freeResponse);
+                        if (defs.chanceMode !== undefined) setAdventureChanceMode(!!defs.chanceMode);
+                        if (defs.freeResponse !== undefined) setAdventureFreeResponseEnabled(!!defs.freeResponse);
+                        if (defs.consistentCharacters !== undefined) setAdventureConsistentCharacters(!!defs.consistentCharacters);
+                        if (defs.storyMode !== undefined) setIsAdventureStoryMode(!!defs.storyMode);
+                        if (defs.socialStoryMode !== undefined) setIsSocialStoryMode(!!defs.socialStoryMode);
+                        if (defs.socialStoryFocus !== undefined) setSocialStoryFocus(defs.socialStoryFocus || '');
+                        if (defs.artStyle) setAdventureArtStyle(defs.artStyle);
+                        if (defs.customArtStyle !== undefined) setAdventureCustomArtStyle(defs.customArtStyle || '');
+                        if (defs.lowQualityVisuals !== undefined) setUseLowQualityVisuals(!!defs.lowQualityVisuals);
+                        if (defs.enableFactionResources !== undefined) setEnableFactionResources(!!defs.enableFactionResources);
+                        if (defs.factionResourceMode) setFactionResourceMode(defs.factionResourceMode);
                     }
                 } else {
                     setStudentProjectSettings({

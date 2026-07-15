@@ -775,6 +775,7 @@ function AdventureView(props) {
     "aria-label": t('adventure.art_style_label') || 'Art style',
     value: adventureArtStyle,
     onChange: e => setAdventureArtStyle(e.target.value),
+    disabled: !isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings),
     className: "mt-1 min-h-11 w-full text-xs px-2 py-2 border border-indigo-600 rounded-lg bg-white focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 focus:outline-none cursor-pointer"
   }, /*#__PURE__*/React.createElement("option", {
     value: "auto"
@@ -796,6 +797,7 @@ function AdventureView(props) {
     value: adventureCustomArtStyle,
     onChange: e => setAdventureCustomArtStyle(e.target.value),
     placeholder: t('adventure.custom_art_style_placeholder') || 'Describe your art style...',
+    disabled: !isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings),
     className: "mt-1 min-h-11 w-full text-xs px-2 py-2 border border-indigo-600 rounded-lg bg-white focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 focus:outline-none"
   }))), /*#__PURE__*/React.createElement("label", {
     className: `min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`

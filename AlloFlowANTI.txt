@@ -10574,16 +10574,42 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useEffect(() => {
       if (adventureState.turnCount > 0 && !adventureState.isLoading) {
           const saveAsync = async () => {
-              const sanitizedState = { ...adventureState };
-              sanitizedState.sceneImage = null;
+              const sanitizedState = {
+                  ...adventureState,
+                  sceneImage: null,
+                  imageCache: [],
+                  _adventureConfig: {
+                      difficulty: adventureDifficulty,
+                      inputMode: adventureInputMode,
+                      languageMode: adventureLanguageMode,
+                      chanceMode: adventureChanceMode,
+                      freeResponse: adventureFreeResponseEnabled,
+                      consistentCharacters: adventureConsistentCharacters,
+                      storyMode: isAdventureStoryMode,
+                      socialStoryMode: isSocialStoryMode,
+                      socialStoryFocus,
+                      artStyle: adventureArtStyle,
+                      customArtStyle: adventureCustomArtStyle,
+                      lowQualityVisuals: useLowQualityVisuals,
+                      enableFactionResources,
+                      factionResourceMode
+                  }
+              };
               if (Array.isArray(sanitizedState.inventory)) {
                   sanitizedState.inventory = sanitizedState.inventory.map(item => {
                       const { image, ...rest } = item;
                       return rest;
                   });
               }
+              if (Array.isArray(sanitizedState.characters)) {
+                  sanitizedState.characters = sanitizedState.characters.map(character => ({
+                      ...character,
+                      portrait: null
+                  }));
+              }
               try {
                   await storageDB.set('allo_adventure_save', sanitizedState);
+                  setHasSavedAdventure(true);
               } catch (e) {
                   warnLog("Adventure Save Error", e);
               }
@@ -10591,7 +10617,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           const timer = setTimeout(saveAsync, 2000);
           return () => clearTimeout(timer);
       }
-  }, [adventureState]);
+  }, [adventureState, adventureDifficulty, adventureInputMode, adventureLanguageMode,
+      adventureChanceMode, adventureFreeResponseEnabled, adventureConsistentCharacters,
+      isAdventureStoryMode, isSocialStoryMode, socialStoryFocus, adventureArtStyle,
+      adventureCustomArtStyle, useLowQualityVisuals, enableFactionResources, factionResourceMode]);
   const [isGateOpen, setIsGateOpen] = useState(false);
   const [pendingRole, setPendingRole] = useState(null);
   const onGateUnlock = () => {
@@ -13383,6 +13412,23 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           targetResourceId = data.roster[user.uid].resourceId;
                       }
                       if (targetResourceId === 'adventure-sync') {
+                          if (data.activeAdventureConfig) {
+                              const config = data.activeAdventureConfig;
+                              if (config.difficulty) setAdventureDifficulty(config.difficulty);
+                              if (config.inputMode) setAdventureInputMode(config.inputMode);
+                              if (config.languageMode) setAdventureLanguageMode(config.languageMode);
+                              if (config.chanceMode !== undefined) setAdventureChanceMode(!!config.chanceMode);
+                              if (config.freeResponse !== undefined) setAdventureFreeResponseEnabled(!!config.freeResponse);
+                              if (config.consistentCharacters !== undefined) setAdventureConsistentCharacters(!!config.consistentCharacters);
+                              if (config.storyMode !== undefined) setIsAdventureStoryMode(!!config.storyMode);
+                              if (config.socialStoryMode !== undefined) setIsSocialStoryMode(!!config.socialStoryMode);
+                              if (config.socialStoryFocus !== undefined) setSocialStoryFocus(config.socialStoryFocus || '');
+                              if (config.artStyle) setAdventureArtStyle(config.artStyle);
+                              if (config.customArtStyle !== undefined) setAdventureCustomArtStyle(config.customArtStyle || '');
+                              if (config.lowQualityVisuals !== undefined) setUseLowQualityVisuals(!!config.lowQualityVisuals);
+                              if (config.enableFactionResources !== undefined) setEnableFactionResources(!!config.enableFactionResources);
+                              if (config.factionResourceMode) setFactionResourceMode(config.factionResourceMode);
+                          }
                           if (data.activeAdventureState) {
                               setAdventureState(prev => {
                                   if (prev.currentScene?.text === data.activeAdventureState.currentScene?.text &&
@@ -13394,7 +13440,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                       ...data.activeAdventureState,
                                       isLoading: false,
                                       history: [],
-                                      isGameOver: data.activeAdventureState.currentScene?.options?.length === 0
+                                      isGameOver: data.activeAdventureState.isGameOver !== undefined
+                                          ? !!data.activeAdventureState.isGameOver
+                                          : (!data.activeAdventureConfig?.freeResponse && data.activeAdventureState.currentScene?.options?.length === 0)
                                   };
                               });
                           }
@@ -13576,23 +13624,51 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [generatedContent && generatedContent.id, activeSessionCode, isTeacherMode, user, activeSessionAppId]);
   useEffect(() => {
       if (isTeacherMode && activeSessionCode && activeView === 'adventure' && adventureState.currentScene) {
-          const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+          const targetAppId = activeSessionAppId || appId;
+          const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+          const shareableSceneImage = typeof adventureState.sceneImage === 'string'
+              && /^https?:\/\//i.test(adventureState.sceneImage)
+              ? adventureState.sceneImage
+              : null;
+          const shareableInventory = (adventureState.inventory || []).map(({ image, ...item }) => item);
           updateDoc(sessionRef, {
               currentResourceId: 'adventure-sync',
               activeAdventureScene: adventureState.currentScene,
+              activeAdventureConfig: {
+                  difficulty: adventureDifficulty,
+                  inputMode: adventureInputMode,
+                  languageMode: adventureLanguageMode,
+                  chanceMode: adventureChanceMode,
+                  freeResponse: adventureFreeResponseEnabled,
+                  consistentCharacters: adventureConsistentCharacters,
+                  storyMode: isAdventureStoryMode,
+                  socialStoryMode: isSocialStoryMode,
+                  socialStoryFocus,
+                  artStyle: adventureArtStyle,
+                  customArtStyle: adventureCustomArtStyle,
+                  lowQualityVisuals: useLowQualityVisuals,
+                  enableFactionResources,
+                  factionResourceMode
+              },
               activeAdventureState: {
                   currentScene: adventureState.currentScene,
-                  sceneImage: adventureState.sceneImage,
+                  sceneImage: shareableSceneImage,
                   level: adventureState.level,
                   xp: adventureState.xp,
                   xpToNextLevel: adventureState.xpToNextLevel,
                   energy: adventureState.energy,
                   gold: adventureState.gold,
-                  inventory: adventureState.inventory
+                  inventory: shareableInventory,
+                  turnCount: adventureState.turnCount,
+                  isGameOver: adventureState.isGameOver
               }
           }).catch(e => warnLog("Adventure broadcast error:", e));
       }
-  }, [isTeacherMode, activeSessionCode, activeView, adventureState, activeSessionAppId]);
+  }, [isTeacherMode, activeSessionCode, activeView, adventureState, activeSessionAppId, appId,
+      adventureDifficulty, adventureInputMode, adventureLanguageMode, adventureChanceMode,
+      adventureFreeResponseEnabled, adventureConsistentCharacters, isAdventureStoryMode,
+      isSocialStoryMode, socialStoryFocus, adventureArtStyle, adventureCustomArtStyle,
+      useLowQualityVisuals, enableFactionResources, factionResourceMode]);
   useEffect(() => {
     if (_alloQrFirebaseHandoffRequiredButMissing) {
       setUser(null);
@@ -24963,6 +25039,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         adventureFreeResponseEnabled,
         adventureInputMode,
         adventureLanguageMode,
+        adventureConsistentCharacters,
+        isAdventureStoryMode,
+        isSocialStoryMode,
+        socialStoryFocus,
+        adventureArtStyle,
+        adventureCustomArtStyle,
+        useLowQualityVisuals,
+        enableFactionResources,
+        factionResourceMode,
         completedActivities,
         escapeRoomState,
         externalCBMScores,
@@ -25084,6 +25169,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         setAdventureCustomInstructions,
         setAdventureChanceMode,
         setAdventureFreeResponseEnabled,
+        setAdventureConsistentCharacters,
+        setIsAdventureStoryMode,
+        setIsSocialStoryMode,
+        setSocialStoryFocus,
+        setAdventureArtStyle,
+        setAdventureCustomArtStyle,
+        setUseLowQualityVisuals,
+        setEnableFactionResources,
+        setFactionResourceMode,
         setStudentNickname,
         setAdventureState,
         setHasSavedAdventure,
@@ -26843,6 +26937,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         setShowDice,
         setShowGlobalLevelUp,
         setShowNewGameSetup,
+        setAdventureDifficulty,
+        setAdventureInputMode,
+        setAdventureLanguageMode,
+        setAdventureChanceMode,
+        setAdventureFreeResponseEnabled,
+        setAdventureConsistentCharacters,
+        setIsAdventureStoryMode,
+        setIsSocialStoryMode,
+        setSocialStoryFocus,
+        setAdventureArtStyle,
+        setAdventureCustomArtStyle,
+        setUseLowQualityVisuals,
+        setEnableFactionResources,
+        setFactionResourceMode,
         callGemini,
         callGeminiVision,
         addToast,
@@ -26863,6 +26971,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         flyToElement,
         resilientJsonParse,
         storageDB,
+        adventureImageDB,
         updateDoc,
         doc,
         db,
