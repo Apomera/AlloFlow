@@ -185,6 +185,14 @@ describe('command contracts and plan validation', () => {
     expect(report.ok).toBe(true);
     expect(report.blockingCount).toBe(0);
   });
+  it('keeps the recorder launch out of automatic demos while allowing safe launcher demos', () => {
+    const { ctx } = mkCtx();
+    const recorder = AC.validatePlan(ctx, [{ commandId: 'open_video_studio', params: {} }], { demoSafeOnly: true });
+    expect(recorder.ok).toBe(false);
+    expect(recorder.items[0].detail).toContain('recorder/editor');
+    const timeline = AC.validatePlan(ctx, [{ commandId: 'open_timeline_studio', params: {} }], { demoSafeOnly: true });
+    expect(timeline.ok).toBe(true);
+  });
 
   it('removes demo-blocked commands from the AI planner menu', async () => {
     const { ctx } = mkCtx({

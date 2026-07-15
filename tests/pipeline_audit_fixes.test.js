@@ -108,12 +108,15 @@ describe('Canvas-test fixes (2026-06-23): conformance overclaim, re-scan save, r
     expect(veraBlock.indexOf('if (!hasChecks)')).toBeLessThan(veraBlock.indexOf('PASSES PDF/UA-1'));
   });
   it('Re-scan with OCR confirms + offers to save the project before wiping the result', () => {
-    const fn = view.slice(view.indexOf('const _reRun = async (force) => {'), view.indexOf('const _reRun = async (force) => {') + 1300);
+    const fn = view.slice(view.indexOf('const _reRun = async (force) => {'), view.indexOf('const _reRun = async (force) => {') + 2200);
     expect(fn).toMatch(/REPLACES your current results/);                 // the warning
     expect(fn).toMatch(/saveProjectToFile\(false\)/);                    // saves if the user opts in
     expect(fn).toMatch(/pdf_audit\.rescan_save_first/);
-    // the confirm must gate the destructive fixAndVerifyPdf (return on cancel)
-    expect(fn).toMatch(/if \(!window\.confirm\([^)]*rescan_confirm[^)]*\)[^)]*\)\) return;/s);
+    expect(fn).toMatch(/await askPdfConfirmation/);
+    expect(fn).toMatch(/alternativeLabel:[^\n]*rescan_without_save/);
+    // the safe-default alert dialog must gate the destructive fixAndVerifyPdf (return on cancel)
+    expect(fn).toMatch(/if \(!_rescanDecision\) return;/);
+    expect(fn).not.toContain('window.confirm(');
   });
   it('the issue-resolution subheading is state-aware (no-remaining affirmative + new-issues honesty)', () => {
     expect(view).toMatch(/pdf_audit\.resolution\.all_clean/);            // "All N resolved — none remaining"

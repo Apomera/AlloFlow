@@ -131,6 +131,34 @@ describe('Cell simulator tooltip contrast and process diagrams', () => {
     expect(html).not.toContain('NaN');
     expect(html).not.toContain('data-cell-sim-canvas');
   });
+  it('supports guided stage focus with progress and malformed-state recovery', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_cell.js', 'cell');
+    const focused = renderTool('cell', { cell: { mode: 'processes', cellProcess: 'respiration', cellProcessStep: 2 } });
+    expect(focused).toContain('Stage 3 of 4');
+    expect(focused).toContain('role="progressbar" aria-label="Focused pathway stage" aria-valuemin="1" aria-valuemax="4" aria-valuenow="3"');
+    expect(focused).toContain('data-cell-process-step="2" aria-pressed="true" aria-current="step"');
+    expect(focused).toContain('Select a stage to focus your study.');
+    expect(focused).toContain('FOCUS');
+    expect(focused).toContain('data-cell-stage-focus="2" aria-labelledby="cell-stage-focus-title"');
+    expect(focused).toContain('Look for this in the diagram');
+    expect(focused).toContain('id="cell-stage-focus-title"');
+    expect(focused).toContain('Krebs cycle');
+    expect(focused).toContain('Mitochondrial matrix');
+
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_cell.js', 'cell');
+    const recovered = renderTool('cell', { cell: { mode: 'processes', cellProcess: 'transport', cellProcessStep: { forged: true } } });
+    expect(recovered).toContain('Stage 1 of 4');
+    expect(recovered).toContain('data-cell-process-step="0" aria-pressed="true" aria-current="step"');
+    expect(recovered).toContain('data-cell-stage-focus="0" aria-labelledby="cell-stage-focus-title"');
+    expect(recovered).toContain('Simple diffusion');
+    expect(recovered).not.toContain('[object Object]');
+
+    const source = readFileSync('stem_lab/stem_tool_cell.js', 'utf8');
+    expect(source).toContain("upd('cellProcessStep', index);");
+    expect(source).toContain("upd('cellProcessStep', 0);");
+  });
   it('offers contextual, keyboard-safe navigation between related pathways', () => {
     resetStemLab();
     loadTool('stem_lab/stem_tool_cell.js', 'cell');

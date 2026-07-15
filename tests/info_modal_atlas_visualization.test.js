@@ -65,4 +65,23 @@ describe('Info modal Atlas visualization', () => {
     expect(source).toContain('<mark className="rounded-sm bg-amber-200 px-0.5 text-inherit">');
     expect(source).toContain('<AtlasHighlight text={tool} query={query} />');
   });
+
+  it('gives every area a curated, non-prescriptive focus map', () => {
+    expect(source).toContain('function getAtlasAreaLens(areaName)');
+    expect(source).toContain("['self-awareness', ['Notice', 'Name', 'Understand', 'Advocate']]");
+    expect(source).toContain("['inquiry lanes', ['Question', 'Gather', 'Analyze', 'Share']]");
+    expect(source).toContain("const areaLens = getAtlasAreaLens(cat.name)");
+    expect(source).toContain('role="list" aria-label={cat.name + \' focus\'}');
+    expect(source).toContain('areaLens.map((focus) =>');
+  });
+
+  it('can expand or collapse all currently visible directory hubs', () => {
+    expect(source).toContain('const expandVisibleHubs = () =>');
+    expect(source).toContain('const collapseVisibleHubs = () =>');
+    expect(source).toContain('visibleHubs.forEach((hub) => next.add(hub.hub))');
+    expect(source).toContain('visibleHubs.forEach((hub) => next.delete(hub.hub))');
+    expect(source).toContain('role="group" aria-label="Atlas hub visibility"');
+    expect(source.match(/aria-controls="atlas-directory-hubs"/g)).toHaveLength(2);
+    expect(source).toContain('id="atlas-directory-hubs"');
+  });
 });

@@ -5694,6 +5694,9 @@ window.StemLab = window.StemLab || {
             var markerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             var loggedMarkerMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
             var loggedRingMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
+            var evidencePathMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.24, depthWrite: false, depthTest: false });
+            var activePathMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.32, depthWrite: false, depthTest: false });
+            var loggedPathMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.46, depthWrite: false, depthTest: false });
             var scanPulse = null;
             var loggedRings = [];
             var scanTargetId = props.scanTarget || 'skull';
@@ -5738,6 +5741,17 @@ window.StemLab = window.StemLab || {
               mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
               mesh.renderOrder = 2;
               scene.add(mesh);
+              return mesh;
+            }
+            function addModelCylinder(a, b, radius, mat, order) {
+              var dir = new THREE.Vector3().subVectors(b, a);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, dist, 10), mat);
+              mesh.position.copy(a).add(b).multiplyScalar(0.5);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              mesh.renderOrder = order || 8;
+              model.add(mesh);
               return mesh;
             }
             function addGroundOval(x, z, sx, sz, mat, rot) {
@@ -5840,15 +5854,34 @@ window.StemLab = window.StemLab || {
             }
 
             if (props.showEvidence) {
-              [
+              var evidenceAnchors = [
                 { id: 'skull', label: 'Skull', point: head },
                 { id: 'shoulder', label: 'Shoulder', point: shoulder },
                 { id: 'hip', label: 'Hip', point: hip }
-              ].forEach(function (anchor) {
+              ];
+              var evidencePoints = {};
+              function evidenceMarkPoint(point) {
+                var p = point.clone();
+                p.y += Math.max(0.12, ht * 0.050);
+                return p;
+              }
+              evidenceAnchors.forEach(function (anchor) { evidencePoints[anchor.id] = evidenceMarkPoint(anchor.point); });
+              [
+                { a: 'skull', b: 'shoulder' },
+                { a: 'shoulder', b: 'hip' }
+              ].forEach(function (segment) {
+                var a = evidencePoints[segment.a];
+                var b = evidencePoints[segment.b];
+                if (!a || !b) return;
+                var complete = !!loggedAnchors[segment.a] && !!loggedAnchors[segment.b];
+                var active = segment.a === scanTargetId || segment.b === scanTargetId;
+                var mat = complete ? loggedPathMat : (active ? activePathMat : evidencePathMat);
+                addModelCylinder(a, b, Math.max(0.018, ht * 0.006), mat, complete ? 21 : (active ? 18 : 7));
+              });
+              evidenceAnchors.forEach(function (anchor) {
                 var anchorLogged = !!loggedAnchors[anchor.id];
                 var mark = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.09, ht * 0.026), 16, 10), anchorLogged ? loggedMarkerMat : markerMat);
-                mark.position.copy(anchor.point);
-                mark.position.y += Math.max(0.12, ht * 0.050);
+                mark.position.copy(evidencePoints[anchor.id]);
                 mark.renderOrder = anchorLogged ? 23 : 10;
                 model.add(mark);
                 var labelPos = anchor.point.clone();
@@ -5880,7 +5913,6 @@ window.StemLab = window.StemLab || {
                 }
               });
             }
-
             if (props.showHuman) {
               var hx = len * 0.56;
               var human = new THREE.Group();
@@ -5974,6 +6006,7 @@ window.StemLab = window.StemLab || {
             readoutChip('Height ' + fmtLength(props.species.heightM), 'rgba(250,204,21,0.55)'),
             props.scanLabel ? readoutChip('Focus ' + props.scanLabel, 'rgba(245,158,11,0.65)') : null,
             props.loggedCount != null ? readoutChip('Logged ' + props.loggedCount + '/' + (props.scanTotal || 3), 'rgba(34,197,94,0.65)') : null,
+            props.pathLoggedCount != null ? readoutChip('Path ' + props.pathLoggedCount + '/' + (props.pathTotal || 2), 'rgba(20,184,166,0.65)') : null,
             readoutChip('Mass ' + fmtWeight(props.species.weightKg), 'rgba(167,139,250,0.55)')
           ),
           el('div', { ref: statusRef, 'aria-live': 'polite', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
@@ -6000,8 +6033,14 @@ window.StemLab = window.StemLab || {
         var scanLogged = scanLogSpecies === dn.id ? rawScanLogged : {};
         var scanLoggedCount = scanTargets.reduce(function (n, target) { return n + (scanLogged[target.id] ? 1 : 0); }, 0);
         var scanLoggedKey = scanTargets.map(function (target) { return scanLogged[target.id] ? target.id : ''; }).join('|');
+        var scanPathLinks = [{ a: 'skull', b: 'shoulder' }, { a: 'shoulder', b: 'hip' }];
+        var scanPathCount = scanPathLinks.reduce(function (n, link) { return n + (scanLogged[link.a] && scanLogged[link.b] ? 1 : 0); }, 0);
         var scanComplete = scanLoggedCount >= scanTargets.length;
         var nextOpenTarget = scanTargets.filter(function (target) { return !scanLogged[target.id]; })[0] || null;
+        var claimReadinessScore = Math.min(5, scanLoggedCount + scanPathCount);
+        var claimReadinessPct = Math.round((claimReadinessScore / 5) * 100);
+        var claimReadinessLabel = scanComplete ? 'CER ready' : (scanPathCount > 0 ? 'Connected evidence' : (scanLoggedCount > 0 ? 'Anchor evidence' : 'Start scanning'));
+        var claimReadinessHint = scanComplete ? 'All anchors and path links are logged. Build a claim with evidence and reasoning.' : (scanPathCount > 0 ? 'A linked path connects anchors. Finish the scan for the strongest claim.' : (scanLoggedCount > 0 ? 'One or more anchors are logged. Link neighboring anchors for stronger reasoning.' : 'Log at least one anchor before writing a claim.'));
         function findNextOpenIdx(loggedMap, startIdx) {
           for (var offset = 1; offset <= scanTargets.length; offset++) {
             var idx = modIndex(startIdx + offset, scanTargets.length);
@@ -6116,6 +6155,7 @@ window.StemLab = window.StemLab || {
               }
             }, (logged ? 'Logged ' : '') + target.label);
           })),
+          el('div', { key: 'path', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, lineHeight: 1.4, marginBottom: 8 } }, 'Evidence path ' + scanPathCount + '/' + scanPathLinks.length + ' linked: Skull -> Shoulder -> Hip'),
           showEvidence ? null : el('div', { key: 'hidden', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 7, padding: 8, borderRadius: 8, border: '1px solid rgba(245,158,11,0.38)', background: 'rgba(15,23,42,0.26)', marginBottom: 8 } }, [ el('span', { key: 't', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.35 } }, 'Scan markers hidden'), el('button', { key: 'b', onClick: showScanMarkers, style: { fontSize: 11.5, fontWeight: 900, padding: '5px 9px', borderRadius: 7, border: '1px solid rgba(245,158,11,0.55)', background: 'rgba(245,158,11,0.16)', color: T.text, cursor: 'pointer' } }, 'Show scan markers') ]),
           el('div', { key: 'target', style: { fontSize: 12.5, color: T.text, lineHeight: 1.5, marginBottom: 6 } }, 'Target: ' + scanTarget.label + ' anchor'),
           el('div', { key: 'prompt', style: { fontSize: 12, color: T.soft, lineHeight: 1.48, marginBottom: 8 } }, scanTarget.prompt),
@@ -6157,6 +6197,9 @@ window.StemLab = window.StemLab || {
         var claimBuilderPanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Field claim builder'),
           el('div', { key: 'status', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Using ' + scanLoggedCount + '/' + scanTargets.length + ' logged anchors' + (scanComplete ? ' | Ready for CER' : ' | Scan more for a stronger claim')),
+          el('div', { key: 'readiness', style: { fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 5 } }, 'Claim strength ' + claimReadinessScore + '/5 | ' + claimReadinessLabel),
+          el('div', { key: 'readinessMeter', style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 6 } }, el('div', { style: { height: '100%', width: claimReadinessPct + '%', background: 'linear-gradient(90deg, #f59e0b, #14b8a6, #22c55e)' } })),
+          el('div', { key: 'readinessHint', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, claimReadinessHint),
           el('div', { key: 'modes', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))', gap: 6, marginBottom: 8 } }, claimOptions.map(function (option) {
             var active = option.id === claimFocus.id;
             return el('button', {
@@ -6218,6 +6261,7 @@ window.StemLab = window.StemLab || {
           keyItem('#f8fafc', 'Skeleton proxy', 'White rods and joints show the inferred bone layout.'),
           keyItem(dColor(dn.diet), 'Body inference', 'Translucent color shows estimated soft tissue volume.'),
           keyItem('#38bdf8', 'Evidence marker', 'Blue points mark fossil anchor locations.'),
+          keyItem('#14b8a6', 'Evidence path', 'Cyan links connect anchors; green links show a completed evidence chain.'),
           keyItem('#22c55e', 'Logged anchor', 'Green rings show evidence points already recorded in the observation log.'),
           keyItem('#f59e0b', 'Scan focus', 'Amber ring pulses around the current evidence target.'),
           keyItem('#0f172a', 'Anchor label', 'Floating labels identify skull, shoulder, and hip evidence points.'),
@@ -6269,7 +6313,7 @@ window.StemLab = window.StemLab || {
                 el('button', { onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin')
               ),
               presetStrip,
-              el(DinoFieldStation3D, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, dietColor: dColor(dn.diet) }),
+              el(DinoFieldStation3D, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, dietColor: dColor(dn.diet) }),
               el('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } }, taskCards)
             ),
             el('div', { key: 'side' },

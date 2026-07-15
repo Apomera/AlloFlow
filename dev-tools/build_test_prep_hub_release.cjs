@@ -87,6 +87,10 @@ const specialEducationLearningDisabilities5383SourcePath=path.join(root,'test_pr
 const specialEducationLearningDisabilities5383BuildPath=path.join(root,'dev-tools','build_special_education_learning_disabilities_5383_pack.cjs');
 const specialEducationLearningDisabilities5383LibraryBuildPath=path.join(root,'dev-tools','build_special_education_learning_disabilities_5383_learning_library.cjs');
 const specialEducationLearningDisabilities5383QaPath=path.join(root,'dev-tools','qa_special_education_learning_disabilities_5383.cjs');
+const specialEducationBehaviorEmotional5372SourcePath=path.join(root,'test_prep','special_education_behavior_emotional_5372_pack.json');
+const specialEducationBehaviorEmotional5372BuildPath=path.join(root,'dev-tools','build_special_education_behavior_emotional_5372_pack.cjs');
+const specialEducationBehaviorEmotional5372LibraryBuildPath=path.join(root,'dev-tools','build_special_education_behavior_emotional_5372_learning_library.cjs');
+const specialEducationBehaviorEmotional5372QaPath=path.join(root,'dev-tools','qa_special_education_behavior_emotional_5372.cjs');
 const outputPath = path.join(root, 'test_prep_hub_module.js');
 const deployOutputPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const tempEntryPath = path.join(root, '_tmp_test_prep_hub_release_entry.jsx');
@@ -109,6 +113,7 @@ const pltEarlyChildhood5621Registration='registerTestPrepPack(PLT_EARLY_CHILDHOO
 const specialEducationEarlyChildhood5692Registration='registerTestPrepPack(SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK);';
 const specialEducationSevereProfound5547Registration='registerTestPrepPack(SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK);';
 const specialEducationLearningDisabilities5383Registration='registerTestPrepPack(SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK);';
+const specialEducationBehaviorEmotional5372Registration='registerTestPrepPack(SPECIAL_EDUCATION_BEHAVIOR_EMOTIONAL_5372_PRACTICE_PACK);';
 
 if (!fs.existsSync(sourcePath)) throw new Error('Test Prep Hub source not found.');
 if (!fs.existsSync(epppBankPath)) throw new Error('EPPP bank not found.');
@@ -129,6 +134,7 @@ if(!fs.existsSync(pltEarlyChildhood5621SourcePath))throw Error('PLT Early Childh
 if(!fs.existsSync(specialEducationEarlyChildhood5692SourcePath))throw Error('Special Education EC/EI 5692 source missing');
 if(!fs.existsSync(specialEducationSevereProfound5547SourcePath))throw Error('Special Education Severe to Profound 5547 source missing');
 if(!fs.existsSync(specialEducationLearningDisabilities5383SourcePath))throw Error('Learning Disabilities 5383 source missing');
+if(!fs.existsSync(specialEducationBehaviorEmotional5372SourcePath))throw Error('EBD 5372 source missing');
 execFileSync(process.execPath, [paraProBatch2BuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [paraProLibraryBuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [paraProLibraryQaPath], { cwd: root, stdio: 'inherit' });
@@ -183,6 +189,7 @@ execFileSync(process.execPath,[pltEarlyChildhood5621BuildPath],{cwd:root,stdio:'
 execFileSync(process.execPath,[specialEducationEarlyChildhood5692BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationEarlyChildhood5692LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationEarlyChildhood5692QaPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[specialEducationSevereProfound5547BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationSevereProfound5547LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationSevereProfound5547QaPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[specialEducationLearningDisabilities5383BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationLearningDisabilities5383LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationLearningDisabilities5383QaPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[specialEducationBehaviorEmotional5372BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationBehaviorEmotional5372LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationBehaviorEmotional5372QaPath],{cwd:root,stdio:'inherit'});
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
 if (!originalSource.includes(registrationMarker)) throw new Error('Test Prep Hub registration marker changed; review the ParaPro release injection.');
@@ -207,6 +214,7 @@ if(!source.includes(pltEarlyChildhood5621Registration))throw Error('Hub must reg
 if(!source.includes(specialEducationEarlyChildhood5692Registration))throw Error('Hub must register Special Education EC/EI 5692');
 if(!source.includes(specialEducationSevereProfound5547Registration))throw Error('Hub must register Special Education Severe to Profound 5547');
 if(!source.includes(specialEducationLearningDisabilities5383Registration))throw Error('Hub must register Learning Disabilities 5383');
+if(!source.includes(specialEducationBehaviorEmotional5372Registration))throw Error('Hub must register EBD 5372');
 const specialEducation5355Pack = JSON.parse(fs.readFileSync(specialEducation5355SourcePath, 'utf8'));
 const schoolCounselor5422Pack = JSON.parse(fs.readFileSync(schoolCounselor5422SourcePath, 'utf8'));
 const schoolPsychologist5403Pack = JSON.parse(fs.readFileSync(schoolPsychologist5403SourcePath, 'utf8'));
@@ -224,6 +232,7 @@ const pltEarlyChildhood5621Pack=JSON.parse(fs.readFileSync(pltEarlyChildhood5621
 const specialEducationEarlyChildhood5692Pack=JSON.parse(fs.readFileSync(specialEducationEarlyChildhood5692SourcePath,'utf8'));
 const specialEducationSevereProfound5547Pack=JSON.parse(fs.readFileSync(specialEducationSevereProfound5547SourcePath,'utf8'));
 const specialEducationLearningDisabilities5383Pack=JSON.parse(fs.readFileSync(specialEducationLearningDisabilities5383SourcePath,'utf8'));
+const specialEducationBehaviorEmotional5372Pack=JSON.parse(fs.readFileSync(specialEducationBehaviorEmotional5372SourcePath,'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 200) {
   throw new Error('ParaPro release pack is empty or invalid.');
 }
@@ -264,6 +273,7 @@ if(pltEarlyChildhood5621Pack.items?.length!==200)throw Error('PLT Early Childhoo
 if(specialEducationEarlyChildhood5692Pack.id!=='praxis-special-education-early-childhood-5692'||specialEducationEarlyChildhood5692Pack.items?.length!==200)throw Error('Special Education EC/EI 5692 release pack invalid');
 if(specialEducationSevereProfound5547Pack.id!=='praxis-special-education-severe-profound-5547'||specialEducationSevereProfound5547Pack.items?.length!==200)throw Error('Special Education Severe to Profound 5547 release pack invalid');
 if(specialEducationLearningDisabilities5383Pack.id!=='praxis-special-education-learning-disabilities-5383'||specialEducationLearningDisabilities5383Pack.items?.length!==200)throw Error('Learning Disabilities 5383 release pack invalid');
+if(specialEducationBehaviorEmotional5372Pack.id!=='praxis-special-education-behavior-emotional-5372'||specialEducationBehaviorEmotional5372Pack.items?.length!==200)throw Error('EBD 5372 release pack invalid');
 const prelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(epppItems) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
@@ -281,7 +291,8 @@ const prelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(epppItems) + ';\n\
   + 'const PLT_EARLY_CHILDHOOD_5621_PRACTICE_PACK = ' + JSON.stringify(pltEarlyChildhood5621Pack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK = ' + JSON.stringify(specialEducationEarlyChildhood5692Pack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK = ' + JSON.stringify(specialEducationSevereProfound5547Pack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK = ' + JSON.stringify(specialEducationLearningDisabilities5383Pack) + ';\n\n';
+  + 'const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK = ' + JSON.stringify(specialEducationLearningDisabilities5383Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_BEHAVIOR_EMOTIONAL_5372_PRACTICE_PACK = ' + JSON.stringify(specialEducationBehaviorEmotional5372Pack) + ';\n\n';
 fs.writeFileSync(tempEntryPath, '/* global React */\n\n' + prelude + source + '\n', 'utf8');
 
 try {

@@ -50,6 +50,9 @@
   function PersonaChatView(props) {
   // State (object-bundle)
   var personaState = props.personaState;
+  var generatedContent = props.generatedContent;
+  var appId = props.appId;
+  var studentNickname = props.studentNickname;
   // State reads (scalar/boolean)
   var theme = ['light', 'dark', 'contrast'].includes(props.theme) ? props.theme : 'light';
   var t = props.t;
@@ -93,6 +96,7 @@
   var handleClosePersonaChat = props.handleClosePersonaChat;
   var handleGenerateReflectionPrompt = props.handleGenerateReflectionPrompt;
   var handlePanelChatSubmit = props.handlePanelChatSubmit;
+  var generatePanelFollowUps = props.generatePanelFollowUps;
   var handlePersonaChatSubmit = props.handlePersonaChatSubmit;
   var handlePersonaTopicSpark = props.handlePersonaTopicSpark;
   var handleRetryPortraitGeneration = props.handleRetryPortraitGeneration;
@@ -104,6 +108,24 @@
   var handleTogglePersonaAutoSend = props.handleTogglePersonaAutoSend;
   var handleToggleShowPersonaHints = props.handleToggleShowPersonaHints;
   var stopPlayback = props.stopPlayback;
+  var _panelChoicePendingState = React.useState(false);
+  var panelChoicePending = _panelChoicePendingState[0];
+  var setPanelChoicePending = _panelChoicePendingState[1];
+  var _handlePanelChoice = function (option) {
+    if (panelChoicePending || personaState.isLoading || !option) return;
+    setPanelChoicePending(true);
+    setPersonaState(function (prev) {
+      return {
+        ...prev,
+        panelSuggestions: []
+      };
+    });
+    Promise.resolve().then(function () {
+      return handlePanelChatSubmit(option.text);
+    }).catch(function () {}).finally(function () {
+      setPanelChoicePending(false);
+    });
+  };
   var personaCloseHandlerRef = React.useRef(handleClosePersonaChat);
   personaCloseHandlerRef.current = handleClosePersonaChat;
 
@@ -190,18 +212,20 @@
   var ErrorBoundary = props.ErrorBoundary;
   var CharacterColumn = props.CharacterColumn;
   var HarmonyMeter = props.HarmonyMeter;
-  // ── Interview resume via the device-storage bridge (2026-07-14) ──
-  // Canvas origins are ephemeral: a refresh loses personaState entirely (it
-  // is plain React state). Snapshot the live interview into on-device
-  // storage (alloDeviceStorage — silent iframe channel, probe-verified to
-  // persist across Canvas sessions) and offer to restore when the view
-  // opens with less conversation than the snapshot holds. Data never
-  // leaves the device; the probe panel (Ctrl+Alt+Shift+D → View app data)
-  // is the review/erase surface for this bucket.
+  // Interview resume via the on-device storage bridge.
+  // Scope every snapshot to an app, Persona resource, and student so a shared
+  // browser cannot offer another project or learner's interview.
+  var _personaSnapshotResourceId = generatedContent && generatedContent.type === 'persona' ? generatedContent.id : null;
+  var _personaSnapshotStudentId = typeof studentNickname === 'string' && studentNickname.trim() ? studentNickname.trim() : isTeacherMode ? 'teacher' : null;
+  var _personaSnapshotEnabled = Boolean(_personaSnapshotResourceId && _personaSnapshotStudentId);
+  var _personaSnapshotScope = [appId || 'app', _personaSnapshotResourceId || 'no-resource', _personaSnapshotStudentId || 'disabled'].map(function (value) {
+    return String(value).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
+  }).join(':');
+  var _personaSnapshotKey = ('active:' + _personaSnapshotScope).slice(0, 500);
   var _dsResumeState = React.useState(null);
   var personaResumeOffer = _dsResumeState[0];
   var setPersonaResumeOffer = _dsResumeState[1];
-  var _dsCheckedRef = React.useRef(false);
+  var _dsCheckedKeyRef = React.useRef(null);
   var _dsSaveTimerRef = React.useRef(null);
   var _ensureDeviceStorage = function () {
     if (!window.__alloDeviceStoragePromise) {
@@ -209,8 +233,6 @@
         var s = document.createElement('script');
         s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
         s.onload = function () {
-          // Pages answers missing files with its SPA index as HTML 200 —
-          // verify the global actually appeared (lame.min.js lesson).
           if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);else reject(new Error('device storage module missing after load'));
         };
         s.onerror = function () {
@@ -223,28 +245,42 @@
       return ds.ready().then(function () {
         return ds;
       });
+    }).catch(function (error) {
+      window.__alloDeviceStoragePromise = null;
+      throw error;
     });
   };
   var _clearPersonaSnapshot = function () {
+    if (!_personaSnapshotEnabled) return;
     _ensureDeviceStorage().then(function (ds) {
-      return ds.remove('persona_sessions', 'active');
+      return ds.remove('persona_sessions', _personaSnapshotKey);
     }).catch(function () {});
+  };
+  var _sanitizeSnapshotCharacter = function (character) {
+    if (!character || typeof character !== 'object') return null;
+    var copy = {
+      ...character
+    };
+    delete copy.chatHistory;
+    delete copy.savedDialogue;
+    if (typeof copy.avatarUrl !== 'string' || copy.avatarUrl.length >= 300000) copy.avatarUrl = null;
+    return copy;
   };
   var _dsChatLen = (personaState.chatHistory || []).length;
   React.useEffect(function () {
-    if (_dsCheckedRef.current) return;
-    _dsCheckedRef.current = true;
+    if (!_personaSnapshotEnabled || _dsCheckedKeyRef.current === _personaSnapshotKey) return;
+    _dsCheckedKeyRef.current = _personaSnapshotKey;
     var mountMsgs = _dsChatLen;
     _ensureDeviceStorage().then(function (ds) {
-      return ds.get('persona_sessions', 'active');
+      return ds.get('persona_sessions', _personaSnapshotKey);
     }).then(function (snap) {
-      if (!snap || !snap.state || !(snap.state.chatHistory || []).length) return;
+      if (!snap || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId || !snap.state || !(snap.state.chatHistory || []).length) return;
       if ((snap.state.chatHistory || []).length > mountMsgs) setPersonaResumeOffer(snap);
     }).catch(function () {});
-  }, []);
+  }, [_personaSnapshotKey]);
   React.useEffect(function () {
-    if (_dsChatLen < 2) return undefined; // nothing worth restoring yet
-    if (personaResumeOffer) return undefined; // don't clobber an undecided offer
+    if (!_personaSnapshotEnabled || _dsChatLen < 2) return undefined;
+    if (personaResumeOffer) return undefined;
     if (_dsSaveTimerRef.current) clearTimeout(_dsSaveTimerRef.current);
     var st = personaState;
     _dsSaveTimerRef.current = setTimeout(function () {
@@ -252,17 +288,21 @@
       var snap;
       try {
         snap = JSON.parse(JSON.stringify({
-          v: 1,
+          v: 2,
+          appId: appId || null,
+          resourceId: _personaSnapshotResourceId,
+          studentId: _personaSnapshotStudentId,
           savedAt: new Date().toISOString(),
           state: {
             mode: st.mode,
-            selectedCharacter: st.selectedCharacter || null,
-            selectedCharacters: st.selectedCharacters || [],
+            selectedCharacter: _sanitizeSnapshotCharacter(st.selectedCharacter),
+            selectedCharacters: (st.selectedCharacters || []).map(_sanitizeSnapshotCharacter).filter(Boolean),
             chatHistory: st.chatHistory || [],
             harmonyScore: st.harmonyScore,
             earnedBadges: st.earnedBadges || [],
             topicSparkCount: st.topicSparkCount || 0,
             suggestions: st.suggestions || [],
+            panelSuggestions: st.panelSuggestions || [],
             avatarUrl: avatarOk ? st.avatarUrl : null
           }
         }));
@@ -270,19 +310,23 @@
         return;
       }
       _ensureDeviceStorage().then(function (ds) {
-        return ds.set('persona_sessions', 'active', snap);
+        return ds.set('persona_sessions', _personaSnapshotKey, snap);
       }).catch(function () {});
     }, 1500);
     return function () {
       if (_dsSaveTimerRef.current) clearTimeout(_dsSaveTimerRef.current);
     };
-  }, [_dsChatLen, personaState.harmonyScore, (personaState.earnedBadges || []).length, !!personaResumeOffer]);
+  }, [_personaSnapshotKey, _dsChatLen, personaState.harmonyScore, (personaState.earnedBadges || []).length, !!personaResumeOffer]);
   var _resumeSnapshotName = personaResumeOffer ? personaResumeOffer.state.selectedCharacter && personaResumeOffer.state.selectedCharacter.name || (personaResumeOffer.state.selectedCharacters || []).map(function (c) {
     return c && c.name;
   }).filter(Boolean).join(' & ') || 'your character' : null;
   var _handleResumeSnapshot = function () {
     var snap = personaResumeOffer;
-    if (!snap) return;
+    if (!snap || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId) {
+      _clearPersonaSnapshot();
+      setPersonaResumeOffer(null);
+      return;
+    }
     setPersonaState(function (prev) {
       return {
         ...prev,
@@ -299,6 +343,32 @@
     _clearPersonaSnapshot();
     setPersonaResumeOffer(null);
   };
+  var _handleCloseAndClearSnapshot = function () {
+    _clearPersonaSnapshot();
+    if (typeof stopPlayback === 'function') stopPlayback();
+    if (typeof setPersonaAutoRead === 'function') setPersonaAutoRead(false);
+    handleClosePersonaChat();
+  };
+  var _handleCompleteReflection = function () {
+    _handleCloseAndClearSnapshot();
+    setReflectionFeedback(null);
+    setIsPersonaReflectionOpen(false);
+    setPersonaReflectionInput('');
+    setPersonaState(function (prev) {
+      return {
+        ...prev,
+        selectedCharacter: null,
+        chatHistory: [],
+        suggestions: [],
+        panelSuggestions: [],
+        selectedCharacters: [],
+        mode: 'single',
+        harmonyScore: 10,
+        earnedBadges: []
+      };
+    });
+  };
+  personaCloseHandlerRef.current = _handleCloseAndClearSnapshot;
   var activePersonaMessageMatch = typeof playingContentId === 'string' ? playingContentId.match(/^persona-message-(\d+)$/) : null;
   var activePersonaMessageIndex = activePersonaMessageMatch ? parseInt(activePersonaMessageMatch[1], 10) : -1;
   var activePersonaMessage = activePersonaMessageIndex >= 0 ? (personaState.chatHistory || [])[activePersonaMessageIndex] : null;
@@ -378,7 +448,7 @@
     "data-help-key": "persona_close",
     "data-help-ignore": true,
     "data-persona-initial-focus": true,
-    onClick: handleClosePersonaChat,
+    onClick: _handleCloseAndClearSnapshot,
     className: "absolute right-4 p-2 text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors motion-reduce:transition-none",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
@@ -595,7 +665,25 @@
           }, formatInteractiveText(cleanText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')), " ");
         }));
       });
-    })(), !isUser && /*#__PURE__*/React.createElement("span", {
+    })(), !isUser && msg.translation && /*#__PURE__*/React.createElement("div", {
+      className: "mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 mb-1"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-[10px] font-bold uppercase tracking-wider text-slate-500"
+    }, t('persona.translation_label') || 'English translation'), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": t('common.volume'),
+      onClick: e => {
+        e.stopPropagation();
+        handleSpeak(msg.translation, `persona-panel-translation-${idx}`, 0);
+      },
+      className: "p-0.5 rounded text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50"
+    }, /*#__PURE__*/React.createElement(Volume2, {
+      size: 12
+    }))), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-500 leading-relaxed italic"
+    }, msg.translation)), !isUser && /*#__PURE__*/React.createElement("span", {
       className: "mt-2 flex items-center gap-1 text-[11px] text-slate-600 opacity-70"
     }, /*#__PURE__*/React.createElement(Volume2, {
       size: 11
@@ -682,7 +770,7 @@
     className: "flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
   }, /*#__PURE__*/React.createElement(Volume2, {
     size: 12
-  }), " Speak Definition")))), (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading ? /*#__PURE__*/React.createElement("div", {
+  }), " Speak Definition")))), (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 bg-white border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 text-center mb-3 font-medium"
@@ -691,22 +779,12 @@
   }, personaState.panelSuggestions.map((opt, i) => /*#__PURE__*/React.createElement("button", {
     type: "button",
     key: i,
-    onClick: e => {
-      const btn = e.currentTarget;
-      const feedbackColor = opt.tier === 'good' ? 'bg-emerald-200 border-emerald-400' : opt.tier === 'poor' ? 'bg-rose-200 border-rose-400' : 'bg-amber-200 border-amber-400';
-      btn.className = btn.className.replace(/bg-indigo-50|border-indigo-200|hover:bg-indigo-100|hover:border-indigo-300/g, '') + ' ' + feedbackColor;
-      setTimeout(() => {
-        setPersonaState(prev => ({
-          ...prev,
-          panelSuggestions: []
-        }));
-        handlePanelChatSubmit(opt.text);
-      }, 400);
-    },
+    onClick: () => _handlePanelChoice(opt),
+    disabled: panelChoicePending || personaState.isLoading,
     className: "text-left px-3 py-2 text-xs font-medium rounded-lg border-2 transition-all motion-reduce:transition-none duration-300 shadow-sm hover:scale-[1.01] active:scale-[0.99] bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300"
   }, /*#__PURE__*/React.createElement("span", {
     className: "opacity-50 mr-2"
-  }, String.fromCharCode(65 + i), "."), opt.text)))) : /*#__PURE__*/React.createElement("div", {
+  }, String.fromCharCode(65 + i), "."), opt.text)))) : isPersonaFreeResponse ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 bg-white border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
@@ -730,7 +808,20 @@
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Send, {
     size: 20
-  }))))), /*#__PURE__*/React.createElement("div", {
+  })))) : /*#__PURE__*/React.createElement("div", {
+    className: "p-4 bg-white border-t border-slate-200 flex items-center justify-center gap-3",
+    role: "status",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 18,
+    className: personaState.isLoading ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-medium text-slate-700"
+  }, t('persona.generating_choices') || 'Preparing response choices...'), !personaState.isLoading && typeof generatePanelFollowUps === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => generatePanelFollowUps(personaState.chatHistory, personaState.selectedCharacters?.[0], personaState.selectedCharacters?.[1]),
+    className: "text-xs font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
+  }, t('common.retry') || 'Retry'))), /*#__PURE__*/React.createElement("div", {
     className: `w-1/4 min-w-[250px] border-l border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex transition-all motion-reduce:transition-none ${activeSpeakerName && activeSpeakerName === personaState.selectedCharacters?.[1]?.name ? 'ring-2 ring-yellow-200 ring-inset shadow-inner' : ''}`
   }, /*#__PURE__*/React.createElement(CharacterColumn, {
     character: personaState.selectedCharacters[1],
@@ -800,22 +891,7 @@
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-expanded": isPersonaReflectionOpen,
-    onClick: () => {
-      setReflectionFeedback(null);
-      setIsPersonaReflectionOpen(false);
-      setPersonaReflectionInput('');
-      _clearPersonaSnapshot();
-      setPersonaState(prev => ({
-        ...prev,
-        selectedCharacter: null,
-        chatHistory: [],
-        suggestions: [],
-        selectedCharacters: [],
-        mode: 'single',
-        harmonyScore: 10,
-        earnedBadges: []
-      }));
-    },
+    onClick: _handleCompleteReflection,
     className: "w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 22
@@ -963,7 +1039,7 @@
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-persona-initial-focus": true,
-    onClick: handleClosePersonaChat,
+    onClick: _handleCloseAndClearSnapshot,
     className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors motion-reduce:transition-none z-50",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
@@ -1140,7 +1216,7 @@
     const isMessagePlayingNow = playingContentId === `persona-message-${idx}`;
     let bubbleClass = 'bg-white text-slate-700 border-slate-200 rounded-bl-none font-serif text-base';
     let speakerName = isUser ? t('common.you') : personaState.selectedCharacter?.name || t('common.character');
-    let avatarUrl = null;
+    let avatarUrl = !isUser ? personaState.avatarUrl || personaState.selectedCharacter?.avatarUrl || null : null;
     if (!isUser && msg.speakerName && personaState.selectedCharacters.length > 0) {
       speakerName = msg.speakerName;
       const charIndex = personaState.selectedCharacters.findIndex(c => c.name === msg.speakerName);
@@ -1203,6 +1279,15 @@
             onClick: e => {
               e.stopPropagation();
               handleSpeak(mainText, `persona-message-${idx}`, currentGlobalIdx);
+            },
+            role: "button",
+            tabIndex: 0,
+            "aria-label": cleanText + '. ' + t('common.click_to_read'),
+            onKeyDown: e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.currentTarget.click();
+              }
             },
             className: `transition-colors motion-reduce:transition-none duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-200 text-slate-950 shadow-sm ring-1 ring-yellow-400' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`,
             title: t('common.click_to_read')
@@ -1381,22 +1466,7 @@
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.check'),
-    onClick: () => {
-      setReflectionFeedback(null);
-      setIsPersonaReflectionOpen(false);
-      setPersonaReflectionInput('');
-      _clearPersonaSnapshot();
-      setPersonaState(prev => ({
-        ...prev,
-        selectedCharacter: null,
-        chatHistory: [],
-        suggestions: [],
-        selectedCharacters: [],
-        mode: 'single',
-        harmonyScore: 10,
-        earnedBadges: []
-      }));
-    },
+    onClick: _handleCompleteReflection,
     className: "w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 22

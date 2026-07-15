@@ -2684,6 +2684,39 @@ function PdfAuditView(props) {
   const [remediationProgress, setRemediationProgress] = useState(null);
   const [showAgentTrace, setShowAgentTrace] = useState(false);
   const [liveChunkTrace, setLiveChunkTrace] = useState({});
+  const [pdfConfirmRequest, setPdfConfirmRequest] = useState(null);
+  const pdfConfirmResolveRef = useRef(null);
+  const pdfConfirmCancelRef = useRef(null);
+  const askPdfConfirmation = useCallback((options) => new Promise((resolve) => {
+    if (pdfConfirmResolveRef.current) pdfConfirmResolveRef.current(false);
+    pdfConfirmResolveRef.current = resolve;
+    setPdfConfirmRequest({
+      title: String((options && options.title) || 'Please confirm'),
+      description: String((options && options.description) || ''),
+      confirmLabel: String((options && options.confirmLabel) || 'Continue'),
+      cancelLabel: String((options && options.cancelLabel) || 'Cancel'),
+      alternativeLabel: options && options.alternativeLabel ? String(options.alternativeLabel) : '',
+      tone: options && options.tone === 'danger' ? 'danger' : 'primary',
+    });
+  }), []);
+  const settlePdfConfirmation = useCallback((result) => {
+    const resolve = pdfConfirmResolveRef.current;
+    pdfConfirmResolveRef.current = null;
+    setPdfConfirmRequest(null);
+    if (resolve) resolve(result);
+  }, []);
+  useEffect(() => {
+    if (!pdfConfirmRequest) return undefined;
+    const timer = setTimeout(() => {
+      try { if (pdfConfirmCancelRef.current) pdfConfirmCancelRef.current.focus(); } catch (_) {}
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [pdfConfirmRequest]);
+  useEffect(() => () => {
+    const resolve = pdfConfirmResolveRef.current;
+    pdfConfirmResolveRef.current = null;
+    if (resolve) resolve(false);
+  }, []);
   useEffect(() => {
     const appendTrace = (detail) => {
       if (!detail || !Number.isInteger(detail.index)) return;
@@ -3473,7 +3506,11 @@ function PdfAuditView(props) {
     const { segments, bodyHtml, lang } = _collectMoSegments(html);
     if (!segments.length) { addToast(t('toasts.mo_no_text') || 'No readable text found to narrate.', 'error'); return; }
     const _confirm = (t('pdf_audit.mo.confirm') || 'Build a read-along ebook? This narrates {n} text sections with text-to-speech — about {n} voice calls, which can take a few minutes.').replace(/\{n\}/g, String(segments.length));
-    if (!window.confirm(_confirm)) return;
+    if (!(await askPdfConfirmation({
+      title: t('pdf_audit.mo.confirm_title') || 'Build read-along ebook?',
+      description: _confirm,
+      confirmLabel: t('pdf_audit.mo.confirm_action') || 'Build read-along',
+    }))) return;
     const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
     const epubLang = lang || 'en';
     setMoExport({ total: segments.length, done: 0, status: 'running' });
@@ -3700,12 +3737,14 @@ function PdfAuditView(props) {
   const plainCompareTrapRef = useRef(null);
   const translateCompareTrapRef = useRef(null);
   const closeConfirmTrapRef = useRef(null);
+  const pdfConfirmTrapRef = useRef(null);
   _alloUseFocusTrap(pdfPreviewTrapRef, !!(pdfPreviewOpen && pdfFixResult));
   _alloUseFocusTrap(pdfFieldsTrapRef, !!pdfFieldCandidates);
   _alloUseFocusTrap(fillableTrapRef, !!fillableCandidates);
   _alloUseFocusTrap(plainCompareTrapRef, !!(showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage));
   _alloUseFocusTrap(translateCompareTrapRef, !!(showTranslationCompare && pdfFixResult && pdfFixResult._translation));
   _alloUseFocusTrap(closeConfirmTrapRef, !!showCloseConfirm);
+  _alloUseFocusTrap(pdfConfirmTrapRef, !!pdfConfirmRequest);
   // S3 (agent): the translate_document command pre-fills the language
   // here via event — the RUN click stays the teacher's (quota guardrail).
   useEffect(() => {
@@ -5249,7 +5288,7 @@ function PdfAuditView(props) {
                     {/* Action Buttons */}
                     <div className="flex gap-2 justify-center">
                       {!pdfBatchProcessing && !pdfBatchSummary && pdfBatchQueue.length > 0 && (
-                        <button onClick={() => {
+                        <button onClick={async () => {
                           // Pre-batch cost estimator \u2014 honest range based on file count and
                           // configured fix passes. Canvas mode: free under Google quotas.
                           // Self-hosted (Blaze tier): show $ range so the user can ack before kicking off.
@@ -5265,7 +5304,11 @@ function PdfAuditView(props) {
                           const message = isCanvas
                             ? `Start batch remediation of ${fileCount} PDF${filePlural}?\n\nCanvas mode \u2014 model calls are covered by your Google / Gemini quota. No billing.\n\nEstimated work: ~${totalCalls} model calls across ${fileCount} file${filePlural} (avg. ${callsPerFile} per file \u00d7 up to ${passes} fix pass${passPlural}).`
                             : `Start batch remediation of ${fileCount} PDF${filePlural}?\n\nEstimated Gemini API consumption: ~${totalCalls} calls (${callsPerFile} per file \u00d7 ${fileCount} files \u00d7 ${passes} fix pass${passPlural}).\n\nEstimated cost on Gemini Flash (Blaze tier): $${costLow}\u2013$${costHigh}\n\nThis is a rough estimate \u2014 actual cost varies with file complexity (scanned/image-heavy PDFs use more vision calls). Reduce \u201cMax Fix Passes\u201d in Settings to cap cost.`;
-                          if (window.confirm(message)) runPdfBatchRemediation();
+                          if (await askPdfConfirmation({
+                            title: 'Start batch remediation?',
+                            description: message,
+                            confirmLabel: `Start batch (${fileCount} file${filePlural})`,
+                          })) runPdfBatchRemediation();
                         }} data-help-key="pdf_audit_view_batch_start_btn" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                           {'\u267f'} Start Batch ({pdfBatchQueue.length} files)
                         </button>
@@ -6146,9 +6189,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const _blFails = [];
                                 const _blMsg = _blVerdict.reason;
                                 addToast('⚠ Baseline post-save structure check FAILED: ' + _blMsg + '.', 'error');
-                                const _blProceed = (typeof window !== 'undefined' && typeof window.confirm === 'function')
-                                  ? window.confirm('The baseline tagged PDF FAILED its post-save structure check:\n\n' + _blMsg + '\n\nDownload the unverified file anyway?')
-                                  : false;
+                                const _blProceed = await askPdfConfirmation({
+                                  title: 'Download an unverified tagged PDF?',
+                                  description: 'The baseline tagged PDF failed its post-save structure check:\n\n' + _blMsg + '\n\nOnly continue if you will verify the file before distributing it.',
+                                  confirmLabel: 'Download unverified PDF',
+                                  tone: 'danger',
+                                });
                                 if (!_blProceed) { _lastTaggedDeliveryRef.current = { withheld: true, reason: 'baseline post-save structure check failed (declined)' }; addToast('Download cancelled — the baseline tagged PDF did not pass verification.', 'info'); return; } // M14
                               }
                               const blob = new Blob([taggedBytes], { type: 'application/pdf' });
@@ -7155,7 +7201,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <button
                               onClick={async () => {
                                 if (!_docPipeline || !_docPipeline.clearMultiSession || !pdfMultiSession.sessionId) return;
-                                if (!window.confirm('Clear saved progress for this PDF? This cannot be undone.')) return;
+                                if (!(await askPdfConfirmation({
+                                  title: 'Clear saved PDF progress?',
+                                  description: 'This permanently removes the saved multi-session progress for this PDF. This cannot be undone.',
+                                  confirmLabel: 'Clear saved progress',
+                                  tone: 'danger',
+                                }))) return;
                                 await _docPipeline.clearMultiSession(pdfMultiSession.sessionId);
                                 setPdfMultiSession(null);
                                 setPdfPageRange(null);
@@ -9342,8 +9393,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </button>
                         ) : (
                           <button
-                            onClick={() => {
-                              if (window.confirm(t('pdf_audit.start_new_confirm') || 'Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
+                            onClick={async () => {
+                              if (await askPdfConfirmation({
+                                title: t('pdf_audit.start_new_title_short') || 'Start a new audit?',
+                                description: t('pdf_audit.start_new_confirm') || 'Your current audit will be cleared. Download any remediated files or save the project first if you need to keep this work.',
+                                confirmLabel: t('pdf_audit.start_new_audit') || 'Start New Audit',
+                                tone: 'danger',
+                              })) {
                                 startNewPdfAudit();
                               }
                             }}
@@ -12063,9 +12119,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           // Re-scanning re-runs the WHOLE pipeline and REPLACES the current results (2026-06-23,
                           // maintainer Canvas test: this was wiping a good audit with no warning). When there's a
                           // result to lose, confirm first and offer to save the project so it isn't discarded.
-                          if (pdfFixResult && pdfFixResult.accessibleHtml && typeof window !== 'undefined' && typeof window.confirm === 'function') {
-                            if (!window.confirm(t('pdf_audit.rescan_confirm') || 'Re-scanning with OCR starts the audit over and REPLACES your current results. Continue?')) return;
-                            if (typeof saveProjectToFile === 'function' && window.confirm(t('pdf_audit.rescan_save_first') || 'Save your current project first?\n\nOK = download a .alloflow.json now, then re-scan.\nCancel = re-scan without saving.')) {
+                          if (pdfFixResult && pdfFixResult.accessibleHtml) {
+                            const _rescanDecision = await askPdfConfirmation({
+                              title: t('pdf_audit.rescan_title') || 'Replace results with a new OCR scan?',
+                              description: (t('pdf_audit.rescan_confirm') || 'Re-scanning with OCR starts the audit over and REPLACES your current results.') + '\n\n' + (t('pdf_audit.rescan_save_first') || 'Save a project copy first if you may need this work again.'),
+                              confirmLabel: t('pdf_audit.rescan_save_action') || 'Save project and re-scan',
+                              alternativeLabel: t('pdf_audit.rescan_without_save') || 'Re-scan without saving',
+                            });
+                            if (!_rescanDecision) return;
+                            if (_rescanDecision === true && typeof saveProjectToFile === 'function') {
                               try { saveProjectToFile(false); addToast(t('pdf_audit.rescan_saved') || '💾 Project saved — re-scanning…', 'info'); } catch (_) {}
                             }
                           }
@@ -13554,6 +13616,55 @@ Return ONLY the plain language summary in ${lang}.`, false);
               Tip: <strong>Save & close</strong> downloads a <code className="px-1 bg-slate-100 rounded">.alloflow.json</code> project file
               that you can re-open later via the sidebar's <strong>Load Project</strong> button.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Shared safe-default confirmation for destructive, costly, and unverified PDF actions. */}
+      {pdfConfirmRequest && (
+        <div
+          role="presentation"
+          className="allo-docsuite fixed inset-0 z-[220] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) settlePdfConfirmation(false); }}
+        >
+          <div
+            ref={pdfConfirmTrapRef}
+            tabIndex={-1}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="pdf-action-confirm-title"
+            aria-describedby="pdf-action-confirm-description"
+            onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); settlePdfConfirmation(false); } }}
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border-2 border-amber-300"
+          >
+            <h3 id="pdf-action-confirm-title" className="text-lg font-bold text-slate-900 mb-2">{pdfConfirmRequest.title}</h3>
+            <p id="pdf-action-confirm-description" className="text-sm text-slate-700 mb-5 leading-relaxed whitespace-pre-line">{pdfConfirmRequest.description}</p>
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+              <button
+                ref={pdfConfirmCancelRef}
+                type="button"
+                onClick={() => settlePdfConfirmation(false)}
+                className="min-h-11 px-4 py-2 bg-white text-slate-800 border border-slate-400 rounded-xl text-sm font-bold hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
+              >
+                {pdfConfirmRequest.cancelLabel}
+              </button>
+              {pdfConfirmRequest.alternativeLabel && (
+                <button
+                  type="button"
+                  onClick={() => settlePdfConfirmation('alternative')}
+                  className="min-h-11 px-4 py-2 bg-white text-red-800 border border-red-400 rounded-xl text-sm font-bold hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
+                >
+                  {pdfConfirmRequest.alternativeLabel}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => settlePdfConfirmation(true)}
+                className={'min-h-11 px-4 py-2 text-white rounded-xl text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ' + (pdfConfirmRequest.tone === 'danger' ? 'bg-red-700 hover:bg-red-800 focus-visible:ring-red-700' : 'bg-indigo-700 hover:bg-indigo-800 focus-visible:ring-indigo-700')}
+              >
+                {pdfConfirmRequest.confirmLabel}
+              </button>
+            </div>
           </div>
         </div>
       )}

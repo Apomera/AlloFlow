@@ -41,8 +41,25 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
-      - name: verify:gate (render-refs + lang-json + module contracts)
+      - name: verify:gate (generated modules + render refs + module contracts)
         run: npm run verify:gate
+
+  adventure-journey:
+    name: Adventure journey (choice + free response + debate)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm install --no-audit --no-fund
+      - name: Install React 18 for the Adventure browser harness
+        run: npm install --no-audit --no-fund --no-save --prefix prismflow-deploy react@^18.2.0 react-dom@^18.2.0
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+      - name: Run deterministic Adventure journeys
+        run: npx playwright test tests/e2e/adventure-journey.spec.ts
 
   unit:
     name: Unit + golden-master tests (vitest)

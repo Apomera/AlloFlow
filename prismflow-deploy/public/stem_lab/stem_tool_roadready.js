@@ -952,6 +952,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var MS_TO_MPH = 2.23694;
   var FT_PER_M = 3.28084;
   var METERS_PER_MILE = 1609.344; // 1 statute mile (NIST exact)
+  // The Three.js scene is modeled in meters: people are ~1.7 units tall,
+  // lane centers are 1.5 units from the centerline, and vehicle physics use
+  // m/s. Keep every world-space conversion explicit so visual motion, HUD
+  // distances, collision geometry, and rule checks all agree.
+  var METERS_PER_WORLD_UNIT = 1;
+  var FEET_PER_WORLD_UNIT = FT_PER_M * METERS_PER_WORLD_UNIT;
+
+  function worldUnitsToMeters(units) { return units * METERS_PER_WORLD_UNIT; }
+  function worldUnitsToFeet(units) { return worldUnitsToMeters(units) * FT_PER_M; }
+  function metersToWorldUnits(meters) { return meters / METERS_PER_WORLD_UNIT; }
+  function followingGapSeconds(distanceWorldUnits, speedMps) {
+    if (!(speedMps > 0)) return Infinity;
+    return worldUnitsToMeters(Math.max(0, distanceWorldUnits)) / speedMps;
+  }
+  function recommendedFollowingMeters(speedMps, weather, multiplier) {
+    var seconds = 3;
+    if (weather === 'rain') seconds = 4;
+    if (weather === 'snow' || weather === 'fog') seconds = 6;
+    if (weather === 'ice') seconds = 8;
+    return 2.5 + Math.max(0, speedMps) * seconds * (multiplier || 1);
+  }
+  // Crossing checks must ignore finite-map wrap/teleport jumps. A physical
+  // vehicle cannot traverse more than 20 m in one clamped simulation frame.
+  function crossedControlLine(previousY, currentY, lineY) {
+    if (![previousY, currentY, lineY].every(isFinite)) return false;
+    if (Math.abs(currentY - previousY) > 20) return false;
+    return (previousY < lineY && currentY >= lineY) ||
+      (previousY > lineY && currentY <= lineY);
+  }
+  function vehicleFootprint(type) {
+    if (type === 'schoolbus' || type === 'bus') return { length: 10.0, width: 2.5 };
+    if (type === 'truck' || type === 'pickup') return { length: 5.5, width: 2.0 };
+    if (type === 'van') return { length: 5.0, width: 2.0 };
+    if (type === 'suv') return { length: 4.8, width: 1.9 };
+    return { length: 4.5, width: 1.8 };
+  }
+  function trafficVehicleMass(type) {
+    if (type === 'schoolbus' || type === 'bus') return 9000;
+    if (type === 'truck' || type === 'pickup') return 2300;
+    if (type === 'van') return 2100;
+    if (type === 'suv') return 1950;
+    return 1550;
+  }
+  // 2D oriented-rectangle overlap (Separating Axis Theorem). This replaces
+  // center-point radii that let the nose of a 4.5 m car pass through traffic.
+  function vehicleRectsOverlap(a, aSize, b, bSize) {
+    if (!a || !b) return false;
+    var axes = [
+      { x: Math.cos(a.heading || 0), y: Math.sin(a.heading || 0) },
+      { x: -Math.sin(a.heading || 0), y: Math.cos(a.heading || 0) },
+      { x: Math.cos(b.heading || 0), y: Math.sin(b.heading || 0) },
+      { x: -Math.sin(b.heading || 0), y: Math.cos(b.heading || 0) }
+    ];
+    var aForward = axes[0], aSide = axes[1], bForward = axes[2], bSide = axes[3];
+    var dx = b.x - a.x, dy = b.y - a.y;
+    for (var i = 0; i < axes.length; i++) {
+      var axis = axes[i];
+      var centerDistance = Math.abs(dx * axis.x + dy * axis.y);
+      var aRadius = Math.abs(aForward.x * axis.x + aForward.y * axis.y) * aSize.length * 0.5 +
+        Math.abs(aSide.x * axis.x + aSide.y * axis.y) * aSize.width * 0.5;
+      var bRadius = Math.abs(bForward.x * axis.x + bForward.y * axis.y) * bSize.length * 0.5 +
+        Math.abs(bSide.x * axis.x + bSide.y * axis.y) * bSize.width * 0.5;
+      if (centerDistance >= aRadius + bRadius) return false;
+    }
+    return true;
+  }
   var AIR_DENSITY = 1.225; // kg/m³ at sea level
 
   // Scenarios use 'clear' internally; lab views expose the friendlier 'dry' to users.
@@ -1095,8 +1161,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   var MAP_SIZE = 96;
 
+  // Scripted linear drives use the same bounded-memory chunk streamer as Free
+  // Explore, but retain a fixed road identity instead of rotating through biomes.
+  // Roundabout and parking are intentionally bounded maneuver courses.
+  var CONTINUOUS_SCENARIO_PROFILES = {
+    residential: { biome: 'residential', intersectionEvery: 3, signalType: 'stop', roadHalfWidth: 3.5, pedestrianCount: 2 },
+    suburban: { biome: 'suburban', intersectionEvery: 3, signalType: 'light', roadHalfWidth: 4.5, pedestrianCount: 2 },
+    highway: { biome: 'suburban', intersectionEvery: 0, signalType: null, roadHalfWidth: 6.5, pedestrianCount: 0, highway: true, flatElevation: true, noLandmarks: true },
+    rural: { biome: 'rural', intersectionEvery: 6, signalType: 'stop', roadHalfWidth: 3.5, pedestrianCount: 0 },
+    night: { biome: 'suburban', intersectionEvery: 3, signalType: 'light', roadHalfWidth: 4.5, pedestrianCount: 2 },
+    fog: { biome: 'rural', intersectionEvery: 6, signalType: 'stop', roadHalfWidth: 3.5, pedestrianCount: 0 },
+    rain: { biome: 'suburban', intersectionEvery: 4, signalType: 'light', roadHalfWidth: 4.5, pedestrianCount: 2 },
+    snow: { biome: 'rural', intersectionEvery: 6, signalType: 'stop', roadHalfWidth: 3.5, pedestrianCount: 0 },
+    construction: { biome: 'industrial', intersectionEvery: 4, signalType: 'flagger', roadHalfWidth: 3.5, pedestrianCount: 0, workZone: true, noLandmarks: true },
+    school_zone: { biome: 'residential', intersectionEvery: 2, intersectionPhase: 1, signalType: 'light', roadHalfWidth: 3.5, pedestrianCount: 4, forceLandmarkId: 'school' },
+    downtown: { biome: 'commercial', intersectionEvery: 2, intersectionPhase: 1, signalType: 'light', roadHalfWidth: 4.5, pedestrianCount: 4 },
+    dawn: { biome: 'rural', intersectionEvery: 6, signalType: 'stop', roadHalfWidth: 3.5, pedestrianCount: 0 }
+  };
+
+  function positiveModulo(value, divisor) {
+    return ((value % divisor) + divisor) % divisor;
+  }
+
+  function clampFiniteCoursePosition(x, y, padding) {
+    var edge = typeof padding === 'number' ? Math.max(0, padding) : 1;
+    var max = MAP_SIZE - 1 - edge;
+    var boundedX = Math.max(edge, Math.min(max, x));
+    var boundedY = Math.max(edge, Math.min(max, y));
+    return { x: boundedX, y: boundedY, hit: boundedX !== x || boundedY !== y };
+  }
+
+  function getContinuousScenarioProfile(scenarioId) {
+    return CONTINUOUS_SCENARIO_PROFILES[scenarioId] || null;
+  }
+
+  function scenarioUsesContinuousWorld(scenarioId) {
+    return !!getContinuousScenarioProfile(scenarioId);
+  }
+
+  function scenarioChunkHasIntersection(profile, chunkIndex) {
+    if (!profile || !profile.intersectionEvery) return false;
+    return positiveModulo(chunkIndex - (profile.intersectionPhase || 0), profile.intersectionEvery) === 0;
+  }
+
+  function scenarioWorldSeed(scenarioId) {
+    var hash = 2166136261;
+    var value = String(scenarioId || 'roadready');
+    for (var i = 0; i < value.length; i++) {
+      hash ^= value.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0) || 1;
+  }
+
+  function worldPostedLimitMph(world, chunk, fallbackMph) {
+    if (world && world.mode === 'scenario' && typeof world.postedLimitMph === 'number') {
+      return world.postedLimitMph;
+    }
+    return getBiomeSpeedLimitMph(chunk && chunk.biome, fallbackMph);
+  }
+
   // ─────────────────────────────────────────────────────────
-  // SECTION 8b: PROCEDURAL INFINITE WORLD (Free Explore)
+  // SECTION 8b: PROCEDURAL STREAMED ROAD WORLDS
   // ─────────────────────────────────────────────────────────
   // Seeded PRNG for deterministic procedural generation.
   // Same seed → same world every time. Different seed → different world.
@@ -1116,24 +1242,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var CLEARANCE_BUFFER = 2; // cells of guaranteed empty space to each side of road
 
   // ─────────────────────────────────────────────────────────
-  // ROAD SPLINE — shared centerline for the infinite world.
+  // ROAD SPLINE — shared centerline for streamed road worlds.
   // The spline is sampled per Y-row so the carved cells, the 3D road ribbon,
   // landmark placement, lane markings and signal positions all agree on where
   // the road actually is. Built incrementally with seeded heading-walk so that
   // chunk N's exit heading equals chunk N+1's entry heading by construction.
   // ─────────────────────────────────────────────────────────
   var SPLINE_MAX_HEADING = 0.55; // radians; clamps how far the road may lean from due-north
-  function createRoadSpline(seed, baseCenterX) {
+  function createRoadSpline(seed, baseCenterX, options) {
+    options = options || {};
+    var profile = options.profile || null;
     // samples[y] = { x: roadCenter, heading: tangent angle in radians (0 = +Y/north) }
     // Headings small ⇒ road is mostly N-S. Positive heading ⇒ road bends toward +X.
     var samples = {};
     function biomeForY(y) {
+      if (profile && profile.biome) return profile.biome;
       // Mirror BIOME_PROGRESSION lookup so curvature matches the visible biome.
       var ci = Math.floor(y / CHUNK_SIZE);
-      var pi = ((ci % BIOME_PROGRESSION.length) + BIOME_PROGRESSION.length) % BIOME_PROGRESSION.length;
+      var pi = positiveModulo(ci, BIOME_PROGRESSION.length);
       return BIOME_PROGRESSION[pi];
     }
     function curvatureForBiome(b) {
+      if (profile && profile.highway) return 0.006;
+      if (options.scenarioId === 'downtown') return 0.004;
       // Max heading delta per cell (radians). Rural roads twist; commercial grids stay straight.
       // Tuned so a ~30-cell rural stretch visibly sweeps several cells of lateral travel.
       if (b === 'rural') return 0.075;
@@ -1209,6 +1340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // hills and turns can occur in any combination. Amplitude varies by biome
     // (rural ≈ rolling, commercial ≈ flat). Deterministic from seed alone.
     function heightAt(y) {
+      if (profile && profile.flatElevation) return 0;
       var biome = biomeForY(y);
       var amp = biome === 'rural' ? 1.6 : biome === 'industrial' ? 0.8 : biome === 'residential' ? 0.5 : biome === 'suburban' ? 0.4 : 0.15;
       // Sum two sine waves with phases derived from the seed — cheap pseudo-noise
@@ -1309,13 +1441,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return eligible[Math.floor(rng() * eligible.length)];
   }
 
-  function generateChunk(chunkIndex, seed, centerX, spline) {
+  function generateChunk(chunkIndex, seed, centerX, spline, options) {
+    options = options || {};
+    var profile = options.profile || null;
     var rng = seededRandom(seed + chunkIndex * 7919);
-    // Use progression for coherent neighborhoods, with seed-based variation
-    var progIndex = ((chunkIndex % BIOME_PROGRESSION.length) + BIOME_PROGRESSION.length) % BIOME_PROGRESSION.length;
-    var biome = BIOME_PROGRESSION[progIndex];
-    // 20% chance to override with a random biome for variety
-    if (rng() < 0.2) biome = BIOMES[Math.floor(rng() * BIOMES.length)];
+    // Scripted worlds keep their scenario biome; Free Explore retains its varied progression.
+    var progIndex = positiveModulo(chunkIndex, BIOME_PROGRESSION.length);
+    var biome = profile && profile.biome ? profile.biome : BIOME_PROGRESSION[progIndex];
+    if (!profile && rng() < 0.2) biome = BIOMES[Math.floor(rng() * BIOMES.length)];
     var chunk = { index: chunkIndex, biome: biome, cells: [], objects3d: null, landmark: null };
     // Per-row road centerline derived from the spline (world Y → local x within chunk).
     // Using these everywhere instead of a constant centerX is what lets the road curve.
@@ -1334,18 +1467,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Visual road ribbon and collision grid both read from the same spline so they stay in sync.
     var curveAmp = 0; // legacy field kept for compatibility; spline supersedes it
     var curveFreq = 0;
-    // Intersections: ~40% chance but never two in a row (guaranteed gap)
-    var hasIntersection = rng() < 0.4 && (chunkIndex % 2 === 0 || rng() < 0.3);
+    // Scripted intersection spacing is deterministic and scenario-specific.
+    // Free Explore keeps its varied seeded cadence.
+    var hasIntersection = profile
+      ? scenarioChunkHasIntersection(profile, chunkIndex)
+      : (rng() < 0.4 && (chunkIndex % 2 === 0 || rng() < 0.3));
     var intersectionY = Math.floor(CHUNK_SIZE * 0.4 + rng() * CHUNK_SIZE * 0.3);
     // Reserve wider main-road corridor: MAX_ROAD_WIDTH + CLEARANCE_BUFFER are module-scope (see top of file).
     for (var cy = 0; cy < CHUNK_SIZE; cy++) {
       var roadCenter = roadCenters[cy];
-      var roadWidth = biome === 'commercial' || biome === 'suburban' ? 4 : 3;
+      var roadWidth = profile ? Math.ceil(profile.roadHalfWidth) : (biome === 'commercial' || biome === 'suburban' ? 4 : 3);
       for (var dx = -roadWidth; dx <= roadWidth; dx++) {
         var rx = roadCenter + dx;
         if (rx >= 0 && rx < MAP_SIZE) chunk.cells[cy][rx] = 0;
       }
-      if (roadCenter >= 0 && roadCenter < MAP_SIZE) chunk.cells[cy][roadCenter] = 3;
+      if (roadCenter >= 0 && roadCenter < MAP_SIZE) chunk.cells[cy][roadCenter] = profile && profile.highway ? 6 : 3;
       // Cross street at intersection — proper road with centerline
       if (hasIntersection && Math.abs(cy - intersectionY) < 3) {
         for (var cx = 0; cx < MAP_SIZE; cx++) {
@@ -1383,9 +1519,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // ─── LANDMARK PLACEMENT (every 3rd chunk, alternating sides) ──────────
     // Landmarks are pre-designed destinations that make the world feel alive.
     // Marked with cell value 7 so the 3D renderer knows to draw them specially.
-    var shouldPlaceLandmark = (chunkIndex % 3 === 0 && chunkIndex !== 0) && !hasIntersection;
+    var shouldPlaceLandmark = !(profile && profile.noLandmarks) && (chunkIndex % 3 === 0 && chunkIndex !== 0) && !hasIntersection;
     if (shouldPlaceLandmark) {
-      var landmark = pickLandmarkForBiome(biome, rng);
+      var landmark = null;
+      if (profile && profile.forceLandmarkId) {
+        landmark = LANDMARK_TYPES.find(function(lt) { return lt.id === profile.forceLandmarkId; }) || null;
+      }
+      if (!landmark) landmark = pickLandmarkForBiome(biome, rng);
       if (landmark) {
         // Alternate sides of the road by chunk index for visual variety
         var side = (chunkIndex % 6 < 3) ? 1 : -1;
@@ -1438,7 +1578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (ny >= 0 && ny < CHUNK_SIZE && nx >= 0 && nx < MAP_SIZE) {
                 var cv = chunk.cells[ny][nx];
                 // Remove ANY obstacle within the clearance buffer (trees, buildings, landmarks)
-                if (cv === 5 || cv === 1 || cv === 6 || cv === 7) chunk.cells[ny][nx] = 2;
+                if (cv === 5 || cv === 1 || (cv === 6 && !(profile && profile.highway)) || cv === 7) chunk.cells[ny][nx] = 2;
               }
             }
           }
@@ -1482,15 +1622,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     chunk.roadCenter = roadCenters[Math.max(0, Math.min(CHUNK_SIZE - 1, intersectionY))];
     chunk.curveAmp = curveAmp;
     chunk.curveFreq = curveFreq;
+    chunk.roadHalfWidth = profile ? profile.roadHalfWidth : (biome === 'commercial' || biome === 'suburban' ? 4.5 : 3.5);
+    chunk.signalType = profile ? profile.signalType : null;
+    chunk.isHighway = !!(profile && profile.highway);
+    chunk.workZone = !!(profile && profile.workZone && positiveModulo(chunkIndex, 3) === 1);
     return chunk;
   }
 
   // Infinite world state
-  function createInfiniteWorld(seed) {
+  function createInfiniteWorld(seed, options) {
+    options = options || {};
     var centerX = Math.floor(MAP_SIZE / 2);
-    var spline = createRoadSpline(seed, centerX);
+    var spline = createRoadSpline(seed, centerX, options);
     return {
       seed: seed,
+      mode: options.mode || 'freeExplore',
+      scenarioId: options.scenarioId || null,
+      profile: options.profile || null,
+      postedLimitMph: options.postedLimitMph,
       chunks: {}, // chunkIndex → chunk data
       centerX: centerX,
       spline: spline,
@@ -1501,7 +1650,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       roadHeightAtY: function(worldY) { return spline.heightAt(worldY); },
       getChunk: function(chunkIndex) {
         if (!this.chunks[chunkIndex]) {
-          this.chunks[chunkIndex] = generateChunk(chunkIndex, this.seed, this.centerX, this.spline);
+          this.chunks[chunkIndex] = generateChunk(chunkIndex, this.seed, this.centerX, this.spline, options);
         }
         return this.chunks[chunkIndex];
       },
@@ -1525,6 +1674,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         spline.cleanup(currentChunkIndex);
       }
     };
+  }
+
+  function createScenarioWorld(scenario) {
+    var profile = scenario && getContinuousScenarioProfile(scenario.id);
+    if (!profile) return null;
+    return createInfiniteWorld(scenarioWorldSeed(scenario.id), {
+      mode: 'scenario',
+      scenarioId: scenario.id,
+      profile: profile,
+      postedLimitMph: scenario.speedLimit
+    });
   }
 
   function buildMap(scenarioId) {
@@ -1705,7 +1865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // ─────────────────────────────────────────────────────────
 
   var RR_MIN_AI_CENTER_GAP = 3.1;
-  var RR_MIN_TRAFFIC_SPAWN_GAP = 7.0;
+  var RR_MIN_TRAFFIC_SPAWN_GAP = 10.0;
 
   function hasTrafficGap(list, x, y, ignoreIndex, minGap, mode) {
     var minSq = minGap * minGap;
@@ -1722,9 +1882,198 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return true;
   }
 
-  function spawnTraffic(scenario) {
+  var ROUNDABOUT_CENTER_X = Math.floor(MAP_SIZE / 2);
+  var ROUNDABOUT_CENTER_Y = Math.floor(MAP_SIZE / 2);
+  var ROUNDABOUT_LANE_RADIUS = 8;
+  var ROUNDABOUT_ENTRY_ANGLES = [-Math.PI / 2, 0, Math.PI / 2, Math.PI];
+
+  function normalizeSignedAngle(angle) {
+    while (angle > Math.PI) angle -= Math.PI * 2;
+    while (angle < -Math.PI) angle += Math.PI * 2;
+    return angle;
+  }
+
+  function roundaboutPose(angle, radius) {
+    var r = radius == null ? ROUNDABOUT_LANE_RADIUS : radius;
+    return {
+      x: ROUNDABOUT_CENTER_X + Math.cos(angle) * r,
+      y: ROUNDABOUT_CENTER_Y + Math.sin(angle) * r,
+      heading: normalizeSignedAngle(angle - Math.PI / 2)
+    };
+  }
+
+  function roundaboutApproach(entryIndex) {
+    var i = positiveModulo(entryIndex, 4);
+    if (i === 0) return { entryIndex: i, angle: -Math.PI / 2, x: ROUNDABOUT_CENTER_X, y: 4, heading: Math.PI / 2 };
+    if (i === 1) return { entryIndex: i, angle: 0, x: MAP_SIZE - 4, y: ROUNDABOUT_CENTER_Y, heading: Math.PI };
+    if (i === 2) return { entryIndex: i, angle: Math.PI / 2, x: ROUNDABOUT_CENTER_X, y: MAP_SIZE - 4, heading: -Math.PI / 2 };
+    return { entryIndex: i, angle: Math.PI, x: 4, y: ROUNDABOUT_CENTER_Y, heading: 0 };
+  }
+
+  // U.S. circulation is counterclockwise. Because map Y grows downward, that
+  // means decreasing polar angle in the top-down simulation.
+  function roundaboutGapSeconds(traffic, entryAngle, ignoreId) {
+    var best = Infinity;
+    for (var i = 0; i < traffic.length; i++) {
+      var other = traffic[i];
+      if (!other || other.id === ignoreId || other._roundaboutState !== 'circulating') continue;
+      var angularDistance = positiveModulo(other._roundaboutAngle - entryAngle, Math.PI * 2);
+      var travelDistance = angularDistance * (other._roundaboutRadius || ROUNDABOUT_LANE_RADIUS);
+      var seconds = travelDistance / Math.max(0.5, Math.abs(other.speed || 0));
+      if (seconds < best) best = seconds;
+    }
+    return best;
+  }
+
+  function spawnRoundaboutTraffic(scenario) {
+    var colors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#94a3b8'];
     var traffic = [];
-    var count = scenario.traffic === 'light' ? 3 : scenario.traffic === 'medium' ? 7 : 12;
+    var circulatingCount = scenario.traffic === 'light' ? 2 : 3;
+    for (var i = 0; i < circulatingCount; i++) {
+      var angle = -Math.PI / 2 - i * (Math.PI * 2 / circulatingCount);
+      var pose = roundaboutPose(angle);
+      traffic.push({
+        id: 'roundabout_circulating_' + i,
+        x: pose.x, y: pose.y, heading: pose.heading,
+        speed: (16 + i * 1.5) * MPH_TO_MS,
+        color: colors[i % colors.length], type: i === 1 ? 'suv' : 'car',
+        personality: { speedBias: 1, followMult: 1.2, aggro: 0.15, rollsStops: 0 },
+        _roundaboutState: 'circulating', _roundaboutAngle: angle,
+        _roundaboutRadius: ROUNDABOUT_LANE_RADIUS, _roundaboutTravel: 0,
+        _roundaboutExitAfter: (2 + (i % 2)) * Math.PI / 2
+      });
+    }
+    var ap = roundaboutApproach(1);
+    traffic.push({
+      id: 'roundabout_approach_east', x: ap.x, y: ap.y, heading: ap.heading,
+      speed: 14 * MPH_TO_MS, color: colors[3], type: 'car',
+      personality: { speedBias: 1, followMult: 1.2, aggro: 0.1, rollsStops: 0 },
+      _roundaboutState: 'approach', _roundaboutEntryIndex: ap.entryIndex,
+      _roundaboutEntryAngle: ap.angle, _roundaboutRadius: ROUNDABOUT_LANE_RADIUS,
+      _roundaboutExitChoices: 2
+    });
+    return traffic;
+  }
+
+  function updateRoundaboutTrafficVehicle(vehicle, dt, traffic) {
+    var targetSpeed = 18 * MPH_TO_MS;
+    if (vehicle._roundaboutState === 'approach') {
+      var entryPose = roundaboutPose(vehicle._roundaboutEntryAngle);
+      var dx = entryPose.x - vehicle.x, dy = entryPose.y - vehicle.y;
+      var distance = Math.hypot(dx, dy);
+      var gap = roundaboutGapSeconds(traffic, vehicle._roundaboutEntryAngle, vehicle.id);
+      var mustYield = distance < 6 && gap < 3;
+      var approachTarget = mustYield ? 0 : targetSpeed;
+      vehicle.speed += Math.max(-3 * dt, Math.min(2 * dt, approachTarget - vehicle.speed));
+      if (distance <= 1.1 && !mustYield) {
+        vehicle._roundaboutState = 'circulating';
+        vehicle._roundaboutAngle = vehicle._roundaboutEntryAngle;
+        vehicle._roundaboutTravel = 0;
+        vehicle._roundaboutExitAfter = (vehicle._roundaboutExitChoices || 2) * Math.PI / 2;
+        vehicle.x = entryPose.x; vehicle.y = entryPose.y; vehicle.heading = entryPose.heading;
+        return vehicle;
+      }
+      if (distance > 0.01) vehicle.heading = Math.atan2(dy, dx);
+      vehicle.x += Math.cos(vehicle.heading) * vehicle.speed * dt;
+      vehicle.y += Math.sin(vehicle.heading) * vehicle.speed * dt;
+      return vehicle;
+    }
+    if (vehicle._roundaboutState === 'circulating') {
+      // Maintain an arc-length following gap around the circle. Faster actors
+      // otherwise catch slower ones after several laps despite spawning evenly.
+      var nearestArc = Infinity, leader = null;
+      for (var ti = 0; ti < traffic.length; ti++) {
+        var candidate = traffic[ti];
+        if (!candidate || candidate === vehicle || candidate._roundaboutState !== 'circulating') continue;
+        var aheadAngle = positiveModulo(vehicle._roundaboutAngle - candidate._roundaboutAngle, Math.PI * 2);
+        if (aheadAngle < 0.01) continue;
+        var arc = aheadAngle * (vehicle._roundaboutRadius || ROUNDABOUT_LANE_RADIUS);
+        if (arc < nearestArc) { nearestArc = arc; leader = candidate; }
+      }
+      if (leader && nearestArc < 7) targetSpeed = Math.min(targetSpeed, Math.max(0, Math.abs(leader.speed || 0) - (7 - nearestArc) * 0.8));
+      vehicle.speed += Math.max(-3 * dt, Math.min(1.5 * dt, targetSpeed - vehicle.speed));
+      var angularStep = Math.abs(vehicle.speed) / (vehicle._roundaboutRadius || ROUNDABOUT_LANE_RADIUS) * dt;
+      vehicle._roundaboutAngle = normalizeSignedAngle(vehicle._roundaboutAngle - angularStep);
+      vehicle._roundaboutTravel = (vehicle._roundaboutTravel || 0) + angularStep;
+      var pose = roundaboutPose(vehicle._roundaboutAngle, vehicle._roundaboutRadius);
+      vehicle.x = pose.x; vehicle.y = pose.y; vehicle.heading = pose.heading;
+      if (vehicle._roundaboutTravel >= vehicle._roundaboutExitAfter) {
+        vehicle._roundaboutState = 'exiting';
+        vehicle._roundaboutExitAngle = vehicle._roundaboutAngle;
+        vehicle.heading = vehicle._roundaboutExitAngle;
+      }
+      return vehicle;
+    }
+    if (vehicle._roundaboutState === 'exiting') {
+      vehicle.heading = vehicle._roundaboutExitAngle;
+      vehicle.x += Math.cos(vehicle.heading) * vehicle.speed * dt;
+      vehicle.y += Math.sin(vehicle.heading) * vehicle.speed * dt;
+      if (Math.hypot(vehicle.x - ROUNDABOUT_CENTER_X, vehicle.y - ROUNDABOUT_CENTER_Y) > 28) {
+        var nextEntry = positiveModulo((vehicle._roundaboutEntryIndex || 0) + 1, 4);
+        var next = roundaboutApproach(nextEntry);
+        vehicle.x = next.x; vehicle.y = next.y; vehicle.heading = next.heading;
+        vehicle.speed = 12 * MPH_TO_MS;
+        vehicle._roundaboutState = 'approach';
+        vehicle._roundaboutEntryIndex = next.entryIndex;
+        vehicle._roundaboutEntryAngle = next.angle;
+        vehicle._roundaboutExitChoices = 1 + positiveModulo(nextEntry + 1, 3);
+      }
+    }
+    return vehicle;
+  }
+
+  function assessRoundaboutFrame(state, previousCar, currentCar, traffic, blinker, dt) {
+    state = state || {};
+    var prevDx = previousCar.x - ROUNDABOUT_CENTER_X, prevDy = previousCar.y - ROUNDABOUT_CENTER_Y;
+    var curDx = currentCar.x - ROUNDABOUT_CENTER_X, curDy = currentCar.y - ROUNDABOUT_CENTER_Y;
+    var prevRadius = Math.hypot(prevDx, prevDy), currentRadius = Math.hypot(curDx, curDy);
+    var currentAngle = Math.atan2(curDy, curDx);
+    var events = [];
+    var entered = prevRadius > 10.5 && currentRadius <= 10.5;
+    if (entered) {
+      var gap = roundaboutGapSeconds(traffic || [], currentAngle, null);
+      if (gap < 3 && !state.yieldReported) {
+        events.push('unsafe_entry');
+        state.yieldReported = true;
+      }
+      state.inCircle = true;
+      state.lastAngle = currentAngle;
+      state.wrongWaySeconds = 0;
+      state.stoppedSeconds = 0;
+    }
+    if (state.inCircle && currentRadius >= 5.5 && currentRadius <= 10.8) {
+      if (state.lastAngle != null) {
+        var angleDelta = normalizeSignedAngle(currentAngle - state.lastAngle);
+        if (angleDelta > 0.002 && Math.abs(currentCar.speed || 0) > 1) state.wrongWaySeconds = (state.wrongWaySeconds || 0) + dt;
+        else state.wrongWaySeconds = Math.max(0, (state.wrongWaySeconds || 0) - dt * 0.5);
+        if (state.wrongWaySeconds > 0.75 && !state.wrongWayReported) {
+          events.push('wrong_way');
+          state.wrongWayReported = true;
+        }
+      }
+      if (Math.abs(currentCar.speed || 0) < 0.3) state.stoppedSeconds = (state.stoppedSeconds || 0) + dt;
+      else state.stoppedSeconds = 0;
+      if (state.stoppedSeconds > 1.5 && !state.stoppedReported) {
+        events.push('stopped_inside');
+        state.stoppedReported = true;
+      }
+      state.lastAngle = currentAngle;
+    }
+    var exited = state.inCircle && prevRadius <= 10.5 && currentRadius > 10.5;
+    if (exited) {
+      if (blinker !== 1) events.push('missing_exit_signal');
+      state.inCircle = false;
+      state.lastAngle = null;
+      state.yieldReported = false;
+      state.wrongWayReported = false;
+      state.stoppedReported = false;
+    }
+    return { state: state, events: events, radius: currentRadius };
+  }
+  function spawnTraffic(scenario) {
+    if (scenario.id === 'roundabout') return spawnRoundaboutTraffic(scenario);
+    var traffic = [];
+    var count = scenario.traffic === 'light' ? 2 : scenario.traffic === 'medium' ? 4 : 7;
     var centerX = Math.floor(MAP_SIZE / 2);
     // Road-curve offset: scenarios with curved roads (rural/snow/fog/dawn/highway)
     // shift the actual road center away from grid centerX. Must match the curves
@@ -1770,7 +2119,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Lane offset: right side of the road relative to direction of travel (US driving).
       // direction=1 (heading +π/2, moving +Y) → laneOffset = -1.5 (right of center for +Y driver)
       // direction=-1 (heading -π/2, moving -Y) → laneOffset = +1.5 (right of center for -Y driver)
-      var laneOffset = direction === 1 ? -1.5 : 1.5;
+      var laneMagnitude = scenario.id === 'highway' ? (Math.random() < 0.35 ? 1.8 : 4.6) : 1.5;
+      var laneOffset = direction === 1 ? -laneMagnitude : laneMagnitude;
       // Spawn position must respect the road's actual sine-curve center at this Y,
       // not the grid-center axis. Without this, on rural / highway / snow / fog /
       // dawn scenes (where the road bends), cars spawned at hardcoded centerX
@@ -1881,6 +2231,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   }
 
   // Cyclists + motorcycles — vulnerable road users. Maine 3-foot passing law.
+  function spawnStreamedPedestrians(scenario, world, chunk, chunkIndex) {
+    var profile = world && world.profile;
+    var count = profile && profile.pedestrianCount ? profile.pedestrianCount : 0;
+    if (!count || !chunk || !chunk.hasIntersection) return [];
+    var rng = seededRandom((world.seed || 1) + chunkIndex * 104729 + 43);
+    var worldY = chunkIndex * CHUNK_SIZE + chunk.intersectionY;
+    var roadCenter = world.spline ? world.spline.centerAt(worldY) : chunk.roadCenter;
+    var sidewalkOffset = (chunk.roadHalfWidth || 3.5) + 1.0;
+    var sidewalkLeft = roadCenter - sidewalkOffset;
+    var sidewalkRight = roadCenter + sidewalkOffset;
+    var peds = [];
+    for (var i = 0; i < count; i++) {
+      var side = i % 2 === 0 ? -1 : 1;
+      var kindRoll = rng();
+      var kind = scenario.id === 'school_zone' && kindRoll < 0.65 ? 'kid'
+        : kindRoll < 0.15 ? 'kid'
+        : kindRoll < 0.30 ? 'jogger'
+        : kindRoll < 0.45 ? 'dogWalker' : 'adult';
+      var pedX = side < 0 ? sidewalkLeft : sidewalkRight;
+      peds.push({
+        x: pedX,
+        y: worldY + (i < 2 ? 0 : (rng() - 0.5) * 2.0),
+        homeX: pedX,
+        vx: 0,
+        vy: 0,
+        color: kind === 'jogger' ? '#22c55e' : kind === 'kid' ? ['#fbbf24', '#ec4899', '#06b6d4'][i % 3]
+          : kind === 'dogWalker' ? '#94a3b8' : ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16'][i % 4],
+        crossing: false,
+        waitingAtCrosswalk: true,
+        crosswalkY: worldY,
+        crossDirection: side,
+        sidewalkLeft: sidewalkLeft,
+        sidewalkRight: sidewalkRight,
+        kind: kind,
+        dartCooldown: 0,
+        _chunk: chunkIndex
+      });
+    }
+    return peds;
+  }
+
   function spawnCyclists(scenario) {
     if (['highway', 'fog', 'snow', 'night', 'parking'].indexOf(scenario.id) !== -1) return [];
     var cyclists = [];
@@ -2354,23 +2745,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var PARKING_SCENARIOS = {
     tightParallel: {
       id: 'tightParallel', label: '🅿️ Tight Parallel', difficulty: 'hard',
-      hint: 'Like standard parallel — but the gap is only 10 ft (vs 18 ft). Be precise.',
-      startCar:  { x: 80, y: 60, heading: 0 },
+      hint: 'A realistic 19 ft curb space: only about 2 ft longer than the training car. Be precise.',
+      startCar:  { x: 145.7, y: 105, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 320, y: 320, w: 60, h: 110, label: 'FRONT', color: '#7c3aed' },
-        { x: 320, y: 425, w: 60, h: 110, label: 'REAR',  color: '#dc2626' }
+        { x: 103, y: 80, w: 24, h: 50, label: 'FRONT', color: '#7c3aed' },
+        { x: 103, y: 193, w: 24, h: 50, label: 'REAR',  color: '#dc2626' }
       ],
-      slot:    { x: 320, y: 380, w: 70, h: 75, requiredHeadingDeg: 0, headingTolDeg: 12 },
-      curb:    { x: 295, edgeColor: '#fbbf24' },
+      slot:    { x: 115, y: 161.5, w: 30, h: 63, requiredHeadingDeg: 270, headingTolDeg: 12 },
+      curb:    { x: 100, edgeColor: '#fbbf24' },
       bestKey: 'tightParallel',
-      // Same heuristic as parallel — just the slot is shorter, so this auto-trips
-      // when the player gets the car squared inside the tighter box.
       stepCheck: function(car, scn, headingDeg) {
-        var inSlot = car.x > scn.slot.x - 30 && car.x < scn.slot.x + 30 && car.y > scn.slot.y - 30 && car.y < scn.slot.y + 50;
-        return inSlot && Math.abs(headingDeg) < scn.slot.headingTolDeg && Math.abs(car.speed) < 1;
+        var inSlot = Math.abs(car.x - scn.slot.x) < scn.slot.w / 2 && Math.abs(car.y - scn.slot.y) < scn.slot.h / 2;
+        var headingOk = Math.min(parkingAngleDeltaDeg(headingDeg, 90), parkingAngleDeltaDeg(headingDeg, 270)) < scn.slot.headingTolDeg;
+        return inSlot && headingOk && Math.abs(car.speed) < 1;
       }
-    },
-    angleBack: {
+    },    angleBack: {
       id: 'angleBack', label: '↘ Angle Back-In', difficulty: 'medium',
       hint: 'Back into a 45° angled spot between two parked cars. Approach from the lane, then reverse at the right angle.',
       startCar:  { x: 100, y: 250, heading: 0 },
@@ -2426,52 +2815,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     },
     hydrantParallel: {
       id: 'hydrantParallel', label: '🚒 Parallel near Hydrant', difficulty: 'hard',
-      hint: 'Parallel-park between two cars with a fire hydrant in the gap. Maine law: park ≥ 10 ft from a hydrant or you get a ticket.',
-      startCar:  { x: 80, y: 60, heading: 0 },
+      hint: 'Park in the legal portion of the long curb space while remaining at least 10 ft from the hydrant.',
+      startCar:  { x: 145.7, y: 65, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 320, y: 280, w: 60, h: 90, label: 'FRONT', color: '#7c3aed' },
-        { x: 320, y: 480, w: 60, h: 90, label: 'REAR',  color: '#dc2626' },
-        { x: 296, y: 405, w: 14, h: 24, label: 'H', color: '#b91c1c', isHydrant: true }
+        { x: 103, y: 40, w: 24, h: 50, label: 'FRONT', color: '#7c3aed' },
+        { x: 103, y: 330, w: 24, h: 50, label: 'REAR',  color: '#dc2626' },
+        { x: 88, y: 170, w: 10, h: 18, label: 'H', color: '#b91c1c', isHydrant: true }
       ],
-      slot:    { x: 320, y: 425, w: 70, h: 75, requiredHeadingDeg: 0, headingTolDeg: 12 },
-      curb:    { x: 295, edgeColor: '#fbbf24' },
+      slot:    { x: 115, y: 270, w: 30, h: 65, requiredHeadingDeg: 270, headingTolDeg: 12 },
+      curb:    { x: 100, edgeColor: '#fbbf24' },
       bestKey: 'hydrantParallel',
       stepCheck: function(car, scn, headingDeg) {
-        var inSlot = car.x > scn.slot.x - 30 && car.x < scn.slot.x + 30 && car.y > scn.slot.y - 30 && car.y < scn.slot.y + 50;
-        return inSlot && Math.abs(headingDeg) < scn.slot.headingTolDeg && Math.abs(car.speed) < 1;
+        var inSlot = Math.abs(car.x - scn.slot.x) < scn.slot.w / 2 && Math.abs(car.y - scn.slot.y) < scn.slot.h / 2;
+        var headingOk = Math.min(parkingAngleDeltaDeg(headingDeg, 90), parkingAngleDeltaDeg(headingDeg, 270)) < scn.slot.headingTolDeg;
+        return inSlot && headingOk && Math.abs(car.speed) < 1;
       }
-    },
-    hillUphill: {
+    },    hillUphill: {
       id: 'hillUphill', label: '⛰️ Uphill With Curb', difficulty: 'medium',
-      hint: 'Park uphill on a curb. When you stop, turn your front wheels AWAY from the curb (toward the street) so a runaway rolls into the curb, not traffic. Hold steering before you stop.',
-      startCar:  { x: 80, y: 60, heading: 0 },
+      hint: 'Park uphill, within 12 inches of the curb, then turn the front wheels away from it.',
+      startCar:  { x: 145.7, y: 95, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 320, y: 320, w: 60, h: 110, label: 'FRONT', color: '#7c3aed' },
-        { x: 320, y: 425, w: 60, h: 110, label: 'REAR',  color: '#dc2626' }
+        { x: 103, y: 70, w: 24, h: 50, label: 'FRONT', color: '#7c3aed' },
+        { x: 103, y: 205, w: 24, h: 50, label: 'REAR',  color: '#dc2626' }
       ],
-      slot:    { x: 320, y: 380, w: 70, h: 75, requiredHeadingDeg: 0, headingTolDeg: 12 },
-      curb:    { x: 295, edgeColor: '#fbbf24' },
+      slot:    { x: 115, y: 167.5, w: 30, h: 75, requiredHeadingDeg: 270, headingTolDeg: 12 },
+      curb:    { x: 100, edgeColor: '#fbbf24' },
       uphill:  true,
       bestKey: 'hillUphill',
       stepCheck: function(car, scn, headingDeg) {
-        var inSlot = car.x > scn.slot.x - 30 && car.x < scn.slot.x + 30 && car.y > scn.slot.y - 30 && car.y < scn.slot.y + 50;
-        return inSlot && Math.abs(headingDeg) < scn.slot.headingTolDeg && Math.abs(car.speed) < 1;
+        var inSlot = Math.abs(car.x - scn.slot.x) < scn.slot.w / 2 && Math.abs(car.y - scn.slot.y) < scn.slot.h / 2;
+        var headingOk = Math.min(parkingAngleDeltaDeg(headingDeg, 90), parkingAngleDeltaDeg(headingDeg, 270)) < scn.slot.headingTolDeg;
+        return inSlot && headingOk && Math.abs(car.speed) < 1;
       }
-    }
-  };
+    }  };
 
-  // Axis-aligned rectangle overlap. MODULE scope on purpose: ScenarioParkingMode
-  // and ParkingMode both need it, and a previous revision defined it only inside
-  // ParkingMode — ScenarioParkingMode's update() then threw ReferenceError on its
-  // first frame, killing 5 of the 6 parking scenarios (every one with obstacles).
+  // Parking geometry uses one explicit scale: the 50 px player-car body represents
+  // a 180 in (15 ft) compact sedan. Every displayed clearance converts through this
+  // constant instead of labeling raw canvas pixels as inches.
+  var PARKING_CAR_LENGTH_PX = 50;
+  var PARKING_CAR_WIDTH_PX = 24;
+  var PARKING_INCHES_PER_PX = 180 / PARKING_CAR_LENGTH_PX;
+
   function rectsOverlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
 
-  // Enclosing axis-aligned box of an obstacle, honoring rotateDeg (drawn about its
-  // center). angleBack's 45° parked cars were drawn rotated but collided as their
-  // unrotated rects — invisible walls where nothing is drawn, pass-through where
-  // the car visibly is.
+  function makeParkingObb(cx, cy, halfLength, halfWidth, angleRad) {
+    var c = Math.cos(angleRad), s = Math.sin(angleRad);
+    return {
+      cx: cx, cy: cy, halfLength: halfLength, halfWidth: halfWidth, angle: angleRad,
+      forward: { x: c, y: s }, side: { x: -s, y: c }
+    };
+  }
+
+  function parkingCarObb(car) {
+    return makeParkingObb(car.x, car.y, PARKING_CAR_LENGTH_PX / 2, PARKING_CAR_WIDTH_PX / 2, car.heading || 0);
+  }
+
+  function parkingObstacleObb(ob) {
+    var angle = (ob.rotateDeg || 0) * Math.PI / 180;
+    return makeParkingObb(ob.x + ob.w / 2, ob.y + ob.h / 2, ob.w / 2, ob.h / 2, angle);
+  }
+  // Compatibility/debug helper: collision uses SAT OBBs, while callers that need
+  // a conservative enclosing box can still request one explicitly.
   function obstacleAabb(ob) {
     if (!ob.rotateDeg) return ob;
     var rad = ob.rotateDeg * Math.PI / 180;
@@ -2481,6 +2887,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return { x: ob.x + ob.w / 2 - rw / 2, y: ob.y + ob.h / 2 - rh / 2, w: rw, h: rh };
   }
 
+  function parkingObbsOverlap(a, b) {
+    var axes = [a.forward, a.side, b.forward, b.side];
+    var dx = b.cx - a.cx, dy = b.cy - a.cy;
+    for (var i = 0; i < axes.length; i++) {
+      var axis = axes[i];
+      var centerDistance = Math.abs(dx * axis.x + dy * axis.y);
+      var radiusA = a.halfLength * Math.abs(a.forward.x * axis.x + a.forward.y * axis.y)
+        + a.halfWidth * Math.abs(a.side.x * axis.x + a.side.y * axis.y);
+      var radiusB = b.halfLength * Math.abs(b.forward.x * axis.x + b.forward.y * axis.y)
+        + b.halfWidth * Math.abs(b.side.x * axis.x + b.side.y * axis.y);
+      if (centerDistance >= radiusA + radiusB) return false;
+    }
+    return true;
+  }
+
+  function parkingCarHitsObstacle(car, obstacle) {
+    return parkingObbsOverlap(parkingCarObb(car), parkingObstacleObb(obstacle));
+  }
+
+  function parkingCurbGapInches(car, curbX) {
+    var box = parkingCarObb(car);
+    var xRadius = Math.abs(box.forward.x) * box.halfLength + Math.abs(box.side.x) * box.halfWidth;
+    return (box.cx - xRadius - curbX) * PARKING_INCHES_PER_PX;
+  }
+
+  function parkingPointClearanceInches(car, px, py) {
+    var box = parkingCarObb(car);
+    var dx = px - box.cx, dy = py - box.cy;
+    var localForward = dx * box.forward.x + dy * box.forward.y;
+    var localSide = dx * box.side.x + dy * box.side.y;
+    var outsideForward = Math.max(0, Math.abs(localForward) - box.halfLength);
+    var outsideSide = Math.max(0, Math.abs(localSide) - box.halfWidth);
+    return Math.hypot(outsideForward, outsideSide) * PARKING_INCHES_PER_PX;
+  }
+
+  function parkingObbInsideBounds(car, bounds) {
+    var box = parkingCarObb(car);
+    var xRadius = Math.abs(box.forward.x) * box.halfLength + Math.abs(box.side.x) * box.halfWidth;
+    var yRadius = Math.abs(box.forward.y) * box.halfLength + Math.abs(box.side.y) * box.halfWidth;
+    return box.cx - xRadius >= bounds.x && box.cx + xRadius <= bounds.x + bounds.w
+      && box.cy - yRadius >= bounds.y && box.cy + yRadius <= bounds.y + bounds.h;
+  }
+
+  function parkingAngleDeltaDeg(a, b) {
+    return Math.abs(((a - b) + 540) % 360 - 180);
+  }
   // ScenarioParkingMode: parameterized variant of ParkingMode for the new scenarios.
   // Uses the same bicycle-model integrator and hit detection patterns. Each scenario's
   // stepCheck (above) determines completion. Score starts at 100, -25 per obstacle hit,
@@ -2570,10 +3022,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         // Hit detection vs obstacles (axis-aligned approximation; rotated
         // obstacles collide via their drawn footprint's enclosing box)
-        var carBox = { x: car.x - 25, y: car.y - 12, w: 50, h: 24 };
         var anyHit = false;
         scn.obstacles.forEach(function(ob) {
-          if (rectsOverlap(carBox, obstacleAabb(ob))) anyHit = true;
+          if (parkingCarHitsObstacle(car, ob)) anyHit = true;
         });
         if (anyHit) {
           if (hitCooldownRef.current <= 0) {
@@ -2592,7 +3043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Boundary breach (if scenario has bounds)
         if (scn.bounds) {
           var bd = scn.bounds;
-          var outOfBounds = car.x < bd.x || car.x > bd.x + bd.w || car.y < bd.y || car.y > bd.y + bd.h;
+          var outOfBounds = !parkingObbInsideBounds(car, bd);
           if (outOfBounds && hitCooldownRef.current <= 0) {
             hitCooldownRef.current = 0.5;
             var newSt2 = Object.assign({}, stRef.current);
@@ -2612,7 +3063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Curb-distance grading (Maine road test rule: 6–12 inches).
           // Only apply when the scenario has a real curb on the left (curb.x > 0).
           if (scn.curb && scn.curb.x > 0) {
-            var curbGap = (car.x - 25) - scn.curb.x;
+            var curbGap = parkingCurbGapInches(car, scn.curb.x);
             if (curbGap >= 6 && curbGap <= 12) {
               notes.push('✓ Curb ~' + Math.round(curbGap) + ' in (ideal 6–12).');
             } else if (curbGap > 12 && curbGap <= 18) {
@@ -2633,10 +3084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (hydrant) {
             var hxC = hydrant.x + hydrant.w / 2;
             var hyC = hydrant.y + hydrant.h / 2;
-            // Closest body edge to hydrant center, axis-aligned approx.
-            var bx = Math.max(car.x - 25, Math.min(hxC, car.x + 25));
-            var by = Math.max(car.y - 12, Math.min(hyC, car.y + 12));
-            var hydDist = Math.hypot(bx - hxC, by - hyC);
+            var hydDist = parkingPointClearanceInches(car, hxC, hyC);
             if (hydDist < 120) {
               var hydPenalty = hydDist < 60 ? 25 : 12;
               finalSt.score = Math.max(0, finalSt.score - hydPenalty);
@@ -2684,7 +3132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var sl = scn.slot;
         gfx.strokeStyle = 'rgba(34,197,94,0.6)'; gfx.lineWidth = 2; gfx.setLineDash([6, 6]);
         gfx.save();
-        gfx.translate(sl.x + sl.w / 2, sl.y + sl.h / 2);
+        gfx.translate(sl.x, sl.y);
         if (sl.requiredHeadingDeg) gfx.rotate(sl.requiredHeadingDeg * Math.PI / 180);
         gfx.strokeRect(-sl.w / 2, -sl.h / 2, sl.w, sl.h);
         gfx.restore();
@@ -2726,7 +3174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var car = carRef.current;
         gfx.save();
         gfx.translate(car.x, car.y);
-        gfx.rotate(car.heading + Math.PI / 2);
+        gfx.rotate(car.heading);
         gfx.fillStyle = '#22d3ee';
         gfx.fillRect(-25, -12, 50, 24);
         gfx.fillStyle = '#0c4a6e';
@@ -2776,7 +3224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var useEffect = React.useEffect;
     var useRef = React.useRef;
     var canvasRef = useRef(null);
-    var carRef = useRef({ x: 80, y: 60, heading: 0, speed: 0, steering: 0 });
+    var carRef = useRef({ x: 145.7, y: 95, heading: -Math.PI / 2, speed: 0, steering: 0 });
     var keysRef = useRef({});
     var animRef = useRef(null);
     var timeRef = useRef(0);
@@ -2789,10 +3237,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var st = status[0]; var setSt = status[1];
 
     // Two parked cars + curb. The slot is between them.
-    var FRONT_CAR = { x: 320, y: 320, w: 60, h: 110 };
-    var REAR_CAR = { x: 320, y: 470, w: 60, h: 110 };
-    var SLOT = { x: 320, y: 380, w: 70, h: 130 }; // target box
-    var CURB_X = 295;
+    var FRONT_CAR = { x: 103, y: 70, w: 24, h: 50 };
+    var REAR_CAR = { x: 103, y: 205, w: 24, h: 50 };
+    var SLOT = { x: 115, y: 167.5, w: 30, h: 75 }; // center + physical target dimensions
+    var CURB_X = 100;
 
     var STEPS = [
       'Step 1: Pull alongside the front car, leave ~2 ft gap. Stop with rear bumpers aligned.',
@@ -2820,7 +3268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }, []);
 
     function resetCar() {
-      carRef.current = { x: 80, y: 60, heading: 0, speed: 0, steering: 0 };
+      carRef.current = { x: 145.7, y: 95, heading: -Math.PI / 2, speed: 0, steering: 0 };
       stepRef.current = 0;
       doneRef.current = false;
       hitConeRef.current = false;
@@ -2866,8 +3314,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         car.x += Math.cos(car.heading) * car.speed * dt;
         car.y += Math.sin(car.heading) * car.speed * dt;
         // Hit detection vs parked cars
-        var carBox = { x: car.x - 25, y: car.y - 12, w: 50, h: 24 };
-        if (rectsOverlap(carBox, FRONT_CAR) || rectsOverlap(carBox, REAR_CAR)) {
+        if (parkingCarHitsObstacle(car, FRONT_CAR) || parkingCarHitsObstacle(car, REAR_CAR)) {
           if (!hitConeRef.current) {
             hitConeRef.current = true;
             var newSt = Object.assign({}, st);
@@ -2880,33 +3327,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         } else {
           hitConeRef.current = false;
         }
-        // Curb. The clamp now aligns with the BODY's left edge (was on car.x
-        // center, which let the body slide 13 px inside the sidewalk). Body
-        // left edge = car.x - 25; clamp body at CURB_X.
-        if (car.x - 25 < CURB_X) {
-          car.x = CURB_X + 25;
+        // Clamp the oriented body at the curb. Rotation changes the projected
+        // body edge, so a fixed center offset is not physically valid.
+        var curbPenetrationInches = parkingCurbGapInches(car, CURB_X);
+        if (curbPenetrationInches < 0) {
+          car.x += (-curbPenetrationInches / PARKING_INCHES_PER_PX);
           car.speed *= 0.3;
         }
-        // Step progression heuristics
+        // Step progression follows the same orientation used by rendering and OBB collision.
         var headingDeg = (car.heading * 180 / Math.PI + 360) % 360;
-        var inSlot = car.x > SLOT.x - 30 && car.x < SLOT.x + 30 && car.y > SLOT.y - 30 && car.y < SLOT.y + 70;
-        if (stepRef.current === 0 && car.y > 250 && car.y < 320 && car.x > 360 && car.x < 420) {
+        var parallelHeading = Math.min(parkingAngleDeltaDeg(headingDeg, 90), parkingAngleDeltaDeg(headingDeg, 270)) < 10;
+        var inSlot = Math.abs(car.x - SLOT.x) < SLOT.w / 2 && Math.abs(car.y - SLOT.y) < SLOT.h / 2;
+        if (stepRef.current === 0 && car.speed < -0.5) {
           stepRef.current = 1; setFeedback(STEPS[1]);
-        } else if (stepRef.current === 1 && (headingDeg > 20 && headingDeg < 80) && car.speed < 0) {
+        } else if (stepRef.current === 1 && parkingAngleDeltaDeg(headingDeg, 270) > 20 && car.speed < 0) {
           stepRef.current = 2; setFeedback(STEPS[2]);
-        } else if (stepRef.current === 2 && car.x < 380) {
+        } else if (stepRef.current === 2 && parkingCurbGapInches(car, CURB_X) < 36) {
           stepRef.current = 3; setFeedback(STEPS[3]);
-        } else if (stepRef.current === 3 && headingDeg < 15) {
+        } else if (stepRef.current === 3 && parallelHeading) {
           stepRef.current = 4; setFeedback(STEPS[4]);
-        } else if (stepRef.current >= 3 && inSlot && Math.abs(headingDeg) < 10 && Math.abs(car.speed) < 1) {
+        } else if (stepRef.current >= 3 && inSlot && parallelHeading && Math.abs(car.speed) < 1) {
           stepRef.current = 5;
           doneRef.current = true;
           var newSt2 = Object.assign({}, st);
-          // Curb-distance grading: Maine road test ideal is 6-12 inches.
-          // Body left edge = car.x - 25, sidewalk edge = CURB_X. Pixel scale
-          // approximates inches (50 px car ~ 16 ft, so 1 px ~ 4 in — but the
-          // sim's slot dimensions treat px as inches for student feedback).
-          var curbGap = (car.x - 25) - CURB_X;
+          var curbGap = parkingCurbGapInches(car, CURB_X);
           var curbAdj = 0;
           var curbMsg = '';
           if (curbGap >= 6 && curbGap <= 12) {
@@ -2946,7 +3390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         gfx.setLineDash([]);
         // Slot guide
         gfx.strokeStyle = 'rgba(34,197,94,0.5)'; gfx.lineWidth = 2; gfx.setLineDash([6, 6]);
-        gfx.strokeRect(SLOT.x, SLOT.y, SLOT.w, SLOT.h);
+        gfx.strokeRect(SLOT.x - SLOT.w / 2, SLOT.y - SLOT.h / 2, SLOT.w, SLOT.h);
         gfx.setLineDash([]);
         // Parked cars
         function drawParked(c, color) {
@@ -2967,7 +3411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var car = carRef.current;
         gfx.save();
         gfx.translate(car.x, car.y);
-        gfx.rotate(car.heading + Math.PI / 2);
+        gfx.rotate(car.heading);
         gfx.fillStyle = '#22d3ee';
         gfx.fillRect(-25, -12, 50, 24);
         // Windshield
@@ -4179,7 +4623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var mpgHistoryRef = useRef([]); // last 60 MPG readings for sparkline
       var blackBoxRef = useRef([]); // last 5 seconds of car state for crash replay
       var drivePathRef = useRef([]); // full drive path for debrief map (sampled every 0.5s)
-      var infiniteWorldRef = useRef(null); // procedural infinite world (Free Explore only)
+      var infiniteWorldRef = useRef(null); // streamed road world (scenario or Free Explore)
       var questRef = useRef(null); // { destination: {name, x, y, icon}, distanceMi, completed, reward }
       // ── Rideshare mode (grounded "Crazy Taxi" — anti-arcade) ──
       // When d.rideshareMode is set, the quest system stops auto-picking landmarks
@@ -4432,10 +4876,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var _scnBase = SCENARIOS.find(function(s) { return s.id === scenarioId; }) || SCENARIOS[0];
         var scn = Object.assign({}, _scnBase);
         var veh = VEHICLES.find(function(v) { return v.id === vehicleId; }) || VEHICLES[0];
+        var continuousScenarioWorld = !d.freeExplore && scenarioUsesContinuousWorld(scn.id);
         mapRef.current = buildMap(scn.id);
         trafficRef.current = spawnTraffic(scn);
-        pedsRef.current = spawnPedestrians(scn);
-        signalsRef.current = spawnSignals(scn);
+        // Streamed logical controls and pedestrians are created with their chunks.
+        // Keeping the finite-map copies would duplicate them near the starting tile.
+        pedsRef.current = continuousScenarioWorld ? [] : spawnPedestrians(scn);
+        signalsRef.current = continuousScenarioWorld ? [] : spawnSignals(scn);
         cyclistsRef.current = spawnCyclists(scn).concat(spawnMotorcycles(scn));
         wildlifeRef.current = null;
         skidRef.current = { active: false, intensity: 0 };
@@ -4475,6 +4922,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         })();
         infiniteWorldRef.current = null;
+        if (continuousScenarioWorld) {
+          infiniteWorldRef.current = createScenarioWorld(scn);
+        }
         // Free explore gets its own welcome
         if (d.freeExplore && d.freeExploreScenario) {
           var fes = d.freeExploreScenario;
@@ -4564,7 +5014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             if (medianX !== -1) {
               startCenterX = medianX;
-              startOffset = 3.5; // well into the right lanes (away from median)
+              startOffset = 4.6; // center of the outer right-hand highway lane
             } else {
               // No median found — use road midpoint
               var hwLeft = -1, hwRight = -1;
@@ -4592,6 +5042,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (roadLeft !== -1) startCenterX = Math.floor((roadLeft + roadRight) / 2);
             }
           }
+        }
+        // Streamed roads own the authoritative centerline. The finite map above is
+        // retained only as a safe fallback for bounded maneuver courses.
+        if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
+          startCenterX = infiniteWorldRef.current.spline.centerAt(startY);
+          startOffset = isHighway ? 4.6 : 1.5;
         }
         // Verify the start position is on drivable road (not a wall/median/tree)
         var startX = startCenterX + startOffset;
@@ -4622,7 +5078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var DANGER_R = 20; // cells ahead OR behind in same direction
         var HEADON_R = 22; // cells ahead for oncoming traffic (collision range is worse head-on)
         (trafficRef.current || []).forEach(function(t) {
-          if (t.crossStreet) return; // handled separately below
+          if (t.crossStreet || t._roundaboutState) return; // specialized actors keep their authored path
           var dy = t.y - startY;
           var sameDir = (t.heading < 0); // player heads -π/2 (negative)
           var inDangerZone = sameDir
@@ -4660,7 +5116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             cy.y = startY + (cy.y >= startY ? 25 : -25);
           }
         });
-        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} };
+        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0, majorViolations: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} };
         // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
         challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0, currentTown: null };
         // Reset per-drive journal and seed the first entry.
@@ -5273,7 +5729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     isLandmark: true
                   };
                   if (q && q.completed) {
-                    addToast('🗺️ New destination: ' + lmDest.type.icon + ' ' + lmDest.type.name + ' — ' + Math.round(pick.dist * 10) + ' ft ahead');
+                    addToast('🗺️ New destination: ' + lmDest.type.icon + ' ' + lmDest.type.name + ' — ' + Math.round(worldUnitsToFeet(pick.dist)) + ' ft ahead');
                     speak('New destination: ' + lmDest.type.name + '. Drive north to reach it.');
                   }
                 } else if (!q) {
@@ -5330,10 +5786,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var hasDeadline = Math.random() < 0.30;
                         if (hasDeadline) {
                           // Give 1 minute per ~0.25 miles, minimum 60s, rounded for display.
-                          // ×10 = the file's cells→feet display convention. (This was ×0.1 —
-                          // 100× short — so targetMin always clamped to 1.0 and EVERY rush
-                          // deadline was a flat 72s regardless of trip length.)
-                          var targetFt = Math.hypot(carRef.current.x - rsArr.dropoff.x, carRef.current.y - rsArr.dropoff.y) * 10;
+                          // Convert the meter-based world distance to feet before deriving
+                          // the deadline; this keeps timing aligned with actual vehicle motion.
+                          var targetFt = worldUnitsToFeet(Math.hypot(carRef.current.x - rsArr.dropoff.x, carRef.current.y - rsArr.dropoff.y));
                           var targetMin = Math.max(1.0, targetFt / 2500); // ~2500 ft per "minute" of generosity
                           // Add 20% slack so smooth driving can still make it.
                           // Clamp to keep extreme spawns humane (45s..10min).
@@ -5576,7 +6031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // ── Turn-by-turn GPS voice navigation ──
                 // Progressive distance-gated callouts. qdist is in world cells (~10 ft/cell).
                 // Approximate feet for natural announcements.
-                var qdistFt = Math.round(qdist * 10);
+                var qdistFt = Math.round(worldUnitsToFeet(qdist));
                 var qSide = (q.x > carRef.current.x + 1.5) ? 'right' : (q.x < carRef.current.x - 1.5) ? 'left' : 'ahead';
                 if (!q._gpsCalls) q._gpsCalls = {};
                 // 1500 ft: general heading
@@ -6060,7 +6515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var sigList = signalsRef.current || [];
             for (var rsi = 0; rsi < sigList.length; rsi++) {
               var sig = sigList[rsi];
-              if (!sig || sig.type !== 'light') continue;
+              if (!sig || (sig.type !== 'light' && sig.type !== 'flagger')) continue;
               var dySig = car.y - sig.y; // positive = ahead (lower y)
               if (dySig > 0 && dySig < 12) {
                 if (sig.state === 'red' || sig.state === 'yellow') raTarget = Math.min(raTarget, dySig < 3 ? 0 : 10);
@@ -6116,7 +6571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Approaching signal
             for (var nsi = 0; nsi < sigList.length; nsi++) {
               var nsig = sigList[nsi];
-              if (!nsig || nsig.type !== 'light') continue;
+              if (!nsig || (nsig.type !== 'light' && nsig.type !== 'flagger')) continue;
               var dySigN = car.y - nsig.y;
               if (dySigN > 4 && dySigN < 10) {
                 var sigKey = 'sig_' + nsig.y + '_' + nsig.state;
@@ -6365,8 +6820,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var turnRate = car.steering * Math.min(1, car.speed / 10) * 1.2 * steerEffect;
           car.heading += turnRate * dt;
           // Position update
-          var moveX = Math.cos(car.heading) * car.speed * dt / 5; // world units
-          var moveY = Math.sin(car.heading) * car.speed * dt / 5;
+          var moveX = Math.cos(car.heading) * car.speed * dt; // world units
+          var moveY = Math.sin(car.heading) * car.speed * dt;
+          var previousCarX = car.x, previousCarY = car.y;
           var newX = car.x + moveX;
           var newY = car.y + moveY;
           // Speed-bump crossing detection. The residential-chunk generator
@@ -6418,7 +6874,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           } else if (mapRef.current && cellY >= 0 && cellY < MAP_SIZE && cellX >= 0 && cellX < MAP_SIZE) {
             cell = mapRef.current[cellY][cellX];
           }
-          if (cell !== undefined) {
+          var finiteCourseBounds = !infiniteWorldRef.current ? clampFiniteCoursePosition(newX, newY, 1) : null;
+          if (finiteCourseBounds && finiteCourseBounds.hit) {
+            car.speed *= -0.15;
+            car.x = finiteCourseBounds.x;
+            car.y = finiteCourseBounds.y;
+            if (!statsRef.current._lastCourseBoundaryAt || timeRef.current - statsRef.current._lastCourseBoundaryAt > 2.5) {
+              statsRef.current._lastCourseBoundaryAt = timeRef.current;
+              eventToastRef.current = { msg: 'Course boundary — turn around. Maneuver courses do not teleport or loop.', until: timeRef.current + 3 };
+            }
+          } else if (cell !== undefined) {
               if (cell === 1 || cell === 5 || cell === 6) {
                 var impactMph = Math.abs(car.speed) * MS_TO_MPH;
                 if (impactMph > 5) {
@@ -6449,15 +6914,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 car.y = newY;
               }
           }
-          // Wrap Y to loop the road (only for non-infinite worlds)
-          // d.freeExplore is checked as backup in case infiniteWorldRef hasn't been set yet
-          if (!infiniteWorldRef.current && !d.freeExplore) {
-            if (car.y < 2) { car.y += MAP_SIZE - 5; }
-            if (car.y > MAP_SIZE - 2) { car.y -= MAP_SIZE - 5; }
+
+          // Roundabout compliance is geometry-driven: detect crossing the yield
+          // boundary, circulation direction, stopping inside, and exit signaling.
+          if (scn.id === 'roundabout') {
+            var rbAssessment = assessRoundaboutFrame(
+              statsRef.current._roundaboutCompliance,
+              { x: previousCarX, y: previousCarY, speed: car.speed },
+              car,
+              trafficRef.current || [],
+              blinkerRef.current,
+              dt
+            );
+            statsRef.current._roundaboutCompliance = rbAssessment.state;
+            var rbEventInfo = {
+              unsafe_entry: { pts: 20, major: true, msg: '🚨 Unsafe roundabout entry — yield to circulating traffic.' },
+              wrong_way: { pts: 25, major: true, msg: '🚨 Wrong-way circulation — travel counterclockwise.' },
+              stopped_inside: { pts: 15, major: true, msg: '⚠️ Do not stop inside a roundabout. Continue to an exit.' },
+              missing_exit_signal: { pts: 5, major: false, msg: '➡️ Signal right before exiting the roundabout.' }
+            };
+            rbAssessment.events.forEach(function(kind) {
+              var info = rbEventInfo[kind];
+              if (!info) return;
+              statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - info.pts);
+              if (info.major) statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
+              pushDriveEvent(statsRef, 'roundabout_' + kind, Math.abs(car.speed) * MS_TO_MPH, frictionCoef(scn.weather), scn.speedLimit, info.major ? 2 : 1);
+              journalLog('roundabout_' + kind, info.major ? '🚨' : '➡️', info.msg);
+              addToast(info.msg + ' -' + info.pts + ' safety');
+              if (roadTestRef.current.active) {
+                roadTestRef.current.deductions.push({ type: 'roundabout_' + kind, pts: info.pts, t: timeRef.current, detail: info.msg });
+                roadTestRef.current.score -= info.pts;
+              }
+            });
           }
-          // Auto-create infinite world if free explore but ref is missing (safety net)
-          if (d.freeExplore && !infiniteWorldRef.current) {
+          // Auto-create the correct streamed world if initialization raced a React update.
+          if (d.freeExplore && (!infiniteWorldRef.current || infiniteWorldRef.current.mode !== 'freeExplore')) {
             infiniteWorldRef.current = createInfiniteWorld(d.worldSeed || 12345);
+          } else if (!d.freeExplore && !infiniteWorldRef.current && scenarioUsesContinuousWorld(scn.id)) {
+            infiniteWorldRef.current = createScenarioWorld(scn);
           }
           // Infinite world: cleanup distant chunks periodically. Second-marker
           // guard — a bare `% 5 === 0` stays true for a full second, re-running
@@ -6842,12 +7336,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Explore: chunk biome → mph map. Scenario mode: scn.speedLimit. School
           // zones: 15 mph regardless of biome (Maine school-zone law).
           var getPostedLimitMphAt = function(worldY) {
-            if (infiniteWorldRef.current && infiniteWorldRef.current.chunks) {
+            if (infiniteWorldRef.current) {
+              var worldForLimit = infiniteWorldRef.current;
               var ci = Math.floor(worldY / CHUNK_SIZE);
-              var ch = infiniteWorldRef.current.chunks[ci];
-              if (ch && ch.biome) {
-                return getBiomeSpeedLimitMph(ch.biome, 25);
-              }
+              var ch = worldForLimit.getChunk(ci);
+              if (ch && ch.biome) return worldPostedLimitMph(worldForLimit, ch, 25);
             }
             if (scn && scn.id === 'school_zone') return 15;
             if (scn && typeof scn.speedLimit === 'number' && isFinite(scn.speedLimit)) return scn.speedLimit;
@@ -6856,6 +7349,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           traffic.forEach(function(t, idx) {
             // Default personality for legacy/cross-street cars that didn't get one.
             var pers = t.personality || { speedBias: 1.0, followMult: 1.0, aggro: 0.35, rollsStops: 0 };
+            if (t._roundaboutState) {
+              updateRoundaboutTrafficVehicle(t, dt, traffic);
+              return;
+            }
             // ── School bus stop-arm cycle ──
             // Periodically a school bus stops to pick up/drop off kids, extending its stop arm
             // and flashing red lights. Surrounding traffic must stop (enforced in the yield block
@@ -6904,7 +7401,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Detection range scales with speed: a fast car needs more distance to brake
             // smoothly to a stop. Stopping distance grows with v² so adding a v-proportional
             // term keeps fast traffic from overshooting the stop line.
-            var signalDetectRange = 14 + Math.abs(t.speed || 0) * 0.45;
+            var aiSpeed = Math.abs(t.speed || 0);
+            var signalDetectRange = metersToWorldUnits(Math.max(14, aiSpeed * 1.2 + (aiSpeed * aiSpeed) / (2 * 3.5)));
             // Track the signal currently controlling us (used below for stop-sign resume).
             var activeStopSign = null;
             var activeStopDist = Infinity;
@@ -7109,7 +7607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // intersection, slow more.
             signals.forEach(function(s) {
               // Now scans BOTH lights and stop signs (was lights-only).
-              if (!s || (s.type !== 'light' && s.type !== 'stop')) return;
+              if (!s || (s.type !== 'light' && s.type !== 'stop' && s.type !== 'flagger')) return;
               var rel = aheadOf(s.x, s.y);
               if (rel.ahead < 0 || rel.ahead > 9) return;
               // We're approaching this intersection. Scan for a car on the cross axis
@@ -7178,7 +7676,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 slowFor = Math.max(slowFor, 1);
                 // Shift toward the outer edge — direction-dependent.
                 if (!t.crossStreet && t.laneOffset !== undefined) {
-                  var pullOver = t.heading > 0 ? -2.4 : 2.4;
+                  var pullOverMag = scn.id === 'highway' ? 5.7 : 2.4;
+                  var pullOver = t.heading > 0 ? -pullOverMag : pullOverMag;
                   t._emergencyPullOver = true;
                   // Cancel any in-flight lane change so it doesn't overwrite the pullover.
                   if (t._pendingLaneOffset !== undefined && t._pendingLaneOffset !== null) {
@@ -7192,7 +7691,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               } else if (t._emergencyPullOver) {
                 // Emergency vehicle has passed — return to default lane.
-                var defaultOff = t.heading > 0 ? -1.5 : 1.5;
+                var defaultMag = scn.id === 'highway' ? 4.6 : 1.5;
+                var defaultOff = t.heading > 0 ? -defaultMag : defaultMag;
                 t.laneOffset += (defaultOff - t.laneOffset) * Math.min(1, dt * 1.5);
                 if (Math.abs(t.laneOffset - defaultOff) < 0.1) t._emergencyPullOver = false;
               }
@@ -7200,7 +7700,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Emergency is null OR responded — still need to return AI cars to their
               // default lane. Without this branch, AI stayed at pullOver-2.4 forever
               // because the outer `if (emergency && !emergency.responded)` gate is false.
-              var defaultOffPost = t.heading > 0 ? -1.5 : 1.5;
+              var defaultMagPost = scn.id === 'highway' ? 4.6 : 1.5;
+              var defaultOffPost = t.heading > 0 ? -defaultMagPost : defaultMagPost;
               t.laneOffset += (defaultOffPost - t.laneOffset) * Math.min(1, dt * 1.5);
               if (Math.abs(t.laneOffset - defaultOffPost) < 0.1) t._emergencyPullOver = false;
             }
@@ -7214,8 +7715,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Also expand if we've seen many hard brakes recently
             if (statsRef.current.hardBrakes >= 3) erraticMult = Math.max(erraticMult, 1.3);
             // Follow car ahead — distance scaled by personality.followMult + erraticMult (direction-aware).
-            var followNear = 4 * pers.followMult * erraticMult + t.speed * 0.25 * pers.followMult;
-            var followFar  = 7 * pers.followMult * erraticMult + t.speed * 0.35 * pers.followMult;
+            var followFar = metersToWorldUnits(recommendedFollowingMeters(Math.abs(t.speed), scn.weather, pers.followMult * erraticMult));
+            var followNear = Math.max(6, followFar * 0.5);
             traffic.forEach(function(other, j) {
               if (j === idx) return;
               // Same-lane detection must be curve-safe: use laneOffset proximity, not world X.
@@ -7480,7 +7981,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // from road centerline (positive = +X side). Cars gently steer toward their
             // target lane position instead of drifting freely.
             var centerXt = Math.floor(MAP_SIZE / 2);
-            if (t.laneOffset === undefined) t.laneOffset = t.heading > 0 ? -1.5 : 1.5;
+            if (t.laneOffset === undefined) {
+              var initialLaneMag = scn.id === 'highway' ? 4.6 : 1.5;
+              t.laneOffset = t.heading > 0 ? -initialLaneMag : initialLaneMag;
+            }
             // Lane-change: ONLY switch lanes within your own direction's half — never
             // cross the centerline into oncoming traffic (that's the legal rule).
             if (!t.crossStreet && !t._laneChangeCooldown) t._laneChangeCooldown = 0;
@@ -7501,7 +8005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (noPassZone) { t._laneChangeCooldown = Math.max(t._laneChangeCooldown || 0, 2); }
             // Lane-change decisions require the car to actually be moving — a stopped
             // car at a red light shouldn't randomly slide sideways into the next lane.
-            if (!t.crossStreet && t._laneChangeCooldown <= 0 && Math.abs(t.speed) > 1.5) {
+            if (!t.crossStreet && scn.id === 'highway' && t._laneChangeCooldown <= 0 && Math.abs(t.speed) > 1.5) {
               // Driver-relative geometry.
               //   myDirSign: +1 southbound (heading ~+π/2), -1 northbound (~−π/2).
               //   innerSign: +laneOffset delta that means "toward centerline" for THIS driver.
@@ -7532,7 +8036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               });
               // Overtake direction = INNER (toward centerline) on US right-side roads.
               // Inner lane offset: SB starts -1.5, moves toward 0 → inner offset = -0.5. NB mirrors to +0.5.
-              var innerOffset = myDirSign === 1 ? -0.5 : 0.5;
+              var innerOffset = myDirSign === 1 ? -1.8 : 1.8;
               if (wantOvertake && pers.aggro > 0.4 && Math.random() < pers.aggro * 0.015 && !t._pendingLaneOffset) {
                 // Going inner — checked blockedInner.
                 if (!blockedInner && Math.abs(t.laneOffset - innerOffset) > 0.5) {
@@ -7543,7 +8047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               } else if (!wantOvertake && t._laneChangeCooldown <= 0 && !t._pendingLaneOffset && Math.random() < 0.0008) {
                 // Return to default lane (outer, toward shoulder).
-                var defaultOffset = myDirSign === 1 ? -1.5 : 1.5;
+                var defaultOffset = myDirSign === 1 ? -4.6 : 4.6;
                 if (Math.abs(t.laneOffset - defaultOffset) > 0.3 && !blockedOuter) {
                   t._pendingLaneOffset = defaultOffset;
                   t._pendingLaneTimer = 1.0;
@@ -7581,7 +8085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 t._pendingLaneOffset = null;
                 t._laneChangeCooldown = 10;
                 // Blinker stays on briefly post-change (realism), then cancels
-                t._blinkerCancelTimer = 0.6;
+                t._blinkerCancelTimer = 2.5;
               }
             }
             // Cancel blinker after lane change completes
@@ -7600,7 +8104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var dirSignAi = Math.sin(t.heading) > 0 ? 1 : -1;
               var nearestTurnSig = null, nearestTurnDist = Infinity;
               signals.forEach(function(s) {
-                if (!s || (s.type !== 'light' && s.type !== 'stop')) return;
+                if (!s || (s.type !== 'light' && s.type !== 'stop' && s.type !== 'flagger')) return;
                 var dyT = (s.y - t.y) * dirSignAi;
                 // Only consider the next intersection ahead within a planning window.
                 if (dyT > 5 && dyT < 14 && dyT < nearestTurnDist) {
@@ -7668,8 +8172,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 while (dhT > Math.PI) dhT -= 2 * Math.PI;
                 while (dhT < -Math.PI) dhT += 2 * Math.PI;
                 t.heading += dhT * (1 - Math.exp(-dt / 0.4));
-                t.y += Math.sin(t.heading) * t.speed * dt / 5;
-                t.x += Math.cos(t.heading) * t.speed * dt / 5;
+                t.y += Math.sin(t.heading) * t.speed * dt;
+                t.x += Math.cos(t.heading) * t.speed * dt;
                 if (Math.abs(dhT) < 0.06) {
                   t.heading = t._turnTarget;
                   t._turning = false;
@@ -7737,8 +8241,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               while (dh < -Math.PI) dh += 2 * Math.PI;
               t.heading += dh * (1 - Math.exp(-dt / 0.15));
               // Forward motion in the car's current direction
-              t.y += Math.sin(t.heading) * t.speed * dt / 5;
-              t.x += Math.cos(t.heading) * t.speed * dt / 5;
+              t.y += Math.sin(t.heading) * t.speed * dt;
+              t.x += Math.cos(t.heading) * t.speed * dt;
               // ── Pull toward target lane position PERPENDICULAR to the spline ──
               // Lane positioning: laneOffset is interpreted as RAW X-offset from the spline
               // center, matching how road geometry + lane paint are constructed (ribbon
@@ -7758,7 +8262,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // forward motion on bends. Tighter lerp keeps cars visibly anchored to
               // their lane on curves, addressing the "cars don't stay in their correct
               // lane" complaint.
-              var xLerp = 1 - Math.exp(-dt / 0.08);
+              var laneChangeTau = t._blinkerCancelTimer > 0 ? 1.0 : 0.08;
+              var xLerp = 1 - Math.exp(-dt / laneChangeTau);
               t.x -= xErr * xLerp;
               // ── Defensive lane-discipline guard ──
               // Legal lane offsets in play range from −2.4 to +2.4 (the
@@ -7772,7 +8277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // handles normal cornering; this guard only fires on real
               // off-lane drift.
               var laneDriftDist = Math.abs(t.x - targetX);
-              if (laneDriftDist > 1.5) {
+              if (laneDriftDist > 1.5 && !(t._blinkerCancelTimer > 0)) {
                 t.x = targetX;
                 t._pendingLaneOffset = null;
                 t._pendingLaneTimer = 0;
@@ -7785,8 +8290,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             } else {
               // Cross-street: straight motion is fine (no spline curvature on cross streets).
-              t.y += Math.sin(t.heading) * t.speed * dt / 5;
-              t.x += Math.cos(t.heading) * t.speed * dt / 5;
+              t.y += Math.sin(t.heading) * t.speed * dt;
+              t.x += Math.cos(t.heading) * t.speed * dt;
             }
             // Wrap / respawn traffic relative to player position. Native cross-street
             // cars (spawned by the intersection) wrap around the X axis to keep cross-
@@ -7804,7 +8309,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (Math.abs(t.y - playerY) > MAP_SIZE * 0.6) {
                 // Position in the correct lane ON the spline perpendicular at the new Y.
                 // Use heading-sign to infer direction (sign-stable even with spline bend).
-                t.laneOffset = t.heading > 0 ? -1.5 : 1.5;
+                var respawnLaneMag = 1.5;
+                if (scn.id === 'highway') {
+                  // Preserve inner/outer highway lane identity across recycling.
+                  respawnLaneMag = Math.abs(Math.abs(t.laneOffset || 4.6) - 1.8) < 1.2 ? 1.8 : 4.6;
+                }
+                t.laneOffset = t.heading > 0 ? -respawnLaneMag : respawnLaneMag;
                 var respawnSpline = infiniteWorldRef.current.spline;
                 var respawnDir = Math.random() < 0.5 ? 1 : -1;
                 var respawnY = playerY + respawnDir * (10 + Math.random() * MAP_SIZE * 0.4);
@@ -7874,16 +8384,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // car's speed so it cannot keep closing on the leader. Cross-street
           // cars are skipped against main-road cars (different coordinate
           // axes; main road's Y vs cross-street's X don't compare cleanly).
-          var CAR_HALF_LEN = 2.0; // ~4m car
-          var CAR_HALF_WID = 0.9; // ~1.8m car
           function _carBox(c) {
-            // Heading near ±π/2 ⇒ long axis along Y (main-road traffic).
-            // Heading near 0 or π ⇒ long axis along X (cross-street traffic).
-            var hdAbs = Math.abs(c.heading);
-            var alongY = hdAbs > Math.PI / 4 && hdAbs < 3 * Math.PI / 4;
+            // Conservative axis-aligned bounds around each real-size vehicle.
+            var dims = vehicleFootprint(c.type);
+            var cosH = Math.abs(Math.cos(c.heading || 0));
+            var sinH = Math.abs(Math.sin(c.heading || 0));
             return {
-              halfX: alongY ? CAR_HALF_WID : CAR_HALF_LEN,
-              halfY: alongY ? CAR_HALF_LEN : CAR_HALF_WID
+              halfX: cosH * dims.length * 0.5 + sinH * dims.width * 0.5,
+              halfY: sinH * dims.length * 0.5 + cosH * dims.width * 0.5
             };
           }
           for (var ci = 0; ci < traffic.length; ci++) {
@@ -8055,12 +8563,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (!w.passed && busDist < 3 && Math.abs(car.speed) > 3) {
                 w.passed = true;
                 statsRef.current.safetyScore -= 30;
-                statsRef.current.crashes++;
+                statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
                 addToast('🚨 ILLEGAL PASS! You passed a stopped school bus. -30 safety');
                 eventToastRef.current = { msg: '🚨 PASSING A STOPPED SCHOOL BUS is a serious violation — this endangers children.', until: timeRef.current + 6 };
                 speak('Illegal pass of a stopped school bus. This is a serious violation under Maine law.');
               }
-              if (!w.credited && busDist < 5 && Math.abs(car.speed) < 1) {
+              if (!w.credited && busDist < 5 && Math.abs(car.speed) <= 0.15) {
                 w.credited = true;
                 statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
                 statsRef.current.stops = (statsRef.current.stops || 0) + 1;
@@ -8249,8 +8757,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             while (emiDh < -Math.PI) emiDh += 2 * Math.PI;
             em.heading += emiDh * (1 - Math.exp(-dt / 0.3));
             // Forward motion in current heading
-            em.y += Math.sin(em.heading) * em.speed * dt / 5;
-            em.x += Math.cos(em.heading) * em.speed * dt / 5;
+            em.y += Math.sin(em.heading) * em.speed * dt;
+            em.x += Math.cos(em.heading) * em.speed * dt;
             // Lateral correction toward player's lane — raw-X (matches lane paint).
             if (em._laneOff === undefined) {
               var pCenterAtCar = emiSpline.centerAt(carRef.current.y);
@@ -8260,7 +8768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var emiXErr = em.x - emiTargetX;
             em.x -= emiXErr * (1 - Math.exp(-dt / 0.18));
           } else {
-            em.y -= em.speed * dt / 5;
+            em.y -= em.speed * dt;
           }
           em.life -= dt;
           // Siren warble
@@ -8369,18 +8877,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               while (cyDh > Math.PI) cyDh -= 2 * Math.PI;
               while (cyDh < -Math.PI) cyDh += 2 * Math.PI;
               cy.heading += cyDh * (1 - Math.exp(-dt / 0.4));
-              cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
-              cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
+              cy.y += Math.sin(cy.heading) * cy.speed * dt;
+              cy.x += Math.cos(cy.heading) * cy.speed * dt;
               // Lateral correction: track raw X offset (matches painted bike-lane position).
               var cyTargetX = cyCenter + cy._bikeLane;
               var cyXErr = cy.x - cyTargetX;
               cy.x -= cyXErr * (1 - Math.exp(-dt / 0.18));
             } else {
-              cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
-              cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
+              cy.y += Math.sin(cy.heading) * cy.speed * dt;
+              cy.x += Math.cos(cy.heading) * cy.speed * dt;
             }
-            if (cy.y < -2) cy.y = MAP_SIZE + 2;
-            if (cy.y > MAP_SIZE + 2) cy.y = -2;
+            if (cySpline) {
+              if (Math.abs(cy.y - carRef.current.y) > MAP_SIZE * 0.6) {
+                var cyRespawnSide = Math.random() < 0.5 ? -1 : 1;
+                cy.y = carRef.current.y + cyRespawnSide * (18 + Math.random() * MAP_SIZE * 0.35);
+                var cyRespawnDir = Math.sin(cy.heading) >= 0 ? 1 : -1;
+                cy._bikeLane = cyRespawnDir === 1 ? -2.8 : 2.8;
+                cy.x = cySpline.centerAt(cy.y) + cy._bikeLane;
+                var cyRespawnTheta = cySpline.headingAt(cy.y);
+                cy.heading = cyRespawnDir === 1 ? (Math.PI / 2 - cyRespawnTheta) : (-Math.PI / 2 - cyRespawnTheta);
+              }
+            } else {
+              if (cy.y < -2) cy.y = MAP_SIZE + 2;
+              if (cy.y > MAP_SIZE + 2) cy.y = -2;
+            }
             // Small wobble for cyclists (keep — adds life)
             if (cy.type === 'cyclist') cy.x += Math.sin(timeRef.current * 3 + cy.y) * 0.002;
           });
@@ -8458,7 +8978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
             // Success: player at near-stop within 8 cells of the bus
-            if (bus._busCompArmed && !bus._busCompLogged && dist < 8 && Math.abs(car.speed) < 1.2) {
+            if (bus._busCompArmed && !bus._busCompLogged && dist < 8 && Math.abs(car.speed) <= 0.15) {
               bus._busCompLogged = timeRef.current;
               statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 6);
               if (!statsRef.current.busStopCompliance) statsRef.current.busStopCompliance = 0;
@@ -8470,6 +8990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             else if (bus._busCompArmed && !bus._busCompLogged && dist < 4 && Math.abs(car.speed) > 2.3) {
               bus._busCompLogged = timeRef.current;
               statsRef.current.safetyScore -= 25;
+              statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
               addToast('🚨 ILLEGAL PASS of school bus with red flashers! -25');
               eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers violates Maine §2308. First offense: Class E crime with a $250 minimum fine.', until: timeRef.current + 6 };
               speak('You passed a stopped school bus. That violates Maine law.');
@@ -8507,7 +9028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               eventToastRef.current = { msg: '🚶 Pedestrian in the crosswalk — full stop until they clear.', until: timeRef.current + 4 };
             }
             // Success: came to a near-stop while the ped is still in/near the crosswalk
-            if (py._yieldArmed && !py._yieldLogged && Math.abs(car.speed) < 0.8 && dist < 6) {
+            if (py._yieldArmed && !py._yieldLogged && Math.abs(car.speed) <= 0.15 && dist < 6) {
               py._yieldLogged = timeRef.current;
               statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 4);
               if (!statsRef.current.pedYields) statsRef.current.pedYields = 0;
@@ -8541,7 +9062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var carDirX = Math.cos(car.heading);
             var carDirY = Math.sin(car.heading);
             var latUnits = Math.abs(dx * carDirY - dy * carDirX); // perpendicular component
-            var latFt = latUnits * 10;
+            var latFt = worldUnitsToFeet(latUnits);
             if (latFt < 3 && !cy._flaggedClose) {
               cy._flaggedClose = true;
               statsRef.current.safetyScore -= 10;
@@ -9032,10 +9553,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var checkSignalCompliance = function() {
           var car = carRef.current;
-          // Helper: is the car on the same road as this signal? Curve-safe — instead of
-          // raw |car.x − s.x|, project onto the spline at the signal's Y. If the signal
-          // sits on the spline (within 3 cells of spline center) AND the car is within
-          // ±3.5 cells perpendicular, treat as "on this road."
           var sigSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
           var carSplineCxAtCar = sigSpline ? sigSpline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
           var carSplineThetaAtCar = sigSpline ? sigSpline.headingAt(car.y) : 0;
@@ -9047,42 +9564,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             return sigOffSpline < 3 && Math.abs(carPerpAtCar) < 3.5;
           };
           signalsRef.current.forEach(function(s) {
-            if (s.type === 'light') {
-              // ALWAYS track position relative to each signal (regardless of state)
-              if (!s._lastY) s._lastY = car.y;
-              var crossed = (s._lastY < s.y && car.y >= s.y) || (s._lastY > s.y && car.y <= s.y);
-              // Only penalize if crossed while signal is RED. Curve-safe road check.
-              if (crossed && s.state === 'red' && onSameRoadAsSignal(s) && Math.abs(car.speed) > 2) {
+            var previousY = s._lastY;
+            if (previousY === undefined || previousY === null) previousY = car.y;
+            var crossed = crossedControlLine(previousY, car.y, s.y);
+            if (s.type === 'light' || s.type === 'flagger') {
+              if (crossed && s.state === 'red' && onSameRoadAsSignal(s) && Math.abs(car.speed) > 0.3) {
                 statsRef.current.safetyScore -= 25;
-                statsRef.current.crashes++;
-                addToast('🚨 RED LIGHT VIOLATION! -25 safety');
-                eventToastRef.current = { msg: '🚨 You ran a red light. In real life, that is reckless driving + an accident.', until: timeRef.current + 4 };
+                statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
+                var controlLabel = s.type === 'flagger' ? 'FLAGGER STOP' : 'RED LIGHT';
+                addToast(controlLabel + ' VIOLATION! -25 safety');
+                eventToastRef.current = { msg: s.type === 'flagger' ? 'You passed a flagger displaying STOP. Flagger directions override other controls.' : 'You ran a red light. Stop before the marked line and remain stopped until green.', until: timeRef.current + 4 };
               }
-              // Green/yellow crossing is fine — no penalty
-              s._lastY = car.y; // always update, preventing stale position bugs
-            } else if (s.type === 'stop') {
-              if (!s._stopped && Math.hypot(car.x - s.x, car.y - s.y) < 3 && car.speed < 1) {
+              s._lastY = car.y;
+              return;
+            }
+            if (s.type !== 'stop') return;
+            var stopDistance = Math.hypot(car.x - s.x, car.y - s.y);
+            var atStopLine = stopDistance < 4 && onSameRoadAsSignal(s);
+            var stoppedSpeed = Math.abs(car.speed);
+            if (atStopLine && stoppedSpeed <= 0.15) {
+              if (s._fullStopStartedAt === undefined || s._fullStopStartedAt === null) {
+                s._fullStopStartedAt = timeRef.current;
+              }
+              if (!s._stopped && timeRef.current - s._fullStopStartedAt >= 0.5) {
                 s._stopped = true;
                 statsRef.current.stops++;
                 addToast('✓ Full stop. +1');
-                eventToastRef.current = { msg: '✓ Good stop at the stop sign.', until: timeRef.current + 2 };
+                eventToastRef.current = { msg: '✓ Good full stop at the stop line.', until: timeRef.current + 2 };
               }
-              if (Math.hypot(car.x - s.x, car.y - s.y) > 6) s._stopped = false;
-              // Rolling stop detection — curve-safe. Use perpendicular distance like the
-              // red-light check, but tighter (±2.5 cells perp) and require approach speed.
-              if (!s._lastY) s._lastY = car.y;
-              if (!s._violated) {
-                var crossedStop = (s._lastY < s.y && car.y >= s.y) || (s._lastY > s.y && car.y <= s.y);
-                if (crossedStop && onSameRoadAsSignal(s) && Math.abs(car.speed) > 3 && !s._stopped) {
-                  s._violated = true;
-                  statsRef.current.safetyScore -= 20;
-                  addToast('🚨 ROLLING STOP! -20 safety');
-                }
-              }
-              // Reset violated flag when far enough away (for looping maps)
-              if (Math.hypot(car.x - s.x, car.y - s.y) > 10) s._violated = false;
-              s._lastY = car.y;
+            } else if (stoppedSpeed > 0.3) {
+              s._fullStopStartedAt = null;
             }
+            if (stopDistance > 6) {
+              s._stopped = false;
+              s._fullStopStartedAt = null;
+            }
+            if (!s._violated && crossed && onSameRoadAsSignal(s) && stoppedSpeed > 0.3 && !s._stopped) {
+              s._violated = true;
+              statsRef.current.safetyScore -= 20;
+              statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
+              addToast('🚨 ROLLING STOP! -20 safety');
+            }
+            if (stopDistance > 10) s._violated = false;
+            s._lastY = car.y;
           });
         };
 
@@ -9282,6 +9806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var fnCarCx = fnSpline ? fnSpline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
           var fnCarTheta = fnSpline ? fnSpline.headingAt(car.y) : 0;
           var fnCarPerp = (car.x - fnCarCx) * Math.cos(fnCarTheta);
+          var playerCollisionSize = vehicleFootprint(currentVehicle && currentVehicle.id);
           trafficRef.current.forEach(function(t) {
             var dx = t.x - car.x;
             var dy = t.y - car.y;
@@ -9304,7 +9829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               nearestDist = dist;
               nearest = t;
             }
-            // Physical collision: hit radius ~1.2 world units
+            // Physical collision uses oriented, type-specific vehicle footprints.
             // Collision: require meaningful relative speed difference (not just being near a car going the same speed).
             // Thresholds lowered from >2 m/s (~4.5 mph) to ~0.5 m/s (~1 mph) so a slow-speed
             // tap still records as a minor bump — previously you could nose into a stopped
@@ -9326,7 +9851,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Gate on the CLOSING speed and either party moving — requiring the
             // PLAYER to be moving (absSpeed) silently dropped every crash into a
             // stopped player (T-boned at a light, AI drifting into a parked car).
-            if (dist < 1.2 && relativeSpeed > 0.5 && (absSpeed > 0.5 || Math.abs(t.speed) > 0.5)) {
+            var trafficCollisionSize = vehicleFootprint(t.type);
+            var vehicleOverlap = vehicleRectsOverlap(car, playerCollisionSize, t, trafficCollisionSize);
+            if (vehicleOverlap && relativeSpeed > 0.5 && (absSpeed > 0.5 || Math.abs(t.speed) > 0.5)) {
               if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;
                 // Mirror to the rear-end cooldown so the upstream rear-end-of-player
@@ -9347,10 +9874,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   statsRef.current.safetyScore -= 10;
                   addToast('💥 Fender bender. -10 safety');
                 }
-                // Physics: elastic-ish collision — both bounce
-                var avgSpeed = (car.speed + t.speed) / 2;
-                car.speed = avgSpeed * -0.3; // bounce back
-                t.speed = avgSpeed * 0.5;
+                // Perfectly inelastic momentum approximation in world space.
+                // Project the shared post-impact velocity back onto each vehicle's
+                // heading; this handles rear-end, head-on, and side impacts without
+                // averaging unrelated signed scalar speeds.
+                var playerMass = (currentVehicle && currentVehicle.mass) || 1500;
+                var trafficMass = trafficVehicleMass(t.type);
+                var sharedVx = (playerMass * carVx + trafficMass * tVx) / (playerMass + trafficMass);
+                var sharedVy = (playerMass * carVy + trafficMass * tVy) / (playerMass + trafficMass);
+                car.speed = (sharedVx * Math.cos(car.heading) + sharedVy * Math.sin(car.heading)) * 0.35;
+                t.speed = (sharedVx * Math.cos(t.heading) + sharedVy * Math.sin(t.heading)) * 0.35;
                 // Push apart to prevent stuck-inside-each-other
                 var pushAngle = Math.atan2(car.y - t.y, car.x - t.x);
                 car.x += Math.cos(pushAngle) * 0.5;
@@ -9371,7 +9904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // curve-safe: compare spline-perpendicular offsets, not raw X.
           if (nearest && absSpeed > 5) {
             var safeFeet = safeFollowingFeet(absSpeed * MS_TO_MPH, currentScenario.weather);
-            var actualFeet = nearestDist * 10;
+            var actualFeet = worldUnitsToFeet(nearestDist);
             var fSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
             var sameLaneAsNearest;
             if (fSpline) {
@@ -9778,7 +10311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // rely on per-chunk grass ribbons that track spline.heightAt() per row
           // (added further down in the chunk-generation block).
           var map = mapRef.current;
-          var isFreeExploreInit = !!d.freeExplore;
+          var isStreamedWorldInit = !!infiniteWorldRef.current;
           var groundGeo = new T.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2, 48, 48);
           var grassBase = isSnow ? [0xd0d8e0, 0xe8ecf0, 0xb8c4d0]
                                  : [0x2d6a1e, 0x3a7a26, 0x1f5a16, 0x4a8a2e];
@@ -9806,7 +10339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Drop well below minimum road dip in Free Explore so even if the
           // per-chunk grass ribbons have gaps (e.g. during chunk unload), the
           // fallback plane can never appear above a road surface.
-          if (isFreeExploreInit) ground.position.y = -4;
+          if (isStreamedWorldInit) ground.position.y = -4;
           scene.add(ground);
 
           // Hoisted: needed by downstream weather/decoration code (hedges, wet
@@ -9824,7 +10357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // hardcoded Y values [20, 40, 56, 72]. Those collide visually with
           // the chunked road and read as zigzag / broken markings on the road
           // surface — exactly the "broken lane lines in Free Explore" report.
-          if (!isFreeExploreInit) {
+          if (!isStreamedWorldInit) {
           // ── Road surface ──
           var isRainScene = currentScenario.weather === 'rain';
           // Wet asphalt is noticeably darker than dry — water fills in the texture pores.
@@ -11059,7 +11592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // the procedural spline, so running this block ALSO produces a phantom
           // grid of scenario buildings + hedges + stop poles materializing on
           // top of the curved infinite-world road.
-          if (!isFreeExploreInit) {
+          if (!isStreamedWorldInit) {
           // ── Buildings from map (with rooftops + driveways) ──
           var buildingMeshes = [];
           var buildColors = [0xb08c64, 0xa09078, 0x8c7a62, 0x9e8878, 0xc0a888];
@@ -11527,6 +12060,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           playerRevR.name = 'rr_playerRev';
           playerCarGroup.add(playerRevR);
 
+          // The authored mesh used half-scale toy-car proportions. Scale it to a
+          // realistic compact-car footprint (~4.1 m long by ~1.8 m wide).
+          playerCarGroup.scale.set(2.15, 1.2, 1.9);
           scene.add(playerCarGroup);
 
           // ── 3D Dashboard (attached to camera, visible in cockpit) ──
@@ -12389,6 +12925,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               });
             });
           }
+          if (s3.flaggerPaddlesByChunk) {
+            Object.keys(s3.flaggerPaddlesByChunk).forEach(function(flaggerKey) {
+              var paddles = s3.flaggerPaddlesByChunk[flaggerKey];
+              if (!paddles || !paddles.length) return;
+              var sigEntry = null;
+              for (var fsi = 0; fsi < signalsRef.current.length; fsi++) {
+                if (signalsRef.current[fsi]._chunk === parseInt(flaggerKey)) { sigEntry = signalsRef.current[fsi]; break; }
+              }
+              if (!sigEntry) return;
+              var stopShown = sigEntry.state === 'red';
+              paddles.forEach(function(paddle) {
+                paddle.mesh.material.color.setHex(stopShown ? 0xdc2626 : 0xf59e0b);
+              });
+            });
+          }
           // School-zone beacon alternating flash. Two beacons per school
           // landmark pulse out-of-phase so the assembly reads as active
                     // school-zone signage. Only active during daytime scenarios
@@ -12714,6 +13265,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 rev.name = ri === 0 ? 'rr_revR' : 'rr_revL';
                 cg.add(rev);
               });
+              // Match rendered footprints to real road vehicles (scene units are meters).
+              var trafficScaleX = isBus ? 2.85 : isTruck ? 2.29 : isVan ? 2.27 : isSUV ? 2.4 : 2.65;
+              var trafficScaleY = isBus ? 1.3 : isVan ? 1.25 : isSUV ? 1.35 : 1.25;
+              var trafficScaleZ = isBus ? 2.94 : (isTruck || isVan) ? 2.35 : isSUV ? 2.24 : 2.12;
+              cg.scale.set(trafficScaleX, trafficScaleY, trafficScaleZ);
               tGroup.add(cg);
               m = cg;
             }
@@ -15269,7 +15825,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // ─── BIOME SPEED LIMIT SIGN at start of each chunk ───
               // Teaches students to match their speed to the zone they're in.
               if (ci % 2 === 0 || (chunk.biome === 'rural' && ci % 3 === 0)) {
-                var biomeLimit = getBiomeSpeedLimitMph(chunk.biome, 25);
+                var biomeLimit = worldPostedLimitMph(iw, chunk, 25);
                 var speedZ = chunkWorldZ + 3;
                 var speedSide = ci % 4 < 2 ? 1 : -1;
                 // SPLINE-RELATIVE placement (same pattern as mile markers and the
@@ -15822,7 +16378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Speed limit sign — one per chunk on alternating sides. The
                 // posted speed matches the biome so the player can self-check.
                 // White rectangle with black text, on a metal post.
-                var slBiomeMph = getBiomeSpeedLimitMph(chunk.biome, 25);
+                var slBiomeMph = worldPostedLimitMph(iw, chunk, 25);
                 (function() {
                   var slZ = chunkWorldZ + 6;
                   var slSide = (chunk.index % 2 === 0) ? 1 : -1;
@@ -15914,7 +16470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // the strip is triangulated via two triangles between consecutive rows.
               // Road width matches the biome cell carving: commercial/suburban
               // carve 4 cells each side (= 8+1 cells), others 3 (= 6+1 cells).
-              var roadHalfW = (chunk.biome === 'commercial' || chunk.biome === 'suburban') ? 4.5 : 3.5;
+              var roadHalfW = chunk.roadHalfWidth || ((chunk.biome === 'commercial' || chunk.biome === 'suburban') ? 4.5 : 3.5);
               // Vertex-colored asphalt: each row gets a slightly different shade
               // seeded by world Y, so the road reads as patched/weathered instead
               // of a single flat gray. Snow biomes desaturate the palette.
@@ -16465,9 +17021,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // (rural, intersections); dashed single-yellow everywhere else.
               // This matches real road convention: solid = don't cross, dashed = passing allowed.
               var chunkNoPass = (chunk.biome === 'rural' || chunk.hasIntersection);
-              if (chunkNoPass) {
-                // Solid double-yellow: two nearly-continuous parallel stripes offset ±0.22m
-                // (slightly wider separation so both stripes read distinctly at distance).
+              if (chunk.isHighway) {
+                // Limited-access highway: raised center barrier plus dashed white lane dividers.
+                var medianMat = new T.MeshLambertMaterial({ color: 0xb8bec7 });
+                for (var medZ = chunkWorldZ + 0.5; medZ < chunkWorldZ + CHUNK_SIZE - 0.5; medZ += 2.0) {
+                  var medCtr = markCenterAtZ(medZ);
+                  var medHt = iw.spline ? iw.spline.heightAt(medZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var medHd = iw.spline ? iw.spline.headingAt(medZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var medianSeg = new T.Mesh(new T.BoxGeometry(0.5, 0.22, 2.05), medianMat);
+                  medianSeg.rotation.y = medHd;
+                  medianSeg.position.set(medCtr, medHt + 0.11, medZ);
+                  chunkGroup.add(medianSeg);
+                }
+                alwaysStripe(-3.2, false, 0.8, 9.0, 0.18, 3.0);
+                alwaysStripe(3.2, false, 0.8, 9.0, 0.18, 3.0);
+              } else if (chunkNoPass) {
                 var solidYellowMat = new T.MeshBasicMaterial({ color: alwaysYellowColor });
                 var dyStep = 2.0;
                 for (var dyZ = chunkWorldZ + 0.5; dyZ < chunkWorldZ + CHUNK_SIZE - 0.5; dyZ += dyStep) {
@@ -16489,11 +17057,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   chunkGroup.add(dyRight);
                 }
               } else {
-                // Dashed single-yellow (passing allowed) — 3m stripe, 4m gap = 7m cycle.
-                // Longer stripes read clearly from the driver's POV vs the old 1m @ 2.2m.
                 alwaysStripe(0, true, 1.0, 7.0, 0.20, 3.0);
-              }
-              // Solid white edge lines — bumped to a near-continuous run so the road
+              }              // Solid white edge lines — bumped to a near-continuous run so the road
               // edges are unambiguous. Old 1.0 m line every 1.8 m gave 44% coverage;
               // 2.5 m line every 3.2 m gives ~78% coverage, reading as a solid line
               // at distance while still saving polys vs a full continuous extrusion.
@@ -16508,7 +17073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var periodicRepaint = (ci % 3 === 0);
               if (scn.weather !== 'snow' && (biomeChanged || periodicRepaint)) {
                 try {
-                  var paintLimit = getBiomeSpeedLimitMph(chunk.biome, 25);
+                  var paintLimit = worldPostedLimitMph(iw, chunk, 25);
                   // Cache the texture per limit value (3–4 unique textures total per session)
                   if (!iw._roadNumCache) iw._roadNumCache = {};
                   var cacheKey = 'n_' + paintLimit;
@@ -16894,7 +17459,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                 });
               }
-              // ── Wet road sheen: glossy puddle patches + reflective streaks in rain ──
+              if (chunk.workZone) {
+                // Streamed taper closes the oncoming-side lane while keeping the
+                // player's right-hand lane open through the active work zone.
+                var wzConeOrange = new T.MeshLambertMaterial({ color: 0xf97316 });
+                var wzConeWhite = new T.MeshBasicMaterial({ color: 0xffffff });
+                for (var wzI = 0; wzI < 9; wzI++) {
+                  var wzZ = chunkWorldZ + 3 + wzI * 3.1;
+                  var wzCtr = markCenterAtZ(wzZ);
+                  var wzHt = iw.spline ? iw.spline.heightAt(wzZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var wzHd = iw.spline ? iw.spline.headingAt(wzZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var wzPerpX = Math.cos(wzHd);
+                  var wzPerpZ = -Math.sin(wzHd);
+                  var wzLat = -0.4 - Math.min(1, wzI / 5) * 2.3;
+                  var wzCone = new T.Mesh(new T.ConeGeometry(0.18, 0.55, 8), wzConeOrange);
+                  wzCone.position.set(wzCtr + wzLat * wzPerpX, wzHt + 0.275, wzZ + wzLat * wzPerpZ);
+                  chunkGroup.add(wzCone);
+                  var wzBand = new T.Mesh(new T.CylinderGeometry(0.12, 0.14, 0.08, 8), wzConeWhite);
+                  wzBand.position.set(wzCtr + wzLat * wzPerpX, wzHt + 0.23, wzZ + wzLat * wzPerpZ);
+                  chunkGroup.add(wzBand);
+                }
+              }              // ── Wet road sheen: glossy puddle patches + reflective streaks in rain ──
               // Only renders during rain or immediately after (for now, while rain is active).
               // Uses deterministic positions seeded by chunk index so the same stretch of road
               // always has the same puddles — no per-frame randomness flicker.
@@ -16949,7 +17534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Centerline detail dashes: only render in pass-allowed zones — no-pass zones
                 // already have a solid double-yellow from the always-on block above, and
                 // adding dashed stripes on top would look cluttered.
-                var isNoPass = chunk.biome === 'rural' || chunk.hasIntersection;
+                var isNoPass = chunk.isHighway || chunk.biome === 'rural' || chunk.hasIntersection;
                 if (!isNoPass) {
                   for (var mlZ = chunkWorldZ + 1; mlZ < chunkWorldZ + CHUNK_SIZE - 1; mlZ += 2) {
                     if (mlZ > skipZ1 && mlZ < skipZ2) continue;
@@ -16984,7 +17569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     chunkGroup.add(edge);
                   });
                 }
-                if (chunk.biome === 'commercial' || chunk.biome === 'suburban') {
+                if (!chunk.isHighway && (chunk.biome === 'commercial' || chunk.biome === 'suburban')) {
                   // In-lane position guides on wider commercial/suburban roads.
                   // Bumped to match the primary lane marking visibility pass so
                   // they read as intentional painted hints rather than thin
@@ -17527,7 +18112,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
                 chunkGroup.add(crossGroup);
                 var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
-                var isTrafficLight = ci % 2 === 0;
+                var streamedControlType = chunk.signalType || (ci % 2 === 0 ? 'light' : 'stop');
+                var isTrafficLight = streamedControlType === 'light';
                 // All signal hardware (pole, mast arm, lights, ped signal, stop signs)
                 // lives inside crossGroup so it rotates with the main road. Local +X is
                 // along the cross-street (perpendicular to main road); local +Z is along
@@ -17771,6 +18357,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     } catch (ccErr) { /* fallback omitted */ }
                   });
                 }
+                if (streamedControlType === 'flagger') {
+                  // Certified flagger and STOP/SLOW paddle for the temporary control.
+                  var flaggerBody = new T.Mesh(new T.BoxGeometry(0.45, 1.0, 0.3), new T.MeshLambertMaterial({ color: 0xf97316 }));
+                  flaggerBody.position.set(3.9, 0.85, -3.2);
+                  crossGroup.add(flaggerBody);
+                  var flaggerHead = new T.Mesh(new T.SphereGeometry(0.18, 8, 6), new T.MeshLambertMaterial({ color: 0xd6a06f }));
+                  flaggerHead.position.set(3.9, 1.55, -3.2);
+                  crossGroup.add(flaggerHead);
+                  var flaggerHelmet = new T.Mesh(new T.SphereGeometry(0.20, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), new T.MeshBasicMaterial({ color: 0xfacc15 }));
+                  flaggerHelmet.position.set(3.9, 1.70, -3.2);
+                  crossGroup.add(flaggerHelmet);
+                  var paddlePole = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, 1.2, 5), sigPoleMat2);
+                  paddlePole.position.set(3.45, 1.15, -3.2);
+                  crossGroup.add(paddlePole);
+                  var paddleFace = new T.Mesh(new T.CircleGeometry(0.26, 8), new T.MeshBasicMaterial({ color: 0xdc2626, side: T.DoubleSide }));
+                  paddleFace.position.set(3.45, 1.78, -3.2);
+                  paddleFace.rotation.y = Math.PI / 2;
+                  crossGroup.add(paddleFace);
+                  s3.flaggerPaddlesByChunk = s3.flaggerPaddlesByChunk || {};
+                  s3.flaggerPaddlesByChunk[ci] = [{ mesh: paddleFace }];
+                }
                 // Crosswalk stripes — span the full main road width, elevation-aware.
                 // Each stripe sits perpendicular to the spline at its own Z (so the
                 // ladder follows the actual road on curves), with rotation.z aligned
@@ -17864,11 +18471,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 sigChunk._signalAdded = true;
                 var sigWorldY = sci * CHUNK_SIZE + sigChunk.intersectionY;
                 var sigX = sigChunk.roadCenter;
-                var isLight = sci % 2 === 0;
+                var signalType = sigChunk.signalType || (sci % 2 === 0 ? 'light' : 'stop');
+                var isLight = signalType === 'light';
+                var isFlagger = signalType === 'flagger';
                 signalsRef.current.push({
-                  x: sigX, y: sigWorldY, type: isLight ? 'light' : 'stop',
-                  state: isLight ? 'green' : 'stop',
-                  timer: Math.random() * 4, greenDur: 8, yellowDur: 3, redDur: 6,
+                  x: sigX, y: sigWorldY, type: signalType,
+                  state: isLight ? 'green' : isFlagger ? 'red' : 'stop',
+                  timer: Math.random() * 4, greenDur: isFlagger ? 10 : 8, yellowDur: isFlagger ? 1 : 3, redDur: isFlagger ? 8 : 6,
                   _lastY: null, _stopped: false, _violated: false,
                   _chunk: sci
                 });
@@ -17897,6 +18506,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     _chunk: sci
                   });
                 });
+                var streamedPeds = spawnStreamedPedestrians(scn, iw, sigChunk, sci);
+                if (streamedPeds.length) pedsRef.current = pedsRef.current.concat(streamedPeds);
               }
             }
 
@@ -17935,6 +18546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // to this chunk. Without this they'd accumulate forever as the
                 // player drives further into the world.
                 trafficRef.current = trafficRef.current.filter(function(tr) { return tr._chunk !== ki; });
+                pedsRef.current = pedsRef.current.filter(function(ped) { return ped._chunk !== ki; });
                 // Clear the chunk's _signalAdded flag so the signal gets re-added if the
                 // player drives back into this chunk later. Without this, the signal entry
                 // would be removed AND never re-created — silent bug where intersections
@@ -17953,6 +18565,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
                 if (s3.pedSigsByChunk && s3.pedSigsByChunk[ki]) {
                   delete s3.pedSigsByChunk[ki];
+                }
+                if (s3.flaggerPaddlesByChunk && s3.flaggerPaddlesByChunk[ki]) {
+                  delete s3.flaggerPaddlesByChunk[ki];
                 }
                 // Speed-bump registry: the physics loop scans this list every
                 // frame; entries were pushed per residential chunk but never
@@ -18926,7 +19541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (nearestSig.state === 'green') { gfx.fillStyle = 'rgba(34,197,94,0.3)'; gfx.beginPath(); gfx.arc(tlX, tlY + 11, 8, 0, Math.PI * 2); gfx.fill(); }
             }
             // Distance label
-            var distFtSig = Math.round(nearestSigDist * 10);
+            var distFtSig = Math.round(worldUnitsToFeet(nearestSigDist));
             gfx.fillStyle = '#94a3b8'; gfx.font = '9px monospace'; gfx.textAlign = 'center';
             gfx.fillText(distFtSig + ' ft', tlX, tlY + 26);
           }
@@ -19067,14 +19682,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
             var ownSpd = Math.abs(car.speed); // m/s
             if (closestAhead && ownSpd > 2) {
-              // Convert cell-distance to feet (display) and to seconds at current speed.
-              var distFt = closestAheadDist * 10; // ~10ft per cell (display convention)
-              // TRUE time-to-reach in world terms: the car covers ownSpd/5 cells
-              // per second (movement integrates speed*dt/5), so gap seconds =
-              // cells / (ownSpd/5). The old distFt/(ownSpd·3.28) mixed the 10ft
-              // display convention with real m/s and under-read the gap ~1.6×,
-              // flagging "close follow" at genuinely safe distances.
-              var secsGap = (closestAheadDist * 5) / ownSpd;
+              // World units are meters, so both display distance and time gap share
+              // the same physical distance used by vehicle motion.
+              var distFt = worldUnitsToFeet(closestAheadDist);
+              var secsGap = followingGapSeconds(closestAheadDist, ownSpd);
               // Color: red < 2, amber 2-3, green ≥ 3
               var gapColor = secsGap < 2 ? '#ef4444' : secsGap < 3 ? '#f59e0b' : '#4ade80';
               var barW = 150, barH = 32;
@@ -19344,7 +19955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (closestRearDist < 15) {
             gfx.fillStyle = closestRearDist < 6 ? '#fca5a5' : '#94a3b8';
             gfx.font = '12px monospace'; gfx.textAlign = 'right';
-            gfx.fillText(Math.round(closestRearDist * 10) + ' ft', mirrorX + mirrorW - 4, mirrorY + mirrorH - 4);
+            gfx.fillText(Math.round(worldUnitsToFeet(closestRearDist)) + ' ft', mirrorX + mirrorW - 4, mirrorY + mirrorH - 4);
           }
           if (tailgateWarning) {
             gfx.fillStyle = '#fca5a5'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'center';
@@ -19751,9 +20362,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.font = 'bold 10px monospace'; gfx.textAlign = 'right';
                 gfx.fillText('Comfort ' + Math.round(liveComfort), rsX + rsW - 8, starBaseY);
                 // Distance remaining + fare preview. Surge mirrors dropoff math.
-                // ×10 = the HUD's cells→feet convention (was ×0.1: 100× short, so
-                // a far dropoff read "3 ft left").
-                var rsRemaining = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 10;
+                // Convert the meter-based scene distance with the shared helper.
+                var rsRemaining = worldUnitsToFeet(Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y));
                 var distSoFar = ((statsRef.current.distance || 0) - rsHud.startSnapshot.distance) / METERS_PER_MILE;
                 var rsWHud = (scn && scn.weather) || 'clear';
                 var rsSurgeHud = rsWHud === 'snow' ? 1.5 : rsWHud === 'fog' ? 1.3 : rsWHud === 'rain' ? 1.2 : 1.0;
@@ -19806,7 +20416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               } else {
                 // Pickup phase — show distance + a little guidance (×10 = cells→ft,
                 // matching every other HUD distance readout)
-                var pickRem = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 10;
+                var pickRem = worldUnitsToFeet(Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y));
                 gfx.fillStyle = '#94a3b8';
                 gfx.font = '9px monospace'; gfx.textAlign = 'right';
                 gfx.fillText(pickRem.toFixed(0) + ' ft to pickup', rsX + rsW - 8, rsY + 64);
@@ -19886,7 +20496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillStyle = '#fef3c7'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'left';
             gfx.fillText(navQ.icon + ' ' + navQ.name, navX - 55, navY + 16);
             gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 14px monospace';
-            var distFeet = Math.round(navDistToQuest * 10);
+            var distFeet = Math.round(worldUnitsToFeet(navDistToQuest));
             var distLabel = distFeet > 5280 ? (distFeet / 5280).toFixed(1) + ' mi' : distFeet + ' ft';
             gfx.fillText(distLabel, navX - 55, navY + 34);
             // Turn hint. Straight ahead = relativeAngle ≈ 0 (the old test centered
@@ -19906,8 +20516,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var q = questRef.current;
           if (q && !q.completed && d.freeExplore) {
             var qDist = Math.hypot(car.x - q.x, car.y - q.y);
-            var qDistFt = Math.round(qDist * 10);
-            var qDistMi = (qDist / 160.9).toFixed(2); // world units to miles approx
+            var qDistFt = Math.round(worldUnitsToFeet(qDist));
+            var qDistMi = (worldUnitsToMeters(qDist) / METERS_PER_MILE).toFixed(2);
             var qAngle = Math.atan2(q.y - car.y, q.x - car.x) - car.heading;
             // Quest panel
             gfx.fillStyle = 'rgba(0,0,0,0.7)';
@@ -29838,12 +30448,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // constants
       MPH_TO_MS: MPH_TO_MS, MS_TO_MPH: MS_TO_MPH, FT_PER_M: FT_PER_M,
       METERS_PER_MILE: METERS_PER_MILE, AIR_DENSITY: AIR_DENSITY,
+      METERS_PER_WORLD_UNIT: METERS_PER_WORLD_UNIT, FEET_PER_WORLD_UNIT: FEET_PER_WORLD_UNIT,
       MAP_SIZE: MAP_SIZE, CHUNK_SIZE: CHUNK_SIZE,
       MAX_ROAD_WIDTH: MAX_ROAD_WIDTH, CLEARANCE_BUFFER: CLEARANCE_BUFFER,
       SPLINE_MAX_HEADING: SPLINE_MAX_HEADING,
       BIOME_SPEED_LIMIT_MPH: BIOME_SPEED_LIMIT_MPH,
+      CONTINUOUS_SCENARIO_PROFILES: CONTINUOUS_SCENARIO_PROFILES,
       RR_MIN_AI_CENTER_GAP: RR_MIN_AI_CENTER_GAP,
       RR_MIN_TRAFFIC_SPAWN_GAP: RR_MIN_TRAFFIC_SPAWN_GAP,
+      PARKING_CAR_LENGTH_PX: PARKING_CAR_LENGTH_PX, PARKING_CAR_WIDTH_PX: PARKING_CAR_WIDTH_PX,
+      PARKING_INCHES_PER_PX: PARKING_INCHES_PER_PX, ROUNDABOUT_LANE_RADIUS: ROUNDABOUT_LANE_RADIUS,
       // data tables
       VEHICLES: VEHICLES, MAINE_RULES: MAINE_RULES, UNIVERSAL_RULES: UNIVERSAL_RULES,
       SIGN_CATEGORIES: SIGN_CATEGORIES, PERMIT_BANK: PERMIT_BANK,
@@ -29857,26 +30471,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       resistiveForce: resistiveForce, stoppingDistance: stoppingDistance,
       idleGph: idleGph, instantMPG: instantMPG, cruiseMPG: cruiseMPG,
       safeFollowingFeet: safeFollowingFeet,
+      worldUnitsToMeters: worldUnitsToMeters, worldUnitsToFeet: worldUnitsToFeet,
+      metersToWorldUnits: metersToWorldUnits, followingGapSeconds: followingGapSeconds,
+      recommendedFollowingMeters: recommendedFollowingMeters,
+      crossedControlLine: crossedControlLine, vehicleFootprint: vehicleFootprint,
+      vehicleRectsOverlap: vehicleRectsOverlap,
       // permit test machinery
       shuffleAnswers: shuffleAnswers, shuffleArray: shuffleArray,
       buildRandomTest: buildRandomTest, buildCategoryTest: buildCategoryTest,
       buildWeakTest: buildWeakTest,
       // world generation
       seededRandom: seededRandom, createRoadSpline: createRoadSpline,
-      generateChunk: generateChunk, createInfiniteWorld: createInfiniteWorld,
+      generateChunk: generateChunk, createInfiniteWorld: createInfiniteWorld, createScenarioWorld: createScenarioWorld,
+      getContinuousScenarioProfile: getContinuousScenarioProfile, scenarioUsesContinuousWorld: scenarioUsesContinuousWorld,
+      scenarioChunkHasIntersection: scenarioChunkHasIntersection, scenarioWorldSeed: scenarioWorldSeed,
+      worldPostedLimitMph: worldPostedLimitMph, positiveModulo: positiveModulo, clampFiniteCoursePosition: clampFiniteCoursePosition,
       buildMap: buildMap, pickLandmarkForBiome: pickLandmarkForBiome,
       getBiomeSpeedLimitMph: getBiomeSpeedLimitMph, townForChunk: townForChunk,
       scenarioRoadCenterX: scenarioRoadCenterX,
       // spawns + signals + events
-      hasTrafficGap: hasTrafficGap, spawnTraffic: spawnTraffic,
-      spawnPedestrians: spawnPedestrians, spawnCyclists: spawnCyclists,
+      hasTrafficGap: hasTrafficGap, spawnTraffic: spawnTraffic, spawnRoundaboutTraffic: spawnRoundaboutTraffic,
+      roundaboutPose: roundaboutPose, roundaboutApproach: roundaboutApproach, roundaboutGapSeconds: roundaboutGapSeconds,
+      updateRoundaboutTrafficVehicle: updateRoundaboutTrafficVehicle, assessRoundaboutFrame: assessRoundaboutFrame,
+      spawnPedestrians: spawnPedestrians, spawnStreamedPedestrians: spawnStreamedPedestrians, spawnCyclists: spawnCyclists,
       spawnMotorcycles: spawnMotorcycles, spawnSignals: spawnSignals,
       updateSignals: updateSignals, maybeSpawnEmergency: maybeSpawnEmergency,
       maybeSpawnWildlife: maybeSpawnWildlife,
       // coaching / grading / misc
       pushDriveEvent: pushDriveEvent, coachTipFor: coachTipFor,
       rrGradeLetter: rrGradeLetter, localDayKey: localDayKey,
-      rectsOverlap: rectsOverlap, obstacleAabb: obstacleAabb
+      rectsOverlap: rectsOverlap, obstacleAabb: obstacleAabb, makeParkingObb: makeParkingObb, parkingCarObb: parkingCarObb,
+      parkingObstacleObb: parkingObstacleObb, parkingObbsOverlap: parkingObbsOverlap,
+      parkingCarHitsObstacle: parkingCarHitsObstacle, parkingCurbGapInches: parkingCurbGapInches,
+      parkingPointClearanceInches: parkingPointClearanceInches, parkingObbInsideBounds: parkingObbInsideBounds,
+      parkingAngleDeltaDeg: parkingAngleDeltaDeg
     };
   }
 

@@ -6,7 +6,15 @@
       "references": [
         "https://www.apa.org/ethics/code/manual-updates.html"
       ],
-      "reviewNote": "Rewritten to distinguish consent, mandated/permitted disclosure, jurisdictional duties, minimum-necessary reasoning, subpoenas, and court orders."
+      "reviewNote": "Rewritten to distinguish consent, mandated/permitted disclosure, jurisdictional duties, minimum-necessary reasoning, subpoenas, and court orders.",
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA?s official primary ethics text, including confidentiality standards and legally created limits."
+        }
+      ]
     },
     "Research Design Hierarchy": {
       "reviewStatus": "editorial-reviewed-source-pending",
@@ -25,7 +33,15 @@
       "references": [
         "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
       ],
-      "reviewNote": "Removed deterministic caregiver labels and prevalence claims; clarified relationship-specific observational classification."
+      "reviewNote": "Removed deterministic caregiver labels and prevalence claims; clarified relationship-specific observational classification.",
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 9.3: Stages of Development",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development",
+          "whyReputable": "An expert-authored, peer-reviewed textbook from nonprofit Rice University."
+        }
+      ]
     },
     "Record Keeping & Retention": {
       "reviewStatus": "source-reviewed-editorial-pass",
@@ -33,14 +49,30 @@
         "https://doi.org/10.1037/0003-066X.62.9.993",
         "https://www.apa.org/ethics/code/manual-updates.html"
       ],
-      "reviewNote": "Removed universal retention periods and distinguished guidance from jurisdictional, institutional, payer, and litigation requirements."
+      "reviewNote": "Removed universal retention periods and distinguished guidance from jurisdictional, institutional, payer, and litigation requirements.",
+      "sourceDetails": [
+        {
+          "title": "Record Keeping Guidelines",
+          "organization": "American Psychological Association",
+          "url": "https://doi.org/10.1037/0003-066X.62.9.993",
+          "whyReputable": "A peer-reviewed APA professional guideline on record content, confidentiality, retention, and legal context."
+        }
+      ]
     },
     "Telehealth Ethics & Practice": {
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://doi.org/10.1037/a0035001"
       ],
-      "reviewNote": "Removed product-compliance shorthand and universal licensure claims; added risk assessment, authority-to-practice, emergency, and consent context."
+      "reviewNote": "Removed product-compliance shorthand and universal licensure claims; added risk assessment, authority-to-practice, emergency, and consent context.",
+      "sourceDetails": [
+        {
+          "title": "Guidelines for the Practice of Telepsychology",
+          "organization": "American Psychological Association",
+          "url": "https://doi.org/10.1037/a0035001",
+          "whyReputable": "A peer-reviewed APA professional guideline on competence, consent, privacy, security, jurisdiction, and emergencies."
+        }
+      ]
     },
     "Autism Spectrum Disorder": {
       "reviewStatus": "source-reviewed-editorial-pass",
@@ -48,28 +80,60 @@
         "https://www.cdc.gov/autism/about/index.html",
         "https://www.cdc.gov/autism/data-research/"
       ],
-      "reviewNote": "Removed stale prevalence and deterministic support-level language; retained current surveillance context and diagnostic-domain distinctions."
+      "reviewNote": "Removed stale prevalence and deterministic support-level language; retained current surveillance context and diagnostic-domain distinctions.",
+      "sourceDetails": [
+        {
+          "title": "About Autism Spectrum Disorder",
+          "organization": "Centers for Disease Control and Prevention (CDC)",
+          "url": "https://www.cdc.gov/autism/about/index.html",
+          "whyReputable": "The U.S. federal public-health authority maintains current developmental-surveillance definitions and context."
+        }
+      ]
     },
     "Intellectual Disability": {
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability"
       ],
-      "reviewNote": "Removed obsolete IQ severity bands and assumed school/work outcomes; emphasized adaptive functioning, context, measurement error, and supports."
+      "reviewNote": "Removed obsolete IQ severity bands and assumed school/work outcomes; emphasized adaptive functioning, context, measurement error, and supports.",
+      "sourceDetails": [
+        {
+          "title": "Frequently Asked Questions on Intellectual Disability",
+          "organization": "American Association on Intellectual and Developmental Disabilities (AAIDD)",
+          "url": "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability",
+          "whyReputable": "A leading interdisciplinary organization that publishes definitions and standards for intellectual disability and supports."
+        }
+      ]
     },
     "ADHD — DSM-5 Presentations": {
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know"
       ],
-      "reviewNote": "Removed paradoxical-calming and universally-best-treatment claims; added differential assessment and individualized multimodal care."
+      "reviewNote": "Removed paradoxical-calming and universally-best-treatment claims; added differential assessment and individualized multimodal care.",
+      "sourceDetails": [
+        {
+          "title": "Attention-Deficit/Hyperactivity Disorder: What You Need to Know",
+          "organization": "National Institute of Mental Health (NIMH), National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know",
+          "whyReputable": "The U.S. federal agency leading mental-health research provides this current evidence overview."
+        }
+      ]
     },
     "BPD Criteria": {
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.nimh.nih.gov/health/publications/borderline-personality-disorder"
       ],
-      "reviewNote": "Removed a universal gold-standard claim and clarified that multiple structured psychotherapies have evidence."
+      "reviewNote": "Removed a universal gold-standard claim and clarified that multiple structured psychotherapies have evidence.",
+      "sourceDetails": [
+        {
+          "title": "Borderline Personality Disorder",
+          "organization": "National Institute of Mental Health (NIMH), National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/borderline-personality-disorder",
+          "whyReputable": "The U.S. federal agency leading mental-health research provides this evidence-grounded overview."
+        }
+      ]
     }
   },
   "flashcards": {

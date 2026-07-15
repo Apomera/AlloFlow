@@ -333,6 +333,10 @@ const PLAN_CONTRACTS = Object.freeze({
     params: ["topic", "grade"],
     reason: "Starts an interactive lesson wizard; it does not finish lesson content automatically."
   },
+  open_video_studio: {
+    demoSafe: false,
+    reason: "Opens the recorder/editor itself; compose and run automatic demos from Video Studio instead."
+  },
   generate_quiz: { requires: ["source"], produces: ["quiz"] },
   generate_glossary: { requires: ["source"], produces: ["glossary"] },
   generate_simplified: { requires: ["source"], produces: ["source"], params: ["grade"] },
@@ -552,6 +556,18 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openSymbolStudio();
       return t("cmd.open_symbol_studio_done", "Symbol Studio opened.");
     } },
+    { id: "open_video_studio", opensPanel: "videoStudio", icon: "\u{1F3A5}", roles: "teacher", label: t("cmd.open_video_studio", "Open Video Studio"), aliases: ["video studio", "screen recorder", "record a demo", "demo recorder", "tutorial recorder"], hint: t("cmd.open_video_studio_hint", "Record, caption, and edit walkthroughs"), run: (c) => {
+      c.openVideoStudio();
+      return t("cmd.open_video_studio_done", "Video Studio opened.");
+    } },
+    { id: "open_cinematic_studio", opensPanel: "cinematicStudio", icon: "\u{1F3AC}", roles: "teacher", label: t("cmd.open_cinematic_studio", "Open Cinematic Studio"), aliases: ["cinematic studio", "cinematic crawl", "title crawl", "intro video", "video opener"], hint: t("cmd.open_cinematic_studio_hint", "Create cinematic intros and explainers"), run: (c) => {
+      c.openCinematicStudio();
+      return t("cmd.open_cinematic_studio_done", "Cinematic Studio opened.");
+    } },
+    { id: "open_allo_studio", opensPanel: "alloStudio", icon: "\u{1F5BC}\uFE0F", roles: "teacher", label: t("cmd.open_allo_studio", "Open AlloStudio"), aliases: ["allostudio", "allo studio", "design studio", "poster editor", "worksheet editor", "flyer studio"], hint: t("cmd.open_allo_studio_hint", "Design accessible posters, flyers, and worksheets"), run: (c) => {
+      c.openAlloStudio();
+      return t("cmd.open_allo_studio_done", "AlloStudio opened.");
+    } },
     { id: "open_accessibility_lab", opensPanel: "accessibilityLab", icon: "\u267F", roles: "teacher", label: t("cmd.open_accessibility_lab", "Open the Accessibility Lab"), aliases: ["accessibility lab", "a11y lab", "accessibility checker", "wcag", "contrast checker"], hint: t("cmd.open_accessibility_lab_hint", "Check & improve accessibility"), run: (c) => {
       c.openAccessibilityLab();
       return t("cmd.open_accessibility_lab_done", "Accessibility Lab opened.");
@@ -571,6 +587,22 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_reading_library", opensPanel: "readingLibrary", icon: "\u{1F4DA}", roles: "all", label: t("cmd.open_reading_library", "Open the Reading Library"), aliases: ["reading library", "library", "books", "picture books", "storyweaver", "read a book"], hint: t("cmd.open_reading_library_hint", "Browse open picture books in 10 languages"), run: (c) => {
       c.openReadingLibrary();
       return t("cmd.open_reading_library_done", "Reading Library opened.");
+    } },
+    { id: "open_open_groove", opensPanel: "openGroove", icon: "\u{1F39B}\uFE0F", roles: "all", label: t("cmd.open_open_groove", "Open Open Groove Studio"), aliases: ["open groove", "groove studio", "music studio", "beat maker", "beats", "synth", "composer"], hint: t("cmd.open_open_groove_hint", "Make beats, synth patterns, and notation-aware music"), run: (c) => {
+      c.openOpenGroove();
+      return t("cmd.open_open_groove_done", "Open Groove Studio opened.");
+    } },
+    { id: "open_timeline_studio", opensPanel: "timelineStudio", icon: "\u{1F570}\uFE0F", roles: "all", label: t("cmd.open_timeline_studio", "Open Timeline Studio"), aliases: ["timeline studio", "timeline maker", "sequence builder", "chronology", "history timeline"], hint: t("cmd.open_timeline_studio_hint", "Build and verify accessible timelines"), run: (c) => {
+      c.openTimelineStudio();
+      return t("cmd.open_timeline_studio_done", "Timeline Studio opened.");
+    } },
+    { id: "open_lingua_practice", opensPanel: "linguaPractice", icon: "A/\u6587", roles: "all", label: t("cmd.open_lingua_practice", "Open Lingua Practice"), aliases: ["lingua practice", "language practice", "practice language", "vocabulary practice", "multilingual practice"], hint: t("cmd.open_lingua_practice_hint", "Practice vocabulary and language from the current source"), run: (c) => {
+      c.openLinguaPractice();
+      return t("cmd.open_lingua_practice_done", "Lingua Practice opened.");
+    } },
+    { id: "open_test_prep_hub", opensPanel: "testPrepHub", icon: "\u{1F9ED}", roles: "all", label: t("cmd.open_test_prep_hub", "Open Test Prep Hub"), aliases: ["test prep", "test prep hub", "exam prep", "practice questions", "study exams"], hint: t("cmd.open_test_prep_hub_hint", "Open free practice sets and study tools"), run: (c) => {
+      c.openTestPrepHub();
+      return t("cmd.open_test_prep_hub_done", "Test Prep Hub opened.");
     } },
     { id: "find_reading", opensPanel: "readingLibrary", icon: "\u{1F4DA}", roles: "all", label: t("cmd.find_reading", "Find the right book"), aliases: ["find a book", "find books about", "recommend a book", "suggest a book", "book about", "books about", "reading about", "learn about", "science article about", "primary source about"], hint: t("cmd.find_reading_hint", "Ask by topic, grade, language, source, or type"), run: (c, params) => runFindReadingCommand(c, params || {}, t) },
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
@@ -1197,6 +1229,7 @@ const CMD_GROUP = {
   font_bigger: "accessibility",
   font_smaller: "accessibility",
   font_reset: "accessibility",
+  set_font_size: "accessibility",
   open_text_settings: "accessibility",
   open_voice_settings: "accessibility",
   read_this_page: "accessibility",
@@ -1217,6 +1250,7 @@ const CMD_GROUP = {
   pipeline_issues: "pipeline",
   pipeline_downloads: "pipeline",
   pipeline_verification: "pipeline",
+  translate_document: "pipeline",
   app_tour: "help",
   pipeline_tour: "help",
   report_problem: "help",
@@ -1228,11 +1262,18 @@ const CMD_GROUP = {
   open_behavior_lens: "tools",
   open_report_writer: "tools",
   open_symbol_studio: "tools",
+  open_video_studio: "tools",
+  open_cinematic_studio: "tools",
+  open_allo_studio: "tools",
   open_accessibility_lab: "tools",
   open_lumen: "tools",
   open_community_catalog: "tools",
   open_dynamic_assessment: "tools",
   open_reading_library: "tools",
+  open_open_groove: "tools",
+  open_timeline_studio: "tools",
+  open_lingua_practice: "tools",
+  open_test_prep_hub: "tools",
   find_reading: "tools",
   stop_reading: "accessibility",
   toggle_mute: "accessibility",
@@ -1272,6 +1313,13 @@ const CMD_CONTEXT = {
   open_project_settings: ["educatorHub"],
   open_notebook: ["learningHub"],
   toggle_socratic: ["learningHub"],
+  open_video_studio: ["educatorHub", "videoStudio"],
+  open_cinematic_studio: ["educatorHub", "videoStudio", "cinematicStudio"],
+  open_allo_studio: ["educatorHub", "alloStudio"],
+  open_open_groove: ["learningHub", "openGroove"],
+  open_timeline_studio: ["learningHub", "timelineStudio"],
+  open_lingua_practice: ["learningHub", "content", "linguaPractice"],
+  open_test_prep_hub: ["learningHub", "testPrepHub"],
   generate_quiz: ["content"],
   generate_glossary: ["content"],
   generate_simplified: ["content", "reading"],
@@ -1308,9 +1356,9 @@ const GROUP_ORDER = ["navigate", "create", "tools", "accessibility", "display", 
 const GROUP_LABEL_FALLBACK = { navigate: "Navigate", create: "Create from this content", tools: "Open a tool", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
 const COMMAND_RECENTS_KEY = "allo_command_recents_v1";
 const COMMAND_RECENTS_LIMIT = 5;
-const CTX_FLAG = { pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", symbolStudio: "symbolStudioOpen", stemLab: "stemLabOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
-const CTX_PRIORITY = ["symbolStudio", "stemLab", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
-const CONTEXT_LABEL_FALLBACK = { pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", stemLab: "Here \u2014 STEM Lab", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
+const CTX_FLAG = { pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
+const CTX_PRIORITY = ["videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
+const CONTEXT_LABEL_FALLBACK = { pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 AlloStudio", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => {

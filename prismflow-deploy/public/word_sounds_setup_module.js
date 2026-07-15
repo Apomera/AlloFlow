@@ -118,11 +118,12 @@ const PHONEME_PACK_GROUPS = {
   "Consonants": ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "y", "z"],
   "Digraphs": ["sh", "zh", "ch", "th", "wh", "ph", "ck", "ng", "q"],
   "Short Vowels": ["a", "e", "i", "o", "u", "oo_short"],
-  "Long Vowels": ["ee", "oo", "ue", "aw", "ai", "ea", "oa"],
+  "Long Vowels": ["ee", "oo", "ue", "aw", "oa"],
   "Diphthongs": ["ay", "ie", "ow", "oy"],
   "R-Controlled": ["ar", "er", "ir", "or", "ur", "air", "ear"]
 };
-const PHONEME_PACK_EXAMPLES = { b: "ball", c: "cat", d: "dog", f: "fish", g: "goat", h: "hat", j: "jam", k: "kite", l: "leg", m: "man", n: "net", p: "pig", r: "red", s: "sun", t: "top", v: "van", w: "win", y: "yes", z: "zip", sh: "ship", zh: "measure", ch: "chip", th: "thumb", wh: "whale", ph: "phone", ck: "duck", ng: "ring", q: "queen", a: "apple", e: "egg", i: "igloo", o: "octopus", u: "up", oo_short: "book", ee: "tree", oo: "moon", ue: "blue", aw: "paw", ai: "rain", ea: "leaf", oa: "boat", ay: "play", ie: "pie", ow: "cow", oy: "boy", ar: "car", er: "her", ir: "bird", or: "fork", ur: "fur", air: "chair", ear: "ear" };
+const PHONEME_PACK_ALIASES = { ai: "ay", ea: "ee" };
+const PHONEME_PACK_EXAMPLES = { b: "ball", c: "cat", d: "dog", f: "fish", g: "goat", h: "hat", j: "jam", k: "kite", l: "leg", m: "man", n: "net", p: "pig", r: "red", s: "sun", t: "top", v: "van", w: "win", y: "yes", z: "zip", sh: "ship", zh: "measure", ch: "chip", th: "thumb", wh: "whale", ph: "phone", ck: "duck", ng: "ring", q: "queen", a: "apple", e: "egg", i: "igloo", o: "octopus", u: "up", oo_short: "book", ee: "tree", oo: "moon", ue: "blue", aw: "paw", oa: "boat", ay: "play", ie: "pie", ow: "cow", oy: "boy", ar: "car", er: "her", ir: "bird", or: "fork", ur: "fur", air: "chair", ear: "ear" };
 const PHONEME_PACK_CUES = {
   b: "Lips together, pop WITH voice, buzzy. Quick.",
   c: "Back of tongue up, quiet pop /k/. Quick.",
@@ -158,14 +159,12 @@ const PHONEME_PACK_CUES = {
   o: "Round mouth, short /o/ (octopus).",
   u: "Relaxed mouth, short /u/ (up).",
   oo_short: "Short /oo/ (book), lips a little round.",
-  ee: "Big smile, long /ee/ (tree). Stretch it.",
+  ee: "Big smile, long /ee/ (tree/leaf). Stretch it.",
   oo: "Round lips, long /oo/ (moon). Stretch it.",
   ue: "Long /u/ (blue), round lips.",
   aw: "Open round mouth /aw/ (paw).",
-  ai: "Long /a/ (rain), say the letter A.",
-  ea: "Long /ee/ (leaf).",
   oa: "Long /o/ (boat), say the letter O.",
-  ay: "Long /a/ (play), say the letter A.",
+  ay: "Long /a/ (play/rain), say the letter A.",
   ie: "Long /i/ (pie), say the letter I.",
   ow: "Round, then open (cow).",
   oy: "Round, then smile (boy).",
@@ -196,7 +195,7 @@ const PHONEME_PACK_WORDS = [
   { word: "duck", keys: ["d", "u", "ck"] },
   { word: "ring", keys: ["r", "i", "ng"] },
   { word: "moon", keys: ["m", "oo", "n"] },
-  { word: "rain", keys: ["r", "ai", "n"] },
+  { word: "rain", keys: ["r", "ay", "n"] },
   { word: "boat", keys: ["b", "oa", "t"] }
 ];
 function renderExampleWithGrapheme(key, word) {
@@ -307,12 +306,18 @@ function genPhonemePackId() {
 }
 function normalizePhonemePack(p) {
   p = p || {};
+  const clips = Object.assign({}, p.clips && typeof p.clips === "object" ? p.clips : {});
+  Object.keys(PHONEME_PACK_ALIASES).forEach((alias) => {
+    const canonical = PHONEME_PACK_ALIASES[alias];
+    if (!clips[canonical] && clips[alias]) clips[canonical] = clips[alias];
+    delete clips[alias];
+  });
   return {
     id: p.id || genPhonemePackId(),
     name: p.name || "Voice Pack",
     kind: p.kind === "student-voice" ? "student-voice" : "teacher-model",
     consent: p.consent === true,
-    clips: p.clips && typeof p.clips === "object" ? p.clips : {},
+    clips,
     instr: p.instr && typeof p.instr === "object" ? p.instr : {},
     // instruction + reinforcer overrides, keyed by slot id
     history: (function() {
@@ -320,6 +325,11 @@ function normalizePhonemePack(p) {
       if (p.history && typeof p.history === "object") {
         Object.keys(p.history).forEach((k) => {
           if (Array.isArray(p.history[k])) out[k] = p.history[k];
+        });
+        Object.keys(PHONEME_PACK_ALIASES).forEach((alias) => {
+          const canonical = PHONEME_PACK_ALIASES[alias];
+          if (out[alias]) out[canonical] = (out[canonical] || []).concat(out[alias]).sort((a, b) => (a?.ts || 0) - (b?.ts || 0));
+          delete out[alias];
         });
       }
       return out;
@@ -1831,7 +1841,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     const isEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith("en");
     const shouldShow = isCanvasEnv && isEnglish && !isKokoroVoice && !kokoroReady && !kokoroRecDismissed && !isProcessing;
     if (!shouldShow) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200 px-6 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 rounded-full p-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl" }, "\u{1F3A4}")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-amber-900 text-sm mb-1" }, t("word_sounds.kokoro_recommended") || "Recommended for Word Sounds: Kokoro local voice"), /* @__PURE__ */ React.createElement("p", { className: "text-amber-800 text-xs leading-relaxed mb-2" }, "Preloading synthesizes ~5 audio clips per word. On Gemini this can hit the 60-second rate-limit cooldown mid-preload. Kokoro is a free on-device voice \u2014 one-time ~40 MB download, then every Word Sounds session is instant and rate-limit-free."), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200 px-6 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 rounded-full p-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl" }, "\u{1F3A4}")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-amber-900 text-sm mb-1" }, t("word_sounds.kokoro_recommended") || "Recommended for Word Sounds: Kokoro local voice"), /* @__PURE__ */ React.createElement("p", { className: "text-amber-800 text-xs leading-relaxed mb-2" }, "Preloading can synthesize dozens of audio clips per word\u2014including prompts, choices, phonemes, syllables, and feedback. On Gemini this can hit the 60-second rate-limit cooldown mid-preload. Kokoro is a free on-device voice\u2014one-time ~40 MB download, then every Word Sounds session is instant and rate-limit-free."), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -2016,7 +2026,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       },
       className: "w-full p-2 border rounded-lg text-center font-bold"
     }
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.syllable_range_hint") || "Limit word complexity (Min/Max Syllables)"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.voice_pack_section", "Voice")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowVoicePack(true), "data-help-key": "ws_gen_voice_pack", className: "w-full p-3 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors flex items-center gap-3 text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl" }, "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-violet-700 text-sm" }, tf("word_sounds.voice_pack_cta", "Record your own sounds")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, tf("word_sounds.voice_pack_cta_hint", "Use your voice for the phoneme bank (Orton-Gillingham)"))))), showVoicePack ? /* @__PURE__ */ React.createElement(PhonemeVoicePackEditor, { onClose: () => setShowVoicePack(false), t }) : null, /* @__PURE__ */ React.createElement("div", { className: "space-y-3", role: "group", "aria-labelledby": "word-sounds-active-sources-label" }, /* @__PURE__ */ React.createElement("div", { id: "word-sounds-active-sources-label", className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.sources", "Active Sources")), /* @__PURE__ */ React.createElement("label", { className: `min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 ${includeGlossary ? "bg-violet-50 border-violet-500" : "bg-white border-slate-200"}`, "data-help-key": "ws_gen_src_glossary" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: includeGlossary, onChange: (e) => setIncludeGlossary(e.target.checked), className: "sr-only" }), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: `w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? "bg-violet-600 border-violet-600" : "border-slate-300"}` }, includeGlossary && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement(BookOpen, { size: 18, className: "text-violet-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, tf("word_sounds.source_glossary", "Glossary"), " (", glossaryTerms?.length || 0, ")"))), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all ${includeFamily ? "bg-pink-50 border-pink-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("label", { className: "min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-pink-600 focus-within:ring-offset-2", "data-help-key": "ws_gen_src_family" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: includeFamily, onChange: (e) => setIncludeFamily(e.target.checked), className: "sr-only" }), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: `w-5 h-5 rounded border flex items-center justify-center ${includeFamily ? "bg-pink-600 border-pink-600" : "border-slate-300"}` }, includeFamily && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement(Layers, { size: 18, className: "text-pink-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, tf("word_sounds.source_family", "Word Family"))), includeFamily && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.syllable_range_hint") || "Limit word complexity (Min/Max Syllables)"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.voice_pack_section", "Voice")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowVoicePack(true), "data-help-key": "ws_gen_voice_pack", className: "w-full p-3 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors flex items-center gap-3 text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl" }, "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-violet-700 text-sm" }, tf("word_sounds.voice_pack_cta", "Record your own sounds")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, tf("word_sounds.voice_pack_cta_hint", "Use your voice for the phoneme bank (Orton-Gillingham)"))))), showVoicePack ? /* @__PURE__ */ React.createElement(PhonemeVoicePackEditor, { onClose: () => setShowVoicePack(false), t }) : null, /* @__PURE__ */ React.createElement("div", { className: "space-y-3", role: "group", "aria-labelledby": "word-sounds-active-sources-label" }, /* @__PURE__ */ React.createElement("div", { id: "word-sounds-active-sources-label", className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.sources", "Active Sources")), /* @__PURE__ */ React.createElement("label", { className: `block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 ${includeGlossary ? "bg-violet-50 border-violet-500" : "bg-white border-slate-200"}`, "data-help-key": "ws_gen_src_glossary" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: includeGlossary, onChange: (e) => setIncludeGlossary(e.target.checked), className: "sr-only" }), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: `w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? "bg-violet-600 border-violet-600" : "border-slate-300"}` }, includeGlossary && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement(BookOpen, { size: 18, className: "text-violet-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, tf("word_sounds.source_glossary", "Glossary"), " (", glossaryTerms?.length || 0, ")"))), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all ${includeFamily ? "bg-pink-50 border-pink-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("label", { className: "min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-pink-600 focus-within:ring-offset-2", "data-help-key": "ws_gen_src_family" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: includeFamily, onChange: (e) => setIncludeFamily(e.target.checked), className: "sr-only" }), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: `w-5 h-5 rounded border flex items-center justify-center ${includeFamily ? "bg-pink-600 border-pink-600" : "border-slate-300"}` }, includeFamily && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement(Layers, { size: 18, className: "text-pink-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, tf("word_sounds.source_family", "Word Family"))), includeFamily && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),

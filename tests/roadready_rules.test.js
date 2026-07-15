@@ -1127,10 +1127,10 @@ describe('RoadReady rules-of-road content', () => {
       expect(src).toContain('var BIOME_SPEED_LIMIT_MPH = { residential: 25, suburban: 25, commercial: 25, industrial: 25, rural: 45 };');
       expect(src).toContain('function getBiomeSpeedLimitMph(biome, fallbackMph)');
       expect(src).toContain('var newLimit = getBiomeSpeedLimitMph(currentBiome, 25);');
-      expect(src).toContain('return getBiomeSpeedLimitMph(ch.biome, 25);');
-      expect(src).toContain('var biomeLimit = getBiomeSpeedLimitMph(chunk.biome, 25);');
-      expect(src).toContain('var slBiomeMph = getBiomeSpeedLimitMph(chunk.biome, 25);');
-      expect(src).toContain('var paintLimit = getBiomeSpeedLimitMph(chunk.biome, 25);');
+      expect(src).toContain('return worldPostedLimitMph(worldForLimit, ch, 25);');
+      expect(src).toContain('var biomeLimit = worldPostedLimitMph(iw, chunk, 25);');
+      expect(src).toContain('var slBiomeMph = worldPostedLimitMph(iw, chunk, 25);');
+      expect(src).toContain('var paintLimit = worldPostedLimitMph(iw, chunk, 25);');
       expect(src).toContain("speedLimit: feMap === 'highway' ? 65 : feMap === 'roundabout' ? 25 : getBiomeSpeedLimitMph(feMap, 25)");
 
       expect(src).not.toContain('var biomeSpeedMap = { residential: 25, suburban: 35, commercial: 30, industrial: 35, rural: 50 };');

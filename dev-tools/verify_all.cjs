@@ -49,6 +49,11 @@ const RUN_PHASE2 = args.includes('--phase2') || args.includes('--all');
 // ──────────────────────────────────────────────────────────────────────────
 const checks = [
   {
+    name: 'Adventure module rebuild-diff',
+    cmd: ['node', '_build_adventure_module.js', '--check'],
+    description: 'adventure_source.jsx deterministically rebuilds to both committed Adventure runtime copies',
+  },
+  {
     name: 'Module registry (V1 static)',
     cmd: ['node', 'dev-tools/verify_module_registry.cjs', '--quiet'],
     description: 'window.AlloModules.X consumer/producer contract',

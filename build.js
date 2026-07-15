@@ -1029,6 +1029,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_cyberdefense.js',
     'stem_lab/stem_tool_physics.js',
     'stem_lab/stem_tool_watercycle.js',
+    'stem_lab/stem_tool_weathersystems.js',
     'stem_lab/stem_tool_rocks.js',
     'stem_lab/stem_tool_dissection.js',
     'stem_lab/stem_tool_behaviorlab.js',

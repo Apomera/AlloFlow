@@ -411,6 +411,19 @@
       measurementsWithoutPrediction: Math.max(0, (measurements || []).length - errors.length)
     };
   }
+  function serializeEventDetailValue(value) {
+    if (value == null) return '';
+    if (typeof value === 'object') {
+      try { return JSON.stringify(value); }
+      catch (err) { return String(value); }
+    }
+    return String(value);
+  }
+
+  function formatSessionEventDetails(data) {
+    return Object.keys(data || {}).sort().map(function(key) { return key + '=' + serializeEventDetailValue(data[key]); }).join('; ');
+  }
+
 
   function compareMeasurementRecords(previous, latest) {
     if (!previous || !latest || previous.isComplete === false || latest.isComplete === false) return null;
@@ -4121,7 +4134,7 @@
         engine.exportSessionCSV = function() {
           var rows = ['Timestamp_ms,Elapsed,Event_Type,Details'];
           engine.sessionLog.forEach(function(entry) {
-            var details = Object.keys(entry.data).map(function(k) { return k + '=' + entry.data[k]; }).join('; ');
+            var details = formatSessionEventDetails(entry.data);
             rows.push(entry.timestamp + ',' + entry.elapsed + ',' + entry.type + ',"' + details.replace(/"/g, '""') + '"');
           });
           return rows.join('\n');

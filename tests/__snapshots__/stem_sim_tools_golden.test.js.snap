@@ -93,13 +93,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bridg
 
 exports[`science-sim + studio render goldens > renders + pins a digest for cell [ssr] 1`] = `
 {
-  "buttons": 39,
+  "buttons": 40,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 108,
+  "lengthBucket": 111,
   "paths": 0,
   "selects": 0,
-  "sha": "479803b3691ba218",
+  "sha": "084f88583ac6cae7",
   "svgs": 0,
 }
 `;
@@ -226,10 +226,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for kitch
   "buttons": 8,
   "canvases": 0,
   "inputs": 1,
-  "lengthBucket": 192,
+  "lengthBucket": 193,
   "paths": 0,
   "selects": 0,
-  "sha": "9c6b94537dfe82fe",
+  "sha": "39b5850e26275a6d",
   "svgs": 0,
 }
 `;

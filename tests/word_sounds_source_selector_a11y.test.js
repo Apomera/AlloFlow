@@ -11,6 +11,16 @@ describe('Word Sounds source selector keyboard behavior', () => {
     expect(source).not.toContain('<div role="button" tabIndex={0} aria-pressed={include');
   });
 
+  it('keeps the selected glossary card from fragmenting into the Active Sources heading', () => {
+    expect(source).toContain('className={`block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer');
+  });
+
+  it('describes the current Word Sounds preload volume accurately', () => {
+    expect(source).toContain('Preloading can synthesize dozens of audio clips per word');
+    expect(source).toContain('prompts, choices, phonemes, syllables, and feedback');
+    expect(source).not.toContain('~5 audio clips per word');
+  });
+
   it('uses native disabled and checked state for the lesson-plan toggle', () => {
     expect(source).toContain('type="checkbox" checked={includeLessonPlan} disabled={sessionType === \'assessment\'}');
     expect(source).not.toContain('aria-disabled={sessionType === \'assessment\'} aria-pressed={includeLessonPlan}');

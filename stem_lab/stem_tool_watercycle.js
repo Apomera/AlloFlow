@@ -4484,6 +4484,70 @@ const d = labToolData.waterCycle || {};
             suspendedSediment3d.visible = false;
             world3d.add(suspendedSediment3d);
 
+            var floodplainStorageGroup3d = new THREE.Group();
+            var floodplainPoolMat3d = new THREE.MeshPhysicalMaterial({
+              color: 0x2dd4bf, emissive: 0x0f766e, emissiveIntensity: 0.18,
+              roughness: 0.16, clearcoat: 0.8, transparent: true, opacity: 0,
+              depthWrite: false
+            });
+            var floodplainEdgeMat3d = new THREE.MeshBasicMaterial({
+              color: 0x99f6e4, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var floodplainPoolSpecs3d = [
+              { position: [6.4, -0.982, -0.55], scale: [1.12, 0.68] },
+              { position: [4.5, -0.984, 0.75], scale: [1.0, 0.72] },
+              { position: [1.7, -1.018, 2.0], scale: [0.86, 0.64] }
+            ];
+            var floodplainPools3d = [];
+            var floodplainEdges3d = [];
+            floodplainPoolSpecs3d.forEach(function(floodplainPoolSpec3d, floodplainPoolIndex3d) {
+              var floodplainPool3d = new THREE.Mesh(new THREE.CircleGeometry(0.55, 36), floodplainPoolMat3d);
+              floodplainPool3d.rotation.x = -Math.PI / 2;
+              floodplainPool3d.position.set(
+                floodplainPoolSpec3d.position[0],
+                floodplainPoolSpec3d.position[1],
+                floodplainPoolSpec3d.position[2]
+              );
+              floodplainPool3d.userData.baseScaleX = floodplainPoolSpec3d.scale[0];
+              floodplainPool3d.userData.baseScaleY = floodplainPoolSpec3d.scale[1];
+              floodplainPool3d.userData.storageDelay = floodplainPoolIndex3d * 0.12;
+              floodplainStorageGroup3d.add(floodplainPool3d);
+              floodplainPools3d.push(floodplainPool3d);
+              var floodplainEdge3d = new THREE.Mesh(new THREE.RingGeometry(0.49, 0.55, 36), floodplainEdgeMat3d);
+              floodplainEdge3d.rotation.x = -Math.PI / 2;
+              floodplainEdge3d.position.copy(floodplainPool3d.position);
+              floodplainEdge3d.position.y += 0.008;
+              floodplainStorageGroup3d.add(floodplainEdge3d);
+              floodplainEdges3d.push(floodplainEdge3d);
+            });
+            var floodplainExchangeCurves3d = [
+              makeJourneyCurve3d([[5.7, -0.91, -1.4], [5.95, -0.95, -0.92], [6.4, -0.98, -0.55]]),
+              makeJourneyCurve3d([[3.5, -0.91, 0.2], [3.9, -0.95, 0.48], [4.5, -0.98, 0.75]]),
+              makeJourneyCurve3d([[1.1, -0.99, 1.25], [1.35, -1.0, 1.62], [1.7, -1.02, 2.0]])
+            ];
+            var floodplainExchangeMat3d = new THREE.MeshBasicMaterial({
+              color: 0x5eead4, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            floodplainExchangeCurves3d.forEach(function(floodplainExchangeCurve3d) {
+              floodplainStorageGroup3d.add(new THREE.Mesh(
+                new THREE.TubeGeometry(floodplainExchangeCurve3d, 28, 0.014, 5, false),
+                floodplainExchangeMat3d
+              ));
+            });
+            var floodplainExchangeMarkerCount3d = 24;
+            var floodplainExchangeMarkerGeometry3d = new THREE.BufferGeometry();
+            floodplainExchangeMarkerGeometry3d.setAttribute('position',
+              new THREE.BufferAttribute(new Float32Array(floodplainExchangeMarkerCount3d * 3), 3));
+            var floodplainExchangeMarkers3d = new THREE.Points(floodplainExchangeMarkerGeometry3d, new THREE.PointsMaterial({
+              color: 0xccfbf1, size: 0.06, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            floodplainStorageGroup3d.add(floodplainExchangeMarkers3d);
+            floodplainStorageGroup3d.visible = false;
+            world3d.add(floodplainStorageGroup3d);
+
             var oceanCurrentGroup3d = new THREE.Group();
             var oceanCurrentCurves3d = [
               makeJourneyCurve3d([[-0.25,-1.12,1.6],[-1.3,-1.11,2.45],[-3.15,-1.13,2.35],[-4.5,-1.12,1.15],[-3.25,-1.13,-0.2],[-1.25,-1.12,0.15]], true),
@@ -5705,6 +5769,14 @@ const d = labToolData.waterCycle || {};
               sedimentTransportLabel3d.scale.set(2.05, 0.51, 1);
               sedimentTransportLabel3d.visible = false;
             }
+            var floodplainStorageLabel3d = makeProcessLabel3d(
+              'floodplain_storage', 'Floodplain storage', '#5eead4', [4.7, -0.05, 1.15]
+            );
+            if (floodplainStorageLabel3d) {
+              delete processLabels3d.floodplain_storage;
+              floodplainStorageLabel3d.scale.set(2.0, 0.5, 1);
+              floodplainStorageLabel3d.visible = false;
+            }
             var snowStorageLabelCanvas3d = document.createElement('canvas');
             snowStorageLabelCanvas3d.width = 512;
             snowStorageLabelCanvas3d.height = 160;
@@ -6167,6 +6239,7 @@ const d = labToolData.waterCycle || {};
             var urbanStormPulseMemory3d = 0;
             var meadowRetentionMemory3d = 0;
             var groundwaterStorageMemory3d = 0.24;
+            var floodplainStorageMemory3d = 0;
             var dropletScaleGoal3d = new THREE.Vector3(1, 1, 1);
             var vaporSourceGoal3d = new THREE.Vector3(-2.1, 0.8, 1.0);
 
@@ -6727,6 +6800,63 @@ const d = labToolData.waterCycle || {};
               if (coverVisual3d === 'grass') runoffCoverFactor3d *= 1 - meadowRetentionMemory3d * 0.12;
               var effectiveRunoff3d = Math.max(0, Math.min(100, runoffVisual3d * runoffCoverFactor3d));
               var runoffRouteActive3d = state3d === 'river_runoff' && !undergroundMode3d;
+              var floodplainStorageTarget3d = runoffRouteActive3d ?
+                Math.max(0, Math.min(1, (effectiveRunoff3d - 42) / 58)) : 0;
+              var floodplainStorageTrend3d = floodplainStorageTarget3d > floodplainStorageMemory3d + 0.01 ?
+                'filling' : (floodplainStorageTarget3d < floodplainStorageMemory3d - 0.01 ? 'draining' : 'stored');
+              if (!journeyPaused3d) {
+                if (motionReduced3d) {
+                  floodplainStorageMemory3d = floodplainStorageTarget3d;
+                } else if (floodplainStorageTarget3d > floodplainStorageMemory3d) {
+                  floodplainStorageMemory3d = Math.min(floodplainStorageTarget3d,
+                    floodplainStorageMemory3d + frameDelta3d * (0.07 + effectiveRunoff3d * 0.0015));
+                } else {
+                  floodplainStorageMemory3d = Math.max(floodplainStorageTarget3d,
+                    floodplainStorageMemory3d - frameDelta3d * 0.018);
+                }
+              }
+              var floodplainStorageVisible3d = !undergroundMode3d && floodplainStorageMemory3d > 0.015;
+              floodplainStorageGroup3d.visible = floodplainStorageVisible3d;
+              floodplainPoolMat3d.opacity = floodplainStorageVisible3d ?
+                0.08 + floodplainStorageMemory3d * 0.42 : 0;
+              floodplainEdgeMat3d.opacity = floodplainStorageVisible3d ?
+                0.16 + floodplainStorageMemory3d * 0.55 : 0;
+              floodplainPools3d.forEach(function(floodplainPool3d, floodplainPoolIndex3d) {
+                var floodplainStorageDelay3d = floodplainPool3d.userData.storageDelay;
+                var localFloodplainStorage3d = Math.max(0, Math.min(1,
+                  (floodplainStorageMemory3d - floodplainStorageDelay3d) / (1 - floodplainStorageDelay3d)));
+                var floodplainPoolPulse3d = motionReduced3d ? 0 :
+                  Math.sin(visualTime3d * 1.35 + floodplainPoolIndex3d) * 0.018;
+                var floodplainPoolScale3d = 0.28 + localFloodplainStorage3d * 0.92 + floodplainPoolPulse3d;
+                floodplainPool3d.visible = localFloodplainStorage3d > 0.005;
+                floodplainPool3d.scale.set(
+                  floodplainPool3d.userData.baseScaleX * floodplainPoolScale3d,
+                  floodplainPool3d.userData.baseScaleY * floodplainPoolScale3d, 1);
+                floodplainEdges3d[floodplainPoolIndex3d].visible = floodplainPool3d.visible;
+                floodplainEdges3d[floodplainPoolIndex3d].scale.copy(floodplainPool3d.scale);
+              });
+              floodplainExchangeMat3d.opacity = floodplainStorageVisible3d ?
+                0.12 + floodplainStorageMemory3d * 0.42 : 0;
+              floodplainExchangeMarkers3d.material.opacity = floodplainStorageVisible3d ?
+                0.2 + floodplainStorageMemory3d * 0.62 : 0;
+              floodplainExchangeMarkers3d.material.size = 0.045 + floodplainStorageMemory3d * 0.04;
+              floodplainExchangeMarkerGeometry3d.setDrawRange(0, Math.max(1,
+                Math.floor(floodplainExchangeMarkerCount3d * (0.25 + floodplainStorageMemory3d * 0.75))));
+              var floodplainExchangeMarkerPosition3d = floodplainExchangeMarkerGeometry3d.attributes.position;
+              for (var floodplainMarkerIndex3d = 0; floodplainMarkerIndex3d < floodplainExchangeMarkerCount3d; floodplainMarkerIndex3d++) {
+                var floodplainCurveIndex3d = floodplainMarkerIndex3d % floodplainExchangeCurves3d.length;
+                var floodplainMarkerPhase3d = (floodplainMarkerIndex3d / floodplainExchangeMarkerCount3d +
+                  visualTime3d * (0.018 + floodplainStorageMemory3d * 0.055)) % 1;
+                var floodplainMarkerT3d = floodplainStorageTrend3d === 'draining' ?
+                  1 - floodplainMarkerPhase3d : floodplainMarkerPhase3d;
+                var floodplainMarkerPoint3d = floodplainExchangeCurves3d[floodplainCurveIndex3d].getPointAt(floodplainMarkerT3d);
+                floodplainExchangeMarkerPosition3d.setXYZ(floodplainMarkerIndex3d,
+                  floodplainMarkerPoint3d.x, floodplainMarkerPoint3d.y, floodplainMarkerPoint3d.z);
+              }
+              floodplainExchangeMarkerPosition3d.needsUpdate = true;
+              if (floodplainStorageLabel3d) floodplainStorageLabel3d.visible = floodplainStorageVisible3d;
+              canvasEl.dataset.floodplainStorage = String(Math.round(floodplainStorageMemory3d * 100));
+              canvasEl.dataset.floodplainExchange = floodplainStorageVisible3d ? floodplainStorageTrend3d : 'hidden';
               var activeTributaryCount3d = runoffRouteActive3d ?
                 Math.max(1, Math.min(surfaceRunoffCurves3d.length, Math.ceil(effectiveRunoff3d / 25))) : 0;
               surfaceRunoffTributaries3d.visible = runoffRouteActive3d;
@@ -6770,7 +6900,8 @@ const d = labToolData.waterCycle || {};
               var sedimentCoverFactor3d = coverVisual3d === 'urban' ? 1 :
                 (coverVisual3d === 'forest' ? 0.38 : 0.72);
               var sedimentStrength3d = runoffRouteActive3d ?
-                Math.min(1, effectiveRunoff3d / 100 * sedimentCoverFactor3d * 1.15) : 0;
+                Math.min(1, effectiveRunoff3d / 100 * sedimentCoverFactor3d * 1.15) *
+                  (1 - floodplainStorageMemory3d * 0.18) : 0;
               var sedimentTransportVisible3d = runoffRouteActive3d && sedimentStrength3d > 0.025;
               riverTurbidity3d.visible = sedimentTransportVisible3d;
               riverTurbidityMat3d.opacity = sedimentTransportVisible3d ?
@@ -6814,6 +6945,8 @@ const d = labToolData.waterCycle || {};
                 (sedimentStrength3d > 0.3 ? 'moderate' : 'low');
               canvasEl.dataset.sedimentTransport = sedimentTransportVisible3d ? 'river-to-estuary' : 'hidden';
               canvasEl.dataset.riverTurbidity = sedimentTransportVisible3d ? riverTurbidityBand3d : 'clear';
+              canvasEl.dataset.floodplainSedimentTrap = floodplainStorageVisible3d ?
+                'settling-suspended-material' : 'hidden';
 
               aquiferFlow3d.visible = infiltrationFlowActive3d;
               aquiferFlow3d.material.opacity = Math.min(0.94, 0.3 + infiltrationVisual3d / 145);
@@ -7594,6 +7727,10 @@ const d = labToolData.waterCycle || {};
           var immersiveStageLabel = d.journeyActive ? journeyLabel : currentStageLabel + ' preview';
           var journeyPaused = !!d.journeyPaused;
           var journeySpeed = d.journeySpeed || 1;
+          var journeyStatusLabel = !d.journeyActive ? 'Previewing the selected process' :
+            d.journeyState === 'ground_choice' ? 'Waiting for a land pathway choice' :
+            journeyPaused ? 'Journey paused' :
+            'Moving at ' + journeySpeed + 'x speed';
           var journeyTimelineSteps = ['Ocean', 'Vapor', 'Cloud', 'Precipitation', 'Land pathway', 'Return'];
           var journeyTimelineIndex = {
             ocean: 0,
@@ -7907,7 +8044,7 @@ const d = labToolData.waterCycle || {};
                   "aria-live": "polite",
                   "aria-atomic": "true"
                 }, journeyView === '3d'
-                  ? "Droplet view: " + immersiveStageLabel + " | illustrative scale"
+                  ? "Droplet view: " + immersiveStageLabel + " | " + journeyStatusLabel + " | illustrative scale"
                   : "Systems view: six connected water-cycle processes"),
                 journeyView === '3d' && React.createElement("button", {
                   type: "button",
@@ -7939,7 +8076,11 @@ const d = labToolData.waterCycle || {};
               React.createElement("div", null,
                 React.createElement("span", null, "Relative pace"),
                 React.createElement("strong", null, journeyLens.pace)
-              )
+              ),
+              React.createElement("div", null,
+                React.createElement("span", null, "Journey status"),
+                React.createElement("strong", null, journeyStatusLabel)
+              ),
             ),
 
             journeyView === '3d' && React.createElement("section", {
@@ -8043,11 +8184,16 @@ const d = labToolData.waterCycle || {};
                 id: "wcJourney3dSedimentInstructions", className: "sr-only"
               }, "During river runoff, tan particles show a relative suspended-sediment signal moving into the estuary. Stronger runoff raises the cue while forest cover buffers it; this is not a concentration or pollutant model."
               ),
+              journeyView === '3d' && React.createElement("p", {
+                id: "wcJourney3dFloodplainInstructions", className: "sr-only"
+              }, "During high runoff, side pools fill across the floodplain, temporarily storing water and settling some suspended material. They drain back slowly after the river pulse; storage is a relative teaching cue, not a mapped flood forecast."
+              ),
               journeyView === '3d' && React.createElement("canvas", {
                 role: "img",
                 tabIndex: 0,
-                "aria-label": "Three-dimensional tracked water parcel in the " + immersiveStageLabel + " stage. Drag or use arrow keys to explore the scene.",
-                "aria-describedby": "wcJourney3dInstructions wcJourney3dUrbanInstructions wcJourney3dGrassInstructions wcJourney3dRouteBalanceInstructions wcJourney3dGroundwaterInstructions wcJourney3dSedimentInstructions",
+                "aria-label": "Three-dimensional tracked water parcel in the " + immersiveStageLabel + " stage. " + journeyStatusLabel + ". Drag or use arrow keys to explore the scene.",
+                "aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown F",
+                "aria-describedby": "wcJourney3dInstructions wcJourney3dUrbanInstructions wcJourney3dGrassInstructions wcJourney3dRouteBalanceInstructions wcJourney3dGroundwaterInstructions wcJourney3dSedimentInstructions wcJourney3dFloodplainInstructions",
                 onKeyDown: handleJourney3dKey,
                 onClick: handleJourney3dSceneClick,
                 ref: journey3dRef,
@@ -8092,7 +8238,9 @@ const d = labToolData.waterCycle || {};
               journeyView === '3d' && d.journeyActive && d.journeyState === 'ground_choice' && React.createElement("section", {
                 className: "wc-viewport-choice",
                 role: "group",
-                "aria-labelledby": "wcViewportChoiceTitle"
+                "aria-labelledby": "wcViewportChoiceTitle",
+                "aria-live": "polite",
+                "aria-atomic": "true",
               },
                 React.createElement("h5", { id: "wcViewportChoiceTitle" }, "Choose where the droplet travels next"),
                 React.createElement("p", null, "The land scenario changes each pathway's tendency, but you remain in control."),

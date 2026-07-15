@@ -7,7 +7,7 @@ function loadMeasurementMath() {
   const start = SOURCE.indexOf('  function formatVolume(vol)');
   const end = SOURCE.indexOf('  var ACHIEVEMENTS = [', start);
   const body = SOURCE.slice(start, end);
-  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
+  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, serializeEventDetailValue, formatSessionEventDetails, measurementDetailsForReport, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
 }
 
 describe('Geometry World measurement model', () => {
@@ -77,6 +77,18 @@ describe('Geometry World measurement model', () => {
     expect(summary).toEqual({ predictionsMade: 3, exactPredictions: 1, predictionsWithin10Percent: 2, averagePredictionPercentError: 10, measurementsWithoutPrediction: 1 });
   });
 
+  it('preserves structured event details for deterministic CSV export', () => {
+    const details = math.formatSessionEventDetails({ prediction: null, note: 'a "quote"', materialCounts: { stone: 2, gold: 1 } });
+    expect(details).toBe('materialCounts={"stone":2,"gold":1}; note=a "quote"; prediction=');
+    expect(math.serializeEventDetailValue([1, 2])).toBe('[1,2]');
+  });
+
+  it('builds deterministic measurement-level educator evidence', () => {
+    const detail = math.measurementDetailsForReport([{ elapsed: '2.5s', data: { L: 2, W: 3, H: 4, isSolidPrism: true, volume: 24, prediction: 20, predictionPercentError: 17, surfaceArea: 52, blocks: 24, materialCounts: { stone: 20, gold: 4 } } }])[0];
+    expect(detail).toEqual({ sequence: 1, elapsed: '2.5s', dimensions: '2\u00d73\u00d74', shape: 'Rectangular prism', occupiedVolume: 24, prediction: 20, predictionPercentError: 17, surfaceArea: 52, blocks: 24, materials: ['gold', 'stone'] });
+  });
+
+
 
 
 
@@ -135,5 +147,9 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('Predictions within 10%');
     expect(SOURCE).toContain('Avg prediction error');
     expect(SOURCE).not.toContain('m.data.blocks === m.data.volume');
+    expect(SOURCE).toContain('var details = formatSessionEventDetails(entry.data)');
+    expect(SOURCE).not.toContain("key + '=' + entry.data[key]");
+    expect(SOURCE).toContain('measurementDetails: measurementDetailsForReport(measurements)');
+    expect(SOURCE).toContain('Measurement-Level Evidence');
   });
 });

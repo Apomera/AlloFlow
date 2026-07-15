@@ -201,9 +201,13 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Next scan target/);
     expect(html).toMatch(/Evidence log 0\/3/);
     expect(html).toMatch(/Logged 0\/3/);
+    expect(html).toMatch(/Path 0\/2/);
+    expect(html).toMatch(/Evidence path 0\/2 linked/);
     expect(html).toMatch(/Next open: Skull/);
     expect(html).toMatch(/Log observation/);
     expect(html).toMatch(/Field claim builder/);
+    expect(html).toMatch(/Claim strength 0\/5 \| Start scanning/);
+    expect(html).toMatch(/Log at least one anchor before writing a claim/);
     expect(html).toMatch(/Scan more for a stronger claim/);
     expect(html).toMatch(/Claim/);
     expect(html).toMatch(/Evidence/);
@@ -221,7 +225,21 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     const html = renderTab(data);
     expect(html).toMatch(/Evidence log 1\/3/);
     expect(html).toMatch(/Logged 1\/3/);
+    expect(html).toMatch(/Path 0\/2/);
+    expect(html).toMatch(/Claim strength 1\/5 \| Anchor evidence/);
     expect(html).toMatch(/Next open: Shoulder/);
+  });
+  it('the 3D field station links consecutive logged scan anchors', () => {
+    const data = baseData('field3d');
+    data.field3dScanLogged = { skull: true, shoulder: true };
+    data.field3dScanSpecies = 'tyrannosaurus';
+    const html = renderTab(data);
+    expect(html).toMatch(/Evidence log 2\/3/);
+    expect(html).toMatch(/Logged 2\/3/);
+    expect(html).toMatch(/Path 1\/2/);
+    expect(html).toMatch(/Claim strength 3\/5 \| Connected evidence/);
+    expect(html).toMatch(/Evidence path 1\/2 linked/);
+    expect(html).toMatch(/Next open: Hip/);
   });
   it('the 3D field station tracks completed scan observations', () => {
     const data = baseData('field3d');
@@ -230,6 +248,9 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     const html = renderTab(data);
     expect(html).toMatch(/Evidence log 3\/3/);
     expect(html).toMatch(/Logged 3\/3/);
+    expect(html).toMatch(/Path 2\/2/);
+    expect(html).toMatch(/Claim strength 5\/5 \| CER ready/);
+    expect(html).toMatch(/Evidence path 2\/2 linked/);
     expect(html).toMatch(/Field scan complete/);
     expect(html).toMatch(/Ready for CER/);
     expect(html).toMatch(/Observation logged/);
@@ -242,9 +263,13 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     const html = renderTab(data);
     expect(html).toMatch(/Evidence log 0\/3/);
     expect(html).toMatch(/Logged 0\/3/);
+    expect(html).toMatch(/Path 0\/2/);
+    expect(html).toMatch(/Evidence path 0\/2 linked/);
     expect(html).toMatch(/Next open: Skull/);
     expect(html).toMatch(/Log observation/);
     expect(html).toMatch(/Field claim builder/);
+    expect(html).toMatch(/Claim strength 0\/5 \| Start scanning/);
+    expect(html).toMatch(/Log at least one anchor before writing a claim/);
     expect(html).toMatch(/Scan more for a stronger claim/);
     expect(html).toMatch(/Claim/);
     expect(html).toMatch(/Evidence/);
@@ -277,9 +302,13 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Next scan target/);
     expect(html).toMatch(/Evidence log 0\/3/);
     expect(html).toMatch(/Logged 0\/3/);
+    expect(html).toMatch(/Path 0\/2/);
+    expect(html).toMatch(/Evidence path 0\/2 linked/);
     expect(html).toMatch(/Next open: Skull/);
     expect(html).toMatch(/Log observation/);
     expect(html).toMatch(/Field claim builder/);
+    expect(html).toMatch(/Claim strength 0\/5 \| Start scanning/);
+    expect(html).toMatch(/Log at least one anchor before writing a claim/);
     expect(html).toMatch(/Scan more for a stronger claim/);
     expect(html).toMatch(/Claim/);
     expect(html).toMatch(/Evidence/);

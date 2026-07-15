@@ -21485,9 +21485,17 @@ var d = labToolData.cell || {};
               var selectedIndex = PROCESSES.findIndex(function(p) { return p.id === requested; });
               if (selectedIndex < 0) selectedIndex = 0;
               var process = PROCESSES[selectedIndex];
+              var savedProcessStep = Number(d.cellProcessStep);
+              var selectedStepIndex = Number.isInteger(savedProcessStep) && savedProcessStep >= 0 && savedProcessStep < process.steps.length ? savedProcessStep : 0;
+              var focusedProcessStep = process.steps[selectedStepIndex];
+              function chooseProcessStep(index) {
+                if (index < 0 || index >= process.steps.length) return;
+                upd('cellProcessStep', index);
+              }
               function chooseProcess(index, focus) {
                 var next = PROCESSES[(index + PROCESSES.length) % PROCESSES.length];
                 upd('cellProcess', next.id);
+                upd('cellProcessStep', 0);
                 if (focus && typeof document !== 'undefined') setTimeout(function() {
                   var target = document.getElementById('cell-process-tab-' + next.id);
                   if (target) target.focus();
@@ -21675,7 +21683,31 @@ var d = labToolData.cell || {};
                     )
                   ),
                   h('div', { className: 'p-3 sm:p-4' },
-                    h('p', { className: 'mb-3 border-l-4 pl-3 text-[13px] leading-relaxed text-slate-700', style: { borderColor: processVisual.accent } }, process.summary),                  process.id === 'respiration' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-cyan-200 bg-slate-950 p-2' },
+                    h('p', { className: 'mb-3 border-l-4 pl-3 text-[13px] leading-relaxed text-slate-700', style: { borderColor: processVisual.accent } }, process.summary),
+                    h('aside', {
+                      className: 'mb-3 overflow-hidden rounded-xl border',
+                      style: { borderColor: processVisual.accent + '66', background: 'linear-gradient(120deg,' + processVisual.soft + ',#fff)' },
+                      'data-cell-stage-focus': selectedStepIndex,
+                      'aria-labelledby': 'cell-stage-focus-title'
+                    },
+                      h('div', { className: 'flex flex-wrap items-stretch' },
+                        h('div', { className: 'flex min-w-[92px] shrink-0 flex-col items-center justify-center px-3 py-3 text-center text-white', style: { background: processVisual.accent } },
+                          h('span', { className: 'text-[11px] font-black uppercase tracking-wide' }, 'Focus lens'),
+                          h('span', { className: 'mt-1 text-xl font-black' }, focusedProcessStep[0]),
+                          h('span', { className: 'text-[11px] font-bold' }, 'of ' + process.steps.length)
+                        ),
+                        h('div', { className: 'min-w-[220px] flex-1 p-3' },
+                          h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                            h('div', null,
+                              h('div', { className: 'text-[11px] font-black uppercase tracking-wide', style: { color: processVisual.accent } }, 'Look for this in the diagram'),
+                              h('h5', { id: 'cell-stage-focus-title', className: 'mt-0.5 text-[14px] font-black text-slate-950' }, focusedProcessStep[1])
+                            ),
+                            h('span', { className: 'rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-slate-700 shadow-sm' }, focusedProcessStep[2])
+                          ),
+                          h('p', { className: 'mt-2 text-[12px] leading-relaxed text-slate-700' }, focusedProcessStep[3])
+                        )
+                      )
+                    ),                  process.id === 'respiration' ? h('figure', { className: 'mb-3 overflow-hidden rounded-xl border border-cyan-200 bg-slate-950 p-2' },
                     h('div', { className: 'mb-1 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2 text-[11px] font-bold text-slate-100' },
                       h('span', null, 'CELLULAR RESPIRATION \u2022 one connected energy pathway'),
                       h('span', { className: 'flex flex-wrap items-center gap-3' },
@@ -21948,26 +21980,52 @@ var d = labToolData.cell || {};
                     ),
                     h('figcaption', { className: 'pt-2 text-center text-[11px] text-slate-300' }, 'Conceptual diagram, not to scale. Electron transfer, proton pumping, oxygen reduction, and ATP production are coupled but simplified here.')
                   ) : null,
-                  h('div', { className: 'mb-2 mt-1 flex flex-wrap items-center justify-between gap-2' },
-                    h('h5', { className: 'text-[12px] font-black uppercase tracking-wide text-slate-800' }, 'How the pathway unfolds'),
-                    h('span', { className: 'text-[11px] font-bold text-slate-500' }, process.steps.length + ' linked stages')
-                  ),
-                  h('ol', { className: 'grid gap-2 md:grid-cols-2', 'aria-label': process.name + ' stages' }, process.steps.map(function(step, stepIndex) {
-                    return h('li', { key: step[0], className: 'relative overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm', style: { borderTopColor: processVisual.accent, borderTopWidth: 3 } },
-                      h('div', { className: 'flex items-start gap-2.5' },
-                        h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-black text-white', style: { background: processVisual.accent } }, step[0]),
-                        h('div', { className: 'min-w-0 flex-1' },
-                          h('div', { className: 'flex flex-wrap items-baseline justify-between gap-1' },
-                            h('strong', { className: 'text-[13px] text-slate-900' }, step[1]),
-                            stepIndex < process.steps.length - 1 ? h('span', { className: 'text-[11px] font-black', style: { color: processVisual.accent }, 'aria-hidden': 'true' }, 'NEXT \u2192') : h('span', { className: 'text-[11px] font-black text-emerald-700' }, 'OUTCOME')
-                          ),
-                          h('div', { className: 'mt-1 text-[11px] font-black uppercase tracking-wide', style: { color: processVisual.accent } }, step[2]),
-                          h('p', { className: 'mt-1 text-[12px] leading-relaxed text-slate-600' }, step[3])
+                  h('section', { className: 'mt-1', 'aria-labelledby': 'cell-process-stages-heading' },
+                    h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' },
+                      h('div', null,
+                        h('h5', { id: 'cell-process-stages-heading', className: 'text-[12px] font-black uppercase tracking-wide text-slate-800' }, 'How the pathway unfolds'),
+                        h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Select a stage to focus your study.')
+                      ),
+                      h('span', { className: 'rounded-full px-2.5 py-1 text-[11px] font-black', style: { background: processVisual.soft, color: processVisual.accent }, 'aria-live': 'polite' }, 'Stage ' + (selectedStepIndex + 1) + ' of ' + process.steps.length)
+                    ),
+                    h('div', { role: 'progressbar', 'aria-label': 'Focused pathway stage', 'aria-valuemin': 1, 'aria-valuemax': process.steps.length, 'aria-valuenow': selectedStepIndex + 1, className: 'mb-3 flex gap-1' },
+                      process.steps.map(function(step, index) {
+                        var reached = index <= selectedStepIndex;
+                        return h('span', { key: 'progress-' + step[0], className: 'h-1.5 flex-1 rounded-full', style: { background: reached ? processVisual.accent : '#cbd5e1' }, 'aria-hidden': 'true' });
+                      })
+                    ),
+                    h('ol', { className: 'grid gap-2 md:grid-cols-2', 'aria-label': process.name + ' stages' }, process.steps.map(function(step, stepIndex) {
+                      var stepSelected = stepIndex === selectedStepIndex;
+                      return h('li', {
+                        key: step[0],
+                        className: 'overflow-hidden rounded-xl border bg-white transition-all',
+                        style: stepSelected ? { borderColor: processVisual.accent, boxShadow: '0 8px 22px rgba(15,23,42,0.14)' } : { borderColor: '#cbd5e1' }
+                      },
+                        h('button', {
+                          type: 'button',
+                          onClick: function() { chooseProcessStep(stepIndex); },
+                          'data-cell-process-step': stepIndex,
+                          'aria-pressed': stepSelected ? 'true' : 'false',
+                          'aria-current': stepSelected ? 'step' : undefined,
+                          className: 'w-full p-3 text-left transition-colors focus-visible:ring-2 focus-visible:ring-inset',
+                          style: { background: stepSelected ? processVisual.soft : '#fff' }
+                        },
+                          h('span', { className: 'flex items-start gap-2.5' },
+                            h('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[12px] font-black text-white', style: { background: processVisual.accent } }, step[0]),
+                            h('span', { className: 'min-w-0 flex-1' },
+                              h('span', { className: 'flex flex-wrap items-baseline justify-between gap-1' },
+                                h('strong', { className: 'text-[13px] text-slate-900' }, step[1]),
+                                stepSelected ? h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black text-white', style: { background: processVisual.accent } }, 'FOCUS') :
+                                  (stepIndex < process.steps.length - 1 ? h('span', { className: 'text-[11px] font-black', style: { color: processVisual.accent }, 'aria-hidden': 'true' }, 'STEP ' + (stepIndex + 1)) : h('span', { className: 'text-[11px] font-black text-emerald-700' }, 'OUTCOME'))
+                              ),
+                              h('span', { className: 'mt-1 block text-[11px] font-black uppercase tracking-wide', style: { color: processVisual.accent } }, step[2]),
+                              h('span', { className: 'mt-1 block text-[12px] leading-relaxed text-slate-600' }, step[3])
+                            )
+                          )
                         )
-                      )
-                    );
-                  })),
-                  h('nav', { className: 'mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white', 'aria-label': 'Connected pathways from ' + process.name, 'data-cell-process-connections': process.id },
+                      );
+                    }))
+                  ),                  h('nav', { className: 'mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white', 'aria-label': 'Connected pathways from ' + process.name, 'data-cell-process-connections': process.id },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-100 px-3 py-2' },
                       h('div', null,
                         h('h5', { className: 'text-[12px] font-black uppercase tracking-wide text-slate-900' }, 'Connected pathways'),

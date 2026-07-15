@@ -37,7 +37,7 @@ function havenState() {
     ],
     decorations: [
       // floor item listed FIRST to prove wall-before-floor ordering
-      { template: 'plants', templateLabel: 'Fern', placement: { roomId: 'main', surface: 'floor', cellIndex: 2 }, imageBase64: 'data:image/png;base64,FERN', studentReflection: 'My first plant!' },
+      { template: 'plants', templateLabel: 'Fern', placement: { roomId: 'main', surface: 'floor', cellIndex: 2 }, imageBase64: 'data:image/png;base64,FERN', studentReflection: 'My first plant!', linkedContent: { type: 'flashcards', data: { cards: [{ front: 'Photosynthesis', back: 'Plants turn light into chemical energy' }] } } },
       { template: 'poster', templateLabel: 'Star Poster', placement: { roomId: 'main', surface: 'wall', cellIndex: 0 }, imageBase64: 'data:image/png;base64,POSTER' },
       { template: 'lamp', placement: { roomId: 'garden', surface: 'floor', cellIndex: 1 }, aiRationale: 'Earned after five pomodoros', recipe3d: { name: 'Lamp', parts: [{ shape: 'cylinder', size: [0.1, 1], position: [0, 0.5, 0], color: '#f59e0b' }] } },
       { template: 'ghost', placement: null },                             // unplaced ⇒ excluded
@@ -57,9 +57,9 @@ describe('buildHavenPalaceData (pure haven → palace mapper)', () => {
     expect(out.data.main).toBe('My AlloHaven');
     expect(out.data.branches.map((b) => b.title)).toEqual(['🏠 My Room', '🌳 Garden']);
     expect(out.data.branches[0].items).toEqual(['Star Poster', 'Fern']);   // wall first, then floor
-    expect(out.data.branches[0].mnemonics).toEqual(['', 'My first plant!']);
+    expect(out.data.branches[0].mnemonics).toEqual(['', 'Remember: Photosynthesis - Plants turn light into chemical energy ? Anchor: My first plant!']);
     expect(out.data.branches[1].items).toEqual(['lamp']);                  // template fallback label
-    expect(out.data.branches[1].mnemonics).toEqual(['Earned after five pomodoros']);
+    expect(out.data.branches[1].mnemonics).toEqual(['Anchor: Earned after five pomodoros']);
   });
 
   it('keys decoration images AND recipe3d sculptures by the palace locus ids', () => {
@@ -103,6 +103,7 @@ describe('buildHavenPalaceData (pure haven → palace mapper)', () => {
     expect(palace.route.length).toBe(1 + 3 + 2);   // entry + 3 decorations + 2 artifacts
     // mnemonics travel into the palace (footer/aria announcements read them)
     const fern = palace.loci.find((l) => l.label === 'Fern');
-    expect(fern.mnemonic).toBe('My first plant!');
+    expect(fern.mnemonic).toContain('Remember: Photosynthesis');
+    expect(fern.mnemonic).toContain('Anchor: My first plant!');
   });
 });

@@ -825,6 +825,41 @@ function getAtlasAreaDescription(areaName, toolCount) {
   return match ? match[1] : 'Explore ' + toolCount + ' tools and learning experiences in this area.';
 }
 
+function getAtlasAreaLens(areaName) {
+  const area = String(areaName || '').toLowerCase();
+  const lenses = [
+    ['core literacy', ['Read', 'Understand', 'Adapt', 'Publish']],
+    ['math fundamentals', ['Model', 'Practice', 'Explain', 'Apply']],
+    ['advanced math', ['Explore', 'Prove', 'Visualize', 'Generalize']],
+    ['life & earth', ['Observe', 'Model', 'Connect', 'Explain']],
+    ['physics & chemistry', ['Predict', 'Experiment', 'Measure', 'Explain']],
+    ['computer science', ['Design', 'Code', 'Test', 'Debug']],
+    ['arts & music', ['Imagine', 'Compose', 'Perform', 'Reflect']],
+    ['behavioral science', ['Observe', 'Interpret', 'Connect', 'Apply']],
+    ['social studies', ['Context', 'Perspective', 'Systems', 'Action']],
+    ['strategy games', ['Plan', 'Test', 'Adapt', 'Reflect']],
+    ['biology & life', ['Structure', 'Function', 'Change', 'Interdependence']],
+    ['geography & earth', ['Place', 'Pattern', 'Process', 'Connection']],
+    ['sound, speech', ['Listen', 'Model', 'Practice', 'Perform']],
+    ['history & engineering', ['Context', 'Design', 'Build', 'Evaluate']],
+    ['ecology & migration', ['Habitat', 'Movement', 'Systems', 'Stewardship']],
+    ['technology & ai', ['Data', 'Model', 'Make', 'Evaluate']],
+    ['self-awareness', ['Notice', 'Name', 'Understand', 'Advocate']],
+    ['self-regulation', ['Notice', 'Choose', 'Practice', 'Recover']],
+    ['inner work', ['Pause', 'Reframe', 'Practice', 'Reflect']],
+    ['care of self', ['Listen', 'Map', 'Support', 'Sustain']],
+    ['self-direction', ['Values', 'Goals', 'Plan', 'Act']],
+    ['social awareness', ['Notice', 'Perspective', 'Culture', 'Care']],
+    ['relationship skills', ['Listen', 'Communicate', 'Repair', 'Belong']],
+    ['responsible decision', ['Pause', 'Weigh', 'Choose', 'Reflect']],
+    ['stewardship', ['Place', 'Care', 'Collaborate', 'Act']],
+    ['inquiry lanes', ['Question', 'Gather', 'Analyze', 'Share']],
+    ['open from anywhere', ['Create', 'Organize', 'Present', 'Reflect']],
+  ];
+  const match = lenses.find(([keyword]) => area.includes(keyword));
+  return match ? match[1] : ['Discover', 'Explore', 'Create', 'Share'];
+}
+
 function atlasHubId(hubName) {
   return 'atlas-hub-' + String(hubName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
@@ -902,6 +937,7 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
     ? cat.tools.length + ' of ' + originalTotal
     : String(cat.tools.length);
   const areaDescription = getAtlasAreaDescription(cat.name, originalTotal);
+  const areaLens = getAtlasAreaLens(cat.name);
 
   return (
     <details open={forceOpen || undefined} className="rounded-xl border border-slate-200 bg-slate-50/70 shadow-sm">
@@ -913,6 +949,17 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
           <span className="min-w-0 flex-1">
             <span className="font-bold text-xs leading-tight text-slate-800 block"><AtlasHighlight text={cat.name} query={query} /></span>
             <span className="text-[10px] leading-relaxed text-slate-500 block mt-0.5"><AtlasHighlight text={areaDescription} query={query} /></span>
+            <span className="block mt-2">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-1">Area focus</span>
+              <span role="list" aria-label={cat.name + ' focus'} className="flex flex-wrap gap-1">
+                {areaLens.map((focus) => (
+                  <span role="listitem" key={focus} className={'inline-flex items-center gap-1 rounded-full border ' + visual.border + ' bg-white px-1.5 py-0.5 text-[9px] font-bold text-slate-600'}>
+                    <span aria-hidden="true" className={'w-1.5 h-1.5 rounded-full ' + visual.accent} />
+                    {focus}
+                  </span>
+                ))}
+              </span>
+            </span>
             <span className="text-[9px] leading-relaxed text-slate-500 block mt-1.5">
               <span className="font-black uppercase tracking-wider text-slate-400">Examples: </span>
               {sampleTools.join(' / ')}
@@ -1165,6 +1212,22 @@ function AtlasTab({ t }) {
 
   const clearSearch = () => setAtlasQuery('');
 
+  const expandVisibleHubs = () => {
+    setOpenHubs((current) => {
+      const next = new Set(current);
+      visibleHubs.forEach((hub) => next.add(hub.hub));
+      return next;
+    });
+  };
+
+  const collapseVisibleHubs = () => {
+    setOpenHubs((current) => {
+      const next = new Set(current);
+      visibleHubs.forEach((hub) => next.delete(hub.hub));
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-5 text-slate-700">
       <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
@@ -1261,13 +1324,29 @@ function AtlasTab({ t }) {
             </p>
           </section>
 
-          <div className="flex items-center gap-2 pt-1">
-            <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
             <h5 id="atlas-directory-title" className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Complete directory</h5>
-            <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />
+            <div role="group" aria-label="Atlas hub visibility" className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={expandVisibleHubs}
+                aria-controls="atlas-directory-hubs"
+                className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+              >
+                Expand hubs
+              </button>
+              <button
+                type="button"
+                onClick={collapseVisibleHubs}
+                aria-controls="atlas-directory-hubs"
+                className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+              >
+                Collapse hubs
+              </button>
+            </div>
           </div>
 
-          <section aria-labelledby="atlas-directory-title">
+          <section id="atlas-directory-hubs" aria-labelledby="atlas-directory-title">
             {visibleHubs.length ? (
               <div className="space-y-2.5">
                 {visibleHubs.map((hub) => (

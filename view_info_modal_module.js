@@ -806,6 +806,40 @@ function getAtlasAreaDescription(areaName, toolCount) {
   const match = descriptions.find(([keyword]) => area.includes(keyword));
   return match ? match[1] : "Explore " + toolCount + " tools and learning experiences in this area.";
 }
+function getAtlasAreaLens(areaName) {
+  const area = String(areaName || "").toLowerCase();
+  const lenses = [
+    ["core literacy", ["Read", "Understand", "Adapt", "Publish"]],
+    ["math fundamentals", ["Model", "Practice", "Explain", "Apply"]],
+    ["advanced math", ["Explore", "Prove", "Visualize", "Generalize"]],
+    ["life & earth", ["Observe", "Model", "Connect", "Explain"]],
+    ["physics & chemistry", ["Predict", "Experiment", "Measure", "Explain"]],
+    ["computer science", ["Design", "Code", "Test", "Debug"]],
+    ["arts & music", ["Imagine", "Compose", "Perform", "Reflect"]],
+    ["behavioral science", ["Observe", "Interpret", "Connect", "Apply"]],
+    ["social studies", ["Context", "Perspective", "Systems", "Action"]],
+    ["strategy games", ["Plan", "Test", "Adapt", "Reflect"]],
+    ["biology & life", ["Structure", "Function", "Change", "Interdependence"]],
+    ["geography & earth", ["Place", "Pattern", "Process", "Connection"]],
+    ["sound, speech", ["Listen", "Model", "Practice", "Perform"]],
+    ["history & engineering", ["Context", "Design", "Build", "Evaluate"]],
+    ["ecology & migration", ["Habitat", "Movement", "Systems", "Stewardship"]],
+    ["technology & ai", ["Data", "Model", "Make", "Evaluate"]],
+    ["self-awareness", ["Notice", "Name", "Understand", "Advocate"]],
+    ["self-regulation", ["Notice", "Choose", "Practice", "Recover"]],
+    ["inner work", ["Pause", "Reframe", "Practice", "Reflect"]],
+    ["care of self", ["Listen", "Map", "Support", "Sustain"]],
+    ["self-direction", ["Values", "Goals", "Plan", "Act"]],
+    ["social awareness", ["Notice", "Perspective", "Culture", "Care"]],
+    ["relationship skills", ["Listen", "Communicate", "Repair", "Belong"]],
+    ["responsible decision", ["Pause", "Weigh", "Choose", "Reflect"]],
+    ["stewardship", ["Place", "Care", "Collaborate", "Act"]],
+    ["inquiry lanes", ["Question", "Gather", "Analyze", "Share"]],
+    ["open from anywhere", ["Create", "Organize", "Present", "Reflect"]]
+  ];
+  const match = lenses.find(([keyword]) => area.includes(keyword));
+  return match ? match[1] : ["Discover", "Explore", "Create", "Share"];
+}
 function atlasHubId(hubName) {
   return "atlas-hub-" + String(hubName || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
@@ -846,7 +880,8 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
   const originalTotal = cat.originalTotal || cat.tools.length;
   const countText = originalTotal > cat.tools.length ? cat.tools.length + " of " + originalTotal : String(cat.tools.length);
   const areaDescription = getAtlasAreaDescription(cat.name, originalTotal);
-  return /* @__PURE__ */ React.createElement("details", { open: forceOpen || void 0, className: "rounded-xl border border-slate-200 bg-slate-50/70 shadow-sm" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer p-3 hover:bg-white/70 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-start gap-2.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "w-7 h-7 shrink-0 rounded-lg " + visual.accent + " text-white flex items-center justify-center text-[11px] font-black shadow-sm" }, index + 1), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-xs leading-tight text-slate-800 block" }, /* @__PURE__ */ React.createElement(AtlasHighlight, { text: cat.name, query })), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] leading-relaxed text-slate-500 block mt-0.5" }, /* @__PURE__ */ React.createElement(AtlasHighlight, { text: areaDescription, query })), /* @__PURE__ */ React.createElement("span", { className: "text-[9px] leading-relaxed text-slate-500 block mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-black uppercase tracking-wider text-slate-400" }, "Examples: "), sampleTools.join(" / "))), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[10px] font-bold text-slate-500 bg-white border border-slate-200 rounded-full px-1.5 py-0.5" }, countText))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 border-t border-slate-200/80" }, /* @__PURE__ */ React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wider text-slate-400 mb-2" }, "Tools in this area"), /* @__PURE__ */ React.createElement("div", { role: "list", className: "flex flex-wrap gap-1.5", "aria-label": cat.name + " tools" }, cat.tools.map((tool, i) => /* @__PURE__ */ React.createElement("span", { role: "listitem", key: tool + i, className: "text-[10px] font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2 py-0.5" }, /* @__PURE__ */ React.createElement(AtlasHighlight, { text: tool, query }))))));
+  const areaLens = getAtlasAreaLens(cat.name);
+  return /* @__PURE__ */ React.createElement("details", { open: forceOpen || void 0, className: "rounded-xl border border-slate-200 bg-slate-50/70 shadow-sm" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer p-3 hover:bg-white/70 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-start gap-2.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "w-7 h-7 shrink-0 rounded-lg " + visual.accent + " text-white flex items-center justify-center text-[11px] font-black shadow-sm" }, index + 1), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-xs leading-tight text-slate-800 block" }, /* @__PURE__ */ React.createElement(AtlasHighlight, { text: cat.name, query })), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] leading-relaxed text-slate-500 block mt-0.5" }, /* @__PURE__ */ React.createElement(AtlasHighlight, { text: areaDescription, query })), /* @__PURE__ */ React.createElement("span", { className: "block mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-1" }, "Area focus"), /* @__PURE__ */ React.createElement("span", { role: "list", "aria-label": cat.name + " focus", className: "flex flex-wrap gap-1" }, areaLens.map((focus) => /* @__PURE__ */ React.createElement("span", { role: "listitem", key: focus, className: "inline-flex items-center gap-1 rounded-full border " + visual.border + " bg-white px-1.5 py-0.5 text-[9px] font-bold text-slate-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "w-1.5 h-1.5 rounded-full " + visual.accent }), focus)))), /* @__PURE__ */ React.createElement("span", { className: "text-[9px] leading-relaxed text-slate-500 block mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-black uppercase tracking-wider text-slate-400" }, "Examples: "), sampleTools.join(" / "))), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[10px] font-bold text-slate-500 bg-white border border-slate-200 rounded-full px-1.5 py-0.5" }, countText))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 border-t border-slate-200/80" }, /* @__PURE__ */ React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wider text-slate-400 mb-2" }, "Tools in this area"), /* @__PURE__ */ React.createElement("div", { role: "list", className: "flex flex-wrap gap-1.5", "aria-label": cat.name + " tools" }, cat.tools.map((tool, i) => /* @__PURE__ */ React.createElement("span", { role: "listitem", key: tool + i, className: "text-[10px] font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2 py-0.5" }, /* @__PURE__ */ React.createElement(AtlasHighlight, { text: tool, query }))))));
 }
 function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query }) {
   const catCount = hub.categories ? hub.categories.length : 0;
@@ -992,6 +1027,20 @@ function AtlasTab({ t }) {
     });
   };
   const clearSearch = () => setAtlasQuery("");
+  const expandVisibleHubs = () => {
+    setOpenHubs((current) => {
+      const next = new Set(current);
+      visibleHubs.forEach((hub) => next.add(hub.hub));
+      return next;
+    });
+  };
+  const collapseVisibleHubs = () => {
+    setOpenHubs((current) => {
+      const next = new Set(current);
+      visibleHubs.forEach((hub) => next.delete(hub.hub));
+      return next;
+    });
+  };
   return /* @__PURE__ */ React.createElement("div", { className: "space-y-5 text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F5FA}\uFE0F"), t("about.atlas_title") || "The AlloFlow Atlas"), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("about.atlas_intro") || "A map of everything inside AlloFlow, by hub. Choose a region for its visual guide, areas, and complete tool directory.")), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Atlas view", className: "grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-100 p-1" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1045,7 +1094,25 @@ function AtlasTab({ t }) {
       className: "absolute right-0 top-0 min-h-11 min-w-11 flex items-center justify-center rounded-r-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600"
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")
-  )), /* @__PURE__ */ React.createElement("p", { id: "atlas-search-status", role: "status", "aria-live": "polite", className: "text-[10px] text-slate-500 mt-2" }, isSearching ? resultStats.tools ? resultStats.tools + (resultStats.tools === 1 ? " matching tool" : " matching tools") + " across " + resultStats.areas + (resultStats.areas === 1 ? " area." : " areas.") : "No Atlas matches found." : "Browse the full directory or search to narrow it.")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "h-px flex-1 bg-slate-200", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h5", { id: "atlas-directory-title", className: "text-[10px] font-black uppercase tracking-[0.18em] text-slate-400" }, "Complete directory"), /* @__PURE__ */ React.createElement("span", { className: "h-px flex-1 bg-slate-200", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "atlas-directory-title" }, visibleHubs.length ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2.5" }, visibleHubs.map((hub) => /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("p", { id: "atlas-search-status", role: "status", "aria-live": "polite", className: "text-[10px] text-slate-500 mt-2" }, isSearching ? resultStats.tools ? resultStats.tools + (resultStats.tools === 1 ? " matching tool" : " matching tools") + " across " + resultStats.areas + (resultStats.areas === 1 ? " area." : " areas.") : "No Atlas matches found." : "Browse the full directory or search to narrow it.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1" }, /* @__PURE__ */ React.createElement("h5", { id: "atlas-directory-title", className: "text-[10px] font-black uppercase tracking-[0.18em] text-slate-400" }, "Complete directory"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Atlas hub visibility", className: "flex flex-wrap gap-1.5" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: expandVisibleHubs,
+      "aria-controls": "atlas-directory-hubs",
+      className: "min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    },
+    "Expand hubs"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: collapseVisibleHubs,
+      "aria-controls": "atlas-directory-hubs",
+      className: "min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    },
+    "Collapse hubs"
+  ))), /* @__PURE__ */ React.createElement("section", { id: "atlas-directory-hubs", "aria-labelledby": "atlas-directory-title" }, visibleHubs.length ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2.5" }, visibleHubs.map((hub) => /* @__PURE__ */ React.createElement(
     AtlasHubCard,
     {
       key: hub.hub,

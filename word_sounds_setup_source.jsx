@@ -33,11 +33,12 @@
         'Consonants': ['b','c','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','y','z'],
         'Digraphs': ['sh','zh','ch','th','wh','ph','ck','ng','q'],
         'Short Vowels': ['a','e','i','o','u','oo_short'],
-        'Long Vowels': ['ee','oo','ue','aw','ai','ea','oa'],
+        'Long Vowels': ['ee','oo','ue','aw','oa'],
         'Diphthongs': ['ay','ie','ow','oy'],
         'R-Controlled': ['ar','er','ir','or','ur','air','ear'],
     };
-    const PHONEME_PACK_EXAMPLES = { b:'ball', c:'cat', d:'dog', f:'fish', g:'goat', h:'hat', j:'jam', k:'kite', l:'leg', m:'man', n:'net', p:'pig', r:'red', s:'sun', t:'top', v:'van', w:'win', y:'yes', z:'zip', sh:'ship', zh:'measure', ch:'chip', th:'thumb', wh:'whale', ph:'phone', ck:'duck', ng:'ring', q:'queen', a:'apple', e:'egg', i:'igloo', o:'octopus', u:'up', oo_short:'book', ee:'tree', oo:'moon', ue:'blue', aw:'paw', ai:'rain', ea:'leaf', oa:'boat', ay:'play', ie:'pie', ow:'cow', oy:'boy', ar:'car', er:'her', ir:'bird', or:'fork', ur:'fur', air:'chair', ear:'ear' };
+    const PHONEME_PACK_ALIASES = { ai: 'ay', ea: 'ee' };
+    const PHONEME_PACK_EXAMPLES = { b:'ball', c:'cat', d:'dog', f:'fish', g:'goat', h:'hat', j:'jam', k:'kite', l:'leg', m:'man', n:'net', p:'pig', r:'red', s:'sun', t:'top', v:'van', w:'win', y:'yes', z:'zip', sh:'ship', zh:'measure', ch:'chip', th:'thumb', wh:'whale', ph:'phone', ck:'duck', ng:'ring', q:'queen', a:'apple', e:'egg', i:'igloo', o:'octopus', u:'up', oo_short:'book', ee:'tree', oo:'moon', ue:'blue', aw:'paw', oa:'boat', ay:'play', ie:'pie', ow:'cow', oy:'boy', ar:'car', er:'her', ir:'bird', or:'fork', ur:'fur', air:'chair', ear:'ear' };
     // Kid-friendly articulatory cues — turns each recording into a mini phonics
     // lesson: how the mouth makes the sound, whether it is voiced ("buzzy") or
     // unvoiced ("quiet"), and whether it is a continuant ("stretch it") or a stop
@@ -78,14 +79,12 @@
         o: 'Round mouth, short /o/ (octopus).',
         u: 'Relaxed mouth, short /u/ (up).',
         oo_short: 'Short /oo/ (book), lips a little round.',
-        ee: 'Big smile, long /ee/ (tree). Stretch it.',
+        ee: 'Big smile, long /ee/ (tree/leaf). Stretch it.',
         oo: 'Round lips, long /oo/ (moon). Stretch it.',
         ue: 'Long /u/ (blue), round lips.',
         aw: 'Open round mouth /aw/ (paw).',
-        ai: 'Long /a/ (rain), say the letter A.',
-        ea: 'Long /ee/ (leaf).',
         oa: 'Long /o/ (boat), say the letter O.',
-        ay: 'Long /a/ (play), say the letter A.',
+        ay: 'Long /a/ (play/rain), say the letter A.',
         ie: 'Long /i/ (pie), say the letter I.',
         ow: 'Round, then open (cow).',
         oy: 'Round, then smile (boy).',
@@ -120,7 +119,7 @@
         { word: 'duck', keys: ['d','u','ck'] },
         { word: 'ring', keys: ['r','i','ng'] },
         { word: 'moon', keys: ['m','oo','n'] },
-        { word: 'rain', keys: ['r','ai','n'] },
+        { word: 'rain', keys: ['r','ay','n'] },
         { word: 'boat', keys: ['b','oa','t'] },
     ];
     // Show the example word with its target grapheme bolded (sound <-> symbol):
@@ -213,17 +212,28 @@
     }
     function normalizePhonemePack(p) {
         p = p || {};
+        const clips = Object.assign({}, (p.clips && typeof p.clips === 'object') ? p.clips : {});
+        Object.keys(PHONEME_PACK_ALIASES).forEach((alias) => {
+            const canonical = PHONEME_PACK_ALIASES[alias];
+            if (!clips[canonical] && clips[alias]) clips[canonical] = clips[alias];
+            delete clips[alias];
+        });
         return {
             id: p.id || genPhonemePackId(),
             name: p.name || 'Voice Pack',
             kind: p.kind === 'student-voice' ? 'student-voice' : 'teacher-model',
             consent: p.consent === true,
-            clips: (p.clips && typeof p.clips === 'object') ? p.clips : {},
+            clips,
             instr: (p.instr && typeof p.instr === 'object') ? p.instr : {}, // instruction + reinforcer overrides, keyed by slot id
             history: (function () {
                 const out = {};
                 if (p.history && typeof p.history === 'object') {
                     Object.keys(p.history).forEach((k) => { if (Array.isArray(p.history[k])) out[k] = p.history[k]; });
+                    Object.keys(PHONEME_PACK_ALIASES).forEach((alias) => {
+                        const canonical = PHONEME_PACK_ALIASES[alias];
+                        if (out[alias]) out[canonical] = (out[canonical] || []).concat(out[alias]).sort((a, b) => (a?.ts || 0) - (b?.ts || 0));
+                        delete out[alias];
+                    });
                 }
                 return out;
             })(),
@@ -1791,7 +1801,7 @@
                         // is on a cloud voice, Kokoro isn't already loaded, and they haven't
                         // dismissed the tip this session. Switching now (before hitting Generate)
                         // is the moment that actually changes the outcome — by the time prewarm
-                        // starts synthesizing ~5 clips per word, Gemini's 60s cooldown can trip.
+                        // starts synthesizing dozens of clips per word, Gemini's 60s cooldown can trip.
                         const isKokoroVoice = typeof selectedVoice === 'string' && /^[abil][fm]_/i.test(selectedVoice);
                         const kokoroReady = typeof window !== 'undefined' && window._kokoroTTS && window._kokoroTTS.ready;
                         const isEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith('en');
@@ -1807,7 +1817,7 @@
                                     <div className="flex-1 min-w-0">
                                         <p className="font-bold text-amber-900 text-sm mb-1">{t('word_sounds.kokoro_recommended') || 'Recommended for Word Sounds: Kokoro local voice'}</p>
                                         <p className="text-amber-800 text-xs leading-relaxed mb-2">
-                                            Preloading synthesizes ~5 audio clips per word. On Gemini this can hit the 60-second rate-limit cooldown mid-preload. Kokoro is a free on-device voice — one-time ~40 MB download, then every Word Sounds session is instant and rate-limit-free.
+                                            Preloading can synthesize dozens of audio clips per word—including prompts, choices, phonemes, syllables, and feedback. On Gemini this can hit the 60-second rate-limit cooldown mid-preload. Kokoro is a free on-device voice—one-time ~40 MB download, then every Word Sounds session is instant and rate-limit-free.
                                         </p>
                                         <div className="flex gap-2">
                                             <button type="button"
@@ -2024,7 +2034,7 @@
                             {showVoicePack ? <PhonemeVoicePackEditor onClose={() => setShowVoicePack(false)} t={t} /> : null}
                             <div className="space-y-3" role="group" aria-labelledby="word-sounds-active-sources-label">
                                 <div id="word-sounds-active-sources-label" className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.sources', 'Active Sources')}</div>
-                                <label className={`min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary"><input type="checkbox" checked={includeGlossary} onChange={(e) => setIncludeGlossary(e.target.checked)} className="sr-only" />
+                                <label className={`block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary"><input type="checkbox" checked={includeGlossary} onChange={(e) => setIncludeGlossary(e.target.checked)} className="sr-only" />
                                     <span className="flex items-center gap-3">
                                         <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
                                             {includeGlossary && <Check size={14} className="text-white" aria-hidden="true" />}

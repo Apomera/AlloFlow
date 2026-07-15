@@ -10879,7 +10879,16 @@
       var mnemonics = [];
       placed.forEach(function(d, ii) {
         items.push(d.templateLabel || d.template || 'Decoration');
-        mnemonics.push(d.studentReflection || d.aiRationale || '');
+        // The decoration is the spatial cue; its attached study content is the
+        // thing the student is walking the route to remember. The old mapper
+        // only carried a reflection/rationale, so a locus with a flashcard deck,
+        // acronym, or cloze note could arrive in 3D without its learning payload.
+        var memoryText = trimIdeaText(getLinkedContentIdeaText(d.linkedContent), 280);
+        var anchorText = trimIdeaText(d.studentReflection || d.aiRationale || '', 140);
+        var mnemonicParts = [];
+        if (memoryText) mnemonicParts.push('Remember: ' + memoryText);
+        if (anchorText) mnemonicParts.push('Anchor: ' + anchorText);
+        mnemonics.push(mnemonicParts.join(' ? '));
         if (d.imageBase64) images['b' + bi + '_i' + ii] = d.imageBase64;
         if (d.recipe3d) objects['b' + bi + '_i' + ii] = d.recipe3d;   // Prim3D sculpture (v2+ decorations)
       });
@@ -10950,6 +10959,7 @@
   // palace module owns the aria-live announcements and the route-list fallback.
   function openHavenWalk3D(state) {
     var store = window.AlloModules && window.AlloModules.StudentArtifactStore;
+    var returnFocus = document.activeElement;
     var artifacts = (store && typeof store.read === 'function') ? store.read() : [];
     var built = buildHavenPalaceData(state, artifacts);
     var totalLoci = built.data.branches.reduce(function(s, b) { return s + b.items.length; }, 0);
@@ -10969,7 +10979,7 @@
     titleWrap.appendChild(title); titleWrap.appendChild(hint);
     var closeBtn = document.createElement('button');
     closeBtn.setAttribute('aria-label', 'Close'); closeBtn.textContent = '✕';
-    closeBtn.style.cssText = 'border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;';
+    closeBtn.style.cssText = 'border:1px solid transparent;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;width:44px;height:44px;border-radius:8px;';
     header.appendChild(titleWrap); header.appendChild(closeBtn);
     var body = document.createElement('div'); body.style.cssText = 'flex:1;position:relative;min-height:0;';
     var status = document.createElement('div');
@@ -10986,10 +10996,24 @@
       try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
       try { document.removeEventListener('keydown', onKey, true); } catch (e) {}
       try { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+      try { if (returnFocus && typeof returnFocus.focus === 'function') returnFocus.focus(); } catch (e) {}
     }
-    function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); destroy(); } }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); destroy(); return; }
+      if (e.key !== 'Tab') return;
+      var focusable = overlay.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      if (!focusable.length) { e.preventDefault(); return; }
+      var first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
     document.addEventListener('keydown', onKey, true);
     closeBtn.onclick = destroy;
+    closeBtn.focus();
+    if (!totalLoci) {
+      status.textContent = 'No loci yet. Place a decoration in an unlocked room, then attach a flashcard, acronym, note, or image association to make this walk memorable.';
+      return destroy;
+    }
     _havenPalaceEnsure().then(function(ok) {
       if (!overlay.parentNode) return;
       var MP = window.AlloModules && window.AlloModules.MemoryPalace;
@@ -11008,10 +11032,10 @@
         images: built.images,
         objects: built.objects,
         landmarks: resolvedLandmarks,
-        onLocusChange: function(locus) {
+        onLocusChange: function(locus, idx, total) {
           if (!locus) return;
           footer.textContent = locus.id === '__entry'
-            ? ''
+            ? ('Entrance - ' + (total - 1) + ' loci')
             : (locus.label + (locus.mnemonic ? ' — ' + locus.mnemonic : ''));
         }
       });

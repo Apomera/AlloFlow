@@ -2016,6 +2016,9 @@ const handleSaveReflection = async (deps) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] handleSaveReflection fired"); } catch(_) {}
       if ((!personaState.selectedCharacter && personaState.mode !== 'panel') || !personaReflectionInput.trim()) return;
+      const submissionGuard = deps.personaReflectionSubmitRef;
+      if (submissionGuard?.current) return;
+      if (submissionGuard) submissionGuard.current = true;
       setIsGradingReflection(true);
       let subjectName = "Interview";
       let contextData = "";
@@ -2068,14 +2071,27 @@ const handleSaveReflection = async (deps) => {
           } catch (e) {
               warnLog("Grading JSON parse error — presenting without a score", e);
           }
-          if (!grading || typeof grading !== 'object' || typeof grading.score !== 'number') {
+          const parsedScore = Number(grading?.score);
+          if (!grading || typeof grading !== 'object' || !Number.isFinite(parsedScore)) {
               grading = {
                   score: null,
-                  feedback: t('persona.grading_unavailable') || 'Your reflection was saved. Automatic feedback was unavailable this time — your teacher can review it.',
+                  feedback: t('persona.grading_unavailable') || 'Your reflection was saved. Automatic feedback was unavailable this time - your teacher can review it.',
                   xpBonus: 20
               };
+          } else {
+              const parsedXpBonus = Number(grading.xpBonus);
+              grading = {
+                  ...grading,
+                  score: Math.max(0, Math.min(100, Math.round(parsedScore))),
+                  feedback: typeof grading.feedback === 'string' && grading.feedback.trim()
+                      ? grading.feedback.trim()
+                      : (t('persona.grading_unavailable') || 'Your reflection was saved.'),
+                  xpBonus: Number.isFinite(parsedXpBonus)
+                      ? Math.max(0, Math.min(50, Math.round(parsedXpBonus)))
+                      : 0
+              };
           }
-          const totalXP = 10 + (grading.xpBonus || 0);
+          const totalXP = 10 + grading.xpBonus;
           const formattedChatLog = personaState.chatHistory.map(m => `**${m.role === 'user' ? 'Student' : (m.speakerName || subjectName)}:**\n${m.text}${m.translation ? `\n\n> *English translation:* ${m.translation}` : ''}`).join('\n\n---\n\n');
           let metaHeader = `### 📝 Student Reflection\n`;
           if (standardsContext || dokContext) {
@@ -2085,7 +2101,7 @@ const handleSaveReflection = async (deps) => {
           const fullData = `${formattedChatLog}\n\n---\n\n${metaHeader}${personaReflectionInput}\n\n> **Teacher Bot Feedback:** ${grading.feedback}${scoreSuffix}`;
           const newItem = {
               id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-              type: 'udl-advice',
+              type: 'persona-reflection',
               data: fullData,
               meta: typeof grading.score === 'number' ? `Reflection on ${subjectName} (Score: ${grading.score})` : `Reflection on ${subjectName}`,
               title: `Reflection: ${subjectName}`,
@@ -2118,6 +2134,7 @@ const handleSaveReflection = async (deps) => {
           addToast(t('toasts.reflection_grade_error'), "error");
       } finally {
           setIsGradingReflection(false);
+          if (submissionGuard) submissionGuard.current = false;
       }
 };
 

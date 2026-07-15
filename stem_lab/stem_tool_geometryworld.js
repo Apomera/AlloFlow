@@ -411,6 +411,39 @@
       measurementsWithoutPrediction: Math.max(0, (measurements || []).length - errors.length)
     };
   }
+  function serializeEventDetailValue(value) {
+    if (value == null) return '';
+    if (typeof value === 'object') {
+      try { return JSON.stringify(value); }
+      catch (err) { return String(value); }
+    }
+    return String(value);
+  }
+
+  function formatSessionEventDetails(data) {
+    return Object.keys(data || {}).sort().map(function(key) { return key + '=' + serializeEventDetailValue(data[key]); }).join('; ');
+  }
+  function measurementDetailsForReport(measurements) {
+    return (measurements || []).map(function(record, index) {
+      var data = record && record.data ? record.data : (record || {});
+      var dimensions = [data.L, data.W, data.H].every(function(value) { return typeof value === 'number'; }) ? data.L + '\u00d7' + data.W + '\u00d7' + data.H : '';
+      var materialNames = Object.keys(data.materialCounts || {}).sort();
+      return {
+        sequence: index + 1,
+        elapsed: record && record.elapsed ? record.elapsed : '',
+        dimensions: dimensions,
+        shape: data.isSolidPrism ? 'Rectangular prism' : 'Composite structure',
+        occupiedVolume: typeof data.volume === 'number' ? data.volume : null,
+        prediction: typeof data.prediction === 'number' ? data.prediction : null,
+        predictionPercentError: typeof data.predictionPercentError === 'number' ? data.predictionPercentError : null,
+        surfaceArea: typeof data.surfaceArea === 'number' ? data.surfaceArea : null,
+        blocks: typeof data.blocks === 'number' ? data.blocks : null,
+        materials: materialNames
+      };
+    });
+  }
+
+
 
   function compareMeasurementRecords(previous, latest) {
     if (!previous || !latest || previous.isComplete === false || latest.isComplete === false) return null;
@@ -4121,7 +4154,7 @@
         engine.exportSessionCSV = function() {
           var rows = ['Timestamp_ms,Elapsed,Event_Type,Details'];
           engine.sessionLog.forEach(function(entry) {
-            var details = Object.keys(entry.data).map(function(k) { return k + '=' + entry.data[k]; }).join('; ');
+            var details = formatSessionEventDetails(entry.data);
             rows.push(entry.timestamp + ',' + entry.elapsed + ',' + entry.type + ',"' + details.replace(/"/g, '""') + '"');
           });
           return rows.join('\n');
@@ -4197,6 +4230,7 @@
                 answer: e.data.choice || e.data.chosenAnswer || ''
               };
             }),
+            measurementDetails: measurementDetailsForReport(measurements),
 
             // Standards alignment
             standardsAddressed: ['5.MD.C.3', '5.MD.C.4', '5.MD.C.5'],
@@ -4273,6 +4307,15 @@
             h += '<li><strong>' + s + '</strong> \u2014 ' + desc + '</li>';
           });
           h += '</ul>';
+          if (r.measurementDetails && r.measurementDetails.length > 0) {
+            h += '<h2>Measurement-Level Evidence</h2><table><tr><th>#</th><th>Time</th><th>Structure</th><th>Actual V</th><th>Prediction</th><th>Error</th><th>Surface</th><th>Blocks</th><th>Materials</th></tr>';
+            r.measurementDetails.forEach(function(m) {
+              h += '<tr><td>' + m.sequence + '</td><td>' + (m.elapsed || '&mdash;') + '</td><td>' + m.shape + (m.dimensions ? '<br><small>' + m.dimensions + '</small>' : '') + '</td>';
+              h += '<td>' + (m.occupiedVolume === null ? '&mdash;' : formatVolume(m.occupiedVolume)) + '</td><td>' + (m.prediction === null ? '&mdash;' : formatVolume(m.prediction)) + '</td><td>' + (m.predictionPercentError === null ? '&mdash;' : m.predictionPercentError + '%') + '</td>';
+              h += '<td>' + (m.surfaceArea === null ? '&mdash;' : m.surfaceArea) + '</td><td>' + (m.blocks === null ? '&mdash;' : m.blocks) + '</td><td>' + (m.materials.length ? m.materials.join(', ') : '&mdash;') + '</td></tr>';
+            });
+            h += '</table>';
+          }
 
           if (r.questionDetails && r.questionDetails.length > 0) {
             h += '<h2>Question-Level Detail</h2><table><tr><th>#</th><th>NPC</th><th>Question</th><th>Result</th><th>Time</th></tr>';

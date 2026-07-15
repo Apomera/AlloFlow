@@ -51,12 +51,15 @@ describe('Throughline — View in 3D entry point', () => {
     const viewBtn = btn(host, 'throughline.view_3d');
     expect(viewBtn).toBeTruthy();
 
+    viewBtn.focus();
+    expect(document.activeElement).toBe(viewBtn);
     await act(async () => { viewBtn.click(); });
     await act(async () => { await Promise.resolve(); });   // flush ensureConceptGraph() + the View effect
 
     const dialog = Array.prototype.slice.call(host.querySelectorAll('[role="dialog"]'))
       .find((d) => (d.getAttribute('aria-label') || '').includes('throughline.view_3d'));
     expect(dialog).toBeTruthy();
+    expect(dialog.contains(document.activeElement)).toBe(true);
     // sampleUnit n1→h1 ("Source Intro"): the 3D overlay's accessible outline names lessons by resolved title
     expect(dialog.textContent).toMatch(/Source Intro/);
 
@@ -65,6 +68,7 @@ describe('Throughline — View in 3D entry point', () => {
     await act(async () => { if (closeBtn) closeBtn.click(); });
     expect(Array.prototype.slice.call(host.querySelectorAll('[role="dialog"]'))
       .some((d) => (d.getAttribute('aria-label') || '').includes('throughline.view_3d'))).toBe(false);
+    expect(document.activeElement).toBe(viewBtn);
 
     try { act(() => root.unmount()); } catch (_) {}
     host.remove();

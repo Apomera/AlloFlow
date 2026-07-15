@@ -1881,6 +1881,9 @@ const handleSaveReflection = async (deps) => {
   } catch (_) {
   }
   if (!personaState.selectedCharacter && personaState.mode !== "panel" || !personaReflectionInput.trim()) return;
+  const submissionGuard = deps.personaReflectionSubmitRef;
+  if (submissionGuard?.current) return;
+  if (submissionGuard) submissionGuard.current = true;
   setIsGradingReflection(true);
   let subjectName = "Interview";
   let contextData = "";
@@ -1930,14 +1933,23 @@ const handleSaveReflection = async (deps) => {
     } catch (e) {
       warnLog("Grading JSON parse error \u2014 presenting without a score", e);
     }
-    if (!grading || typeof grading !== "object" || typeof grading.score !== "number") {
+    const parsedScore = Number(grading?.score);
+    if (!grading || typeof grading !== "object" || !Number.isFinite(parsedScore)) {
       grading = {
         score: null,
-        feedback: t("persona.grading_unavailable") || "Your reflection was saved. Automatic feedback was unavailable this time \u2014 your teacher can review it.",
+        feedback: t("persona.grading_unavailable") || "Your reflection was saved. Automatic feedback was unavailable this time - your teacher can review it.",
         xpBonus: 20
       };
+    } else {
+      const parsedXpBonus = Number(grading.xpBonus);
+      grading = {
+        ...grading,
+        score: Math.max(0, Math.min(100, Math.round(parsedScore))),
+        feedback: typeof grading.feedback === "string" && grading.feedback.trim() ? grading.feedback.trim() : t("persona.grading_unavailable") || "Your reflection was saved.",
+        xpBonus: Number.isFinite(parsedXpBonus) ? Math.max(0, Math.min(50, Math.round(parsedXpBonus))) : 0
+      };
     }
-    const totalXP = 10 + (grading.xpBonus || 0);
+    const totalXP = 10 + grading.xpBonus;
     const formattedChatLog = personaState.chatHistory.map((m) => `**${m.role === "user" ? "Student" : m.speakerName || subjectName}:**
 ${m.text}${m.translation ? `
 
@@ -1959,7 +1971,7 @@ ${metaHeader}${personaReflectionInput}
 > **Teacher Bot Feedback:** ${grading.feedback}${scoreSuffix}`;
     const newItem = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      type: "udl-advice",
+      type: "persona-reflection",
       data: fullData,
       meta: typeof grading.score === "number" ? `Reflection on ${subjectName} (Score: ${grading.score})` : `Reflection on ${subjectName}`,
       title: `Reflection: ${subjectName}`,
@@ -1989,6 +2001,7 @@ ${metaHeader}${personaReflectionInput}
     addToast(t("toasts.reflection_grade_error"), "error");
   } finally {
     setIsGradingReflection(false);
+    if (submissionGuard) submissionGuard.current = false;
   }
 };
 const handleSocraticSubmit = async (inputOverride = null, deps) => {

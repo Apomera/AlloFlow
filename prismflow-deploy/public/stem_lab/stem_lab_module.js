@@ -3583,6 +3583,11 @@
                 color: 'cyan', ready: true
               },
               {
+                id: 'weatherSystems', icon: '\uD83C\uDF26\uFE0F', label: 'Weather Systems & Forecasting',
+                desc: 'Explore fronts, pressure, humidity, wind, radar, station models, severe-weather hazards, and evidence-based forecasting.',
+                color: 'sky', ready: true
+              },
+              {
                 id: 'rockCycle', icon: '\uD83E\uDEA8', label: t('stem.tools_menu.rock_cycle'),
                 desc: 'Trace the transformation of igneous, sedimentary, and metamorphic rocks.',
                 color: 'stone', ready: true
@@ -5366,7 +5371,7 @@
             dataPlot: true, dinoLab: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, geologyExplorer: true, science: true, solarSystem: true,
-            titrationLab: true, universe: true, unitConvert: true, waterCycle: true,
+            titrationLab: true, universe: true, unitConvert: true, waterCycle: true, weatherSystems: true,
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
             cyberDefense: true, semiconductor: true,

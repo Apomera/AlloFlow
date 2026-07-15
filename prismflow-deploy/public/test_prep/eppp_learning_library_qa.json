@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T13:35:20.673Z",
+  "generatedAt": "2026-07-15T15:47:24.810Z",
   "libraryId": "eppp-learning-library",
   "standard": {
     "checks": [
@@ -29,7 +29,9 @@
     "retainedReviewedFlashcards": 336,
     "retiredRedundantFlashcards": 79,
     "qaPassedMemoryAids": 0,
-    "sourceReviewedMemoryAids": 8,
+    "sourceReviewedMemoryAids": 24,
+    "releasedMemoryAids": 24,
+    "releasedFlashcards": 336,
     "editorialReviewedSourcePendingMemoryAids": 2
   },
   "status": "review-in-progress",

@@ -114,5 +114,18 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain("'aria-controls': 'geo-stretch-net-panel'");
     expect(source).toContain("disabled: !net");
     expect(source).toContain("'aria-controls': 'geo-single-net-panel'");
+    expect(source).toContain("clearTimeout(window._geoSrTimer); window._geoSrTimer = null");
+    expect(source).toContain("_geoAudioCtx.state !== 'closed'");
+    expect(source).toContain("_geoAudioCtx = null");
+    expect(source).toContain("id: 'geo-challenge-answer'");
+    expect(source).toContain("document.getElementById('geo-challenge-answer')");
+    expect(source).toContain("geoFormatChallengeAnswer(challenge)");
+    expect(source).toContain("'aria-label': t('stem.geosandbox.challenge_result', 'Challenge result')");
+    expect(source).toContain("geoBuildTutorPrompt(mode, shape, dims, construction, sculptRecipe, unitDef.short)");
+    expect(source).toContain("if (aiLoading || aiRequestRef.current) return");
+    expect(source).toContain("'aria-controls': 'geo-ai-tutor-panel'");
+    expect(source).toContain("'aria-busy': aiLoading");
+    expect(source).toContain("Analyzing the current geometry scene");
+    expect(source).toContain("document.getElementById('geo-ai-tutor-button')");
   });
 });

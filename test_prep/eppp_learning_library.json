@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T13:35:20.673Z",
+  "generatedAt": "2026-07-15T15:47:24.810Z",
   "libraryId": "eppp-learning-library",
   "reviewStandard": {
     "checks": [
@@ -29,7 +29,9 @@
     "retainedReviewedFlashcards": 336,
     "retiredRedundantFlashcards": 79,
     "qaPassedMemoryAids": 0,
-    "sourceReviewedMemoryAids": 8,
+    "sourceReviewedMemoryAids": 24,
+    "releasedMemoryAids": 24,
+    "releasedFlashcards": 336,
     "editorialReviewedSourcePendingMemoryAids": 2
   },
   "chapters": [
@@ -23538,7 +23540,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23563,7 +23567,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23587,7 +23593,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23611,7 +23619,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23634,7 +23644,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23659,7 +23671,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23685,7 +23699,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23712,7 +23728,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23737,7 +23755,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23763,7 +23783,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23787,7 +23809,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23812,7 +23836,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23836,7 +23862,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23860,7 +23888,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23874,7 +23904,7 @@
       "domain": "Growth & Lifespan Development",
       "title": "Erikson's 8 Stages",
       "type": "mnemonic",
-      "content": "**\"Trust In It, I Identify In Good Integrity\"** — First letter of each crisis: 1. **T**rust vs. Mistrust (0-1): Can I trust the world? 2. **A**utonomy vs. Shame (1-3): Can **I** do it myself? 3. **I**nitiative vs. Guilt (3-6): Can **I** make things happen? 4. **I**ndustry vs. Inferiority (6-12): Can **I** master skills? 5. **Id**entity vs. Role Confusion (12-18): Who am **I**? 6. **In**timacy vs. Isolation (18-40): Can I share **in**timacy? 7. **G**enerativity vs. Stagnation (40-65): Am I **G**iving back? 8. **I**ntegrity vs. Despair (65+): Was my life worthy?",
+      "content": "**Erikson?s historical sequence:** trust?mistrust; autonomy?shame/doubt; initiative?guilt; industry?inferiority; identity?role confusion; intimacy?isolation; generativity?stagnation; integrity?despair. The order is useful, but age bands are approximate teaching conventions?not diagnostic deadlines. Erikson proposed that each period makes a tension salient; themes can recur and later development can revise their resolution. Use the model to organize questions, not infer pathology from age or assume one culturally universal life course.",
       "tags": [
         "erikson",
         "psychosocial",
@@ -23882,14 +23912,25 @@
         "identity",
         "stages"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 9.2: Lifespan Theories",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+          "whyReputable": "An expert-reviewed text that presents historical stage theories with developmental context."
+        }
+      ],
+      "reviewNote": "Retained the sequence while removing rigid ages and universal-path claims.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -23910,7 +23951,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23935,7 +23978,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -23949,7 +23994,7 @@
       "domain": "Growth & Lifespan Development",
       "title": "Vygotsky's ZPD",
       "type": "analogy",
-      "content": "The Zone of Proximal Development is like a **swimming lesson:** 🏊 **Can Do Zone** = Can swim alone (independent level) 🦺 **ZPD** = Can swim WITH water wings or instructor (learning zone) 🌊 **Can't Do Zone** = Deep end — too hard even with help **Scaffolding** = The water wings. You provide support, then gradually remove it as the child gains confidence. Key: Learning happens in the ZPD, NOT in the comfort zone.",
+      "content": "**ZPD: what a learner cannot yet do independently but can accomplish with appropriate guidance or collaboration.** Cue: can do independently; can do with well-matched assistance (ZPD); cannot yet do even with current assistance. Scaffolding is a later instructional metaphor for contingent support that changes as competence grows; it is related to, but not identical with, Vygotsky?s original construct. Effective support responds to the learner and fades or changes when no longer needed. Avoid ?all learning happens only here.?",
       "tags": [
         "vygotsky",
         "zpd",
@@ -23957,14 +24002,25 @@
         "development",
         "learning"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/lifespan-development/pages/5-3-cognition-in-early-childhood"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Lifespan Development, Section 5.3: Cognition in Early Childhood",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/lifespan-development/pages/5-3-cognition-in-early-childhood",
+          "whyReputable": "An expert-authored, peer-reviewed lifespan-development text from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Distinguished ZPD from scaffolding and removed an exclusive-learning claim.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -23973,21 +24029,32 @@
       "domain": "Assessment & Diagnosis",
       "title": "Reliability vs. Validity",
       "type": "analogy",
-      "content": "Think of a **dartboard:** 🎯 **Reliable + Valid** = All darts in the bullseye (consistent AND accurate) 🔵 **Reliable but NOT Valid** = All darts clustered together, but off-center 🎯 **Valid but NOT Reliable** = Darts are scattered around the bullseye but average out ❌ **Neither** = Darts all over the place **Key rule:** A test can be reliable without being valid, but CANNOT be valid without being reliable! \"Reliability is necessary but not sufficient for validity.\"",
+      "content": "**Reliability/precision asks how consistent or precise scores are; validity asks whether evidence and theory support an intended score interpretation and use.** Internal consistency, interrater agreement, stability, and conditional precision answer different questions. Validity belongs to a proposed use in a population and context?not ?the test? in the abstract. Imprecision limits defensible interpretation, but the dartboard slogan ?validity is accuracy? is incomplete: modern validity requires a broader evidence argument and plausible alternatives.",
       "tags": [
         "reliability",
         "validity",
         "psychometrics",
         "assessment"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing (2014)",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "The joint professional consensus framework for validity, precision, fairness, and test use."
+        }
+      ],
+      "reviewNote": "Replaced the accuracy-only dartboard rule with the unified validity framework.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -24006,7 +24073,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24031,7 +24100,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24045,7 +24116,7 @@
       "domain": "Treatment, Intervention & Prevention",
       "title": "CBT Core Concepts",
       "type": "analogy",
-      "content": "CBT works on the **thought triangle** 🔺: **Thoughts** ↔ **Feelings** ↔ **Behaviors** (All three influence each other) Think of it like **colored glasses:** → Wearing blue glasses (negative thoughts) makes everything look blue (sad feelings) → Change the glasses (cognitive restructuring) = change how you see the world **Aaron Beck's** cognitive distortions are the \"smudges on the glasses\": All-or-nothing, catastrophizing, mind reading, should statements, etc.",
+      "content": "**CBT uses a collaborative, testable formulation linking situations, interpretations, emotion/physiology, and behavior.** Methods can include behavioral activation, exposure or experiments, skills practice, monitoring, problem solving, and examining the usefulness and evidence for appraisals. The aim is not forced positive thinking; it is more accurate, flexible responding and goal-linked behavior change. Protocols differ by problem and population, and technique should follow assessment, risk, culture, accessibility, preferences, and evidence.",
       "tags": [
         "CBT",
         "beck",
@@ -24053,14 +24124,25 @@
         "distortions",
         "therapy"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ptsd-guideline"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Clinical Practice Guideline for the Treatment of PTSD in Adults",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ptsd-guideline",
+          "whyReputable": "An APA guideline based on systematic evidence review and transparent recommendation methods."
+        }
+      ],
+      "reviewNote": "Removed positive-thinking and one-way-causation shortcuts.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -24080,7 +24162,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24104,7 +24188,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24132,7 +24218,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24146,7 +24234,7 @@
       "domain": "Research Methods & Statistics",
       "title": "Type I vs. Type II Errors",
       "type": "analogy",
-      "content": "Think of a **pregnancy test:** 🔴 **Type I** (False Positive/α error) = Test says pregnant, but you're NOT → \"Seeing something that isn't there\" — the **boy who cried wolf** → Controlled by setting alpha (p < .05) 🔵 **Type II** (False Negative/β error) = Test says not pregnant, but you ARE → \"Missing something that IS there\" — a **missed diagnosis** → Related to statistical power (1 - β) **Memory trick:** Type **I** = \"**I** see it but it's not real\" (1 = 1 thing that shouldn't be there)",
+      "content": "**Type I:** reject a true null. Chosen ? controls the long-run Type I rate under the model and plan; p < .05 is not a 5% probability that the null is true. **Type II:** fail to reject a false null for a specified alternative; probability ?. **Power = 1 ? ?** for a specified alternative, design, variability, and analysis. Fail to reject is not prove no effect. Multiplicity, optional stopping, assumption violations, and selective reporting can make nominal rates misleading. Balance errors by consequences; neither is always worse.",
       "tags": [
         "type I",
         "type II",
@@ -24156,14 +24244,25 @@
         "power",
         "statistics"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The ASA Statement on p-Values: Context, Process, and Purpose",
+          "organization": "American Statistical Association",
+          "url": "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf",
+          "whyReputable": "An expert consensus statement correcting common hypothesis-testing errors."
+        }
+      ],
+      "reviewNote": "Corrected conditional probabilities and added power and multiplicity boundaries.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -24183,7 +24282,9 @@
       ],
       "reviewStatus": "editorial-reviewed-source-pending",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "Removed the universal evidence ladder and separated causal, synthesis, contextual, and qualitative inference.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -24207,7 +24308,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24233,7 +24336,16 @@
       "references": [
         "https://www.apa.org/ethics/code/manual-updates.html"
       ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA?s official primary ethics text, including confidentiality standards and legally created limits."
+        }
+      ],
       "reviewNote": "Rewritten to distinguish consent, mandated/permitted disclosure, jurisdictional duties, minimum-necessary reasoning, subpoenas, and court orders.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -24256,7 +24368,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24281,7 +24395,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24307,7 +24423,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24333,7 +24451,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24360,7 +24480,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24390,7 +24512,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24417,7 +24541,9 @@
       "references": [
         "https://doi.org/10.1037/h0054346"
       ],
+      "sourceDetails": [],
       "reviewNote": "Reframed as a historical humanistic model rather than a rigid or culturally universal prerequisite pyramid.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -24446,7 +24572,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24474,7 +24602,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24503,7 +24633,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24517,7 +24649,7 @@
       "domain": "Social & Cultural Bases of Behavior",
       "title": "Attribution Theory",
       "type": "mnemonic",
-      "content": "**Fundamental Attribution Error** = \"It's WHO they are\" (not the situation) → We overestimate PERSONAL causes for others' behavior → We overestimate SITUATIONAL causes for our OWN behavior (actor-observer) **Kelley's Covariation Model — \"CCD\":** • **C**onsensus — Do others do it too? (High = situation) • **C**onsistency — Does this person always do it? (High = stable cause) • **D**istinctiveness — Only in this situation? (High = external) All HIGH = **External** attribution Low consensus + High consistency + Low distinctiveness = **Internal**",
+      "content": "**Kelley cue: consensus, consistency, distinctiveness?evidence, not a deterministic table.** Consensus asks whether others respond similarly; consistency asks whether this person responds similarly across occasions; distinctiveness asks whether this person responds differently to other targets. Patterns support person, entity, circumstance, or mixed hypotheses, but missing cues limit inference. Correspondence bias concerns over-weighting dispositions in some contexts. Do not pair it with a universal actor?observer rule: a meta-analysis found essentially no overall asymmetry, with moderator and valence effects.",
       "tags": [
         "attribution",
         "fundamental attribution error",
@@ -24527,14 +24659,25 @@
         "distinctiveness",
         "actor-observer"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/17073526/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The actor-observer asymmetry in attribution: a (surprising) meta-analysis",
+          "organization": "Bertram F. Malle, Psychological Bulletin",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17073526/",
+          "whyReputable": "A peer-reviewed meta-analysis of 173 studies that directly tests a widely taught shortcut."
+        }
+      ],
+      "reviewNote": "Removed the universal actor-observer claim and deterministic covariation verdict.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -24543,7 +24686,7 @@
       "domain": "Social & Cultural Bases of Behavior",
       "title": "Cognitive Dissonance",
       "type": "analogy",
-      "content": "**Leon Festinger** — It's like wearing mismatched shoes: When your beliefs ≠ your behavior, it creates mental DISCOMFORT. You MUST reduce the dissonance by: → **Change behavior** (stop smoking) → **Change belief** (\"smoking isn't that bad\") → **Add a new cognition** (\"I exercise, so it balances out\") **Classic study:** Paid $1 vs $20 to lie about boring task → $1 group changed their attitude MORE (insufficient justification)",
+      "content": "**Cognitive dissonance is aversive inconsistency among relevant cognitions, commitments, or behavior.** People may reduce it by changing behavior or attitude, adding consonant reasons, trivializing, or reframing responsibility and importance. In Festinger and Carlsmith?s classic study, participants paid $1 later rated a dull task more favorably than those paid $20, consistent with insufficient external justification under those conditions. This is not proof that every mismatch must cause attitude change; choice, commitment, consequences, culture, and available justification matter.",
       "tags": [
         "cognitive dissonance",
         "festinger",
@@ -24551,14 +24694,25 @@
         "insufficient justification",
         "belief"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/h0041593"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Cognitive consequences of forced compliance",
+          "organization": "Leon Festinger and James M. Carlsmith, Journal of Abnormal and Social Psychology",
+          "url": "https://doi.org/10.1037/h0041593",
+          "whyReputable": "The landmark peer-reviewed primary experiment behind the insufficient-justification example."
+        }
+      ],
+      "reviewNote": "Preserved the primary study while removing inevitability.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -24580,7 +24734,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24610,7 +24766,16 @@
       "references": [
         "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
       ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 9.3: Stages of Development",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development",
+          "whyReputable": "An expert-authored, peer-reviewed textbook from nonprofit Rice University."
+        }
+      ],
       "reviewNote": "Removed deterministic caregiver labels and prevalence claims; clarified relationship-specific observational classification.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -24639,7 +24804,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24668,7 +24835,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24694,7 +24863,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24721,7 +24892,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24748,7 +24921,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24776,7 +24951,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24803,7 +24980,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24817,7 +24996,7 @@
       "domain": "Assessment & Diagnosis",
       "title": "Sensitivity, Specificity, PPV, NPV",
       "type": "mnemonic",
-      "content": "**\"SnNout, SpPin\"** — The golden rule of screening: 🔍 **Sensitivity** (Se**N**sitivity) = Correctly identifies people WITH the condition → High sensitivity: good at ruling OUT (Sn-N-out) → Few false negatives 🎯 **Specificity** (S**P**ecificity) = Correctly identifies people WITHOUT the condition → High specificity: good at ruling IN (Sp-P-in) → Few false positives **PPV** = If test positive, what's the chance you're truly positive? **NPV** = If test negative, what's the chance you're truly negative? ⚠️ PPV/NPV depend on **base rate** (prevalence)! Sensitivity/Specificity do NOT.",
+      "content": "**Read the 2?2 table:** Sensitivity = TP/(TP+FN), among people with the condition who tests positive. Specificity = TN/(TN+FP), among people without it who tests negative. PPV = TP/(TP+FP), among positive results who has the condition. NPV = TN/(TN+FN), among negative results who does not. Sensitivity and specificity can vary with threshold, spectrum, setting, and verification. Predictive values depend strongly on prevalence: the same test can have much lower PPV in a low-prevalence population.",
       "tags": [
         "sensitivity",
         "specificity",
@@ -24829,14 +25008,25 @@
         "false negative",
         "diagnosis"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Principles of Epidemiology in Public Health Practice, Third Edition: Lesson 3",
+          "organization": "Centers for Disease Control and Prevention (CDC)",
+          "url": "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html",
+          "whyReputable": "The U.S. federal public-health authority?s training text for diagnostic-test measures."
+        }
+      ],
+      "reviewNote": "Added exact denominators and context/base-rate boundaries.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -24859,7 +25049,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24886,7 +25078,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24913,7 +25107,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24942,7 +25138,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24968,7 +25166,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -24982,7 +25182,7 @@
       "domain": "Treatment, Intervention & Prevention",
       "title": "Motivational Interviewing",
       "type": "mnemonic",
-      "content": "**\"OARS\"** — The 4 MI techniques: ❓ **O**pen-ended questions — \"What concerns you about your drinking?\" ✅ **A**ffirmations — \"It took courage to come here today\" 🪞 **R**eflections — \"So you're feeling torn about making changes\" 📝 **S**ummaries — Pull together what client has said **Spirit of MI:** → Express empathy → Develop discrepancy (between values and behavior) → Roll with resistance (don't argue!) → Support self-efficacy **Key:** MI is for AMBIVALENT clients (contemplation stage) **NOT directive — the client argues for change, not the therapist**",
+      "content": "**MI spirit: partnership, acceptance, compassion, and evocation. Processes: engaging ? focusing ? evoking ? planning.** OARS?open questions, affirmations, reflections, summaries?supports conversation, but MI is not a bag of techniques. The practitioner listens for and strengthens the person?s own language for change while respecting autonomy; sustain talk is explored rather than argued away. Planning follows sufficient readiness and shared focus. MI is collaborative and directional, not persuasion by stealth or a guarantee of change.",
       "tags": [
         "motivational interviewing",
         "MI",
@@ -24993,14 +25193,25 @@
         "miller",
         "rollnick"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.motivationalinterviewing.org/sites/default/files/elfinder_uploads/ColleenMarshall/Glossary%20of%20MI%20Terms.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Glossary of Motivational Interviewing Terms",
+          "organization": "Motivational Interviewing Network of Trainers (MINT)",
+          "url": "https://www.motivationalinterviewing.org/sites/default/files/elfinder_uploads/ColleenMarshall/Glossary%20of%20MI%20Terms.pdf",
+          "whyReputable": "Terminology from the international professional network devoted to fidelity-consistent MI."
+        }
+      ],
+      "reviewNote": "Aligned the cue with current MI spirit and processes.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -25021,7 +25232,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25052,7 +25265,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25081,7 +25296,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25111,7 +25328,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25135,7 +25354,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25164,7 +25385,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25191,7 +25414,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25220,7 +25445,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25234,7 +25461,7 @@
       "domain": "Research Methods & Statistics",
       "title": "Standard Error of Measurement",
       "type": "analogy",
-      "content": "**SEM** = How much a score might WOBBLE if you tested again Think of a bathroom scale that's slightly off: → Your true weight = 150 lbs → SEM = ±3 lbs → Each reading might be 147-153 **Formula:** SEM = SD × √(1 − reliability) → Higher reliability → SMALLER SEM → more precise scores → SEM is in the SAME UNITS as the test score **Confidence interval:** Score ± 1 SEM = 68% CI, ± 2 SEM = 95% CI **Key EPPP fact:** When comparing two scores (e.g., Verbal IQ vs Performance IQ), the difference must exceed the SEM to be meaningful.",
+      "content": "**Classical-test-theory SEM** is a score-unit estimate of measurement error, often approximated as SD ? ?(1 ? reliability) for the relevant distribution and reliability estimate. Higher reliability generally yields smaller SEM with other terms fixed. A score interval needs an appropriate multiplier and assumptions; ??1 SEM guarantees a 68% true-score range? is too strong. Precision can vary across scores, forms, groups, and purposes. Comparing scores requires the standard error of the difference and a decision rule?not simply a difference greater than one SEM.",
       "tags": [
         "SEM",
         "standard error",
@@ -25244,14 +25471,25 @@
         "true score",
         "observed score"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ncme.org/resources-publications/professional-learning/glossary"
+      ],
+      "sourceDetails": [
+        {
+          "title": "NCME Glossary of Important Assessment and Measurement Terms",
+          "organization": "National Council on Measurement in Education",
+          "url": "https://ncme.org/resources-publications/professional-learning/glossary",
+          "whyReputable": "Field-standard definitions from a leading professional measurement organization."
+        }
+      ],
+      "reviewNote": "Corrected confidence-interval and score-comparison shortcuts.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -25270,7 +25508,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25296,7 +25536,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25323,7 +25565,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25349,7 +25593,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25375,7 +25621,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25400,7 +25648,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25428,7 +25678,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25458,7 +25710,16 @@
       "references": [
         "https://www.nimh.nih.gov/health/publications/borderline-personality-disorder"
       ],
+      "sourceDetails": [
+        {
+          "title": "Borderline Personality Disorder",
+          "organization": "National Institute of Mental Health (NIMH), National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/borderline-personality-disorder",
+          "whyReputable": "The U.S. federal agency leading mental-health research provides this evidence-grounded overview."
+        }
+      ],
       "reviewNote": "Removed a universal gold-standard claim and clarified that multiple structured psychotherapies have evidence.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -25483,7 +25744,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25510,7 +25773,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25536,7 +25801,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25566,7 +25833,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25593,7 +25862,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25624,7 +25895,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25652,7 +25925,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25680,7 +25955,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25706,7 +25983,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25734,7 +26013,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25762,7 +26043,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25790,7 +26073,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25818,7 +26103,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25846,7 +26133,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25873,7 +26162,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25899,7 +26190,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25927,7 +26220,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25953,7 +26248,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -25981,7 +26278,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26010,7 +26309,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26037,7 +26338,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26066,7 +26369,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26094,7 +26399,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26121,7 +26428,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26150,7 +26459,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26178,7 +26489,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26206,7 +26519,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26236,7 +26551,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26264,7 +26581,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26291,7 +26610,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26318,7 +26639,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26346,7 +26669,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26373,7 +26698,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26399,7 +26726,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26425,7 +26754,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26454,7 +26785,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26481,7 +26814,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26509,7 +26844,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26538,7 +26875,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26566,7 +26905,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26594,7 +26935,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26621,7 +26964,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26648,7 +26993,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26675,7 +27022,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26702,7 +27051,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26730,7 +27081,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26758,7 +27111,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26786,7 +27141,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26814,7 +27171,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26843,7 +27202,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26871,7 +27232,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26899,7 +27262,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26928,7 +27293,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26957,7 +27324,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26984,7 +27353,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -26998,7 +27369,7 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "title": "Negative Reinforcement vs. Punishment",
       "type": "analogy",
-      "content": "**The #1 EPPP mix-up! Here's the definitive guide:** ✅ **Negative REINFORCEMENT** = REMOVES something bad → behavior INCREASES → Taking aspirin REMOVES headache → you take aspirin more → Seatbelt buzzer STOPS when you buckle → you buckle faster → \"Negative\" = taking AWAY, \"Reinforcement\" = behavior goes UP ❌ **Positive PUNISHMENT** = ADDS something bad → behavior DECREASES → Spanking, getting a ticket, verbal reprimand ❌ **Negative PUNISHMENT** = REMOVES something good → behavior DECREASES → Taking away phone, time-out, losing privileges → Also called \"response cost\" **Memory grid:** | | Add (+) | Remove (−) | |--|--|--| | **↑ Behavior** | Positive Reinforcement | Negative Reinforcement | | **↓ Behavior** | Positive Punishment | Negative Punishment |",
+      "content": "**Classify a consequence with two questions:** Was a stimulus added (+) or removed (?)? Did the future probability of behavior increase (reinforcement) or decrease (punishment)? Positive reinforcement adds and increases; negative reinforcement removes/avoids and increases; positive punishment adds and decreases; negative punishment removes and decreases. Positive/negative do not mean good/bad, and the label depends on observed behavior change?not intention. Escape and avoidance are common negative-reinforcement arrangements; response cost is one form of negative punishment.",
       "tags": [
         "negative reinforcement",
         "positive punishment",
@@ -27009,14 +27380,25 @@
         "response cost",
         "time-out"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 6.3: Operant Conditioning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+          "whyReputable": "An expert-authored, peer-reviewed open textbook from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Made classification functional and corrected the time-out/response-cost equivalence.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -27038,7 +27420,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27066,7 +27450,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27095,7 +27481,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27123,7 +27511,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27152,7 +27542,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27180,7 +27572,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27209,7 +27603,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27238,7 +27634,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27268,7 +27666,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27297,7 +27697,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27325,7 +27727,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27352,7 +27756,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27366,7 +27772,7 @@
       "domain": "Ethical, Legal & Professional Issues",
       "title": "Test Security & Release",
       "type": "mnemonic",
-      "content": "**APA Standard 9 — Assessment Ethics:** 🔒 **Test Security (9.11):** → Do NOT release raw test data to unqualified individuals → Protect test materials from unauthorized disclosure → Sharing test items/protocols can invalidate the test 📋 **Release of Test Data (9.04):** → Release data to client or their representative ONLY: → With client consent, OR → As required by law/court order → Note: \"Test data\" ≠ \"Test materials\" → Data = client's responses, scores, notes → Materials = test manuals, protocols, items (PROTECT these!) 📊 **Appropriate Use (9.02):** → Tests must be used for their intended purpose → Consider culture, language, disability in interpretation → Don't base decisions on outdated test results **Key:** Never give a client the actual test booklet or scoring key! You CAN share scores and interpretive reports.",
+      "content": "**Distinguish test data from test materials, then identify authority and risk.** Test data include scores, client responses, and examination notes. Under APA Standard 9.04, psychologists generally provide data pursuant to a client/patient release, with a narrow option to refrain for likely substantial harm or substantial misuse/misrepresentation; absent release, provide only as required by law or court order. Test materials include manuals, instruments, protocols, and questions/stimuli; Standard 9.11 calls for reasonable security efforts consistent with law and contract. Avoid blanket never-release rules.",
       "tags": [
         "test security",
         "assessment",
@@ -27378,14 +27784,25 @@
         "ethics",
         "APA"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA?s official primary text for the General Principles and enforceable Ethical Standards."
+        }
+      ],
+      "reviewNote": "Corrected blanket unqualified-recipient and never-release rules.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -27409,7 +27826,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27437,7 +27856,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27465,7 +27886,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27492,7 +27915,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27520,7 +27945,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27548,7 +27975,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27576,7 +28005,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27590,7 +28021,7 @@
       "domain": "Biological Bases of Behavior",
       "title": "Action Potential Steps",
       "type": "mnemonic",
-      "content": "**\"RDAT\" — The 4 phases of an action potential:** ⚡ **R**esting state = −70mV (K+ inside, Na+ outside) → Neuron is polarized, waiting for signal 📈 **D**epolarization = Na+ channels OPEN, Na+ rushes IN → Interior becomes positive (reaches +30mV) → All-or-none law: fires fully or not at all! 📉 **A**ction = Repolarization: K+ channels open, K+ rushes OUT → Returns to negative ⬇️ **T**oo far = Hyperpolarization (briefly below −70mV) → Refractory period: absolute (can't fire) → relative (needs stronger stimulus) **Key:** Saltatory conduction = jumping between nodes of Ranvier on myelinated axons → FASTER transmission **Myelin disorders:** MS (CNS), Guillain-Barré (PNS)",
+      "content": "**Threshold ? rising phase ? falling phase ? afterhyperpolarization ? recovery.** At threshold, voltage-gated sodium conductance rises; sodium-channel inactivation and delayed potassium conductance then drive repolarization. Continued potassium conductance can briefly make the membrane more negative than rest. The absolute refractory period reflects unavailable sodium channels; during the relative refractory period another spike needs stronger input. Myelin permits saltatory propagation between excitable nodes. Exact voltages and timing vary?memorize the mechanism, not one universal number.",
       "tags": [
         "action potential",
         "depolarization",
@@ -27602,14 +28033,25 @@
         "neuron",
         "all-or-none"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://openstax.org/books/biology-2e/pages/35-2-how-neurons-communicate"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Biology 2e, Section 35.2: How Neurons Communicate",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/biology-2e/pages/35-2-how-neurons-communicate",
+          "whyReputable": "An expert-authored, peer-reviewed open textbook from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Corrected phase names, refractory mechanisms, and universal voltage claims.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -27632,7 +28074,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27646,7 +28090,7 @@
       "domain": "Biological Bases of Behavior",
       "title": "Glial Cells",
       "type": "mnemonic",
-      "content": "**\"SOME Glue\" — Types of glial (support) cells:** 🧹 **S**chwann cells = Myelin in the PNS (peripheral) → One Schwann cell wraps ONE segment ⭕ **O**ligodendrocytes = Myelin in the CNS (central) → One oligo wraps MULTIPLE axons 🧠 **M**icroglia = Immune cells of the brain → Clean up debris, fight infection → \"Micro janitors\" ⭐ **E**pendymal = Line ventricles, produce CSF 🌟 **Astrocytes** = Most abundant! Star-shaped → Blood-brain barrier → Regulate nutrients, repair, support → \"Astro = star, they're the STARS of support\" **Key:** Glial cells OUTNUMBER neurons ~10:1 They don't transmit signals but are essential for neural function",
+      "content": "**Glia support, regulate, defend, and myelinate?do not reduce them to passive ?glue.?** Astrocytes help regulate the extracellular environment, metabolism, synapses, and blood?brain-barrier functions. Oligodendrocytes form CNS myelin and can support segments on multiple axons; Schwann cells myelinate PNS segments and support repair. Microglia are resident immune-surveillance and response cells. Ependymal cells line ventricles and participate in cerebrospinal-fluid physiology. Cell counts and roles vary by region; avoid the outdated ?glia outnumber neurons 10:1 everywhere? shortcut.",
       "tags": [
         "glial",
         "schwann",
@@ -27659,14 +28103,25 @@
         "CNS",
         "blood-brain barrier"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK10869/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Neuroscience, 2nd edition: ?Glial Cells?",
+          "organization": "NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK10869/",
+          "whyReputable": "A scholarly neuroscience textbook hosted by the U.S. National Library of Medicine."
+        }
+      ],
+      "reviewNote": "Removed passive-glue and universal 10:1 claims.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -27689,7 +28144,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27718,7 +28175,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27747,7 +28206,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27775,7 +28236,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27804,7 +28267,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27833,7 +28298,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27864,7 +28331,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27892,7 +28361,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27920,7 +28391,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27950,7 +28423,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -27978,7 +28453,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28010,7 +28487,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28039,7 +28518,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28068,7 +28549,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28097,7 +28580,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28127,7 +28612,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28141,7 +28628,7 @@
       "domain": "Ethical, Legal & Professional Issues",
       "title": "APA Ethical Standards vs Principles",
       "type": "mnemonic",
-      "content": "**Critical distinction — MOST tested on EPPP:** 🌟 **General PRINCIPLES** (A-E) = ASPIRATIONAL → Goals to strive for, ideals → You CANNOT be sanctioned for violating a principle → A: Beneficence & Nonmaleficence → B: Fidelity & Responsibility → C: Integrity → D: Justice → E: Respect for People's Rights & Dignity 📋 **Ethical STANDARDS** (1-10) = ENFORCEABLE → Specific rules you MUST follow → Violations → sanctions, loss of license → Organized by topic: competence, relationships, privacy, etc. **Key EPPP scenarios:** → \"Is this a VIOLATION?\" → Look at Standards → \"Should the psychologist ASPIRE to...\" → Look at Principles → \"Can the psychologist be SANCTIONED?\" → Only for Standard violations **TRICK:** If an answer says \"violates General Principle A\" → probably WRONG Principles can't be \"violated\" — only Standards can!",
+      "content": "**APA Code:** General Principles A?E are aspirational ideals; Ethical Standards contain potentially enforceable rules. A: Beneficence and Nonmaleficence; B: Fidelity and Responsibility; C: Integrity; D: Justice; E: Respect for People?s Rights and Dignity. Principles still guide reasoning when rules leave judgment. APA ethics findings, licensing-board actions, civil liability, employment discipline, and criminal law are different processes; an alleged Standard violation does not automatically mean loss of license. Identify the authority, current provision, jurisdiction, and facts.",
       "tags": [
         "APA",
         "ethics",
@@ -28155,14 +28642,25 @@
         "justice",
         "integrity"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA?s official primary text for the General Principles and enforceable Ethical Standards."
+        }
+      ],
+      "reviewNote": "Corrected automatic-sanction language and distinguished governing authorities.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -28186,7 +28684,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28216,7 +28716,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28246,7 +28748,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28276,7 +28780,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28305,7 +28811,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28319,7 +28827,7 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "title": "Short-Term vs Working Memory",
       "type": "analogy",
-      "content": "**They're related but NOT the same thing!** 📋 **Short-Term Memory** (Atkinson-Shiffrin): → Passive storage buffer → Capacity: 7 ± 2 items (Miller's Magic Number) → Duration: ~15-30 seconds (without rehearsal) → Maintenance rehearsal keeps info circulating → Chunking increases effective capacity 🧠 **Working Memory** (Baddeley): → ACTIVE processing system (not just storage) → 4 components: → **Central executive** = Attention director (the boss) → **Phonological loop** = Verbal/auditory rehearsal → **Visuospatial sketchpad** = Mental images → **Episodic buffer** = Integrates info from all sources **Key difference:** → STM = Just HOLDING info (like a notepad) → WM = HOLDING + MANIPULATING info (like a calculator) **EPPP tip:** Working memory is strongly correlated with fluid intelligence",
+      "content": "**Short-term memory emphasizes brief retention; working memory emphasizes temporary maintenance plus controlled use.** In Baddeley?s model, the phonological loop supports speech-based information, the visuospatial sketchpad supports visual/spatial information, the central executive coordinates attention, and the limited-capacity episodic buffer integrates information across systems and long-term memory. ?7 ? 2? came from particular span tasks and is not a universal working-memory capacity. Different models define working memory differently; name the model and task instead of treating one architecture as settled fact.",
       "tags": [
         "short-term memory",
         "working memory",
@@ -28332,14 +28840,25 @@
         "chunking",
         "capacity"
       ],
-      "reviewStatus": "review-required",
-      "references": [],
-      "reviewNote": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/11058819/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The episodic buffer: a new component of working memory?",
+          "organization": "Alan Baddeley, Trends in Cognitive Sciences",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11058819/",
+          "whyReputable": "A peer-reviewed article by the originator of the influential multicomponent model."
+        }
+      ],
+      "reviewNote": "Removed universal 7?2 and passive-versus-active claims; bounded the model.",
+      "reviewArtifact": "eppp_memory_aid_review_wave_01.json",
       "checks": {
-        "accuracyAndCurrency": "pending",
-        "oversimplification": "pending",
-        "biasAndContext": "pending",
-        "sourceSupport": "pending"
+        "accuracyAndCurrency": "editorial-pass",
+        "oversimplification": "editorial-pass",
+        "biasAndContext": "editorial-pass",
+        "sourceSupport": "pass"
       }
     },
     {
@@ -28362,7 +28881,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28391,7 +28912,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28421,7 +28944,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28450,7 +28975,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28481,7 +29008,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28510,7 +29039,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28542,7 +29073,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28572,7 +29105,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28602,7 +29137,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28631,7 +29168,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28660,7 +29199,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28688,7 +29229,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28717,7 +29260,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28747,7 +29292,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28778,7 +29325,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28808,7 +29357,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28838,7 +29389,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28868,7 +29421,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28900,7 +29455,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28932,7 +29489,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28962,7 +29521,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -28993,7 +29554,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29022,7 +29585,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29053,7 +29618,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29083,7 +29650,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29113,7 +29682,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29142,7 +29713,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29172,7 +29745,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29202,7 +29777,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29231,7 +29808,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29261,7 +29840,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29290,7 +29871,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29323,7 +29906,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29354,7 +29939,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29386,7 +29973,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29416,7 +30005,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29446,7 +30037,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29476,7 +30069,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29507,7 +30102,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29538,7 +30135,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29567,7 +30166,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29597,7 +30198,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29627,7 +30230,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29658,7 +30263,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29688,7 +30295,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29718,7 +30327,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29749,7 +30360,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29777,7 +30390,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29807,7 +30422,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29841,7 +30458,16 @@
         "https://doi.org/10.1037/0003-066X.62.9.993",
         "https://www.apa.org/ethics/code/manual-updates.html"
       ],
+      "sourceDetails": [
+        {
+          "title": "Record Keeping Guidelines",
+          "organization": "American Psychological Association",
+          "url": "https://doi.org/10.1037/0003-066X.62.9.993",
+          "whyReputable": "A peer-reviewed APA professional guideline on record content, confidentiality, retention, and legal context."
+        }
+      ],
       "reviewNote": "Removed universal retention periods and distinguished guidance from jurisdictional, institutional, payer, and litigation requirements.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -29873,7 +30499,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29906,7 +30534,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29937,7 +30567,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29967,7 +30599,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -29997,7 +30631,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30027,7 +30663,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30058,7 +30696,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30089,7 +30729,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30120,7 +30762,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30150,7 +30794,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30180,7 +30826,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30211,7 +30859,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30243,7 +30893,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30274,7 +30926,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30304,7 +30958,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30335,7 +30991,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30368,7 +31026,16 @@
       "references": [
         "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know"
       ],
+      "sourceDetails": [
+        {
+          "title": "Attention-Deficit/Hyperactivity Disorder: What You Need to Know",
+          "organization": "National Institute of Mental Health (NIMH), National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know",
+          "whyReputable": "The U.S. federal agency leading mental-health research provides this current evidence overview."
+        }
+      ],
       "reviewNote": "Removed paradoxical-calming and universally-best-treatment claims; added differential assessment and individualized multimodal care.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -30402,7 +31069,16 @@
         "https://www.cdc.gov/autism/about/index.html",
         "https://www.cdc.gov/autism/data-research/"
       ],
+      "sourceDetails": [
+        {
+          "title": "About Autism Spectrum Disorder",
+          "organization": "Centers for Disease Control and Prevention (CDC)",
+          "url": "https://www.cdc.gov/autism/about/index.html",
+          "whyReputable": "The U.S. federal public-health authority maintains current developmental-surveillance definitions and context."
+        }
+      ],
       "reviewNote": "Removed stale prevalence and deterministic support-level language; retained current surveillance context and diagnostic-domain distinctions.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -30434,7 +31110,16 @@
       "references": [
         "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability"
       ],
+      "sourceDetails": [
+        {
+          "title": "Frequently Asked Questions on Intellectual Disability",
+          "organization": "American Association on Intellectual and Developmental Disabilities (AAIDD)",
+          "url": "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability",
+          "whyReputable": "A leading interdisciplinary organization that publishes definitions and standards for intellectual disability and supports."
+        }
+      ],
       "reviewNote": "Removed obsolete IQ severity bands and assumed school/work outcomes; emphasized adaptive functioning, context, measurement error, and supports.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -30464,7 +31149,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30495,7 +31182,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30525,7 +31214,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30559,7 +31250,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30590,7 +31283,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30621,7 +31316,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30652,7 +31349,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30683,7 +31382,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",
@@ -30716,7 +31417,16 @@
       "references": [
         "https://doi.org/10.1037/a0035001"
       ],
+      "sourceDetails": [
+        {
+          "title": "Guidelines for the Practice of Telepsychology",
+          "organization": "American Psychological Association",
+          "url": "https://doi.org/10.1037/a0035001",
+          "whyReputable": "A peer-reviewed APA professional guideline on competence, consent, privacy, security, jurisdiction, and emergencies."
+        }
+      ],
       "reviewNote": "Removed product-compliance shorthand and universal licensure claims; added risk assessment, authority-to-practice, emergency, and consent context.",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "editorial-pass",
         "oversimplification": "editorial-pass",
@@ -30748,7 +31458,9 @@
       ],
       "reviewStatus": "review-required",
       "references": [],
+      "sourceDetails": [],
       "reviewNote": "",
+      "reviewArtifact": "",
       "checks": {
         "accuracyAndCurrency": "pending",
         "oversimplification": "pending",

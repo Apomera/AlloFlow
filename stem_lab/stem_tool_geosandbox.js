@@ -518,6 +518,7 @@ window.StemLab = window.StemLab || {
   }
 
   function cleanupScene() {
+    if (window._geoSrTimer) { clearTimeout(window._geoSrTimer); window._geoSrTimer = null; }
     if (window._geoScene) {
       cancelAnimationFrame((window._geoScene.renderer && window._geoScene.renderer._geoAnimId) || window._geoScene.animId);
       // End any live VR session and stop the XR frame loop before disposing the GL.
@@ -533,6 +534,10 @@ window.StemLab = window.StemLab || {
       }
       if (window._geoScene.controls) window._geoScene.controls.dispose();
       window._geoScene = null;
+    }
+    if (_geoAudioCtx) {
+      try { if (typeof _geoAudioCtx.close === 'function' && _geoAudioCtx.state !== 'closed') _geoAudioCtx.close(); } catch (e) {}
+      _geoAudioCtx = null;
     }
   }
 
@@ -947,6 +952,13 @@ window.StemLab = window.StemLab || {
     if (['faces','edges','vertices','eulerCheck'].indexOf(challenge.type) >= 0) return Number.isInteger(num) && num === challenge.answer;
     if (challenge.answer === 0) return num === 0;
     return Math.abs(num - challenge.answer) / Math.abs(challenge.answer) <= 0.05;
+  }
+
+  function geoFormatChallengeAnswer(challenge) {
+    if (!challenge) return '';
+    if (typeof challenge.answer !== 'number') return String(challenge.answer == null ? '' : challenge.answer);
+    if (['faces','edges','vertices','eulerCheck'].indexOf(challenge.type) >= 0) return String(challenge.answer);
+    return challenge.answer.toFixed(2);
   }
 
   // ── STL Export ──
@@ -1639,6 +1651,29 @@ window.StemLab = window.StemLab || {
     var mm = calcMeasurements(shape, dims || {});
     return 'Single ' + (names[shape] || shape || 'shape') + '. Volume ' + (Math.round(mm.vol * 100) / 100) + ' ' + units + ' cubed. Surface area ' + (Math.round(mm.sa * 100) / 100) + ' ' + units + ' squared.';
   }
+
+  function geoBuildTutorPrompt(mode, shape, dims, construction, sculptRecipe, unitShort) {
+    var units = unitShort || 'u';
+    var intro = 'You are a friendly geometry tutor for a middle-school student. Keep the response under 120 words. ';
+    if (mode === 'stretch') {
+      return intro + geoDescribeScene('stretch', shape, dims, construction, units) +
+        ' Explain the selected object or the dimensional progression from point to line to plane to solid. Ask one short guiding question and do not invent measurements.';
+    }
+    if (mode === 'sculpt') {
+      var sm = geoSculptMeasure(sculptRecipe);
+      if (!sm.parts.length) return intro + 'The AI sculpture scene is empty. Suggest one simple object to build from two or three geometric primitives and ask which primitive the student would start with.';
+      var partText = sm.parts.slice(0, 12).map(function(p) { return p.name + ' (' + p.dims + ')'; }).join(', ');
+      return intro + 'The student is editing a sculpture named ' + ((sculptRecipe && sculptRecipe.name) || 'untitled') + '. Parts: ' + partText +
+        '. Sum-of-parts volume ' + sm.totalVol.toFixed(2) + ' ' + units + ' cubed; sum-of-parts surface area ' + sm.totalSA.toFixed(2) + ' ' + units +
+        ' squared. These totals are upper bounds because overlapping parts are counted separately. Explain one useful geometric relationship and ask one short guiding question.';
+    }
+    var meas = calcMeasurements(shape, dims || {});
+    return intro + 'The student is looking at a ' + meas.name + '. Volume = ' + meas.vol.toFixed(2) + ' ' + units +
+      ' cubed; surface area = ' + meas.sa.toFixed(2) + ' ' + units + ' squared. ' +
+      (meas.faces > 0 ? 'It has ' + meas.faces + ' faces, ' + meas.edges + ' edges, and ' + meas.vertices + ' vertices. ' : '') +
+      'Briefly explain what makes the shape unique, give one real-world example, and share one useful math fact.';
+  }
+
   function geoUniqueSaveName(rawName, saved) {
     var base = String(rawName || '').trim().slice(0, 40);
     if (!base) return '';
@@ -1933,6 +1968,7 @@ window.StemLab = window.StemLab || {
       resizeObject: resizeObject,
       geoStretchMeasure: geoStretchMeasure,
       geoDescribeScene: geoDescribeScene,
+      geoBuildTutorPrompt: geoBuildTutorPrompt,
       geoUniqueSaveName: geoUniqueSaveName,
       geoNormalizeConstruction: geoNormalizeConstruction,
       geoScaleObject: geoScaleObject,
@@ -1951,6 +1987,7 @@ window.StemLab = window.StemLab || {
       geoPyramidGeometryRadius: geoPyramidGeometryRadius,
       geoNormalizeShapeDims: geoNormalizeShapeDims,
       geoChallengeAnswerCorrect: geoChallengeAnswerCorrect,
+      geoFormatChallengeAnswer: geoFormatChallengeAnswer,
       geoCrossSection: geoCrossSection, geoConicSection: geoConicSection,
       geoShapeNet: geoShapeNet, geoRealWorldScale: geoRealWorldScale,
       geoPrimitiveMeasure: geoPrimitiveMeasure, geoSculptMeasure: geoSculptMeasure,
@@ -2033,6 +2070,7 @@ window.StemLab = window.StemLab || {
         if (announceToSR) {
           if (window._geoSrTimer) clearTimeout(window._geoSrTimer);
           window._geoSrTimer = setTimeout(function() {
+            window._geoSrTimer = null;
             var nextDims = geoNormalizeShapeDims(shape, Object.assign({}, dims, (function() { var o = {}; o[key] = Number(val); return o; })()));
             var newMeas = calcMeasurements(shape, nextDims);
             announceToSR(key + ' set to ' + nextDims[key].toFixed(1) + '. Volume ' + newMeas.vol.toFixed(2) + ', surface area ' + newMeas.sa.toFixed(2) + '.');
@@ -2376,6 +2414,7 @@ window.StemLab = window.StemLab || {
       var aiResponse = ext.aiResponse || '';
       var aiLoading = ext.aiLoading || false;
       var showAI = ext.showAI || false;
+      var aiRequestRef = React.useRef(false);
 
       var updExt = function(obj) {
         setLabToolData(function(prev) {
@@ -2466,6 +2505,7 @@ window.StemLab = window.StemLab || {
           default: dd=''; break;
         }
         setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox||{}, { shape:sid, dims:rd, challengeMode:true, challenge:{ type:tmpl.type, shapeId:sid, dims:rd, answer:answer, question:tmpl.q, unit:tmpl.unit, dimDesc:dd, shapeName:cm.name }, challengeAnswer:'', challengeResult:null }) }); });
+        window.setTimeout(function() { var input = document.getElementById('geo-challenge-answer'); if (input) input.focus(); }, 0);
       };
 
       var checkChallengeAnswer = function() {
@@ -2487,27 +2527,29 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { geoSandbox: Object.assign({}, g, { challengeResult:correct?'correct':'wrong', challengeScore:ns, _geoExt: Object.assign(exObj, updates) }) });
         });
         if (correct && typeof awardXP === 'function') awardXP('geoSandbox', 5, 'Geometry challenge correct!');
+        if (announceToSR) announceToSR(correct ? 'Correct. Five experience points awarded.' : 'Not quite. The correct answer is ' + geoFormatChallengeAnswer(challenge) + (challenge.unit ? ' ' + challenge.unit : '') + '.');
       };
 
       // ── AI Tutor ──
       var askAI = function() {
-        if (aiLoading) return;
+        if (aiLoading || aiRequestRef.current) return;
+        aiRequestRef.current = true;
         updExt({ aiLoading: true, aiResponse: '', showAI: true });
-        var meas = calcMeasurements(shape, dims);
-        var prompt = 'You are a friendly geometry tutor for a student exploring 3D shapes. ' +
-          'The student is looking at a ' + meas.name + ' with these measurements: ' +
-          'Volume = ' + meas.vol.toFixed(2) + ' cubic units, Surface Area = ' + meas.sa.toFixed(2) + ' square units. ' +
-          (meas.faces > 0 ? 'It has ' + meas.faces + ' faces, ' + meas.edges + ' edges, and ' + meas.vertices + ' vertices. ' : '') +
-          'Give a brief, engaging explanation of this shape: what makes it unique, a real-world application, ' +
-          'and one fun math fact. Keep it under 120 words. Use simple language for a middle-school student.';
+        var prompt = geoBuildTutorPrompt(mode, shape, dims, construction, sculptRecipe, unitDef.short);
         if (typeof ctx.callGemini === 'function') {
           ctx.callGemini(prompt, false, false, 0.7).then(function(resp) {
+            aiRequestRef.current = false;
             updExt({ aiResponse: resp || 'No response received.', aiLoading: false });
+            if (announceToSR) announceToSR('AI Tutor response ready.');
           }).catch(function() {
+            aiRequestRef.current = false;
             updExt({ aiResponse: 'AI tutor is unavailable right now.', aiLoading: false });
+            if (announceToSR) announceToSR('AI Tutor is unavailable right now.');
           });
         } else {
+          aiRequestRef.current = false;
           updExt({ aiResponse: 'AI tutor requires Gemini API.', aiLoading: false });
+          if (announceToSR) announceToSR('AI Tutor requires an AI provider connection.');
         }
       };
 
@@ -3103,7 +3145,8 @@ window.StemLab = window.StemLab || {
               title: t('stem.geosandbox.badges_b_2', 'Badges [B]'),
               className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (showBadges ? 'text-white bg-gradient-to-r from-purple-700 to-fuchsia-800 shadow-md' : 'text-purple-200 bg-purple-700/30 border border-purple-300/70 hover:bg-purple-700/40')
             }, '\uD83C\uDFC5 ' + badgeCount + '/' + Object.keys(geoBadges).length),
-            h('button', { 'aria-label': t('stem.geosandbox.ai_tutor', 'AI Tutor'),
+            h('button', { id: 'geo-ai-tutor-button', 'aria-label': t('stem.geosandbox.ai_tutor', 'AI Tutor'),
+              'aria-controls': 'geo-ai-tutor-panel', 'aria-expanded': showAI, disabled: aiLoading,
               onClick: askAI,
               title: t('stem.geosandbox.ai_tutor', 'AI Tutor [/]'),
               className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (aiLoading ? 'text-white bg-gradient-to-r from-cyan-700 to-blue-700 opacity-90' : showAI ? 'text-white bg-gradient-to-r from-cyan-700 to-blue-700 shadow-md' : 'text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 hover:bg-cyan-500/30')
@@ -3137,16 +3180,16 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── AI Tutor panel ──
-        showAI && h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
+        showAI && h('div', { id: 'geo-ai-tutor-panel', role: 'region', 'aria-labelledby': 'geo-ai-tutor-title', 'aria-busy': aiLoading, className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
           h('div', { className: 'flex items-center justify-between mb-2' },
-            h('div', { className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, t('stem.geosandbox.ai_geometry_tutor', '\uD83E\uDD16 AI Geometry Tutor')),
-            h('button', { onClick: function() { updExt({ showAI: false }); }, 'aria-label': t('stem.geosandbox.close_ai_geometry_tutor', 'Close AI Geometry Tutor'), className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
+            h('div', { id: 'geo-ai-tutor-title', className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, t('stem.geosandbox.ai_geometry_tutor', '\uD83E\uDD16 AI Geometry Tutor')),
+            h('button', { onClick: function() { updExt({ showAI: false }); window.setTimeout(function() { var btn = document.getElementById('geo-ai-tutor-button'); if (btn) btn.focus(); }, 0); }, 'aria-label': t('stem.geosandbox.close_ai_geometry_tutor', 'Close AI Geometry Tutor'), className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
           ),
           aiLoading
-            ? h('div', { className: 'text-sm text-cyan-300 opacity-90' }, 'Analyzing this ' + m.name + '...')
+            ? h('div', { role: 'status', className: 'text-sm text-cyan-300 opacity-90' }, t('stem.geosandbox.ai_analyzing_scene', 'Analyzing the current geometry scene...'))
             : aiResponse
               ? h('div', { className: 'text-sm text-slate-200 leading-relaxed whitespace-pre-wrap' }, aiResponse)
-              : h('div', { className: 'text-sm text-slate-200 italic' }, t('stem.geosandbox.click_ai_tutor_or_press_to_get_insight', 'Click "AI Tutor" or press / to get insights about the current shape.'))
+              : h('div', { className: 'text-sm text-slate-200 italic' }, t('stem.geosandbox.click_ai_tutor_or_press_to_get_insight', 'Click "AI Tutor" or press / to get insights about the current scene.'))
         ),
 
         // Main layout: sidebar + viewport
@@ -4600,10 +4643,10 @@ window.StemLab = window.StemLab || {
         ),
 
         // === CHALLENGE MODE PANEL ===
-        gd.challengeMode && challenge && h('div', { className: 'bg-gradient-to-br from-amber-900/80 to-orange-900/60 backdrop-blur-md rounded-xl border-2 border-amber-500/60 p-4 space-y-3 shadow-lg shadow-amber-900/30' },
+        gd.challengeMode && challenge && h('div', { 'aria-labelledby': 'geo-challenge-title', className: 'bg-gradient-to-br from-amber-900/80 to-orange-900/60 backdrop-blur-md rounded-xl border-2 border-amber-500/60 p-4 space-y-3 shadow-lg shadow-amber-900/30' },
           // Challenge header with score
           h('div', { className: 'flex items-center justify-between' },
-            h('h3', { className: 'text-base font-black text-amber-200 flex items-center gap-2' }, t('stem.geosandbox.geometry_challenge', '\uD83C\uDFAF Geometry Challenge')),
+            h('h3', { id: 'geo-challenge-title', className: 'text-base font-black text-amber-200 flex items-center gap-2' }, t('stem.geosandbox.geometry_challenge', '\uD83C\uDFAF Geometry Challenge')),
             h('div', { className: 'flex items-center gap-3' },
               h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2705 ' + challengeScore.correct),
               h('span', { className: 'text-xs text-slate-300' }, '/'),
@@ -4622,6 +4665,7 @@ window.StemLab = window.StemLab || {
           // Answer input + check button
           !challengeResult && h('div', { className: 'flex gap-2' },
             h('input', {
+              id: 'geo-challenge-answer',
               type: challenge.type === 'identify' ? 'text' : 'number',
               value: challengeAnswer,
               onChange: function(e) { upd('challengeAnswer', e.target.value); },
@@ -4638,13 +4682,13 @@ window.StemLab = window.StemLab || {
             }, t('stem.geosandbox.check_2', '\u2714 Check'))
           ),
           // Result feedback
-          challengeResult && h('div', { className: 'space-y-2' },
+          challengeResult && h('div', { role: 'group', 'aria-label': t('stem.geosandbox.challenge_result', 'Challenge result'), className: 'space-y-2' },
             h('div', { className: 'flex items-center gap-2 p-3 rounded-lg ' + (challengeResult === 'correct' ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-red-500/20 border border-red-500/30') },
               h('span', { className: 'text-lg' }, challengeResult === 'correct' ? '\u2705' : '\u274C'),
               h('div', null,
                 h('div', { className: 'text-sm font-bold ' + (challengeResult === 'correct' ? 'text-emerald-300' : 'text-red-300') }, challengeResult === 'correct' ? 'Correct! +5 XP' : 'Not quite!'),
                 challengeResult !== 'correct' && h('div', { className: 'text-xs text-slate-200 mt-0.5' }, t('stem.geosandbox.the_correct_answer_is', 'The correct answer is: '),
-                  h('span', { className: 'font-bold text-amber-300 font-mono' }, typeof challenge.answer === 'number' ? challenge.answer.toFixed(2) : challenge.answer),
+                  h('span', { className: 'font-bold text-amber-300 font-mono' }, geoFormatChallengeAnswer(challenge)),
                   challenge.unit ? ' ' + challenge.unit : ''
                 )
               )

@@ -353,6 +353,10 @@ const PLAN_CONTRACTS = Object.freeze({
     params: ['topic', 'grade'],
     reason: 'Starts an interactive lesson wizard; it does not finish lesson content automatically.'
   },
+  open_video_studio: {
+    demoSafe: false,
+    reason: 'Opens the recorder/editor itself; compose and run automatic demos from Video Studio instead.'
+  },
   generate_quiz: { requires: ['source'], produces: ['quiz'] },
   generate_glossary: { requires: ['source'], produces: ['glossary'] },
   generate_simplified: { requires: ['source'], produces: ['source'], params: ['grade'] },
@@ -527,11 +531,18 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'open_behavior_lens', opensPanel: 'behaviorLens', icon: '🔎', roles: 'teacher', label: t('cmd.open_behavior_lens', 'Open the Behavior Lens'), aliases: ['behavior lens', 'behaviour lens', 'abc data', 'behavior data', 'fba', 'observation'], hint: t('cmd.open_behavior_lens_hint', 'Behavior observation & analysis'), run: (c) => { c.openBehaviorLens(); return t('cmd.open_behavior_lens_done', 'Behavior Lens opened.'); } },
     { id: 'open_report_writer', opensPanel: 'reportWriter', icon: '📄', roles: 'teacher', label: t('cmd.open_report_writer', 'Open the Report Writer'), aliases: ['report writer', 'write a report', 'evaluation report', 'psych report', 'reports'], hint: t('cmd.open_report_writer_hint', 'Draft evaluation reports'), run: (c) => { c.openReportWriter(); return t('cmd.open_report_writer_done', 'Report Writer opened.'); } },
     { id: 'open_symbol_studio', opensPanel: 'symbolStudio', icon: '🔣', roles: 'teacher', label: t('cmd.open_symbol_studio', 'Open Symbol Studio'), aliases: ['symbol studio', 'aac', 'communication board', 'picture symbols', 'symbols', 'visual schedule'], hint: t('cmd.open_symbol_studio_hint', 'AAC boards & visual supports'), run: (c) => { c.openSymbolStudio(); return t('cmd.open_symbol_studio_done', 'Symbol Studio opened.'); } },
+    { id: 'open_video_studio', opensPanel: 'videoStudio', icon: '🎥', roles: 'teacher', label: t('cmd.open_video_studio', 'Open Video Studio'), aliases: ['video studio', 'screen recorder', 'record a demo', 'demo recorder', 'tutorial recorder'], hint: t('cmd.open_video_studio_hint', 'Record, caption, and edit walkthroughs'), run: (c) => { c.openVideoStudio(); return t('cmd.open_video_studio_done', 'Video Studio opened.'); } },
+    { id: 'open_cinematic_studio', opensPanel: 'cinematicStudio', icon: '🎬', roles: 'teacher', label: t('cmd.open_cinematic_studio', 'Open Cinematic Studio'), aliases: ['cinematic studio', 'cinematic crawl', 'title crawl', 'intro video', 'video opener'], hint: t('cmd.open_cinematic_studio_hint', 'Create cinematic intros and explainers'), run: (c) => { c.openCinematicStudio(); return t('cmd.open_cinematic_studio_done', 'Cinematic Studio opened.'); } },
+    { id: 'open_allo_studio', opensPanel: 'alloStudio', icon: '🖼️', roles: 'teacher', label: t('cmd.open_allo_studio', 'Open AlloStudio'), aliases: ['allostudio', 'allo studio', 'design studio', 'poster editor', 'worksheet editor', 'flyer studio'], hint: t('cmd.open_allo_studio_hint', 'Design accessible posters, flyers, and worksheets'), run: (c) => { c.openAlloStudio(); return t('cmd.open_allo_studio_done', 'AlloStudio opened.'); } },
     { id: 'open_accessibility_lab', opensPanel: 'accessibilityLab', icon: '♿', roles: 'teacher', label: t('cmd.open_accessibility_lab', 'Open the Accessibility Lab'), aliases: ['accessibility lab', 'a11y lab', 'accessibility checker', 'wcag', 'contrast checker'], hint: t('cmd.open_accessibility_lab_hint', 'Check & improve accessibility'), run: (c) => { c.openAccessibilityLab(); return t('cmd.open_accessibility_lab_done', 'Accessibility Lab opened.'); } },
     { id: 'open_lumen', opensPanel: 'stemLab', icon: '💡', roles: 'teacher', label: t('cmd.open_lumen', 'Open Lumen (data canvas)'), aliases: ['lumen', 'data canvas', 'chart data', 'graph data', 'progress charts', 'visualize data'], hint: t('cmd.open_lumen_hint', 'Turn assessment data into charts'), run: (c) => { c.openLumen(); return t('cmd.open_lumen_done', 'Lumen opened in the STEM Lab.'); } },
     { id: 'open_community_catalog', opensPanel: 'communityCatalog', icon: '🗂️', roles: 'teacher', label: t('cmd.open_community_catalog', 'Open the Community Catalog'), aliases: ['community catalog', 'catalog', 'shared lessons', 'browse lessons', 'community'], hint: t('cmd.open_community_catalog_hint', 'Browse shared community lessons'), run: (c) => { c.openCommunityCatalog(); return t('cmd.open_community_catalog_done', 'Community Catalog opened.'); } },
     { id: 'open_dynamic_assessment', opensPanel: 'dynamicAssessment', icon: '📊', roles: 'teacher', label: t('cmd.open_dynamic_assessment', 'Open Dynamic Assessment'), aliases: ['dynamic assessment', 'progress monitoring', 'probe', 'cbm', 'assessment'], hint: t('cmd.open_dynamic_assessment_hint', 'Run a dynamic assessment'), run: (c) => { c.openDynamicAssessment(); return t('cmd.open_dynamic_assessment_done', 'Dynamic Assessment opened.'); } },
     { id: 'open_reading_library', opensPanel: 'readingLibrary', icon: '📚', roles: 'all', label: t('cmd.open_reading_library', 'Open the Reading Library'), aliases: ['reading library', 'library', 'books', 'picture books', 'storyweaver', 'read a book'], hint: t('cmd.open_reading_library_hint', 'Browse open picture books in 10 languages'), run: (c) => { c.openReadingLibrary(); return t('cmd.open_reading_library_done', 'Reading Library opened.'); } },
+    { id: 'open_open_groove', opensPanel: 'openGroove', icon: '🎛️', roles: 'all', label: t('cmd.open_open_groove', 'Open Open Groove Studio'), aliases: ['open groove', 'groove studio', 'music studio', 'beat maker', 'beats', 'synth', 'composer'], hint: t('cmd.open_open_groove_hint', 'Make beats, synth patterns, and notation-aware music'), run: (c) => { c.openOpenGroove(); return t('cmd.open_open_groove_done', 'Open Groove Studio opened.'); } },
+    { id: 'open_timeline_studio', opensPanel: 'timelineStudio', icon: '🕰️', roles: 'all', label: t('cmd.open_timeline_studio', 'Open Timeline Studio'), aliases: ['timeline studio', 'timeline maker', 'sequence builder', 'chronology', 'history timeline'], hint: t('cmd.open_timeline_studio_hint', 'Build and verify accessible timelines'), run: (c) => { c.openTimelineStudio(); return t('cmd.open_timeline_studio_done', 'Timeline Studio opened.'); } },
+    { id: 'open_lingua_practice', opensPanel: 'linguaPractice', icon: 'A/文', roles: 'all', label: t('cmd.open_lingua_practice', 'Open Lingua Practice'), aliases: ['lingua practice', 'language practice', 'practice language', 'vocabulary practice', 'multilingual practice'], hint: t('cmd.open_lingua_practice_hint', 'Practice vocabulary and language from the current source'), run: (c) => { c.openLinguaPractice(); return t('cmd.open_lingua_practice_done', 'Lingua Practice opened.'); } },
+    { id: 'open_test_prep_hub', opensPanel: 'testPrepHub', icon: '🧭', roles: 'all', label: t('cmd.open_test_prep_hub', 'Open Test Prep Hub'), aliases: ['test prep', 'test prep hub', 'exam prep', 'practice questions', 'study exams'], hint: t('cmd.open_test_prep_hub_hint', 'Open free practice sets and study tools'), run: (c) => { c.openTestPrepHub(); return t('cmd.open_test_prep_hub_done', 'Test Prep Hub opened.'); } },
     { id: 'find_reading', opensPanel: 'readingLibrary', icon: '📚', roles: 'all', label: t('cmd.find_reading', 'Find the right book'), aliases: ['find a book', 'find books about', 'recommend a book', 'suggest a book', 'book about', 'books about', 'reading about', 'learn about', 'science article about', 'primary source about'], hint: t('cmd.find_reading_hint', 'Ask by topic, grade, language, source, or type'), run: (c, params) => runFindReadingCommand(c, params || {}, t) },
 
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
@@ -941,23 +952,26 @@ function scoreCommand(cmd, q) {
 // maps — NOT fields on each registry entry — so the registry stays untouched and these are
 // pure renderer metadata layered ON TOP of `when`/`roles` (the only hard-availability gate).
 // Unmapped commands default to group 'navigate' and no context (never floated), so an
-// un-mapped/new command still renders correctly.
+// un-mapped/new command still renders correctly. Tests still require every registry
+// command to be explicitly grouped so browse metadata cannot silently drift.
 const CMD_GROUP = {
   open_educator_hub:'navigate', open_learning_hub:'navigate', open_document_builder:'navigate', open_wizard:'navigate',
   open_notebook:'navigate', open_translate:'navigate', open_class_session:'navigate', open_class_analytics:'navigate',
   open_export_menu:'navigate', open_ai_settings:'navigate', go_dashboard:'navigate', open_roster:'navigate', open_project_settings:'navigate',
   generate_quiz:'create', generate_glossary:'create', generate_simplified:'create', generate_sentence_frames:'create',
   generate_analysis:'create', create_lesson:'create', submit_work:'create',
-  font_bigger:'accessibility', font_smaller:'accessibility', font_reset:'accessibility', open_text_settings:'accessibility',
+  font_bigger:'accessibility', font_smaller:'accessibility', font_reset:'accessibility', set_font_size:'accessibility', open_text_settings:'accessibility',
   open_voice_settings:'accessibility', read_this_page:'accessibility', toggle_focus_mode:'accessibility', toggle_reading_ruler:'accessibility',
   toggle_help_mode:'accessibility', toggle_bot:'accessibility', toggle_line_focus:'accessibility', toggle_visual_supports:'accessibility',
   toggle_dictation:'accessibility', toggle_socratic:'accessibility', zen_on:'accessibility', zen_off:'accessibility',
   switch_theme:'display', toggle_color_overlay:'display', toggle_animations:'display',
-  pipeline_score:'pipeline', pipeline_issues:'pipeline', pipeline_downloads:'pipeline', pipeline_verification:'pipeline',
+  pipeline_score:'pipeline', pipeline_issues:'pipeline', pipeline_downloads:'pipeline', pipeline_verification:'pipeline', translate_document:'pipeline',
   app_tour:'help', pipeline_tour:'help', report_problem:'help',
   voice_start:'voice', voice_stop:'voice',
   open_stem_lab:'tools', open_storyforge:'tools', open_allohaven:'tools', open_behavior_lens:'tools', open_report_writer:'tools',
-  open_symbol_studio:'tools', open_accessibility_lab:'tools', open_lumen:'tools', open_community_catalog:'tools', open_dynamic_assessment:'tools', open_reading_library:'tools', find_reading:'tools',
+  open_symbol_studio:'tools', open_video_studio:'tools', open_cinematic_studio:'tools', open_allo_studio:'tools',
+  open_accessibility_lab:'tools', open_lumen:'tools', open_community_catalog:'tools', open_dynamic_assessment:'tools', open_reading_library:'tools',
+  open_open_groove:'tools', open_timeline_studio:'tools', open_lingua_practice:'tools', open_test_prep_hub:'tools', find_reading:'tools',
   stop_reading:'accessibility', toggle_mute:'accessibility', line_spacing_more:'accessibility', line_spacing_less:'accessibility', open_study_timer:'accessibility',
   cycle_reading_theme:'display', set_ui_language:'display', open_sel_hub:'tools', open_submission_inbox:'navigate', toggle_cloud_sync:'navigate', generate_outline:'create', export_pack:'create',
   launch_flashcards:'create', clear_my_answers:'create', clear_workspace:'create', undo_settings:'create', open_persona_chat:'navigate',
@@ -968,6 +982,8 @@ const CMD_CONTEXT = {
   open_document_builder:['educatorHub','content'], open_wizard:['educatorHub'], create_lesson:['educatorHub'], open_translate:['educatorHub','content'],
   open_class_session:['educatorHub'], open_class_analytics:['educatorHub','behaviorLens'], open_roster:['educatorHub'], open_project_settings:['educatorHub'],
   open_notebook:['learningHub'], toggle_socratic:['learningHub'],
+  open_video_studio:['educatorHub','videoStudio'], open_cinematic_studio:['educatorHub','videoStudio','cinematicStudio'], open_allo_studio:['educatorHub','alloStudio'],
+  open_open_groove:['learningHub','openGroove'], open_timeline_studio:['learningHub','timelineStudio'], open_lingua_practice:['learningHub','content','linguaPractice'], open_test_prep_hub:['learningHub','testPrepHub'],
   generate_quiz:['content'], generate_glossary:['content'], generate_simplified:['content','reading'], generate_sentence_frames:['content'], generate_analysis:['content'], open_export_menu:['content'], find_reading:['content','learningHub','reading'],
   read_this_page:['learningHub','symbolStudio','stemLab','content','reading'],
   font_bigger:['reading'], font_smaller:['reading'], toggle_reading_ruler:['reading'], toggle_line_focus:['reading'], toggle_color_overlay:['reading'], zen_off:['reading'],
@@ -982,10 +998,10 @@ const GROUP_LABEL_FALLBACK = { navigate:'Navigate', create:'Create from this con
 const COMMAND_RECENTS_KEY = 'allo_command_recents_v1';
 const COMMAND_RECENTS_LIMIT = 5;
 // context → ctx signal (string boolean-key, OR a function for derived ones like reading).
-const CTX_FLAG = { pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', symbolStudio:'symbolStudioOpen', stemLab:'stemLabOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
+const CTX_FLAG = { pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', symbolStudio:'symbolStudioOpen', videoStudio:'videoStudioOpen', alloStudio:'alloStudioOpen', cinematicStudio:'cinematicStudioOpen', stemLab:'stemLabOpen', openGroove:'openGrooveOpen', timelineStudio:'timelineStudioOpen', linguaPractice:'linguaPracticeOpen', testPrepHub:'testPrepHubOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
 // Priority when several contexts are active (tool > pipeline > hub > content > reading).
-const CTX_PRIORITY = ['symbolStudio','stemLab','behaviorLens','pipeline','educatorHub','learningHub','content','reading'];
-const CONTEXT_LABEL_FALLBACK = { pipeline:'Here — Pipeline results', educatorHub:'Here — Educator Hub', learningHub:'Here — Learning Hub', symbolStudio:'Here — Symbol Studio', stemLab:'Here — STEM Lab', behaviorLens:'Here — Behavior Lens', content:'Here — this content', reading:'Here — Reading mode' };
+const CTX_PRIORITY = ['videoStudio','alloStudio','cinematicStudio','symbolStudio','stemLab','openGroove','timelineStudio','linguaPractice','testPrepHub','behaviorLens','pipeline','educatorHub','learningHub','content','reading'];
+const CONTEXT_LABEL_FALLBACK = { pipeline:'Here — Pipeline results', educatorHub:'Here — Educator Hub', learningHub:'Here — Learning Hub', symbolStudio:'Here — Symbol Studio', videoStudio:'Here — Video Studio', alloStudio:'Here — AlloStudio', cinematicStudio:'Here — Cinematic Studio', stemLab:'Here — STEM Lab', openGroove:'Here — Open Groove Studio', timelineStudio:'Here — Timeline Studio', linguaPractice:'Here — Lingua Practice', testPrepHub:'Here — Test Prep Hub', behaviorLens:'Here — Behavior Lens', content:'Here — this content', reading:'Here — Reading mode' };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => { const f = CTX_FLAG[k]; return typeof f === 'function' ? f(ctx) : !!ctx[f]; });

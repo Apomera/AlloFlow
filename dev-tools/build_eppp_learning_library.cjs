@@ -65,6 +65,7 @@ const diagramTemplates = windowObject._epppDiagrams || {};
 const overridesPath = path.join(root, 'test_prep', 'eppp_learning_review_overrides.json');
 const reviewOverrides = fs.existsSync(overridesPath) ? JSON.parse(fs.readFileSync(overridesPath, 'utf8')) : { memoryAids: {} };
 const flashcardWavePattern = /^eppp_flashcard_review_wave_\d+\.json$/i;
+const memoryAidWavePattern = /^eppp_memory_aid_review_wave_\d+\.json$/i;
 const flashcardWaveRecords = new Map();
 for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entry) => flashcardWavePattern.test(entry)).sort()) {
   const wave = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', filename), 'utf8'));
@@ -73,6 +74,17 @@ for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entr
     if (!id) throw new Error(`Flashcard review wave ${filename} has an item without an id.`);
     if (flashcardWaveRecords.has(id)) throw new Error(`Flashcard ${id} appears in more than one review wave.`);
     flashcardWaveRecords.set(id, { ...item, reviewArtifact: filename });
+  }
+}
+const memoryAidWaveRecords = new Map();
+for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entry) => memoryAidWavePattern.test(entry)).sort()) {
+  const wave = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', filename), 'utf8'));
+  for (const item of (Array.isArray(wave.items) ? wave.items : [])) {
+    const legacyId = String(item && item.legacyId || '');
+    const title = String(item && item.title || '');
+    if (!legacyId || !title) throw new Error(`Memory-aid review wave ${filename} has an item without a legacyId or title.`);
+    if (memoryAidWaveRecords.has(legacyId)) throw new Error(`Memory aid ${legacyId} appears in more than one review wave.`);
+    memoryAidWaveRecords.set(legacyId, { ...item, reviewArtifact: filename });
   }
 }
 const domainByNumber = new Map(domains.map((domain) => [Number(domain.id), String(domain.name)]));
@@ -171,18 +183,28 @@ for (const domain of domains) {
 }
 
 const aidRecords = memoryAids.map((aid) => {
-  const override = reviewOverrides.memoryAids && reviewOverrides.memoryAids[String(aid.title || '')] || {};
+  const legacyId = stableId('memory-aid', [aid.domainId, aid.title, aid.type, aid.content]);
+  const waveOverride = memoryAidWaveRecords.get(legacyId) || {};
+  const manualOverride = reviewOverrides.memoryAids && reviewOverrides.memoryAids[String(aid.title || '')] || {};
+  const override = { ...waveOverride, ...manualOverride };
   return ({
-  id: stableId('memory-aid', [aid.domainId, aid.title, aid.type, aid.content]),
+  id: legacyId,
   domainId: Number(aid.domainId),
   domain: domainByNumber.get(Number(aid.domainId)) || 'Unassigned',
   title: cleanText(aid.title) || 'Untitled memory aid',
   type: cleanText(aid.type) || 'unspecified',
-  content: cleanText(aid.content),
+  content: cleanText(override.content || aid.content),
   tags: (Array.isArray(aid.tags) ? aid.tags : []).map(cleanText).filter(Boolean),
   reviewStatus: override.reviewStatus || 'review-required',
   references: Array.isArray(override.references) ? override.references : [],
+  sourceDetails: Array.isArray(override.sourceDetails) ? override.sourceDetails.map((source) => ({
+    title: cleanText(source && source.title),
+    organization: cleanText(source && source.organization),
+    url: cleanText(source && source.url),
+    whyReputable: cleanText(source && source.whyReputable),
+  })).filter((source) => source.title && source.url && source.whyReputable) : [],
   reviewNote: String(override.reviewNote || ''),
+  reviewArtifact: cleanText(waveOverride.reviewArtifact),
   checks: {
     accuracyAndCurrency: override.reviewStatus ? 'editorial-pass' : 'pending',
     oversimplification: override.reviewStatus ? 'editorial-pass' : 'pending',
@@ -232,6 +254,8 @@ const catalog = {
     retiredRedundantFlashcards: flashcards.filter((card) => card.contentDisposition === 'retire-redundant').length,
     qaPassedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'qa-passed').length,
     sourceReviewedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').length,
+    releasedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').length,
+    releasedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').length,
     editorialReviewedSourcePendingMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending').length,
   },
   chapters: chapterRecords,

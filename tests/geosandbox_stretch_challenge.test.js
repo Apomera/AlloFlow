@@ -453,6 +453,14 @@ describe('geoChallengeAnswerCorrect', () => {
   });
 });
 
+describe('geoFormatChallengeAnswer', () => {
+  it('keeps topology answers integral while rounding measured answers for feedback', () => {
+    expect(P.geoFormatChallengeAnswer({ type: 'faces', answer: 6 })).toBe('6');
+    expect(P.geoFormatChallengeAnswer({ type: 'volume', answer: Math.PI })).toBe('3.14');
+    expect(P.geoFormatChallengeAnswer({ type: 'identify', answer: 'Sphere' })).toBe('Sphere');
+  });
+});
+
 describe('geoCrossSection + geoConicSection (single-mode slicing)', () => {
   it('cone cross-section is a circle shrinking to the apex; area = πr²', () => {
     const base = P.geoCrossSection('cone', { r: 3, h: 6 }, 0);      // bottom
@@ -593,6 +601,29 @@ describe('geoDescribeScene (screen-reader scene summary)', () => {
     expect(P.geoDescribeScene('stretch', null, null, { objects: [], selection: null }, 'u')).toContain('Add a point to begin');
   });
 });
+
+describe('geoBuildTutorPrompt', () => {
+  it('uses the current single-shape measurements', () => {
+    const prompt = P.geoBuildTutorPrompt('single', 'box', { w: 2, h: 3, d: 4 }, null, null, 'cm');
+    expect(prompt).toContain('Rectangular Prism');
+    expect(prompt).toContain('Volume = 24.00 cm cubed');
+  });
+  it('describes the active stretch construction rather than a hidden single shape', () => {
+    const construction = { objects: [{ id: 2, type: 'segment', position: [0,0,0], vector: [3,0,0] }], selection: 2 };
+    const prompt = P.geoBuildTutorPrompt('stretch', 'sphere', { r: 5 }, construction, null, 'u');
+    expect(prompt).toContain('Dimensional-stretch scene');
+    expect(prompt).toContain('Selected Segment #2');
+    expect(prompt).not.toContain('sphere');
+  });
+  it('describes sculpt parts and states the overlap limitation', () => {
+    const recipe = { name: 'robot', scale: 1, parts: [{ shape: 'box', size: [2,3,4] }, { shape: 'sphere', size: [1] }] };
+    const prompt = P.geoBuildTutorPrompt('sculpt', 'box', {}, null, recipe, 'cm');
+    expect(prompt).toContain('robot');
+    expect(prompt).toContain('Rectangular Prism');
+    expect(prompt).toContain('upper bounds because overlapping parts are counted separately');
+  });
+});
+
 describe('saved construction safety', () => {
   it('creates a bounded unique name instead of overwriting an existing save', () => {
     expect(P.geoUniqueSaveName('My build', {})).toBe('My build');

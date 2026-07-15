@@ -38,14 +38,14 @@ describe('Persona Chat WCAG dialog behavior', () => {
 
   it('uses explicit non-submit types for all native buttons', () => {
     const buttons = source.match(/<button\b[\s\S]*?>/g) || [];
-    expect(buttons).toHaveLength(32);
+    expect(buttons).toHaveLength(34);
     for (const button of buttons) expect(button).toContain('type="button"');
   });
 });
 
 describe('Persona Chat reduced motion and generated copies', () => {
   it('adds a local fallback to every animation and broad transition utility', () => {
-    expect(source.match(/motion-reduce:animate-none/g)).toHaveLength(37);
+    expect(source.match(/motion-reduce:animate-none/g)).toHaveLength(38);
     expect(source.match(/motion-reduce:transition-none/g)).toHaveLength(51);
   });
 

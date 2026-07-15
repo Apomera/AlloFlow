@@ -309,3 +309,31 @@ describe('ConceptGraph3D — constellation mode (pure, docs §4.5)', () => {
     h.destroy();
   });
 });
+
+describe('ConceptGraph3D - live organizer control contract', () => {
+  it('keeps interactive chrome accessible and exposes a linear progress anchor', () => {
+    const source = readFileSync(resolve(process.cwd(), 'concept_graph_3d_module.js'), 'utf8');
+    expect(source).toContain("panel.setAttribute('role', 'region')");
+    expect(source).toContain("legHeader.setAttribute('aria-expanded', 'true')");
+    expect(source).toContain("legHeader.setAttribute('aria-controls', legBody.id)");
+    expect(source).toContain("routeProgress.textContent = (scene.outline.order || []).length + ' concepts'");
+    expect(source).toContain('var outlinePanel = buildOutlineDom(scene, t, true, function (id)');
+    expect(source).toContain("outlineBtn.setAttribute('aria-controls', outlinePanel.id)");
+    expect(source).toContain("outlineBtn.setAttribute('aria-pressed', outlineVisible ? 'true' : 'false')");
+    expect(source).toContain("outlineBtn.setAttribute('aria-expanded', outlineVisible ? 'true' : 'false')");
+    expect(source).toContain('outlinePanel.hidden = !outlineVisible');
+    expect(source).toContain("if (outlineVisible) selectNode(null)");
+    expect(source).toContain("button.setAttribute('data-concept-id', id)");
+    expect(source).toContain("button.setAttribute('aria-current', 'step')");
+    expect(source).toContain('kbFocus(id)');
+    expect(source).toContain("outlinePanel.addEventListener('keydown', onOutlineKeyDown)");
+    expect(source).toContain("if (e.key !== 'Escape') return");
+    expect(source).toContain("outlinePanel.removeEventListener('keydown', onOutlineKeyDown)");
+    expect(source).not.toContain("outlinePanel.setAttribute('aria-hidden', 'true')");
+    expect(source).toContain('Reading-order outline shown.');
+    expect(source).toContain("'Concept ' + (outlinePos + 1) + ' of '");
+    expect(source).toContain('Drag to orbit ? scroll to zoom ? arrow keys step through concepts');
+    expect(source).toContain('min-width:44px;min-height:44px');
+    expect(source).not.toContain('[legend, panel, tip, resetBtn].forEach');
+  });
+});
