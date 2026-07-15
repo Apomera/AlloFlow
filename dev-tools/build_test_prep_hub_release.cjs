@@ -79,6 +79,14 @@ const specialEducationEarlyChildhood5692SourcePath=path.join(root,'test_prep','s
 const specialEducationEarlyChildhood5692BuildPath=path.join(root,'dev-tools','build_special_education_early_childhood_5692_pack.cjs');
 const specialEducationEarlyChildhood5692LibraryBuildPath=path.join(root,'dev-tools','build_special_education_early_childhood_5692_learning_library.cjs');
 const specialEducationEarlyChildhood5692QaPath=path.join(root,'dev-tools','qa_special_education_early_childhood_5692.cjs');
+const specialEducationSevereProfound5547SourcePath=path.join(root,'test_prep','special_education_severe_profound_5547_pack.json');
+const specialEducationSevereProfound5547BuildPath=path.join(root,'dev-tools','build_special_education_severe_profound_5547_pack.cjs');
+const specialEducationSevereProfound5547LibraryBuildPath=path.join(root,'dev-tools','build_special_education_severe_profound_5547_learning_library.cjs');
+const specialEducationSevereProfound5547QaPath=path.join(root,'dev-tools','qa_special_education_severe_profound_5547.cjs');
+const specialEducationLearningDisabilities5383SourcePath=path.join(root,'test_prep','special_education_learning_disabilities_5383_pack.json');
+const specialEducationLearningDisabilities5383BuildPath=path.join(root,'dev-tools','build_special_education_learning_disabilities_5383_pack.cjs');
+const specialEducationLearningDisabilities5383LibraryBuildPath=path.join(root,'dev-tools','build_special_education_learning_disabilities_5383_learning_library.cjs');
+const specialEducationLearningDisabilities5383QaPath=path.join(root,'dev-tools','qa_special_education_learning_disabilities_5383.cjs');
 const outputPath = path.join(root, 'test_prep_hub_module.js');
 const deployOutputPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const tempEntryPath = path.join(root, '_tmp_test_prep_hub_release_entry.jsx');
@@ -99,6 +107,8 @@ const teachingReading5205Registration = 'registerTestPrepPack(TEACHING_READING_5
 const earlyChildhood5025Registration = 'registerTestPrepPack(EARLY_CHILDHOOD_5025_PRACTICE_PACK);';
 const pltEarlyChildhood5621Registration='registerTestPrepPack(PLT_EARLY_CHILDHOOD_5621_PRACTICE_PACK);';
 const specialEducationEarlyChildhood5692Registration='registerTestPrepPack(SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK);';
+const specialEducationSevereProfound5547Registration='registerTestPrepPack(SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK);';
+const specialEducationLearningDisabilities5383Registration='registerTestPrepPack(SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK);';
 
 if (!fs.existsSync(sourcePath)) throw new Error('Test Prep Hub source not found.');
 if (!fs.existsSync(epppBankPath)) throw new Error('EPPP bank not found.');
@@ -117,6 +127,8 @@ if (!fs.existsSync(teachingReading5205SourcePath)) throw new Error('Teaching Rea
 if (!fs.existsSync(earlyChildhood5025SourcePath)) throw new Error('Early Childhood 5025 release source not found.');
 if(!fs.existsSync(pltEarlyChildhood5621SourcePath))throw Error('PLT Early Childhood 5621 source missing');
 if(!fs.existsSync(specialEducationEarlyChildhood5692SourcePath))throw Error('Special Education EC/EI 5692 source missing');
+if(!fs.existsSync(specialEducationSevereProfound5547SourcePath))throw Error('Special Education Severe to Profound 5547 source missing');
+if(!fs.existsSync(specialEducationLearningDisabilities5383SourcePath))throw Error('Learning Disabilities 5383 source missing');
 execFileSync(process.execPath, [paraProBatch2BuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [paraProLibraryBuildPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath, [paraProLibraryQaPath], { cwd: root, stdio: 'inherit' });
@@ -169,6 +181,8 @@ execFileSync(process.execPath, [earlyChildhood5025LibraryBuildPath], { cwd: root
 execFileSync(process.execPath, [earlyChildhood5025QaPath], { cwd: root, stdio: 'inherit' });
 execFileSync(process.execPath,[pltEarlyChildhood5621BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[pltEarlyChildhood5621LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[pltEarlyChildhood5621QaPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[specialEducationEarlyChildhood5692BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationEarlyChildhood5692LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationEarlyChildhood5692QaPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[specialEducationSevereProfound5547BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationSevereProfound5547LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationSevereProfound5547QaPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[specialEducationLearningDisabilities5383BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationLearningDisabilities5383LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[specialEducationLearningDisabilities5383QaPath],{cwd:root,stdio:'inherit'});
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
 if (!originalSource.includes(registrationMarker)) throw new Error('Test Prep Hub registration marker changed; review the ParaPro release injection.');
@@ -191,6 +205,8 @@ if (!source.includes(teachingReading5205Registration)) throw new Error('Test Pre
 if (!source.includes(earlyChildhood5025Registration)) throw new Error('Test Prep Hub source must register the Early Childhood 5025 pack.');
 if(!source.includes(pltEarlyChildhood5621Registration))throw Error('Hub must register PLT Early Childhood 5621');
 if(!source.includes(specialEducationEarlyChildhood5692Registration))throw Error('Hub must register Special Education EC/EI 5692');
+if(!source.includes(specialEducationSevereProfound5547Registration))throw Error('Hub must register Special Education Severe to Profound 5547');
+if(!source.includes(specialEducationLearningDisabilities5383Registration))throw Error('Hub must register Learning Disabilities 5383');
 const specialEducation5355Pack = JSON.parse(fs.readFileSync(specialEducation5355SourcePath, 'utf8'));
 const schoolCounselor5422Pack = JSON.parse(fs.readFileSync(schoolCounselor5422SourcePath, 'utf8'));
 const schoolPsychologist5403Pack = JSON.parse(fs.readFileSync(schoolPsychologist5403SourcePath, 'utf8'));
@@ -206,6 +222,8 @@ const teachingReading5205Pack = JSON.parse(fs.readFileSync(teachingReading5205So
 const earlyChildhood5025Pack = JSON.parse(fs.readFileSync(earlyChildhood5025SourcePath, 'utf8'));
 const pltEarlyChildhood5621Pack=JSON.parse(fs.readFileSync(pltEarlyChildhood5621SourcePath,'utf8'));
 const specialEducationEarlyChildhood5692Pack=JSON.parse(fs.readFileSync(specialEducationEarlyChildhood5692SourcePath,'utf8'));
+const specialEducationSevereProfound5547Pack=JSON.parse(fs.readFileSync(specialEducationSevereProfound5547SourcePath,'utf8'));
+const specialEducationLearningDisabilities5383Pack=JSON.parse(fs.readFileSync(specialEducationLearningDisabilities5383SourcePath,'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 200) {
   throw new Error('ParaPro release pack is empty or invalid.');
 }
@@ -244,6 +262,8 @@ if (!teachingReading5205Pack || teachingReading5205Pack.id !== 'praxis-teaching-
 if (!earlyChildhood5025Pack || earlyChildhood5025Pack.id !== 'praxis-early-childhood-5025' || earlyChildhood5025Pack.batchSize !== 100 || earlyChildhood5025Pack.items?.length !== 200) throw new Error('Early Childhood 5025 release pack is invalid.');
 if(pltEarlyChildhood5621Pack.items?.length!==200)throw Error('PLT Early Childhood 5621 release pack invalid');
 if(specialEducationEarlyChildhood5692Pack.id!=='praxis-special-education-early-childhood-5692'||specialEducationEarlyChildhood5692Pack.items?.length!==200)throw Error('Special Education EC/EI 5692 release pack invalid');
+if(specialEducationSevereProfound5547Pack.id!=='praxis-special-education-severe-profound-5547'||specialEducationSevereProfound5547Pack.items?.length!==200)throw Error('Special Education Severe to Profound 5547 release pack invalid');
+if(specialEducationLearningDisabilities5383Pack.id!=='praxis-special-education-learning-disabilities-5383'||specialEducationLearningDisabilities5383Pack.items?.length!==200)throw Error('Learning Disabilities 5383 release pack invalid');
 const prelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(epppItems) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
@@ -259,7 +279,9 @@ const prelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(epppItems) + ';\n\
   + 'const TEACHING_READING_5205_PRACTICE_PACK = ' + JSON.stringify(teachingReading5205Pack) + ';\n\n'
   + 'const EARLY_CHILDHOOD_5025_PRACTICE_PACK = ' + JSON.stringify(earlyChildhood5025Pack) + ';\n\n'
   + 'const PLT_EARLY_CHILDHOOD_5621_PRACTICE_PACK = ' + JSON.stringify(pltEarlyChildhood5621Pack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK = ' + JSON.stringify(specialEducationEarlyChildhood5692Pack) + ';\n\n';
+  + 'const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK = ' + JSON.stringify(specialEducationEarlyChildhood5692Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK = ' + JSON.stringify(specialEducationSevereProfound5547Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK = ' + JSON.stringify(specialEducationLearningDisabilities5383Pack) + ';\n\n';
 fs.writeFileSync(tempEntryPath, '/* global React */\n\n' + prelude + source + '\n', 'utf8');
 
 try {

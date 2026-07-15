@@ -21,6 +21,8 @@ const TEACHING_READING_5205_PACK_SOURCE = path.join(ROOT, 'test_prep', 'teaching
 const EARLY_CHILDHOOD_5025_PACK_SOURCE = path.join(ROOT, 'test_prep', 'early_childhood_5025_pack.json');
 const PLT_EARLY_CHILDHOOD_5621_PACK_SOURCE = path.join(ROOT, 'test_prep', 'plt_early_childhood_5621_pack.json');
 const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PACK_SOURCE = path.join(ROOT, 'test_prep', 'special_education_early_childhood_5692_pack.json');
+const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PACK_SOURCE = path.join(ROOT, 'test_prep', 'special_education_severe_profound_5547_pack.json');
+const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PACK_SOURCE = path.join(ROOT, 'test_prep', 'special_education_learning_disabilities_5383_pack.json');
 const OUTPUT = path.join(ROOT, 'test_prep_hub_module.js');
 const DEPLOY_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const TMP = path.join(ROOT, '_tmp_test_prep_hub_entry.jsx');
@@ -92,6 +94,12 @@ const PLT_EARLY_CHILDHOOD_5621_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_plt_
 const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_special_education_early_childhood_5692_pack.cjs');
 const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_special_education_early_childhood_5692_learning_library.cjs');
 const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_special_education_early_childhood_5692.cjs');
+const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_special_education_severe_profound_5547_pack.cjs');
+const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_special_education_severe_profound_5547_learning_library.cjs');
+const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_special_education_severe_profound_5547.cjs');
+const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_special_education_learning_disabilities_5383_pack.cjs');
+const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_special_education_learning_disabilities_5383_learning_library.cjs');
+const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_special_education_learning_disabilities_5383.cjs');
 const skipEpppRefresh = process.argv.includes('--skip-eppp-refresh');
 
 if (!fs.existsSync(SOURCE)) {
@@ -158,6 +166,12 @@ execSync(`node "${PLT_EARLY_CHILDHOOD_5621_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'in
 execSync(`node "${SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_LIBRARY_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 if (!Array.isArray(bank) || !bank.length) throw new Error('EPPP native item bank is empty or invalid.');
 const paraProPack = JSON.parse(fs.readFileSync(PARAPRO_PACK_SOURCE, 'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 200) {
@@ -209,6 +223,8 @@ const earlyChildhood5025Pack=JSON.parse(fs.readFileSync(EARLY_CHILDHOOD_5025_PAC
 if(earlyChildhood5025Pack.items?.length!==200) throw new Error('Early Childhood 5025 pack invalid.');
 const pltEarlyChildhood5621Pack=JSON.parse(fs.readFileSync(PLT_EARLY_CHILDHOOD_5621_PACK_SOURCE,'utf8'));if(pltEarlyChildhood5621Pack.items?.length!==200)throw Error('PLT Early Childhood 5621 pack invalid');
 const specialEducationEarlyChildhood5692Pack=JSON.parse(fs.readFileSync(SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PACK_SOURCE,'utf8'));if(specialEducationEarlyChildhood5692Pack.id!=='praxis-special-education-early-childhood-5692'||specialEducationEarlyChildhood5692Pack.items?.length!==200)throw Error('Special Education EC/EI 5692 pack invalid');
+const specialEducationSevereProfound5547Pack=JSON.parse(fs.readFileSync(SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PACK_SOURCE,'utf8'));if(specialEducationSevereProfound5547Pack.id!=='praxis-special-education-severe-profound-5547'||specialEducationSevereProfound5547Pack.items?.length!==200)throw Error('Special Education Severe to Profound 5547 pack invalid');
+const specialEducationLearningDisabilities5383Pack=JSON.parse(fs.readFileSync(SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PACK_SOURCE,'utf8'));if(specialEducationLearningDisabilities5383Pack.id!=='praxis-special-education-learning-disabilities-5383'||specialEducationLearningDisabilities5383Pack.items?.length!==200)throw Error('Learning Disabilities 5383 pack invalid');
 const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
@@ -224,7 +240,9 @@ const bankPrelude = 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n
   + 'const TEACHING_READING_5205_PRACTICE_PACK = ' + JSON.stringify(teachingReading5205Pack) + ';\n\n'
   + 'const EARLY_CHILDHOOD_5025_PRACTICE_PACK = ' + JSON.stringify(earlyChildhood5025Pack) + ';\n\n'
   + 'const PLT_EARLY_CHILDHOOD_5621_PRACTICE_PACK = ' + JSON.stringify(pltEarlyChildhood5621Pack) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK = ' + JSON.stringify(specialEducationEarlyChildhood5692Pack) + ';\n\n';
+  + 'const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK = ' + JSON.stringify(specialEducationEarlyChildhood5692Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK = ' + JSON.stringify(specialEducationSevereProfound5547Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK = ' + JSON.stringify(specialEducationLearningDisabilities5383Pack) + ';\n\n';
 fs.writeFileSync(TMP, '/* global React */\n\n' + bankPrelude + source + '\n', 'utf8');
 
 try {
