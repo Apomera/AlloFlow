@@ -7,7 +7,9 @@ const { clean, normalize, sourceFor } = require('./eppp_editorial_support.cjs');
 const waveNumber = String(process.env.EPPP_FLASHCARD_REVIEW_WAVE || '01').padStart(2, '0');
 if (!['01', '02'].includes(waveNumber)) throw new Error(`Unsupported EPPP flashcard review wave: ${waveNumber}`);
 const isWave02 = waveNumber === '02';
-const revisions = require(isWave02 ? './eppp_flashcard_revisions_wave_02.cjs' : './eppp_flashcard_revisions.cjs');
+const baseRevisions = require(isWave02 ? './eppp_flashcard_revisions_wave_02.cjs' : './eppp_flashcard_revisions.cjs');
+const supplementalRevisions = isWave02 ? require('./eppp_flashcard_revisions_wave_02_data.cjs') : new Map();
+const revisions = new Map([...baseRevisions, ...supplementalRevisions]);
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep', 'eppp_learning_library.json');
@@ -186,7 +188,11 @@ for (const [domainId, quota] of quotas) {
 }
 
 const items = selected.map((card, index) => {
-  const revision = revisions.get(card.front) || {};
+  const rawRevision = revisions.get(card.front) || {};
+  const revision = typeof rawRevision === 'string' ? {
+    back: rawRevision,
+    reason: 'Legacy wording was rewritten after accuracy, nuance, source-alignment, and overclaim review.',
+  } : rawRevision;
   const front = clean(revision.front || card.front);
   const back = clean(revision.back || card.back);
   const revisionApplied = Boolean(revision.front || revision.back);

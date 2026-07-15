@@ -63,7 +63,7 @@ describe('EPPP flashcard review wave 01', () => {
     const cardsById = new Map(library.flashcards.map((card) => [card.id, card]));
 
     expect(library.summary.flashcards).toBe(415);
-    expect(library.summary.sourceReviewedFlashcards).toBe(109);
+    expect(library.summary.sourceReviewedFlashcards).toBe(209);
     expect(wave.summary.previouslySourceReviewed).toBe(9);
     expect(wave.summary.sourceReviewedAfterIntegration).toBe(109);
     expect(wave.summary.remainingFirstPass).toBe(306);

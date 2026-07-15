@@ -24,6 +24,12 @@ const SOURCES = {
     'https://openstax.org/books/introduction-behavioral-neuroscience/pages/3-introduction',
     'OpenStax is Rice University\'s nonprofit educational publisher. This expert-authored and peer-reviewed neuroscience chapter covers neurotransmitter synthesis, release, receptor action, and inactivation.'
   ),
+  sensation: source(
+    'Psychology 2e, Chapter 5: Sensation and Perception',
+    'OpenStax, Rice University (second edition)',
+    'https://openstax.org/books/psychology-2e/pages/5-introduction',
+    'OpenStax is Rice University\'s nonprofit educational publisher. This expert-authored, peer-reviewed chapter directly covers sensory transduction, thresholds, perception, attention, and bottom-up and top-down processing.'
+  ),
   memory: source(
     'Psychology 2e, Chapter 8: Memory',
     'OpenStax, Rice University (second edition)',
@@ -66,17 +72,41 @@ const SOURCES = {
     'https://openstax.org/books/psychology-2e/pages/14-introduction',
     'OpenStax is Rice University\'s nonprofit educational publisher. This expert-authored and peer-reviewed psychology chapter covers integrated biological, psychological, behavioral, and social perspectives on stress, health, coping, and health-related behavior.'
   ),
+  multicultural: source(
+    'Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality',
+    'American Psychological Association (2017)',
+    'https://www.apa.org/about/policy/multicultural-guidelines.pdf',
+    'The American Psychological Association adopted these professional guidelines after expert and governance review. They provide the primary APA framework for culturally responsive practice, identity, intersectionality, context, and power.'
+  ),
+  forensic: source(
+    'Specialty Guidelines for Forensic Psychology',
+    'American Psychological Association and American Academy of Forensic Psychology',
+    'https://www.apa.org/practice/guidelines/forensic-psychology',
+    'These APA-adopted specialty guidelines were developed by forensic-psychology experts and provide the profession\'s authoritative guidance on roles, competence, relationships, methods, communications, and limits in forensic practice.'
+  ),
   mmpi: source(
     'Minnesota Multiphasic Personality Inventory-3 (MMPI-3)',
     'University of Minnesota Press, Test Division, official MMPI publisher',
     'https://www.upress.umn.edu/test-division/mmpi-3/',
     'The University of Minnesota Press Test Division publishes the MMPI family. Its official instrument materials are the primary source for edition-specific structure, intended use, scales, administration, and interpretation limits.'
   ),
+  mmpi2: source(
+    'Minnesota Multiphasic Personality Inventory-2 (MMPI-2)',
+    'University of Minnesota Press, Test Division, official MMPI publisher',
+    'https://www.upress.umn.edu/test-division/mmpi-2/',
+    'The University of Minnesota Press Test Division is the official publisher of the MMPI-2. Its instrument materials are the primary source for edition-specific scales, administration, scoring, validity indicators, and interpretation limits.'
+  ),
   wechsler: source(
     'Wechsler Intelligence Scale for Children | Fifth Edition (WISC-V)',
     'Pearson Clinical Assessment, official instrument publisher',
     'https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Cognition-%26-Neuro/Wechsler-Intelligence-Scale-for-Children-%7C-Fifth-Edition/p/100000771',
     'Pearson publishes and standardizes the Wechsler intelligence scales. Its official product and technical materials are the primary source for edition-specific subtests, composites, age ranges, administration, and interpretation.'
+  ),
+  wais: source(
+    'Wechsler Adult Intelligence Scale | Fourth Edition (WAIS-IV)',
+    'Pearson Clinical Assessment, official instrument publisher',
+    'https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Cognition-%26-Neuro/Wechsler-Adult-Intelligence-Scale-%7C-Fourth-Edition/p/100000392',
+    'Pearson publishes and standardizes the WAIS-IV. Its official product and technical materials are the primary source for edition-specific index scores, composites, administration, norms, and interpretation boundaries.'
   ),
   bayley: source(
     'Bayley Scales of Infant and Toddler Development | Fourth Edition (Bayley-4)',
@@ -89,6 +119,12 @@ const SOURCES = {
     'Rorschach Performance Assessment System, official system publisher',
     'https://r-pas.org/Home/About',
     'R-PAS is the official publisher and training organization for its standardized Rorschach system. Its materials document the system\'s administration, coding, normative basis, and appropriate evidence boundaries.'
+  ),
+  tat: source(
+    'Thematic Apperception Test',
+    'American Psychological Association Dictionary of Psychology',
+    'https://dictionary.apa.org/thematic-apperception-test',
+    'The APA Dictionary of Psychology is maintained by the American Psychological Association as an expert-edited reference. It provides a profession-specific definition and appropriate conceptual scope for the Thematic Apperception Test.'
   ),
   neuropsychAssessment: source(
     'Neuropsychological Assessment',
@@ -161,30 +197,37 @@ const SOURCES = {
 function sourceFor(domainId, value) {
   const text = normalize(value);
   if (domainId === 1) {
-    if (/biopsychosocial|health behavior|stress and health/.test(text)) return SOURCES.health;
-    return /\b(?:neurotrans\w*|dopamin\w*|seroton\w*|gaba\w*|acetyl\w*|receptors?|agonists?|antagonists?|synap\w*|drugs?|medicat\w*|benzodia\w*|antipsych\w*|antidepress\w*)\b/.test(text) ? SOURCES.neurochemistry : SOURCES.neuroanatomy;
+    if (/biopsychosocial|health behavior|stress and health|diathesis|health belief/.test(text)) return SOURCES.health;
+    if (/ssri|benzodia|buspirone|medicat/.test(text)) return SOURCES.medications;
+    return /\b(?:neurotrans\w*|dopamin\w*|seroton\w*|gaba\w*|acetyl\w*|receptors?|agonists?|antagonists?|synap\w*|drugs?|parkinson|antipsych\w*|antidepress\w*)\b/.test(text) ? SOURCES.neurochemistry : SOURCES.neuroanatomy;
   }
   if (domainId === 2) {
     if (/memory|recall|recognition|encoding|retrieval|forget|amnesia|interference|rehearsal|misinformation|serial position|generation effect|spacing effect/.test(text)) return SOURCES.memory;
-    if (/conditioning|reinforcement|punishment|extinction|learning|schedule|shaping|modeling/.test(text)) return SOURCES.learning;
+    if (/conditioning|reinforcement|punishment|extinction|learning|schedule|shaping|modeling|taste aversion|garcia/.test(text)) return SOURCES.learning;
+    if (/sensation|perception/.test(text)) return SOURCES.sensation;
     if (/emotion|motivation|drive|arousal|hunger|attribution of emotion|overjustification|schachter/.test(text)) return SOURCES.motivation;
     return SOURCES.cognition;
   }
-  if (domainId === 3) return SOURCES.social;
+  if (domainId === 3) return /racial identity|acculturation|intersectionality|implicit bias|power and privilege/.test(text) ? SOURCES.multicultural : SOURCES.social;
   if (domainId === 4) return SOURCES.development;
   if (domainId === 5) {
+    if (/mmpi 2/.test(text)) return SOURCES.mmpi2;
     if (/mmpi/.test(text)) return SOURCES.mmpi;
     if (/bayley/.test(text)) return SOURCES.bayley;
-    if (/wechsler|wisc|wais|wppsi/.test(text)) return SOURCES.wechsler;
+    if (/wais/.test(text)) return SOURCES.wais;
+    if (/wechsler|wisc|wppsi/.test(text)) return SOURCES.wechsler;
     if (/rorschach/.test(text)) return SOURCES.rorschach;
+    if (/thematic apperception|\btat\b/.test(text)) return SOURCES.tat;
     if (/halstead|reitan|neuropsych/.test(text)) return SOURCES.neuropsychAssessment;
     if (/\b(?:disorder|syndrome|diagnos|psychopatholog|symptom)\b/.test(text)) return SOURCES.disorders;
     return SOURCES.testing;
   }
   if (domainId === 6) return /medicat|drug|antidepress|antipsych|benzodia|maoi|ssri|lithium|stimulant|clozapine/.test(text) ? SOURCES.medications : SOURCES.therapy;
-  if (domainId === 7) return /belmont|human subject|informed consent|irb|research ethics|debrief|deception/.test(text) ? SOURCES.belmont : (/mean|median|mode|variance|deviation|correl|regress|probab|alpha|power|signific|distribution|anova|chi.square|t.test|effect size|cohen|type i|type ii/.test(text) ? SOURCES.statistics : SOURCES.research);
+  if (domainId === 7) return /belmont|human subject|informed consent|irb|research ethics|debrief|deception/.test(text) ? SOURCES.belmont : (/mean|median|mode|variance|deviation|correl|regress|probab|alpha|power|signific|distribution|anova|chi.square|t.test|effect size|cohen|type i|type ii|bayesian|frequentist|multicollinearity|mediation|moderation|normal distribution|parametric|non parametric|propensity|item response theory|irt/.test(text) ? SOURCES.statistics : SOURCES.research);
   if (/evidence based practice/.test(text)) return SOURCES.ebpp;
   if (/supervision/.test(text)) return SOURCES.supervision;
+  if (/forensic/.test(text)) return SOURCES.forensic;
+  if (/multicultural|cultural competence|culturally responsive/.test(text)) return SOURCES.multicultural;
   return SOURCES.ethics;
 }
 

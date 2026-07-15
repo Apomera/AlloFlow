@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-15T02:28:00.640Z",
+  "generatedAt": "2026-07-15T03:52:10.986Z",
   "summary": {
     "legacyQuestions": 2933,
     "nativeQaQuestions": 1500,
@@ -20,7 +20,7 @@
     "chapterReferences": 383,
     "aiReflectiveCodas": 49,
     "sourceReviewedChapters": 49,
-    "sourceReviewedFlashcards": 109,
+    "sourceReviewedFlashcards": 209,
     "sourceReviewedMemoryAids": 8,
     "editorialReviewedSourcePendingMemoryAids": 2,
     "learnerModes": 14
@@ -137,7 +137,7 @@
       "contentType": "flashcards",
       "count": 415,
       "status": "review-in-progress",
-      "reviewedCount": 109,
+      "reviewedCount": 209,
       "nextGate": "remaining cards need deduplication, atomic-answer review, source support and clue checks"
     },
     {
