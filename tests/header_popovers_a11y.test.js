@@ -12,13 +12,19 @@ describe('Header popover semantics and dismissal', () => {
     expect(source.match(/aria-haspopup="dialog"/g)?.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('names the Text, Voice, and Join popovers and handles Escape on their content', () => {
-    expect(source).toContain('role="dialog" aria-label={t(\'settings.text.header\')}');
-    expect(source).toContain('role="dialog" aria-label={t(\'settings.voice.label\')}');
-    expect(source).toContain('role="dialog" aria-label={t(\'session.join\')}');
-    expect(source).toContain("document.querySelector('[data-help-key=\"header_settings_text\"]')?.focus()");
-    expect(source).toContain("document.querySelector('[data-help-key=\"header_settings_voice\"]')?.focus()");
-    expect(source).toContain("document.querySelector('[data-help-key=\"header_session_join\"]')?.focus()");
+  it('makes all four header dialogs modal, named, trapped, and dismissible', () => {
+    expect(source).toContain('_headerUseFocusTrap(_setupMenuRef, showSetupPathMenu');
+    expect(source).toContain('_headerUseFocusTrap(_textSettingsRef, showTextSettings');
+    expect(source).toContain('_headerUseFocusTrap(_voiceSettingsRef, showVoiceSettings');
+    expect(source).toContain('_headerUseFocusTrap(_joinPopoverRef, isJoinPopoverOpen');
+    expect(source).toContain('aria-labelledby="header-text-settings-title"');
+    expect(source).toContain('aria-labelledby="header-voice-settings-title"');
+    expect(source).toContain('aria-labelledby="header-join-session-title"');
+    expect(source.match(/aria-modal="true"/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(source.match(/min-w-6 min-h-6/g)?.length).toBeGreaterThanOrEqual(3);
+    expect(source).not.toContain(`document.querySelector('[data-help-key="header_settings_text"]')`);
+    expect(source).not.toContain(`document.querySelector('[data-help-key="header_settings_voice"]')`);
+    expect(source).not.toContain(`document.querySelector('[data-help-key="header_session_join"]')`);
   });
 
   it('keeps click-catcher backdrops out of keyboard and accessibility APIs', () => {

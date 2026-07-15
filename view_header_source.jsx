@@ -13,6 +13,8 @@
  * Icons: read from window globals (each falls back to noop). Avoids tight
  * coupling to the parent app's lucide-react imports.
  */
+const _headerUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
+
 function HeaderBar(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
@@ -113,31 +115,13 @@ function HeaderBar(props) {
 
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
   const _setupMenuRef = React.useRef(null);
-  const _setupMenuReturnRef = React.useRef(null);
-  // Setup-path dialog a11y: trap focus inside the dialog, close on Escape from anywhere
-  // (not just the backdrop), and restore focus to the opener — matching the full-lesson
-  // modal pattern in the Guided banner.
-  React.useEffect(() => {
-    if (!showSetupPathMenu) return;
-    _setupMenuReturnRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
-    const root = _setupMenuRef.current;
-    try { if (root) { const f = root.querySelector('button, a[href], [tabindex]:not([tabindex="-1"])'); (f || root).focus(); } } catch (_) {}
-    const onKey = (e) => {
-      if (e.key === 'Escape') { e.stopPropagation(); setShowSetupPathMenu(false); return; }
-      if (e.key === 'Tab' && root) {
-        const items = root.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
-        if (!items.length) return;
-        const first = items[0], last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); try { last.focus(); } catch (_) {} }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); try { first.focus(); } catch (_) {} }
-      }
-    };
-    document.addEventListener('keydown', onKey, true);
-    return () => {
-      document.removeEventListener('keydown', onKey, true);
-      try { const r = _setupMenuReturnRef.current; if (r && r.focus && document.contains(r)) r.focus(); } catch (_) {}
-    };
-  }, [showSetupPathMenu]);
+  const _textSettingsRef = React.useRef(null);
+  const _voiceSettingsRef = React.useRef(null);
+  const _joinPopoverRef = React.useRef(null);
+  _headerUseFocusTrap(_setupMenuRef, showSetupPathMenu, () => setShowSetupPathMenu(false));
+  _headerUseFocusTrap(_textSettingsRef, showTextSettings, handleSetShowTextSettingsToFalse);
+  _headerUseFocusTrap(_voiceSettingsRef, showVoiceSettings, handleSetShowVoiceSettingsToFalse);
+  _headerUseFocusTrap(_joinPopoverRef, isJoinPopoverOpen, handleSetIsJoinPopoverOpenToFalse);
   const openQuickStartSetup = () => {
     try { if (safeRemoveItem) safeRemoveItem('allo_wizard_completed'); } catch (_) {}
     setShowSetupPathMenu(false);
@@ -262,11 +246,14 @@ function HeaderBar(props) {
                             {showTextSettings && (
                                 <>
                                     <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
-                                    <div role="dialog" aria-label={t('settings.text.header')} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowTextSettings(false); document.querySelector('[data-help-key="header_settings_text"]')?.focus(); } }} className={`fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
+                                    <div ref={_textSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-text-settings-title" className={`fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
                                         <div className="space-y-5">
                                             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                                                <h4 className="font-bold text-sm">{t('settings.text.header')}</h4>
-                                                <button onClick={resetFontSize} data-help-key="header_settings_text_reset" className="text-[11px] text-indigo-500 hover:text-indigo-700 font-bold flex items-center gap-1"><RefreshCw size={10}/> {t('common.reset')}</button>
+                                                <h4 id="header-text-settings-title" className="font-bold text-sm">{t('settings.text.header')}</h4>
+                                                <div className="flex items-center gap-2">
+                                                    <button type="button" onClick={resetFontSize} data-help-key="header_settings_text_reset" className="text-[11px] text-indigo-500 hover:text-indigo-700 font-bold flex items-center gap-1"><RefreshCw size={10}/> {t('common.reset')}</button>
+                                                    <button type="button" onClick={handleSetShowTextSettingsToFalse} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close text settings'}>&times;</button>
+                                                </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <label className={`text-xs font-bold flex items-center gap-1 ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>{t('settings.text.font_family')}</label>
@@ -402,10 +389,11 @@ function HeaderBar(props) {
                             {showVoiceSettings && (
                                 <>
                                     <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
-                                    <div role="dialog" aria-label={t('settings.voice.label')} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowVoiceSettings(false); document.querySelector('[data-help-key="header_settings_voice"]')?.focus(); } }} className={`fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
+                                    <div ref={_voiceSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-voice-settings-title" className={`fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
                                         <div className="space-y-3">
                                             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
-                                                <h4 className="font-bold text-sm">{t('settings.voice.label')}</h4>
+                                                <h4 id="header-voice-settings-title" className="font-bold text-sm">{t('settings.voice.label')}</h4>
+                                                <button type="button" onClick={handleSetShowVoiceSettingsToFalse} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close voice settings'}>&times;</button>
                                             </div>
                                             <div>
                                                 <select aria-label={t('common.selection')}
@@ -861,8 +849,12 @@ function HeaderBar(props) {
                                                 <WifiOff size={14} /> <span className="hidden lg:inline">{t('session.join')}</span>
                                             </button>
                                             {isJoinPopoverOpen && (
-                                                <div role="dialog" aria-label={t('session.join')} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); handleSetIsJoinPopoverOpenToFalse(); document.querySelector('[data-help-key="header_session_join"]')?.focus(); } }} className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95">
+                                                <div ref={_joinPopoverRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-join-session-title" className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 motion-reduce:animate-none">
                                                     <div className="space-y-2">
+                                                        <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                                                            <h2 id="header-join-session-title" className="text-sm font-black text-slate-800">{t('session.join')}</h2>
+                                                            <button type="button" onClick={handleSetIsJoinPopoverOpenToFalse} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close join session'}>&times;</button>
+                                                        </div>
                                                         <div>
                                                             <label className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.host_id_optional')}</label>
                                                             <input aria-label={t('common.session_default_placeholder')}
