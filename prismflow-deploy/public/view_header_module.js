@@ -242,6 +242,7 @@ function HeaderBar(props) {
   return /* @__PURE__ */ React.createElement("header", { "aria-label": t("common.main_application_header"), className: `p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === "contrast" ? "bg-black border-b-4 border-yellow-400" : "bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[98%] mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { className: `text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3 ${theme === "contrast" ? "text-yellow-400" : "text-white drop-shadow-sm"}` }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center justify-center ${theme === "contrast" ? "" : "p-1.5 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30"}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Layers, { className: "w-10 h-10", "aria-hidden": "true" })), theme === "contrast" ? t("header.app_name") : /* @__PURE__ */ React.createElement("span", { className: "bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent" }, t("header.app_name")), /* @__PURE__ */ React.createElement("div", { className: `hidden md:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-green-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.equitable"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-teal-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.accessible"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-purple-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.scaffolded"))))), /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-sm font-medium italic opacity-90 ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, t("header.tagline")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] ${theme === "contrast" ? "text-yellow-400" : "px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100"}` }, t("header.rights")), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100"}` }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }), " ", t("header.pii_warning")))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleSetShowXPModalToTrue,
       "data-help-key": "xp_modal_trigger",
       className: `relative z-[60] flex items-center gap-2 px-3 py-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all hover:scale-105 active:scale-95 cursor-pointer ${theme === "contrast" ? "border-yellow-400 bg-black text-yellow-400" : "bg-yellow-400/20 border-yellow-200/50 text-yellow-100 hover:bg-yellow-400/30"}`,
@@ -258,6 +259,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement("div", { id: "tour-header-settings", className: `relative z-[60] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement(GlobalMuteButton, { className: `px-3 py-2 rounded-xl transition-colors ${theme === "light" ? "bg-white/10 hover:bg-white/20 text-white" : theme === "contrast" ? "bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold" : "hover:bg-white/10 text-white"}` }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setShowReadThisPage((prev) => !prev),
       "data-help-key": "read_this_page_toggle",
       className: `flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${showReadThisPage || focusNarrationEnabled ? "ring-2 ring-purple-400 !bg-purple-600 !text-white shadow-[0_0_10px_rgba(147,51,234,0.5)]" : ""} ${theme === "light" ? "bg-white/10 hover:bg-white/20 text-white" : theme === "contrast" ? "bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold" : "hover:bg-white/10 text-white"}`,
@@ -268,6 +270,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setShowTextSettings(!showTextSettings);
         setShowVoiceSettings(false);
@@ -295,6 +298,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] opacity-70 p-2 rounded bg-slate-50 dark:bg-slate-700 ${FONT_OPTIONS.find((f) => f.id === selectedFont)?.cssClass || ""}` }, t("settings.text.font_preview"), " ", t("settings.text.font_preview_sample"))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.toggle_focus_mode"),
       onClick: handleToggleFocusMode,
       "data-help-key": "header_settings_text_bionic",
@@ -302,7 +306,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `p-1.5 rounded-md ${focusMode ? "bg-indigo-500 text-white" : "bg-slate-200 text-slate-500 dark:bg-slate-600 dark:text-slate-200"}` }, /* @__PURE__ */ React.createElement(Eye, { size: 16 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, t("settings.text.bionic")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] opacity-70" }, t("settings.text.bionic_sub")))),
     /* @__PURE__ */ React.createElement("div", { className: `w-10 h-5 rounded-full relative transition-colors ${focusMode ? "bg-indigo-500" : "bg-slate-300"}` }, /* @__PURE__ */ React.createElement("div", { className: `absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${focusMode ? "left-6" : "left-1"}` }))
-  ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.text.size")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded" }, baseFontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3", "data-help-key": "header_settings_text_size" }, /* @__PURE__ */ React.createElement("button", { "aria-label": t("common.minimize"), onClick: () => {
+  ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.text.size")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded" }, baseFontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3", "data-help-key": "header_settings_text_size" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.minimize"), onClick: () => {
     setBaseFontSize(Math.max(12, baseFontSize - 1));
     setSliderFontSize(Math.max(12, baseFontSize - 1));
   }, className: `p-2.5 rounded-lg transition-colors ${theme === "light" ? "hover:bg-slate-100" : "hover:bg-slate-700"}` }, /* @__PURE__ */ React.createElement(Minimize, { size: 16 })), /* @__PURE__ */ React.createElement(
@@ -319,7 +323,7 @@ function HeaderBar(props) {
       onTouchEnd: () => setBaseFontSize(sliderFontSize),
       className: "flex-grow h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
     }
-  ), /* @__PURE__ */ React.createElement("button", { "aria-label": t("common.maximize"), onClick: () => {
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.maximize"), onClick: () => {
     setBaseFontSize(Math.min(24, baseFontSize + 1));
     setSliderFontSize(Math.min(24, baseFontSize + 1));
   }, className: `p-2.5 rounded-lg transition-colors ${theme === "light" ? "hover:bg-slate-100" : "hover:bg-slate-700"}` }, /* @__PURE__ */ React.createElement(Maximize, { size: 16 })))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 dark:border-slate-700 pt-3 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.text.line_height")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded" }, lineHeight)), /* @__PURE__ */ React.createElement(
@@ -363,6 +367,7 @@ function HeaderBar(props) {
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: th.id,
         role: "radio",
         "aria-checked": isActive,
@@ -378,6 +383,7 @@ function HeaderBar(props) {
   }))))))), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setShowVoiceSettings(!showVoiceSettings);
         setShowTextSettings(false);
@@ -464,6 +470,7 @@ function HeaderBar(props) {
   ))), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mt-2 italic leading-tight` }, t("settings.voice.helper"))))))), /* @__PURE__ */ React.createElement("div", { className: "w-px h-6 bg-white/20 mx-1" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleToggleDisableAnimations,
       "data-help-key": "header_settings_anim",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${disableAnimations ? "bg-red-700 text-white shadow-lg" : "hover:bg-white/10 text-white/80 hover:text-white"}`,
@@ -474,6 +481,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: toggleTheme,
       "data-help-key": "header_settings_theme",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${theme === "light" ? "bg-white/10 hover:bg-white/20 text-white" : theme === "dark" ? "bg-indigo-600 hover:bg-indigo-500 text-yellow-300 shadow-lg shadow-indigo-500/50" : "bg-yellow-400 text-black hover:bg-yellow-300"}`,
@@ -486,6 +494,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: toggleOverlay,
       "data-help-key": "header_settings_overlay",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${colorOverlay !== "none" ? "bg-white text-indigo-900 shadow-lg" : "hover:bg-white/10 text-white/80 hover:text-white"}`,
@@ -496,6 +505,7 @@ function HeaderBar(props) {
   )), /* @__PURE__ */ React.createElement("div", { id: "tour-header-tools", className: `relative z-40 flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, !isStudentLinkMode && !isIndependentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         if (!isTeacherMode && APP_CONFIG._cfg_validation_key) {
           setPendingRole("toggle_view");
@@ -513,6 +523,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleSetActiveViewToDashboard,
       "data-help-key": "header_dashboard",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${activeView === "dashboard" ? "bg-white text-indigo-900 shadow-lg" : "hover:bg-white/10 text-white/80 hover:text-white"}`,
@@ -523,6 +534,7 @@ function HeaderBar(props) {
   ), latestLessonPlan && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => handleRestoreView(latestLessonPlan),
       "data-help-key": "header_jump_lesson",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${generatedContent?.id === latestLessonPlan.id ? "bg-cyan-100 text-cyan-800 shadow-lg ring-2 ring-cyan-500" : "hover:bg-white/10 text-white/80 hover:text-white"}`,
@@ -533,6 +545,7 @@ function HeaderBar(props) {
   ), notebookEntryCount > 0 && setShowNotebook && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setShowNotebook(true),
       "data-help-key": "header_open_notebook",
       className: "p-2 rounded-xl transition-all flex items-center gap-1.5 hover:bg-white/10 text-white/80 hover:text-white",
@@ -544,6 +557,7 @@ function HeaderBar(props) {
   ))), /* @__PURE__ */ React.createElement("div", { id: "tour-header-utils", className: `relative z-[100] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleSetShowHintsModalToTrue,
       "data-help-key": "hints_recall",
       className: "p-2 rounded-xl hover:bg-white/10 text-white/70 hover:text-white transition-colors relative",
@@ -555,6 +569,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleToggleIsBotVisible,
       "data-help-key": "header_bot_toggle",
       className: `p-2 rounded-xl transition-colors ${isBotVisible ? "bg-indigo-500 text-white shadow-md" : "hover:bg-white/10 text-white/70 hover:text-white"}`,
@@ -565,6 +580,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "data-help-ignore": "true",
       onClick: handleToggleIsHelpMode,
       className: `p-2 rounded-xl transition-colors ${isHelpMode ? "bg-yellow-400 text-slate-900 shadow-md animate-pulse" : "hover:bg-white/10 text-white/70 hover:text-white"}`,
@@ -573,17 +589,20 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(CircleHelp, { size: 20 })
   ), showHelpOnboarding && !isHelpMode && /* @__PURE__ */ React.createElement(
-    "div",
+    "button",
     {
+      type: "button",
       onClick: dismissHelpOnboarding,
-      className: "absolute -bottom-14 right-0 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce z-[10999] whitespace-nowrap border-2 border-indigo-400",
+      "aria-label": t("common.dismiss") || "Dismiss help tip",
+      className: "absolute -bottom-14 right-0 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
       style: { minWidth: "160px", textAlign: "center" }
     },
-    /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400" }),
-    /* @__PURE__ */ React.createElement("span", null, "\u{1F4A1} Click ", /* @__PURE__ */ React.createElement("strong", null, "?"), " anytime for help!")
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400" }),
+    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), " Click ", /* @__PURE__ */ React.createElement("strong", null, "?"), " anytime for help!")
   )), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleCloudToggleClick,
       "data-help-key": "header_cloud_sync",
       className: `p-2 rounded-xl transition-colors ${isCloudSyncEnabled ? "bg-green-700 text-white shadow-lg shadow-green-500/30" : "hover:bg-white/10 text-white/70 hover:text-white"}`,
@@ -594,6 +613,7 @@ function HeaderBar(props) {
   ), isTeacherMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setRunTour(true);
         setTourStep(0);
@@ -608,6 +628,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setShowSetupPathMenu(true),
       "data-help-key": "header_rerun_wizard",
       className: "p-2 rounded-xl hover:bg-white/10 text-white transition-colors",
@@ -618,6 +639,7 @@ function HeaderBar(props) {
   )), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleSetShowInfoModalToTrue,
       "data-help-key": "header_about",
       className: "p-2 rounded-xl hover:bg-white/10 text-white transition-colors",
@@ -628,6 +650,7 @@ function HeaderBar(props) {
   ))), /* @__PURE__ */ React.createElement("div", { className: "w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `w-full flex flex-wrap items-center justify-start gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "max-w-full scale-90 origin-left sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, null))), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setShowAIBackendModal(true),
       "data-help-key": "header_ai_backend",
       className: `px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider ${(() => {
@@ -645,6 +668,7 @@ function HeaderBar(props) {
   ), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         if (APP_CONFIG._cfg_validation_key) {
           setPendingRole("educator_hub");
@@ -663,6 +687,7 @@ function HeaderBar(props) {
   ), isTeacherMode && setShowLearningHub && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setShowLearningHub(true),
       "data-help-key": "header_learning_hub",
       className: "px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10",
@@ -674,6 +699,7 @@ function HeaderBar(props) {
   ), isTeacherMode && !isIndependentMode && setBridgeSendOpen && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setBridgeSendOpen(true),
       "data-help-key": "header_bridge",
       className: "px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10",
@@ -685,6 +711,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.connect"),
       onClick: () => activeSessionCode ? setShowSessionModal(true) : startClassSession(),
       className: `px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${activeSessionCode ? "bg-green-700 text-white border-green-400 animate-pulse" : "bg-white/10 hover:bg-white/20 text-white border-white/10 hover:border-white/30"}`,
@@ -696,6 +723,7 @@ function HeaderBar(props) {
   )) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center" }, activeSessionCode ? /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 text-white px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm transition-colors ${sessionData ? "bg-green-700 border-green-600" : "bg-yellow-500 border-yellow-400"}` }, sessionData ? /* @__PURE__ */ React.createElement(Wifi, { size: 14, className: "animate-pulse" }) : /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), /* @__PURE__ */ React.createElement("span", null, sessionData ? `Synced: ${activeSessionCode}` : `Connecting: ${activeSessionCode}`), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.close"),
       "data-help-key": "header_session_status",
       onClick: () => {
@@ -713,6 +741,7 @@ function HeaderBar(props) {
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleToggleIsJoinPopoverOpen,
       className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30",
       "data-help-key": "header_session_join",
@@ -749,6 +778,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.continue"),
       onClick: () => joinClassSession(joinCodeInput),
       className: "bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors"
@@ -757,6 +787,7 @@ function HeaderBar(props) {
   ))))), isJoinPopoverOpen && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetIsJoinPopoverOpenToFalse })))), isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleSetIsTranslateModalOpenToTrue,
       className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 mr-2",
       title: t("header.translate_tooltip"),
@@ -768,6 +799,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("header.documents_menu_aria") || "Documents menu",
       "aria-haspopup": "menu",
       "aria-expanded": showExportMenu,
@@ -799,9 +831,10 @@ function HeaderBar(props) {
       const first = el.querySelector('[role="menuitem"]');
       if (first) first.focus();
     }
-  }, className: "absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl p-2 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-800 px-2 py-1 flex items-center gap-1.5" }, "\u{1F4C4}", " Documents"), /* @__PURE__ */ React.createElement("button", { role: "menuitem", onClick: () => openExportPreview("print"), className: "w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1" }, "\u{1F6E0}\uFE0F", " Document Builder"), customExportCSS && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-600 font-medium px-2 mb-1" }, "\u2713 Custom style active"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F4C4}", " Print & PDF"), /* @__PURE__ */ React.createElement(
+  }, className: "absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl p-2 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-800 px-2 py-1 flex items-center gap-1.5" }, "\u{1F4C4}", " Documents"), /* @__PURE__ */ React.createElement("button", { type: "button", role: "menuitem", onClick: () => openExportPreview("print"), className: "w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1" }, "\u{1F6E0}\uFE0F", " Document Builder"), customExportCSS && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-600 font-medium px-2 mb-1" }, "\u2713 Custom style active"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F4C4}", " Print & PDF"), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       role: "menuitem",
       "aria-label": t("header.open_doc_builder_pdf_aria") || "Open Document Builder for PDF",
       onClick: () => openExportPreview("print"),
@@ -814,6 +847,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       role: "menuitem",
       onClick: () => openExportPreview("worksheet"),
       className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors",
@@ -825,6 +859,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F4BB}", " Digital Formats"), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       role: "menuitem",
       onClick: () => openExportPreview("html"),
       className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 text-indigo-700 text-xs font-bold transition-colors",
@@ -836,6 +871,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       role: "menuitem",
       "aria-label": t("common.export_as_slides"),
       onClick: () => openExportPreview("slides"),
@@ -849,6 +885,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "Student QR"), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       role: "menuitem",
       onClick: () => {
         if (typeof createHomeworkAssignmentLink === "function") createHomeworkAssignmentLink();
@@ -865,6 +902,7 @@ function HeaderBar(props) {
   }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " Recent homework links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, "Teacher-prepared resources open for students with AI generation off."), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       role: "menuitem",
       onClick: () => {
         handleExportQTI();
@@ -879,6 +917,7 @@ function HeaderBar(props) {
   ), !isIndependentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       role: "menuitem",
       onClick: () => {
         handleExportIMS();
@@ -893,6 +932,7 @@ function HeaderBar(props) {
   )), showExportMenu && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setShowClassAnalytics(true),
       className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40",
       title: t("common.assessment_center") || "Assessment Center",
@@ -904,6 +944,7 @@ function HeaderBar(props) {
   ), !isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleSetShowSubmitModalToTrue,
       className: `bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30`,
       title: t("header.submit_tooltip"),
