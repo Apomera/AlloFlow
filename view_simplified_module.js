@@ -639,11 +639,18 @@ function SimplifiedView(props) {
     var isTableText = function (p) {
       return p.trim().startsWith('|') || p.indexOf('\n|') !== -1;
     };
+    var splitForReadAloud = function (part) {
+      try {
+        var KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+        if (KS && typeof KS.splitSentences === 'function') return KS.splitSentences(part);
+      } catch (_) {}
+      return splitTextToSentences(part);
+    };
     var parts = getSideBySideContent(text);
     var list = parts ? parts.source.concat(parts.target).flatMap(function (p) {
-      return isTableText(p) ? [] : splitTextToSentences(p);
+      return isTableText(p) ? [] : splitForReadAloud(p);
     }) : text.split(/\n{2,}/).flatMap(function (p) {
-      return isTableText(p) ? [] : splitTextToSentences(p);
+      return isTableText(p) ? [] : splitForReadAloud(p);
     });
     return list.map(cleanSentenceForAudio).filter(function (s) {
       return s && s.trim().length > 0;

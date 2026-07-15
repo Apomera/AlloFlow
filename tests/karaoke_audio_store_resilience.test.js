@@ -5,6 +5,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadAlloModule } from './setup.js';
 
 let KS;
+let AudioHelpers;
 let nextBlobId;
 
 const b64 = (size, byte = 65) => Buffer.alloc(size, byte).toString('base64');
@@ -12,7 +13,9 @@ const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
 const hash8 = (file) => createHash('sha256').update(read(file)).digest('hex').slice(0, 8);
 
 beforeAll(() => {
+  loadAlloModule('audio_helpers_module.js');
   loadAlloModule('karaoke_audio_store_module.js');
+  AudioHelpers = window.AlloModules.AudioHelpers;
   KS = window.AlloModules.KaraokeAudioStore;
   if (!KS) throw new Error('KaraokeAudioStore did not register');
 });
@@ -83,6 +86,39 @@ describe('KaraokeAudioStore resilience', () => {
     })).toBe(1);
     expect(store.has(sentence)).toBe(true);
     expect(store.metadataOf(sentence)).toBeNull();
+  });
+
+  it('preserves source lines and bounds long units to complete local-TTS clips', () => {
+    const longLine = Array.from({ length: 42 }, (_, index) => `word${index}`).join(' ') + '.';
+    const sentences = KS.splitSentences(`A heading without punctuation\n${longLine}`);
+
+    expect(sentences[0]).toBe('A heading without punctuation');
+    expect(sentences.slice(1).join(' ')).toBe(longLine);
+    expect(sentences.every((sentence) => sentence.length <= 120)).toBe(true);
+  });
+
+  it('encodes MP3 cooperatively so background capture yields to playback', async () => {
+    const yieldToMain = vi.fn(() => Promise.resolve());
+    const encodeBuffer = vi.fn(() => new Uint8Array([1, 2, 3]));
+    const flush = vi.fn(() => new Uint8Array([4, 5]));
+    window.lamejs = {
+      Mp3Encoder: class {
+        encodeBuffer(samples) { return encodeBuffer(samples); }
+        flush() { return flush(); }
+      },
+    };
+
+    const pcm = new Uint8Array(new Int16Array(1152 * 3).buffer);
+    const blob = await AudioHelpers.pcmToMp3Async(pcm, 24000, 64, {
+      blocksPerYield: 1,
+      yieldToMain,
+    });
+
+    expect(blob.type).toBe('audio/mp3');
+    expect(encodeBuffer).toHaveBeenCalledTimes(3);
+    expect(yieldToMain).toHaveBeenCalledTimes(2);
+    expect(flush).toHaveBeenCalledTimes(1);
+    delete window.lamejs;
   });
 
   it('rejects an oversized clip without destroying the previously saved take', () => {

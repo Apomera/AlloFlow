@@ -1279,13 +1279,17 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                         warmedRef.current.delete(i);
                         capturedWarmRef.current.delete(i);
                     } else if (needsDurableCapture) {
-                        const captured = await scheduleCaptureForStorage(sentences[i], warmedUrl);
-                        let stored = false;
-                        try {
-                            const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
-                            stored = !!(st && st.has(sentences[i]));
-                        } catch (e) {}
-                        if (captured || stored) capturedWarmRef.current.add(i);
+                        // Persistence must never hold up generation of the next
+                        // look-ahead clip. Snapshot/save runs independently and
+                        // reports completion through the shared store/events.
+                        scheduleCaptureForStorage(sentences[i], warmedUrl).then((captured) => {
+                            let stored = false;
+                            try {
+                                const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+                                stored = !!(st && st.has(sentences[i]));
+                            } catch (e) {}
+                            if (captured || stored) capturedWarmRef.current.add(i);
+                        });
                     }
                 }
                 catch (e) { warmedRef.current.delete(i); capturedWarmRef.current.delete(i); }
@@ -1370,7 +1374,6 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         if (token !== playTokenRef.current) return;
 
         if (url) {
-            scheduleCaptureForStorage(sentenceText, url);
             const audio = new Audio(url);
             audio.playbackRate = playbackSpeedRef.current || 1;
             audioRef.current = audio;
@@ -1404,6 +1407,9 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
             });
             try {
                 await audio.play();
+                // Let playback win the main-thread/startup race; capture snapshots
+                // immediately afterward and performs conversion in the background.
+                scheduleCaptureForStorage(sentenceText, url);
                 return;
             } catch (e) {
                 if (token !== playTokenRef.current) return;

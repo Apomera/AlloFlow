@@ -21620,6 +21620,23 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
     return KS[slot];
   };
+  // Serialize karaoke MP3 work and prefer the cooperative encoder. Generating
+  // or warming several clips can otherwise run multiple synchronous LAME loops
+  // during playback, delaying sentence transitions and edit-mode updates.
+  const _encodeKaraokeMp3 = (pcmBytes, sampleRate, kbps) => {
+    const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
+    if (!_ah) return Promise.reject(new Error('Audio helpers unavailable'));
+    const encode = () => {
+      if (typeof _ah.pcmToMp3Async === 'function') return _ah.pcmToMp3Async(pcmBytes, sampleRate || 24000, kbps || 64);
+      if (typeof _ah.pcmToMp3 === 'function') return _ah.pcmToMp3(pcmBytes, sampleRate || 24000, kbps || 64);
+      throw new Error('MP3 encoder unavailable');
+    };
+    const previous = window.__alloKaraokeMp3Queue || Promise.resolve();
+    const next = Promise.resolve(previous).catch(() => {}).then(encode);
+    window.__alloKaraokeMp3Queue = next.catch(() => {});
+    return next;
+  };
+
   // MediaRecorder commonly produces Opus/WebM. Normalize teacher/student
   // sentence takes to the same compact 24 kHz mono MP3 used by generated
   // karaoke clips. If this browser cannot decode or encode the recording,
@@ -21632,7 +21649,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
     const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!window.lamejs || !_ah || typeof _ah.pcmToMp3 !== 'function' || !AudioCtx) {
+    if (!window.lamejs || !_ah || (typeof _ah.pcmToMp3Async !== 'function' && typeof _ah.pcmToMp3 !== 'function') || !AudioCtx) {
       return { b64: await _blobToBase64(blob), mime: originalMime };
     }
     let ctx = null;
@@ -21667,7 +21684,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           else setTimeout(resolve, 0);
         } catch (_) { setTimeout(resolve, 0); }
       });
-      const mp3Blob = _ah.pcmToMp3(new Uint8Array(pcm16.buffer), targetRate, 64);
+      const mp3Blob = await _encodeKaraokeMp3(new Uint8Array(pcm16.buffer), targetRate, 64);
       return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
     } catch (e) {
       warnLog('[Karaoke audio] Microphone MP3 normalization failed; preserving original recording:', e && e.message ? e.message : e);
@@ -21682,12 +21699,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const _synthSentenceForStore = async (sentence) => {
     try {
       const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
-      if (window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
+      if (window.lamejs && _ah && (typeof _ah.pcmToMp3Async === 'function' || typeof _ah.pcmToMp3 === 'function')) {
         const r = await fetchTTSBytes(sentence, selectedVoice, voiceSpeed || 1, leveledTextLanguage || currentUiLanguage || 'English');
         if (r && r.bytes) {
           // 64 kbps mono is transparent for 24 kHz speech and halves the
           // embedded-JSON weight vs the 128 kbps download default.
-          const mp3Blob = _ah.pcmToMp3(r.bytes, 24000, 64);
+          const mp3Blob = await _encodeKaraokeMp3(r.bytes, 24000, 64);
           return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg', provider: 'gemini-pcm' };
         }
       }
@@ -21852,10 +21869,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         let b64 = null;
         let mime = null;
         let provider = 'played-tts';
-        if (isWav && window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
+        if (isWav && window.lamejs && _ah && (typeof _ah.pcmToMp3Async === 'function' || typeof _ah.pcmToMp3 === 'function')) {
           try {
             const pcm = new Uint8Array(buf, 44);
-            const mp3Blob = _ah.pcmToMp3(pcm, 24000, 64);
+            const mp3Blob = await _encodeKaraokeMp3(pcm, 24000, 64);
             b64 = await _blobToBase64(mp3Blob);
             mime = 'audio/mpeg';
             provider = 'played-tts-mp3';

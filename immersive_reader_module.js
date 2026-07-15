@@ -1074,14 +1074,15 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
             warmedRef.current.delete(i);
             capturedWarmRef.current.delete(i);
           } else if (needsDurableCapture) {
-            const captured = await scheduleCaptureForStorage(sentences[i], warmedUrl);
-            let stored = false;
-            try {
-              const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
-              stored = !!(st && st.has(sentences[i]));
-            } catch (e) {
-            }
-            if (captured || stored) capturedWarmRef.current.add(i);
+            scheduleCaptureForStorage(sentences[i], warmedUrl).then((captured) => {
+              let stored = false;
+              try {
+                const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+                stored = !!(st && st.has(sentences[i]));
+              } catch (e) {
+              }
+              if (captured || stored) capturedWarmRef.current.add(i);
+            });
           }
         } catch (e) {
           warmedRef.current.delete(i);
@@ -1192,7 +1193,6 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     }
     if (token !== playTokenRef.current) return;
     if (url) {
-      scheduleCaptureForStorage(sentenceText, url);
       const audio = new Audio(url);
       audio.playbackRate = playbackSpeedRef.current || 1;
       audioRef.current = audio;
@@ -1227,6 +1227,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       });
       try {
         await audio.play();
+        scheduleCaptureForStorage(sentenceText, url);
         return;
       } catch (e) {
         if (token !== playTokenRef.current) return;

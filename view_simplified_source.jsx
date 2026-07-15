@@ -521,10 +521,17 @@
     var getReadAloudSentencesForText = function (rawText) {
       var text = typeof rawText === 'string' ? rawText : String(rawText || '');
       var isTableText = function (p) { return p.trim().startsWith('|') || p.indexOf('\n|') !== -1; };
+      var splitForReadAloud = function (part) {
+        try {
+          var KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+          if (KS && typeof KS.splitSentences === 'function') return KS.splitSentences(part);
+        } catch (_) {}
+        return splitTextToSentences(part);
+      };
       var parts = getSideBySideContent(text);
       var list = parts
-        ? parts.source.concat(parts.target).flatMap(function (p) { return isTableText(p) ? [] : splitTextToSentences(p); })
-        : text.split(/\n{2,}/).flatMap(function (p) { return isTableText(p) ? [] : splitTextToSentences(p); });
+        ? parts.source.concat(parts.target).flatMap(function (p) { return isTableText(p) ? [] : splitForReadAloud(p); })
+        : text.split(/\n{2,}/).flatMap(function (p) { return isTableText(p) ? [] : splitForReadAloud(p); });
       return list.map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
     };
     var karaokeReaderSentences = React.useMemo(function () {

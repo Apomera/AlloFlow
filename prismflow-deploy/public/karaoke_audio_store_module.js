@@ -43,6 +43,32 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       .replace(/\s+/g, ' ').trim();
   }
 
+  // Kokoro begins returning a multi-URL stream above 120 characters. Karaoke
+  // consumes one URL per highlighted unit, so keep every canonical unit within
+  // that complete-clip boundary. Prefer a clause break, then a word boundary.
+  var MAX_KARAOKE_CHARS = 120;
+  function splitLongSentence(sentence) {
+    var remaining = String(sentence || '').trim();
+    var out = [];
+    while (remaining.length > MAX_KARAOKE_CHARS) {
+      var minCut = Math.floor(MAX_KARAOKE_CHARS * 0.55);
+      var clauseCut = -1;
+      var wordCut = -1;
+      for (var i = 1; i <= MAX_KARAOKE_CHARS && i < remaining.length; i++) {
+        if (!/\s/.test(remaining.charAt(i))) continue;
+        wordCut = i;
+        if (i >= minCut && /[,;:\u2014\u2013-]/.test(remaining.charAt(i - 1))) clauseCut = i;
+      }
+      var cut = clauseCut > 0 ? clauseCut : wordCut;
+      if (cut <= 0) cut = MAX_KARAOKE_CHARS;
+      var chunk = remaining.slice(0, cut).trim();
+      if (chunk) out.push(chunk);
+      remaining = remaining.slice(cut).trim();
+    }
+    if (remaining) out.push(remaining);
+    return out;
+  }
+
   // Sentence splitter shared with KaraokeReaderOverlay so the prep flow
   // generates exactly the sentences the player will request. When the app's
   // canonical splitter (PureHelpers.splitTextToSentences — the one handleSpeak
@@ -70,6 +96,23 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     if (tail) out.push(tail);
     return out.length ? out : [cleaned];
   }
+
+  // Preserve meaningful source line boundaries before using the app's sentence
+  // rules. This keeps headings and list rows from merging into a later sentence,
+  // then bounds every unit to one complete local-TTS clip.
+  function splitKaraokeSentences(text) {
+    var raw = String(text || '').replace(/<[^>]*>/g, '').replace(/\r\n?/g, '\n').trim();
+    if (!raw) return [];
+    var lines = raw.split(/\n+/).map(function (line) {
+      return line.replace(/\s+/g, ' ').trim();
+    }).filter(Boolean);
+    var out = [];
+    lines.forEach(function (line) {
+      splitSentences(line).forEach(function (sentence) { out.push.apply(out, splitLongSentence(sentence)); });
+    });
+    return out;
+  }
+
 
   // base64 (bare or data: URI) → playable blob URL. Guarded so a bad entry
   // can't take down hydration of the rest.
@@ -221,7 +264,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.KaraokeAudioStore = {
     keyFor: keyFor,
-    splitSentences: splitSentences,
+    splitSentences: splitKaraokeSentences,
     b64ToUrl: b64ToUrl,
     createStore: createStore,
     // Two parallel lanes for the active resource, both keyed by sentence:

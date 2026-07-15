@@ -327,6 +327,98 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
   });
 });
 
+describe('complete clip and shared-request contracts', () => {
+  it('uses a complete Kokoro clip for generic read-aloud callers', async () => {
+    const speak = vi.fn(() => Promise.resolve('blob:complete-kokoro-sentence'));
+    const speakStreaming = vi.fn(() => Promise.resolve('blob:first-chunk-only'));
+    window._kokoroTTS = { ready: true, speak, speakStreaming };
+    const state = {
+      queue: Promise.resolve(),
+      botQueue: Promise.resolve(),
+      urlCache: new Map(),
+      rateLimitedUntil: 0,
+    };
+    const { callTTS } = createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts-model' },
+      AVAILABLE_VOICES: ['Puck'],
+      _isCanvasEnv: false,
+      languageToTTSCode: () => 'en',
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'English',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({}),
+      getAi: () => null,
+      setShowKokoroOfferModal: () => {},
+    });
+
+    const sentence = 'This deliberately long sentence exceeds the local streaming threshold, but karaoke must receive every word in one playable clip.';
+    const url = await callTTS(sentence, 'af_bella', 1, 0, 'English');
+
+    expect(url).toBe('blob:complete-kokoro-sentence');
+    expect(speak).toHaveBeenCalledTimes(1);
+    expect(speakStreaming).not.toHaveBeenCalled();
+  });
+
+  it('deduplicates a non-Canvas warm/current race before the URL cache is populated', async () => {
+    let releaseFetch;
+    const fetchGate = new Promise((resolveGate) => { releaseFetch = resolveGate; });
+    const fetchMock = vi.fn(async () => {
+      await fetchGate;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ inlineData: { data: 'AQI=' } }] } }],
+        }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => 'blob:shared-non-canvas-tts'),
+    });
+    const state = {
+      queue: Promise.resolve(),
+      botQueue: Promise.resolve(),
+      urlCache: new Map(),
+      rateLimitedUntil: 0,
+    };
+    const { callTTS } = createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts-model' },
+      AVAILABLE_VOICES: ['Puck'],
+      _isCanvasEnv: false,
+      languageToTTSCode: () => 'en',
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'English',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({}),
+      getAi: () => null,
+      setShowKokoroOfferModal: () => {},
+    });
+
+    const warmed = callTTS('Share this in-flight request.', 'Puck', 1, 0, 'English');
+    const current = callTTS('Share this in-flight request.', 'Puck', 1, 0, 'English');
+    await Promise.resolve();
+    await Promise.resolve();
+    releaseFetch();
+    const [warmedUrl, currentUrl] = await Promise.all([warmed, current]);
+
+    expect(warmedUrl).toBe('blob:shared-non-canvas-tts');
+    expect(currentUrl).toBe(warmedUrl);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('Canvas callTTS URL cache', () => {
   it('reuses the first synthesized URL and avoids a second fetch', async () => {
     const fetchMock = vi.fn(async () => ({
