@@ -18058,10 +18058,23 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // of this multi-minute run — a concurrent wrapped call's rebind can no longer swap the
     // document, settings, or file identity mid-remediation.
     const _run = _makeRunCtx();
-    const _isBatch = !!batchOverrides;
+    const _onProgress = batchOverrides?.onProgress || null;
+    const _silentMode = !!_onProgress;
+    // Passing an options object does not make a single-file UI run a batch. The old
+    // `!!batchOverrides` test mislabeled every Make Accessible run and reduced its
+    // image-alt spot-check sample. Batch callers are explicitly progress-managed.
+    const _isBatch = _silentMode || !!(batchOverrides && batchOverrides.batchMode === true);
     const _base64 = batchOverrides?.base64 || _run.base64;
-    const _documentKey = await _documentDigest(_base64);
     const _fileName = batchOverrides?.fileName || (_run.file && _run.file.name) || 'document.pdf';
+    const _auditResult = batchOverrides?.auditResult || _run.auditResult;
+    if (!_base64) { addToast(t('toasts.cannot_fix_pdf_data_found'), 'error'); return null; }
+    if (!_silentMode && !_auditResult) { addToast(t('toasts.cannot_fix_audit_results_found'), 'error'); return null; }
+    // Claim the generation before the digest await. The exported duplicate guard records this
+    // generation synchronously, closing the window where two calls could hash the same PDF in
+    // parallel before either one became visible as the active remediation.
+    let _myRunGen = 0;
+    if (!_silentMode && typeof window !== 'undefined') { _myRunGen = (window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1); }
+    const _documentKey = await _documentDigest(_base64);
     const _runFileSize = batchOverrides?.fileSize || (_run.file && _run.file.size) || null;
     const _polishPasses = (batchOverrides && batchOverrides.polishPasses != null) ? batchOverrides.polishPasses : _run.polishPasses;
     const _runTargetScore = (batchOverrides && batchOverrides.targetScore != null) ? batchOverrides.targetScore : _run.targetScore;
@@ -18072,8 +18085,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // through the `_mimeType === 'application/pdf'` OCR gate: Tesseract fed a zip to
     // pdf.js and Vision got DOCX bytes labeled application/pdf.
     const _mimeType = /\.docx$/i.test(_fileName) ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : /\.pptx$/i.test(_fileName) ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'application/pdf';
-    const _auditResult = batchOverrides?.auditResult || _run.auditResult;
-    const _onProgress = batchOverrides?.onProgress || null;
+
     // Multi-session: when the UI passes pageRange [start, end], we limit extraction to those
     // pages and auto-save the remediated HTML to the multi-session store keyed by doc fingerprint.
     // Lets teachers tackle long PDFs across days without re-remediating earlier pages each session.
@@ -18127,22 +18139,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     _pipeLog('Init', 'Pipeline starting', { file: _fileName, batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 });
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
-    if (!_base64) { addToast(t('toasts.cannot_fix_pdf_data_found'), 'error'); return null; }
     // "Silent mode" = caller is doing its own UI via an onProgress callback
     // (multi-file batch). Partial single-file audits (pageRange only, no
     // onProgress) still need the single-file UI state — otherwise the teacher
     // never sees loading, never sees the result, and multi-session auto-save
     // at the bottom never fires. Previously this gate was `_isBatch` (== any
     // batchOverrides), which over-suppressed the UI whenever pageRange was set.
-    const _silentMode = !!_onProgress;
-    if (!_silentMode && !_auditResult) { addToast(t('toasts.cannot_fix_audit_results_found'), 'error'); return null; }
+
     if (!_silentMode) { setPdfFixLoading(true); setPdfFixResult(null); }
     // Zombie-run guard (2026-06-20): bump a generation token at run start. If the dead-man watchdog
     // later gives up on THIS run (it bumps the token too) and the teacher starts another document, our
     // late-resolving promise must NOT stomp the newer state — the completion write below checks the
     // token still matches before calling setPdfFixResult.
-    let _myRunGen = 0;
-    if (!_silentMode && typeof window !== 'undefined') { _myRunGen = (window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1); }
+
     // M8 (deep dive 2026-07-09): run-scope staleness probe — true once the watchdog (or a newer run)
     // bumped the generation. Threaded into the fix loop so an invalidated run stops GRINDING (up to
     // maxFixPasses chunked AI passes ≈ an hour under a storm, competing with the fresh run for the
@@ -34191,6 +34200,45 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   // Wrap each function to bind fresh state before execution
   var _wrap = function(fn) { return function() { _bindState(); return fn.apply(this, arguments); }; };
   var _wrapAsync = function(fn) { return async function() { _bindState(); return fn.apply(this, arguments); }; };
+  // Authoritative single-file re-entry guard. UI disabling is necessary feedback, but it cannot
+  // protect programmatic callers or a rapid second event before React renders. A watchdog/new-file
+  // invalidation changes the generation token, which deliberately releases a stale lock so recovery
+  // remains possible. Managed batch files retain their existing sequential/onProgress ownership.
+  var _activeSingleFixPromise = null;
+  var _activeSingleFixGeneration = 0;
+  var _wrapFixAndVerify = function(fn) { return function() {
+    _bindState();
+    var self = this;
+    var args = arguments;
+    var options = args[0] || null;
+    var managedBatch = !!(options && (options.onProgress || options.batchMode === true));
+    if (managedBatch) return fn.apply(self, args);
+    var liveGeneration = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
+    if (_activeSingleFixPromise && liveGeneration !== _activeSingleFixGeneration) {
+      warnLog('[fixAndVerifyPdf] Releasing stale single-file run lock after generation invalidation.');
+      _activeSingleFixPromise = null;
+      _activeSingleFixGeneration = 0;
+    }
+    if (_activeSingleFixPromise) {
+      var duplicateError = new Error('A remediation run is already in progress.');
+      duplicateError.name = 'RemediationAlreadyRunningError';
+      duplicateError.isAlreadyRunning = true;
+      warnLog('[fixAndVerifyPdf] Duplicate single-file start ignored; the active remediation still owns this document.');
+      try { if (addToast) addToast('Remediation is already running. The duplicate start was ignored.', 'info'); } catch (_) {}
+      return Promise.reject(duplicateError);
+    }
+    var runPromise;
+    try { runPromise = Promise.resolve(fn.apply(self, args)); }
+    catch (error) { runPromise = Promise.reject(error); }
+    _activeSingleFixGeneration = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
+    _activeSingleFixPromise = runPromise;
+    return runPromise.finally(function() {
+      if (_activeSingleFixPromise === runPromise) {
+        _activeSingleFixPromise = null;
+        _activeSingleFixGeneration = 0;
+      }
+    });
+  }; };
   return {
     deriveVerificationState: _alloDeriveVerificationState,
     createVerificationHtmlBinding: _alloCreateVerificationHtmlBinding,
@@ -34257,7 +34305,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     applyFormBlanks: _wrap(applyFormBlanks),
     refixChunk: _wrapAsync(refixChunk),
     getChunkState: _wrap(getChunkState),
-    fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
+    fixAndVerifyPdf: _wrapFixAndVerify(fixAndVerifyPdf),
     // Recompute the Resolved/Persisted/Newly-Introduced lists against a fresh audit after a follow-up
     // pass, so they reflect the CURRENT doc instead of going stale (recompute-on-incremental-commit).
     recomputeIssueResolution: _recomputeIssueResolution,

@@ -2784,6 +2784,9 @@ function PdfAuditView(props) {
     setPdfFixResult((prev) => prev && prev.accessibleHtml === token.html ? updater(prev) : prev);
     return true;
   };
+  const _oneClickRemediationBusyRef = useRef(false);
+  const [oneClickRemediationBusy, setOneClickRemediationBusy] = useState(false);
+  const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning;
   const [currentRemediationDigest, setCurrentRemediationDigest] = useState(null);
   useEffect(() => {
     let cancelled = false;
@@ -5686,217 +5689,229 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         }
         setMediaDigesting(false);
       }, className: "px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold text-xs hover:bg-cyan-700 disabled:opacity-50" }, mediaDigesting ? "\u23F3 " + (mediaDigestProgress || (t("pdf_audit.media.digesting") || "Digesting\u2026 (large recordings take a while)")) : "\u25B6 " + (t("pdf_audit.media.go") || "Digest recording")), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 ml-2" }, t("pdf_audit.media.unlock_note") || "The buttons below unlock once the digest is ready."));
-    })(), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4" }, remediationReady === false && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mb-3 rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-black" }, "Remediation engine not ready"), /* @__PURE__ */ React.createElement("div", null, _remediationDependencies.failed.length ? "Required modules failed to load: " + _remediationDependencies.failed.join(", ") : "Required modules are still loading: " + _remediationDependencies.pending.join(", ")), _remediationDependencies.failed.length > 0 && typeof retryRemediationDependencies === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: retryRemediationDependencies, className: "mt-2 rounded-lg border border-amber-500 bg-white px-3 py-1 font-bold hover:bg-amber-100" }, "Retry required modules")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200" }, "\u{1F512} ", t("pdf_audit.gemini_disclosure") || "Privacy: this document\u2019s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don\u2019t upload documents containing student personal information you aren\u2019t permitted to share with a third-party AI service."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_make_accessible_btn", disabled: remediationReady === false, onClick: async () => {
-      if (pdfAuditResult?._mediaPending) {
-        addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
+    })(), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4" }, remediationReady === false && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mb-3 rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-black" }, "Remediation engine not ready"), /* @__PURE__ */ React.createElement("div", null, _remediationDependencies.failed.length ? "Required modules failed to load: " + _remediationDependencies.failed.join(", ") : "Required modules are still loading: " + _remediationDependencies.pending.join(", ")), _remediationDependencies.failed.length > 0 && typeof retryRemediationDependencies === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: retryRemediationDependencies, className: "mt-2 rounded-lg border border-amber-500 bg-white px-3 py-1 font-bold hover:bg-amber-100" }, "Retry required modules")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200" }, "\u{1F512} ", t("pdf_audit.gemini_disclosure") || "Privacy: this document\u2019s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don\u2019t upload documents containing student personal information you aren\u2019t permitted to share with a third-party AI service."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_make_accessible_btn", disabled: _oneClickOperationBusy || remediationReady === false, "aria-busy": _oneClickOperationBusy ? "true" : void 0, onClick: async () => {
+      if (_oneClickRemediationBusyRef.current || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning) {
+        addToast(t("toasts.remediation_already_running") || "Remediation is already running. This click was ignored so the active run can finish.", "info");
         return;
       }
-      if (!_requireRemediationReady()) return;
+      _oneClickRemediationBusyRef.current = true;
+      setOneClickRemediationBusy(true);
       try {
-        pdfAutoContinueAbortRef.current = false;
-      } catch (_) {
-      }
-      try {
-        setLastTaggedValidation(null);
-        setVeraPdfResult(null);
-        setVeraPdfAutoSkipped(null);
-        _selectTaggedArtifact(null);
-      } catch (_) {
-      }
-      let _veraWarm = null;
-      let _veraIframe = null;
-      try {
-        const _nmIn = (pendingPdfFile?.name || "").toLowerCase();
-        const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmIn);
-        if (pdfAutoVeraPdf && _isPdfIn) {
-          _veraIframe = warmVeraPdfIframe();
-          const _embedViable = !!(_veraIframe && (_veraEmbedPref() === "ok" || _veraIframe.isReady()));
-          if (!_embedViable) _veraWarm = warmVeraPdfWindow();
+        if (pdfAuditResult?._mediaPending) {
+          addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
+          return;
         }
-      } catch (_) {
-      }
-      setPdfFixMode("auto");
-      setPdfAuditResult(null);
-      addToast(t("toasts.auditing_remediating_pdf"), "info");
-      let _audit = null;
-      try {
-        _audit = await runPdfAccessibilityAudit(pendingPdfBase64);
-        if (!_audit) return;
-      } catch (auditErr) {
-        addToast(t("toasts.audit_error_continuing") || "\u26A0 The audit hit an error \u2014 attempting remediation anyway.", "warning");
-      }
-      await new Promise((res) => setTimeout(res, 250));
-      addToast(t("toasts.make_accessible_fixing") || "\u2728 Audit done \u2014 remediating automatically (no clicks needed)\u2026", "info");
-      const _HANDSOFF_MAX = 3;
-      const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|dependency|module unavailable|modules? finish loading|failed to (?:load|fetch)|load timeout)\b/i;
-      const _handsDisposition = (e) => {
-        if (!e) return "retry";
-        const _m = String(e && (e.message || e) || "");
-        if (e.name === "AbortError" || /\baborted?\b/i.test(_m)) return "stop-silent";
-        if (e.isConfig) return "never";
-        if (e.isAuth && !e.canvasTransientAuth) return "never";
-        if (e.isQuota) return e.classification && e.classification.perDay ? "pause-daily" : "wait-retry";
-        if (e.canvasTransientAuth) return "wait-retry";
-        if (_permanentRegex.test(_m)) return "never";
-        return "retry";
-      };
-      const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current);
-      let _handsErr = null, _res = null;
-      const _runFix = async () => {
-        _handsErr = null;
+        if (!_requireRemediationReady()) return;
         try {
-          _res = await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || void 0 });
-        } catch (e) {
-          _handsErr = e;
-        }
-        if (!_handsErr) {
-          for (let _w = 0; _w < 6 && !(_res || pdfFixResultRef.current); _w++) {
-            await new Promise((res) => setTimeout(res, 200));
-          }
-          _res = _res || pdfFixResultRef.current;
-        }
-      };
-      await _runFix();
-      let _fixTries = 0;
-      while (!_res && _fixTries < _HANDSOFF_MAX && !_stopped()) {
-        const _disp = _handsDisposition(_handsErr);
-        if (_disp === "never" || _disp === "stop-silent") break;
-        if (_disp === "pause-daily") {
-          addToast("\u23F8 " + (t("toasts.handsoff_daily_quota") || "Daily AI quota reached \u2014 the run is paused, your progress is preserved. Re-run after the quota resets (midnight Pacific)."), "warning");
-          break;
-        }
-        _fixTries++;
-        if (_disp === "wait-retry") {
-          addToast("\u23F3 " + (t("toasts.handsoff_wait_retry") || "AI rate-limit \u2014 waiting for it to ease before retrying") + " (" + _fixTries + "/" + _HANDSOFF_MAX + ")\u2026", "info");
-          try {
-            if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === "function") await _docPipeline.waitForGeminiCalm({ maxWaitMs: 18e4, shouldAbort: _stopped });
-          } catch (_) {
-          }
-        } else {
-          addToast("\u{1F501} " + (t("toasts.handsoff_retry_fix") || "Hands-off mode \u2014 the fix produced no result; retrying") + " (" + _fixTries + "/" + _HANDSOFF_MAX + ")\u2026", "info");
-          await new Promise((res) => setTimeout(res, 1500 * _fixTries));
-        }
-        if (_stopped()) break;
-        await _runFix();
-      }
-      let r = _res || pdfFixResultRef.current;
-      if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) {
-        addToast(t("toasts.auto_continue_no_axe") || "\u26A0 Auto-continue to target unavailable for this run \u2014 the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.", "warning");
-      }
-      let _loopTries = 0, _prevScore = -1;
-      const _aiThrottledClean = !!(r && r._aiVerificationIncomplete && r.axeAudit && r.axeAudit.totalViolations === 0);
-      if (_aiThrottledClean) addToast(t("toasts.ai_throttled_shipped") || "\u26A0 The AI service is throttled, so the AI semantic score is incomplete \u2014 but the structural/automated checks are clean. Shipped the structural result; re-run in a few minutes for a full AI-verified score.", "warning");
-      while (!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped()) {
-        await runAutoFixLoop(8);
-        if (_stopped()) break;
-        r = pdfFixResultRef.current;
-        const _s = r ? r.afterScore || 0 : 0;
-        if (!r || _s >= pdfTargetScore || r.axeAudit && r.axeAudit.totalViolations === 0 || _s <= _prevScore) break;
-        _prevScore = _s;
-        _loopTries++;
-        addToast("\u{1F501} " + (t("toasts.handsoff_retry_loop") || "Hands-off mode \u2014 below target; retrying the loop") + " (" + _loopTries + "/" + _HANDSOFF_MAX + ", " + _s + "/100, target " + pdfTargetScore + ")\u2026", "info");
-        await new Promise((res) => setTimeout(res, 1500 * _loopTries));
-      }
-      const _finCur = pdfFixResultRef.current;
-      if (!_aiThrottledClean && !_stopped() && _finCur && _finCur.accessibleHtml && (_loopTries > 0 || _finCur._aiVerificationIncomplete)) {
-        addToast("\u{1F50D} " + (t("toasts.handsoff_final_audit") || "Finalizing \u2014 running one full audit so the score covers the whole document\u2026"), "info");
-        try {
-          await _reauditAndScore(_finCur.accessibleHtml, null);
+          pdfAutoContinueAbortRef.current = false;
         } catch (_) {
         }
-      }
-      if (pdfFixResultRef.current && pdfAutoSaveProject) {
-        saveProjectToFile(true);
-      }
-      const _viaPopup = !!(_veraWarm && _veraWarm.win && !_veraWarm.win.closed);
-      const _viaIframe = !_viaPopup && !!(_veraIframe && _veraIframe.isReady());
-      if (_viaPopup || _viaIframe) {
-        let _validated = false;
-        let _veraRun = null;
-        const _autoSetupOperation = ++_veraPdfValidationGenerationRef.current;
-        setVeraPdfBusy(true);
         try {
-          const _fr = pdfFixResultRef.current;
-          const _autoSourceHtml = String(_fr && _fr.accessibleHtml || "");
-          const _okLib = _autoSourceHtml ? await _ensurePdfLib() : false;
-          const _b64v = _okLib ? await ensurePdfBase64() : null;
-          if (_b64v) {
-            const _binV = atob(_b64v);
-            const _bytesV = new Uint8Array(_binV.length);
-            for (let _i = 0; _i < _binV.length; _i++) _bytesV[_i] = _binV.charCodeAt(_i);
-            const _dmV = _deriveDocMeta(_autoSourceHtml, pendingPdfFile?.name);
-            const _ovV = pdfMetaOverride || {};
-            const _resV = await createTaggedPdf(_bytesV, _fr, { title: _ovV.title && _ovV.title.trim() || _dmV.title, lang: _ovV.lang && _ovV.lang.trim() || _dmV.lang || "en", author: _ovV.author && _ovV.author.trim() || void 0, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(_fr) });
-            const _tbV = _resV && _resV.bytes ? _resV.bytes : _resV;
-            if (_tbV && _autoSetupOperation === _veraPdfValidationGenerationRef.current && String(pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml || "") === _autoSourceHtml) {
-              const _autoArtifact = _selectTaggedArtifact(_tbV);
-              setLastTaggedValidation(null);
-              setVeraPdfResult(null);
-              _veraRun = _beginVeraPdfValidation(_autoArtifact, _autoSourceHtml);
-              setVeraPdfBusy(true);
-              const _vrV = _viaIframe ? await validateOnIframe(_veraIframe, _veraRun.bytes) : await validateOnWarmWindow(_veraWarm, _veraRun.bytes);
-              _validated = true;
-              const _vbhV = await _sha256OfBytes(_veraRun.bytes);
-              const _boundAutoValidation = await _viewBindValidationToHtml({
-                fileName: pendingPdfFile?.name || "document.pdf",
-                pdfUa1Checks: _resV && _resV.pdfUa1Checks || null,
-                roundTrip: _resV && _resV.roundTrip || null,
-                postExportValidator: _resV && _resV.postExportValidator || null,
-                veraPdf: _vrV,
-                veraPdfAt: (/* @__PURE__ */ new Date()).toISOString(),
-                veraPdfBytesHash: _vbhV,
-                generatedAt: (/* @__PURE__ */ new Date()).toISOString()
-              }, _autoSourceHtml, _docPipeline);
-              if (_veraPdfValidationIsCurrent(_veraRun)) {
-                setLastTaggedValidation(_viewAttachTaggedArtifactProof(_boundAutoValidation, _veraRun));
-                setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._vrV }, _veraRun));
-                setVeraPdfAutoSkipped(null);
-                _recordVeraPdfRules(_vrV, "export");
-                if (_vrV && !_vrV.error) addToast((_vrV.compliant ? "\u2705 " : "\u26A0 ") + (t("toasts.auto_verapdf_done") || "Independent veraPDF (ISO 14289-1) validation complete") + (_vrV.compliant ? "" : " \u2014 " + (_vrV.failedRules ? _vrV.failedRules.length : 0) + " rule(s) flagged \u2014 see the Self-check section"), _vrV.compliant ? "success" : "warning");
+          setLastTaggedValidation(null);
+          setVeraPdfResult(null);
+          setVeraPdfAutoSkipped(null);
+          _selectTaggedArtifact(null);
+        } catch (_) {
+        }
+        let _veraWarm = null;
+        let _veraIframe = null;
+        try {
+          const _nmIn = (pendingPdfFile?.name || "").toLowerCase();
+          const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmIn);
+          if (pdfAutoVeraPdf && _isPdfIn) {
+            _veraIframe = warmVeraPdfIframe();
+            const _embedViable = !!(_veraIframe && (_veraEmbedPref() === "ok" || _veraIframe.isReady()));
+            if (!_embedViable) _veraWarm = warmVeraPdfWindow();
+          }
+        } catch (_) {
+        }
+        setPdfFixMode("auto");
+        setPdfAuditResult(null);
+        addToast(t("toasts.auditing_remediating_pdf"), "info");
+        let _audit = null;
+        try {
+          _audit = await runPdfAccessibilityAudit(pendingPdfBase64);
+          if (!_audit) return;
+        } catch (auditErr) {
+          addToast(t("toasts.audit_error_continuing") || "\u26A0 The audit hit an error \u2014 attempting remediation anyway.", "warning");
+        }
+        await new Promise((res) => setTimeout(res, 250));
+        addToast(t("toasts.make_accessible_fixing") || "\u2728 Audit done \u2014 remediating automatically (no clicks needed)\u2026", "info");
+        const _HANDSOFF_MAX = 3;
+        const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|dependency|module unavailable|modules? finish loading|failed to (?:load|fetch)|load timeout)\b/i;
+        const _handsDisposition = (e) => {
+          if (!e) return "retry";
+          if (e.isAlreadyRunning) return "stop-silent";
+          const _m = String(e && (e.message || e) || "");
+          if (e.name === "AbortError" || /\baborted?\b/i.test(_m)) return "stop-silent";
+          if (e.isConfig) return "never";
+          if (e.isAuth && !e.canvasTransientAuth) return "never";
+          if (e.isQuota) return e.classification && e.classification.perDay ? "pause-daily" : "wait-retry";
+          if (e.canvasTransientAuth) return "wait-retry";
+          if (_permanentRegex.test(_m)) return "never";
+          return "retry";
+        };
+        const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current);
+        let _handsErr = null, _res = null;
+        const _runFix = async () => {
+          _handsErr = null;
+          try {
+            _res = await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || void 0 });
+          } catch (e) {
+            _handsErr = e;
+          }
+          if (!_handsErr) {
+            for (let _w = 0; _w < 6 && !(_res || pdfFixResultRef.current); _w++) {
+              await new Promise((res) => setTimeout(res, 200));
+            }
+            _res = _res || pdfFixResultRef.current;
+          }
+        };
+        await _runFix();
+        let _fixTries = 0;
+        while (!_res && _fixTries < _HANDSOFF_MAX && !_stopped()) {
+          const _disp = _handsDisposition(_handsErr);
+          if (_disp === "never" || _disp === "stop-silent") break;
+          if (_disp === "pause-daily") {
+            addToast("\u23F8 " + (t("toasts.handsoff_daily_quota") || "Daily AI quota reached \u2014 the run is paused, your progress is preserved. Re-run after the quota resets (midnight Pacific)."), "warning");
+            break;
+          }
+          _fixTries++;
+          if (_disp === "wait-retry") {
+            addToast("\u23F3 " + (t("toasts.handsoff_wait_retry") || "AI rate-limit \u2014 waiting for it to ease before retrying") + " (" + _fixTries + "/" + _HANDSOFF_MAX + ")\u2026", "info");
+            try {
+              if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === "function") await _docPipeline.waitForGeminiCalm({ maxWaitMs: 18e4, shouldAbort: _stopped });
+            } catch (_) {
+            }
+          } else {
+            addToast("\u{1F501} " + (t("toasts.handsoff_retry_fix") || "Hands-off mode \u2014 the fix produced no result; retrying") + " (" + _fixTries + "/" + _HANDSOFF_MAX + ")\u2026", "info");
+            await new Promise((res) => setTimeout(res, 1500 * _fixTries));
+          }
+          if (_stopped()) break;
+          await _runFix();
+        }
+        let r = _res || pdfFixResultRef.current;
+        if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) {
+          addToast(t("toasts.auto_continue_no_axe") || "\u26A0 Auto-continue to target unavailable for this run \u2014 the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.", "warning");
+        }
+        let _loopTries = 0, _prevScore = -1;
+        const _aiThrottledClean = !!(r && r._aiVerificationIncomplete && r.axeAudit && r.axeAudit.totalViolations === 0);
+        if (_aiThrottledClean) addToast(t("toasts.ai_throttled_shipped") || "\u26A0 The AI service is throttled, so the AI semantic score is incomplete \u2014 but the structural/automated checks are clean. Shipped the structural result; re-run in a few minutes for a full AI-verified score.", "warning");
+        while (!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped()) {
+          await runAutoFixLoop(8);
+          if (_stopped()) break;
+          r = pdfFixResultRef.current;
+          const _s = r ? r.afterScore || 0 : 0;
+          if (!r || _s >= pdfTargetScore || r.axeAudit && r.axeAudit.totalViolations === 0 || _s <= _prevScore) break;
+          _prevScore = _s;
+          _loopTries++;
+          addToast("\u{1F501} " + (t("toasts.handsoff_retry_loop") || "Hands-off mode \u2014 below target; retrying the loop") + " (" + _loopTries + "/" + _HANDSOFF_MAX + ", " + _s + "/100, target " + pdfTargetScore + ")\u2026", "info");
+          await new Promise((res) => setTimeout(res, 1500 * _loopTries));
+        }
+        const _finCur = pdfFixResultRef.current;
+        if (!_aiThrottledClean && !_stopped() && _finCur && _finCur.accessibleHtml && (_loopTries > 0 || _finCur._aiVerificationIncomplete)) {
+          addToast("\u{1F50D} " + (t("toasts.handsoff_final_audit") || "Finalizing \u2014 running one full audit so the score covers the whole document\u2026"), "info");
+          try {
+            await _reauditAndScore(_finCur.accessibleHtml, null);
+          } catch (_) {
+          }
+        }
+        if (pdfFixResultRef.current && pdfAutoSaveProject) {
+          saveProjectToFile(true);
+        }
+        const _viaPopup = !!(_veraWarm && _veraWarm.win && !_veraWarm.win.closed);
+        const _viaIframe = !_viaPopup && !!(_veraIframe && _veraIframe.isReady());
+        if (_viaPopup || _viaIframe) {
+          let _validated = false;
+          let _veraRun = null;
+          const _autoSetupOperation = ++_veraPdfValidationGenerationRef.current;
+          setVeraPdfBusy(true);
+          try {
+            const _fr = pdfFixResultRef.current;
+            const _autoSourceHtml = String(_fr && _fr.accessibleHtml || "");
+            const _okLib = _autoSourceHtml ? await _ensurePdfLib() : false;
+            const _b64v = _okLib ? await ensurePdfBase64() : null;
+            if (_b64v) {
+              const _binV = atob(_b64v);
+              const _bytesV = new Uint8Array(_binV.length);
+              for (let _i = 0; _i < _binV.length; _i++) _bytesV[_i] = _binV.charCodeAt(_i);
+              const _dmV = _deriveDocMeta(_autoSourceHtml, pendingPdfFile?.name);
+              const _ovV = pdfMetaOverride || {};
+              const _resV = await createTaggedPdf(_bytesV, _fr, { title: _ovV.title && _ovV.title.trim() || _dmV.title, lang: _ovV.lang && _ovV.lang.trim() || _dmV.lang || "en", author: _ovV.author && _ovV.author.trim() || void 0, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(_fr) });
+              const _tbV = _resV && _resV.bytes ? _resV.bytes : _resV;
+              if (_tbV && _autoSetupOperation === _veraPdfValidationGenerationRef.current && String(pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml || "") === _autoSourceHtml) {
+                const _autoArtifact = _selectTaggedArtifact(_tbV);
+                setLastTaggedValidation(null);
+                setVeraPdfResult(null);
+                _veraRun = _beginVeraPdfValidation(_autoArtifact, _autoSourceHtml);
+                setVeraPdfBusy(true);
+                const _vrV = _viaIframe ? await validateOnIframe(_veraIframe, _veraRun.bytes) : await validateOnWarmWindow(_veraWarm, _veraRun.bytes);
+                _validated = true;
+                const _vbhV = await _sha256OfBytes(_veraRun.bytes);
+                const _boundAutoValidation = await _viewBindValidationToHtml({
+                  fileName: pendingPdfFile?.name || "document.pdf",
+                  pdfUa1Checks: _resV && _resV.pdfUa1Checks || null,
+                  roundTrip: _resV && _resV.roundTrip || null,
+                  postExportValidator: _resV && _resV.postExportValidator || null,
+                  veraPdf: _vrV,
+                  veraPdfAt: (/* @__PURE__ */ new Date()).toISOString(),
+                  veraPdfBytesHash: _vbhV,
+                  generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+                }, _autoSourceHtml, _docPipeline);
+                if (_veraPdfValidationIsCurrent(_veraRun)) {
+                  setLastTaggedValidation(_viewAttachTaggedArtifactProof(_boundAutoValidation, _veraRun));
+                  setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._vrV }, _veraRun));
+                  setVeraPdfAutoSkipped(null);
+                  _recordVeraPdfRules(_vrV, "export");
+                  if (_vrV && !_vrV.error) addToast((_vrV.compliant ? "\u2705 " : "\u26A0 ") + (t("toasts.auto_verapdf_done") || "Independent veraPDF (ISO 14289-1) validation complete") + (_vrV.compliant ? "" : " \u2014 " + (_vrV.failedRules ? _vrV.failedRules.length : 0) + " rule(s) flagged \u2014 see the Self-check section"), _vrV.compliant ? "success" : "warning");
+                }
+              }
+            }
+          } catch (_vErr) {
+            try {
+              warnLog && warnLog("[auto-veraPDF] " + (_vErr && _vErr.message));
+            } catch (_) {
+            }
+          } finally {
+            const _attemptCurrent = _veraRun ? _veraRun.operation === _veraPdfValidationGenerationRef.current : _autoSetupOperation === _veraPdfValidationGenerationRef.current;
+            if (_attemptCurrent) {
+              try {
+                setVeraPdfBusy(false);
+              } catch (_) {
+              }
+            }
+            if (!_validated && _viaPopup) {
+              try {
+                if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close();
+              } catch (_) {
+              }
+            }
+            if (!_validated && _attemptCurrent) {
+              try {
+                setVeraPdfAutoSkipped("validation-failed");
+              } catch (_) {
               }
             }
           }
-        } catch (_vErr) {
+        } else {
+          if (_veraWarm && _veraWarm.win) {
+            try {
+              _veraWarm.win.close();
+            } catch (_) {
+            }
+          }
           try {
-            warnLog && warnLog("[auto-veraPDF] " + (_vErr && _vErr.message));
-          } catch (_) {
-          }
-        } finally {
-          const _attemptCurrent = _veraRun ? _veraRun.operation === _veraPdfValidationGenerationRef.current : _autoSetupOperation === _veraPdfValidationGenerationRef.current;
-          if (_attemptCurrent) {
-            try {
-              setVeraPdfBusy(false);
-            } catch (_) {
-            }
-          }
-          if (!_validated && _viaPopup) {
-            try {
-              if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close();
-            } catch (_) {
-            }
-          }
-          if (!_validated && _attemptCurrent) {
-            try {
-              setVeraPdfAutoSkipped("validation-failed");
-            } catch (_) {
-            }
-          }
-        }
-      } else {
-        if (_veraWarm && _veraWarm.win) {
-          try {
-            _veraWarm.win.close();
+            const _nmSkip = (pendingPdfFile?.name || "").toLowerCase();
+            const _isPdfSkip = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmSkip);
+            if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped("transport-blocked");
           } catch (_) {
           }
         }
-        try {
-          const _nmSkip = (pendingPdfFile?.name || "").toLowerCase();
-          const _isPdfSkip = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmSkip);
-          if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped("transport-blocked");
-        } catch (_) {
-        }
+      } finally {
+        _oneClickRemediationBusyRef.current = false;
+        setOneClickRemediationBusy(false);
       }
-    }, className: "w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" }, "\u2728 ", t("pdf_audit.one_click.label") || "Make Accessible", " ", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold opacity-80 mt-0.5" }, t("pdf_audit.one_click.badge") || "fully automatic \u2014 audit, fix, verify, repeat to target")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-2 text-center" }, t("pdf_audit.one_click.desc") || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.', typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => startPipelineTour("triage"), className: "ml-2 text-indigo-600 underline font-bold hover:text-indigo-800", "data-help-ignore": "true" }, "\u2728 ", t("pdf_audit.tour.triage_cta") || "60-second tour")), /* @__PURE__ */ React.createElement("details", { className: "text-left mt-2 text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-center hover:text-slate-700" }, "\u2139\uFE0F ", t("pdf_audit.title2.summary") || "Why schools are required to do this (ADA Title II)"), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 px-2" }, t("pdf_audit.title2.body") || "The US Department of Justice\u2019s ADA Title II rule requires WCAG 2.2 AA digital accessibility from state and local government entities \u2014 including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence \u2014 every document you fix now is one fewer at the deadline. (Informational, not legal advice.)"))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_settings_panel", className: "text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600" }, "\u2699\uFE0F Pipeline Settings"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Audit Passes: ", pdfAuditorCount), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAuditorCount <= 2 ? "Fast" : pdfAuditorCount <= 5 ? "Balanced" : pdfAuditorCount <= 7 ? "Thorough" : "Research-grade")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_audit_passes_slider", type: "range", min: "1", max: "10", value: pdfAuditorCount, onChange: (e) => setPdfAuditorCount(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.audit_passes_aria") || "Number of audit passes" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "1 (quick)"), /* @__PURE__ */ React.createElement("span", null, "5 (default)"), /* @__PURE__ */ React.createElement("span", null, "10 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Target Score: ", pdfTargetScore), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfTargetScore >= 95 ? "Near-perfect" : pdfTargetScore >= 90 ? "Excellent" : pdfTargetScore >= 80 ? "Good" : "Minimum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_target_score_slider", type: "range", min: "60", max: "100", step: "5", value: pdfTargetScore, onChange: (e) => setPdfTargetScore(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.target_score_aria") || "Target accessibility score" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "60 (min)"), /* @__PURE__ */ React.createElement("span", null, "95 (default)"), /* @__PURE__ */ React.createElement("span", null, "100"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Max Fix Passes: ", pdfAutoFixPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAutoFixPasses === 0 ? "Disabled" : pdfAutoFixPasses <= 3 ? "Quick" : pdfAutoFixPasses <= 5 ? "Standard" : pdfAutoFixPasses <= 8 ? "Thorough" : "Maximum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_max_fix_passes_slider", type: "range", min: "0", max: "15", value: pdfAutoFixPasses, onChange: (e) => setPdfAutoFixPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.max_fix_passes_aria") || "Max fix pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0 (off)"), /* @__PURE__ */ React.createElement("span", null, "8 (default)"), /* @__PURE__ */ React.createElement("span", null, "15 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] mb-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, t("pdf_audit.settings.ocr_lang") || "Scanned-doc OCR language"), !pdfOcrLanguage && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("pdf_audit.settings.ocr_auto") || "Auto-detect")), /* @__PURE__ */ React.createElement("select", { "data-help-key": "pdf_audit_view_ocr_language", value: pdfOcrLanguage || "", onChange: (e) => setPdfOcrLanguage(e.target.value), "aria-label": t("pdf_audit.settings.ocr_lang_aria") || "OCR language for scanned documents", className: "w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u{1F310} ", t("pdf_audit.settings.ocr_auto_long") || "Auto-detect (recommended)"), OCR_LANG_OPTIONS.map((o) => /* @__PURE__ */ React.createElement("option", { key: o.code, value: o.code }, o.label))), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, t("pdf_audit.settings.ocr_lang_hint") || "Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.")), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200" }, /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_auto_continue_toggle", type: "checkbox", checked: pdfAutoContinue, onChange: (e) => setPdfAutoContinue(e.target.checked), className: "mt-0.5 rounded", "aria-label": t("pdf_audit.settings.auto_continue_aria") || "Auto-continue remediation until target score" }), /* @__PURE__ */ React.createElement("span", null, "\u{1F501} ", /* @__PURE__ */ React.createElement("b", null, "Auto-continue"), " until score \u2265 ", /* @__PURE__ */ React.createElement("b", null, pdfTargetScore), " \u2014 runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Polish Passes: ", pdfPolishPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfPolishPasses === 0 ? "None" : pdfPolishPasses === 1 ? "Standard" : "Extra polish")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_polish_passes_slider", type: "range", min: "0", max: "3", value: pdfPolishPasses, onChange: (e) => setPdfPolishPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.polish_passes_aria") || "Polish pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0"), /* @__PURE__ */ React.createElement("span", null, "2 (default)"), /* @__PURE__ */ React.createElement("span", null, "3"))), (pdfFixLoading || pdfAutoContinueRunning) && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1" }, "\u24D8 ", t("pdf_audit.settings.locked_midrun") || "A run is in progress \u2014 changes here apply to the NEXT run; the current run keeps the settings it started with."))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_branding_panel", className: "bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors" }, "\u2728 Output Style & Branding (optional)"), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t("pdf_audit.brand.heading") || "Brand Colors"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.brand.where_from") || "Where do the colors come from?"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement(
+    }, className: "w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all motion-reduce:transition-none shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" }, _oneClickOperationBusy ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "animate-spin motion-reduce:animate-none inline-block mr-2", "aria-hidden": "true" }, "\u23F3"), pdfAuditLoading ? t("pdf_audit.one_click.auditing") || "Auditing document\u2026" : pdfFixLoading ? pdfFixStep || t("pdf_audit.one_click.remediating") || "Remediating document\u2026" : pdfAutoContinueRunning ? t("pdf_audit.one_click.verifying") || "Verifying improvements\u2026" : t("pdf_audit.one_click.finishing") || "Finishing remediation\u2026", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold opacity-80 mt-0.5" }, t("pdf_audit.one_click.wait") || "Keep this window open \u2014 duplicate starts are disabled")) : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2728 ", t("pdf_audit.one_click.label") || "Make Accessible", " ", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold opacity-80 mt-0.5" }, t("pdf_audit.one_click.badge") || "fully automatic \u2014 audit, fix, verify, repeat to target"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-2 text-center" }, t("pdf_audit.one_click.desc") || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.', typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => startPipelineTour("triage"), className: "ml-2 text-indigo-600 underline font-bold hover:text-indigo-800", "data-help-ignore": "true" }, "\u2728 ", t("pdf_audit.tour.triage_cta") || "60-second tour")), /* @__PURE__ */ React.createElement("details", { className: "text-left mt-2 text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-center hover:text-slate-700" }, "\u2139\uFE0F ", t("pdf_audit.title2.summary") || "Why schools are required to do this (ADA Title II)"), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 px-2" }, t("pdf_audit.title2.body") || "The US Department of Justice\u2019s ADA Title II rule requires WCAG 2.2 AA digital accessibility from state and local government entities \u2014 including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence \u2014 every document you fix now is one fewer at the deadline. (Informational, not legal advice.)"))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_settings_panel", className: "text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600" }, "\u2699\uFE0F Pipeline Settings"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Audit Passes: ", pdfAuditorCount), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAuditorCount <= 2 ? "Fast" : pdfAuditorCount <= 5 ? "Balanced" : pdfAuditorCount <= 7 ? "Thorough" : "Research-grade")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_audit_passes_slider", type: "range", min: "1", max: "10", value: pdfAuditorCount, onChange: (e) => setPdfAuditorCount(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.audit_passes_aria") || "Number of audit passes" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "1 (quick)"), /* @__PURE__ */ React.createElement("span", null, "5 (default)"), /* @__PURE__ */ React.createElement("span", null, "10 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Target Score: ", pdfTargetScore), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfTargetScore >= 95 ? "Near-perfect" : pdfTargetScore >= 90 ? "Excellent" : pdfTargetScore >= 80 ? "Good" : "Minimum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_target_score_slider", type: "range", min: "60", max: "100", step: "5", value: pdfTargetScore, onChange: (e) => setPdfTargetScore(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.target_score_aria") || "Target accessibility score" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "60 (min)"), /* @__PURE__ */ React.createElement("span", null, "95 (default)"), /* @__PURE__ */ React.createElement("span", null, "100"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Max Fix Passes: ", pdfAutoFixPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAutoFixPasses === 0 ? "Disabled" : pdfAutoFixPasses <= 3 ? "Quick" : pdfAutoFixPasses <= 5 ? "Standard" : pdfAutoFixPasses <= 8 ? "Thorough" : "Maximum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_max_fix_passes_slider", type: "range", min: "0", max: "15", value: pdfAutoFixPasses, onChange: (e) => setPdfAutoFixPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.max_fix_passes_aria") || "Max fix pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0 (off)"), /* @__PURE__ */ React.createElement("span", null, "8 (default)"), /* @__PURE__ */ React.createElement("span", null, "15 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] mb-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, t("pdf_audit.settings.ocr_lang") || "Scanned-doc OCR language"), !pdfOcrLanguage && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("pdf_audit.settings.ocr_auto") || "Auto-detect")), /* @__PURE__ */ React.createElement("select", { "data-help-key": "pdf_audit_view_ocr_language", value: pdfOcrLanguage || "", onChange: (e) => setPdfOcrLanguage(e.target.value), "aria-label": t("pdf_audit.settings.ocr_lang_aria") || "OCR language for scanned documents", className: "w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u{1F310} ", t("pdf_audit.settings.ocr_auto_long") || "Auto-detect (recommended)"), OCR_LANG_OPTIONS.map((o) => /* @__PURE__ */ React.createElement("option", { key: o.code, value: o.code }, o.label))), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, t("pdf_audit.settings.ocr_lang_hint") || "Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.")), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200" }, /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_auto_continue_toggle", type: "checkbox", checked: pdfAutoContinue, onChange: (e) => setPdfAutoContinue(e.target.checked), className: "mt-0.5 rounded", "aria-label": t("pdf_audit.settings.auto_continue_aria") || "Auto-continue remediation until target score" }), /* @__PURE__ */ React.createElement("span", null, "\u{1F501} ", /* @__PURE__ */ React.createElement("b", null, "Auto-continue"), " until score \u2265 ", /* @__PURE__ */ React.createElement("b", null, pdfTargetScore), " \u2014 runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Polish Passes: ", pdfPolishPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfPolishPasses === 0 ? "None" : pdfPolishPasses === 1 ? "Standard" : "Extra polish")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_polish_passes_slider", type: "range", min: "0", max: "3", value: pdfPolishPasses, onChange: (e) => setPdfPolishPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.polish_passes_aria") || "Polish pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0"), /* @__PURE__ */ React.createElement("span", null, "2 (default)"), /* @__PURE__ */ React.createElement("span", null, "3"))), (pdfFixLoading || pdfAutoContinueRunning) && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1" }, "\u24D8 ", t("pdf_audit.settings.locked_midrun") || "A run is in progress \u2014 changes here apply to the NEXT run; the current run keeps the settings it started with."))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_branding_panel", className: "bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors" }, "\u2728 Output Style & Branding (optional)"), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t("pdf_audit.brand.heading") || "Brand Colors"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.brand.where_from") || "Where do the colors come from?"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {

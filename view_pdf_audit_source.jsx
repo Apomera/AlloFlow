@@ -2693,6 +2693,14 @@ function PdfAuditView(props) {
     setPdfFixResult((prev) => prev && prev.accessibleHtml === token.html ? updater(prev) : prev);
     return true;
   };
+  // One-click remediation is one logical operation even though it crosses several host states
+  // (audit -> OCR/fix -> auto-continue -> final validation). React state alone is not a safe
+  // re-entry lock: a rapid second click can arrive before the next render, and the audit result
+  // view reappears while the fix is still running. The ref closes that same-tick window; the
+  // state keeps the control visibly busy/disabled across every phase.
+  const _oneClickRemediationBusyRef = useRef(false);
+  const [oneClickRemediationBusy, setOneClickRemediationBusy] = useState(false);
+  const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning;
   const [currentRemediationDigest, setCurrentRemediationDigest] = useState(null);
   useEffect(() => {
     let cancelled = false;
@@ -5427,7 +5435,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   )}
                   <p className="text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200">🔒 {t('pdf_audit.gemini_disclosure') || 'Privacy: this document’s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don’t upload documents containing student personal information you aren’t permitted to share with a third-party AI service.'}</p>
-                  <button data-help-key="pdf_audit_view_make_accessible_btn" disabled={remediationReady === false} onClick={async () => {
+                  <button data-help-key="pdf_audit_view_make_accessible_btn" disabled={_oneClickOperationBusy || remediationReady === false} aria-busy={_oneClickOperationBusy ? 'true' : undefined} onClick={async () => {
+                    if (_oneClickRemediationBusyRef.current || pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning) {
+                      addToast(t('toasts.remediation_already_running') || 'Remediation is already running. This click was ignored so the active run can finish.', 'info');
+                      return;
+                    }
+                    _oneClickRemediationBusyRef.current = true;
+                    setOneClickRemediationBusy(true);
+                    try {
                     if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
                     if (!_requireRemediationReady()) return;
                     // B1 (2026-06-28): a PRIOR run's Stop left pdfAutoContinueAbortRef.current = true and it is
@@ -5494,6 +5509,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|dependency|module unavailable|modules? finish loading|failed to (?:load|fetch)|load timeout)\b/i;
                     const _handsDisposition = (e) => {
                       if (!e) return 'retry';                              // no result, no error → transient shape
+                      if (e.isAlreadyRunning) return 'stop-silent';        // duplicate invocation: the original run owns the UI
                       const _m = String((e && (e.message || e)) || '');
                       if (e.name === 'AbortError' || /\baborted?\b/i.test(_m)) return 'stop-silent'; // cancellation: no retry, no alarm
                       if (e.isConfig) return 'never';
@@ -5643,8 +5659,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped('transport-blocked');
                       } catch (_) {}
                     }
-                  }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
-                    ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
+                    } finally {
+                      _oneClickRemediationBusyRef.current = false;
+                      setOneClickRemediationBusy(false);
+                    }
+                  }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all motion-reduce:transition-none shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                    {_oneClickOperationBusy ? (
+                      <><span className="animate-spin motion-reduce:animate-none inline-block mr-2" aria-hidden="true">⏳</span>{pdfAuditLoading ? (t('pdf_audit.one_click.auditing') || 'Auditing document…') : pdfFixLoading ? (pdfFixStep || t('pdf_audit.one_click.remediating') || 'Remediating document…') : pdfAutoContinueRunning ? (t('pdf_audit.one_click.verifying') || 'Verifying improvements…') : (t('pdf_audit.one_click.finishing') || 'Finishing remediation…')}<span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.wait') || 'Keep this window open — duplicate starts are disabled'}</span></>
+                    ) : (
+                      <>✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span></>
+                    )}
                   </button>
                   <p className="text-[11px] text-slate-600 mt-2 text-center">{t('pdf_audit.one_click.desc') || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.'}
                     {typeof startPipelineTour === 'function' && (
