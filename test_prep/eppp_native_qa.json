@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 3,
-  "generatedAt": "2026-07-15T14:10:15.277Z",
+  "schemaVersion": 4,
+  "generatedAt": "2026-07-15T15:05:21.132Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
-    "label": "AlloFlow native test-prep editorial QA v3",
+    "label": "AlloFlow native test-prep editorial QA v4",
     "checks": [
       "authoritative-source",
       "one-best-answer",
@@ -19,7 +19,7 @@
       "provenance",
       "qa-declaration"
     ],
-    "meaning": "Editorial QA confirms cited answer support, one-best-answer structure, distinct and readable distractors, clean text encoding, clue review, explanatory and option-specific feedback where required, template integrity, accessibility review declarations, and provenance.",
+    "meaning": "Editorial QA confirms cited answer support, one-best-answer structure, distinct and readable distractors, mechanical-padding rejection, clean text encoding, parallel-choice review, explanatory and option-specific feedback where required, template integrity, accessibility review declarations, and provenance.",
     "limitation": "Editorial QA is not psychometric calibration, official exam approval, or independent licensed-psychologist validation."
   },
   "summary": {
@@ -67993,7 +67993,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/0010-0277(77"
+        "https://doi.org/10.1016/0010-0277(77)90018-X"
       ]
     },
     {
@@ -68241,7 +68241,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/0010-0277(77"
+        "https://doi.org/10.1037/0278-7393.29.3.455"
       ]
     },
     {
@@ -68365,7 +68365,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/S0022-5371(74"
+        "https://doi.org/10.1016/S0022-5371(74)80011-3"
       ]
     },
     {
@@ -68427,7 +68427,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/S0022-5371(72"
+        "https://doi.org/10.1016/S0022-5371(72)80001-X"
       ]
     },
     {
@@ -75495,7 +75495,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/0001-6918(67"
+        "https://doi.org/10.1016/0001-6918(67)90011-X"
       ]
     },
     {

@@ -1,12 +1,12 @@
 # EPPP native pack editorial QA report
 
-Generated: 2026-07-15T14:10:15.277Z
+Generated: 2026-07-15T15:05:21.132Z
 
 Pack: EPPP Part 1 — Source-Reviewed Practice Bank v3.1.0
 
 ## Scope
 
-Editorial QA confirms cited answer support, one-best-answer structure, distinct and readable distractors, clean text encoding, clue review, explanatory and option-specific feedback where required, template integrity, accessibility review declarations, and provenance.
+Editorial QA confirms cited answer support, one-best-answer structure, distinct and readable distractors, mechanical-padding rejection, clean text encoding, parallel-choice review, explanatory and option-specific feedback where required, template integrity, accessibility review declarations, and provenance.
 
 > Editorial QA is not psychometric calibration, official exam approval, or independent licensed-psychologist validation.
 
