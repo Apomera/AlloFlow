@@ -26,6 +26,12 @@ function PersonaChatView(props) {
   var playbackState = props.playbackState;
   // Refs
   var personaScrollRef = props.personaScrollRef;
+  var personaDialogRef = React.useRef(null);
+  var personaPreviousFocusRef = React.useRef(null);
+  var personaDefinitionDialogRef = React.useRef(null);
+  var personaDefinitionReturnFocusRef = React.useRef(null);
+  var personaReflectionDialogRef = React.useRef(null);
+  var personaReflectionReturnFocusRef = React.useRef(null);
   // Setters
   var setPersonaState = props.setPersonaState;
   var setPersonaInput = props.setPersonaInput;
@@ -50,6 +56,89 @@ function PersonaChatView(props) {
   var handleTogglePersonaAutoSend = props.handleTogglePersonaAutoSend;
   var handleToggleShowPersonaHints = props.handleToggleShowPersonaHints;
   var stopPlayback = props.stopPlayback;
+  var personaCloseHandlerRef = React.useRef(handleClosePersonaChat);
+  personaCloseHandlerRef.current = handleClosePersonaChat;
+
+  // WCAG 2.4.3 / 2.1.1: contain focus in the modal, support Escape,
+  // focus the close control on entry, and restore the invoking control.
+  React.useEffect(function () {
+    var dialog = personaDialogRef.current;
+    if (!dialog) return undefined;
+    personaPreviousFocusRef.current = document.activeElement;
+    var focusTimer = window.setTimeout(function () {
+      var initial = dialog.querySelector('[data-persona-initial-focus]');
+      if (initial && typeof initial.focus === 'function') initial.focus();
+      else dialog.focus();
+    }, 0);
+    var focusableSelector = 'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    var handleDialogKeyDown = function (event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        personaCloseHandlerRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      var scope = dialog.querySelector('[data-persona-reflection-dialog]') || dialog;
+      var focusable = Array.prototype.filter.call(scope.querySelectorAll(focusableSelector), function (element) {
+        return element.getAttribute('aria-hidden') !== 'true' && (element.offsetParent !== null || element === document.activeElement);
+      });
+      if (!focusable.length) {
+        event.preventDefault();
+        scope.focus();
+        return;
+      }
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !scope.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dialog.addEventListener('keydown', handleDialogKeyDown);
+    return function () {
+      window.clearTimeout(focusTimer);
+      dialog.removeEventListener('keydown', handleDialogKeyDown);
+      var previous = personaPreviousFocusRef.current;
+      if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+    };
+  }, []);
+
+  React.useEffect(function () {
+    if (!personaDefinitionData) return undefined;
+    var dialog = personaDefinitionDialogRef.current;
+    if (!dialog) return undefined;
+    personaDefinitionReturnFocusRef.current = document.activeElement;
+    var focusTimer = window.setTimeout(function () {
+      var initial = dialog.querySelector('[data-definition-initial-focus]');
+      if (initial && typeof initial.focus === 'function') initial.focus();
+    }, 0);
+    return function () {
+      window.clearTimeout(focusTimer);
+      var previous = personaDefinitionReturnFocusRef.current;
+      if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+    };
+  }, [!!personaDefinitionData]);
+
+  React.useEffect(function () {
+    if (!isPersonaReflectionOpen) return undefined;
+    var dialog = personaReflectionDialogRef.current;
+    if (!dialog) return undefined;
+    personaReflectionReturnFocusRef.current = document.activeElement;
+    var focusTimer = window.setTimeout(function () {
+      var initial = dialog.querySelector('textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      if (initial && typeof initial.focus === 'function') initial.focus();
+      else dialog.focus();
+    }, 0);
+    return function () {
+      window.clearTimeout(focusTimer);
+      var previous = personaReflectionReturnFocusRef.current;
+      if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+    };
+  }, [isPersonaReflectionOpen]);
+
   // Pure helpers
   var splitTextToSentences = props.splitTextToSentences;
   var formatInteractiveText = props.formatInteractiveText;
@@ -183,11 +272,19 @@ function PersonaChatView(props) {
             (from-yellow-50 / from-indigo-50 chips + info boxes) into the theme-dark remap so they
             stop reading light-pastel in dark mode. No-op in light mode. */}
         <div
-            className={`allo-docsuite fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 theme-${theme}`}
+            className={`allo-docsuite fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300 theme-${theme}`}
+            ref={personaDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="persona-chat-title"
+            tabIndex={-1}
             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
         >
+            <h1 id="persona-chat-title" className="sr-only">
+                {personaState.mode === 'panel' ? (t('persona.panel_header') || 'Panel interview') : (t('persona.interview_title') || 'Character interview')}
+            </h1>
             {personaResumeOffer && (
-                <div role="region" aria-label={t('persona.resume_title') || 'Resume saved interview'} className="absolute top-4 left-1/2 -translate-x-1/2 z-[10000] max-w-[94%] bg-amber-50 border-2 border-amber-300 text-amber-900 rounded-xl shadow-2xl px-4 py-2.5 flex flex-wrap items-center gap-3 animate-in slide-in-from-top-2 duration-300">
+                <div role="region" aria-live="polite" aria-atomic="true" aria-label={t('persona.resume_title') || 'Resume saved interview'} className="absolute top-4 left-1/2 -translate-x-1/2 z-[10000] max-w-[94%] bg-amber-50 border-2 border-amber-300 text-amber-900 rounded-xl shadow-2xl px-4 py-2.5 flex flex-wrap items-center gap-3 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-300">
                     <span className="text-sm font-medium">
                         💾 {(t('persona.resume_prompt') || 'Pick up your earlier interview with {name}?').replace('{name}', _resumeSnapshotName)}
                         <span className="opacity-70 ml-1 text-xs">
@@ -195,10 +292,10 @@ function PersonaChatView(props) {
                         </span>
                     </span>
                     <span className="flex items-center gap-2 ml-auto">
-                        <button onClick={_handleResumeSnapshot} className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-full transition-colors">
+                        <button type="button" onClick={_handleResumeSnapshot} className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none">
                             {t('persona.resume_btn') || 'Resume'}
                         </button>
-                        <button onClick={_handleDiscardSnapshot} className="text-xs font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full transition-colors">
+                        <button type="button" onClick={_handleDiscardSnapshot} className="text-xs font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none">
                             {t('persona.resume_discard_btn') || 'Discard'}
                         </button>
                     </span>
@@ -220,41 +317,44 @@ function PersonaChatView(props) {
                                      <span className="text-[11px] text-slate-600">{t('common.xp')}</span>
                                  </div>
                              </div>
-                             <div className="w-full max-w-lg transition-all duration-500">
+                             <div className="w-full max-w-lg transition-all motion-reduce:transition-none duration-500">
                                 <HarmonyMeter score={personaState.harmonyScore ?? 10} />
                              </div>
-                             <button
+                             <button type="button"
                                 data-help-key="persona_close" data-help-ignore
+                                data-persona-initial-focus
                                 onClick={handleClosePersonaChat}
-                                className="absolute right-4 p-2 text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
+                                className="absolute right-4 p-2 text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors motion-reduce:transition-none"
                                 aria-label={t('common.close')}
                              >
                                 <X size={20} />
                              </button>
                         </div>
                         <div className="shrink-0 px-4 py-2 border-b border-slate-200 bg-slate-50/90 flex flex-wrap items-center justify-center gap-2">
-                            <button
+                            <button type="button"
                                 aria-label={t('common.volume')}
                                 onClick={() => {
                                     const newState = !personaAutoRead;
                                     setPersonaAutoRead(newState);
                                     if (!newState) stopPlayback();
                                 }}
-                                className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
+                                className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                     personaAutoRead
                                     ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                 }`}
                                 title={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
                                 data-help-key="persona_auto_read"
+                                aria-pressed={personaAutoRead}
                             >
-                                {personaAutoRead ? <Volume2 size={16} className="animate-pulse"/> : <VolumeX size={16}/>}
+                                {personaAutoRead ? <Volume2 size={16} className="animate-pulse motion-reduce:animate-none"/> : <VolumeX size={16}/>}
                                 <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_read_label')}</span>
                             </button>
-                            <button
+                            <button type="button"
                                 data-help-key="persona_auto_send"
+                                aria-pressed={personaAutoSend}
                                 onClick={handleTogglePersonaAutoSend}
-                                className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
+                                className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                     personaAutoSend
                                     ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -266,11 +366,12 @@ function PersonaChatView(props) {
                             </button>
                             <div className="w-px h-6 bg-slate-300 mx-1"></div>
                             {isPersonaFreeResponse && (
-                                <button
+                                <button type="button"
                                     aria-label={t('common.show')}
                                     data-help-key="persona_show_hints"
+                                    aria-pressed={showPersonaHints}
                                     onClick={handleToggleShowPersonaHints}
-                                    className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
+                                    className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                         !showPersonaHints
                                         ? 'bg-red-50 text-red-600 border-red-200 shadow-inner'
                                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -284,15 +385,16 @@ function PersonaChatView(props) {
                                 </button>
                             )}
                             {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
-                            <button
-                                aria-label={t('common.message')}
+                            <button type="button"
+                                aria-label={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
                                 data-help-key="persona_response_mode"
+                                aria-pressed={isPersonaFreeResponse}
                                 onClick={() => {
                                     const newMode = !isPersonaFreeResponse;
                                     setIsPersonaFreeResponse(newMode);
                                     if (!newMode) setShowPersonaHints(true);
                                 }}
-                                className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
+                                className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                     !isPersonaFreeResponse
                                     ? 'bg-purple-100 text-purple-900 border-purple-300 shadow-sm ring-1 ring-purple-200'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -305,31 +407,31 @@ function PersonaChatView(props) {
                                 </span>
                             </button>
                             )}
-                            <button
+                            <button type="button"
                                 data-help-key="persona_topic_spark"
                                 onClick={handlePersonaTopicSpark}
                                 disabled={personaState.isLoading || (personaState.topicSparkCount || 0) >= 2}
-                                className={`p-2 rounded-lg border shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                                className={`p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${
                                     (personaState.topicSparkCount || 0) >= 2
                                     ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
                                     : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'
                                 }`}
                                 title={`Get a topic suggestion (${2 - (personaState.topicSparkCount || 0)} remaining)`}
                             >
-                                <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse" : ""}/>
+                                <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse motion-reduce:animate-none" : ""}/>
                             </button>
                             <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                            <button
+                            <button type="button"
                                 aria-label={t('common.save')}
                                 data-help-key="persona_save_chat"
                                 onClick={handleSavePersonaChat}
                                 disabled={personaState.chatHistory.length === 0}
-                                className="p-2 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                className="p-2 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 title={t('persona.save_tooltip')}
                             >
                                 <Save size={16}/>
                             </button>
-                            <button
+                            <button type="button"
                                 aria-label={t('common.check')}
                                 data-help-key="persona_conclude"
                                 onClick={() => {
@@ -337,7 +439,7 @@ function PersonaChatView(props) {
                                     setIsPersonaReflectionOpen(true);
                                 }}
                                 disabled={!panelConcludeReady}
-                                className={`relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all text-xs font-bold ${
+                                className={`relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all motion-reduce:transition-none text-xs font-bold ${
                                     panelConcludeReady
                                     ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700'
                                     : 'bg-slate-200 text-slate-600 border-slate-300 cursor-not-allowed'
@@ -351,7 +453,7 @@ function PersonaChatView(props) {
                                 {!panelConcludeReady && <span className="hidden lg:inline text-[10px] font-black opacity-80">{panelUnlockPct}%</span>}
                                 {!panelConcludeReady && (
                                     <span className="absolute left-1 right-1 bottom-1 h-1 rounded-full bg-white/70 overflow-hidden">
-                                        <span className="block h-full rounded-full bg-indigo-400 transition-all duration-500" style={{ width: `${panelUnlockPct}%` }} />
+                                        <span className="block h-full rounded-full bg-indigo-400 transition-all motion-reduce:transition-none duration-500" style={{ width: `${panelUnlockPct}%` }} />
                                     </span>
                                 )}
                             </button>
@@ -360,22 +462,22 @@ function PersonaChatView(props) {
                             {(personaState.selectedCharacters || []).map((char, cIdx) => {
                                 const isActivePanelist = activeSpeakerName && activeSpeakerName === char?.name;
                                 return (
-                                    <div key={char?.name || cIdx} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-full border text-xs font-bold whitespace-nowrap transition-all ${isActivePanelist ? 'bg-yellow-50 border-yellow-300 text-yellow-900 shadow-sm ring-2 ring-yellow-200' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                                    <div key={char?.name || cIdx} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-full border text-xs font-bold whitespace-nowrap transition-all motion-reduce:transition-none ${isActivePanelist ? 'bg-yellow-50 border-yellow-300 text-yellow-900 shadow-sm ring-2 ring-yellow-200' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
                                         <div className={`w-6 h-6 rounded-full overflow-hidden bg-white border ${isActivePanelist ? 'border-yellow-400' : 'border-slate-300'}`}>
                                             {char?.avatarUrl ? <img loading="lazy" src={char.avatarUrl} alt={char.name} className="w-full h-full object-cover" /> : <span className="w-full h-full flex items-center justify-center text-[10px]">{(char?.name || '?').slice(0, 1)}</span>}
                                         </div>
                                         <span>{char?.name || t('common.character')}</span>
-                                        {isActivePanelist && <Volume2 size={12} className="text-yellow-600 animate-pulse" />}
+                                        {isActivePanelist && <Volume2 size={12} className="text-yellow-600 animate-pulse motion-reduce:animate-none" />}
                                     </div>
                                 );
                             })}
                         </div>
                         <div className="flex-1 flex overflow-hidden">
-                            <div className={`w-1/4 min-w-[250px] border-r border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex transition-all ${activeSpeakerName && activeSpeakerName === personaState.selectedCharacters?.[0]?.name ? 'ring-2 ring-yellow-200 ring-inset shadow-inner' : ''}`}>
+                            <div className={`w-1/4 min-w-[250px] border-r border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex transition-all motion-reduce:transition-none ${activeSpeakerName && activeSpeakerName === personaState.selectedCharacters?.[0]?.name ? 'ring-2 ring-yellow-200 ring-inset shadow-inner' : ''}`}>
                                 <CharacterColumn character={personaState.selectedCharacters[0]} side="left" onRetryPortrait={handleRetryPortraitGeneration} />
                             </div>
                             <div className="flex-1 flex flex-col bg-slate-50/50 relative min-w-[320px]">
-                                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-atomic="true" aria-label={t("a11y.interview_conversation")}>
+                                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label={t("a11y.interview_conversation")}>
                                     {personaState.chatHistory.map((msg, idx) => {
                                         const isUser = msg.role === 'user';
                                         const isCharB = !isUser && msg.speakerName === personaState.selectedCharacters[1]?.name;
@@ -384,14 +486,14 @@ function PersonaChatView(props) {
                                         return (
                                             <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`} aria-label={speakerLabel + ' said: ' + msg.text.substring(0, 100)}>
                                                  <div
-                                                    className={`relative overflow-hidden max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border transition-all ${
+                                                    className={`relative overflow-hidden max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border transition-all motion-reduce:transition-none ${
                                                     isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' :
                                                     isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' :
                                                     'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2'
                                                     } ${isMessagePlayingNow ? 'ring-2 ring-yellow-200 border-yellow-300 shadow-md' : ''}`}
                                                     aria-label={!isUser ? (t('a11y.message_speaker_read_aloud', { name: speakerLabel }) || ('Message from ' + speakerLabel + '. Click any sentence to hear it read aloud.')) : undefined}
                                                  >
-                                                    {isMessagePlayingNow && <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 animate-pulse" />}
+                                                    {isMessagePlayingNow && <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 animate-pulse motion-reduce:animate-none" />}
                                                     {isUser ? (
                                                         msg.text.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')
                                                     ) : (
@@ -430,7 +532,7 @@ function PersonaChatView(props) {
                                                                                     }}
                                                                                     role="button"
                                                                                     tabIndex={0}
-                                                                                    className={`transition-colors duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-200 text-slate-950 shadow-sm ring-1 ring-yellow-400' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`}
+                                                                                    className={`transition-colors motion-reduce:transition-none duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-200 text-slate-950 shadow-sm ring-1 ring-yellow-400' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`}
                                                                                     title={t('common.click_to_read')}
                                                                                     aria-label={t('a11y.sentence_read_aloud', { num: currentGlobalIdx + 1 }) || `Sentence ${currentGlobalIdx + 1}. Click to read aloud.`}
                                                                                 >
@@ -448,52 +550,63 @@ function PersonaChatView(props) {
                                                  </div>
                                                  <span className={`text-[11px] mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`}>
                                                     {speakerLabel}
-                                                    {isMessagePlayingNow && <Volume2 size={11} className="animate-pulse" />}
+                                                    {isMessagePlayingNow && <Volume2 size={11} className="animate-pulse motion-reduce:animate-none" />}
                                                  </span>
                                             </div>
                                         );
                                     })}
                                     {personaState.isLoading && (
-                                        <div className="flex justify-center p-4">
+                                        <div role="status" aria-live="polite" className="flex justify-center p-4">
                                             <div className="bg-white px-4 py-2 rounded-full border border-indigo-100 shadow-sm flex items-center gap-2 text-xs font-bold text-slate-600">
-                                                <RefreshCw size={12} className="animate-spin text-indigo-500"/> {t('persona.status_deliberating')}
+                                                <RefreshCw size={12} className="animate-spin motion-reduce:animate-none text-indigo-500"/> {t('persona.status_deliberating')}
                                                 <span className="flex items-center gap-0.5 ml-1" aria-hidden="true">
-                                                    <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse"></span>
-                                                    <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse" style={{ animationDelay: '120ms' }}></span>
-                                                    <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse" style={{ animationDelay: '240ms' }}></span>
+                                                    <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse motion-reduce:animate-none"></span>
+                                                    <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse motion-reduce:animate-none" style={{ animationDelay: '120ms' }}></span>
+                                                    <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse motion-reduce:animate-none" style={{ animationDelay: '240ms' }}></span>
                                                 </span>
                                             </div>
                                         </div>
                                     )}
                                     {panelTtsPending.length > 0 && (
-                                        <div className="flex justify-center p-2">
-                                            <div className="bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200 flex items-center gap-2 text-xs font-medium text-violet-600 animate-pulse">
-                                                <Volume2 size={12} className="animate-bounce"/> Waiting to speak...
+                                        <div role="status" aria-live="polite" className="flex justify-center p-2">
+                                            <div className="bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200 flex items-center gap-2 text-xs font-medium text-violet-600 animate-pulse motion-reduce:animate-none">
+                                                <Volume2 size={12} className="animate-bounce motion-reduce:animate-none"/> Waiting to speak...
                                             </div>
                                         </div>
                                     )}
                                     {personaDefinitionData && (
                                         <div
-                                            className="fixed z-[9999] bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 max-w-sm animate-in zoom-in-95 duration-150"
+                                            className="fixed z-[9999] bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 max-w-sm animate-in motion-reduce:animate-none zoom-in-95 duration-150"
                                             style={{
                                                 left: Math.min(personaDefinitionData.x + 10, window.innerWidth - 320),
                                                 top: Math.min(personaDefinitionData.y + 10, window.innerHeight - 150)
                                             }}
-                                            role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
+                                            ref={personaDefinitionDialogRef}
+                                            role="dialog"
+                                            aria-labelledby="persona-definition-title"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Escape') {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleSetPersonaDefinitionDataToNull();
+                                                }
+                                            }}
+                                            onClick={(e) => e.stopPropagation()}
                                         >
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="font-bold text-lg text-indigo-600">{personaDefinitionData.word}</span>
-                                                <button
+                                                <span id="persona-definition-title" className="font-bold text-lg text-indigo-600">{personaDefinitionData.word}</span>
+                                                <button type="button"
+                                                    data-definition-initial-focus
                                                     aria-label={t('common.close_definition')}
                                                     onClick={handleSetPersonaDefinitionDataToNull}
-                                                    className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded p-1 transition-colors"
+                                                    className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded p-1 transition-colors motion-reduce:transition-none"
                                                 >
                                                     <X size={16}/>
                                                 </button>
                                             </div>
                                             {isPersonaDefining ? (
                                                 <div className="flex items-center gap-2 text-slate-600 text-sm">
-                                                    <RefreshCw size={14} className="animate-spin"/>
+                                                    <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/>
                                                     Looking up definition...
                                                 </div>
                                             ) : (
@@ -501,7 +614,7 @@ function PersonaChatView(props) {
                                                     <p className="text-sm text-slate-700 leading-relaxed mb-3">
                                                         {personaDefinitionData.text}
                                                     </p>
-                                                    <button
+                                                    <button type="button"
                                                         aria-label={t('common.volume')}
                                                         onClick={() => handleSpeak(personaDefinitionData.text, 'persona-definition', 0)}
                                                         className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
@@ -518,7 +631,7 @@ function PersonaChatView(props) {
                                         <p className="text-xs text-slate-600 text-center mb-3 font-medium">{t('persona.panel_choose_response')}</p>
                                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5">
                                             {personaState.panelSuggestions.map((opt, i) => (
-                                                <button
+                                                <button type="button"
                                                     key={i}
                                                     onClick={(e) => {
                                                         const btn = e.currentTarget;
@@ -531,7 +644,7 @@ function PersonaChatView(props) {
                                                             handlePanelChatSubmit(opt.text);
                                                         }, 400);
                                                     }}
-                                                    className="text-left px-3 py-2 text-xs font-medium rounded-lg border-2 transition-all duration-300 shadow-sm hover:scale-[1.01] active:scale-[0.99] bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300"
+                                                    className="text-left px-3 py-2 text-xs font-medium rounded-lg border-2 transition-all motion-reduce:transition-none duration-300 shadow-sm hover:scale-[1.01] active:scale-[0.99] bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300"
                                                 >
                                                     <span className="opacity-50 mr-2">{String.fromCharCode(65+i)}.</span>
                                                     {opt.text}
@@ -546,36 +659,51 @@ function PersonaChatView(props) {
                                                 value={personaInput}
                                                 onChange={(e) => setPersonaInput(e.target.value)}
                                                 onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit(personaInput)}
-                                                className="flex-1 p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-400 outline-none transition-all placeholder:text-slate-600"
+                                                className="flex-1 p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-400 outline-none transition-all motion-reduce:transition-none placeholder:text-slate-600"
                                                 placeholder={t('persona.panel_question_placeholder')}
                                                 disabled={personaState.isLoading}
                                             />
-                                            <button
+                                            <button type="button"
                                                 aria-label={personaState.isLoading ? 'Waiting for response...' : 'Send message to interview subject'}
                                                 aria-busy={personaState.isLoading ? 'true' : 'false'}
                                                 onClick={() => handlePanelChatSubmit(personaInput)}
                                                 disabled={!personaInput.trim() || personaState.isLoading}
-                                                className="bg-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="bg-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
-                                                {personaState.isLoading ? <RefreshCw size={20} className="animate-spin"/> : <Send size={20} />}
+                                                {personaState.isLoading ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none"/> : <Send size={20} />}
                                             </button>
                                         </div>
                                     </div>
                                 )}
                             </div>
-                            <div className={`w-1/4 min-w-[250px] border-l border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex transition-all ${activeSpeakerName && activeSpeakerName === personaState.selectedCharacters?.[1]?.name ? 'ring-2 ring-yellow-200 ring-inset shadow-inner' : ''}`}>
+                            <div className={`w-1/4 min-w-[250px] border-l border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex transition-all motion-reduce:transition-none ${activeSpeakerName && activeSpeakerName === personaState.selectedCharacters?.[1]?.name ? 'ring-2 ring-yellow-200 ring-inset shadow-inner' : ''}`}>
                                 <CharacterColumn character={personaState.selectedCharacters[1]} side="right" onRetryPortrait={handleRetryPortraitGeneration} />
                             </div>
                         </div>
                         {isPersonaReflectionOpen && (
-                            <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col p-8 animate-in fade-in duration-300">
+                            <div
+                                ref={personaReflectionDialogRef}
+                                data-persona-reflection-dialog
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="persona-reflection-title"
+                                tabIndex={-1}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape' && !isGradingReflection) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleSetIsPersonaReflectionOpenToFalse();
+                                    }
+                                }}
+                                className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col p-8 animate-in motion-reduce:animate-none fade-in duration-300"
+                            >
                                 {reflectionFeedback ? (
                                     <>
                                         <div className="text-center mb-6 relative">
-                                            <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in zoom-in duration-300">
+                                            <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300">
                                                 <Sparkles size={40} className="fill-current" />
                                             </div>
-                                            <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
+                                            <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
                                             <p className="text-slate-600 text-sm">{reflectionFeedback.subjectName}</p>
                                         </div>
                                         <div className="flex-1 overflow-y-auto space-y-4">
@@ -598,7 +726,7 @@ function PersonaChatView(props) {
                                             </div>
                                         </div>
                                         <div className="mt-6">
-                                            <button aria-expanded={isPersonaReflectionOpen} onClick={() => { setReflectionFeedback(null); setIsPersonaReflectionOpen(false); setPersonaReflectionInput(''); _clearPersonaSnapshot(); setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: 'single', harmonyScore: 10, earnedBadges: [] })); }} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
+                                            <button type="button" aria-expanded={isPersonaReflectionOpen} onClick={() => { setReflectionFeedback(null); setIsPersonaReflectionOpen(false); setPersonaReflectionInput(''); _clearPersonaSnapshot(); setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: 'single', harmonyScore: 10, earnedBadges: [] })); }} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg">
                                                 <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
                                             </button>
                                         </div>
@@ -607,7 +735,7 @@ function PersonaChatView(props) {
                                     <>
                                         <div className="text-center mb-6 relative">
                                             <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm"><PenTool size={32} /></div>
-                                            <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
+                                            <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
                                             <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle')}</p>
                                         </div>
                                         <div className="flex-1 overflow-y-auto">
@@ -615,7 +743,7 @@ function PersonaChatView(props) {
                                                 <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
                                                     <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">{t('persona.reflection_prompt_label') || 'Reflection Question'}</h4>
                                                     {isGeneratingReflectionPrompt ? (
-                                                        <div className="flex items-center gap-2 text-indigo-500 text-sm italic"><RefreshCw size={14} className="animate-spin"/> {t('persona.status_generating_prompt')}</div>
+                                                        <div role="status" aria-live="polite" className="flex items-center gap-2 text-indigo-500 text-sm italic"><RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> {t('persona.status_generating_prompt')}</div>
                                                     ) : (
                                                         <p className="text-slate-700 text-sm leading-relaxed">{dynamicReflectionQuestion || t('persona.default_reflection_prompt')}</p>
                                                     )}
@@ -624,9 +752,9 @@ function PersonaChatView(props) {
                                             </div>
                                         </div>
                                         <div className="mt-6 flex gap-3">
-                                            <button onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={isGradingReflection} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{t('persona.back_to_chat')}</button>
-                                            <button aria-label={t('common.submit_reflection_for_grading')} onClick={handleSaveReflection} disabled={!personaReflectionInput.trim() || isGradingReflection} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                                                {isGradingReflection ? <RefreshCw size={18} className="animate-spin"/> : <Sparkles size={18} className="text-yellow-700 fill-current"/>}
+                                            <button type="button" onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={isGradingReflection} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed">{t('persona.back_to_chat')}</button>
+                                            <button type="button" aria-label={t('common.submit_reflection_for_grading')} onClick={handleSaveReflection} disabled={!personaReflectionInput.trim() || isGradingReflection} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                                {isGradingReflection ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={18} className="text-yellow-700 fill-current"/>}
                                                 {isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp')}
                                             </button>
                                         </div>
@@ -643,24 +771,24 @@ function PersonaChatView(props) {
                              <img loading="lazy"
                                  src={personaState.avatarUrl}
                                  alt={personaState.selectedCharacter.name}
-                                 className={`w-full h-full object-cover transition-all duration-500 hover:scale-105 ${personaState.isImageLoading ? 'blur-[2px] opacity-90 scale-105' : ''}`}
+                                 className={`w-full h-full object-cover transition-all motion-reduce:transition-none duration-500 hover:scale-105 ${personaState.isImageLoading ? 'blur-[2px] opacity-90 scale-105' : ''}`}
                                  style={{ objectPosition: 'top center' }}
                              />
                          )}
                          {personaState.isImageLoading && (
-                             <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/10 backdrop-blur-[1px] transition-all">
+                             <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/10 backdrop-blur-[1px] transition-all motion-reduce:transition-none">
                                  <div className="bg-white/20 p-3 rounded-full backdrop-blur-md border border-white/30 shadow-lg">
-                                     <RefreshCw size={32} className="text-white animate-spin drop-shadow-md"/>
+                                     <RefreshCw size={32} className="text-white animate-spin motion-reduce:animate-none drop-shadow-md"/>
                                  </div>
                              </div>
                          )}
                          {!personaState.avatarUrl && !personaState.isImageLoading && (
                              <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-4">
                                  <History size={64} className="text-yellow-300/50"/>
-                                 <button
+                                 <button type="button"
                                      aria-label={t('common.refresh')}
                                      onClick={() => handleRetryPortraitGeneration(personaState.selectedCharacter)}
-                                     className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 px-4 py-2 rounded-full text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
+                                     className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 px-4 py-2 rounded-full text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2 transition-all motion-reduce:transition-none shadow-md hover:shadow-lg"
                                  >
                                      <RefreshCw size={16} />
                                      {t('persona.generate_portrait')}
@@ -683,7 +811,7 @@ function PersonaChatView(props) {
                      </div>
                      <div className="w-full mt-6">
                          <div className="flex justify-between items-end mb-1">
-                             <label className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Trust / Rapport</label>
+                             <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Trust / Rapport</span>
                              <span className={`text-xs font-bold ${
                                  (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'text-green-600' :
                                  (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 30 ? 'text-yellow-600' : 'text-red-500'
@@ -691,9 +819,9 @@ function PersonaChatView(props) {
                                  {personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport}%
                              </span>
                          </div>
-                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-400">
+                         <div role="progressbar" aria-label="Trust / Rapport" aria-valuemin={0} aria-valuemax={100} aria-valuenow={personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport ?? 0} className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-400">
                              <div
-                                 className={`h-full transition-all duration-500 ease-out ${
+                                 className={`h-full transition-all motion-reduce:transition-none duration-500 ease-out ${
                                      (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'bg-green-500' :
                                      (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 30 ? 'bg-yellow-400' : 'bg-red-500'
                                  }`}
@@ -708,7 +836,7 @@ function PersonaChatView(props) {
                              </h4>
                              <div className="space-y-2">
                                  {personaState.selectedCharacter.quests.map((quest, qIdx) => (
-                                     <div key={qIdx} className={`p-3 rounded-lg border text-xs transition-all ${quest.isCompleted ? 'bg-green-50 border-green-200 text-green-800' : 'bg-white border-slate-100 text-slate-600'}`}>
+                                     <div key={qIdx} className={`p-3 rounded-lg border text-xs transition-all motion-reduce:transition-none ${quest.isCompleted ? 'bg-green-50 border-green-200 text-green-800' : 'bg-white border-slate-100 text-slate-600'}`}>
                                          <div className="flex items-start gap-2">
                                              <div className={`mt-0.5 ${quest.isCompleted ? 'text-green-500' : 'text-slate-600'}`}>
                                                  {quest.isCompleted ? <CheckCircle2 size={14}/> : <div className="w-3.5 h-3.5 rounded-full border-2 border-current"></div>}
@@ -731,9 +859,10 @@ function PersonaChatView(props) {
                      )}
                 </div>
                 <div className="flex-1 flex flex-col h-full bg-white relative min-w-0">
-                    <button
-                        onClick={handleClosePersonaChat}
-                        className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-50"
+                    <button type="button"
+                        data-persona-initial-focus
+                                onClick={handleClosePersonaChat}
+                        className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors motion-reduce:transition-none z-50"
                         aria-label={t('common.close')}
                     >
                         <X size={24} />
@@ -750,36 +879,38 @@ function PersonaChatView(props) {
                                     <span className="text-[11px] text-slate-600">/ 300</span>
                                 </div>
                             </div>
-                            <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div role="progressbar" aria-label={t('common.xp') || 'Experience points'} aria-valuemin={0} aria-valuemax={300} aria-valuenow={personaState.selectedCharacter?.accumulatedXP || 0} className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
                                 <div
-                                    className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all duration-500"
+                                    className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all motion-reduce:transition-none duration-500"
                                     style={{ width: `${Math.min(100, ((personaState.selectedCharacter?.accumulatedXP || 0) / 300) * 100)}%` }}
                                 ></div>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                        <button
+                        <button type="button"
                             aria-label={t('common.volume')}
                             data-help-key="persona_auto_read"
+                                aria-pressed={personaAutoRead}
                             onClick={() => {
                                 const newState = !personaAutoRead;
                                 setPersonaAutoRead(newState);
                                 if (!newState) stopPlayback();
                             }}
-                            className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
+                            className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                 personaAutoRead
                                 ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
                                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                             }`}
                             title={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
                         >
-                            {personaAutoRead ? <Volume2 size={16} className="animate-pulse"/> : <VolumeX size={16}/>}
+                            {personaAutoRead ? <Volume2 size={16} className="animate-pulse motion-reduce:animate-none"/> : <VolumeX size={16}/>}
                             <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_read_label')}</span>
                         </button>
-                        <button
+                        <button type="button"
                             data-help-key="persona_auto_send"
+                                aria-pressed={personaAutoSend}
                             onClick={handleTogglePersonaAutoSend}
-                            className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
+                            className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                 personaAutoSend
                                 ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
                                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -790,11 +921,12 @@ function PersonaChatView(props) {
                             <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_send')}</span>
                         </button>
                         <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                        <button
+                        <button type="button"
                             aria-label={t('common.show')}
                             data-help-key="persona_hints_toggle"
+                            aria-pressed={showPersonaHints}
                             onClick={handleToggleShowPersonaHints}
-                                className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
+                                className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                     !showPersonaHints
                                     ? 'bg-red-50 text-red-600 border-red-200 shadow-inner'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -807,15 +939,16 @@ function PersonaChatView(props) {
                                 </span>
                             </button>
                         {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
-                        <button
-                            aria-label={t('common.message')}
+                        <button type="button"
+                            aria-label={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
                             data-help-key="persona_response_mode"
+                                aria-pressed={isPersonaFreeResponse}
                             onClick={() => {
                                 const newMode = !isPersonaFreeResponse;
                                 setIsPersonaFreeResponse(newMode);
                                 if (!newMode) setShowPersonaHints(true);
                             }}
-                            className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
+                            className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
                                 !isPersonaFreeResponse
                                 ? 'bg-purple-100 text-purple-900 border-purple-300 shadow-sm ring-1 ring-purple-200'
                                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -828,11 +961,11 @@ function PersonaChatView(props) {
                             </span>
                         </button>
                         )}
-                        <button
+                        <button type="button"
                             data-help-key="persona_topic_spark"
                             onClick={handlePersonaTopicSpark}
                             disabled={personaState.isLoading || (personaState.topicSparkCount || 0) >= 2}
-                            className={`p-2 rounded-lg border shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                            className={`p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${
                                 (personaState.topicSparkCount || 0) >= 2
                                 ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
                                 : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'
@@ -840,19 +973,19 @@ function PersonaChatView(props) {
                             title={t('persona.topic_spark_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
                             aria-label={t('persona.topic_spark_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
                         >
-                            <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse" : ""}/>
+                            <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse motion-reduce:animate-none" : ""}/>
                         </button>
-                        <button
+                        <button type="button"
                             data-help-key="persona_save_chat"
                             onClick={handleSavePersonaChat}
                             disabled={personaState.chatHistory.length === 0}
-                            className="p-2 rounded-lg bg-white text-slate-600 border border-slate-400 shadow-sm hover:bg-slate-50 hover:border-indigo-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 rounded-lg bg-white text-slate-600 border border-slate-400 shadow-sm hover:bg-slate-50 hover:border-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                             title={t('persona.chat_save')}
                             aria-label={t('persona.chat_save')}
                         >
                             <Save size={16}/>
                         </button>
-                        <button
+                        <button type="button"
                             aria-label={t('common.check')}
                             data-help-key="persona_conclude"
                             onClick={() => {
@@ -860,7 +993,7 @@ function PersonaChatView(props) {
                                 setIsPersonaReflectionOpen(true);
                             }}
                             disabled={!singleConcludeReady}
-                            className={`relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all text-xs font-bold ${
+                            className={`relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all motion-reduce:transition-none text-xs font-bold ${
                                 singleConcludeReady
                                 ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700'
                                 : 'bg-slate-200 text-slate-600 border-slate-300 cursor-not-allowed'
@@ -876,13 +1009,13 @@ function PersonaChatView(props) {
                             {!singleConcludeReady && <span className="hidden lg:inline text-[10px] font-black opacity-80">{singleUnlockPct}%</span>}
                             {!singleConcludeReady && (
                                 <span className="absolute left-1 right-1 bottom-1 h-1 rounded-full bg-white/70 overflow-hidden">
-                                    <span className="block h-full rounded-full bg-indigo-400 transition-all duration-500" style={{ width: `${singleUnlockPct}%` }} />
+                                    <span className="block h-full rounded-full bg-indigo-400 transition-all motion-reduce:transition-none duration-500" style={{ width: `${singleUnlockPct}%` }} />
                                 </span>
                             )}
                         </button>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-label="Interview conversation with character">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Interview conversation with character">
                         {(!personaState.chatHistory || personaState.chatHistory.length === 0) && (
                             <div className="mx-auto my-10 max-w-md text-center rounded-2xl border border-dashed border-yellow-200 bg-white/80 px-6 py-8 shadow-sm">
                                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200">
@@ -922,13 +1055,13 @@ function PersonaChatView(props) {
                                  <div className={`flex gap-3 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                                      {!isUser && avatarUrl && (
                                          <div className="flex-shrink-0 mt-1">
-                                             <div className={`w-8 h-8 rounded-full overflow-hidden border shadow-sm bg-white transition-all ${isMessagePlayingNow ? 'border-yellow-400 ring-2 ring-yellow-200 shadow-yellow-100' : 'border-slate-400'}`}>
+                                             <div className={`w-8 h-8 rounded-full overflow-hidden border shadow-sm bg-white transition-all motion-reduce:transition-none ${isMessagePlayingNow ? 'border-yellow-400 ring-2 ring-yellow-200 shadow-yellow-100' : 'border-slate-400'}`}>
                                                  <img loading="lazy" src={avatarUrl} alt={speakerName} className="w-full h-full object-cover" />
                                              </div>
                                          </div>
                                      )}
-                                     <div className={`relative overflow-hidden p-4 rounded-2xl text-sm shadow-sm leading-relaxed transition-all ${bubbleClass} ${isMessagePlayingNow ? 'ring-2 ring-yellow-200 border-yellow-300 shadow-md' : ''}`}>
-                                         {isMessagePlayingNow && <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 animate-pulse" />}
+                                     <div className={`relative overflow-hidden p-4 rounded-2xl text-sm shadow-sm leading-relaxed transition-all motion-reduce:transition-none ${bubbleClass} ${isMessagePlayingNow ? 'ring-2 ring-yellow-200 border-yellow-300 shadow-md' : ''}`}>
+                                         {isMessagePlayingNow && <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 animate-pulse motion-reduce:animate-none" />}
                                          {(() => {
                                              // Keep the English translation OUT of the TTS sentence spans:
                                              // new messages carry it in msg.translation; the split also
@@ -963,7 +1096,7 @@ function PersonaChatView(props) {
                                                                                  e.stopPropagation();
                                                                                  handleSpeak(mainText, `persona-message-${idx}`, currentGlobalIdx);
                                                                              }}
-                                                                            className={`transition-colors duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-200 text-slate-950 shadow-sm ring-1 ring-yellow-400' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`}
+                                                                            className={`transition-colors motion-reduce:transition-none duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-200 text-slate-950 shadow-sm ring-1 ring-yellow-400' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`}
                                                                              title={t('common.click_to_read')}
                                                                          >
                                                                              {formatInteractiveText(cleanText)}
@@ -978,13 +1111,13 @@ function PersonaChatView(props) {
                                                          <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                                                              <div className="flex items-center gap-2 mb-1">
                                                                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('persona.translation_label') || 'English translation'}</span>
-                                                                 <button
+                                                                 <button type="button"
                                                                      aria-label={t('common.volume')}
                                                                      onClick={(e) => {
                                                                          e.stopPropagation();
                                                                          handleSpeak(translationText, `persona-translation-${idx}`, 0);
                                                                      }}
-                                                                     className="p-0.5 rounded text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors"
+                                                                     className="p-0.5 rounded text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
                                                                      title={t('common.click_to_read')}
                                                                  >
                                                                      <Volume2 size={12}/>
@@ -1000,7 +1133,7 @@ function PersonaChatView(props) {
                                  </div>
                                  <span className={`text-[11px] mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${!isUser && avatarUrl ? 'ml-11' : ''} ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`}>
                                      {speakerName}
-                                     {isMessagePlayingNow && <Volume2 size={11} className="animate-pulse" />}
+                                     {isMessagePlayingNow && <Volume2 size={11} className="animate-pulse motion-reduce:animate-none" />}
                                  </span>
                              </div>
                              );
@@ -1016,12 +1149,12 @@ function PersonaChatView(props) {
                                         </div>
                                     )}
                                     <div className="bg-white p-3 rounded-2xl border border-yellow-200 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-2 shadow-sm">
-                                        <History size={14} className="animate-spin text-yellow-600"/>
+                                        <History size={14} className="animate-spin motion-reduce:animate-none text-yellow-600"/>
                                         <span>{t('persona.status_thinking', { name: personaState.selectedCharacter?.name })}</span>
                                         <span className="flex items-center gap-0.5 ml-1" aria-hidden="true">
-                                            <span className="w-1 h-1 rounded-full bg-yellow-500 animate-pulse"></span>
-                                            <span className="w-1 h-1 rounded-full bg-yellow-500 animate-pulse" style={{ animationDelay: '120ms' }}></span>
-                                            <span className="w-1 h-1 rounded-full bg-yellow-500 animate-pulse" style={{ animationDelay: '240ms' }}></span>
+                                            <span className="w-1 h-1 rounded-full bg-yellow-500 animate-pulse motion-reduce:animate-none"></span>
+                                            <span className="w-1 h-1 rounded-full bg-yellow-500 animate-pulse motion-reduce:animate-none" style={{ animationDelay: '120ms' }}></span>
+                                            <span className="w-1 h-1 rounded-full bg-yellow-500 animate-pulse motion-reduce:animate-none" style={{ animationDelay: '240ms' }}></span>
                                         </span>
                                     </div>
                                 </div>
@@ -1030,8 +1163,8 @@ function PersonaChatView(props) {
                     </div>
                     <div className="bg-white border-t border-slate-100 flex flex-col shrink-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                         {isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && (
-                            <div className="px-4 pt-2 pb-0 flex justify-center animate-in slide-in-from-bottom-2 fade-in">
-                                <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
+                            <div className="px-4 pt-2 pb-0 flex justify-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in">
+                                <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
                                     {!personaTurnHintsViewed ? t('persona.hard_mode_active') : t('persona.hints_viewed_status')}
                                 </span>
                             </div>
@@ -1043,10 +1176,10 @@ function PersonaChatView(props) {
                                 : 'flex-wrap pb-4 justify-center'
                             }`}>
                                 {personaState.suggestions.map((q, i) => (
-                                    <button
+                                    <button type="button"
                                         key={i}
                                         onClick={() => handlePersonaChatSubmit(q)}
-                                        className={`whitespace-normal text-left px-3 py-2 text-xs font-bold rounded-xl border transition-colors shadow-sm ${
+                                        className={`whitespace-normal text-left px-3 py-2 text-xs font-bold rounded-xl border transition-colors motion-reduce:transition-none shadow-sm ${
                                             isPersonaFreeResponse
                                             ? 'bg-yellow-50 text-yellow-800 border-yellow-200 hover:bg-yellow-100 flex-shrink-0'
                                             : 'bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 w-full sm:w-[48%] py-3 text-sm'
@@ -1066,36 +1199,51 @@ function PersonaChatView(props) {
                                     onChange={(e) => setPersonaInput(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePersonaChatSubmit()}
                                     placeholder={t('persona.character_question_placeholder', {name: personaState.selectedCharacter?.name})}
-                                    className="flex-grow text-sm p-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-yellow-100 focus:border-yellow-400 outline-none transition-all placeholder:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
+                                    className="flex-grow text-sm p-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-yellow-100 focus:border-yellow-400 outline-none transition-all motion-reduce:transition-none placeholder:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
                                     autoFocus
                                     disabled={personaState.isLoading}
                                 />
-                                <button
+                                <button type="button"
                                     aria-label={personaState.isLoading ? 'Waiting for response...' : 'Send question to ' + (personaState.selectedCharacter?.name || 'character')}
                                     aria-busy={personaState.isLoading ? 'true' : 'false'}
                                     onClick={() => handlePersonaChatSubmit()}
                                     disabled={!personaInput.trim() || personaState.isLoading}
-                                    className="bg-yellow-500 hover:bg-yellow-600 text-indigo-900 font-bold p-3 rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center active:scale-95"
+                                    className="bg-yellow-500 hover:bg-yellow-600 text-indigo-900 font-bold p-3 rounded-xl transition-colors motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center active:scale-95"
                                 >
-                                    {personaState.isLoading ? <RefreshCw size={20} className="animate-spin"/> : <Send size={20}/>}
+                                    {personaState.isLoading ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none"/> : <Send size={20}/>}
                                 </button>
                             </div>
                         )}
                         {!isPersonaFreeResponse && personaState.isLoading && (
-                            <div className="p-8 text-center text-slate-600 italic text-xs flex items-center justify-center gap-2">
-                                <RefreshCw size={14} className="animate-spin"/> {t('persona.status_generating_options')}
+                            <div role="status" aria-live="polite" className="p-8 text-center text-slate-600 italic text-xs flex items-center justify-center gap-2">
+                                <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> {t('persona.status_generating_options')}
                             </div>
                         )}
                     </div>
                     {isPersonaReflectionOpen && (
-                        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col p-8 animate-in fade-in duration-300">
+                            <div
+                                ref={personaReflectionDialogRef}
+                                data-persona-reflection-dialog
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="persona-reflection-title"
+                                tabIndex={-1}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape' && !isGradingReflection) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleSetIsPersonaReflectionOpenToFalse();
+                                    }
+                                }}
+                                className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col p-8 animate-in motion-reduce:animate-none fade-in duration-300"
+                            >
                             {reflectionFeedback ? (
                                 <>
                                     <div className="text-center mb-6 relative">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in zoom-in duration-300">
+                                        <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300">
                                             <Sparkles size={40} className="fill-current" />
                                         </div>
-                                        <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
+                                        <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
                                         <p className="text-slate-600 text-sm">{reflectionFeedback.subjectName}</p>
                                     </div>
                                     <div className="flex-1 overflow-y-auto space-y-4">
@@ -1122,7 +1270,7 @@ function PersonaChatView(props) {
                                         </div>
                                     </div>
                                     <div className="mt-6">
-                                        <button
+                                        <button type="button"
                                             aria-label={t('common.check')}
                                             onClick={() => {
                                                 setReflectionFeedback(null);
@@ -1131,7 +1279,7 @@ function PersonaChatView(props) {
                                                 _clearPersonaSnapshot();
                                                 setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: 'single', harmonyScore: 10, earnedBadges: [] }));
                                             }}
-                                            className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-lg"
+                                            className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
                                         >
                                             <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
                                         </button>
@@ -1143,7 +1291,7 @@ function PersonaChatView(props) {
                                         <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm">
                                             <PenTool size={32} />
                                         </div>
-                                        <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
+                                        <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
                                         <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle')}</p>
                                     </div>
                                     <div className="flex-1 overflow-y-auto">
@@ -1151,8 +1299,8 @@ function PersonaChatView(props) {
                                             <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
                                                 <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2">{t('persona.prompt_label')}</h4>
                                                 {isGeneratingReflectionPrompt ? (
-                                                    <div className="flex items-center gap-2 text-indigo-600 font-medium animate-pulse">
-                                                        <RefreshCw size={16} className="animate-spin"/> {t('persona.generating_question')}
+                                                    <div role="status" aria-live="polite" className="flex items-center gap-2 text-indigo-600 font-medium animate-pulse motion-reduce:animate-none">
+                                                        <RefreshCw size={16} className="animate-spin motion-reduce:animate-none"/> {t('persona.generating_question')}
                                                     </div>
                                                 ) : (
                                                     <p className="text-slate-700 font-medium">
@@ -1171,20 +1319,20 @@ function PersonaChatView(props) {
                                         </div>
                                     </div>
                                     <div className="mt-6 flex gap-3">
-                                        <button
+                                        <button type="button"
                                             aria-label={t('common.refresh')}
                                             onClick={handleSetIsPersonaReflectionOpenToFalse} data-help-key="persona_back_btn"
                                             disabled={isGradingReflection}
-                                            className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {t('persona.back_to_chat')}
                                         </button>
-                                        <button aria-label={t('common.submit_reflection_for_grading')}
+                                        <button type="button" aria-label={t('common.submit_reflection_for_grading')}
                                             onClick={handleSaveReflection} data-help-key="persona_submit_btn"
                                             disabled={!personaReflectionInput.trim() || isGradingReflection}
-                                            className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
-                                            {isGradingReflection ? <RefreshCw size={18} className="animate-spin"/> : <Sparkles size={18} className="text-yellow-700 fill-current"/>}
+                                            {isGradingReflection ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={18} className="text-yellow-700 fill-current"/>}
                                             {isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp')}
                                         </button>
                                     </div>
