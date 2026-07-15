@@ -241,7 +241,7 @@ const AnchorChartSection = React.memo((props) => {
       alignItems: "center",
       justifyContent: "center",
       position: "relative"
-    } }, iconUrl ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: iconPrompt || label, style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
+    } }, iconUrl ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: label ? label + " section icon" : iconPrompt || `Section ${sectionIndex + 1} icon`, style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -312,7 +312,7 @@ const AnchorChartSection = React.memo((props) => {
       {
         type: "button",
         onClick: () => removeBullet(idx),
-        className: "opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1",
+        className: "inline-flex min-h-6 min-w-6 items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1 rounded",
         "aria-label": `Remove bullet ${idx + 1} from ${label || `section ${sectionIndex + 1}`}`
       },
       "\u2715"
@@ -321,7 +321,7 @@ const AnchorChartSection = React.memo((props) => {
       {
         type: "button",
         onClick: addBullet,
-        className: "mt-2 text-[11px] font-bold px-2 py-0.5 rounded-full border",
+        className: "mt-2 min-h-6 text-[11px] font-bold px-2 py-0.5 rounded-full border",
         style: { color: marker.ink, borderColor: marker.hex, background: "white" },
         "aria-label": `Add bullet to ${label || `section ${sectionIndex + 1}`}`
       },
@@ -331,13 +331,14 @@ const AnchorChartSection = React.memo((props) => {
       {
         type: "button",
         onClick: () => setShowIconEditor((v) => !v),
-        className: "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded",
+        className: "min-h-6 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded",
         style: { color: marker.ink, background: marker.soft },
         "aria-expanded": showIconEditor,
+        "aria-controls": `ac-icon-editor-${section.id || sectionIndex}`,
         "aria-label": `${showIconEditor ? "Hide" : "Show"} icon prompt editor for ${label || `section ${sectionIndex + 1}`}`
       },
       showIconEditor ? "\u25BC Hide icon prompt" : "\u25B8 Edit icon prompt"
-    ), showIconEditor ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement(
+    ), showIconEditor ? /* @__PURE__ */ React.createElement("div", { id: `ac-icon-editor-${section.id || sectionIndex}`, className: "space-y-2 mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -357,7 +358,7 @@ const AnchorChartSection = React.memo((props) => {
           onRegenIcon(sectionIndex);
         },
         disabled: isRegeneratingIcon,
-        className: "text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap",
+        className: "min-h-6 text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap",
         style: { color: marker.ink, borderColor: marker.hex, background: "white" },
         "aria-label": `Generate icon for ${label || `section ${sectionIndex + 1}`}`
       },
@@ -378,7 +379,7 @@ const AnchorChartSection = React.memo((props) => {
         type: "button",
         onClick: handleRefineIcon,
         disabled: isRefining || !refinePrompt.trim(),
-        className: "text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap",
+        className: "min-h-6 text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap",
         style: { color: "#0369a1", borderColor: "#38bdf8", background: "white" },
         "aria-label": `Refine icon for ${label || `section ${sectionIndex + 1}`}`
       },
@@ -448,7 +449,16 @@ ${bulletText}`;
   const paperRef = React.useRef(null);
   const interactiveDialogRef = React.useRef(null);
   const rubricTextareaRef = React.useRef(null);
+  const interactiveDialogOpenerRef = React.useRef(null);
   const [showInteractiveDialog, setShowInteractiveDialog] = React.useState(false);
+  const openInteractiveDialog = React.useCallback(() => {
+    try {
+      interactiveDialogOpenerRef.current = document.activeElement;
+    } catch (_) {
+      interactiveDialogOpenerRef.current = null;
+    }
+    setShowInteractiveDialog(true);
+  }, []);
   const [rubricDraft, setRubricDraft] = React.useState(interactive.rubric || "");
   React.useEffect(() => {
     setRubricDraft(interactive.rubric || "");
@@ -460,12 +470,20 @@ ${bulletText}`;
     }
   }, [showInteractiveDialog, t2]);
   React.useEffect(() => {
-    if (!showInteractiveDialog) return;
+    if (!showInteractiveDialog) return void 0;
     const timer = setTimeout(() => {
       const target = rubricTextareaRef.current || interactiveDialogRef.current;
       if (target && typeof target.focus === "function") target.focus();
     }, 0);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      const opener = interactiveDialogOpenerRef.current;
+      interactiveDialogOpenerRef.current = null;
+      try {
+        if (opener && opener.isConnected && typeof opener.focus === "function") opener.focus();
+      } catch (_) {
+      }
+    };
   }, [showInteractiveDialog]);
   const [studentAnswers, setStudentAnswers] = React.useState({});
   const [gradingState, setGradingState] = React.useState("idle");
@@ -618,6 +636,7 @@ ${bulletText}`;
   const handleInteractiveDialogKeyDown = (e) => {
     if (e.key === "Escape") {
       e.preventDefault();
+      e.stopPropagation();
       setShowInteractiveDialog(false);
       return;
     }
@@ -776,7 +795,8 @@ ${bulletText}`;
     "button",
     {
       type: "button",
-      onClick: () => setShowInteractiveDialog(true),
+      onClick: openInteractiveDialog,
+      "aria-haspopup": "dialog",
       className: "px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50",
       "aria-label": "Edit interactive rubric",
       title: "Edit rubric / disarm"
@@ -796,7 +816,8 @@ ${bulletText}`;
     "button",
     {
       type: "button",
-      onClick: () => setShowInteractiveDialog(true),
+      onClick: openInteractiveDialog,
+      "aria-haspopup": "dialog",
       className: "px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50",
       "aria-label": "Arm interactive mode",
       title: "Make this chart interactive \u2014 students fill in blanks + get AI feedback",
@@ -999,7 +1020,7 @@ ${bulletText}`;
       "aria-busy": gradingState === "submitting"
     },
     gradingState === "submitting" ? "\u23F3 Grading\u2026" : "\u2728 Submit for AI feedback"
-  )), gradingState === "done" && gradingResult ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2" }, gradingResult.strength ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5" }, "What you did well"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.strength)) : null, gradingResult.growthNudge ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5" }, "One thing to try next"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.growthNudge)) : null, gradingResult.xpAwarded > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("span", null, "+", gradingResult.xpAwarded, " XP earned")) : gradingResult.hadPriorXp ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] italic text-slate-500" }, "You've already earned XP here \u2014 improve your answers to earn more.") : null) : null, gradingState === "error" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[12px] text-red-700" }, "Couldn't reach the AI grader \u2014 try again in a moment.") : null) : null), showInteractiveDialog ? /* @__PURE__ */ React.createElement(
+  )), gradingState === "done" && gradingResult ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2", role: "status", "aria-live": "polite", "aria-atomic": "true" }, gradingResult.strength ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5" }, "What you did well"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.strength)) : null, gradingResult.growthNudge ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5" }, "One thing to try next"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.growthNudge)) : null, gradingResult.xpAwarded > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("span", null, "+", gradingResult.xpAwarded, " XP earned")) : gradingResult.hadPriorXp ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] italic text-slate-500" }, "You've already earned XP here \u2014 improve your answers to earn more.") : null) : null, gradingState === "error" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[12px] text-red-700", role: "alert" }, "Couldn't reach the AI grader \u2014 try again in a moment.") : null) : null), showInteractiveDialog ? /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4",

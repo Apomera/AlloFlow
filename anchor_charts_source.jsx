@@ -230,7 +230,7 @@ const AnchorChartSection = React.memo((props) => {
           position: 'relative',
         }}>
           {iconUrl ? (
-            <img src={iconUrl} alt={iconPrompt || label} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            <img src={iconUrl} alt={label ? (label + ' section icon') : (iconPrompt || `Section ${sectionIndex + 1} icon`)} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           ) : isRegeneratingIcon ? (
             <span className="text-[10px] text-slate-600 animate-pulse motion-reduce:animate-none" role="status">Drawing…</span>
           ) : (
@@ -322,7 +322,7 @@ const AnchorChartSection = React.memo((props) => {
                       <button
                         type="button"
                         onClick={() => removeBullet(idx)}
-                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1"
+                        className="inline-flex min-h-6 min-w-6 items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 text-slate-600 hover:text-red-500 text-xs px-1 rounded"
                         aria-label={`Remove bullet ${idx + 1} from ${label || `section ${sectionIndex + 1}`}`}
                       >✕</button>
                     </>
@@ -337,7 +337,7 @@ const AnchorChartSection = React.memo((props) => {
             <button
               type="button"
               onClick={addBullet}
-              className="mt-2 text-[11px] font-bold px-2 py-0.5 rounded-full border"
+              className="mt-2 min-h-6 text-[11px] font-bold px-2 py-0.5 rounded-full border"
               style={{ color: marker.ink, borderColor: marker.hex, background: 'white' }}
               aria-label={`Add bullet to ${label || `section ${sectionIndex + 1}`}`}
             >+ Add bullet</button>
@@ -349,13 +349,14 @@ const AnchorChartSection = React.memo((props) => {
               <button
                 type="button"
                 onClick={() => setShowIconEditor((v) => !v)}
-                className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                className="min-h-6 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
                 style={{ color: marker.ink, background: marker.soft }}
                 aria-expanded={showIconEditor}
+                aria-controls={`ac-icon-editor-${section.id || sectionIndex}`}
                 aria-label={`${showIconEditor ? 'Hide' : 'Show'} icon prompt editor for ${label || `section ${sectionIndex + 1}`}`}
               >{showIconEditor ? '▼ Hide icon prompt' : '▸ Edit icon prompt'}</button>
               {showIconEditor ? (
-                <div className="space-y-2 mt-2">
+                <div id={`ac-icon-editor-${section.id || sectionIndex}`} className="space-y-2 mt-2">
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
@@ -371,7 +372,7 @@ const AnchorChartSection = React.memo((props) => {
                         type="button"
                         onClick={() => { commitIconPrompt(); onRegenIcon(sectionIndex); }}
                         disabled={isRegeneratingIcon}
-                        className="text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
+                        className="min-h-6 text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
                         style={{ color: marker.ink, borderColor: marker.hex, background: 'white' }}
                         aria-label={`Generate icon for ${label || `section ${sectionIndex + 1}`}`}
                       >{isRegeneratingIcon ? '⏳ Generating…' : '✨ Generate icon'}</button>
@@ -391,7 +392,7 @@ const AnchorChartSection = React.memo((props) => {
                         type="button"
                         onClick={handleRefineIcon}
                         disabled={isRefining || !refinePrompt.trim()}
-                        className="text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
+                        className="min-h-6 text-[11px] font-bold px-3 py-1 rounded border whitespace-nowrap"
                         style={{ color: '#0369a1', borderColor: '#38bdf8', background: 'white' }}
                         aria-label={`Refine icon for ${label || `section ${sectionIndex + 1}`}`}
                       >
@@ -480,12 +481,17 @@ const AnchorChartView = React.memo((props) => {
   const paperRef = React.useRef(null);
   const interactiveDialogRef = React.useRef(null);
   const rubricTextareaRef = React.useRef(null);
+  const interactiveDialogOpenerRef = React.useRef(null);
   // ── Interactive mode (Phase 10) ──
   // When `interactive.armed`, students see blanked bullets + input fields and
   // can submit for AI feedback graded against `interactive.rubric`. Teacher
   // arms / disarms via the dialog. State lives on `data.interactive` so it
   // round-trips through save/load. (`interactive` is derived defensively above.)
   const [showInteractiveDialog, setShowInteractiveDialog] = React.useState(false);
+  const openInteractiveDialog = React.useCallback(() => {
+    try { interactiveDialogOpenerRef.current = document.activeElement; } catch (_) { interactiveDialogOpenerRef.current = null; }
+    setShowInteractiveDialog(true);
+  }, []);
   const [rubricDraft, setRubricDraft] = React.useState(interactive.rubric || '');
   React.useEffect(() => { setRubricDraft(interactive.rubric || ''); }, [interactive.rubric, generatedContent && generatedContent.id]);
   // SR announcement when these modals open (the modal chrome has role="dialog"
@@ -498,12 +504,17 @@ const AnchorChartView = React.memo((props) => {
     }
   }, [showInteractiveDialog, t]);
   React.useEffect(() => {
-    if (!showInteractiveDialog) return;
+    if (!showInteractiveDialog) return undefined;
     const timer = setTimeout(() => {
       const target = rubricTextareaRef.current || interactiveDialogRef.current;
       if (target && typeof target.focus === 'function') target.focus();
     }, 0);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      const opener = interactiveDialogOpenerRef.current;
+      interactiveDialogOpenerRef.current = null;
+      try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (_) {}
+    };
   }, [showInteractiveDialog]);
   // Student-side state: answers keyed by section id+idx, and grading result.
   const [studentAnswers, setStudentAnswers] = React.useState({}); // { [sectionId]: { [idx]: text } }
@@ -665,6 +676,7 @@ const AnchorChartView = React.memo((props) => {
   const handleInteractiveDialogKeyDown = (e) => {
     if (e.key === 'Escape') {
       e.preventDefault();
+      e.stopPropagation();
       setShowInteractiveDialog(false);
       return;
     }
@@ -848,7 +860,8 @@ const AnchorChartView = React.memo((props) => {
               <span className="inline-flex items-center gap-1">
                 <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-fuchsia-600 text-white">🎯 Interactive armed</span>
                 <button type="button"
-                  onClick={() => setShowInteractiveDialog(true)}
+                  onClick={openInteractiveDialog}
+                  aria-haspopup="dialog"
                   className="px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50"
                   aria-label="Edit interactive rubric"
                   title="Edit rubric / disarm"
@@ -862,7 +875,8 @@ const AnchorChartView = React.memo((props) => {
               </span>
             ) : (
               <button type="button"
-                onClick={() => setShowInteractiveDialog(true)}
+                onClick={openInteractiveDialog}
+                  aria-haspopup="dialog"
                 className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50"
                 aria-label="Arm interactive mode"
                 title="Make this chart interactive — students fill in blanks + get AI feedback"
@@ -1078,7 +1092,7 @@ const AnchorChartView = React.memo((props) => {
               >{gradingState === 'submitting' ? '⏳ Grading…' : '✨ Submit for AI feedback'}</button>
             </div>
             {gradingState === 'done' && gradingResult ? (
-              <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2">
+              <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2" role="status" aria-live="polite" aria-atomic="true">
                 {gradingResult.strength ? (
                   <div className="bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2">
                     <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5">What you did well</div>
@@ -1101,7 +1115,7 @@ const AnchorChartView = React.memo((props) => {
               </div>
             ) : null}
             {gradingState === 'error' ? (
-              <div className="mt-2 text-[12px] text-red-700">Couldn't reach the AI grader — try again in a moment.</div>
+              <div className="mt-2 text-[12px] text-red-700" role="alert">Couldn't reach the AI grader — try again in a moment.</div>
             ) : null}
           </div>
         ) : null}
