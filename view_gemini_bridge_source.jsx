@@ -40,6 +40,68 @@ function _bridgeStopListening() {
     _bridgeActiveRec = null;
   }
 }
+function _useBridgeReducedMotion() {
+  const [reducedMotion, setReducedMotion] = React.useState(() =>
+    typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = () => setReducedMotion(media.matches);
+    updatePreference();
+    if (media.addEventListener) media.addEventListener('change', updatePreference);
+    else if (media.addListener) media.addListener(updatePreference);
+    return () => {
+      if (media.removeEventListener) media.removeEventListener('change', updatePreference);
+      else if (media.removeListener) media.removeListener(updatePreference);
+    };
+  }, []);
+  return reducedMotion;
+}
+function _useBridgeDialogFocus(open) {
+  const dialogRef = React.useRef(null);
+  const returnFocusRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!open || typeof document === 'undefined') return undefined;
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    returnFocusRef.current = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter((node) => !node.hasAttribute('hidden') && node.getAttribute('aria-hidden') !== 'true' && node.style.display !== 'none' && node.style.visibility !== 'hidden');
+    const focusTarget = getFocusable()[0] || dialog;
+    const focusFrame = typeof window !== 'undefined' && window.requestAnimationFrame
+      ? window.requestAnimationFrame(() => focusTarget.focus())
+      : null;
+    if (focusFrame === null) focusTarget.focus();
+    const trapTab = (event) => {
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dialog.addEventListener('keydown', trapTab);
+    return () => {
+      dialog.removeEventListener('keydown', trapTab);
+      if (focusFrame !== null && typeof window !== 'undefined' && window.cancelAnimationFrame) window.cancelAnimationFrame(focusFrame);
+      const returnTarget = returnFocusRef.current;
+      if (returnTarget && returnTarget.isConnected && typeof returnTarget.focus === 'function') returnTarget.focus();
+    };
+  }, [open]);
+  return dialogRef;
+}
 // onPick now STAGES a phrase into the editable input (edit-before-send) rather than
 // firing it instantly. gen = { phrases, onGenerate, loading } drives the AI custom
 // phrase generator. Collapsed by default (open:false) so the thread leads the panel.
@@ -51,7 +113,7 @@ function _bridgePhrasesPanel(onPick, translating, t, _bt, gen) {
   var activeCat = gen.activeCat || null, onCat = gen.onCat || function () {};
   var editHint = (t && t('roster.bridge_phrase_edit_hint')) || 'Tap to edit, then press Enter to send';
   function _chip(ph, key, bg, border) {
-    return React.createElement('button', { key: key, disabled: translating, onClick: function () { onPick(ph); }, title: editHint, style: { background: bg, border: border, color: cAccent, padding: '6px 10px', borderRadius: '10px', fontSize: '12px', cursor: translating ? 'default' : 'pointer', opacity: translating ? 0.5 : 1, textAlign: 'left' } }, ph);
+    return React.createElement('button', { type: 'button', key: key, disabled: translating, onClick: function () { onPick(ph); }, title: editHint, style: { background: bg, border: border, color: cAccent, padding: '6px 10px', borderRadius: '10px', fontSize: '12px', cursor: translating ? 'default' : 'pointer', opacity: translating ? 0.5 : 1, textAlign: 'left' } }, ph);
   }
   function _genSubmit() { var el = document.getElementById('bridge-gen-instruction'); if (el && el.value.trim() && gen.onGenerate && !gen.loading) gen.onGenerate(el.value.trim()); }
   return React.createElement('details', { open: false, style: { marginBottom: '12px' } },
@@ -63,7 +125,7 @@ function _bridgePhrasesPanel(onPick, translating, t, _bt, gen) {
       React.createElement('div', { role: 'tablist', 'aria-label': (t && t('roster.bridge_phrases_title')) || 'Quick phrases', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
         BRIDGE_PHRASES.map(function (cat) {
           var on = activeCat === cat.id;
-          return React.createElement('button', { key: cat.id, type: 'button', role: 'tab', 'aria-selected': on ? 'true' : 'false', onClick: function () { onCat(on ? null : cat.id); }, style: { background: on ? 'rgba(20,184,166,0.22)' : 'rgba(20,184,166,0.06)', border: '1px solid ' + (on ? 'rgba(20,184,166,0.5)' : 'rgba(20,184,166,0.18)'), color: cAccent, padding: '6px 11px', borderRadius: '999px', fontSize: '12px', fontWeight: on ? 700 : 600, cursor: 'pointer', whiteSpace: 'nowrap' } }, cat.icon + ' ' + cat.label);
+          return React.createElement('button', { type: 'button', key: cat.id, role: 'tab', 'aria-selected': on ? 'true' : 'false', onClick: function () { onCat(on ? null : cat.id); }, style: { background: on ? 'rgba(20,184,166,0.22)' : 'rgba(20,184,166,0.06)', border: '1px solid ' + (on ? 'rgba(20,184,166,0.5)' : 'rgba(20,184,166,0.18)'), color: cAccent, padding: '6px 11px', borderRadius: '999px', fontSize: '12px', fontWeight: on ? 700 : 600, cursor: 'pointer', whiteSpace: 'nowrap' } }, cat.icon + ' ' + cat.label);
         })),
       // Only the active topic's phrases render.
       (function () {
@@ -75,8 +137,8 @@ function _bridgePhrasesPanel(onPick, translating, t, _bt, gen) {
       React.createElement('div', { style: { marginTop: '4px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)' } },
         React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: cMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '5px' } }, '✨ ' + ((t && t('roster.bridge_gen_label')) || 'Generate custom phrases')),
         React.createElement('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-          React.createElement('input', { id: 'bridge-gen-instruction', type: 'text', disabled: translating || gen.loading, 'aria-label': (t && t('roster.bridge_gen_placeholder')) || 'Describe the phrases to generate', placeholder: (t && t('roster.bridge_gen_placeholder')) || 'e.g. reassure a parent their child had a hard morning', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); _genSubmit(); } }, style: { flex: 1, minWidth: '180px', background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: '10px', padding: '8px 10px', color: cText, fontSize: '12px', outline: 'none', fontFamily: 'inherit', opacity: (translating || gen.loading) ? 0.5 : 1 } }),
-          React.createElement('button', { disabled: translating || gen.loading, onClick: _genSubmit, style: { background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.35)', color: _bt.aiAccent || '#d8b4fe', padding: '8px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: (translating || gen.loading) ? 'default' : 'pointer', whiteSpace: 'nowrap' } }, gen.loading ? ('⏳ ' + ((t && t('roster.bridge_gen_loading')) || 'Generating…')) : ('✨ ' + ((t && t('roster.bridge_gen_btn')) || 'Generate')))),
+          React.createElement('input', { id: 'bridge-gen-instruction', type: 'text', disabled: translating || gen.loading, 'aria-label': (t && t('roster.bridge_gen_placeholder')) || 'Describe the phrases to generate', placeholder: (t && t('roster.bridge_gen_placeholder')) || 'e.g. reassure a parent their child had a hard morning', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); _genSubmit(); } }, style: { flex: 1, minWidth: '180px', background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: '10px', padding: '8px 10px', color: cText, fontSize: '12px', fontFamily: 'inherit', opacity: (translating || gen.loading) ? 0.5 : 1 } }),
+          React.createElement('button', { type: 'button', disabled: translating || gen.loading, onClick: _genSubmit, style: { background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.35)', color: _bt.aiAccent || '#d8b4fe', padding: '8px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: (translating || gen.loading) ? 'default' : 'pointer', whiteSpace: 'nowrap' } }, gen.loading ? ('⏳ ' + ((t && t('roster.bridge_gen_loading')) || 'Generating…')) : ('✨ ' + ((t && t('roster.bridge_gen_btn')) || 'Generate')))),
         genList.length ? React.createElement('div', { style: { marginTop: '8px' } },
           React.createElement('div', { style: { fontSize: '10px', fontWeight: 700, color: cMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } }, '✨ ' + ((t && t('roster.bridge_gen_results')) || 'Generated — tap to edit and send')),
           React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
@@ -97,9 +159,9 @@ function _bridgeAiBar(onAsk, onExport, translating, t, _bt) {
   function ask() { var el = document.getElementById('bridge-f2f-ai-input'); if (el && el.value.trim()) { onAsk(el.value.trim()); el.value = ''; } }
   return React.createElement('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
     React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '16px' } }, '🤖'),
-    React.createElement('input', { id: 'bridge-f2f-ai-input', type: 'text', disabled: translating, 'aria-label': (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI for help', placeholder: (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI: how do I say…, words for…, explain simply…', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } }, style: { flex: 1, minWidth: '170px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '12px', padding: '10px 12px', color: cText, fontSize: '13px', outline: 'none', fontFamily: 'inherit', opacity: translating ? 0.5 : 1 } }),
-    React.createElement('button', { disabled: translating, onClick: ask, style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.35)', color: aiAccent, padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: translating ? 'default' : 'pointer', whiteSpace: 'nowrap' } }, (t && t('roster.bridge_ai_btn')) || 'Ask AI'),
-    React.createElement('button', { onClick: onExport, title: (t && t('roster.bridge_export')) || 'Export the conversation', 'aria-label': (t && t('roster.bridge_export')) || 'Export the conversation', style: { background: cBg, border: cBorder, color: cSecondary, padding: '10px 12px', borderRadius: '12px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' } }, '⬇ ' + ((t && t('roster.bridge_export_short')) || 'Export')));
+    React.createElement('input', { id: 'bridge-f2f-ai-input', type: 'text', disabled: translating, 'aria-label': (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI for help', placeholder: (t && t('roster.bridge_ai_placeholder')) || 'Ask the AI: how do I say…, words for…, explain simply…', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } }, style: { flex: 1, minWidth: '170px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '12px', padding: '10px 12px', color: cText, fontSize: '13px', fontFamily: 'inherit', opacity: translating ? 0.5 : 1 } }),
+    React.createElement('button', { type: 'button', disabled: translating, onClick: ask, style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.35)', color: aiAccent, padding: '10px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: translating ? 'default' : 'pointer', whiteSpace: 'nowrap' } }, (t && t('roster.bridge_ai_btn')) || 'Ask AI'),
+    React.createElement('button', { type: 'button', onClick: onExport, title: (t && t('roster.bridge_export')) || 'Export the conversation', 'aria-label': (t && t('roster.bridge_export')) || 'Export the conversation', style: { background: cBg, border: cBorder, color: cSecondary, padding: '10px 12px', borderRadius: '12px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' } }, '⬇ ' + ((t && t('roster.bridge_export_short')) || 'Export')));
 }
 // A distinct bubble for an AI-helper exchange: the question + the answer + its translation, shown to BOTH sides.
 function _bridgeAiBubble(msg, aLang, bLang, handleAudio, t, _bt) {
@@ -115,8 +177,8 @@ function _bridgeAiBubble(msg, aLang, bLang, handleAudio, t, _bt) {
             React.createElement('div', { dir: 'auto', style: { fontSize: '14px', color: cPrimary, lineHeight: 1.6, fontWeight: 500 } }, msg.answer || ''),
             msg.translated ? React.createElement('div', { dir: 'auto', style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '14px', color: cPrimary, lineHeight: 1.6 } }, '🌍 ' + msg.translated) : null,
             React.createElement('div', { style: { marginTop: '8px', display: 'flex', gap: '6px' } },
-              React.createElement('button', { onClick: function () { handleAudio(msg.answer, aLang); }, style: { background: cBg, border: cBorder, color: cSecondary, padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
-              msg.translated ? React.createElement('button', { onClick: function () { handleAudio(msg.translated, bLang); }, style: { background: cBg, border: cBorder, color: cSecondary, padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
+              React.createElement('button', { type: 'button', onClick: function () { handleAudio(msg.answer, aLang); }, style: { background: cBg, border: cBorder, color: cSecondary, padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (aLang || '').slice(0, 3)),
+              msg.translated ? React.createElement('button', { type: 'button', onClick: function () { handleAudio(msg.translated, bLang); }, style: { background: cBg, border: cBorder, color: cSecondary, padding: '4px 10px', borderRadius: '8px', fontSize: '11px', cursor: 'pointer' } }, '🔊 ' + (bLang || '').slice(0, 3)) : null))));
 }
 try { window.__alloBridgePure = { BRIDGE_PHRASES: BRIDGE_PHRASES, _bridgeTranscript: _bridgeTranscript }; } catch (e) {}
 
@@ -145,6 +207,8 @@ function BridgeSendModal(props) {
   // Category-first quick phrases: only the tapped topic's phrases are shown,
   // so the expanded panel stays compact. null = no topic open yet.
   const [bridgePhraseCat, setBridgePhraseCat] = React.useState(null);
+  const bridgeReducedMotion = _useBridgeReducedMotion();
+  const bridgeSendDialogRef = _useBridgeDialogFocus(bridgeSendOpen && isTeacherMode);
   // Reset the per-send selection globals each time the modal opens. The mode /
   // language / grade / target selects are uncontrolled, so on a 2nd open they
   // show their defaults again while these globals still hold the previous
@@ -193,6 +257,7 @@ function BridgeSendModal(props) {
         };
         return (
         <div
+          ref={bridgeSendDialogRef} tabIndex={-1}
           role="dialog" aria-modal="true" aria-label={t('common.bridge_mode_send_panel')}
           style={{position:'fixed',inset:0,zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',background:_bt.overlay,backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)'}}
           onClick={(e) => { if (e.target === e.currentTarget) {
@@ -230,14 +295,15 @@ function BridgeSendModal(props) {
                 </p>
               </div>
               <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
-                <button
+                <button type="button"
                   onClick={() => setBridgeFullscreen(f => !f)}
                   aria-label={bridgeFullscreen ? (t('roster.bridge_exit_fullscreen') || 'Exit full screen') : (t('roster.bridge_fullscreen') || 'Full screen')}
                   title={bridgeFullscreen ? (t('roster.bridge_exit_fullscreen') || 'Exit full screen') : (t('roster.bridge_fullscreen') || 'Full screen')}
                   style={{background:_bt.btnCloseBg,border:_bt.btnCloseBorder,color:_bt.btnCloseColor,width:'36px',height:'36px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
                 >{bridgeFullscreen ? '🗗' : '⛶'}</button>
-                <button
+                <button type="button"
                   onClick={() => setBridgeSendOpen(false)}
+                  aria-label={t('common.close') || 'Close'}
                   style={{background:_bt.btnCloseBg,border:_bt.btnCloseBorder,color:_bt.btnCloseColor,width:'36px',height:'36px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
                 >✕</button>
               </div>
@@ -254,7 +320,7 @@ function BridgeSendModal(props) {
                     {icon:'🔍',label:'Review',prompt:'Let\'s review what we learned about: '},
                     {icon:'❗',label:'Reminder',prompt:'Important reminder for class: '}
                   ].map((tmpl, ti) => (
-                    <button
+                    <button type="button"
                       key={ti}
                       onClick={() => {
                         const ta = document.getElementById('bridge-send-textarea');
@@ -294,7 +360,7 @@ function BridgeSendModal(props) {
                     borderRadius:'16px',padding:'16px 18px',paddingBottom:'32px',
                     color:_bt.inputText,fontSize:'15px',lineHeight:1.7,
                     resize:'vertical',minHeight:'160px',
-                    outline:'none',fontFamily:'inherit',
+                    fontFamily:'inherit',
                     transition:'border-color 0.2s, box-shadow 0.2s'
                   }}
                   onFocus={(e) => { e.target.style.borderColor = 'rgba(20,184,166,0.4)'; e.target.style.boxShadow = '0 0 0 3px rgba(20,184,166,0.1)'; }}
@@ -303,7 +369,7 @@ function BridgeSendModal(props) {
                 <span id="bridge-char-count" style={{position:'absolute',bottom:'10px',right:'16px',fontSize:'11px',color:_bt.textMuted,pointerEvents:'none'}}>0 chars</span>
               </div>
               <div style={{display:'flex',gap:'8px',marginBottom:'20px',flexWrap:'wrap'}}>
-                <button
+                <button type="button"
                   onClick={() => {
                     const ta = document.getElementById('bridge-send-textarea');
                     if (!ta) return;
@@ -343,14 +409,14 @@ function BridgeSendModal(props) {
                     e.target.value = '';
                   }}
                 />
-                <button
+                <button type="button"
                   data-help-key="bridge_send_attach_image_btn"
                   id="bridge-attach-image-btn"
                   onClick={() => document.getElementById('bridge-image-file-input')?.click()}
                   aria-label={t('common.upload_and_attach_an_image')}
                   style={{background:'rgba(168,85,247,0.1)',border:'1px solid rgba(168,85,247,0.25)',borderRadius:'10px',padding:'8px 14px',color:'#c084fc',fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
                 ><span>🖼️</span> {t('resource_builder.attach_image')}</button>
-                <button
+                <button type="button"
                   id="bridge-remove-image-btn"
                   onClick={() => {
                     window.__bridgeAttachedImage = null;
@@ -363,7 +429,7 @@ function BridgeSendModal(props) {
                   style={{display:'none',background:'rgba(239,68,68,0.1)',border:'1px solid rgba(239,68,68,0.25)',borderRadius:'10px',padding:'8px 10px',color:'#f87171',fontSize:'12px',fontWeight:700,cursor:'pointer',alignItems:'center',gap:'4px',transition:'all 0.2s'}}
                 ><span>✕</span></button>
                 {generatedContent?.data?.imageUrl && (
-                  <button
+                  <button type="button"
                     onClick={() => {
                       window.__bridgeAttachedImage = generatedContent.data.imageUrl;
                       const btn = document.getElementById('bridge-attach-image-btn');
@@ -387,7 +453,7 @@ function BridgeSendModal(props) {
                     {id:'simplify', icon:'✨', title:'Simplify', desc:'Rewrite at selected grade reading level'},
                     {id:'livechat', icon:'💬', title:'Live Chat', desc:'Face-to-face translation with TTS'}
                   ].map((m, mi) => (
-                    <button
+                    <button type="button"
                       key={m.id}
                       aria-label={m.title + ': ' + m.desc}
                       data-bridge-mode={m.id}
@@ -457,7 +523,7 @@ function BridgeSendModal(props) {
                     aria-label={t('common.target_group_selector')}
                     defaultValue="all"
                     onChange={(e) => { window.__bridgeTarget = e.target.value; }}
-                    style={{width:'100%',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,outline:'none',cursor:'pointer',appearance:'auto'}}
+                    style={{width:'100%',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,cursor:'pointer',appearance:'auto'}}
                   >
                     <option value="all" style={{background:_bt.selectBg,color:_bt.selectText}}>🎯 All Groups</option>
                     {rosterKey?.groups && Object.entries(rosterKey.groups).map(([gId, g]) => (
@@ -484,7 +550,7 @@ function BridgeSendModal(props) {
                         if (prev) prev.textContent = e.target.value;
                       }
                     }}
-                    style={{width:'100%',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,outline:'none',cursor:'pointer',appearance:'auto'}}
+                    style={{width:'100%',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,cursor:'pointer',appearance:'auto'}}
                   >
                     {[
                       {v:'English',f:'🇺🇸'},{v:'Spanish',f:'🇪🇸'},{v:'French',f:'🇫🇷'},{v:'Arabic',f:'🇸🇦'},
@@ -505,7 +571,7 @@ function BridgeSendModal(props) {
                       const prev = document.getElementById('bridge-settings-preview-lang');
                       if (prev) prev.textContent = e.target.value || 'Custom';
                     }}
-                    style={{display:'none',width:'100%',boxSizing:'border-box',marginTop:'8px',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'10px',padding:'10px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,outline:'none'}}
+                    style={{display:'none',width:'100%',boxSizing:'border-box',marginTop:'8px',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'10px',padding:'10px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,}}
                   />
                 </div>
                 <div>
@@ -516,7 +582,7 @@ function BridgeSendModal(props) {
                     aria-label={t('common.grade_level_selector')}
                     defaultValue={gradeLevel || '5th Grade'}
                     onChange={(e) => { window.__bridgeGrade = e.target.value; const prev = document.getElementById('bridge-settings-preview-grade'); if (prev) prev.textContent = e.target.value; }}
-                    style={{width:'100%',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,outline:'none',cursor:'pointer',appearance:'auto'}}
+                    style={{width:'100%',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,cursor:'pointer',appearance:'auto'}}
                   >
                     {['PreK','Kindergarten','1st Grade','2nd Grade','3rd Grade','4th Grade','5th Grade','6th Grade','7th Grade','8th Grade','9th Grade','10th Grade','11th Grade','12th Grade'].map(g => (
                       <option key={g} value={g} style={{background:_bt.selectBg,color:_bt.selectText}}>{g}</option>
@@ -599,7 +665,7 @@ function BridgeSendModal(props) {
               </div>
               {bridgeHistory.length > 0 && (
                 <div style={{marginBottom:'20px'}}>
-                  <button
+                  <button type="button"
                     data-help-key="bridge_send_history_toggle"
                     onClick={() => setBridgeHistoryOpen(h => !h)}
                     style={{
@@ -651,7 +717,7 @@ function BridgeSendModal(props) {
                               </div>
                             </div>
                             <div style={{display:'flex',gap:'6px',flexShrink:0}}>
-                              <button
+                              <button type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setBridgeMessage({
@@ -669,7 +735,7 @@ function BridgeSendModal(props) {
                                 title={t('common.view_this_message')}
                                 style={{background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.25)',color:'#a5b4fc',padding:'6px 10px',borderRadius:'8px',fontSize:'11px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',whiteSpace:'nowrap'}}
                               >👁️ View</button>
-                              <button
+                              <button type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   const ta = document.getElementById('bridge-send-textarea');
@@ -686,7 +752,7 @@ function BridgeSendModal(props) {
                       ))}
                       {bridgeHistory.length > 0 && (
                         <div style={{padding:'10px 16px',borderTop:'1px solid rgba(255,255,255,0.04)',textAlign:'center'}}>
-                          <button
+                          <button type="button"
                             onClick={() => { setBridgeHistory([]); setBridgeHistoryOpen(false); addToast('History cleared', 'info'); }}
                             style={{background:'none',border:'none',color:'#475569',fontSize:'11px',cursor:'pointer',padding:'4px 8px',transition:'color 0.2s'}}
                             onMouseEnter={(e) => e.target.style.color = '#ef4444'}
@@ -699,17 +765,17 @@ function BridgeSendModal(props) {
                 </div>
               )}
               {bridgeSending && (
-                <div style={{
+                <div role="status" aria-live="polite" aria-atomic="true" style={{
                   display:'flex',alignItems:'center',justifyContent:'center',gap:'12px',
                   padding:'16px 20px',marginBottom:'16px',
                   background:'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08))',
                   border:'1px solid rgba(99,102,241,0.2)',borderRadius:'14px',
-                  animation:'pulse 2s infinite'
+                  animation:bridgeReducedMotion ? 'none' : 'pulse 2s infinite'
                 }}>
-                  <div style={{
+                  <div aria-hidden="true" style={{
                     width:'24px',height:'24px',borderRadius:'50%',
                     border:'3px solid rgba(99,102,241,0.2)',borderTopColor:'#6366f1',
-                    animation:'bridgeSpinnerSpin 1s linear infinite'
+                    animation:bridgeReducedMotion ? 'none' : 'bridgeSpinnerSpin 1s linear infinite'
                   }} />
                   <div>
                     <div style={{fontSize:'14px',fontWeight:700,color:'#a5b4fc'}}>✨ Generating your Bridge message...</div>
@@ -717,7 +783,7 @@ function BridgeSendModal(props) {
                   </div>
                 </div>
               )}
-              <button
+              <button type="button"
                 data-help-key="bridge_send_button"
                 id="bridge-send-button"
                 aria-label={bridgeSending ? 'Generating content...' : 'Generate and send bridge message'}
@@ -873,7 +939,7 @@ function BridgeSendModal(props) {
                 }}
               >
                 {bridgeSending ? (
-                  <><span style={{display:'inline-block',animation:'pulse 1.5s ease-in-out infinite',fontSize:'18px'}}>⏳</span> {t('bridge.generating_bilingual_status') || 'Generating bilingual content...'}</>
+                  <><span style={{display:'inline-block',animation:bridgeReducedMotion ? 'none' : 'pulse 1.5s ease-in-out infinite',fontSize:'18px'}}>⏳</span> {t('bridge.generating_bilingual_status') || 'Generating bilingual content...'}</>
                 ) : (
                   <><span style={{fontSize:'18px'}}>📡</span> {t('bridge.generate_and_send_button') || 'Generate & Send to Class'}</>
                 )}
@@ -1020,7 +1086,7 @@ function BridgeSendModal(props) {
                     <h3 style={{margin:0,fontSize:'16px',fontWeight:800,color:typeof _bt!=='undefined'?_bt.textAccent:'#5eead4',display:'flex',alignItems:'center',gap:'8px'}}>
                       <span>🌐</span> {t('roster.bridge_f2f_title') || 'Face-to-Face Translation'}
                     </h3>
-                    <button
+                    <button type="button"
                       onClick={() => { _bridgeStopListening(); setBridgeChatOpen(false); setBridgeChatMessages([]); setBridgeF2FListening(null); setBridgeGenPhrases([]); setBridgeGenLoading(false); setBridgePhraseCat(null); }}
                       style={{background:'rgba(239,68,68,0.15)',border:'1px solid rgba(239,68,68,0.3)',color:'#fca5a5',padding:'6px 14px',borderRadius:'10px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}
                     >{t('roster.bridge_f2f_end') || 'End'}</button>
@@ -1034,7 +1100,7 @@ function BridgeSendModal(props) {
                         aria-label={t('roster.bridge_f2f_person_a_language') || 'Person A language'}
                         value={bridgeF2FTeacherLang}
                         onChange={(e) => { setBridgeF2FTeacherLang(e.target.value); setBridgeF2FCustomLangA(''); }}
-                        style={{width:'100%',background:typeof _bt!=='undefined'?_bt.inputBg:'rgba(255,255,255,0.04)',border:typeof _bt!=='undefined'?_bt.inputBorder:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px 10px',color:typeof _bt!=='undefined'?_bt.inputText:'#e2e8f0',fontSize:'12px',fontWeight:600,cursor:'pointer',outline:'none'}}
+                        style={{width:'100%',background:typeof _bt!=='undefined'?_bt.inputBg:'rgba(255,255,255,0.04)',border:typeof _bt!=='undefined'?_bt.inputBorder:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px 10px',color:typeof _bt!=='undefined'?_bt.inputText:'#e2e8f0',fontSize:'12px',fontWeight:600,cursor:'pointer',}}
                       >
                         <option value="custom" style={{background:typeof _bt!=='undefined'?_bt.selectBg:'#1e293b',color:typeof _bt!=='undefined'?_bt.selectText:'#e2e8f0'}}>✏️ {t('roster.bridge_f2f_custom_lang') || 'Custom...'}</option>
                           <option key='English' value='English' style={{background:typeof _bt!=='undefined'?_bt.selectBg:'#1e293b',color:typeof _bt!=='undefined'?_bt.selectText:'#e2e8f0'}}>English</option>
@@ -1114,7 +1180,7 @@ function BridgeSendModal(props) {
                       {bridgeF2FTeacherLang === 'custom' && (
                         <input type="text" aria-label={t('roster.bridge_f2f_custom_lang_a') || 'Person A custom language'} value={bridgeF2FCustomLangA} onChange={(e) => setBridgeF2FCustomLangA(e.target.value)}
                           placeholder={t('roster.bridge_f2f_custom_placeholder') || 'e.g. Yoruba, Tigrinya...'}
-                          style={{width:'100%',boxSizing:'border-box',marginTop:'6px',background:typeof _bt!=='undefined'?_bt.inputBg:'rgba(255,255,255,0.04)',border:typeof _bt!=='undefined'?_bt.inputBorder:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px 10px',color:typeof _bt!=='undefined'?_bt.inputText:'#e2e8f0',fontSize:'12px',outline:'none'}}
+                          style={{width:'100%',boxSizing:'border-box',marginTop:'6px',background:typeof _bt!=='undefined'?_bt.inputBg:'rgba(255,255,255,0.04)',border:typeof _bt!=='undefined'?_bt.inputBorder:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px 10px',color:typeof _bt!=='undefined'?_bt.inputText:'#e2e8f0',fontSize:'12px',}}
                         />
                       )}
                     </div>
@@ -1126,7 +1192,7 @@ function BridgeSendModal(props) {
                         aria-label={t('roster.bridge_f2f_person_b_language') || 'Person B language'}
                         value={bridgeF2FLang}
                         onChange={(e) => { setBridgeF2FLang(e.target.value); setBridgeF2FCustomLangB(''); }}
-                        style={{width:'100%',background:typeof _bt!=='undefined'?_bt.inputBg:'rgba(255,255,255,0.04)',border:typeof _bt!=='undefined'?_bt.inputBorder:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px 10px',color:typeof _bt!=='undefined'?_bt.inputText:'#e2e8f0',fontSize:'12px',fontWeight:600,cursor:'pointer',outline:'none'}}
+                        style={{width:'100%',background:typeof _bt!=='undefined'?_bt.inputBg:'rgba(255,255,255,0.04)',border:typeof _bt!=='undefined'?_bt.inputBorder:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px 10px',color:typeof _bt!=='undefined'?_bt.inputText:'#e2e8f0',fontSize:'12px',fontWeight:600,cursor:'pointer',}}
                       >
                         <option value="custom" style={{background:typeof _bt!=='undefined'?_bt.selectBg:'#1e293b',color:typeof _bt!=='undefined'?_bt.selectText:'#e2e8f0'}}>✏️ {t('roster.bridge_f2f_custom_lang') || 'Custom...'}</option>
                           <option key='English' value='English' style={{background:typeof _bt!=='undefined'?_bt.selectBg:'#1e293b',color:typeof _bt!=='undefined'?_bt.selectText:'#e2e8f0'}}>English</option>
@@ -1206,7 +1272,7 @@ function BridgeSendModal(props) {
                       {bridgeF2FLang === 'custom' && (
                         <input type="text" aria-label={t('roster.bridge_f2f_custom_lang_b') || 'Person B custom language'} value={bridgeF2FCustomLangB} onChange={(e) => setBridgeF2FCustomLangB(e.target.value)}
                           placeholder={t('roster.bridge_f2f_custom_placeholder') || 'e.g. Yoruba, Tigrinya...'}
-                          style={{width:'100%',boxSizing:'border-box',marginTop:'6px',background:typeof _bt!=='undefined'?_bt.inputBg:'rgba(255,255,255,0.04)',border:typeof _bt!=='undefined'?_bt.inputBorder:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px 10px',color:typeof _bt!=='undefined'?_bt.inputText:'#e2e8f0',fontSize:'12px',outline:'none'}}
+                          style={{width:'100%',boxSizing:'border-box',marginTop:'6px',background:typeof _bt!=='undefined'?_bt.inputBg:'rgba(255,255,255,0.04)',border:typeof _bt!=='undefined'?_bt.inputBorder:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px 10px',color:typeof _bt!=='undefined'?_bt.inputText:'#e2e8f0',fontSize:'12px',}}
                         />
                       )}
                     </div>
@@ -1225,7 +1291,7 @@ function BridgeSendModal(props) {
                           ? ('🔒 ' + (t('roster.bridge_f2f_ferpa_ondevice') || 'Private: translated on this device — nothing is sent out.') + ' • ' + (t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'))
                           : ('🔒 ' + (t('roster.bridge_f2f_ferpa') || 'Private: never saved or synced. Translation is processed by a secure AI service.') + ' • ' + (t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'))
                       ),
-                      (!_odActive && _odPossible) ? React.createElement('button', {
+                      (!_odActive && _odPossible) ? React.createElement('button', { type: 'button',
                         onClick: async () => {
                           addToast(t('roster.bridge_ondevice_loading') || 'Loading on-device translation…', 'info');
                           try {
@@ -1293,10 +1359,10 @@ function BridgeSendModal(props) {
                             )}
                             {msg.translated && (
                               <div style={{marginTop:'8px',display:'flex',gap:'6px'}}>
-                                <button onClick={() => handleAudio(msg.text, msg.sender === 'personA' ? _personALang : _personBLang)}
+                                <button type="button" onClick={() => handleAudio(msg.text, msg.sender === 'personA' ? _personALang : _personBLang)}
                                   style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color: '#94a3b8',padding:'4px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
                                 >🔊 {msg.sender === 'personA' ? _personALang.slice(0,3) : _personBLang.slice(0,3)}</button>
-                                <button onClick={() => handleAudio(msg.translated, msg.sender === 'personA' ? _personBLang : _personALang)}
+                                <button type="button" onClick={() => handleAudio(msg.translated, msg.sender === 'personA' ? _personBLang : _personALang)}
                                   style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color: '#94a3b8',padding:'4px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
                                 >🔊 {msg.sender === 'personA' ? _personBLang.slice(0,3) : _personALang.slice(0,3)}</button>
                               </div>
@@ -1318,13 +1384,15 @@ function BridgeSendModal(props) {
                             const text = e.target.value.trim(); e.target.value = '';
                             _sendMessage('personA', text, _personALang, _personBLang);
                           }}
-                          style={{flex:1,background:'rgba(20,184,166,0.06)',border:'1px solid rgba(20,184,166,0.15)',borderRadius:'12px',padding:'12px 14px',color: '#e2e8f0',fontSize:'14px',outline:'none',fontFamily:'inherit',opacity:bridgeF2FTranslating?0.5:1}}
+                          style={{flex:1,background:'rgba(20,184,166,0.06)',border:'1px solid rgba(20,184,166,0.15)',borderRadius:'12px',padding:'12px 14px',color: '#e2e8f0',fontSize:'14px',fontFamily:'inherit',opacity:bridgeF2FTranslating?0.5:1}}
                           onFocus={(e) => e.target.style.borderColor = 'rgba(20,184,166,0.4)'}
                           onBlur={(e) => e.target.style.borderColor = 'rgba(20,184,166,0.15)'}
                         />
-                        <button disabled={bridgeF2FTranslating}
+                        <button type="button" disabled={bridgeF2FTranslating}
+                          aria-pressed={bridgeF2FListening==='personA'}
+                          aria-label={bridgeF2FListening==='personA' ? 'Stop listening for Person A' : 'Start listening for Person A'}
                           onClick={() => _startListening('personA', _getLangCode(_personALang), 'bridge-f2f-a-input')}
-                          style={{background:bridgeF2FListening==='personA'?'rgba(239,68,68,0.3)':'rgba(20,184,166,0.15)',border:'1px solid '+(bridgeF2FListening==='personA'?'rgba(239,68,68,0.4)':'rgba(20,184,166,0.25)'),borderRadius:'12px',padding:'12px 14px',cursor:'pointer',fontSize:'18px',animation:bridgeF2FListening==='personA'?'pulse 1.5s infinite':'none'}}
+                          style={{background:bridgeF2FListening==='personA'?'rgba(239,68,68,0.3)':'rgba(20,184,166,0.15)',border:'1px solid '+(bridgeF2FListening==='personA'?'rgba(239,68,68,0.4)':'rgba(20,184,166,0.25)'),borderRadius:'12px',padding:'12px 14px',cursor:'pointer',fontSize:'18px',animation:!bridgeReducedMotion && bridgeF2FListening==='personA'?'pulse 1.5s infinite':'none'}}
                         >{bridgeF2FListening==='personA'?'🔴':'🎤'}</button>
                       </div>
                     </div>
@@ -1339,13 +1407,15 @@ function BridgeSendModal(props) {
                             const text = e.target.value.trim(); e.target.value = '';
                             _sendMessage('personB', text, _personBLang, _personALang);
                           }}
-                          style={{flex:1,background:'rgba(99,102,241,0.06)',border:'1px solid rgba(99,102,241,0.15)',borderRadius:'12px',padding:'12px 14px',color: '#e2e8f0',fontSize:'14px',outline:'none',fontFamily:'inherit',opacity:bridgeF2FTranslating?0.5:1}}
+                          style={{flex:1,background:'rgba(99,102,241,0.06)',border:'1px solid rgba(99,102,241,0.15)',borderRadius:'12px',padding:'12px 14px',color: '#e2e8f0',fontSize:'14px',fontFamily:'inherit',opacity:bridgeF2FTranslating?0.5:1}}
                           onFocus={(e) => e.target.style.borderColor = 'rgba(99,102,241,0.4)'}
                           onBlur={(e) => e.target.style.borderColor = 'rgba(99,102,241,0.15)'}
                         />
-                        <button disabled={bridgeF2FTranslating}
+                        <button type="button" disabled={bridgeF2FTranslating}
+                          aria-pressed={bridgeF2FListening==='personB'}
+                          aria-label={bridgeF2FListening==='personB' ? 'Stop listening for Person B' : 'Start listening for Person B'}
                           onClick={() => _startListening('personB', _getLangCode(_personBLang), 'bridge-f2f-b-input')}
-                          style={{background:bridgeF2FListening==='personB'?'rgba(239,68,68,0.3)':'rgba(99,102,241,0.15)',border:'1px solid '+(bridgeF2FListening==='personB'?'rgba(239,68,68,0.4)':'rgba(99,102,241,0.25)'),borderRadius:'12px',padding:'12px 14px',cursor:'pointer',fontSize:'18px',animation:bridgeF2FListening==='personB'?'pulse 1.5s infinite':'none'}}
+                          style={{background:bridgeF2FListening==='personB'?'rgba(239,68,68,0.3)':'rgba(99,102,241,0.15)',border:'1px solid '+(bridgeF2FListening==='personB'?'rgba(239,68,68,0.4)':'rgba(99,102,241,0.25)'),borderRadius:'12px',padding:'12px 14px',cursor:'pointer',fontSize:'18px',animation:!bridgeReducedMotion && bridgeF2FListening==='personB'?'pulse 1.5s infinite':'none'}}
                         >{bridgeF2FListening==='personB'?'🔴':'🎤'}</button>
                       </div>
                     </div>
@@ -1379,6 +1449,7 @@ function BridgeMessageModal(props) {
     theme, ttsSpeed, updateDoc, user,
     warnLog
   } = props;
+  const bridgeMessageDialogRef = _useBridgeDialogFocus(!!bridgeMessage);
   if (!(bridgeMessage)) return null;
         const _dDark = theme === 'dark';
         const _dContrast = theme === 'contrast';
@@ -1407,6 +1478,7 @@ function BridgeMessageModal(props) {
         };
         return (
         <div
+          ref={bridgeMessageDialogRef} tabIndex={-1}
           role="dialog" aria-modal="true" aria-label={t('common.bridge_message_display')}
           style={{position:'fixed',inset:0,zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',background: bridgeProjectionMode ? 'rgba(0,0,0,0.95)' : _dt.overlay,backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',transition:'background 0.3s'}}
           onClick={(e) => { if (e.target === e.currentTarget) setBridgeMessage(null); }}
@@ -1434,14 +1506,14 @@ function BridgeMessageModal(props) {
                 <span style={{fontSize: bridgeProjectionMode ? '32px' : '24px'}}>📩</span> {t('roster.bridge_title') || 'Message from your teacher'}
               </h2>
               <div style={{display:'flex',gap:'8px'}}>
-                <button
+                <button type="button"
                   data-help-key="bridge_message_projection_toggle"
                   onClick={() => setBridgeProjectionMode(p => !p)}
                   aria-label={bridgeProjectionMode ? 'Exit projection mode' : 'Enter projection mode'}
                   title={bridgeProjectionMode ? 'Exit Projection' : 'Projection Mode'}
                   style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color: '#94a3b8',width:'36px',height:'36px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
                 >{bridgeProjectionMode ? '🖥️' : '📽️'}</button>
-                <button
+                <button type="button"
                   onClick={() => { setBridgeMessage(null); setBridgeKaraokeIndex(-1); setBridgeTtsPlaying(false); setBridgeTermsSaved([]); }}
                   aria-label={t('common.close_bridge_message')}
                   style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color: '#94a3b8',width:'36px',height:'36px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
@@ -1471,7 +1543,7 @@ function BridgeMessageModal(props) {
                   )})}
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:'10px',marginTop:'12px'}}>
-                  <button
+                  <button type="button"
                     data-help-key="bridge_message_play_english_btn"
                     disabled={bridgeTtsPlaying}
                     onClick={async () => {
@@ -1535,7 +1607,7 @@ function BridgeMessageModal(props) {
                     )})}
                   </div>
                   <div style={{display:'flex',alignItems:'center',gap:'10px',marginTop:'12px'}}>
-                    <button
+                    <button type="button"
                       disabled={bridgeTtsPlaying}
                       onClick={async () => {
                         const text = bridgeMessage.translated;
@@ -1605,7 +1677,7 @@ function BridgeMessageModal(props) {
                             </div>
                             {def && <div style={{fontSize:'12px',color:_dt.textSecondary,lineHeight:1.5,marginBottom:'8px'}}>{def}</div>}
                             {!isSaved && (
-                              <button onClick={async (e) => {
+                              <button type="button" onClick={async (e) => {
                                 e.stopPropagation();
                                 try { await handleQuickAddGlossary(word, true); setBridgeTermsSaved(prev => [...prev, word]); addToast(`Saved "${word}" to glossary`, 'success'); }
                                 catch(err) { warnLog('Bridge term save failed:', err); }
@@ -1624,7 +1696,7 @@ function BridgeMessageModal(props) {
                         }}>
                           {word}
                           {!isSaved ? (
-                            <button onClick={async (e) => {
+                            <button type="button" onClick={async (e) => {
                               e.stopPropagation();
                               try { await handleQuickAddGlossary(word, true); setBridgeTermsSaved(prev => [...prev, word]); addToast(`Saved "${word}" to glossary`, 'success'); }
                               catch(err) { warnLog('Bridge term save failed:', err); }
@@ -1640,7 +1712,7 @@ function BridgeMessageModal(props) {
               )}
               <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
                 {bridgeMessage.terms && bridgeMessage.terms.length > 0 && (
-                  <button
+                  <button type="button"
                     data-help-key="bridge_message_save_terms_btn"
                     disabled={!bridgeMessage.terms || bridgeMessage.terms.every(t2 => bridgeTermsSaved.includes(typeof t2 === 'object' ? t2.word : t2))}
                     onClick={async () => {
@@ -1657,7 +1729,7 @@ function BridgeMessageModal(props) {
                     style={{background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.25)',color:'#a5b4fc',padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
                   >{bridgeMessage.terms.every(t2 => bridgeTermsSaved.includes(t2)) ? '✅ All Saved' : '📖 Save All Terms'}</button>
                 )}
-                <button
+                <button type="button"
                   data-help-key="bridge_message_read_again_btn"
                   onClick={async () => {
                     setBridgeTtsPlaying(true); setBridgeActiveLanguage('en');
@@ -1677,7 +1749,7 @@ function BridgeMessageModal(props) {
                   }}
                   style={{background:'rgba(20,184,166,0.15)',border:'1px solid rgba(20,184,166,0.25)',color:'#5eead4',padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
                 >🔄 Read Again</button>
-                <button
+                <button type="button"
                   data-help-key="bridge_message_copy_btn"
                   onClick={() => {
                     const text = [
@@ -1693,7 +1765,7 @@ function BridgeMessageModal(props) {
                   }}
                   style={{background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.25)',color:'#a5b4fc',padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
                 >📋 Copy</button>
-                <button
+                <button type="button"
                   data-help-key="bridge_message_print_btn"
                   onClick={() => {
                     // HTML-escape everything interpolated into the print document (model/teacher
@@ -1727,7 +1799,7 @@ function BridgeMessageModal(props) {
                   }}
                   style={{background:'rgba(168,85,247,0.15)',border:'1px solid rgba(168,85,247,0.25)',color:'#c084fc',padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
                 >🖨️ Print</button>
-                <button
+                <button type="button"
                   onClick={() => { setBridgeMessage(null); setBridgeKaraokeIndex(-1); setBridgeTtsPlaying(false); }}
                   style={{background:_dt.btnBg,border:_dt.btnBorder,color:_dt.btnColor,padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
                 >{t('roster.bridge_close') || 'Close'}</button>
@@ -1769,7 +1841,7 @@ function BridgeMessageModal(props) {
                       ].map((r,ri) => {
                         const _sel = _myRxn === r.emoji;
                         return (
-                          <button key={ri} onClick={() => {
+                          <button type="button" key={ri} onClick={() => {
                             if (user?.uid && activeSessionCode && activeSessionAppId) {
                               updateDoc(
                                 doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode),
