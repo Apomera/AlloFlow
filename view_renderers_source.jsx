@@ -3955,6 +3955,31 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;
+  const handleAccessibleNodeKeyDown = (e, node) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleNodeClick(e, node.id);
+          return;
+      }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !isChallengeActive && isTeacherMode && !isMapLocked) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleDeleteNode(node.id);
+          return;
+      }
+      const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+      if (!delta || isMapLocked) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const step = e.shiftKey ? 25 : 10;
+      const width = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
+      const height = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+      setConceptMapNodes((nodes) => nodes.map((item) => item.id === node.id ? {
+          ...item,
+          x: Math.max(0, Math.min(width, item.x + delta[0] * step)),
+          y: Math.max(0, Math.min(height, item.y + delta[1] * step))
+      } : item));
+  };
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderInteractiveMap fired"); } catch(_) {}
       const isVenn = generatedContent?.data?.structureType === 'Venn Diagram';
       const handleVennResetBoard = () => {
@@ -4331,13 +4356,18 @@ const renderInteractiveMap = (deps) => {
                               return (
                                   <g
                                     key={edge.id}
-                                    className={!isMapLocked ? "pointer-events-auto cursor-pointer hover:opacity-70 group" : ""}
+                                    role={!isMapLocked ? "button" : undefined}
+                                    tabIndex={!isMapLocked ? 0 : undefined}
+                                    focusable={!isMapLocked ? "true" : "false"}
+                                    aria-label={!isMapLocked ? (t('concept_map.tooltips.delete_edge') || 'Delete connection') + ': ' + fromNode.text + ' to ' + toNode.text : undefined}
+                                    className={!isMapLocked ? "pointer-events-auto cursor-pointer hover:opacity-70 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" : ""}
                                     onClick={() => !isMapLocked && handleDeleteEdge(edge.id)}
+                                    onKeyDown={(e) => { if (!isMapLocked && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); handleDeleteEdge(edge.id); } }}
                                   >
                                       <title>{t('concept_map.tooltips.delete_edge')}</title>
                                       {isFlowChart ? (
                                           <>
-                                            <path d={pathD} stroke="transparent" strokeWidth="20" fill="none" />
+                                            <path d={pathD} stroke="transparent" strokeWidth="24" fill="none" />
                                             <path
                                                 d={pathD}
                                                 stroke={strokeColor}
@@ -4350,7 +4380,7 @@ const renderInteractiveMap = (deps) => {
                                           </>
                                       ) : (
                                           <>
-                                            <path d={curvePathD} stroke="transparent" strokeWidth="20" fill="none" />
+                                            <path d={curvePathD} stroke="transparent" strokeWidth="24" fill="none" />
                                             {/* Soft colour halo beneath accent-coded concept-map edges — echoes the
                                                 static KeyConceptMapView's glowing curves. Scoped to edges that carry an
                                                 accent (concept maps) with no status, so flow / feedback edges stay crisp. */}
@@ -4452,13 +4482,20 @@ const renderInteractiveMap = (deps) => {
                           onMouseDown={(e) => !isMapLocked && handleNodeMouseDown(e, node.id)}
                           onClick={(e) => handleNodeClick(e, node.id)}
                       >
-                          <div className={`px-2 line-clamp-4 pointer-events-none select-none ${node.type === 'flow-decision' ? '-rotate-45' : ''}`}>
+                          <div
+                              role="button"
+                              tabIndex={0}
+                              aria-label={node.text}
+                              aria-pressed={connectingSourceId === node.id}
+                              onKeyDown={(e) => handleAccessibleNodeKeyDown(e, node)}
+                              className={`w-full h-full px-2 flex items-center justify-center line-clamp-4 select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${node.type === 'flow-decision' ? '-rotate-45' : ''}`}
+                          >
                               {node.text}
                           </div>
                           {!isChallengeActive && !isMapLocked && (
-                              <button aria-label={t('common.close_concept_map_challenge')}
+                              <button type="button" aria-label={(t('concept_map.tooltips.delete_node') || 'Delete concept') + ': ' + node.text}
                                   onClick={(e) => { e.stopPropagation(); handleDeleteNode(node.id); }}
-                                  className={`absolute -top-1 -right-1 bg-red-700 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition-colors z-20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 scale-75 hover:scale-100 ${node.type === 'flow-decision' ? '-rotate-45 -translate-y-2 translate-x-2' : ''}`}
+                                  className={`absolute -top-1 -right-1 min-w-6 min-h-6 bg-red-700 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition-colors z-20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:scale-110 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 ${node.type === 'flow-decision' ? '-rotate-45 -translate-y-2 translate-x-2' : ''}`}
                                   title={t('concept_map.tooltips.delete_node')}
                               >
                                   <X size={12} />

@@ -12175,11 +12175,42 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const strokeWidth = isSelected ? 3 : 2;
     const onMouseDown = (e) => !isMapLocked && handleNodeMouseDown(e, id);
     const onClick = (e) => handleNodeClick(e, id);
+    const onKeyDown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleNodeClick(e, id);
+            return;
+        }
+        if ((e.key === 'Delete' || e.key === 'Backspace') && !isChallengeActive && isTeacherMode && !isMapLocked) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDeleteNode(id);
+            return;
+        }
+        const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+        if (!delta || isMapLocked) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const step = e.shiftKey ? 25 : 10;
+        const width = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
+        const height = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+        setConceptMapNodes((nodes) => nodes.map((item) => item.id === id ? {
+            ...item,
+            x: Math.max(0, Math.min(width, item.x + delta[0] * step)),
+            y: Math.max(0, Math.min(height, item.y + delta[1] * step))
+        } : item));
+    };
     const gProps = {
         transform: `translate(${x},${y})`,
+        role: 'button',
+        tabIndex: 0,
+        focusable: 'true',
+        'aria-label': text,
+        'aria-pressed': isSelected,
         onMouseDown,
         onClick,
-        className: `${!isMapLocked ? "cursor-grab active:cursor-grabbing hover:opacity-90" : "cursor-default"} transition-all duration-300 group`,
+        onKeyDown,
+        className: `${!isMapLocked ? "cursor-grab active:cursor-grabbing hover:opacity-90" : "cursor-default"} transition-all duration-300 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`,
         key: id
     };
     let shape;
@@ -12236,12 +12267,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
             {shape}
             {!isChallengeActive && isTeacherMode && !isMapLocked && (
                <g
+                 aria-hidden="true"
+                 focusable="false"
                  className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity cursor-pointer"
                  onClick={(e) => { e.stopPropagation(); handleDeleteNode(id); }}
                  transform="translate(45, -35)"
                >
                    <title>{t('concept_map.tooltips.delete_node')}</title>
-                   <circle r="9" fill="#ef4444" stroke="white" strokeWidth="1"/>
+                   <circle r="12" fill="#ef4444" stroke="white" strokeWidth="1"/>
                    <text textAnchor="middle" dy="3" fill="white" fontSize="10" fontWeight="bold">×</text>
                </g>
             )}
