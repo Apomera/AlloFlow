@@ -66,6 +66,41 @@ var MessageSquare = _lazyIcon('MessageSquare');
 var PenTool = _lazyIcon('PenTool');
 var ShieldCheck = _lazyIcon('ShieldCheck');
 var quizreducedMotionClass = 'motion-reduce:animate-none';
+function _quizFocusableElements(container) {
+  if (!container || typeof container.querySelectorAll !== 'function') return [];
+  var selector = 'a[href], area[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
+  return Array.prototype.slice.call(container.querySelectorAll(selector)).filter(function (el) {
+    if (!el || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest && el.closest('[inert]')) return false;
+    return el.offsetWidth > 0 || el.offsetHeight > 0 || typeof el.getClientRects !== 'function' || el.getClientRects().length > 0;
+  });
+}
+function _quizHandleDialogKeyDown(event, dialogRef, closeDialog) {
+  if (!event) return;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    event.stopPropagation();
+    closeDialog();
+    return;
+  }
+  if (event.key !== 'Tab') return;
+  var dialog = dialogRef && dialogRef.current;
+  var focusable = _quizFocusableElements(dialog);
+  if (!dialog || focusable.length === 0) {
+    event.preventDefault();
+    if (dialog && typeof dialog.focus === 'function') dialog.focus();
+    return;
+  }
+  var first = focusable[0];
+  var last = focusable[focusable.length - 1];
+  var active = typeof document !== 'undefined' ? document.activeElement : null;
+  if (event.shiftKey && (active === first || !dialog.contains(active))) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 function _quizShuffleCopy(arr) {
   var copy = (arr || []).slice();
   for (var i = copy.length - 1; i > 0; i--) {
@@ -302,17 +337,17 @@ function SequenceSenseCard(p) {
     onClick: function () {
       answerVerify('yes');
     },
-    className: "flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors"
+    className: "flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none"
   }, "✓ Yes, correct"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       answerVerify('no');
     },
-    className: "flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors"
+    className: "flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none"
   }, "✗ No, something is off"), allowIDK && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: markIDK,
-    className: "px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors",
+    className: "px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none",
     "aria-label": "I don't know — skip without penalty",
     title: t("tooltips.skip_ai_explain")
   }, /*#__PURE__*/React.createElement("span", {
@@ -334,7 +369,7 @@ function SequenceSenseCard(p) {
       onClick: function () {
         answerPrinciple(opt);
       },
-      className: "px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors"
+      className: "px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors motion-reduce:transition-none"
     }, opt);
   }))), grade && /*#__PURE__*/React.createElement("div", {
     className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
@@ -574,7 +609,7 @@ function RelationMismatchCard(p) {
   }, "Step 1 of 2 — Click the pair that's wrong above."), allowIDK && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: markIDK,
-    className: "px-2 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors",
+    className: "px-2 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none",
     "aria-label": "I don't know — skip without penalty",
     title: t("tooltips.skip_ai_explain")
   }, /*#__PURE__*/React.createElement("span", {
@@ -592,7 +627,7 @@ function RelationMismatchCard(p) {
       onClick: function () {
         answerPartner(cand);
       },
-      className: "px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors"
+      className: "px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors motion-reduce:transition-none"
     }, cand);
   }))), grade && /*#__PURE__*/React.createElement("div", {
     className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
@@ -720,7 +755,7 @@ function McqEnhancements(p) {
   }, aiExplainerEnabled && !explainer.open && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: requestExplainer,
-    className: "text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors",
+    className: "text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors motion-reduce:transition-none",
     "aria-label": t("a11y.explain_concept"),
     title: t("tooltips.quick_ai_explanation")
   }, /*#__PURE__*/React.createElement("span", {
@@ -728,7 +763,7 @@ function McqEnhancements(p) {
   }, "🤖 "), t("ui_common.explain_concept_action")), allowIDK && !idkMarked && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: markIDK,
-    className: "text-xs font-semibold px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 transition-colors",
+    className: "text-xs font-semibold px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 transition-colors motion-reduce:transition-none",
     "aria-label": "I don't know — skip without penalty",
     title: "Skip — no penalty. The AI will explain the concept."
   }, /*#__PURE__*/React.createElement("span", {
@@ -770,7 +805,7 @@ function McqEnhancements(p) {
       onClick: function () {
         setConfidence(lvl);
       },
-      className: 'px-2 py-0.5 rounded border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+      className: 'px-2 py-0.5 rounded border transition-colors motion-reduce:transition-none ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
     }, labels[lvl]);
   })));
 }
@@ -982,6 +1017,7 @@ function LiveResultsDashboard(p) {
   var setExplainerModal = explainerModalState[1];
   var prevFocusRef = React.useRef(null);
   var explainerCloseBtnRef = React.useRef(null);
+  var explainerDialogRef = React.useRef(null);
   function openExplainer(conceptIdx, conceptText) {
     try {
       prevFocusRef.current = document.activeElement;
@@ -1041,34 +1077,31 @@ function LiveResultsDashboard(p) {
       pushed: false,
       error: ''
     });
-    try {
-      if (prevFocusRef.current && typeof prevFocusRef.current.focus === 'function') {
-        prevFocusRef.current.focus();
-      }
-    } catch (e) {}
   }
   React.useEffect(function () {
     if (!explainerModal.open) return;
-    function onKey(e) {
-      if (e.key === 'Escape') closeExplainer();
-    }
-    document.addEventListener('keydown', onKey);
     var raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame(function () {
       try {
-        explainerCloseBtnRef.current && explainerCloseBtnRef.current.focus();
+        if (explainerCloseBtnRef.current) explainerCloseBtnRef.current.focus();else if (explainerDialogRef.current) explainerDialogRef.current.focus();
       } catch (e) {}
     }) : setTimeout(function () {
       try {
-        explainerCloseBtnRef.current && explainerCloseBtnRef.current.focus();
+        if (explainerCloseBtnRef.current) explainerCloseBtnRef.current.focus();else if (explainerDialogRef.current) explainerDialogRef.current.focus();
       } catch (e) {}
     }, 0);
     return function () {
-      document.removeEventListener('keydown', onKey);
       if (typeof cancelAnimationFrame === 'function' && raf) {
         try {
           cancelAnimationFrame(raf);
         } catch (e) {}
+      } else if (typeof clearTimeout === 'function') {
+        clearTimeout(raf);
       }
+      var previous = prevFocusRef.current;
+      prevFocusRef.current = null;
+      try {
+        if (previous && previous.isConnected !== false && typeof previous.focus === 'function') previous.focus();
+      } catch (e) {}
     };
   }, [explainerModal.open]);
   function copyExplainer() {
@@ -1208,8 +1241,9 @@ function LiveResultsDashboard(p) {
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "✨ "), 'AI grading ' + inFlightCount + '…'), canShareResults && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: shareResultsToClass,
-    className: "ml-auto text-xs font-bold px-3 py-1 rounded-full border border-blue-300 bg-white text-blue-700 hover:bg-blue-50 transition-colors",
+    className: "ml-auto text-xs font-bold px-3 py-1 rounded-full border border-blue-300 bg-white text-blue-700 hover:bg-blue-50 transition-colors motion-reduce:transition-none",
     title: t('quiz.share_results_tooltip') || 'Send anonymous per-question results to every connected student (peer-to-peer, nothing stored)',
     "aria-label": t('quiz.share_results_aria') || 'Share anonymous results with the class'
   }, /*#__PURE__*/React.createElement("span", {
@@ -1322,7 +1356,7 @@ function LiveResultsDashboard(p) {
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: exportCsv,
-      className: "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors",
+      className: "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors motion-reduce:transition-none",
       "aria-label": t("a11y.export_gradebook_csv"),
       "data-help-key": "quiz_csv_export_btn",
       title: t("tooltips.download_gradebook_csv")
@@ -1366,7 +1400,7 @@ function LiveResultsDashboard(p) {
         type: "button",
         "aria-expanded": isExpanded,
         "aria-label": (isExpanded ? 'Collapse' : 'Expand') + ' ' + row.displayName + ' details',
-        className: "text-slate-600 hover:text-indigo-600 transition-colors text-xs font-mono",
+        className: "text-slate-600 hover:text-indigo-600 transition-colors motion-reduce:transition-none text-xs font-mono",
         onClick: function (e) {
           e.stopPropagation();
           toggleRowExpanded(row.uid);
@@ -1466,7 +1500,7 @@ function LiveResultsDashboard(p) {
               e.stopPropagation();
               setTeacherOverride(row.uid, qIdx, isActive ? null : opt.s);
             },
-            className: 'text-xs font-bold w-6 h-6 rounded transition-colors ' + (isActive ? 'bg-' + opt.color + '-600 text-white border border-' + opt.color + '-700' : 'bg-white text-slate-700 border border-slate-300 hover:bg-' + opt.color + '-50 hover:border-' + opt.color + '-300'),
+            className: 'text-xs font-bold w-6 h-6 rounded transition-colors motion-reduce:transition-none ' + (isActive ? 'bg-' + opt.color + '-600 text-white border border-' + opt.color + '-700' : 'bg-white text-slate-700 border border-slate-300 hover:bg-' + opt.color + '-50 hover:border-' + opt.color + '-300'),
             "aria-label": 'Override status to ' + opt.label + (isActive ? ' (currently set, click to undo)' : ''),
             "aria-pressed": isActive,
             title: 'Set status to ' + opt.s + (isActive ? ' (click again to undo)' : '')
@@ -1517,7 +1551,7 @@ function LiveResultsDashboard(p) {
         onClick: function () {
           openExplainer(card.questionIdx, card.conceptText);
         },
-        className: "ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors",
+        className: "ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors motion-reduce:transition-none",
         "aria-label": t("a11y.explain_to_class"),
         "data-help-key": "quiz_explain_to_class_btn",
         title: t("tooltips.generate_concept_explainer")
@@ -1704,10 +1738,15 @@ function LiveResultsDashboard(p) {
     }));
   }
   var explainerModalEl = explainerModal.open ? /*#__PURE__*/React.createElement("div", {
+    ref: explainerDialogRef,
+    tabIndex: -1,
     className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 p-4",
     role: "dialog",
     "aria-modal": "true",
-    "aria-label": t("a11y.concept_explainer"),
+    "aria-labelledby": "quiz-concept-explainer-title",
+    onKeyDown: function (e) {
+      _quizHandleDialogKeyDown(e, explainerDialogRef, closeExplainer);
+    },
     onClick: function (e) {
       if (e.target === e.currentTarget) closeExplainer();
     }
@@ -1716,6 +1755,7 @@ function LiveResultsDashboard(p) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start justify-between gap-3 mb-3"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    id: "quiz-concept-explainer-title",
     className: "font-black text-base text-slate-800"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
@@ -1728,13 +1768,16 @@ function LiveResultsDashboard(p) {
     ref: explainerCloseBtnRef,
     onClick: closeExplainer,
     "aria-label": t("a11y.close_concept_explainer"),
-    className: "flex-shrink-0 text-slate-600 hover:text-slate-700 text-xl leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded"
+    className: "flex-shrink-0 text-slate-600 hover:text-slate-700 text-xl leading-none  focus-visible:ring-2 focus-visible:ring-indigo-400 rounded"
   }, "×")), explainerModal.loading ? /*#__PURE__*/React.createElement("div", {
-    className: "p-4 text-center text-sm text-slate-600"
+    className: "p-4 text-center text-sm text-slate-600",
+    role: "status",
+    "aria-live": "polite"
   }, /*#__PURE__*/React.createElement("span", {
     className: 'inline-block animate-pulse ' + quizreducedMotionClass
   }, "✨ Generating explainer…")) : explainerModal.error ? /*#__PURE__*/React.createElement("div", {
-    className: "p-3 rounded bg-rose-50 border border-rose-200 text-sm text-rose-800"
+    className: "p-3 rounded bg-rose-50 border border-rose-200 text-sm text-rose-800",
+    role: "alert"
   }, explainerModal.error) : /*#__PURE__*/React.createElement("div", {
     className: "p-3 rounded bg-indigo-50 border border-indigo-200 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap"
   }, explainerModal.text), /*#__PURE__*/React.createElement("div", {
@@ -2054,7 +2097,7 @@ function FreeformItemCard(p) {
     },
     placeholder: t("placeholders.missing_word_or_phrase"),
     disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
-    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
+    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
   }) : /*#__PURE__*/React.createElement("textarea", {
     "aria-label": typeLabel + " response",
     value: response,
@@ -2064,7 +2107,7 @@ function FreeformItemCard(p) {
     placeholder: q.type === 'self-explanation' ? 'Explain the concept in your own words (3-5 sentences)...' : 'Type your 1-2 sentence response...',
     disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
     rows: q.type === 'self-explanation' ? 5 : 3,
-    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y"
+    className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y"
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between gap-2 mt-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2073,11 +2116,11 @@ function FreeformItemCard(p) {
     type: "button",
     onClick: submitGrade,
     disabled: !response.trim() || grade.loading || grade.status === 'correct' || grade.status === 'idk',
-    className: "px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    className: "px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
   }, grade.loading ? 'Grading…' : grade.status === 'correct' || grade.status === 'idk' ? '' : grade.status ? 'Re-check' : 'Grade my answer'), allowIDK && !grade.status && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: markIDK,
-    className: "px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors",
+    className: "px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none",
     "aria-label": "I don't know — skip without penalty",
     title: t("tooltips.skip_ai_explain_concept")
   }, /*#__PURE__*/React.createElement("span", {
@@ -2098,7 +2141,7 @@ function FreeformItemCard(p) {
         error: ''
       });
     },
-    className: "px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+    className: "px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors motion-reduce:transition-none"
   }, t("ui_common.try_again"))), grade.status && /*#__PURE__*/React.createElement("div", {
     className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
     role: "status",
@@ -2110,7 +2153,7 @@ function FreeformItemCard(p) {
   }, statusLabel), aiExplainerEnabled && grade.status !== 'correct' && grade.status !== 'idk' && !explainer.open && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: requestExplainer,
-    className: "ml-auto text-xs font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors",
+    className: "ml-auto text-xs font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors motion-reduce:transition-none",
     title: t("tooltips.quick_ai_explanation")
   }, "🤖 Explain this")), grade.feedback && /*#__PURE__*/React.createElement("p", {
     className: 'text-sm text-' + statusColor + '-900 mb-2'
@@ -2149,7 +2192,7 @@ function FreeformItemCard(p) {
         setConfidence(lvl);
         emitLiveAnswer(lvl);
       },
-      className: 'px-2 py-0.5 rounded border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+      className: 'px-2 py-0.5 rounded border transition-colors motion-reduce:transition-none ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
     }, labels[lvl]);
   })));
 }
@@ -2463,7 +2506,7 @@ function QuizView(props) {
         toggleRefinePanel(key);
       },
       disabled: isLoading,
-      className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors disabled:opacity-50',
+      className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50',
       title: isLoading ? 'Refining…' : 'Refine this image',
       "aria-label": t("a11y.refine_image"),
       "data-help-key": "quiz_image_refine_btn"
@@ -2501,7 +2544,7 @@ function QuizView(props) {
       },
       placeholder: 'Describe how to refine this image (e.g. "make the background pure white", "add a clearer label")…',
       rows: 2,
-      className: "w-full text-xs p-1.5 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none resize-y",
+      className: "w-full text-xs p-1.5 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200  resize-y",
       disabled: isLoading
     }), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mt-1.5"
@@ -2559,6 +2602,39 @@ function QuizView(props) {
   var handleReviewTileClick = props.handleReviewTileClick;
   var handleAwardPoints = props.handleAwardPoints;
   var closeReviewModal = props.closeReviewModal;
+  var reviewDialogRef = React.useRef(null);
+  var reviewCloseBtnRef = React.useRef(null);
+  var reviewPreviousFocusRef = React.useRef(null);
+  var reviewModalOpen = !!(reviewGameState && reviewGameState.activeQuestion);
+  React.useEffect(function () {
+    if (!reviewModalOpen) return;
+    try {
+      reviewPreviousFocusRef.current = document.activeElement;
+    } catch (e) {}
+    var raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame(function () {
+      try {
+        if (reviewCloseBtnRef.current) reviewCloseBtnRef.current.focus();else if (reviewDialogRef.current) reviewDialogRef.current.focus();
+      } catch (e) {}
+    }) : setTimeout(function () {
+      try {
+        if (reviewCloseBtnRef.current) reviewCloseBtnRef.current.focus();else if (reviewDialogRef.current) reviewDialogRef.current.focus();
+      } catch (e) {}
+    }, 0);
+    return function () {
+      if (typeof cancelAnimationFrame === 'function' && raf) {
+        try {
+          cancelAnimationFrame(raf);
+        } catch (e) {}
+      } else if (typeof clearTimeout === 'function') {
+        clearTimeout(raf);
+      }
+      var previous = reviewPreviousFocusRef.current;
+      reviewPreviousFocusRef.current = null;
+      try {
+        if (previous && previous.isConnected !== false && typeof previous.focus === 'function') previous.focus();
+      } catch (e) {}
+    };
+  }, [reviewModalOpen]);
   var handlePresentationOptionClick = props.handlePresentationOptionClick;
   var togglePresentationAnswer = props.togglePresentationAnswer;
   var togglePresentationExplanation = props.togglePresentationExplanation;
@@ -2670,7 +2746,7 @@ function QuizView(props) {
   var _showClassExplainer = !!_pushedExplainer && _pushedExplainer.text && _pushedExplainer.ts !== dismissedExplainerTs && !isEditingQuiz && !isPresentationMode && !isTeacherMode;
   var classExplainerBanner = _showClassExplainer ? /*#__PURE__*/React.createElement("div", {
     key: "class-explainer-banner",
-    className: "rounded-xl border-2 border-amber-300 bg-amber-50 p-4 mb-2 shadow-sm animate-in fade-in slide-in-from-top-2",
+    className: "rounded-xl border-2 border-amber-300 bg-amber-50 p-4 mb-2 shadow-sm animate-in motion-reduce:animate-none fade-in slide-in-from-top-2",
     role: "region",
     "aria-label": "Teacher explanation"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2747,7 +2823,7 @@ function QuizView(props) {
       type: "button",
       onClick: bulkImproveDistractors,
       disabled: isBulkImproving,
-      className: "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors",
+      className: "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors motion-reduce:transition-none",
       "aria-label": isBulkImproving ? 'Rewriting ' + weakCount + ' weak distractors' : 'Rewrite all ' + weakCount + ' flagged distractors in one batch',
       "data-help-key": "quiz_bulk_improve_btn",
       title: 'Rewrite all ' + weakCount + ' flagged distractor' + (weakCount === 1 ? '' : 's') + ' in one batch'
@@ -2785,14 +2861,14 @@ function QuizView(props) {
       }
     },
     placeholder: _quizMode === 'pre-check' ? 'e.g., "what plants need to grow"' : 'e.g., "photosynthesis"',
-    className: "flex-1 min-w-0 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+    className: "flex-1 min-w-0 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400"
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       explainConcept(explainerInput);
     },
     disabled: !explainerInput.trim() || explainerData.loading,
-    className: "px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    className: "px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
   }, explainerData.loading ? 'Explaining…' : 'Explain')), explainerData.response && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 p-3 bg-white border border-indigo-200 rounded-lg"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2818,42 +2894,46 @@ function QuizView(props) {
   }, /*#__PURE__*/React.createElement("strong", null, "UDL Goal:"), " Providing options for action and expression. Frequent formative assessments help track progress and adjust instruction."), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-wrap"
   }, isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.connect'),
     onClick: handleStartLiveSession,
-    className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200 ' + quizreducedMotionClass,
+    className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200 ' + quizreducedMotionClass,
     title: t('quiz.launch_live_tooltip')
   }, /*#__PURE__*/React.createElement(Wifi, {
     size: 14
   }), " ", t('quiz.launch_live_btn')), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full animate-in fade-in duration-300"
+    className: "flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full animate-in motion-reduce:animate-none fade-in duration-300"
   }, /*#__PURE__*/React.createElement(Users, {
     size: 12,
     className: "text-orange-700"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-black text-orange-700"
   }, Object.keys(sessionData?.roster || {}).length, " ", t('quiz.lobby_waiting') || "Ready")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.locked'),
     onClick: handleToggleInteractive,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-400 hover:bg-slate-50'}`,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-400 hover:bg-slate-50'}`,
     title: t('session.toggle_interactive_title')
   }, sessionData?.forceStatic ? /*#__PURE__*/React.createElement(Lock, {
     size: 12
   }) : /*#__PURE__*/React.createElement(Unlock, {
     size: 12
   }), sessionData?.forceStatic ? t('session.static_only') : t('session.interactive'))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.confirm'),
     onClick: handleToggleIsPresentationMode,
     disabled: isReviewGame || isTeacherMode && sessionData?.quizState?.isActive,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isPresentationMode ? 'bg-indigo-600 text-white hover:bg-indigo-700 ring-2 ring-indigo-200' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isPresentationMode ? 'bg-indigo-600 text-white hover:bg-indigo-700 ring-2 ring-indigo-200' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`,
     title: t('quiz.presentation')
   }, isPresentationMode ? /*#__PURE__*/React.createElement(CheckCircle, {
     size: 14
   }) : /*#__PURE__*/React.createElement(MonitorPlay, {
     size: 14
   }), isPresentationMode ? t('common.close') : t('quiz.presentation')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleToggleIsReviewGame,
     disabled: isPresentationMode,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isReviewGame ? 'bg-yellow-500 text-indigo-900 hover:bg-yellow-600 ring-2 ring-yellow-200' : 'bg-white text-yellow-600 border border-yellow-200 hover:bg-yellow-50'}`,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isReviewGame ? 'bg-yellow-500 text-indigo-900 hover:bg-yellow-600 ring-2 ring-yellow-200' : 'bg-white text-yellow-600 border border-yellow-200 hover:bg-yellow-50'}`,
     title: t('quiz.review_game'),
     "aria-label": t('quiz.review_game')
   }, isReviewGame ? /*#__PURE__*/React.createElement(XCircle, {
@@ -2861,6 +2941,7 @@ function QuizView(props) {
   }) : /*#__PURE__*/React.createElement(Gamepad2, {
     size: 14
   }), isReviewGame ? t('common.close') : t('quiz.review_game')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       if (escapeRoomState.isActive) {
         if (isTeacherMode && activeSessionCode) {
@@ -2877,7 +2958,7 @@ function QuizView(props) {
       }
     },
     disabled: isPresentationMode || isReviewGame,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${escapeRoomState.isActive ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-200' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50'}`,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${escapeRoomState.isActive ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-200' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50'}`,
     title: isTeacherMode && activeSessionCode ? t('escape_room.launch_live_tooltip') : t('escape_room.title'),
     "aria-label": t('escape_room.title')
   }, escapeRoomState.isActive ? /*#__PURE__*/React.createElement(XCircle, {
@@ -2885,23 +2966,26 @@ function QuizView(props) {
   }) : /*#__PURE__*/React.createElement(DoorOpen, {
     size: 14
   }), escapeRoomState.isActive ? t('common.close') : isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title')), isTeacherMode && !isIndependentMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleExportQTI,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all shadow-sm",
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all motion-reduce:transition-none shadow-sm",
     title: t('export_menu.qti'),
     "aria-label": t('export_menu.qti')
   }, /*#__PURE__*/React.createElement(FolderDown, {
     size: 14
   }), " ", t('quiz.export_qti_btn')), !isPresentationMode && !isReviewGame && (isTeacherMode || isParentMode) && /*#__PURE__*/React.createElement(React.Fragment, null, !isIndependentMode && !isParentMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.toggle_edit_quiz'),
     onClick: handleToggleIsEditingQuiz,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingQuiz ? 'bg-teal-700 text-white hover:bg-teal-700' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50'}`
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm ${isEditingQuiz ? 'bg-teal-700 text-white hover:bg-teal-700' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50'}`
   }, isEditingQuiz ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
   }), isEditingQuiz ? t('common.done_editing') : t('quiz.edit')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleToggleShowQuizAnswers,
-    className: "text-xs flex items-center gap-2 bg-teal-100 text-teal-700 px-3 py-1.5 rounded-full font-bold hover:bg-teal-200 transition-colors"
+    className: "text-xs flex items-center gap-2 bg-teal-100 text-teal-700 px-3 py-1.5 rounded-full font-bold hover:bg-teal-200 transition-colors motion-reduce:transition-none"
   }, showQuizAnswers ? /*#__PURE__*/React.createElement(CheckSquare, {
     size: 14,
     className: "fill-current"
@@ -2946,12 +3030,13 @@ function QuizView(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-end px-4"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleEndLiveSession,
-    className: "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-2"
+    className: "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none shadow-sm flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(XCircle, {
     size: 14
   }), " ", t('session.action_end')))) : isReviewGame ? /*#__PURE__*/React.createElement("div", {
-    className: "animate-in fade-in duration-500"
+    className: "animate-in motion-reduce:animate-none fade-in duration-500"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-900 p-6 rounded-2xl shadow-2xl border-4 border-yellow-500 relative overflow-hidden min-h-[700px] flex flex-col"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2973,18 +3058,20 @@ function QuizView(props) {
   }, t('review_game.subtitle'))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.volume'),
     onClick: () => {
       setSoundEnabled(!soundEnabled);
       if (!soundEnabled) playSound('click');
     },
-    className: `p-2 rounded-full transition-colors ${soundEnabled ? 'bg-yellow-500 text-slate-900' : 'bg-slate-700 text-slate-600'}`,
+    className: `p-2 rounded-full transition-colors motion-reduce:transition-none ${soundEnabled ? 'bg-yellow-500 text-slate-900' : 'bg-slate-700 text-slate-100'}`,
     title: t('review_game.toggle_sound')
   }, soundEnabled ? /*#__PURE__*/React.createElement(Volume2, {
     size: 20
   }) : /*#__PURE__*/React.createElement(MicOff, {
     size: 20
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.regenerate_vocabulary'),
     onClick: () => {
       setConfirmDialog({
@@ -3002,7 +3089,7 @@ function QuizView(props) {
         }
       });
     },
-    className: "p-2 bg-slate-700 text-slate-600 rounded-full hover:bg-slate-600",
+    className: "p-2 bg-slate-700 text-slate-100 rounded-full hover:bg-slate-600",
     title: t('review_game.reset')
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 20
@@ -3013,7 +3100,7 @@ function QuizView(props) {
     className: `${team.color} bg-opacity-20 border-2 border-opacity-50 border-${team.color.split('-')[1]}-400 rounded-lg p-3 min-w-[140px] flex flex-col items-center relative group`
   }, /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_team'),
-    className: "bg-transparent text-center font-bold text-white outline-none focus:ring-2 focus:ring-white/50 w-full mb-1",
+    className: "bg-transparent text-center font-bold text-white  focus:ring-2 focus:ring-white/50 w-full mb-1",
     value: team.name,
     onChange: e => setGameTeams(prev => prev.map(t => t.id === team.id ? {
       ...t,
@@ -3022,25 +3109,29 @@ function QuizView(props) {
   }), /*#__PURE__*/React.createElement("div", {
     className: "text-3xl font-black text-white drop-shadow-md"
   }, team.score), scoreAnimation.teamId === team.id && /*#__PURE__*/React.createElement("div", {
-    className: "absolute -top-8 left-1/2 -translate-x-1/2 text-yellow-700 font-black text-xl animate-[ping_1s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap shadow-sm"
+    className: "absolute -top-8 left-1/2 -translate-x-1/2 text-yellow-700 font-black text-xl animate-[ping_1s_ease-out_reverse] motion-reduce:animate-none pointer-events-none z-20 whitespace-nowrap shadow-sm"
   }, "+", scoreAnimation.points), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2 mt-2 opacity-50 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+    className: "flex gap-2 mt-2 opacity-50 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleManualScore(team.id, -100),
-    className: "text-xs bg-white/10 hover:bg-white/20 text-white px-2 rounded"
+    className: "min-w-6 min-h-6 inline-flex items-center justify-center text-xs bg-white/10 hover:bg-white/20 text-white px-2 rounded"
   }, "-"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleManualScore(team.id, 100),
-    className: "text-xs bg-white/10 hover:bg-white/20 text-white px-2 rounded"
+    className: "min-w-6 min-h-6 inline-flex items-center justify-center text-xs bg-white/10 hover:bg-white/20 text-white px-2 rounded"
   }, "+")), gameTeams.length > 1 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleRemoveTeam(team.id),
-    className: "absolute -top-2 -right-2 bg-slate-800 text-red-600 rounded-full p-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-slate-700 transition-all shadow-sm",
+    className: "absolute -top-2 -right-2 min-w-6 min-h-6 inline-flex items-center justify-center bg-slate-800 text-red-400 rounded-full p-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-slate-700 transition-all motion-reduce:transition-none shadow-sm",
     "aria-label": t('common.remove')
   }, /*#__PURE__*/React.createElement(X, {
     size: 10
   })))), gameTeams.length < 6 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.add'),
     onClick: handleAddTeam,
-    className: "flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 hover:text-white hover:border-slate-400 transition-colors"
+    className: "flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 hover:text-white hover:border-slate-400 transition-colors motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 24
   }), /*#__PURE__*/React.createElement("span", {
@@ -3061,36 +3152,50 @@ function QuizView(props) {
     }), cat.name), cat.questions.map((q, qIdx) => {
       const isClaimed = reviewGameState.claimed.has(q.originalIndex);
       return /*#__PURE__*/React.createElement("button", {
+        type: "button",
         key: qIdx,
         onClick: () => !isClaimed && handleReviewTileClick(q, q.points),
         disabled: isClaimed,
         "aria-label": `Category: ${cat.name}, ${q.points} Points${isClaimed ? ', Claimed' : ''}`,
         "aria-disabled": isClaimed,
         className: `
-                                                            h-24 rounded-lg font-black text-3xl shadow-lg transition-all duration-300 transform flex items-center justify-center border-b-4 relative overflow-hidden group focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:ring-offset-4 focus:ring-offset-slate-900
+                                                            h-24 rounded-lg font-black text-3xl shadow-lg transition-all motion-reduce:transition-none duration-300 transform flex items-center justify-center border-b-4 relative overflow-hidden group  focus:ring-4 focus:ring-yellow-400 focus:ring-offset-4 focus:ring-offset-slate-900
                                                             ${isClaimed ? 'bg-slate-800/50 text-slate-700 border-slate-800 cursor-default' : 'bg-gradient-to-b from-blue-500 to-blue-600 text-yellow-300 border-blue-800 hover:from-blue-400 hover:to-blue-500 hover:-translate-y-1 hover:shadow-blue-500/20 hover:shadow-xl cursor-pointer active:scale-95'}
                                                         `
       }, !isClaimed && /*#__PURE__*/React.createElement("div", {
-        className: "absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]"
+        className: "absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite] motion-reduce:animate-none"
       }), /*#__PURE__*/React.createElement("span", {
         className: "relative z-10 drop-shadow-md"
       }, isClaimed ? '' : q.points));
     }));
   })), reviewGameState.activeQuestion && /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 sm:p-12 animate-in zoom-in-95 duration-300"
+    ref: reviewDialogRef,
+    tabIndex: -1,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "quiz-review-question-title",
+    onKeyDown: function (e) {
+      _quizHandleDialogKeyDown(e, reviewDialogRef, function () {
+        closeReviewModal(false);
+      });
+    },
+    className: "absolute inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 sm:p-12 animate-in motion-reduce:animate-none zoom-in-95 duration-300"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-blue-800 w-full max-w-4xl rounded-2xl border-4 border-yellow-500 shadow-2xl p-8 text-center relative flex flex-col max-h-full overflow-y-auto"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-500 text-blue-900 font-black text-2xl px-6 py-2 rounded-full shadow-lg border-2 border-white"
   }, reviewGameState.activeQuestion.points), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    ref: reviewCloseBtnRef,
     "aria-label": t('common.close'),
     onClick: () => closeReviewModal(false),
-    className: "absolute top-4 right-4 text-blue-700 hover:text-white transition-colors"
+    className: "absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-blue-100 hover:text-white hover:bg-blue-700 transition-colors motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement(X, {
     size: 24
   })), /*#__PURE__*/React.createElement("div", {
     className: "mt-8 mb-8"
   }, /*#__PURE__*/React.createElement("h3", {
+    id: "quiz-review-question-title",
     className: "text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm"
   }, formatInlineText(reviewGameState.activeQuestion.question, false, true)), reviewGameState.activeQuestion.question_en && /*#__PURE__*/React.createElement("p", {
     className: "text-blue-200 text-lg italic mt-4"
@@ -3099,7 +3204,7 @@ function QuizView(props) {
   }, reviewGameState.activeQuestion.options.map((opt, oIdx) => /*#__PURE__*/React.createElement("div", {
     key: oIdx,
     className: `
-                                                            p-4 rounded-xl text-lg font-medium border-2 transition-all
+                                                            p-4 rounded-xl text-lg font-medium border-2 transition-all motion-reduce:transition-none
                                                             ${reviewGameState.showAnswer ? opt === reviewGameState.activeQuestion.correctAnswer ? 'bg-green-700 border-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)] scale-105' : 'bg-blue-900/50 border-blue-700 text-blue-300 opacity-50' : 'bg-blue-700 border-blue-500 text-white'}
                                                         `
   }, /*#__PURE__*/React.createElement("span", {
@@ -3107,7 +3212,8 @@ function QuizView(props) {
   }, String.fromCharCode(65 + oIdx), "."), " ", formatInlineText(opt, false, true)))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center gap-6 mt-auto pt-4 border-t border-blue-700"
   }, !reviewGameState.showAnswer ? /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.check'),
+    type: "button",
+    "aria-label": t('review_game.reveal_answer'),
     onClick: () => {
       setReviewGameState(prev => ({
         ...prev,
@@ -3115,26 +3221,28 @@ function QuizView(props) {
       }));
       playSound('reveal');
     },
-    className: "bg-yellow-500 text-blue-900 px-8 py-3 rounded-full font-bold text-lg hover:bg-yellow-400 transition-colors shadow-lg hover:shadow-yellow-500/20"
+    className: "bg-yellow-500 text-blue-900 px-8 py-3 rounded-full font-bold text-lg hover:bg-yellow-400 transition-colors motion-reduce:transition-none shadow-lg hover:shadow-yellow-500/20"
   }, t('review_game.reveal_answer')) : /*#__PURE__*/React.createElement("div", {
-    className: "w-full animate-in fade-in slide-in-from-bottom-4"
+    className: "w-full animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-blue-200 text-sm font-bold uppercase tracking-wider mb-3"
   }, t('review_game.who_correct')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap justify-center gap-3"
   }, gameTeams.map(team => /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.check'),
+    type: "button",
+    "aria-label": `Award ${reviewGameState.activeQuestion.points} points to ${team.name}`,
     key: team.id,
     onClick: () => handleAwardPoints(team.id, reviewGameState.activeQuestion.points),
-    className: `${team.color.replace('bg-', 'bg-')} hover:opacity-90 ${team.color.includes('yellow') ? 'text-indigo-900' : 'text-white'} px-4 py-2 rounded-lg font-bold shadow-md flex items-center gap-2 border-b-4 border-black/20 active:border-b-0 active:translate-y-1 transition-all`
+    className: `${team.color.replace('bg-', 'bg-')} hover:opacity-90 ${team.color.includes('yellow') ? 'text-indigo-900' : 'text-white'} px-4 py-2 rounded-lg font-bold shadow-md flex items-center gap-2 border-b-4 border-black/20 active:border-b-0 active:translate-y-1 transition-all motion-reduce:transition-none`
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 16
   }), " ", team.name)), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       playSound('incorrect');
       closeReviewModal(true);
     },
-    className: "bg-slate-700 text-slate-600 hover:bg-slate-600 px-4 py-2 rounded-lg font-bold transition-colors"
+    className: "bg-slate-700 text-white hover:bg-slate-600 px-4 py-2 rounded-lg font-bold transition-colors motion-reduce:transition-none"
   }, t('review_game.no_points'))))))))) : escapeRoomState.isActive ? window.AlloModules && window.AlloModules.EscapeRoomGameplay ? /*#__PURE__*/React.createElement(window.AlloModules.EscapeRoomGameplay, {
     escapeRoomState: escapeRoomState,
     setEscapeRoomState: setEscapeRoomState,
@@ -3166,7 +3274,7 @@ function QuizView(props) {
     globalPoints: globalPoints,
     inputText: inputText
   }) : null : isPresentationMode ? /*#__PURE__*/React.createElement("div", {
-    className: "space-y-8 animate-in fade-in duration-500"
+    className: "space-y-8 animate-in motion-reduce:animate-none fade-in duration-500"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl shadow-lg"
   }, /*#__PURE__*/React.createElement("h2", {
@@ -3175,9 +3283,10 @@ function QuizView(props) {
     size: 24,
     className: "text-teal-700"
   }), " ", t('quiz.presentation_board')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.reset_presentation'),
     onClick: resetPresentation,
-    className: "flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold transition-colors"
+    className: "flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14
   }), " ", t('quiz.reset_board'))), generatedContent?.data.questions.map((q, i) => {
@@ -3189,7 +3298,7 @@ function QuizView(props) {
     const showExplanation = pState.showExplanation;
     return /*#__PURE__*/React.createElement("div", {
       key: i,
-      className: "bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-md hover:shadow-lg transition-all"
+      className: "bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-md hover:shadow-lg transition-all motion-reduce:transition-none"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex gap-4 mb-6"
     }, /*#__PURE__*/React.createElement("div", {
@@ -3207,7 +3316,7 @@ function QuizView(props) {
       const isCorrectOption = opt === q.correctAnswer;
       let btnClass = "bg-slate-50 border-2 border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50";
       let icon = /*#__PURE__*/React.createElement("div", {
-        className: "w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 transition-colors"
+        className: "w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 transition-colors motion-reduce:transition-none"
       });
       if (isSelected) {
         if (pState.isCorrect) {
@@ -3217,7 +3326,7 @@ function QuizView(props) {
             className: "text-green-600"
           });
         } else {
-          btnClass = "bg-red-100 border-2 border-red-400 text-red-900 animate-shake";
+          btnClass = "bg-red-100 border-2 border-red-400 text-red-900 animate-shake motion-reduce:animate-none";
           icon = /*#__PURE__*/React.createElement(XCircle, {
             size: 24,
             className: "text-red-500"
@@ -3233,11 +3342,11 @@ function QuizView(props) {
         btnClass = "opacity-50 bg-slate-50 border-slate-100 text-slate-600 cursor-not-allowed";
       }
       return /*#__PURE__*/React.createElement("button", {
-        "aria-label": t('common.cancel'),
+        type: "button",
         key: optIdx,
         onClick: () => handlePresentationOptionClick(i, opt),
         disabled: showAnswer,
-        className: `p-5 rounded-xl text-left font-bold text-lg transition-all duration-200 flex items-center gap-4 group w-full ${btnClass}`
+        className: `p-5 rounded-xl text-left font-bold text-lg transition-all motion-reduce:transition-none duration-200 flex items-center gap-4 group w-full ${btnClass}`
       }, /*#__PURE__*/React.createElement("div", {
         className: "shrink-0"
       }, icon), /*#__PURE__*/React.createElement("div", {
@@ -3250,33 +3359,35 @@ function QuizView(props) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "h-8 flex items-center relative"
     }, isAnswered && !isCorrectlyAnswered && !showAnswer && /*#__PURE__*/React.createElement("span", {
-      className: "text-red-500 font-bold flex items-center gap-2 animate-in fade-in slide-in-from-left-2"
+      className: "text-red-500 font-bold flex items-center gap-2 animate-in motion-reduce:animate-none fade-in slide-in-from-left-2"
     }, /*#__PURE__*/React.createElement(XCircle, {
       size: 18
     }), " ", t('quiz.presentation_try_again')), isAnswered && isCorrectlyAnswered && /*#__PURE__*/React.createElement("span", {
-      className: "text-green-600 font-bold flex items-center gap-2 animate-in zoom-in duration-300 overflow-visible"
+      className: "text-green-600 font-bold flex items-center gap-2 animate-in motion-reduce:animate-none zoom-in duration-300 overflow-visible"
     }, /*#__PURE__*/React.createElement(Sparkles, {
       size: 18
     }), " ", t('quiz.presentation_correct'), /*#__PURE__*/React.createElement(ConfettiExplosion, null))), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2"
     }, q.factCheck && /*#__PURE__*/React.createElement("button", {
-      "aria-label": t('common.collapse'),
+      type: "button",
+      "aria-label": showExplanation ? t('quiz.hide_explanation') : t('quiz.show_explanation'),
       onClick: () => togglePresentationExplanation(i),
-      className: `text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${showExplanation ? 'bg-yellow-100 text-yellow-700' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'}`
+      className: `text-xs font-bold px-3 py-1.5 rounded-lg transition-colors motion-reduce:transition-none flex items-center gap-2 ${showExplanation ? 'bg-yellow-100 text-yellow-700' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'}`
     }, showExplanation ? /*#__PURE__*/React.createElement(ChevronUp, {
       size: 14
     }) : /*#__PURE__*/React.createElement(Info, {
       size: 14
     }), showExplanation ? t('quiz.hide_explanation') : t('quiz.show_explanation')), /*#__PURE__*/React.createElement("button", {
-      "aria-label": t('common.show'),
+      type: "button",
+      "aria-label": showAnswer ? t('quiz.hide_answer') : t('quiz.reveal_answer'),
       onClick: () => togglePresentationAnswer(i),
-      className: `text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${showAnswer ? 'bg-slate-200 text-slate-600' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`
+      className: `text-xs font-bold px-3 py-1.5 rounded-lg transition-colors motion-reduce:transition-none flex items-center gap-2 ${showAnswer ? 'bg-slate-200 text-slate-600' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`
     }, showAnswer ? /*#__PURE__*/React.createElement(Eye, {
       size: 14
     }) : /*#__PURE__*/React.createElement(MousePointerClick, {
       size: 14
     }), showAnswer ? t('quiz.hide_answer') : t('quiz.reveal_answer')))), showExplanation && q.factCheck && /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 ml-0 md:ml-14 p-4 bg-yellow-50 border border-yellow-100 rounded-xl animate-in slide-in-from-top-2"
+      className: "mt-4 ml-0 md:ml-14 p-4 bg-yellow-50 border border-yellow-100 rounded-xl animate-in motion-reduce:animate-none slide-in-from-top-2"
     }, /*#__PURE__*/React.createElement("div", {
       className: "prose prose-sm text-slate-700 max-w-none leading-relaxed"
     }, renderFormattedText(q.factCheck))));
@@ -3322,13 +3433,13 @@ function QuizView(props) {
     "aria-label": t('quiz.edit_question') || 'Edit question',
     value: q.question,
     onChange: e => handleQuizChange(i, 'question', e.target.value),
-    className: "w-full font-bold text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+    className: "w-full font-bold text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-none transition-all motion-reduce:transition-none",
     rows: getRows(q.question)
   }), q.question_en !== undefined && /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('quiz.edit_question_english') || 'Edit question English translation',
     value: q.question_en || '',
     onChange: e => handleQuizChange(i, 'question', e.target.value, null, true),
-    className: "w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+    className: "w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-none transition-all motion-reduce:transition-none",
     rows: getRows(q.question_en || ''),
     placeholder: t('common.placeholder_english_trans')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
@@ -3336,10 +3447,11 @@ function QuizView(props) {
   }, q.question), q.question_en && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 italic px-2"
   }, q.question_en)))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.refresh'),
+    type: "button",
+    "aria-label": isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check'),
     onClick: () => handleFactCheck(i),
     disabled: isFactChecking[i],
-    className: `flex-shrink-0 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded border transition-colors ${q.factCheck ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-indigo-200' : 'text-teal-800 bg-teal-50 hover:bg-teal-100 border-teal-200'}`,
+    className: `flex-shrink-0 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded border transition-colors motion-reduce:transition-none ${q.factCheck ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-indigo-200' : 'text-teal-800 bg-teal-50 hover:bg-teal-100 border-teal-200'}`,
     title: t('quiz.verify_tooltip')
   }, isFactChecking[i] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
@@ -3362,7 +3474,7 @@ function QuizView(props) {
         selectMcqOption(i, optIdx, opt, q);
       }
     } : undefined,
-    className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100'}`
+    className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors motion-reduce:transition-none' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100'}`
   }, Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("div", {
     className: "relative mb-2"
   }, /*#__PURE__*/React.createElement("img", {
@@ -3380,13 +3492,13 @@ function QuizView(props) {
     "aria-label": t('quiz.edit_option') || 'Edit answer option',
     value: opt,
     onChange: e => handleQuizChange(i, 'option', e.target.value, optIdx),
-    className: `w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5 outline-none resize-none transition-all ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`,
+    className: `w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5  resize-none transition-all motion-reduce:transition-none ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`,
     rows: getRows(opt, 30)
   }), q.options_en && /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('quiz.edit_option_translation') || 'Edit option translation',
     value: q.options_en[optIdx] || '',
     onChange: e => handleQuizChange(i, 'option', e.target.value, optIdx, true),
-    className: "w-full text-xs text-slate-600 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5 outline-none resize-none transition-all mt-1",
+    className: "w-full text-xs text-slate-600 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5  resize-none transition-all motion-reduce:transition-none mt-1",
     rows: getRows(q.options_en[optIdx] || '', 30),
     placeholder: t('common.placeholder_option_trans')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
@@ -3442,16 +3554,17 @@ function QuizView(props) {
       setMcqConfidence(i, lvl, q);
     }
   }), q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 ml-9 p-3 pr-20 bg-yellow-50 border border-yellow-100 rounded-lg text-xs text-yellow-800 flex gap-2 items-start animate-in slide-in-from-top-2 relative"
+    className: "mt-4 ml-9 p-3 pr-20 bg-yellow-50 border border-yellow-100 rounded-lg text-xs text-yellow-800 flex gap-2 items-start animate-in motion-reduce:animate-none slide-in-from-top-2 relative"
   }, /*#__PURE__*/React.createElement(Stamp, {
     label: t('quiz.verified_stamp'),
     position: "top-2 right-2",
     size: "small"
   }), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.refresh'),
+    type: "button",
+    "aria-label": isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check'),
     onClick: () => handleFactCheck(i),
     disabled: isFactChecking[i],
-    className: "absolute bottom-2 right-2 p-1.5 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors",
+    className: "absolute bottom-2 right-2 p-1.5 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors motion-reduce:transition-none",
     title: t('quiz.regenerate_check')
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
@@ -3493,13 +3606,13 @@ function QuizView(props) {
       "aria-label": t('quiz.edit_reflection') || 'Edit reflection prompt',
       value: text,
       onChange: e => handleReflectionChange(i, e.target.value),
-      className: "w-full text-indigo-800 mb-1 italic text-sm bg-transparent border border-transparent hover:border-indigo-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+      className: "w-full text-indigo-800 mb-1 italic text-sm bg-transparent border border-transparent hover:border-indigo-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-none transition-all motion-reduce:transition-none",
       rows: getRows(text)
     }), (textEn !== null || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", {
       "aria-label": t('quiz.edit_reflection_translation') || 'Edit reflection translation',
       value: textEn || '',
       onChange: e => handleReflectionChange(i, e.target.value, true),
-      className: "w-full text-indigo-600 mb-4 text-xs bg-transparent border border-transparent hover:border-indigo-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+      className: "w-full text-indigo-600 mb-4 text-xs bg-transparent border border-transparent hover:border-indigo-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-none transition-all motion-reduce:transition-none",
       rows: getRows(textEn || ''),
       placeholder: t('common.placeholder_reflection_trans')
     })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
@@ -3529,7 +3642,7 @@ function QuizView(props) {
         setReflectionDraft(i, e.target.value);
       },
       placeholder: t("placeholders.reflection_here"),
-      className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
+      className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-y transition-all motion-reduce:transition-none",
       rows: 4
     }), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mt-2"
@@ -3572,7 +3685,7 @@ function QuizView(props) {
         setReflectionDraft(0, e.target.value);
       },
       placeholder: t("placeholders.reflection_here"),
-      className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
+      className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-y transition-all motion-reduce:transition-none",
       rows: 4
     }), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mt-2"

@@ -35,6 +35,37 @@ describe('Quiz accessibility', () => {
     expect(text).toContain('<input aria-label="Concept to explain" type="text" value={explainerInput}');
   });
 
+  it('gives both modal layers complete dialog focus behavior', () => {
+    const text = source();
+    expect(text.match(/role="dialog"/g)).toHaveLength(2);
+    expect(text.match(/aria-modal="true"/g)).toHaveLength(2);
+    expect(text).toContain('function _quizHandleDialogKeyDown(event, dialogRef, closeDialog)');
+    expect(text).toContain('aria-labelledby="quiz-concept-explainer-title"');
+    expect(text).toContain('aria-labelledby="quiz-review-question-title"');
+    expect(text).toContain('previous.isConnected !== false');
+    expect(text).toContain('reviewCloseBtnRef.current.focus()');
+  });
+
+  it('preserves visible focus, explicit button behavior, and reduced motion', () => {
+    const text = source();
+    expect(text).not.toContain('outline-none');
+    expect(text.match(/<button(?!\s+(?:type="button"|key=\{[^}]+\}\s+type="button"))/g)).toBeNull();
+    const transitionLines = text.split(/\r?\n/).filter((line) => /transition-(?:all|colors|transform|opacity)/.test(line));
+    transitionLines.forEach((line) => expect(line).toContain('motion-reduce:transition-none'));
+    const animationLines = text.split(/\r?\n/).filter((line) => /animate-(?!none)/.test(line));
+    animationLines.forEach((line) => expect(line).toMatch(/quizreducedMotionClass|motion-reduce:animate-none/));
+  });
+
+  it('uses state-specific control names and live explainer feedback', () => {
+    const text = source();
+    expect(text).not.toContain(`<button type="button" aria-label={t('common.cancel')} key={optIdx}`);
+    expect(text).not.toContain("aria-label={t('common.collapse')} onClick={() => togglePresentationExplanation(i)}");
+    expect(text).not.toContain("aria-label={t('common.show')} onClick={() => togglePresentationAnswer(i)}");
+    expect(text).toContain("aria-label={showAnswer ? t('quiz.hide_answer') : t('quiz.reveal_answer')}");
+    expect(text).toContain('role="status" aria-live="polite"');
+    expect(text).toContain('role="alert">{explainerModal.error}</div>');
+  });
+
   it('passes the repository static audit after generation', () => {
     const result = spawnSync(process.execPath, ['a11y-audit/static-audit.js', '--file', 'view_quiz_module.js'], {
       cwd: process.cwd(),
