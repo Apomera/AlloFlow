@@ -1331,6 +1331,7 @@ const AlloCommandPalette = ({ ctx }) => {
       return [];
     }
   });
+  const dialogRef = useRef(null);
   const inputRef = useRef(null);
   const prevFocusRef = useRef(null);
   const t = _mkT(ctx && ctx.t);
@@ -1423,13 +1424,62 @@ const AlloCommandPalette = ({ ctx }) => {
   useEffect(() => {
     if (open && inputRef.current) inputRef.current.focus();
     if (!open && prevFocusRef.current) {
+      const previous = prevFocusRef.current;
+      prevFocusRef.current = null;
       try {
-        prevFocusRef.current.focus();
+        if (previous.isConnected && typeof previous.focus === "function") previous.focus();
       } catch (_) {
       }
-      prevFocusRef.current = null;
     }
   }, [open]);
+  useEffect(() => {
+    if (!open) return void 0;
+    const dialog = dialogRef.current;
+    const input = inputRef.current;
+    if (!dialog || !input) return void 0;
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+    )).filter((node) => !node.hidden && node.getAttribute("aria-hidden") !== "true");
+    const onDocumentKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (confirming) {
+          setConfirming(null);
+          input.focus();
+        } else {
+          setOpen(false);
+        }
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !dialog.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const onDocumentFocusIn = (event) => {
+      if (!dialog.contains(event.target)) input.focus();
+    };
+    document.addEventListener("keydown", onDocumentKeyDown, true);
+    document.addEventListener("focusin", onDocumentFocusIn);
+    return () => {
+      document.removeEventListener("keydown", onDocumentKeyDown, true);
+      document.removeEventListener("focusin", onDocumentFocusIn);
+    };
+  }, [open, confirming]);
   useEffect(() => {
     if (open) setSel(selectable.length ? selectable[0] : 0);
   }, [open, query]);
@@ -1502,14 +1552,16 @@ const AlloCommandPalette = ({ ctx }) => {
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[12000] flex items-start justify-center pt-[14vh] px-4", role: "presentation", onClick: () => setOpen(false) }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
     "div",
     {
+      ref: dialogRef,
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": t("palette.aria", "AlloFlow command palette"),
+      "aria-labelledby": "allo-palette-title",
+      tabIndex: -1,
       "data-help-ignore": "true",
       className: "relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-indigo-200 overflow-hidden",
       onClick: (e) => e.stopPropagation()
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 py-3 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u26A1"), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 py-3 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("h2", { id: "allo-palette-title", className: "sr-only" }, t("palette.aria", "AlloFlow command palette")), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u26A1"), /* @__PURE__ */ React.createElement(
       "input",
       {
         ref: inputRef,
@@ -1532,10 +1584,6 @@ const AlloCommandPalette = ({ ctx }) => {
             e.preventDefault();
             const row = rows[sel];
             if (row && row.kind === "cmd") runCmd(row.c);
-          } else if (e.key === "Escape") {
-            e.preventDefault();
-            if (confirming) setConfirming(null);
-            else setOpen(false);
           }
         },
         placeholder: t("palette.placeholder", "Type a command \u2014 \u201Cbigger text\u201D, \u201Ceducator hub\u201D, \u201Cread this page\u201D\u2026"),
@@ -1548,19 +1596,32 @@ const AlloCommandPalette = ({ ctx }) => {
         "aria-activedescendant": selectedCommandId ? "allo-cmd-" + selectedCommandId : void 0,
         className: "flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500"
       }
-    ), /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5" }, "Esc")),
-    /* @__PURE__ */ React.createElement("div", { id: "allo-palette-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, paletteStatus),
-    /* @__PURE__ */ React.createElement("ul", { id: "allo-palette-list", role: "listbox", "aria-label": t("palette.list_aria", "Matching commands"), className: "max-h-[46vh] overflow-y-auto py-1" }, selectable.length === 0 && /* @__PURE__ */ React.createElement("li", { role: "presentation", className: "px-4 py-6 text-center text-xs text-slate-600" }, t("palette.no_match", "No matching command. The bot chat (and soon voice) understands free-form requests.")), rows.map((row, i) => row.kind === "header" ? /* @__PURE__ */ React.createElement("li", { key: "h-" + i, role: "presentation", className: "px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 select-none" }, row.label) : /* @__PURE__ */ React.createElement("li", { key: row.c.id, id: "allo-cmd-" + row.c.id, role: "option", "aria-selected": i === sel }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5" }, "Esc"), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
+        onClick: () => setOpen(false),
+        "aria-label": t("palette.close", "Close command palette"),
+        className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-xl leading-none text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")
+    )),
+    /* @__PURE__ */ React.createElement("div", { id: "allo-palette-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, paletteStatus),
+    /* @__PURE__ */ React.createElement("ul", { id: "allo-palette-list", role: "listbox", "aria-label": t("palette.list_aria", "Matching commands"), className: "max-h-[46vh] overflow-y-auto py-1" }, selectable.length === 0 && /* @__PURE__ */ React.createElement("li", { role: "presentation", className: "px-4 py-6 text-center text-xs text-slate-600" }, t("palette.no_match", "No matching command. The bot chat (and soon voice) understands free-form requests.")), rows.map((row, i) => row.kind === "header" ? /* @__PURE__ */ React.createElement("li", { key: "h-" + i, role: "presentation", className: "px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 select-none" }, row.label) : /* @__PURE__ */ React.createElement(
+      "li",
+      {
+        key: row.c.id,
+        id: "allo-cmd-" + row.c.id,
+        role: "option",
+        "aria-selected": i === sel,
         onClick: () => runCmd(row.c),
         onMouseEnter: () => setSel(i),
-        className: `w-full text-left px-4 py-2.5 flex items-center gap-3 ${i === sel ? "bg-indigo-50" : ""}`
+        className: `min-h-11 w-full cursor-pointer px-4 py-2.5 text-left flex items-center gap-3 ${i === sel ? "bg-indigo-50" : ""}`
       },
       /* @__PURE__ */ React.createElement("span", { className: "text-lg shrink-0", "aria-hidden": "true" }, row.c.icon),
       /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: `block text-sm font-bold ${i === sel ? "text-indigo-900" : "text-slate-800"}` }, row.c.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 truncate" }, confirming === row.c.id ? t("palette.confirm", "\u26A0 Press Enter again to confirm") : row.c.hint)),
       i === sel && /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-indigo-600 border border-indigo-300 rounded px-1.5 py-0.5 shrink-0" }, "\u21B5")
-    )))),
+    ))),
     /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 border-t border-slate-200 text-[10px] text-slate-600 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("kbd", { className: "border border-slate-300 rounded px-1" }, "\u2191\u2193"), " ", t("palette.nav", "navigate")), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("kbd", { className: "border border-slate-300 rounded px-1" }, "\u21B5"), " ", t("palette.run", "run")), /* @__PURE__ */ React.createElement("span", { className: "ml-auto" }, t("palette.footer", "Every action is announced. Ctrl+K toggles.")))
   ));
 };
