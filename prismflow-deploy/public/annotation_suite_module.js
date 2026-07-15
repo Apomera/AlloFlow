@@ -335,7 +335,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
         {
           type: "button",
           onClick: commit,
-          className: "px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold",
+          className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold",
           "aria-label": t("a11y.save_note"),
           title: "Save & close"
         },
@@ -350,7 +350,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
           onClick: function() {
             onDelete(a.id);
           },
-          className: "px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold",
+          className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold",
           "aria-label": t("a11y.delete_note"),
           title: "Delete"
         },
@@ -450,7 +450,7 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
           onClick: function() {
             setExpanded(false);
           },
-          className: "px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold",
+          className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold",
           style: { color: accent },
           "aria-label": t("a11y.close_voice_note"),
           title: "Close"
@@ -463,7 +463,7 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
           onClick: function() {
             onDelete(a.id);
           },
-          className: "px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold",
+          className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold",
           style: { color: accent },
           "aria-label": t("a11y.delete_voice_note"),
           title: "Delete"
@@ -509,7 +509,7 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
       {
         type: "button",
         onClick: onCancel,
-        className: "px-2 py-1 rounded text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200",
+        className: "min-h-6 px-2 py-1 rounded text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200",
         "aria-label": t("a11y.cancel_recording")
       },
       "Cancel"
@@ -518,7 +518,7 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
       {
         type: "button",
         onClick: onStop,
-        className: "px-3 py-1 rounded text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 flex items-center gap-1",
+        className: "min-h-6 px-3 py-1 rounded text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 flex items-center gap-1",
         "aria-label": t("a11y.stop_save_recording")
       },
       /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 bg-white" }),
@@ -1610,7 +1610,7 @@ function Sidebar(props) {
         onClick: function() {
           setFilter(key);
         },
-        className: "px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors motion-reduce:transition-none " + (active ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"),
+        className: "min-h-6 px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors motion-reduce:transition-none " + (active ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"),
         "aria-pressed": active
       },
       label,
@@ -1625,14 +1625,14 @@ function Sidebar(props) {
       className: "fixed top-16 right-3 z-[60] bg-white border border-slate-300 rounded-xl shadow-2xl flex flex-col",
       style: { width: 300, maxHeight: "calc(100vh - 120px)" },
       role: "region",
-      "aria-label": "Annotation list"
+      "aria-labelledby": "annotation-list-title"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, "\u{1F4CB} Annotations ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, "(", counts.total, ")")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, onImport && /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-xl" }, /* @__PURE__ */ React.createElement("h2", { id: "annotation-list-title", className: "text-xs font-bold text-slate-700" }, "\u{1F4CB} Annotations ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, "(", counts.total, ")")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, onImport && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: onImport,
-        className: "px-2 py-0.5 text-[10px] font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300",
+        className: "min-h-6 px-2 py-0.5 text-[10px] font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300",
         "aria-label": "Import annotations from a saved file",
         title: "Import annotations from a file (e.g., a student's downloaded annotations)"
       },
@@ -1642,14 +1642,14 @@ function Sidebar(props) {
       {
         type: "button",
         onClick: onClose,
-        className: "p-1 text-slate-500 hover:text-red-500 rounded-full hover:bg-white",
+        className: "inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-500 hover:text-red-500 rounded-full hover:bg-white",
         "aria-label": "Close annotation list",
         title: "Close"
       },
       X ? /* @__PURE__ */ React.createElement(X, { size: 14 }) : /* @__PURE__ */ React.createElement("span", null, "\u2715")
     ))),
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-3 py-2 border-b border-slate-200" }, Pill("all", "All", counts.total), Pill("teacher", "Teacher", counts.teacher), Pill("mine", isTeacher ? "Teacher" : "Mine", mineCount)),
-    /* @__PURE__ */ React.createElement("div", { className: "overflow-y-auto flex-1 px-1 py-1", style: { minHeight: 100 } }, visible.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-6 text-center text-[11px] text-slate-600 italic" }, "No annotations match this filter."), visible.map(function(a) {
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-3 py-2 border-b border-slate-200", role: "group", "aria-label": "Filter annotations" }, Pill("all", "All", counts.total), Pill("teacher", "Teacher", counts.teacher), Pill("mine", isTeacher ? "Teacher" : "Mine", mineCount)),
+    /* @__PURE__ */ React.createElement("div", { className: "overflow-y-auto flex-1 px-1 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-600", style: { minHeight: 100 }, role: "list", "aria-label": "Annotations", tabIndex: 0 }, visible.length === 0 && /* @__PURE__ */ React.createElement("div", { role: "listitem", className: "px-3 py-6 text-center text-[11px] text-slate-600 italic" }, "No annotations match this filter."), visible.map(function(a) {
       const isTeacherAnno = a.author === "teacher";
       const canDelete = isTeacher || a.author === "student";
       const title = buildStickerTitle(a);
@@ -1657,21 +1657,22 @@ function Sidebar(props) {
         "div",
         {
           key: a.id,
-          className: "group px-2 py-1.5 mb-0.5 rounded-md text-xs cursor-pointer transition-colors motion-reduce:transition-none " + (isTeacherAnno ? "bg-indigo-50/60 hover:bg-indigo-100 border-s-2 border-indigo-400" : "bg-amber-50/40 hover:bg-amber-100 border-s-2 border-amber-300"),
-          onClick: function() {
-            onFocus(a.id);
-          },
-          role: "button",
-          tabIndex: 0,
-          onKeyDown: function(e) {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onFocus(a.id);
-            }
-          },
-          "aria-label": "Jump to " + annotationPreview(a) + " from " + title
+          role: "listitem",
+          className: "group px-2 py-1.5 mb-0.5 rounded-md text-xs transition-colors motion-reduce:transition-none " + (isTeacherAnno ? "bg-indigo-50/60 hover:bg-indigo-100 border-s-2 border-indigo-400" : "bg-amber-50/40 hover:bg-amber-100 border-s-2 border-amber-300")
         },
-        /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-medium text-slate-800 truncate" }, annotationPreview(a)), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5 truncate" }, title || (isTeacherAnno ? "Teacher" : "Student"))), canDelete && /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: function() {
+              onFocus(a.id);
+            },
+            className: "min-h-6 flex-1 min-w-0 rounded text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+            "aria-label": "Jump to " + annotationPreview(a) + " from " + title
+          },
+          /* @__PURE__ */ React.createElement("div", { className: "font-medium text-slate-800 truncate" }, annotationPreview(a)),
+          /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5 truncate" }, title || (isTeacherAnno ? "Teacher" : "Student"))
+        ), canDelete && /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -1679,7 +1680,7 @@ function Sidebar(props) {
               e.stopPropagation();
               onDelete(a.id);
             },
-            className: "opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none p-0.5 text-slate-600 hover:text-red-500 rounded",
+            className: "inline-flex min-h-6 min-w-6 items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none p-0.5 text-slate-600 hover:text-red-500 rounded",
             "aria-label": "Delete " + annotationPreview(a),
             title: "Delete"
           },
