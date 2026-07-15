@@ -62,7 +62,7 @@
   if (document.getElementById("allo-sf-focus-css")) return;
   var st = document.createElement("style");
   st.id = "allo-sf-focus-css";
-  st.textContent = "[data-sf-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}";
+  st.textContent = '.sf-modal-root :is(button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])):focus-visible{outline:3px solid #fff!important;outline-offset:2px!important;box-shadow:0 0 0 5px #0f172a!important;border-radius:6px}@media (forced-colors:active){.sf-modal-root :is(button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])):focus-visible{outline-color:Highlight!important;box-shadow:none!important}}';
   if (document.head) document.head.appendChild(st);
 })();
 let _sfAnnounceTimer = null;
@@ -5240,7 +5240,7 @@ show();
       value: storyTitle,
       onChange: (e) => setStoryTitle(e.target.value),
       placeholder: t("placeholders.story_title"),
-      className: "w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none font-bold"
+      className: "w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 font-bold"
     }
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("labels.pen_name")), /* @__PURE__ */ React.createElement("div", { className: "w-full text-sm p-2.5 border border-slate-400 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-base" }, "\xE2\u0153\x8D\xEF\xB8\x8F"), " ", authorName), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-1" }, "Your codename is your pen name \xE2\u20AC\u201D it keeps your identity private")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-indigo-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-indigo-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16 }), " Genre"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" }, Object.entries(GENRE_TEMPLATES).map(([key, g]) => /* @__PURE__ */ React.createElement(
     "button",
@@ -5313,7 +5313,7 @@ show();
       onKeyDown: (e) => e.key === "Enter" && addVocabTerm(),
       placeholder: t("placeholders.add_a_term"),
       "aria-label": t("a11y.vocabulary_term"),
-      className: "flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
+      className: "flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300"
     }
   ), /* @__PURE__ */ React.createElement(
     "input",
@@ -5324,7 +5324,7 @@ show();
       onKeyDown: (e) => e.key === "Enter" && addVocabTerm(),
       placeholder: t("placeholders.definition_optional"),
       "aria-label": t("a11y.term_definition"),
-      className: "flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
+      className: "flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300"
     }
   ), /* @__PURE__ */ React.createElement("button", { onClick: addVocabTerm, disabled: !newTerm.trim(), className: "px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Add"))), /* @__PURE__ */ React.createElement(
     "button",
@@ -5362,7 +5362,7 @@ show();
       onChange: (e) => setCustomArtStyle(e.target.value),
       placeholder: t("placeholders.custom_art_style"),
       "aria-label": t("a11y.custom_art_style"),
-      className: "mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
+      className: "mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-purple-300"
     }
   )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-teal-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-teal-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Type, { size: 16 }), " Writing Language"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-2" }, LANG_OPTIONS.map((l) => /* @__PURE__ */ React.createElement(
     "button",
@@ -5380,7 +5380,7 @@ show();
       onChange: (e) => setCustomLanguage(e.target.value),
       placeholder: t("placeholders.type_your_language"),
       "aria-label": t("a11y.custom_writing_language"),
-      className: "mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-300 outline-none"
+      className: "mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-300"
     }
   ), language !== "en" && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-teal-500 font-medium" }, "AI scaffolds, coaching, grading, and dictation will use ", langLabel)), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-amber-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " Story Prompt (Optional)"), /* @__PURE__ */ React.createElement(
     "textarea",
@@ -5389,7 +5389,7 @@ show();
       onChange: (e) => setStoryPrompt(e.target.value),
       placeholder: "Give your students a theme or starting scenario... e.g., 'Write about a scientist who discovers something unexpected'",
       "aria-label": t("a11y.story_prompt"),
-      className: "w-full text-sm p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-none h-20"
+      className: "w-full text-sm p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-amber-300 resize-none h-20"
     }
   ), genre !== "free" && STORY_STARTERS[genre] && /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-3 border-t border-amber-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-2" }, "\xF0\u0178\u2019\xA1 ", GENRE_TEMPLATES[genre]?.label, " Story Starters \xE2\u20AC\u201D click to use"), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, STORY_STARTERS[genre].map((starter, si) => /* @__PURE__ */ React.createElement(
     "button",
@@ -5408,10 +5408,10 @@ show();
       value: rubricText,
       onChange: (e) => setRubricText(e.target.value),
       placeholder: "| Criteria | 1 - Beginning | 3 - Developing | 5 - Exemplary |\n|----------|---------------|----------------|---------------|\n| Vocabulary | Few terms used | Some terms used | All terms used correctly |",
-      className: "w-full text-xs p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none resize-none h-24 font-mono",
+      className: "w-full text-xs p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-emerald-300 resize-none h-24 font-mono",
       "aria-label": t("a11y.custom_grading_rubric")
     }
-  )))), phase === "write" && /* @__PURE__ */ React.createElement("div", { className: `space-y-4 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, t("ui_common.write_your_story")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Use your vocabulary ingredients in each paragraph", revisionSnapshot && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 ml-2" }, "Draft #", draftCount, " \xE2\u20AC\u201D revising!"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, timerActive ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-rose-100 border border-rose-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-black tabular-nums ${timerDuration - timerSeconds <= 30 ? "text-red-600 animate-pulse" : "text-rose-700"}` }, formatTime(timerSeconds)), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  )))), phase === "write" && /* @__PURE__ */ React.createElement("div", { className: `space-y-4 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, t("ui_common.write_your_story")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Use your vocabulary ingredients in each paragraph", revisionSnapshot && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 ml-2" }, "Draft #", draftCount, " \xE2\u20AC\u201D revising!"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, timerActive ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-rose-100 border border-rose-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-black tabular-nums ${timerDuration - timerSeconds <= 30 ? "text-red-600 animate-pulse motion-reduce:animate-none" : "text-rose-700"}` }, formatTime(timerSeconds)), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setTimerActive(false);
     clearTimeout(timerRef.current);
   }, className: "text-[11px] font-bold text-rose-500 hover:text-rose-700" }, t("ui_common.stop"))) : /* @__PURE__ */ React.createElement("div", { className: "flex bg-slate-100 rounded-full p-0.5" }, [3, 5, 10].map((min) => /* @__PURE__ */ React.createElement("button", { key: min, onClick: () => startTimer(min), className: "px-2 py-1 rounded-full text-[11px] font-bold text-slate-600 hover:text-rose-600 hover:bg-white transition-all", title: `${min}-minute writing sprint` }, min, "m"))), /* @__PURE__ */ React.createElement("div", { className: "flex bg-slate-100 rounded-full p-0.5" }, Object.entries(LAYOUT_MODES).map(([key, m]) => /* @__PURE__ */ React.createElement(
@@ -5615,7 +5615,7 @@ show();
       onClick: () => toggleDictation(idx),
       disabled: language === "other",
       title: language === "other" ? "Voice typing works only with the listed languages (it would otherwise transcribe in English). Pick a language from the list to use it." : "Start dictation",
-      className: `text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${language === "other" ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50" : dictation.isDictating && dictatingParagraphIdx === idx ? "bg-red-100 border-red-300 text-red-600 animate-pulse" : "bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700"}`,
+      className: `text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${language === "other" ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50" : dictation.isDictating && dictatingParagraphIdx === idx ? "bg-red-100 border-red-300 text-red-600 animate-pulse motion-reduce:animate-none" : "bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700"}`,
       "aria-label": language === "other" ? "Voice typing unavailable for a custom language" : dictation.isDictating && dictatingParagraphIdx === idx ? "Stop dictation" : "Start dictation"
     },
     /* @__PURE__ */ React.createElement(Mic, { size: 10 }),
@@ -5637,7 +5637,7 @@ show();
       id: `sf-beat-${p.id}`,
       value: p.plotBeat || "",
       onChange: (e) => updateParagraphBeat(idx, e.target.value),
-      className: "text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium outline-none focus:border-indigo-500",
+      className: "text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium focus:border-indigo-500",
       "aria-label": `Plot beat for paragraph ${idx + 1} (optional)`
     },
     PLOT_BEATS.map((b) => /* @__PURE__ */ React.createElement("option", { key: b.value || "none", value: b.value }, b.label))
@@ -5677,7 +5677,7 @@ show();
       {
         value: (panelDirections[p.id] || {})[field] || "",
         onChange: (e) => updatePanelDirection(p.id, field, e.target.value),
-        className: "w-full px-2 py-1.5 text-[11px] rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-bold outline-none focus:border-blue-400",
+        className: "w-full px-2 py-1.5 text-[11px] rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-bold focus:border-blue-400",
         "aria-label": `Panel ${idx + 1} ${label.toLowerCase()}`
       },
       options.map((opt) => /* @__PURE__ */ React.createElement("option", { key: opt.value || `${field}-none`, value: opt.value }, opt.label))
@@ -5697,7 +5697,7 @@ show();
         type: "text",
         value: (panelThumbnails[p.id] || {}).focalPoint || "",
         onChange: (e) => updatePanelThumbnail(p.id, "focalPoint", e.target.value),
-        className: "w-full px-2 py-1.5 text-[11px] rounded-md border border-teal-100 bg-white text-slate-700 outline-none focus:border-teal-400",
+        className: "w-full px-2 py-1.5 text-[11px] rounded-md border border-teal-100 bg-white text-slate-700 focus:border-teal-400",
         placeholder: "Focal point",
         "aria-label": `Panel ${idx + 1} focal point`
       }
@@ -5706,7 +5706,7 @@ show();
       {
         value: (panelThumbnails[p.id] || {}).letteringSpace || "",
         onChange: (e) => updatePanelThumbnail(p.id, "letteringSpace", e.target.value),
-        className: "w-full px-2 py-1.5 text-[11px] rounded-md border border-teal-100 bg-white text-slate-700 font-bold outline-none focus:border-teal-400",
+        className: "w-full px-2 py-1.5 text-[11px] rounded-md border border-teal-100 bg-white text-slate-700 font-bold focus:border-teal-400",
         "aria-label": `Panel ${idx + 1} lettering space`
       },
       COMIC_LETTERING_SPACE_OPTIONS.map((opt) => /* @__PURE__ */ React.createElement("option", { key: opt.value || "lettering-space-none", value: opt.value }, opt.label))
@@ -5715,7 +5715,7 @@ show();
       {
         value: (panelThumbnails[p.id] || {}).composition || "",
         onChange: (e) => updatePanelThumbnail(p.id, "composition", e.target.value),
-        className: "mt-2 w-full p-2 text-[11px] resize-none outline-none border border-teal-100 rounded-lg bg-white focus:border-teal-400",
+        className: "mt-2 w-full p-2 text-[11px] resize-none border border-teal-100 rounded-lg bg-white focus:border-teal-400",
         style: { minHeight: "38px" },
         placeholder: "Composition: foreground/background, negative space, character placement...",
         "aria-label": `Panel ${idx + 1} composition rough`
@@ -5725,7 +5725,7 @@ show();
       {
         value: (panelThumbnails[p.id] || {}).sketchNote || "",
         onChange: (e) => updatePanelThumbnail(p.id, "sketchNote", e.target.value),
-        className: "mt-2 w-full p-2 text-[11px] resize-none outline-none border border-teal-100 rounded-lg bg-white focus:border-teal-400",
+        className: "mt-2 w-full p-2 text-[11px] resize-none border border-teal-100 rounded-lg bg-white focus:border-teal-400",
         style: { minHeight: "34px" },
         placeholder: "Sketch note: silhouette, motion, important prop, or staging reminder...",
         "aria-label": `Panel ${idx + 1} thumbnail sketch note`
@@ -5735,7 +5735,7 @@ show();
       {
         value: p.text,
         onChange: (e) => updateParagraph(idx, e.target.value),
-        className: "w-full p-2.5 text-xs resize-none outline-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic",
+        className: "w-full p-2.5 text-xs resize-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic",
         style: { minHeight: "50px" },
         placeholder: t("placeholders.panel_narrator"),
         "aria-label": `Panel ${idx + 1} narration`
@@ -5746,7 +5746,7 @@ show();
         type: "text",
         value: (panelDialogue[p.id] || {}).speaker || "",
         onChange: (e) => updatePanelDialogue(p.id, "speaker", e.target.value),
-        className: "w-20 p-1.5 text-[11px] border border-blue-200 rounded-lg outline-none focus:border-blue-400 font-bold text-blue-700",
+        className: "w-20 p-1.5 text-[11px] border border-blue-200 rounded-lg focus:border-blue-400 font-bold text-blue-700",
         placeholder: t("placeholders.who_speaker"),
         "aria-label": `Panel ${idx + 1} speaker name`
       }
@@ -5755,7 +5755,7 @@ show();
       {
         value: (panelDialogue[p.id] || {}).speech || "",
         onChange: (e) => updatePanelDialogue(p.id, "speech", e.target.value),
-        className: "flex-1 p-2 text-xs resize-none outline-none border-2 border-blue-200 rounded-xl bg-white focus:border-blue-400 transition-colors",
+        className: "flex-1 p-2 text-xs resize-none border-2 border-blue-200 rounded-xl bg-white focus:border-blue-400 transition-colors",
         style: { minHeight: "36px", borderRadius: "16px" },
         placeholder: '"What the character says out loud..."',
         "aria-label": `Panel ${idx + 1} speech`
@@ -5765,7 +5765,7 @@ show();
       {
         value: (panelDialogue[p.id] || {}).thought || "",
         onChange: (e) => updatePanelDialogue(p.id, "thought", e.target.value),
-        className: "w-full p-2 text-xs resize-none outline-none border-2 border-purple-200 rounded-xl bg-purple-50/30 focus:border-purple-400 transition-colors italic",
+        className: "w-full p-2 text-xs resize-none border-2 border-purple-200 rounded-xl bg-purple-50/30 focus:border-purple-400 transition-colors italic",
         style: { minHeight: "30px", borderRadius: "20px", borderStyle: "dashed" },
         placeholder: t("placeholders.character_thinking"),
         "aria-label": `Panel ${idx + 1} thought`
@@ -5776,7 +5776,7 @@ show();
         type: "text",
         value: (panelDialogue[p.id] || {}).sfx || "",
         onChange: (e) => updatePanelDialogue(p.id, "sfx", e.target.value),
-        className: "flex-1 p-1.5 text-xs border border-red-200 rounded-lg outline-none focus:border-red-400 font-black text-red-600 uppercase",
+        className: "flex-1 p-1.5 text-xs border border-red-200 rounded-lg focus:border-red-400 font-black text-red-600 uppercase",
         placeholder: t("placeholders.sound_effect_example"),
         "aria-label": `Panel ${idx + 1} sound effect`
       }
@@ -5805,7 +5805,7 @@ show();
         value: p.text,
         onChange: (e) => updateParagraph(idx, e.target.value),
         dir: "auto",
-        className: `w-full p-4 text-sm resize-none outline-none transition-colors ${layoutMode === "dark" ? "bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-700 caret-cyan-400" : layoutMode === "journal" ? "bg-amber-50 text-amber-900 placeholder:text-amber-600 focus:bg-amber-100/50" : "focus:bg-rose-50/30"}`,
+        className: `w-full p-4 text-sm resize-none transition-colors ${layoutMode === "dark" ? "bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-700 caret-cyan-400" : layoutMode === "journal" ? "bg-amber-50 text-amber-900 placeholder:text-amber-600 focus:bg-amber-100/50" : "focus:bg-rose-50/30"}`,
         style: {
           minHeight: "120px",
           fontFamily: layoutMode === "journal" ? "'Georgia', 'Times New Roman', serif" : "inherit",
@@ -5836,7 +5836,7 @@ show();
         "aria-hidden": "true"
       }
     ),
-    hwLoading && hwTargetParagraph === idx ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\xE2\x8F\xB3") : "\xF0\u0178\u201C\xB7",
+    hwLoading && hwTargetParagraph === idx ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin motion-reduce:animate-none" }, "\xE2\x8F\xB3") : "\xF0\u0178\u201C\xB7",
     hwLoading && hwTargetParagraph === idx ? " Reading..." : " Snap Your Writing"
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -5918,7 +5918,7 @@ show();
     /* @__PURE__ */ React.createElement(ImageIcon, { size: 14 }),
     " ",
     isProcessing ? "Generating..." : "Illustrate All"
-  ))), (coverArt || coverArtLoading) && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2" }, t("ui_common.book_cover")), coverArtLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "text-purple-700 animate-spin" })) : coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: t("alts.book_cover"), className: "max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" })), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-widest" }, "Comic Continuity"), onCallGemini && /* @__PURE__ */ React.createElement(
+  ))), (coverArt || coverArtLoading) && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2" }, t("ui_common.book_cover")), coverArtLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "text-purple-700 animate-spin motion-reduce:animate-none" })) : coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: t("alts.book_cover"), className: "max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" })), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-widest" }, "Comic Continuity"), onCallGemini && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: draftComicContinuity,
@@ -5938,7 +5938,7 @@ show();
       value: comicContinuity[field] || "",
       onChange: (e) => updateComicContinuity(field, e.target.value),
       placeholder,
-      className: "w-full h-20 p-2 text-xs rounded-lg border border-purple-100 bg-purple-50/40 text-slate-700 outline-none focus:border-purple-400 resize-none",
+      className: "w-full h-20 p-2 text-xs rounded-lg border border-purple-100 bg-purple-50/40 text-slate-700 focus:border-purple-400 resize-none",
       "aria-label": `Comic continuity ${label.toLowerCase()}`
     }
   ))))), promptPreview && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border-2 border-purple-300 rounded-2xl p-5 shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " Preview Image Prompt \xE2\u20AC\u201D ", layoutMode === "comic" ? "Panel" : "Paragraph", " ", promptPreview.idx + 1), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, "Edit the prompt below before generating, or click Generate to proceed."), /* @__PURE__ */ React.createElement(
@@ -5946,7 +5946,7 @@ show();
     {
       value: promptPreview.prompt,
       onChange: (e) => setPromptPreview((prev) => ({ ...prev, prompt: e.target.value })),
-      className: "w-full text-sm p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none resize-none h-20",
+      className: "w-full text-sm p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-300 resize-none h-20",
       "aria-label": t("a11y.image_gen_prompt")
     }
   ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("button", { onClick: () => confirmIllustration(), className: "px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14 }), " Generate Image"), /* @__PURE__ */ React.createElement("button", { onClick: () => setPromptPreview(null), className: "px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors" }, "Cancel"))), paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-purple-600 mb-1" }, layoutMode === "comic" ? "Panel" : "Paragraph", " ", idx + 1), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed" }, p.text || p.scaffoldFrame || /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-500" }, t("ui_common.empty_paragraph"))), illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-purple-700 italic truncate", title: illustrations[p.id].prompt }, "Prompt: ", illustrations[p.id].prompt.substring(0, 80), "..."), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
@@ -5960,7 +5960,7 @@ show();
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }),
     " Draft Art Prompt"
-  )), /* @__PURE__ */ React.createElement("div", { className: "w-48 shrink-0" }, illustrations[p.id]?.isLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-36 bg-purple-50 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-200" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24, className: "text-purple-700 animate-spin" })) : illustrations[p.id]?.imageUrl ? /* @__PURE__ */ React.createElement("div", { className: "relative group" }, /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Illustration ${idx + 1}`, className: "w-48 rounded-xl shadow-md border border-purple-100" }), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" }, illustrations[p.id]?.previousImageUrl && /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "w-48 shrink-0" }, illustrations[p.id]?.isLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-36 bg-purple-50 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-200" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24, className: "text-purple-700 animate-spin motion-reduce:animate-none" })) : illustrations[p.id]?.imageUrl ? /* @__PURE__ */ React.createElement("div", { className: "relative group" }, /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Illustration ${idx + 1}`, className: "w-48 rounded-xl shadow-md border border-purple-100" }), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" }, illustrations[p.id]?.previousImageUrl && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => undoIllustration(p.id),
@@ -5998,7 +5998,7 @@ show();
         if (e.key === "Enter" && imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt);
       },
       placeholder: "e.g., make sky purple, add a dog...",
-      className: "w-full text-[11px] p-1.5 border border-purple-200 rounded-lg outline-none focus:ring-1 focus:ring-purple-300",
+      className: "w-full text-[11px] p-1.5 border border-purple-200 rounded-lg focus:ring-1 focus:ring-purple-300",
       "aria-label": t("a11y.describe_illustration_changes"),
       autoFocus: true
     }
@@ -6039,7 +6039,7 @@ show();
       id: "sf-voice",
       value: narratorVoice,
       onChange: (e) => setNarratorVoice(e.target.value),
-      className: "text-xs p-1 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-300 outline-none font-bold text-indigo-700"
+      className: "text-xs p-1 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-700"
     },
     VOICE_POOL.map((v) => /* @__PURE__ */ React.createElement("option", { key: v, value: v }, v))
   )), characters.length === 0 && /* @__PURE__ */ React.createElement("button", { onClick: detectCharacters, disabled: isProcessing, className: "px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-200 transition-colors disabled:opacity-50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " Detect Characters"), /* @__PURE__ */ React.createElement("button", { onClick: narrateAll, disabled: isProcessing, className: "px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Volume2, { size: 14 }), " ", isProcessing ? "Narrating..." : "Narrate All"), /* @__PURE__ */ React.createElement(
@@ -6064,7 +6064,7 @@ show();
     const isCurrentPlayback = playbackIdx === idx;
     const hasSentenceAudio = seg?.sentenceAudios && seg.sentenceAudios.length > 0;
     const displaySentences = hasSentenceAudio ? seg.sentences : splitSentences(p.text);
-    return /* @__PURE__ */ React.createElement("div", { key: p.id, className: `bg-white rounded-2xl border-2 shadow-sm p-5 transition-colors ${isCurrentPlayback ? "border-green-400 bg-green-50/30" : "border-indigo-100"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "Paragraph ", idx + 1, " ", isCurrentPlayback && "\u25B6 Playing"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, hasSentenceAudio ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-green-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12 }), " AI Narrated (", seg.sentenceAudios.filter(Boolean).length, " sentences)") : seg?.aiLoading ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-indigo-400 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin" }), " Generating...") : /* @__PURE__ */ React.createElement("button", { onClick: () => narrateParagraph(p.id, p.text), className: "text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Volume2, { size: 12 }), " Narrate"), hasSentenceAudio && /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: p.id, className: `bg-white rounded-2xl border-2 shadow-sm p-5 transition-colors ${isCurrentPlayback ? "border-green-400 bg-green-50/30" : "border-indigo-100"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "Paragraph ", idx + 1, " ", isCurrentPlayback && "\u25B6 Playing"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, hasSentenceAudio ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-green-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12 }), " AI Narrated (", seg.sentenceAudios.filter(Boolean).length, " sentences)") : seg?.aiLoading ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-indigo-400 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }), " Generating...") : /* @__PURE__ */ React.createElement("button", { onClick: () => narrateParagraph(p.id, p.text), className: "text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Volume2, { size: 12 }), " Narrate"), hasSentenceAudio && /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {
@@ -6085,7 +6085,7 @@ show();
       "button",
       {
         onClick: () => recordingParagraphId === p.id ? stopRecordingParagraph() : startRecordingParagraph(p.id),
-        className: `text-xs font-bold flex items-center gap-1 transition-colors ${recordingParagraphId === p.id ? "text-red-600 animate-pulse" : "text-rose-500 hover:text-rose-700"}`
+        className: `text-xs font-bold flex items-center gap-1 transition-colors ${recordingParagraphId === p.id ? "text-red-600 animate-pulse motion-reduce:animate-none" : "text-rose-500 hover:text-rose-700"}`
       },
       /* @__PURE__ */ React.createElement(Mic, { size: 12 }),
       " ",
@@ -6094,7 +6094,7 @@ show();
       "button",
       {
         onClick: () => fluencyReadingId === p.id ? stopFluencyReading(p.id, p.text) : startFluencyReading(p.id),
-        className: `text-xs font-bold flex items-center gap-1 transition-colors ${fluencyReadingId === p.id && fluencyRecording ? "text-orange-600 animate-pulse" : "text-teal-500 hover:text-teal-700"}`,
+        className: `text-xs font-bold flex items-center gap-1 transition-colors ${fluencyReadingId === p.id && fluencyRecording ? "text-orange-600 animate-pulse motion-reduce:animate-none" : "text-teal-500 hover:text-teal-700"}`,
         "aria-label": fluencyReadingId === p.id ? t("a11y.stop_fluency_reading") || "Stop fluency reading" : t("a11y.read_aloud_fluency_practice") || "Read aloud for fluency practice"
       },
       /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }),
@@ -6219,7 +6219,7 @@ show();
       disabled: valenceLoading,
       className: "text-[11px] font-bold text-violet-600 hover:text-violet-800 disabled:opacity-50 inline-flex items-center gap-1"
     },
-    valenceLoading ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\xE2\x8F\xB3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }),
+    valenceLoading ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin motion-reduce:animate-none" }, "\xE2\x8F\xB3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }),
     " ",
     valenceLoading ? "Reading\xE2\u20AC\xA6" : "Suggest arc"
   )), (() => {
@@ -6254,7 +6254,7 @@ show();
         }
       ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 w-6 text-right tabular-nums" }, v > 0 ? "+" + v : v));
     })), anySet && match ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-2 py-1.5" }, match.weak ? "Closest shape (loosely): " : "Your story looks like a ", /* @__PURE__ */ React.createElement("span", { className: "font-black" }, match.emoji, " ", match.label), match.weak ? "" : "!", " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 font-medium" }, "\xE2\u20AC\u201D a craft lens, not a rule.")) : /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-slate-500 italic" }, `Drag a point or tap "Suggest arc" to map your story's emotional ups & downs.`));
-  })())), wordFrequency.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.word_frequency")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, wordFrequency.slice(0, 12).map(([word, count]) => /* @__PURE__ */ React.createElement("div", { key: word, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${count >= 4 ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600"}`, title: `"${word}" used ${count} times` }, word, " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] opacity-60" }, "\xC3\u2014", count)))), overusedWords.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-amber-600 font-medium" }, "Tip: Try varying your word choice \xE2\u20AC\u201D ", /* @__PURE__ */ React.createElement("strong", null, overusedWords.join(", ")), " ", overusedWords.length === 1 ? "appears" : "appear", " 4+ times. Use synonyms for variety!")), !gradingResult && !isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(Star, { size: 48, className: "text-slate-600 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, 'Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your story')), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 48, className: "text-indigo-400 mx-auto mb-4 animate-spin" }), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-600 font-bold" }, "Reading your story and preparing feedback...")), gradingResult && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg", title: "AI-generated estimate \xE2\u20AC\u201D draft feedback, not a final grade" }, gradingResult.totalScore), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1.5 font-medium" }, "AI estimate \xC2\xB7 draft feedback, not a final grade")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 border-2 border-green-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16 }), " Glow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-green-800 leading-relaxed" }, gradingResult.feedback?.glow)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Grow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, gradingResult.feedback?.grow))), gradingResult.scores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, t("headings.score_breakdown")), Object.keys(selfAssessment).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-violet-400" }), " You"), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-indigo-500" }), " AI"))), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-100" }, gradingResult.scores.map((s, i) => {
+  })())), wordFrequency.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.word_frequency")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, wordFrequency.slice(0, 12).map(([word, count]) => /* @__PURE__ */ React.createElement("div", { key: word, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${count >= 4 ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600"}`, title: `"${word}" used ${count} times` }, word, " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] opacity-60" }, "\xC3\u2014", count)))), overusedWords.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-amber-600 font-medium" }, "Tip: Try varying your word choice \xE2\u20AC\u201D ", /* @__PURE__ */ React.createElement("strong", null, overusedWords.join(", ")), " ", overusedWords.length === 1 ? "appears" : "appear", " 4+ times. Use synonyms for variety!")), !gradingResult && !isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(Star, { size: 48, className: "text-slate-600 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, 'Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your story')), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 48, className: "text-indigo-400 mx-auto mb-4 animate-spin motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-600 font-bold" }, "Reading your story and preparing feedback...")), gradingResult && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg", title: "AI-generated estimate \xE2\u20AC\u201D draft feedback, not a final grade" }, gradingResult.totalScore), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1.5 font-medium" }, "AI estimate \xC2\xB7 draft feedback, not a final grade")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 border-2 border-green-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16 }), " Glow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-green-800 leading-relaxed" }, gradingResult.feedback?.glow)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Grow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, gradingResult.feedback?.grow))), gradingResult.scores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, t("headings.score_breakdown")), Object.keys(selfAssessment).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-violet-400" }), " You"), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-indigo-500" }), " AI"))), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-100" }, gradingResult.scores.map((s, i) => {
     const aiScoreNum = (() => {
       const m = String(s.score || "").match(/(\d+(?:\.\d+)?)/);
       return m ? parseFloat(m[1]) : null;
@@ -6311,7 +6311,7 @@ show();
       {
         value: pageMeta.layout || "",
         onChange: (e) => updateComicPageMeta(page.page, "layout", e.target.value),
-        className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 outline-none focus:border-blue-400",
+        className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400",
         "aria-label": `Page ${page.page} layout`
       },
       /* @__PURE__ */ React.createElement("option", { value: "" }, "Use global (", getComicPageLayoutLabel(comicPageLayout), ")"),
@@ -6321,7 +6321,7 @@ show();
       {
         value: pageMeta.turn || "",
         onChange: (e) => updateComicPageMeta(page.page, "turn", e.target.value),
-        className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 outline-none focus:border-blue-400",
+        className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400",
         "aria-label": `Page ${page.page} turn`
       },
       COMIC_PAGE_TURN_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.value || "unset", value: option.value }, option.label))
@@ -6331,7 +6331,7 @@ show();
         value: pageMeta.note || "",
         onChange: (e) => updateComicPageMeta(page.page, "note", e.target.value),
         placeholder: "Page note",
-        className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs text-slate-700 outline-none focus:border-blue-400",
+        className: "px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs text-slate-700 focus:border-blue-400",
         "aria-label": `Page ${page.page} note`
       }
     )), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, pageStats.bubblePanels ? `${pageStats.placedBubbles} of ${pageStats.bubblePanels} bubble panel${pageStats.bubblePanels === 1 ? "" : "s"} anchored` : "No bubble panels yet", pageStats.crowdedBubbles > 0 ? ` - ${pageStats.crowdedBubbles} crowded` : "", pageStats.gutterRiskPanels > 0 ? ` - ${pageStats.gutterRiskPanels} near gutter` : ""), /* @__PURE__ */ React.createElement(
@@ -6384,7 +6384,7 @@ show();
         value: printSafety.gutter,
         onChange: (e) => updateComicPrintSafety("gutter", e.target.value),
         disabled: printSafety.format === "digital",
-        className: "w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-xs font-bold text-slate-700 outline-none focus:border-emerald-400 disabled:opacity-60",
+        className: "w-full px-3 py-2 rounded-lg border border-emerald-100 bg-white text-xs font-bold text-slate-700 focus:border-emerald-400 disabled:opacity-60",
         "aria-label": "Comic print gutter"
       },
       Object.entries(COMIC_PRINT_GUTTERS).map(([key, item]) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.label, " ", item.width !== "none" ? `(${item.width})` : ""))
@@ -6457,7 +6457,7 @@ show();
       {
         value: letteringSpace,
         onChange: (e) => updatePanelThumbnail(p.id, "letteringSpace", e.target.value),
-        className: "w-full px-3 py-2 rounded-lg border border-fuchsia-100 bg-white text-xs font-bold text-slate-700 outline-none focus:border-fuchsia-400",
+        className: "w-full px-3 py-2 rounded-lg border border-fuchsia-100 bg-white text-xs font-bold text-slate-700 focus:border-fuchsia-400",
         "aria-label": `Panel ${idx + 1} bubble anchor`
       },
       COMIC_LETTERING_SPACE_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.value || "unset", value: option.value }, option.label))
