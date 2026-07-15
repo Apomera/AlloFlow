@@ -255,6 +255,45 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).toContain('.brainatlas-canvas-shell:fullscreen .brainatlas-zoom-controls');
   });
 
+  it('uses compact immersive chrome to maximize the fullscreen diagram', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const normal = render({ view: 'languageNetwork', canvasZoom: 1.25 });
+
+    expect(normal).toContain('data-brainatlas-scrollable="true"');
+    expect(normal).toMatch(/Diagram enlarged.*scroll to explore/i);
+    expect(normal).toContain('brainatlas-fullscreen-enter-label');
+    expect(normal).toContain('brainatlas-fullscreen-exit-label');
+    expect(normal).toContain('brainatlas-fullscreen-shortcut');
+    expect(normal).toMatch(/Exit full screen/);
+    expect(normal).toMatch(/>Esc<\/span>/);
+    expect(src).toContain('scrollbar-gutter:stable both-edges');
+    expect(src).toContain('.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-header');
+    expect(src).toContain('.brainatlas-canvas-shell:fullscreen .brainatlas-canvas-status');
+    expect(src).toContain('.brainatlas-canvas-shell:fullscreen .brainatlas-learning-footer');
+    expect(src).toContain('.brainatlas-canvas-shell:fullscreen .brainatlas-fullscreen-exit-label');
+  });
+
+  it('keeps previous and next diagram navigation compact and wraparound-safe', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const first = render({ view: 'lateral' });
+    const last = render({ view: 'crossLateral' });
+
+    expect(first).toContain('data-brainatlas-fullscreen-navigator="true"');
+    expect(first).toContain('data-brainatlas-previous-view="true"');
+    expect(first).toContain('data-brainatlas-next-view="true"');
+    expect(first).toContain('data-brainatlas-fullscreen-position="true"');
+    expect(first).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">1 \/ 21/);
+    expect(last).toContain('data-brainatlas-fullscreen-position="true"');
+    expect(last).toMatch(/data-brainatlas-fullscreen-position="true" aria-live="polite">21 \/ 21/);
+    expect(src).toContain('function stepBrainAtlasView(direction)');
+    expect(src).toContain('VIEW_KEYS[(currentViewIndex - 1 + VIEW_KEYS.length) % VIEW_KEYS.length]');
+    expect(src).toContain('VIEW_KEYS[(currentViewIndex + 1) % VIEW_KEYS.length]');
+    expect(src).toContain('.brainatlas-canvas-shell:fullscreen .brainatlas-fullscreen-navigator');
+    expect(src).toContain('.brainatlas-fullscreen-navigator{display:none;');
+  });
+
 
 
 
