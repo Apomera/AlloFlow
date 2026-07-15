@@ -226,7 +226,7 @@ function StorybookPicker(props) {
           key: b.slug,
           onClick: function () { pick(b); },
           disabled: !!busy,
-          className: 'flex items-start gap-3 p-2 rounded-xl border-2 border-slate-100 hover:border-amber-400 hover:bg-amber-50 transition-all bg-white text-start disabled:opacity-60',
+          className: 'flex items-start gap-3 p-2 rounded-xl border-2 border-slate-100 hover:border-amber-400 hover:bg-amber-50 transition-all motion-reduce:transition-none bg-white text-start disabled:opacity-60',
         },
           b.cover ? e('img', { src: b.cover, alt: '', loading: 'lazy', className: 'w-14 h-14 rounded-lg object-cover bg-slate-100 flex-shrink-0' }) : e('span', { className: 'w-14 h-14 rounded-lg bg-amber-50 flex items-center justify-center text-2xl flex-shrink-0', 'aria-hidden': 'true' }, '📖'),
           e('span', { className: 'min-w-0' },
@@ -241,6 +241,40 @@ function StorybookPicker(props) {
       wt('wizard.storybook_credit', 'Reading Catalog resources come from StoryWeaver and other open/public educational sources. Check each item for its license.'))
   );
 }
+const useQuickStartDialogFocus = (ref, isOpen, onEscape) => {
+  const escapeRef = useRef(onEscape);
+  escapeRef.current = onEscape;
+  useEffect(() => {
+    if (!isOpen || !ref.current) return undefined;
+    const dialog = ref.current;
+    const previouslyFocused = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+      .filter((element) => element && !element.hidden && element.getAttribute('aria-hidden') !== 'true' && !element.closest('[inert]') && element.getClientRects().length > 0);
+    const timer = setTimeout(() => (getFocusable()[0] || dialog).focus(), 0);
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        escapeRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      dialog.removeEventListener('keydown', handleKeyDown);
+      if (previouslyFocused?.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [isOpen, ref]);
+};
 const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode, initialSourceMode, onInitialModeConsumed }) => {
   const [step, setStep] = useState(1);
   const { t } = useContext(LanguageContext);
@@ -252,7 +286,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
     setIsHelpMode(false);
     onClose();
   }, [setIsHelpMode, onClose]);
-  useFocusTrap(wizardRef, isOpen, handleClose);
+  useQuickStartDialogFocus(wizardRef, isOpen, handleClose);
   const [localData, setLocalData] = useState({
       topic: '',
       grade: '3rd Grade',
@@ -526,13 +560,14 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
   return (
     <div
         ref={wizardRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="quickstart-wizard-title"
         aria-describedby="quickstart-step-status"
-        className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+        className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300"
     >
-      <div className={`bg-white w-full ${localData.sourceMode === 'storybook' && step === 3 ? 'max-w-4xl' : 'max-w-xl'} rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]`}>
+      <div className={`bg-white w-full ${localData.sourceMode === 'storybook' && step === 3 ? 'max-w-4xl' : 'max-w-xl'} rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in motion-reduce:animate-none zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]`}>
           <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0">
               <div>
                   <h2 id="quickstart-wizard-title" className="text-xl font-black text-slate-800 flex items-center gap-2">
@@ -541,24 +576,24 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                   <p id="quickstart-step-status" role="status" aria-live="polite" aria-atomic="true" className="text-xs font-bold text-slate-600 mt-1">{wt('wizard.step_status', 'Step')} {step} {wt('wizard.step_of', 'of')} 4</p>
                   <div className="flex gap-1 mt-2" role="progressbar" aria-label={wt('wizard.progress', 'Quick Start progress')} aria-valuemin={1} aria-valuemax={4} aria-valuenow={step} aria-valuetext={`Step ${step} of 4`}>
                       {[1, 2, 3, 4].map(s => (
-                          <div key={s} aria-hidden="true" className={`h-1.5 w-5 rounded-full transition-colors ${step >= s ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
+                          <div key={s} aria-hidden="true" className={`h-1.5 w-5 rounded-full transition-colors motion-reduce:transition-none ${step >= s ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
                       ))}
                   </div>
               </div>
               <div className="flex items-center gap-4">
-                  <button
+                  <button type="button"
                       aria-label={t('common.skip')}
                     data-help-ignore="true"
                     onClick={handleSkip}
-                    className="inline-flex min-h-6 items-center px-1 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors uppercase tracking-wider"
+                    className="inline-flex min-h-6 items-center px-1 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors motion-reduce:transition-none uppercase tracking-wider"
                   >
                     {t('common.skip')}
                   </button>
-                  <button data-help-ignore="true" onClick={handleClose} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close_wizard')}><X size={24}/></button>
+                  <button type="button" data-help-ignore="true" onClick={handleClose} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none" aria-label={t('common.close_wizard')}><X size={24}/></button>
               </div>
           </div>
           {isHelpMode && wizardStepHelp[step] && (
-            <div className="mx-8 mt-4 mb-0 p-4 bg-indigo-50 border border-indigo-200 rounded-xl animate-in slide-in-from-top-2 duration-200">
+            <div className="mx-8 mt-4 mb-0 p-4 bg-indigo-50 border border-indigo-200 rounded-xl animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
               <div className="flex items-start gap-3">
                 <HelpCircle size={18} className="text-indigo-500 mt-0.5 shrink-0" />
                 <div>
@@ -566,23 +601,24 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                   <p className="text-xs text-indigo-700 mt-1 leading-relaxed">{wizardStepHelp[step].text}</p>
                   <p className="text-xs text-indigo-500 mt-2 italic">💡 Click any element below for a detailed explanation</p>
                 </div>
-                <button onClick={() => setIsHelpMode(false)} className="text-indigo-400 hover:text-indigo-600 shrink-0 min-w-6 min-h-6 inline-flex items-center justify-center"><X size={14}/></button>
+                <button type="button" aria-label={t('common.close')} onClick={() => setIsHelpMode(false)} className="text-indigo-400 hover:text-indigo-600 shrink-0 min-w-6 min-h-6 inline-flex items-center justify-center"><X size={14}/></button>
               </div>
             </div>
           )}
           <div className="p-8 overflow-y-auto custom-scrollbar">
               {step === 1 && (
-                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300">
                       <div>
-                          <label className="block text-lg font-bold text-slate-700 mb-3">{t('wizard.global_context')}</label>
+                          <div id="quickstart-grade-label" className="block text-lg font-bold text-slate-700 mb-3">{t('wizard.global_context')}</div>
                           <p className="text-slate-600 mb-4 text-sm">{t('wizard.grade_helper')}</p>
-                          <div className="grid grid-cols-4 gap-3">
+                          <div role="group" aria-labelledby="quickstart-grade-label" className="grid grid-cols-4 gap-3">
                               {grades.map((g) => (
-                                  <button
+                                  <button type="button"
                                     key={g.value}
                                     data-help-key="wizard_grade_option"
+                                    aria-pressed={localData.grade === g.value}
                                     onClick={() => setLocalData(prev => ({ ...prev, grade: g.value }))}
-                                    className={`py-3 px-2 rounded-xl border-2 font-bold transition-all text-sm ${localData.grade === g.value ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700'}`}
+                                    className={`py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm ${localData.grade === g.value ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700'}`}
                                   >
                                     {g.label}
                                   </button>
@@ -603,7 +639,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   onChange={(e) => setRegion(e.target.value)}
                                   data-help-key="wizard_region_input"
                                   placeholder={t('standards.region_placeholder')}
-                                  className="w-full sm:w-1/3 text-base p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-all"
+                                  className="w-full sm:w-1/3 text-base p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-all motion-reduce:transition-none"
                               />
                               )}
                               <div className="flex-grow flex gap-2">
@@ -612,18 +648,18 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                     value={learningGoal}
                                     onChange={(e) => setLearningGoal(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleGoalSearch()}
-                                    className="w-full text-base p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-all"
+                                    className="w-full text-base p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-all motion-reduce:transition-none"
                                     data-help-key="wizard_growth_goal_input"
                                     placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.learning_goal_placeholder')}
                                   />
-                                  <button aria-label={t('common.search_learning_standards')}
+                                  <button type="button" aria-label={t('common.search_learning_standards')}
                                     data-help-key="wizard_find_standard_btn"
                                     onClick={handleGoalSearch}
                                     disabled={isSearching || !learningGoal.trim()}
                                     aria-busy={isSearching}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded-xl shadow-md transition-all flex items-center gap-2 disabled:opacity-50 shrink-0"
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded-xl shadow-md transition-all motion-reduce:transition-none flex items-center gap-2 disabled:opacity-50 shrink-0"
                                   >
-                                    {isSearching ? <RefreshCw size={20} className="animate-spin" aria-hidden="true"/> : <Search size={20} aria-hidden="true"/>}
+                                    {isSearching ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Search size={20} aria-hidden="true"/>}
                                     {t('wizard.find_button')}
                                   </button>
                               </div>
@@ -631,22 +667,23 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       </div>
                       )}
                       {suggestedStandards.length > 0 && (
-                          <div ref={standardsListRef} className="space-y-2 animate-in slide-in-from-top-2">
-                              <label className="block text-sm font-bold text-slate-700">{t('wizard.standards_selection_label')}</label>
-                              <div className="max-h-[200px] overflow-y-auto custom-scrollbar p-1 border border-slate-100 rounded-xl bg-slate-50/50">
+                          <div ref={standardsListRef} className="space-y-2 animate-in motion-reduce:animate-none slide-in-from-top-2">
+                              <div id="quickstart-standards-selection-label" className="block text-sm font-bold text-slate-700">{t('wizard.standards_selection_label')}</div>
+                              <div role="group" aria-labelledby="quickstart-standards-selection-label" className="max-h-[200px] overflow-y-auto custom-scrollbar p-1 border border-slate-100 rounded-xl bg-slate-50/50">
                                   {suggestedStandards.map((std, i) => {
                                       const val = `${std.code}: ${std.description}`;
                                       const isSelected = localData.standards.includes(val);
                                       return (
-                                          <div
+                                          <button type="button"
                                             key={i}
                                             data-help-key="wizard_standard_select"
+                                            aria-pressed={isSelected}
                                             onClick={() => toggleStandard(val)}
-                                            className={`p-3 rounded-xl border-2 cursor-pointer transition-all mb-2 ${isSelected ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300'}`}
+                                            className={`w-full text-left p-3 rounded-xl border-2 cursor-pointer transition-all motion-reduce:transition-none mb-2 ${isSelected ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300'}`}
                                           >
                                               <div className="flex items-start gap-3">
-                                                  <div className={`w-5 h-5 rounded flex items-center justify-center border ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 bg-white'}`}>
-                                                      {isSelected && <CheckCircle size={14}/>}
+                                                  <div aria-hidden="true" className={`w-5 h-5 rounded flex items-center justify-center border ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 bg-white'}`}>
+                                                      {isSelected && <CheckCircle size={14} aria-hidden="true"/>}
                                                   </div>
                                                   <div>
                                                       {!isIndependentMode && (
@@ -655,7 +692,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                       <div className={`${isIndependentMode ? 'text-sm font-medium text-slate-800' : 'text-xs text-slate-600'} leading-snug`}>{std.description}</div>
                                                   </div>
                                               </div>
-                                          </div>
+                                          </button>
                                       );
                                   })}
                               </div>
@@ -665,60 +702,60 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                   </div>
               )}
               {step === 2 && (
-                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300">
                       <div>
                           <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.source_material')}</label>
                           <p className="text-slate-600 mb-6 text-sm">{t('wizard.source_desc')}</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <button data-help-key="wizard_upload_source"
+                              <button type="button" data-help-key="wizard_upload_source"
                                   aria-label={t('common.upload')}
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'file' }));
                                     setStep(3);
                                 }}
-                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all group bg-white active:scale-95 h-40"
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all motion-reduce:transition-none group bg-white active:scale-95 motion-reduce:active:scale-100 h-40"
                               >
-                                <div className="bg-indigo-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                <div className="bg-indigo-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 motion-reduce:hover:scale-100 transition-transform motion-reduce:transition-none group-hover:bg-white">
                                     <Upload size={32} className="text-indigo-600"/>
                                 </div>
                                 <span className="font-bold text-slate-700 group-hover:text-indigo-700 text-lg">{t('wizard.upload_file')}</span>
                                 <span className="text-xs text-slate-600 mt-1">{t('wizard.upload_desc')}</span>
                               </button>
-                              <button data-help-key="wizard_search_source"
+                              <button type="button" data-help-key="wizard_search_source"
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'search' }));
                                     setStep(3);
                                 }}
-                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition-all group bg-white active:scale-95 h-40"
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition-all motion-reduce:transition-none group bg-white active:scale-95 motion-reduce:active:scale-100 h-40"
                               >
-                                <div className="bg-teal-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                <div className="bg-teal-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 motion-reduce:hover:scale-100 transition-transform motion-reduce:transition-none group-hover:bg-white">
                                     <Globe size={32} className="text-teal-600"/>
                                 </div>
                                 <span className="font-bold text-slate-700 group-hover:text-teal-700 text-lg">{wt('wizard.find_web', 'Find on the Web')}</span>
                                 <span className="text-xs text-slate-600 mt-1">{wt('wizard.find_web_desc', 'Paste a link or let AI search for you')}</span>
                               </button>
-                              <button data-help-key="wizard_storybook_source"
+                              <button type="button" data-help-key="wizard_storybook_source"
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'storybook' }));
                                     setStep(3);
                                 }}
-                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50 transition-all group bg-white active:scale-95 h-40"
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50 transition-all motion-reduce:transition-none group bg-white active:scale-95 motion-reduce:active:scale-100 h-40"
                               >
-                                <div className="bg-amber-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                <div className="bg-amber-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 motion-reduce:hover:scale-100 transition-transform motion-reduce:transition-none group-hover:bg-white">
                                     <span className="text-[32px] leading-none" aria-hidden="true">📖</span>
                                 </div>
                                 <span className="font-bold text-slate-700 group-hover:text-amber-700 text-lg">{wt('wizard.storybooks', 'Reading Catalog')}</span>
                                 <span className="text-xs text-slate-600 mt-1">{wt('wizard.storybooks_desc', 'Books, articles, and primary sources')}</span>
                               </button>
-                              <button data-help-key="wizard_generate_source"
+                              <button type="button" data-help-key="wizard_generate_source"
                                   aria-label={t('common.generate')}
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'generate' }));
                                     setStep(3);
                                 }}
-                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-purple-500 hover:bg-purple-50 transition-all group bg-white active:scale-95 h-40"
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-purple-500 hover:bg-purple-50 transition-all motion-reduce:transition-none group bg-white active:scale-95 motion-reduce:active:scale-100 h-40"
                               >
-                                <div className="bg-purple-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                <div className="bg-purple-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 motion-reduce:hover:scale-100 transition-transform motion-reduce:transition-none group-hover:bg-white">
                                     <Sparkles size={32} className="text-purple-600 fill-current"/>
                                 </div>
                                 <span className="font-bold text-slate-700 group-hover:text-purple-700 text-lg">{t('wizard.generate_scratch')}</span>
@@ -729,7 +766,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                   </div>
               )}
               {step === 3 && (
-                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300">
                       {localData.sourceMode === 'url' && (
                           <div>
                               <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.import_web')}</label>
@@ -742,35 +779,35 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       onChange={(e) => setUrlInput(e.target.value)}
                                       data-help-key="wizard_url_input"
                                       placeholder={t('wizard.url_placeholder')}
-                                      className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/30 outline-none transition-all"
+                                      className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/30 transition-all motion-reduce:transition-none"
                                       onKeyDown={(e) => e.key === 'Enter' && handleWizardUrlFetch(urlInput)}
                                       autoFocus
                                   />
-                                  <button
-                                      aria-label={t('common.refresh')}
+                                  <button type="button"
+                                      aria-label={t('wizard.fetch_action')}
                                       data-help-key="wizard_url_fetch_btn"
                                       onClick={() => handleWizardUrlFetch(urlInput)}
                                       disabled={isFetching || !urlInput}
                                       aria-busy={isFetching}
-                                      className="bg-blue-600 text-white font-bold px-6 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
+                                      className="bg-blue-600 text-white font-bold px-6 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center gap-2 shadow-md"
                                   >
-                                      {isFetching ? <RefreshCw size={20} className="animate-spin" aria-hidden="true"/> : <Download size={20} aria-hidden="true"/>}
+                                      {isFetching ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Download size={20} aria-hidden="true"/>}
                                       {t('wizard.fetch_action')}
                                   </button>
                               </div>
                               {typeof localData.fetchedContent === 'string' && localData.fetchedContent && (
-                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm">
+                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 shadow-sm">
                                       <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
                                           <CheckCircle size={20} className="fill-green-100 text-green-600" /> {t('wizard.content_loaded')}
                                       </div>
                                       <p className="text-xs text-green-700 mb-4 line-clamp-3 opacity-80 bg-white/50 p-2 rounded border border-green-100">
                                           {localData.fetchedContent.substring(0, 300)}...
                                       </p>
-                                      <button
-                                          aria-label={t('common.continue')}
+                                      <button type="button"
+                                          aria-label={t('common.next')}
                                           data-help-key="wizard_content_next_btn"
                                           onClick={() => setStep(4)}
-                                          className="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                                          className="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md"
                                       >
                                           {t('common.next')} <ArrowRight size={18} />
                                       </button>
@@ -789,38 +826,38 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       onChange={(e) => setLocalData(prev => ({ ...prev, searchQuery: e.target.value }))}
                                       data-help-key="wizard_search_input"
                                       placeholder={wt('wizard.find_web_placeholder', 'Paste a URL, or describe a topic…')}
-                                      className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-500/30 outline-none transition-all"
+                                      className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-500/30 transition-all motion-reduce:transition-none"
                                       onKeyDown={(e) => e.key === 'Enter' && handleWizardWebFind()}
                                       autoFocus
                                   />
-                                  <button aria-label={t('common.search_with_ai')}
+                                  <button type="button" aria-label={t('common.search_with_ai')}
                                       data-help-key="wizard_search_btn"
                                       onClick={handleWizardWebFind}
                                       disabled={isFetching || !localData.searchQuery}
                                       aria-busy={isFetching}
-                                      className="bg-teal-600 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
+                                      className="bg-teal-600 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center gap-2 shadow-md"
                                   >
-                                      {isFetching ? <RefreshCw size={20} className="animate-spin" aria-hidden="true"/> : <Search size={20} aria-hidden="true"/>}
+                                      {isFetching ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Search size={20} aria-hidden="true"/>}
                                       {isFetching ? t('wizard.finding_button') : t('wizard.find_button')}
                                   </button>
                               </div>
                               {!(typeof localData.fetchedContent === 'string' && localData.fetchedContent) && localData.searchOptions && localData.searchOptions.length > 0 && (
-                                  <div className="space-y-3 mb-6 animate-in slide-in-from-bottom-4">
+                                  <div className="space-y-3 mb-6 animate-in motion-reduce:animate-none slide-in-from-bottom-4">
                                       <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('wizard.select_resource')}</h4>
                                       {localData.searchOptions.map((opt, idx) => (
                                           <div key={idx} className="relative group">
-                                            <button
-                                                aria-label={t('common.refresh')}
+                                            <button type="button"
+                                                aria-label={opt.title || t('wizard.untitled_resource')}
                                                 data-help-key="wizard_search_result_select"
                                                 onClick={() => selectSearchOption(opt)}
-                                                className="w-full text-start p-4 pe-12 rounded-xl border-2 border-slate-100 hover:border-teal-500 hover:bg-teal-50 transition-all bg-white shadow-sm"
+                                                className="w-full text-start p-4 pe-12 rounded-xl border-2 border-slate-100 hover:border-teal-500 hover:bg-teal-50 transition-all motion-reduce:transition-none bg-white shadow-sm"
                                             >
                                                 <div className="font-bold text-slate-700 group-hover:text-teal-800 mb-1 text-sm">{opt.title || t('wizard.untitled_resource')}</div>
                                                 <div className="text-xs text-slate-600 group-hover:text-teal-600 line-clamp-2">{opt.description || t('wizard.no_description')}</div>
                                                 <div className="text-[11px] text-slate-600 mt-2 truncate max-w-xs">{opt.url}</div>
                                                 {isFetching && (
                                                     <div className="absolute inset-0 bg-white/50 flex items-center justify-center" role="status" aria-busy="true" aria-label={t('wizard.finding_button') || 'Loading'}>
-                                                        <RefreshCw size={20} className="animate-spin text-teal-600" aria-hidden="true"/>
+                                                        <RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-teal-600" aria-hidden="true"/>
                                                     </div>
                                                 )}
                                             </button>
@@ -834,7 +871,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                     setUrlInput('');
                                                     if (addToast) addToast(t('wizard.link_opened_toast'), "info");
                                                 }}
-                                                className="absolute end-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors z-20"
+                                                className="absolute end-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20"
                                                 data-help-key="wizard_search_result_link"
                                                 title={t('wizard.open_link_title')}
                                             >
@@ -845,7 +882,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   </div>
                               )}
                               {typeof localData.fetchedContent === 'string' && localData.fetchedContent && (
-                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm">
+                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 shadow-sm">
                                       <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
                                           <CheckCircle size={20} className="fill-green-100 text-green-600" /> {t('wizard.content_loaded')}
                                       </div>
@@ -859,18 +896,18 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           {localData.fetchedContent.substring(0, 300)}...
                                       </p>
                                       <div className="flex gap-2">
-                                          <button
-                                              aria-label={t('common.continue')}
+                                          <button type="button"
+                                              aria-label={t('wizard.back_to_results')}
                                             data-help-key="wizard_back_results_btn"
                                             onClick={() => setLocalData(prev => ({ ...prev, fetchedContent: '', resourceMeta: null }))}
                                             className="px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-400 rounded-xl"
                                           >
                                               {t('wizard.back_to_results')}
                                           </button>
-                                          <button
-                                              aria-label={t('common.continue')}
+                                          <button type="button"
+                                              aria-label={t('common.next')}
                                               onClick={() => setStep(4)}
-                                              className="flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                                              className="flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md"
                                           >
                                               {t('common.next')} <ArrowRight size={18} />
                                           </button>
@@ -887,7 +924,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   <StorybookPicker t={t} grade={localData.grade} addToast={addToast} onPicked={(text, meta, ref) => setLocalData(prev => ({ ...prev, fetchedContent: text, resourceMeta: meta, searchQuery: meta.title, storybookRef: ref }))} />
                               )}
                               {typeof localData.fetchedContent === 'string' && localData.fetchedContent && (
-                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm">
+                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 shadow-sm">
                                       <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
                                           <CheckCircle size={20} className="fill-green-100 text-green-600" /> {t('wizard.content_loaded')}
                                       </div>
@@ -901,17 +938,17 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           {localData.fetchedContent.substring(0, 300)}...
                                       </p>
                                       <div className="flex gap-2">
-                                          <button
-                                              aria-label={t('common.continue')}
+                                          <button type="button"
+                                              aria-label={wt('wizard.back_to_books', 'Choose another resource')}
                                               onClick={() => setLocalData(prev => ({ ...prev, fetchedContent: '', resourceMeta: null }))}
                                               className="px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-400 rounded-xl"
                                           >
                                               {wt('wizard.back_to_books', 'Choose another resource')}
                                           </button>
-                                          <button
-                                              aria-label={t('common.continue')}
+                                          <button type="button"
+                                              aria-label={t('common.next')}
                                               onClick={() => setStep(4)}
-                                              className="flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                                              className="flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md"
                                           >
                                               {t('common.next')} <ArrowRight size={18} />
                                           </button>
@@ -937,7 +974,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                               value={localData.topic}
                                               onChange={(e) => setLocalData(prev => ({ ...prev, topic: e.target.value }))}
                                               placeholder={t('wizard.topic_placeholder')}
-                                              className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all"
+                                              className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-all motion-reduce:transition-none"
                                               autoFocus
                                               data-help-key="wizard_topic_input"
                                               aria-label={t('wizard.input_topic_label')}
@@ -955,7 +992,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   dir="auto"
                                                   value={localData.tone}
                                                   onChange={(e) => setLocalData(prev => ({ ...prev, tone: e.target.value }))}
-                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
+                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-all motion-reduce:transition-none bg-white"
                                                   data-help-key="wizard_tone_select"
                                                   aria-label={t('wizard.input_tone_label')}
                                               >
@@ -978,7 +1015,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   dir="auto"
                                                   value={localData.length}
                                                   onChange={(e) => setLocalData(prev => ({ ...prev, length: e.target.value }))}
-                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
+                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-all motion-reduce:transition-none bg-white"
                                                   data-help-key="wizard_length_select"
                                                   aria-label={t('wizard.input_length_label')}
                                               >
@@ -1002,7 +1039,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   dir="auto"
                                                   value={localData.grade}
                                                   onChange={(e) => setLocalData(prev => ({ ...prev, grade: e.target.value }))}
-                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
+                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-all motion-reduce:transition-none bg-white"
                                                   data-help-key="wizard_level_select"
                                                   aria-label={t('common.target_level')}
                                               >
@@ -1035,7 +1072,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   dir="auto"
                                                   value={localData.dokLevel}
                                                   onChange={(e) => setLocalData(prev => ({ ...prev, dokLevel: e.target.value }))}
-                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all bg-white"
+                                                  className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-all motion-reduce:transition-none bg-white"
                                                   data-help-key="wizard_dok_select"
                                                   aria-label={t('wizard.aria_dok_label')}
                                               >
@@ -1052,22 +1089,24 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   {!isParentMode && (
                                     <div className="bg-slate-50 p-2 rounded-lg border border-slate-400">
                                         <div className="flex justify-between items-center mb-2">
-                                            <label className="text-xs text-slate-600 font-bold flex items-center gap-1">
-                                                <CheckCircle size={12} className="text-green-600"/> {isIndependentMode ? t('wizard.learning_goals') : t('wizard.target_standard')}
-                                            </label>
+                                            <span id="quickstart-standard-mode-label" className="text-xs text-slate-600 font-bold flex items-center gap-1">
+                                                <CheckCircle size={12} className="text-green-600" aria-hidden="true"/> {isIndependentMode ? t('wizard.learning_goals') : t('wizard.target_standard')}
+                                            </span>
                                             {!isIndependentMode && (
-                                            <div className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
-                                                <button
+                                            <div role="group" aria-labelledby="quickstart-standard-mode-label" className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
+                                                <button type="button"
                                                     data-help-key="wizard_std_mode_ai"
+                                                    aria-pressed={standardMode === 'ai'}
                                                     onClick={() => setStandardMode('ai')}
-                                                    className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
+                                                    className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                                 >
                                                     {t('standards.ai_match')}
                                                 </button>
-                                                <button
+                                                <button type="button"
                                                     data-help-key="wizard_std_mode_manual"
+                                                    aria-pressed={standardMode === 'manual'}
                                                     onClick={() => setStandardMode('manual')}
-                                                    className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
+                                                    className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                                 >
                                                     {t('standards.manual')}
                                                 </button>
@@ -1075,7 +1114,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                             )}
                                         </div>
                                         {standardMode === 'ai' ? (
-                                            <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                            <div className="space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
                                                 <div className="flex gap-2">
                                                     {!isIndependentMode && (
                                                     <input dir="auto" aria-label={t('common.common_standards_region_placeholder')}
@@ -1083,7 +1122,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                         value={aiStandardRegion}
                                                         onChange={(e) => setAiStandardRegion(e.target.value)}
                                                         placeholder={t('common.standards_region_placeholder')}
-                                                        className="w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                                        className="w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
                                                     />
                                                     )}
                                                     <input dir="auto" aria-label={t('common.enter_ai_standard_query')}
@@ -1092,23 +1131,23 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                         onChange={(e) => setAiStandardQuery(e.target.value)}
                                                         onKeyDown={(e) => e.key === 'Enter' && handleFindStandards()}
                                                         data-help-key="standards_query_input" placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
-                                                        className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                                        className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
                                                     />
-                                                    <button
+                                                    <button type="button"
                                                         onClick={handleFindStandards} data-help-key="standards_search_btn"
                                                         disabled={isFindingStandards || !aiStandardQuery.trim()}
                                                         aria-busy={isFindingStandards}
-                                                        className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 transition-colors shadow-sm"
+                                                        className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 transition-colors motion-reduce:transition-none shadow-sm"
                                                         title={t('standards.search_button_title')}
                                                         aria-label={t('standards.search_button_title')}
                                                     >
-                                                        {isFindingStandards ? <RefreshCw size={14} className="animate-spin" aria-hidden="true"/> : <Search size={14} aria-hidden="true"/>}
+                                                        {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Search size={14} aria-hidden="true"/>}
                                                     </button>
                                                 </div>
                                                 {suggestedStandards.length > 0 && (
                                                     <div ref={standardsListRef} className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100 shadow-inner">
                                                         {suggestedStandards.map((std, idx) => (
-                                                            <button
+                                                            <button type="button"
                                                                 key={idx}
                                                                 onClick={() => {
                                                                     const val = `${std.code}: ${std.description}`;
@@ -1119,7 +1158,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                                         if(addToast) addToast(t('standards.toast_max_limit'), "error");
                                                                     }
                                                                 }}
-                                                                className="w-full text-start p-2 hover:bg-indigo-50 transition-colors group flex flex-col gap-1"
+                                                                className="w-full text-start p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group flex flex-col gap-1"
                                                             >
                                                                 <div className="flex justify-between items-start gap-1">
                                                                     {!isIndependentMode && (
@@ -1141,7 +1180,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                            <div className="flex gap-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
                                                 <input dir="auto" aria-label={t('common.enter_standard_input_value')}
                                                     type="text"
                                                     value={standardInputValue}
@@ -1149,13 +1188,13 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                     onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
                                                     data-help-key="wizard_std_manual_input"
                                                     placeholder={t('standards.manual_placeholder')}
-                                                    className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                                    className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
                                                 />
-                                                <button
+                                                <button type="button"
                                                     aria-label={t('common.add')}
                                                     onClick={handleAddStandard}
                                                     disabled={!standardInputValue.trim() || localData.standards.length >= 3}
-                                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50"
+                                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50"
                                                     data-help-key="wizard_std_manual_add_btn"
                                                     title={t('standards.add_standard')}
                                                 >
@@ -1168,11 +1207,11 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   {localData.standards.length > 0 && (
                                       <div className="flex flex-wrap gap-2 mt-2 mb-2">
                                           {localData.standards.map((std, idx) => (
-                                              <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 border border-green-200 animate-in slide-in-from-left-1 max-w-full">
+                                              <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 border border-green-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
                                                   <span className="truncate" title={std}>
                                                       {std.split(':')[0]}
                                                   </span>
-                                                  <button
+                                                  <button type="button"
                                                       onClick={() => handleRemoveStandard(idx)}
                                                       className="hover:text-green-900 ms-1 shrink-0"
                                                       data-help-key="wizard_std_remove_btn"
@@ -1199,7 +1238,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           value={localData.vocabulary}
                                           onChange={(e) => setLocalData(prev => ({ ...prev, vocabulary: e.target.value }))}
                                           placeholder={t('wizard.vocab_placeholder')}
-                                          className="w-full ps-9 p-3 border-2 border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                          className="w-full ps-9 p-3 border-2 border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
                                           data-help-key="wizard_vocab_input"
                                           aria-label={t('input.vocab')}
                                         />
@@ -1218,7 +1257,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                               onChange={(e) => setLocalData(prev => ({ ...prev, sourceCustomInstructions: e.target.value }))}
                                               data-help-key="wizard_instructions_input"
                                               placeholder={t('wizard.instructions_placeholder')}
-                                              className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none transition-all h-20 resize-none"
+                                              className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-all motion-reduce:transition-none h-20 resize-none"
                                           />
                                       </div>
                                   </div>
@@ -1234,11 +1273,11 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           <ShieldCheck size={16} className="text-purple-500"/> {t('wizard.verify_facts')}
                                       </label>
                                   </div>
-                                  <button
-                                      aria-label={t('common.continue')}
+                                  <button type="button"
+                                      aria-label={t('common.next')}
                                       onClick={() => setStep(4)}
                                       disabled={!localData.topic.trim()}
-                                      className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md mt-4"
+                                      className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md mt-4"
                                   >
                                       {t('common.next')} <ArrowRight size={18} />
                                   </button>
@@ -1254,10 +1293,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               <p className="text-slate-600 mb-8 max-w-xs mx-auto text-sm">
                                   {t('wizard.file_helper')}
                               </p>
-                              <button
+                              <button type="button"
                                   aria-label={t('common.upload')}
                                   onClick={() => onComplete({ ...localData, sourceMode: 'file', materialType: 'file' })}
-                                  className="bg-indigo-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-indigo-700 transition-transform hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto shadow-xl"
+                                  className="bg-indigo-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-indigo-700 transition-transform motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center gap-3 mx-auto shadow-xl"
                               >
                                   <Upload size={20}/> {t('wizard.select_file')}
                               </button>
@@ -1267,18 +1306,18 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                   </div>
               )}
               {step === 4 && (
-                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300">
                       <div>
                           <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.adaptation')}</label>
                           <p className="text-slate-600 mb-6">{t('wizard.adaptation_desc')}</p>
                           <div className="space-y-4">
                               <div>
-                                  <label className="block text-sm font-bold text-slate-600 mb-2">{t('wizard.output_format')}</label>
-                                  <select dir="auto" aria-label={t('common.selection')}
+                                  <label htmlFor="quickstart-output-format" className="block text-sm font-bold text-slate-600 mb-2">{t('wizard.output_format')}</label>
+                                  <select id="quickstart-output-format" dir="auto"
                                     value={localData.format}
                                     data-help-key="wizard_format_select"
                                     onChange={(e) => setLocalData({...localData, format: e.target.value})}
-                                    className="w-full p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                                    className="w-full p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
                                   >
                                     <option value="Standard Text">{t('simplified.formats.standard')}</option>
                                     <option value="Dialogue Script">{t('simplified.formats.dialogue')}</option>
@@ -1300,22 +1339,22 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                         onKeyDown={(e) => e.key === 'Enter' && addWizLanguage()}
                                         data-help-key="wizard_lang_input"
                                         placeholder={t('wizard.language_placeholder')}
-                                        className="flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                                        className="flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
                                         disabled={localData.languages.length >= 4}
                                       />
-                                      <button aria-label={t('common.add')}
+                                      <button type="button" aria-label={t('common.add')}
                                         data-help-key="wizard_lang_add_btn"
                                         onClick={addWizLanguage}
                                         disabled={!wizLangInput.trim() || localData.languages.length >= 4}
-                                        className="bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors"
+                                        className="bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none"
                                       >
                                         <Plus size={20} />
                                       </button>
                                   </div>
-                                  <select dir="auto" aria-label={t('common.selection')}
+                                  <select dir="auto" aria-label={wt('wizard.common_language_select', 'Add a common language')}
                                       data-help-key="wizard_lang_common_select"
                                       onChange={(e) => { addCommonLanguage(e.target.value); e.target.value = ""; }}
-                                      className="w-full text-xs border border-slate-400 rounded-lg p-2 bg-slate-50 text-slate-600 mb-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 cursor-pointer"
+                                      className="w-full text-xs border border-slate-400 rounded-lg p-2 bg-slate-50 text-slate-600 mb-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 cursor-pointer"
                                       disabled={localData.languages.length >= 4}
                                   >
                                       <option data-help-key="wizard_lang_common_select" value="">{t('wizard.quick_add_language')}</option>
@@ -1331,10 +1370,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   </select>
                                   <div className="flex flex-wrap gap-2 min-h-[40px] bg-slate-50 p-2 rounded-xl border border-slate-100">
                                       {localData.languages.map(lang => (
-                                          <span key={lang} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in zoom-in">
+                                          <span key={lang} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none zoom-in">
                                               {lang}
-                                              <button
-                                                  aria-label={t('common.close')}
+                                              <button type="button"
+                                                  aria-label={`${t('common.remove')} ${lang}`}
                                                   data-help-key="wizard_lang_remove_btn"
                                                   onClick={() => removeWizLanguage(lang)}
                                                   className="hover:text-indigo-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
@@ -1356,24 +1395,24 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                         onKeyDown={(e) => e.key === 'Enter' && addWizInterest()}
                                         data-help-key="wizard_interest_input"
                                         placeholder={t('wizard.interest_placeholder')}
-                                        className="flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500"
                                         disabled={localData.interests.length >= 5}
                                       />
-                                      <button aria-label={t('common.add')}
+                                      <button type="button" aria-label={t('common.add')}
                                         data-help-key="wizard_interest_add_btn"
                                         onClick={addWizInterest}
                                         disabled={!wizInterestInput.trim() || localData.interests.length >= 5}
-                                        className="bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors"
+                                        className="bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none"
                                       >
                                         <Plus size={20} />
                                       </button>
                                   </div>
                                   <div className="flex flex-wrap gap-2 min-h-[40px] bg-slate-50 p-2 rounded-xl border border-slate-100">
                                       {localData.interests.map(interest => (
-                                          <span key={interest} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in zoom-in">
+                                          <span key={interest} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none zoom-in">
                                               {interest}
-                                              <button
-                                                  aria-label={t('common.close')}
+                                              <button type="button"
+                                                  aria-label={`${t('common.remove')} ${interest}`}
                                                   data-help-key="wizard_interest_remove_btn"
                                                   onClick={() => removeWizInterest(interest)}
                                                   className="hover:text-pink-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
@@ -1388,7 +1427,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               </div>
                           </div>
                           <div className="flex justify-between pt-4 mt-4 border-t border-slate-100">
-                              <button
+                              <button type="button"
                                   aria-label={t('common.back')}
                                 data-help-key="wizard_prev_btn"
                                 onClick={() => setStep(s => s - 1)}
@@ -1396,11 +1435,11 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               >
                                 <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
                               </button>
-                              <button
+                              <button type="button"
                                   aria-label={t('common.finish')}
                                 data-help-key="wizard_complete_btn"
                                 onClick={() => onComplete(localData)}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all active:scale-95 flex items-center gap-2"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 flex items-center gap-2"
                               >
                                 {t('common.finish')} <CheckCircle2 size={18} />
                               </button>
@@ -1412,10 +1451,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
           {step < 4 && (
               <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
                   {step > 1 ? (
-                      <button
+                      <button type="button"
                           aria-label={t('common.back')}
                         onClick={() => setStep(s => s - 1)}
-                        className="text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2 transition-colors"
+                        className="text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2 transition-colors motion-reduce:transition-none"
                       >
                         <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
                       </button>
@@ -1423,11 +1462,11 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       <div></div>
                   )}
                   {step === 1 && (
-                      <button aria-label={t('common.next')}
+                      <button type="button" aria-label={t('common.next')}
                         data-help-key="wizard_next_grade_btn"
                         onClick={handleNext}
                         disabled={!localData.grade}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-indigo-500/30 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-indigo-500/30 transition-all motion-reduce:transition-none flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 motion-reduce:active:scale-100"
                       >
                         {t('common.next')} <ArrowRight size={20} />
                       </button>
