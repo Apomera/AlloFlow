@@ -79,20 +79,40 @@ function SessionModal({
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
-    const getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
+    const getFocusable = function () {
+      return Array.from(dialog.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      )).filter(function (element) {
+        if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      });
+    };
     const first = getFocusable()[0];
     (first || dialog).focus();
     const onKeyDown = function (event) {
-      if (event.key === 'Escape') { event.preventDefault(); handleSetShowSessionModalToFalse(); return; }
+      if (!isTopTrap()) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); handleSetShowSessionModalToFalse(); return; }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
       else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
     };
-    dialog.addEventListener('keydown', onKeyDown);
-    return function () { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
+    document.addEventListener('keydown', onKeyDown);
+    return function () {
+      document.removeEventListener('keydown', onKeyDown);
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
   }, [handleSetShowSessionModalToFalse]);
 
   const liveJoinUrl = React.useMemo(() => {
@@ -182,18 +202,18 @@ function SessionModal({
 
   return (
     <div className={`fixed inset-0 bg-black/80 z-[150] flex items-center justify-center animate-in fade-in duration-200 motion-reduce:animate-none ${isProjectionMode ? 'p-0' : 'p-4'}`} role="presentation" onClick={handleSetShowSessionModalToFalse}>
-      <div ref={dialogRef} tabIndex={-1} className={`bg-white shadow-2xl text-center w-full overflow-y-auto relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none ${isProjectionMode ? 'h-screen max-w-none rounded-none p-6 sm:p-10' : 'max-h-[90vh] max-w-md rounded-2xl p-5 sm:p-8'}`} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title">
-        {!isLocalOnly && liveJoinUrl && <button type="button" onClick={() => setIsProjectionMode(value => !value)} className="absolute top-4 left-4 z-10 flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm hover:border-indigo-400" aria-label={isProjectionMode ? 'Exit projection mode' : 'Open projection mode'}>
+      <div ref={dialogRef} tabIndex={-1} className={`bg-white shadow-2xl text-center w-full overflow-y-auto relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none ${isProjectionMode ? 'h-screen max-w-none rounded-none p-6 sm:p-10' : 'max-h-[90vh] max-w-md rounded-2xl p-5 sm:p-8'}`} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title" aria-describedby="alloflow-session-modal-description">
+        {!isLocalOnly && liveJoinUrl && <button type="button" onClick={() => setIsProjectionMode(value => !value)} className="absolute top-4 left-4 z-10 min-h-11 flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm hover:border-indigo-400" aria-label={isProjectionMode ? 'Exit projection mode' : 'Open projection mode'}>
           {isProjectionMode ? <Minimize size={16} aria-hidden="true"/> : <Maximize size={16} aria-hidden="true"/>} <span className="hidden sm:inline">{isProjectionMode ? 'Exit projection mode' : 'Open projection mode'}</span>
         </button>}
-        <button onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24} aria-hidden="true"/></button>
+        <button type="button" onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24} aria-hidden="true"/></button>
         <div className="flex justify-center mb-4">
           <div className="bg-green-100 p-4 rounded-full shadow-inner" aria-hidden="true">
             <Wifi size={48} className="text-green-600 animate-pulse motion-reduce:animate-none" />
           </div>
         </div>
         <h2 id="alloflow-session-modal-title" className="text-2xl font-black text-slate-800 mb-2">{isLocalOnly ? 'Local preview' : isMailboxSession ? 'Class Mailbox live session' : t('session.live_title')}</h2>
-        <p className="text-slate-600 mb-6 font-medium">{isLocalOnly ? 'Firebase did not create a shareable session. This preview stays on the teacher device.' : isMailboxSession ? 'Students join through your Class Mailbox without accounts.' : t('session.live_instruction')}</p>
+        <p id="alloflow-session-modal-description" className="text-slate-600 mb-6 font-medium">{isLocalOnly ? 'Firebase did not create a shareable session. This preview stays on the teacher device.' : isMailboxSession ? 'Students join through your Class Mailbox without accounts.' : t('session.live_instruction')}</p>
         <button
           type="button"
           aria-label={`${activeSessionCode}. ${t('session.click_to_copy')}`}
@@ -223,18 +243,18 @@ function SessionModal({
               <li className="flex items-center justify-center gap-1.5 rounded-lg bg-white px-2 py-2 font-bold text-emerald-800"><CheckCircle2 size={14} aria-hidden="true"/> Student link ready</li>
               <li className="flex items-center justify-center gap-1.5 rounded-lg bg-white px-2 py-2 font-bold text-emerald-800">{liveQrSvg && <CheckCircle2 size={14} aria-hidden="true"/>} <span role="status" aria-live="polite" aria-atomic="true">{qrStatusText}</span></li>
             </ul>
-            <button
+            <button type="button"
               onClick={() => copyToClipboard(liveJoinUrl)}
-              className="w-full flex items-center justify-center gap-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 bg-white border border-cyan-300 hover:border-cyan-400 rounded-lg p-2 transition-all break-all"
+              className="w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 bg-white border border-cyan-300 hover:border-cyan-400 rounded-lg p-2 transition-all break-all"
             >
               Copy student join link <Copy size={12} aria-hidden="true"/>
             </button>
-            <input aria-label="Selectable student join link" readOnly value={liveJoinUrl} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500" />
+            <input aria-label="Selectable student join link" readOnly value={liveJoinUrl} onFocus={event => event.target.select()} className="mt-2 min-h-11 w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500" />
             <div className={`mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 ${isProjectionMode ? 'hidden' : ''}`}>
-              <button type="button" onClick={testStudentJoin} className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
+              <button type="button" onClick={testStudentJoin} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
                 Test as student <ExternalLink size={12} aria-hidden="true"/>
               </button>
-              <button type="button" onClick={printLiveQr} disabled={!liveQrSvg} className="flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" onClick={printLiveQr} disabled={!liveQrSvg} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
                 Print QR <Printer size={12} aria-hidden="true"/>
               </button>
             </div>
@@ -250,10 +270,10 @@ function SessionModal({
         {!isProjectionMode && lanJoinUrl && (
           <div className="mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
             <p className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1">Local network join link</p>
-            <button
+            <button type="button"
               aria-label={`${t('common.copy')} ${lanJoinUrl}`}
               onClick={() => copyToClipboard(lanJoinUrl)}
-              className="w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-emerald-800 hover:text-emerald-900 bg-white border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all break-all"
+              className="w-full min-h-11 flex items-center justify-center gap-2 text-xs font-mono font-bold text-emerald-800 hover:text-emerald-900 bg-white border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all break-all"
             >
               {lanJoinUrl} <Copy size={12} aria-hidden="true"/>
             </button>
@@ -262,10 +282,10 @@ function SessionModal({
         {!isProjectionMode && !isMailboxSession && (
           <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
             <p className="text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
-            <button
+            <button type="button"
               aria-label={`${t('common.copy')} ${appId}`}
               onClick={() => copyToClipboard(appId)}
-              className="w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-400 hover:border-indigo-200 rounded-lg p-2 transition-all"
+              className="w-full min-h-11 flex items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-400 hover:border-indigo-200 rounded-lg p-2 transition-all"
             >
               {appId} <Copy size={12} aria-hidden="true"/>
             </button>
@@ -273,7 +293,7 @@ function SessionModal({
         )}
         {!isProjectionMode && sessionData && (
           <div className="mb-6 text-center animate-in slide-in-from-bottom-2 motion-reduce:animate-none">
-            <button
+            <button type="button"
               onClick={handleSetShowGroupModalToTrue}
               className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-3"
             >
@@ -288,7 +308,7 @@ function SessionModal({
         )}
         {!isProjectionMode && sessionData && (
           <div className="mb-8 flex justify-center">
-            <button
+            <button type="button"
               role="switch"
               aria-checked={sessionData.mode === 'sync'}
               onClick={toggleSessionMode}
@@ -307,13 +327,13 @@ function SessionModal({
           </div>
         )}
         <div className={`flex flex-col sm:flex-row gap-3 justify-center ${isProjectionMode ? 'hidden' : ''}`}>
-          <button
+          <button type="button"
             onClick={handleSetShowSessionModalToFalse}
             className="w-full sm:w-auto px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors"
           >
             {t('session.action_close')}
           </button>
-          <button
+          <button type="button"
             onClick={() => {
               if (typeof onRequestEndSession === 'function') onRequestEndSession();
               else setConfirmDialog({ message: t('session.end_confirm') || 'Are you sure you want to end this session?', onConfirm: () => { setActiveSessionCode(null); setSessionData(null); setShowSessionModal(false); } });

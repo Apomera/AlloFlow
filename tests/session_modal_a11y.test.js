@@ -7,15 +7,20 @@ describe('Live session modal accessibility', () => {
   it('provides a named modal dialog and non-interactive backdrop', () => {
     expect(source).toContain('role="presentation" onClick={handleSetShowSessionModalToFalse}');
     expect(source).toContain('ref={dialogRef} tabIndex={-1}');
-    expect(source).toContain('role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title"');
+    expect(source).toContain('role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title" aria-describedby="alloflow-session-modal-description"');
     expect(source).toContain('id="alloflow-session-modal-title"');
+    expect(source).toContain('id="alloflow-session-modal-description"');
   });
 
   it('manages initial focus, containment, Escape, and focus return', () => {
     expect(source).toContain('(first || dialog).focus()');
+    expect(source).toContain('window.__alloFocusTrapStack');
+    expect(source).toContain('if (!isTopTrap()) return');
+    expect(source).toContain("document.addEventListener('keydown', onKeyDown)");
+    expect(source).toContain("element.closest('[hidden], [inert], [aria-hidden=\"true\"]')");
     expect(source).toContain("if (event.key === 'Escape')");
     expect(source).toContain("if (event.key !== 'Tab') return");
-    expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()");
+    expect(source).toContain('previousFocus.isConnected');
   });
 
   it('offers verified teacher test and print actions for a ready live QR', () => {
@@ -45,6 +50,10 @@ describe('Live session modal accessibility', () => {
     expect(source).toContain("aria-label={`${t('common.copy')} ${lanJoinUrl}`}");
     expect(source).toContain("aria-label={`${t('common.copy')} ${appId}`}");
     expect(source).toContain('role="switch"');
+    expect(source.match(/<button\b/g)).toHaveLength(12);
+    expect(source.match(/type="button"/g)).toHaveLength(12);
+    expect(source.match(/min-h-11/g)?.length).toBeGreaterThanOrEqual(5);
+    expect(source).toContain('min-w-11 min-h-11');
     expect(source).toContain("aria-checked={sessionData.mode === 'sync'}");
   });
 
