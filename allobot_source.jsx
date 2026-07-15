@@ -99,7 +99,7 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
             absolute ${posClasses[placement]}
             bg-white text-indigo-900 text-xs font-bold px-4 py-3
             shadow-xl border border-indigo-100
-            transition-all duration-300 ease-out
+            transition-all motion-reduce:transition-none duration-300 ease-out
             w-max max-w-[200px] z-50 pointer-events-none
             ${variant === 'thought' ? 'rounded-[2rem]' : 'rounded-2xl'}
             ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2'}
@@ -108,6 +108,7 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
         {displayedText}
         {isTruncated && displayedText.length === text?.length && (
             <button
+                type="button"
                 onClick={(e) => {
                     e.stopPropagation();
                     if (onReadMore) onReadMore();
@@ -1440,7 +1441,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                         dur="8s"
                         repeatCount="indefinite"
                     />
-                    <circle r="2.5" fill="#E0F2FE" className="animate-pulse" />
+                    <circle r="2.5" fill="#E0F2FE" className="animate-pulse motion-reduce:animate-none" />
                     <ellipse rx="12" ry="4" stroke="#67E8F9" strokeWidth="0.8" fill="none" />
                     <ellipse rx="12" ry="4" stroke="#67E8F9" strokeWidth="0.8" fill="none" transform="rotate(60)" />
                     <ellipse rx="12" ry="4" stroke="#67E8F9" strokeWidth="0.8" fill="none" transform="rotate(120)" />
@@ -1884,7 +1885,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 onMicClick();
                             }}
                             onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                            className={`absolute -bottom-1 -left-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 animate-pulse' : 'bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100'}`}
+                            className={`absolute -bottom-1 -left-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 animate-pulse motion-reduce:animate-none' : 'bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100'}`}
                             title={isListening ? t('bot.mic_stop_title') : t('bot.mic_start_title')}
                             aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}
                         >
@@ -1937,7 +1938,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                 )}
                     <rect x="25" y="42" width="50" height="8" rx="2" fill={colors.jetpackStroke} />
                     <circle cx="50" cy="46" r="6" fill="#06B6D4" stroke={colors.jetpackStroke} strokeWidth="2" />
-                    <circle cx="50" cy="46" r="3" fill="#67E8F9" className="animate-pulse" />
+                    <circle cx="50" cy="46" r="3" fill="#67E8F9" className="animate-pulse motion-reduce:animate-none" />
                     <path d="M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
                     <path d="M10 46 H30 M10 60 H30" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
                     <path d="M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
@@ -1958,7 +1959,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     </g>
                 )}
                 {effectiveMood === 'thinking' && !isSleeping && !motionDisabled && (
-                    <g className="animate-pulse" style={{ animationDuration: '2s' }}>
+                    <g className="animate-pulse motion-reduce:animate-none" style={{ animationDuration: '2s' }}>
                         <path
                             d="M 20 -50 L 80 -50 L 54 5 L 46 5 Z"
                             fill="url(#hologram-beam)"
@@ -1991,11 +1992,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         <text x="75" y="-5" fontSize="18" fill="#60A5FA" fontWeight="bold" style={STYLE_ANIMATION_DELAY_HALF}>Z</text>
                     </g>
                 )}
-                <circle cx="50" cy="50" r="45" fill={colors.glow} fillOpacity="0.2" className={isSleeping || motionDisabled ? "" : "animate-pulse"} />
+                <circle cx="50" cy="50" r="45" fill={colors.glow} fillOpacity="0.2" className={isSleeping || motionDisabled ? "" : "animate-pulse motion-reduce:animate-none"} />
                 <g
                     className={
                         isSleeping || motionDisabled ? "" :
-                        (isMoving ? "transition-transform duration-100 ease-out" :
+                        (isMoving ? "transition-transform motion-reduce:transition-none duration-100 ease-out" :
                         (wobbleState.active ? "animate-antenna-spring" : "animate-antenna-sway"))
                     }
                     style={{
@@ -2017,14 +2018,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         fill={isSleeping ? "#64748B" : "#FACC15"}
                         className={
                             effectiveMood === 'thinking' && !motionDisabled && !isSleeping ? "animate-ping" :
-                            (!motionDisabled && isTalking ? "animate-pulse" :
+                            (!motionDisabled && isTalking ? "animate-pulse motion-reduce:animate-none" :
                             (isSleeping ? "" :
                             (antennaAction === 'bounce' ? "animate-antenna-tri-bounce" : "")))
                         }
                     />
                 </g>
                 {effectiveMood === 'thinking' && !isSleeping && !motionDisabled && (
-                    <g className="animate-pulse" style={{ animationDuration: '1.5s' }}>
+                    <g className="animate-pulse motion-reduce:animate-none" style={{ animationDuration: '1.5s' }}>
                         <path
                             d="M 35 40 L 15 5 L 85 5 L 65 40 Z"
                             fill="url(#hologram-gradient)"
@@ -2039,7 +2040,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                 <circle cx="50" cy="55" r="35" fill={`url(#bodyGradient-${effectiveMood})`} />
                 <circle cx="50" cy="55" r="35" fill="url(#rimLightGradient)" />
                 {activeView === 'faq' && !isSleeping && !motionDisabled && (
-                     <g className="animate-bounce" style={{ animationDuration: '2.5s' }}>
+                     <g className="animate-bounce motion-reduce:animate-none" style={{ animationDuration: '2.5s' }}>
                           <text x="50" y="10" fontSize="24" fill="#F59E0B" stroke="#B45309" strokeWidth="1" textAnchor="middle" fontWeight="bold" style={{ filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))' }}>?</text>
                      </g>
                 )}
@@ -2107,7 +2108,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 stroke="#475569"
                                 strokeWidth="0.5"
                             />
-                            <ellipse cx="0" cy="9" rx="6" ry="2" fill="#FACC15" fillOpacity="0.8" className="animate-pulse" />
+                            <ellipse cx="0" cy="9" rx="6" ry="2" fill="#FACC15" fillOpacity="0.8" className="animate-pulse motion-reduce:animate-none" />
                         </g>
                     )}
                 </g>
@@ -2120,7 +2121,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                 {heldItem && !isSleeping && !isDragging && (
                     <g
                         id="held-item"
-                        className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${isMoving ? "transition-transform duration-100 ease-out" : ""}`}
+                        className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${isMoving ? "transition-transform motion-reduce:transition-none duration-100 ease-out" : ""}`}
                         style={{
                             transformOrigin: '90px 65px',
                             transform: isMoving ? `rotate(${propRotation}deg)` : undefined
@@ -2215,8 +2216,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             <g transform="translate(82, 44) rotate(10)">
                                 <rect x="8" y="8" width="4" height="24" fill="#1F2937" rx="1" />
                                 <path d="M10 0 L12 6 L18 6 L13 10 L15 16 L10 12 L5 16 L7 10 L2 6 L8 6 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1" />
-                                <circle cx="4" cy="4" r="1" fill="#FCD34D" className="animate-pulse" />
-                                <circle cx="16" cy="2" r="1" fill="#FCD34D" className="animate-pulse" style={{ animationDelay: '0.2s' }} />
+                                <circle cx="4" cy="4" r="1" fill="#FCD34D" className="animate-pulse motion-reduce:animate-none" />
+                                <circle cx="16" cy="2" r="1" fill="#FCD34D" className="animate-pulse motion-reduce:animate-none" style={{ animationDelay: '0.2s' }} />
                             </g>
                         )}
                         {(heldItem === 'paintbrush' || activeView === 'image') && (
@@ -2224,14 +2225,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <rect x="0" y="0" width="4" height="26" rx="1" fill="#D4A373" stroke="#A16207" strokeWidth="0.5" />
                                 <rect x="-0.5" y="-8" width="5" height="8" fill="#94A3B8" stroke="#475569" strokeWidth="0.5" />
                                 <path d="M0 -8 L-1 -16 Q 2 -20 5 -16 L 4 -8 Z" fill="#FCD34D" stroke="#D97706" strokeWidth="0.5" />
-                                <circle cx="2" cy="-18" r="2.5" fill="#3B82F6" className="animate-pulse" />
+                                <circle cx="2" cy="-18" r="2.5" fill="#3B82F6" className="animate-pulse motion-reduce:animate-none" />
                             </g>
                         )}
                     </g>
                 )}
                 <g style={{ transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}>
                     {isSleeping ? (
-                        <g className="transition-all duration-500">
+                        <g className="transition-all motion-reduce:transition-none duration-500">
                             <path d="M34 49 Q39 53 44 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
                             <path d="M56 49 Q61 53 66 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
                         </g>
@@ -2241,25 +2242,25 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 cx="38" cy="48"
                                 rx={eyeRx} ry={eyeRy * blinkScale}
                                 fill={colors.eye}
-                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                                className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
                             />
                             <ellipse
                                 cx="62" cy="48"
                                 rx={eyeRx} ry={eyeRy * blinkScale}
                                 fill={colors.eye}
-                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                                className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
                             />
                             <ellipse
                                 cx="40" cy={48 - (2 * blinkScale)}
                                 rx="2.5" ry={2.5 * blinkScale}
                                 fill="white" opacity="0.8"
-                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                                className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
                             />
                             <ellipse
                                 cx="64" cy={48 - (2 * blinkScale)}
                                 rx="2.5" ry={2.5 * blinkScale}
                                 fill="white" opacity="0.8"
-                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                                className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
                             />
                         </g>
                     )}
@@ -2273,7 +2274,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         className="mouth-transition"
                     />
                     {!isSleeping && effectiveMood !== 'idle' && (
-                        <g className="transition-all duration-300">
+                        <g className="transition-all motion-reduce:transition-none duration-300">
                             {effectiveMood === 'happy' && <path d="M33 42 Q38 39 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                             {effectiveMood === 'sad' && <path d="M33 39 Q38 41 43 43" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                             {effectiveMood === 'thinking' && <path d="M33 42 Q38 42 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
