@@ -10654,6 +10654,128 @@ var createDocPipeline = function(deps) {
     const hash = normalized ? await _sha256Hex(normalized) : null;
     return hash ? ('sha256:' + hash) : null;
   };
+  // Session-local OCR evidence cache (2026-07-15): a hands-off retry that is throttled AFTER
+  // dual OCR used to repeat the most quota-heavy part of the run (language ID + every Vision
+  // extraction chunk) even though Step 1 had already completed successfully. Bank only complete,
+  // reconciled scanned-PDF evidence and restore it for the exact same bytes/settings. This is
+  // deliberately NOT persistent: page word boxes can be large and may contain sensitive text.
+  // A fresh app session, changed document/range/language/backend/model/version, incomplete page
+  // coverage, or an explicit Re-scan with OCR all force a fresh extraction.
+  const _OCR_EVIDENCE_VERSION = '20260715-1';
+  const _OCR_EVIDENCE_MAX_ENTRIES = 4;
+  const _OCR_EVIDENCE_MAX_BYTES = 32 * 1024 * 1024;
+  const _OCR_EVIDENCE_MAX_ENTRY_BYTES = 16 * 1024 * 1024;
+  const _ocrEvidenceCache = new Map();
+  let _ocrEvidenceCacheBytes = 0;
+  const _ocrEvidenceRangeKey = (pageRange) => {
+    if (!Array.isArray(pageRange) || !pageRange.length) return 'all';
+    const start = Math.max(1, Number(pageRange[0]) || 1);
+    const end = Math.max(start, Number(pageRange[1]) || start);
+    return start + '-' + end;
+  };
+  const _ocrEvidenceIdentity = (opts) => {
+    const o = opts || {};
+    return {
+      version: _OCR_EVIDENCE_VERSION,
+      documentDigest: o.documentDigest || null,
+      pageRangeKey: _ocrEvidenceRangeKey(o.pageRange),
+      ocrLanguage: String(o.ocrLanguage || 'auto').trim().toLowerCase() || 'auto',
+      backendId: String(o.backendId || 'unknown'),
+      effectivePageCount: Math.max(0, Number(o.effectivePageCount) || 0),
+    };
+  };
+  const _ocrEvidenceKey = (identity) => {
+    const i = identity || {};
+    if (!i.documentDigest || !i.effectivePageCount) return null;
+    return [i.version, i.documentDigest, i.pageRangeKey, i.ocrLanguage, i.backendId, i.effectivePageCount].join('|');
+  };
+  const _ocrEvidenceExpectedPages = (identity) => {
+    const i = identity || {};
+    const count = Math.max(0, Number(i.effectivePageCount) || 0);
+    let start = 1;
+    if (i.pageRangeKey && i.pageRangeKey !== 'all') start = Math.max(1, Number(String(i.pageRangeKey).split('-')[0]) || 1);
+    return Array.from({ length: count }, (_, idx) => start + idx);
+  };
+  const _ocrEvidenceCompatible = (record, identity) => {
+    if (!record || !identity) return false;
+    for (const field of ['version', 'documentDigest', 'pageRangeKey', 'ocrLanguage', 'backendId', 'effectivePageCount']) {
+      if (record[field] !== identity[field]) return false;
+    }
+    if (typeof record.extractedText !== 'string' || record.extractedText.trim().length <= 100) return false;
+    if (!record.ocrMethod || !/(?:tesseract|vision)/i.test(String(record.ocrMethod))) return false;
+    // Do not replay an extraction that already knew a page failed. A retry may recover it.
+    if (Array.isArray(record.ocrPageErrors) && record.ocrPageErrors.length) return false;
+    if (!Array.isArray(record.groundTruthPages) || !record.groundTruthPages.length) return false;
+    const present = new Set(record.groundTruthPages
+      .map(p => p && Number(p.pageNum))
+      .filter(n => Number.isFinite(n) && n > 0));
+    return _ocrEvidenceExpectedPages(identity).every(pageNum => present.has(pageNum));
+  };
+  const _readOcrEvidence = (identity) => {
+    const key = _ocrEvidenceKey(identity);
+    if (!key || !_ocrEvidenceCache.has(key)) return null;
+    const stored = _ocrEvidenceCache.get(key);
+    try {
+      const record = JSON.parse(stored.serialized);
+      if (!_ocrEvidenceCompatible(record, identity)) {
+        _ocrEvidenceCache.delete(key);
+        _ocrEvidenceCacheBytes = Math.max(0, _ocrEvidenceCacheBytes - stored.bytes);
+        return null;
+      }
+      // LRU touch. JSON.parse also provides a defensive clone: downstream PDF generation may
+      // annotate page/word objects without mutating the banked evidence.
+      _ocrEvidenceCache.delete(key);
+      _ocrEvidenceCache.set(key, stored);
+      return record;
+    } catch (_) {
+      _ocrEvidenceCache.delete(key);
+      _ocrEvidenceCacheBytes = Math.max(0, _ocrEvidenceCacheBytes - (stored && stored.bytes || 0));
+      return null;
+    }
+  };
+  const _writeOcrEvidence = (identity, evidence) => {
+    const key = _ocrEvidenceKey(identity);
+    if (!key) return false;
+    const record = Object.assign({}, identity, evidence || {}, { savedAt: Date.now() });
+    if (!_ocrEvidenceCompatible(record, identity)) return false;
+    try {
+      const serialized = JSON.stringify(record);
+      const bytes = serialized.length * 2;
+      if (bytes > _OCR_EVIDENCE_MAX_ENTRY_BYTES) return false;
+      const prior = _ocrEvidenceCache.get(key);
+      if (prior) {
+        _ocrEvidenceCache.delete(key);
+        _ocrEvidenceCacheBytes = Math.max(0, _ocrEvidenceCacheBytes - prior.bytes);
+      }
+      _ocrEvidenceCache.set(key, { serialized, bytes });
+      _ocrEvidenceCacheBytes += bytes;
+      while (_ocrEvidenceCache.size > _OCR_EVIDENCE_MAX_ENTRIES || _ocrEvidenceCacheBytes > _OCR_EVIDENCE_MAX_BYTES) {
+        const oldestKey = _ocrEvidenceCache.keys().next().value;
+        if (oldestKey == null) break;
+        const oldest = _ocrEvidenceCache.get(oldestKey);
+        _ocrEvidenceCache.delete(oldestKey);
+        _ocrEvidenceCacheBytes = Math.max(0, _ocrEvidenceCacheBytes - (oldest && oldest.bytes || 0));
+      }
+      return _ocrEvidenceCache.has(key);
+    } catch (_) { return false; }
+  };
+  const _restoreOcrEvidenceGlobals = (record) => {
+    if (!record || typeof window === 'undefined') return;
+    window.__lastGroundTruthCharCount = record.groundTruthCharCount || record.extractedText.length;
+    window.__lastGroundTruthPageMap = record.groundTruthPages || null;
+    window.__lastGroundTruthMethod = record.groundTruthMethod || 'vision-ocr';
+    window.__lastOcrTesseractText = record.ocrTesseractText || '';
+    window.__lastOcrVisionText = record.ocrVisionText || '';
+    window.__lastOcrDisagreements = record.ocrDisagreements || [];
+    window.__lastOcrMethod = record.ocrMethod || null;
+    window.__lastOcrPageErrors = record.ocrPageErrors || [];
+    window.__lastOcrLowConfidencePages = record.ocrLowConfidencePages || [];
+    window.__alloDetectedFolios = record.detectedFolios || [];
+    window.__alloOcrDupeCollapses = record.ocrDupeCollapses || [];
+    window.__alloOcrColumnReorders = record.ocrColumnReorders || [];
+    window.__alloStrippedEdgeLines = record.strippedEdgeLines || [];
+    window.__lastVisionStripTrail = record.visionStripTrail || [];
+  };
   const _auditCacheKey = async (base64Data, numAuditors, outLang) => {
     // H10 (deep dive 2026-07-02): hash the FULL content — the old head-4KB+length+tail-4KB
     // sample collided for same-length template PDFs differing only in interior pages
@@ -18407,6 +18529,36 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       _forceFullOcr = _extOut.forceFullOcr;                  // garbled-layer detector can force the OCR path
       _garbledFallbackText = _extOut.garbledFallbackText;    // discarded layer kept as the junk-ratio fallback
       const _officeMediaImages = _extOut.officeMediaImages;  // H1: spliced into accessibleHtml post-transform
+      // Exact-byte OCR evidence reuse: deterministic parsing above remains authoritative for text
+      // PDFs. Only a scanned/empty PDF may reuse a complete prior dual-OCR result, and manual
+      // full/per-page re-OCR always bypasses this read. The language setting is deliberately read
+      // fresh here because it is the pipeline's documented Stage-1 exception to run snapshots.
+      const _requestedOcrLanguage = (() => {
+        try {
+          return (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || 'auto';
+        } catch (_) { return 'auto'; }
+      })();
+      const _runOcrEvidenceIdentity = _ocrEvidenceIdentity({
+        documentDigest: _documentKey,
+        pageRange: _pageRange,
+        ocrLanguage: _requestedOcrLanguage,
+        backendId: _cacheBackendId(),
+        effectivePageCount,
+      });
+      let _ocrEvidenceCacheHit = false;
+      if ((!extractedText || extractedText.length <= 100)
+          && _mimeType === 'application/pdf'
+          && !_forceFullOcr
+          && !(_forceOcrPages && _forceOcrPages.length)) {
+        const _bankedOcr = _readOcrEvidence(_runOcrEvidenceIdentity);
+        if (_bankedOcr) {
+          extractedText = _bankedOcr.extractedText;
+          _restoreOcrEvidenceGlobals(_bankedOcr);
+          _ocrEvidenceCacheHit = true;
+          updateProgress(1, 'Reusing complete OCR evidence for ' + effectivePageCount + ' page' + (effectivePageCount === 1 ? '' : 's') + ' - skipped Tesseract + Vision');
+          warnLog('[OCR cache] Exact-byte hit - reused ' + extractedText.length + ' chars / ' + effectivePageCount + ' pages; skipped language detection, Tesseract, and Vision extraction calls');
+        }
+      }
 
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
@@ -18461,7 +18613,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
       // If deterministic extraction succeeded, skip OCR entirely
       if (extractedText && extractedText.length > 100) {
-        warnLog(`[Det] Using deterministic extraction (${extractedText.length} chars), skipping OCR`);
+        if (!_ocrEvidenceCacheHit) warnLog('[Det] Using deterministic extraction (' + extractedText.length + ' chars), skipping OCR');
         // Fall through to Step 1b (image extraction) with extractedText already populated
       } else if (_base64 && _mimeType === 'application/pdf') {
         // Scanned-PDF path: run Tesseract and Vision in parallel, then reconcile.
@@ -18862,6 +19014,47 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
 
       // ── Step 1b (S2-extracted → _extractPdfImages) ──
+      // Bank complete scanned-PDF evidence BEFORE image descriptions, styling, transformation, and
+      // verification make further AI calls. If one of those later stages throttles, the hands-off
+      // retry can restart without repeating OCR. Incomplete page coverage/failures and oversized
+      // evidence are rejected by _writeOcrEvidence; a backend/language change during OCR also skips
+      // the write rather than labeling evidence with stale settings.
+      if (!_ocrEvidenceCacheHit && _mimeType === 'application/pdf' && _documentKey && window.__lastOcrMethod) {
+        const _writeOcrEvidenceIdentity = _ocrEvidenceIdentity({
+          documentDigest: _documentKey,
+          pageRange: _pageRange,
+          ocrLanguage: (() => {
+            try { return (window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || 'auto'; }
+            catch (_) { return 'auto'; }
+          })(),
+          backendId: _cacheBackendId(),
+          effectivePageCount,
+        });
+        if (_ocrEvidenceKey(_writeOcrEvidenceIdentity) === _ocrEvidenceKey(_runOcrEvidenceIdentity)) {
+          const _banked = _writeOcrEvidence(_writeOcrEvidenceIdentity, {
+            extractedText,
+            groundTruthCharCount: window.__lastGroundTruthCharCount || extractedText.length,
+            groundTruthPages: Array.isArray(window.__lastGroundTruthPageMap) ? window.__lastGroundTruthPageMap : null,
+            groundTruthMethod: window.__lastGroundTruthMethod || 'vision-ocr',
+            ocrTesseractText: window.__lastOcrTesseractText || '',
+            ocrVisionText: window.__lastOcrVisionText || '',
+            ocrDisagreements: window.__lastOcrDisagreements || [],
+            ocrMethod: window.__lastOcrMethod,
+            ocrPageErrors: window.__lastOcrPageErrors || [],
+            ocrLowConfidencePages: window.__lastOcrLowConfidencePages || [],
+            detectedFolios: window.__alloDetectedFolios || [],
+            ocrDupeCollapses: window.__alloOcrDupeCollapses || [],
+            ocrColumnReorders: window.__alloOcrColumnReorders || [],
+            strippedEdgeLines: window.__alloStrippedEdgeLines || [],
+            visionStripTrail: window.__lastVisionStripTrail || [],
+          });
+          if (_banked) warnLog('[OCR cache] Banked complete reconciled evidence (' + extractedText.length + ' chars / ' + effectivePageCount + ' pages) before downstream AI calls');
+          else warnLog('[OCR cache] Evidence not banked - incomplete page coverage, recorded page failure, or memory cap');
+        } else {
+          warnLog('[OCR cache] Evidence not banked - OCR language or AI backend/model changed during extraction');
+        }
+      }
+
       const _imgOut = await _extractPdfImages({ base64: _base64, mimeType: _mimeType, silentMode: _silentMode, updateProgress });
       let extractedImages = _imgOut.extractedImages; // consumed by the placeholder splice, image report, and return payload
 
