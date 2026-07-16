@@ -637,6 +637,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return specimen.length < 3.25 ? 'its carapace is below the 3.25-inch Maine training minimum' : specimen.length > 5 ? 'its carapace is above the 5-inch Maine training maximum' : specimen.isVNotched ? 'it is a protected V-notched female breeder' : 'it does not meet the Maine training profile';
   }
 
+  function getCoreShellfishHandlingGuidance(action, legalToRetain) {
+    if (action !== 'keep' || !legalToRetain) {
+      return { id: 'release', label: 'Low-impact release', text: 'Minimize deck time, support the body, and lower the animal gently into the water rather than dropping it from height.' };
+    }
+    return { id: 'retain', label: 'Retained catch care', text: 'Log size and protection checks, keep the catch cool and secure, and count it toward the current possession limit.' };
+  }
+
   function getCoreFishHandlingGuidance(action, legalToRetain) {
     if (action !== 'retain' || !legalToRetain) {
       return { id: 'release', label: 'Release handling', text: 'Wet hands, support the fish horizontally, minimize air exposure, and let it recover facing into moving water.' };
@@ -690,6 +697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     evaluateCoreFishDecision: evaluateCoreFishDecision,
     evaluateCoreCaliperReading: evaluateCoreCaliperReading,
     getCoreShellfishReleaseReason: getCoreShellfishReleaseReason,
+    getCoreShellfishHandlingGuidance: getCoreShellfishHandlingGuidance,
     getCoreFishHandlingGuidance: getCoreFishHandlingGuidance,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
@@ -10081,6 +10089,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var voyageMode = voyageModeHook[0], setVoyageMode = voyageModeHook[1];
     var activeLobsterHook = useState(null);
     var activeLobster = activeLobsterHook[0], setActiveLobster = activeLobsterHook[1];
+    var shellfishDecisionResultHook = useState(null);
+    var shellfishDecisionResult = shellfishDecisionResultHook[0], setShellfishDecisionResult = shellfishDecisionResultHook[1];
     var activeFishHook = useState(null);
     var activeFish = activeFishHook[0], setActiveFish = activeFishHook[1];
     var fishEvidenceHook = useState(null);
@@ -10176,7 +10186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (decisionFocusRef.current && decisionFocusRef.current.focus) decisionFocusRef.current.focus();
       }, 80);
       return function() { clearTimeout(focusTimer); };
-    }, [activeFish, activeLobster, activeTraffic, fishDecisionResult]);
+    }, [activeFish, activeLobster, activeTraffic, fishDecisionResult, shellfishDecisionResult]);
 
     // Regenerate checkpoint specimen on region changes
     useEffect(function() {
@@ -10246,6 +10256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         setActiveLobster(ev);
         setCaliperVal(ev.specimenType === 'crab' ? 4.5 : ev.specimenType === 'crayfish' ? 2.5 : 3.5);
         setCaliperCheck(null);
+        setShellfishDecisionResult(null);
       }
       if (ev.type === 'fish-haul') {
         setFishEvidence(null);
@@ -11425,6 +11436,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 );
               }
 
+              function submitShellfishDecision(action) {
+                if (!caliperCheck || !caliperCheck.accurate || shellfishDecisionResult) return;
+                var correct = action === 'keep' ? !!activeLobster.isKeeper : !activeLobster.isKeeper;
+                var typeLabel = activeLobster.specimenType === 'crab' ? 'crab' : activeLobster.specimenType === 'crayfish' ? 'crayfish' : 'lobster';
+                var reason = getCoreShellfishReleaseReason(activeLobster);
+                var message = action === 'keep' ? correct ? 'Correct. This ' + typeLabel + ' meets the training profile at ' + activeLobster.length.toFixed(2) + ' inches and may be retained.' : 'Review needed. Release is required because ' + reason + '.' : correct ? 'Correct. Release is required because ' + reason + '.' : 'Review needed. This specimen meets the training profile; voluntary release is allowed, but this classification asks whether harvest is permitted.';
+                var handling = getCoreShellfishHandlingGuidance(action, activeLobster.isKeeper);
+                pushStatus({ type: correct && action === 'keep' ? 'lobster' : correct ? 'complete' : action === 'keep' ? 'violation' : 'guidance', length: activeLobster.length, isKeeper: correct && action === 'keep', text: message });
+                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('shellfish', action, correct, activeLobster.specimenType, true);
+                setShellfishDecisionResult({ correct: correct, action: action, message: message, handling: handling });
+                flAnnounce(message + ' ' + handling.label + '. ' + handling.text);
+              }
+              function continueAfterShellfishReview() {
+                if (harborRef.current && harborRef.current.setPaused) harborRef.current.setPaused(false);
+                setActiveLobster(null);
+                setCaliperCheck(null);
+                setShellfishDecisionResult(null);
+              }
+
               return h('div', {
                 role: 'dialog',
                 'aria-modal': 'true',
@@ -11652,6 +11682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       ),
                       h('input', {
                         type: 'range',
+                        disabled: !!shellfishDecisionResult,
                         'aria-label': 'Caliper measurement in inches',
                         min: activeLobster.specimenType === 'crab' ? 3.00 : activeLobster.specimenType === 'crayfish' ? 1.50 : 2.50,
                         max: activeLobster.specimenType === 'crab' ? 8.00 : activeLobster.specimenType === 'crayfish' ? 5.00 : 6.00,
@@ -11663,7 +11694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                         style: { width: '100%', cursor: 'ew-resize', accentColor: '#f59e0b' }
                       }),
                       h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 8 } },
-                        h('button', { type: 'button', className: 'fl-btn', onClick: function() { var checked = evaluateCoreCaliperReading(activeLobster.length, caliperVal); setCaliperCheck(checked); flAnnounce(checked.message); }, style: { padding: '8px 12px', border: '1px solid rgba(251,191,36,0.55)', borderRadius: 6, background: '#78350f', color: '#fef3c7', fontWeight: 900, cursor: 'pointer' } }, 'Lock reading'),
+                        h('button', { type: 'button', className: 'fl-btn', disabled: !!shellfishDecisionResult, onClick: function() { var checked = evaluateCoreCaliperReading(activeLobster.length, caliperVal); setCaliperCheck(checked); flAnnounce(checked.message); }, style: { padding: '8px 12px', border: '1px solid rgba(251,191,36,0.55)', borderRadius: 6, background: shellfishDecisionResult ? '#475569' : '#78350f', color: '#fef3c7', fontWeight: 900, cursor: shellfishDecisionResult ? 'not-allowed' : 'pointer' } }, 'Lock reading'),
                         h('span', { id: 'fl-caliper-feedback', role: 'status', 'aria-live': 'polite', style: { flex: '1 1 190px', color: caliperCheck && caliperCheck.accurate ? '#86efac' : caliperCheck ? '#fde68a' : '#cbd5e1', fontSize: 11, lineHeight: 1.4 } }, caliperCheck ? caliperCheck.accurate ? 'Measurement logged: ' + caliperVal.toFixed(2) + ' in. Continue to the compliance action.' : caliperCheck.message : 'Align the jaws, then lock the reading before classifying the catch.')
                       )
                     )
@@ -11693,61 +11724,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
                     lawsCardContent,
 
-                    h('div', { style: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' } },
+                    shellfishDecisionResult ? h('div', { style: { marginTop: 'auto', padding: 12, borderRadius: 7, border: '1px solid ' + (shellfishDecisionResult.correct ? 'rgba(110,231,183,0.55)' : 'rgba(251,191,36,0.6)'), background: shellfishDecisionResult.correct ? 'rgba(6,78,59,0.45)' : 'rgba(120,53,15,0.4)' } },
+                      h('div', { id: 'fl-shellfish-review', role: 'status', 'aria-live': 'polite' },
+                        h('div', { style: { color: shellfishDecisionResult.correct ? '#6ee7b7' : '#fde68a', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, shellfishDecisionResult.correct ? 'Decision confirmed' : 'Deckhand review'),
+                        h('p', { style: { margin: '6px 0 10px', color: '#f8fafc', fontSize: 12, lineHeight: 1.5 } }, shellfishDecisionResult.message),
+                        h('div', { style: { padding: 9, borderRadius: 6, background: 'rgba(2,6,23,0.45)' } },
+                          h('strong', { style: { color: '#bae6fd', fontSize: 11 } }, shellfishDecisionResult.handling.label),
+                          h('div', { style: { marginTop: 4, color: '#dbeafe', fontSize: 11, lineHeight: 1.45 } }, shellfishDecisionResult.handling.text)
+                        )
+                      ),
+                      h('button', { ref: decisionFocusRef, type: 'button', className: 'fl-btn', onClick: continueAfterShellfishReview, style: { width: '100%', marginTop: 10, padding: 10, border: 0, borderRadius: 6, background: '#38bdf8', color: '#082f49', fontWeight: 900, cursor: 'pointer' } }, 'Continue voyage')
+                    ) : h('div', { style: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' } },
                       h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } }, 'Confirm your compliance action:'),
-                      h('button', {
-                        className: 'fl-btn',
-                        disabled: !caliperCheck || !caliperCheck.accurate,
-                        onClick: function() {
-                          if (!caliperCheck || !caliperCheck.accurate) return;
-                          var decisionCorrect = activeLobster.isKeeper;
-                          var msg = '';
-                          var violationText = '';
-
-                          if (decisionCorrect) {
-                            msg = '✓ Legal ' + (activeLobster.specimenType === 'crab' ? 'crab' : activeLobster.specimenType === 'crayfish' ? 'crayfish' : 'lobster') + ' kept! Size: ' + activeLobster.length.toFixed(2) + '" ' + (activeLobster.isFemale ? 'Female' : 'Male') + '.';
-                            flAnnounce(msg);
-                            pushStatus({ type: 'lobster', length: activeLobster.length, isKeeper: true, text: msg });
-                          } else {
-                            var reason = getCoreShellfishReleaseReason(activeLobster);
-                            violationText = 'Compliance review: release required because ' + reason + '. No fine is simulated; penalties depend on current jurisdiction and fishery.';
-                            flAnnounce(violationText);
-                            pushStatus({ type: 'violation', text: violationText });
-                          }
-
-                          if (harborRef.current && harborRef.current.resolveCatch) {
-                            harborRef.current.resolveCatch('shellfish', 'keep', decisionCorrect, activeLobster.specimenType);
-                          }
-                          setActiveLobster(null);
-                        },
-                        style: { padding: '10px', background: caliperCheck && caliperCheck.accurate ? '#10b981' : '#475569', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: caliperCheck && caliperCheck.accurate ? 'pointer' : 'not-allowed', fontSize: '12px' }
-                      }, 'CLASSIFY: LEGAL TO RETAIN'),
-
-                      h('button', {
-                        className: 'fl-btn',
-                        disabled: !caliperCheck || !caliperCheck.accurate,
-                        onClick: function() {
-                          if (!caliperCheck || !caliperCheck.accurate) return;
-                          var decisionCorrect = !activeLobster.isKeeper;
-                          var msg = '';
-
-                          if (decisionCorrect) {
-                            msg = '✓ Released a specimen requiring release under the training profile (' + activeLobster.length.toFixed(2) + '"). Compliance check passed.';
-                            flAnnounce(msg);
-                            pushStatus({ type: 'complete', text: msg });
-                          } else {
-                            msg = 'Not quite: this specimen meets the training rule, though voluntary release remains allowed (' + activeLobster.length.toFixed(2) + '").';
-                            flAnnounce(msg);
-                            pushStatus({ type: 'complete', text: msg });
-                          }
-                          
-                          if (harborRef.current && harborRef.current.resolveCatch) {
-                            harborRef.current.resolveCatch('shellfish', 'release', decisionCorrect, activeLobster.specimenType);
-                          }
-                          setActiveLobster(null);
-                        },
-                        style: { padding: '10px', background: caliperCheck && caliperCheck.accurate ? '#64748b' : '#1e293b', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: caliperCheck && caliperCheck.accurate ? 'pointer' : 'not-allowed', fontSize: '12px' }
-                      }, 'CLASSIFY: MUST RELEASE')
+                      h('button', { type: 'button', className: 'fl-btn', disabled: !caliperCheck || !caliperCheck.accurate, onClick: function() { submitShellfishDecision('keep'); }, style: { padding: '10px', background: caliperCheck && caliperCheck.accurate ? '#10b981' : '#475569', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: caliperCheck && caliperCheck.accurate ? 'pointer' : 'not-allowed', fontSize: '12px' } }, 'CLASSIFY: LEGAL TO RETAIN'),
+                      h('button', { type: 'button', className: 'fl-btn', disabled: !caliperCheck || !caliperCheck.accurate, onClick: function() { submitShellfishDecision('release'); }, style: { padding: '10px', background: caliperCheck && caliperCheck.accurate ? '#64748b' : '#1e293b', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: caliperCheck && caliperCheck.accurate ? 'pointer' : 'not-allowed', fontSize: '12px' } }, 'CLASSIFY: MUST RELEASE')
                     )
                   )
                 )

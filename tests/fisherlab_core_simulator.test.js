@@ -288,6 +288,14 @@ describe('Fisher Lab shellfish caliper', () => {
     expect(getCoreShellfishReleaseReason({ region: 'pnw', length: 6.5, isFemale: true })).toContain('male-only');
     expect(getCoreShellfishReleaseReason({ region: 'greatlakes', length: 2 })).toContain('local species or jurisdiction');
   });
+
+  it('pairs shellfish decisions with species-appropriate handling guidance', () => {
+    const { getCoreShellfishHandlingGuidance } = window.__FisherLabCore;
+
+    expect(getCoreShellfishHandlingGuidance('keep', true)).toMatchObject({ id: 'retain', label: 'Retained catch care' });
+    expect(getCoreShellfishHandlingGuidance('release', false)).toMatchObject({ id: 'release', label: 'Low-impact release' });
+    expect(getCoreShellfishHandlingGuidance('keep', false).id).toBe('release');
+  });
 });
 
 describe('Fisher Lab simulator safeguards', () => {
@@ -378,11 +386,18 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).not.toContain("'aria-label': 'Measurement diagram for a '");
     expect(source).toContain("'aria-describedby': 'fl-caliper-feedback'");
     expect(source).toContain("disabled: !caliperCheck || !caliperCheck.accurate");
-    expect(source).toContain("if (!caliperCheck || !caliperCheck.accurate) return;");
+    expect(source).toContain("if (!caliperCheck || !caliperCheck.accurate || shellfishDecisionResult) return;");
     expect(source).toContain('Practice profile only — check current MD-DNR');
     expect(source).toContain('WASHINGTON COMMERCIAL COASTAL TRAINING PROFILE');
     expect(source).toContain('no Great Lakes-wide size threshold is scored');
-    expect(source).toContain('No fine is simulated; penalties depend on current jurisdiction and fishery.');
+    expect(source).not.toContain('No fine is simulated; penalties depend on current jurisdiction and fishery.');
+    expect(source).toContain('submitShellfishDecision');
+    expect(source).toContain("getCoreShellfishHandlingGuidance(action, activeLobster.isKeeper)");
+    expect(source).toContain("activeLobster.specimenType, true");
+    expect(source).toContain("id: 'fl-shellfish-review', role: 'status'");
+    expect(source).toContain('Continue voyage');
+    expect(source).toContain("fishDecisionResult, shellfishDecisionResult");
+    expect(source).toContain("disabled: !!shellfishDecisionResult");
     expect(source).not.toContain('GLFC CRAYFISH LAWS');
     expect(source).not.toContain('minSize: 3, slot:');
     expect(source).not.toContain('CITATION: Possession of');
