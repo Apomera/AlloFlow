@@ -216,6 +216,45 @@ describe('solar system main 3D canvas loop', () => {
     });
   });
 
+  it('defers every canvas resize out of ResizeObserver delivery to avoid loop errors', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      // Each observer coalesces into a single rAF instead of resizing synchronously.
+      expect(source).toContain('let solarResizePending = false;');
+      expect(source).toContain('var planetResizePending = false;');
+      expect(source).toContain('var droneResizePending = false;');
+      // Drone resize skips no-op notifications and never lets Three.js write
+      // inline px styles (which would re-trigger the observer).
+      expect(source).toContain('function resizeDroneCanvas(forceResize)');
+      expect(source).toContain('if (!forceResize && w === _lastDroneSizeW && h2 === _lastDroneSizeH && isFS === _lastDroneSizeFS) return;');
+      expect(source).toContain('renderer.setSize(w, h2, false);');
+      // Fullscreen transitions force a resize through a named, removable handler.
+      expect(source).toContain('function onDroneFullscreenChange() { resizeDroneCanvas(true); }');
+      // The duplicate drone observer is gone; cleanup targets the surviving one.
+      expect(source).not.toContain('var ro3d = new ResizeObserver');
+      expect(source).toContain('canvasEl._droneRO = droneRO;');
+    });
+  });
+
+  it('keeps photo evidence with journal entries and offers a journal export', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      // The captured thumbnail reaches the journal entry (session-local copy only,
+      // so persisted state stays text-sized).
+      expect(source).toContain('function recordDroneJournal(kind, title, observation, cer, silent, photoThumb)');
+      expect(source).toContain('droneJournalEntries.unshift(photoThumb ? Object.assign({ photoThumb: photoThumb }, entry) : entry);');
+      expect(source).toContain('true, thumbDataUrl);');
+      expect(source).toContain("entry.photoThumb ? '<img src=");
+      // Export button downloads a standalone HTML evidence log.
+      expect(source).toContain('data-journal-export="true"');
+      expect(source).toContain('function exportDroneJournal()');
+      expect(source).toContain("_field_journal_' + new Date().toISOString().slice(0, 10) + '.html'");
+      expect(source).toContain("addMissionEntry('\\uD83D\\uDCD3 Exported field journal for ' + sel.name);");
+    });
+  });
+
   it('detects mode-specific patterns after three readings and adds them to the evidence', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');

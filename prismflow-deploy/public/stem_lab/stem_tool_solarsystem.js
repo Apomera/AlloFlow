@@ -1993,11 +1993,21 @@ const d = labToolData.solarSystem || {};
 
               // â"€â"€ Resize handler â"€â"€
 
+              // Apply resizes on the next frame: mutating the canvas inside observer
+              // delivery re-triggers the observer and logs "ResizeObserver loop
+              // completed with undelivered notifications".
+              let solarResizePending = false;
+
               resizeObserver = new ResizeObserver(function () {
 
-                const w = canvas.clientWidth; const h = canvas.clientHeight;
-
-                if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); if (composer) { try { composer.setSize(w, h); } catch (e) {} } }
+                if (solarResizePending) return;
+                solarResizePending = true;
+                requestAnimationFrame(function () {
+                  solarResizePending = false;
+                  if (!solarAlive || !canvas.isConnected) return;
+                  const w = canvas.clientWidth; const h = canvas.clientHeight;
+                  if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); if (composer) { try { composer.setSize(w, h); } catch (e) {} } }
+                });
 
               });
 
@@ -7609,11 +7619,19 @@ const d = labToolData.solarSystem || {};
 
                       drawPlanet();
 
+                      // Deferred to the next frame so the canvas mutation happens outside
+                      // observer delivery (avoids the ResizeObserver loop console error).
+                      var planetResizePending = false;
                       var ro = new ResizeObserver(function () {
 
-                        W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 350;
-
-                        cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                        if (planetResizePending) return;
+                        planetResizePending = true;
+                        requestAnimationFrame(function () {
+                          planetResizePending = false;
+                          if (!cvEl.isConnected) return;
+                          W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 350;
+                          cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                        });
 
                       });
 
@@ -10375,7 +10393,8 @@ const d = labToolData.solarSystem || {};
                         // Handling true fullscreen resize dynamically
 
                         // Robust fullscreen + resize handler
-                        function resizeDroneCanvas() {
+                        var _lastDroneSizeW = 0, _lastDroneSizeH = 0, _lastDroneSizeFS = null;
+                        function resizeDroneCanvas(forceResize) {
                           if (!renderer || !camera) return;
                           var isFS = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
                           var container = document.getElementById('drone-fullscreen-container') || canvasEl.parentElement;
@@ -10418,23 +10437,38 @@ const d = labToolData.solarSystem || {};
                             w = canvasEl.clientWidth || canvasEl.parentElement.clientWidth || 900;
                             h2 = canvasEl.clientHeight || canvasEl.parentElement.clientHeight || 600;
                           }
+                          if (!forceResize && w === _lastDroneSizeW && h2 === _lastDroneSizeH && isFS === _lastDroneSizeFS) return;
+                          _lastDroneSizeW = w; _lastDroneSizeH = h2; _lastDroneSizeFS = isFS;
                           W = w; H = h2;
                           camera.aspect = w / h2;
                           camera.updateProjectionMatrix();
-                          renderer.setSize(w, h2);
+                          // updateStyle=false: CSS above owns the layout size; letting Three
+                          // write inline px styles here re-triggers the ResizeObserver.
+                          renderer.setSize(w, h2, false);
                         }
                         // Track on a separate doc map so cleanup can target the right node.
-                        var _droneDocH = canvasEl._droneDocHandlers = { fullscreenchange: resizeDroneCanvas, webkitfullscreenchange: resizeDroneCanvas, mozfullscreenchange: resizeDroneCanvas };
-                        document.addEventListener('fullscreenchange', resizeDroneCanvas);
-                        document.addEventListener('webkitfullscreenchange', resizeDroneCanvas);
-                        document.addEventListener('mozfullscreenchange', resizeDroneCanvas);
-                        // Also observe size changes from layout reflow
+                        function onDroneFullscreenChange() { resizeDroneCanvas(true); }
+                        var _droneDocH = canvasEl._droneDocHandlers = { fullscreenchange: onDroneFullscreenChange, webkitfullscreenchange: onDroneFullscreenChange, mozfullscreenchange: onDroneFullscreenChange };
+                        document.addEventListener('fullscreenchange', onDroneFullscreenChange);
+                        document.addEventListener('webkitfullscreenchange', onDroneFullscreenChange);
+                        document.addEventListener('mozfullscreenchange', onDroneFullscreenChange);
+                        // Also observe size changes from layout reflow. The actual resize is
+                        // deferred to the next frame: resizing the renderer inside observer
+                        // delivery re-triggers the observer and logs "ResizeObserver loop
+                        // completed with undelivered notifications".
+                        var droneResizePending = false;
                         var droneRO = new ResizeObserver(function() {
-                          if (!document.fullscreenElement) resizeDroneCanvas();
+                          if (droneResizePending) return;
+                          droneResizePending = true;
+                          requestAnimationFrame(function() {
+                            droneResizePending = false;
+                            if (!canvasEl.isConnected) return;
+                            resizeDroneCanvas();
+                          });
                         });
                         droneRO.observe(canvasEl);
                         // Initial size fix after 1 frame (in case clientWidth was 0)
-                        requestAnimationFrame(function() { resizeDroneCanvas(); });
+                        requestAnimationFrame(function() { resizeDroneCanvas(true); });
 
 
 
@@ -10998,6 +11032,7 @@ const d = labToolData.solarSystem || {};
                           if (!journalPanel) return;
                           var rows = droneJournalEntries.length ? droneJournalEntries.map(function (entry) {
                             return '<div style="border:1px solid rgba(52,211,153,0.18);background:rgba(15,23,42,0.62);border-radius:12px;padding:10px;margin-bottom:8px">' +
+                              (entry.photoThumb ? '<img src="' + entry.photoThumb + '" alt="Photo evidence from ' + droneEscapeHtml(entry.planet || sel.name) + '" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid rgba(56,189,248,0.25);margin-bottom:6px" />' : '') +
                               '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:5px">' +
                               '<div style="font-weight:800;color:#86efac;font-size:12px">' + droneEscapeHtml(entry.kind || 'Field note') + ': ' + droneEscapeHtml(entry.title || sel.name) + '</div>' +
                               '<div style="font-size:9px;color:#94a3b8;white-space:nowrap">' + droneEscapeHtml(entry.time || '') + '</div>' +
@@ -11013,8 +11048,49 @@ const d = labToolData.solarSystem || {};
                           journalPanel.innerHTML =
                             '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">' +
                             '<div><div style="font-weight:900;color:#86efac;font-size:15px">\uD83D\uDCD3 Drone Field Journal</div><div style="font-size:10px;color:#94a3b8">' + droneEscapeHtml(sel.name) + ' evidence log</div></div>' +
+                            '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">' +
+                            (droneJournalEntries.length ? '<button type="button" data-journal-export="true" aria-label="Download field journal as a web page" style="min-height:26px;padding:3px 8px;border:1px solid rgba(52,211,153,0.45);border-radius:8px;background:rgba(2,6,23,0.84);color:#86efac;font:700 10px system-ui;cursor:pointer">\u2B07 Save journal</button>' : '') +
                             '<div style="font-size:10px;color:#94a3b8">Press J to close</div>' +
+                            '</div>' +
                             '</div>' + rows;
+                          var journalExportBtn = journalPanel.querySelector('[data-journal-export]');
+                          if (journalExportBtn) journalExportBtn.onclick = exportDroneJournal;
+                        }
+
+                        // Download the session's field journal as a self-contained web page:
+                        // observations, Claim-Evidence-Reasoning, and photo evidence students
+                        // can turn in or cite \u2014 mirrors the teacher CSV export culture.
+                        function exportDroneJournal() {
+                          if (!droneJournalEntries.length) return;
+                          var entryHtml = droneJournalEntries.map(function (entry) {
+                            return '<article style="border:1px solid #1e293b;background:#0f172a;border-radius:12px;padding:14px;margin-bottom:12px">' +
+                              (entry.photoThumb ? '<img src="' + entry.photoThumb + '" alt="Photo evidence from ' + droneEscapeHtml(entry.planet || sel.name) + '" style="max-width:320px;width:100%;border-radius:8px;display:block;margin-bottom:10px"/>' : '') +
+                              '<h2 style="margin:0 0 2px;font-size:14px;color:#86efac">' + droneEscapeHtml(entry.kind || 'Field note') + ': ' + droneEscapeHtml(entry.title || sel.name) + '</h2>' +
+                              '<div style="font-size:10px;color:#94a3b8;margin-bottom:8px">' + droneEscapeHtml(entry.time || '') + (entry.zone ? ' \u2022 ' + droneEscapeHtml(entry.zone) : '') + '</div>' +
+                              '<p style="margin:0 0 8px;font-size:12px;color:#cbd5e1;line-height:1.5">' + droneEscapeHtml(entry.observation || '') + '</p>' +
+                              '<div style="font-size:11px;line-height:1.5;color:#e2e8f0">' +
+                              '<div><strong style="color:#38bdf8">Claim</strong> ' + droneEscapeHtml(entry.claim || '') + '</div>' +
+                              '<div><strong style="color:#fbbf24">Evidence</strong> ' + droneEscapeHtml(entry.evidence || '') + '</div>' +
+                              '<div><strong style="color:#a78bfa">Reasoning</strong> ' + droneEscapeHtml(entry.reasoning || '') + '</div>' +
+                              '</div></article>';
+                          }).join('');
+                          var docHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
+                            '<title>' + droneEscapeHtml(sel.name) + ' field journal</title></head>' +
+                            '<body style="margin:0;padding:24px;background:#020617;color:#e2e8f0;font-family:system-ui,sans-serif;max-width:720px;margin-left:auto;margin-right:auto">' +
+                            '<h1 style="margin:0 0 2px;font-size:20px;color:#86efac">\uD83D\uDCD3 ' + droneEscapeHtml(sel.name) + ' Field Journal</h1>' +
+                            '<div style="font-size:11px;color:#94a3b8;margin-bottom:18px">' + droneEscapeHtml(modeLabel) + ' \u2022 exported ' + new Date().toLocaleString() + ' \u2022 ' + droneJournalEntries.length + ' field note' + (droneJournalEntries.length === 1 ? '' : 's') + '</div>' +
+                            entryHtml + '</body></html>';
+                          var journalBlob = new Blob([docHtml], { type: 'text/html' });
+                          var journalUrl = URL.createObjectURL(journalBlob);
+                          var journalLink = document.createElement('a');
+                          journalLink.href = journalUrl;
+                          journalLink.download = sel.name.replace(/\s/g, '_') + '_field_journal_' + new Date().toISOString().slice(0, 10) + '.html';
+                          document.body.appendChild(journalLink);
+                          journalLink.click();
+                          document.body.removeChild(journalLink);
+                          setTimeout(function () { URL.revokeObjectURL(journalUrl); }, 2000);
+                          addMissionEntry('\uD83D\uDCD3 Exported field journal for ' + sel.name);
+                          if (addToast) addToast('\uD83D\uDCD3 Field journal exported!', 'success');
                         }
 
                         function markMissionStat(key) {
@@ -11024,7 +11100,7 @@ const d = labToolData.solarSystem || {};
                           }
                         }
 
-                        function recordDroneJournal(kind, title, observation, cer, silent) {
+                        function recordDroneJournal(kind, title, observation, cer, silent, photoThumb) {
                           cer = cer || buildDroneCER(kind, title, observation, observation);
                           var entry = {
                             planet: sel.name,
@@ -11039,7 +11115,9 @@ const d = labToolData.solarSystem || {};
                             timestamp: Date.now(),
                             time: new Date().toLocaleTimeString()
                           };
-                          droneJournalEntries.unshift(entry);
+                          // Photo thumbnails stay on the session-local copy only — the
+                          // persisted journal entry keeps its small text-only footprint.
+                          droneJournalEntries.unshift(photoThumb ? Object.assign({ photoThumb: photoThumb }, entry) : entry);
                           if (droneJournalEntries.length > 8) droneJournalEntries = droneJournalEntries.slice(0, 8);
                           var updatedJournal = (journalEntries || []).concat([entry]);
                           journalEntries = updatedJournal;
@@ -11689,7 +11767,7 @@ const d = labToolData.solarSystem || {};
                             if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 5);
                             addMissionEntry('\uD83D\uDCF8 Photo: ' + sel.name + ' ' + photoLabel + ' heading ' + currentHeadingLabel);
                             markMissionStat('photographed');
-                            recordDroneJournal('Photo', 'Photo evidence: ' + sel.name, photoLabel + ' at heading ' + currentHeadingLabel + ' ' + Math.round(currentHeadingDeg) + '\u00B0.', buildDroneCER('photo', sel.name + ' photo', 'Image captured at ' + photoLabel + ' while facing ' + currentHeadingLabel + '.', 'A timestamped image gives students evidence they can cite later.'), true);
+                            recordDroneJournal('Photo', 'Photo evidence: ' + sel.name, photoLabel + ' at heading ' + currentHeadingLabel + ' ' + Math.round(currentHeadingDeg) + '\u00B0.', buildDroneCER('photo', sel.name + ' photo', 'Image captured at ' + photoLabel + ' while facing ' + currentHeadingLabel + '.', 'A timestamped image gives students evidence they can cite later.'), true, thumbDataUrl);
                           }
 
                         };
@@ -13803,19 +13881,9 @@ const d = labToolData.solarSystem || {};
 
 
 
-                        // Resize handler
-
-                        var ro3d = new ResizeObserver(function () {
-
-                          W = canvasEl.clientWidth; H = canvasEl.clientHeight;
-
-                          if (W && H) { camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); }
-
-                        });
-
-                        ro3d.observe(canvasEl);
-
-
+                        // Resize handling lives in droneRO/resizeDroneCanvas above — a second
+                        // observer here used to double-resize the renderer inside observer
+                        // delivery and trigger the ResizeObserver loop console error.
 
                         canvasEl._droneCleanup = function () {
 
@@ -13851,8 +13919,6 @@ const d = labToolData.solarSystem || {};
                           if (droneRO) { try { droneRO.disconnect(); } catch (e) {} }
 
                           if (document.pointerLockElement === canvasEl) document.exitPointerLock();
-
-                          ro3d.disconnect();
 
                           renderer.dispose();
 
@@ -13913,7 +13979,7 @@ const d = labToolData.solarSystem || {};
 
                         };
 
-                        canvasEl._droneRO = ro3d;
+                        canvasEl._droneRO = droneRO;
 
                       }
 
