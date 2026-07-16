@@ -488,14 +488,14 @@ const d = labToolData.solarSystem || {};
               { alt: 50, name: __alloT('stem.solarsystem.methane_clouds', 'Methane Clouds'), desc: __alloT('stem.solarsystem.blue_green_ice_crystal_clouds', 'Blue-green ice crystal clouds'), temp: '-195\u00B0C', pressure: '1 atm', color: '#5aafa5' },
               { alt: -100, name: __alloT('stem.solarsystem.h_s_clouds', 'H\u2082S Clouds'), desc: __alloT('stem.solarsystem.hydrogen_sulfide_clouds_rotten_eggs', 'Hydrogen sulfide clouds (rotten eggs!)'), temp: '-100\u00B0C', pressure: '10 atm', color: '#3a8a7a' },
               { alt: -5000, name: __alloT('stem.solarsystem.superionic_ice', 'Superionic Ice'), desc: __alloT('stem.solarsystem.water_in_exotic_superionic_state', 'Water in exotic superionic state'), temp: '2,700\u00B0C', pressure: '200,000 atm', color: '#2a5a7a' },
-              { alt: -15000, name: __alloT('stem.solarsystem.diamond_rain', 'Diamond Rain'), desc: __alloT('stem.solarsystem.carbon_atoms_crushed_into_diamonds_fal', 'Carbon atoms crushed into diamonds falling like rain'), temp: '5,000\u00B0C', pressure: '1,000,000 atm', color: '#b8d8f8' }
+              { alt: -15000, name: __alloT('stem.solarsystem.diamond_rain', 'Diamond Rain'), desc: __alloT('stem.solarsystem.carbon_atoms_crushed_into_diamonds_fal', 'Lab experiments suggest carbon squeezed this hard forms diamonds that sink like rain'), temp: '5,000\u00B0C', pressure: '1,000,000 atm', color: '#b8d8f8' }
             ],
             Neptune: [
               { alt: 300, name: __alloT('stem.solarsystem.upper_atmosphere_3', 'Upper Atmosphere'), desc: __alloT('stem.solarsystem.deep_blue_from_methane_absorption', 'Deep blue from methane absorption'), temp: '-220\u00B0C', pressure: '0.001 atm', color: '#4060c0' },
               { alt: 50, name: __alloT('stem.solarsystem.methane_clouds_2', 'Methane Clouds'), desc: __alloT('stem.solarsystem.supersonic_winds_2_100_km_h', 'Supersonic winds: 2,100 km/h'), temp: '-200\u00B0C', pressure: '1 atm', color: '#3050a0' },
               { alt: -100, name: __alloT('stem.solarsystem.deep_clouds', 'Deep Clouds'), desc: __alloT('stem.solarsystem.great_dark_spot_storms', 'Great Dark Spot storms'), temp: '-50\u00B0C', pressure: '50 atm', color: '#203080' },
               { alt: -5000, name: __alloT('stem.solarsystem.hot_ice_mantle', 'Hot Ice Mantle'), desc: __alloT('stem.solarsystem.superionic_water_at_extreme_pressure', 'Superionic water at extreme pressure'), temp: '2,700\u00B0C', pressure: '200,000 atm', color: '#1a2060' },
-              { alt: -15000, name: __alloT('stem.solarsystem.diamond_rain_2', 'Diamond Rain'), desc: __alloT('stem.solarsystem.literal_diamonds_raining_down_through_', 'Literal diamonds raining down through the depths'), temp: '5,000\u00B0C', pressure: '1,000,000 atm', color: '#a0c8e8' }
+              { alt: -15000, name: __alloT('stem.solarsystem.diamond_rain_2', 'Diamond Rain'), desc: __alloT('stem.solarsystem.literal_diamonds_raining_down_through_', 'Experiments suggest real diamonds rain down through these depths'), temp: '5,000\u00B0C', pressure: '1,000,000 atm', color: '#a0c8e8' }
             ]
           };
 
@@ -561,11 +561,11 @@ const d = labToolData.solarSystem || {};
             ],
             Saturn: [
               { q: 'What if you could stand on Saturn\u2019s rings?', a: 'You\u2019d sink! The rings are mostly tiny ice particles with gaps between them. Average thickness is only 10 meters!' },
-              { q: 'Will Saturn always have rings?', a: 'No! They\u2019re slowly raining into Saturn. In ~100 million years, the rings will be completely gone.' }
+              { q: 'Will Saturn always have rings?', a: 'No! They\u2019re slowly raining into Saturn. Estimates from Cassini data suggest they could be gone within a few hundred million years \u2014 scientists are still refining the number.' }
             ],
             Uranus: [
               { q: 'Why is Uranus sideways?', a: 'Scientists think a proto-planet the size of Earth smashed into Uranus billions of years ago, knocking it on its side!' },
-              { q: 'What\u2019s diamond rain like?', a: 'At 8,000 km depth, carbon atoms are crushed into diamonds that fall like hailstones through liquid hydrogen. Truly alien weather!' }
+              { q: 'What\u2019s diamond rain like?', a: 'Scientists haven’t seen it directly, but lab experiments squeezing carbon suggest that around 8,000 km deep it gets crushed into diamonds that fall like hailstones through liquid hydrogen. Truly alien weather!' }
             ],
             Neptune: [
               { q: 'How can Neptune have 2,100 km/h winds?', a: 'With almost no solid surface to create friction, once winds start they barely slow down. Neptune also radiates internal heat.' },
@@ -612,7 +612,7 @@ const d = labToolData.solarSystem || {};
             'There may be a giant \u201CPlanet Nine\u201D lurking beyond Pluto\'s orbit.',
             'Olympus Mons on Mars is so large, you couldn\'t see the edges from its summit.',
             'Europa\'s ocean may contain 2-3x more water than all of Earth\'s oceans.',
-            'Diamond rain is real \u2014 it happens inside Uranus and Neptune.',
+            'Lab experiments suggest diamond rain falls inside Uranus and Neptune.',
             'The Kuiper Belt extends from 30 to 50 AU from the Sun.',
             'Saturn\'s moon Titan has a thicker atmosphere than Earth!'
           ];
@@ -8573,7 +8573,8 @@ const d = labToolData.solarSystem || {};
 
                         // ── Visible Sun in Sky ──
                         // Sun apparent size varies by planet distance from Sun
-                        var sunSizeFactors = { Mercury: 3.2, Venus: 1.9, Earth: 1.0, Mars: 0.65, Jupiter: 0.19, Saturn: 0.1, Uranus: 0.04, Neptune: 0.025, Pluto: 0.02 };
+                        // Apparent solar diameter vs Earth ≈ 1 / mean distance in AU
+                        var sunSizeFactors = { Mercury: 2.6, Venus: 1.4, Earth: 1.0, Mars: 0.65, Jupiter: 0.19, Saturn: 0.1, Uranus: 0.05, Neptune: 0.033, Pluto: 0.025 };
                         var sunSizeFactor = sunSizeFactors[sel.name] || 0.5;
                         var sunRadius = 2.5 * sunSizeFactor;
                         var sunGeo = new THREE.SphereGeometry(sunRadius, 16, 16);
@@ -10735,17 +10736,17 @@ const d = labToolData.solarSystem || {};
 
                           [t('stem.solar_sys.venus')]: [
 
-                            { x: 12, z: -15, name: t('stem.planet_view.maxwell_montes'), desc: __alloT('stem.solarsystem.highest_mountain_on_venus_at_11_km_tal', 'Highest mountain on Venus at 11 km \u2014 taller than Everest.'), fact: __alloT('stem.solarsystem.the_summit_is_coated_with_a_metallic_s', 'The summit is coated with a metallic "snow" made from lead sulfide and bismuth sulfide.') },
+                            { x: 12, z: -15, name: t('stem.planet_view.maxwell_montes'), desc: __alloT('stem.solarsystem.highest_mountain_on_venus_at_11_km_tal', 'Highest mountain on Venus at 11 km \u2014 taller than Everest.'), fact: __alloT('stem.solarsystem.the_summit_is_coated_with_a_metallic_s', 'The summit is coated with a metallic "snow" — scientists think it’s likely lead sulfide and bismuth sulfide.') },
 
                             { x: -18, z: 20, name: t('stem.planet_view.pancake_dome'), desc: __alloT('stem.solarsystem.flat_topped_volcanic_domes_unique_to_v', 'Flat-topped volcanic domes unique to Venus, up to 65 km across.'), fact: __alloT('stem.solarsystem.extremely_viscous_lava_oozed_out_and_s', 'Extremely viscous lava oozed out and spread like thick pancake batter.') },
 
-                            { x: 25, z: 5, name: t('stem.planet_view.venera_13_landing_site'), desc: __alloT('stem.solarsystem.soviet_lander_that_survived_127_minute', 'Soviet lander that survived 127 minutes on the surface in 1982.'), fact: __alloT('stem.solarsystem.venera_13_took_the_first_color_photos_', 'Venera 13 took the first color photos of Venus\u2019s surface before being crushed by pressure.') }
+                            { x: 25, z: 5, name: t('stem.planet_view.venera_13_landing_site'), desc: __alloT('stem.solarsystem.soviet_lander_that_survived_127_minute', 'Soviet lander that survived 127 minutes on the surface in 1982.'), fact: __alloT('stem.solarsystem.venera_13_took_the_first_color_photos_', 'Venera 13 took the first color photos of Venus\u2019s surface before the heat and pressure ended its mission.') }
 
                           ],
 
                           [t('stem.solar_sys.earth')]: [
 
-                            { x: 10, z: -12, name: __alloT('stem.solarsystem.mariana_trench', 'Mariana Trench'), desc: __alloT('stem.solarsystem.deepest_point_on_earth_at_11_034_m_dee', 'Deepest point on Earth at 11,034 m \u2014 deeper than Everest is tall.'), fact: __alloT('stem.solarsystem.more_people_have_walked_on_the_moon_th', 'More people have walked on the Moon than have been to the bottom of the Mariana Trench.') },
+                            { x: 10, z: -12, name: __alloT('stem.solarsystem.mariana_trench', 'Mariana Trench'), desc: __alloT('stem.solarsystem.deepest_point_on_earth_at_11_034_m_dee', 'Deepest point on Earth at about 10,935 m \u2014 deeper than Everest is tall.'), fact: __alloT('stem.solarsystem.more_people_have_walked_on_the_moon_th', 'More people have walked on the Moon than have been to the bottom of the Mariana Trench.') },
 
                             { x: -22, z: 15, name: __alloT('stem.solarsystem.hydrothermal_vent_field', 'Hydrothermal Vent Field'), desc: __alloT('stem.solarsystem.superheated_water_erupts_at_400_c_supp', 'Superheated water erupts at 400\u00B0C, supporting life without sunlight.'), fact: __alloT('stem.solarsystem.tube_worms_here_can_grow_to_2_4m_and_l', 'Tube worms here can grow to 2.4m and live 250+ years using chemosynthesis \u2014 no sunlight needed!') },
 
@@ -11060,7 +11061,9 @@ const d = labToolData.solarSystem || {};
                                   ? 'Coordinates and bearings can guide a rover or probe to an evidence site.'
                                   : kind === 'route'
                                     ? 'A planned route can be tested against live position and distance evidence.'
-                                    : 'This landmark is evidence of the planet changing over time.';
+                                    : kind === 'prediction'
+                                      ? 'A prediction tested against a new measurement shows whether my model of this world works.'
+                                      : 'This landmark is evidence of the planet changing over time.';
                           var reason = isOcean
                             ? 'Depth, pressure, temperature, and life signs change together, so location matters when interpreting ocean evidence.'
                             : isGas
@@ -11288,7 +11291,7 @@ const d = labToolData.solarSystem || {};
 
                           isOcean ? '\uD83C\uDF0A The ocean has 5 depth zones: Sunlight, Twilight, Midnight, Abyssal, and Hadal. Each has unique life adapted to extreme conditions.' : isGas ? '\uD83E\uDEA8 Gas giants have no solid surface \u2014 you would fall forever through ever-denser gas layers.' : '\uD83E\uDEA8 The terrain is generated from real-world elevation science for ' + sel.terrainType + ' surfaces.',
 
-                          isOcean ? '\uD83D\uDC33 At 11,034 meters, the Mariana Trench\u2019s Challenger Deep is the deepest point in any ocean. The pressure there is 1,086 times atmospheric!' : isGas ? '\uD83C\uDF21 If you parachuted into ' + sel.name + ', you would never touch ground \u2014 just endless clouds.' : '\uD83E\uDEA8 The surface of ' + sel.name + ' is made of ' + (sel.surface || 'rock and dust') + '.',
+                          isOcean ? '\uD83D\uDC33 At about 10,935 meters, the Mariana Trench\u2019s Challenger Deep is the deepest point in any ocean. The pressure there is over 1,000 times atmospheric!' : isGas ? '\uD83C\uDF21 If you parachuted into ' + sel.name + ', you would never touch ground \u2014 just endless clouds.' : '\uD83E\uDEA8 The surface of ' + sel.name + ' is made of ' + (sel.surface || 'rock and dust') + '.',
 
                           // Planet-specific unique facts
 
@@ -11384,7 +11387,7 @@ const d = labToolData.solarSystem || {};
                         canvasEl.parentElement.appendChild(soundDesc);
                         var AMBIENT_SOUNDS = {
                           Mercury: ['\uD83D\uDD07 Dead silence. No atmosphere to carry sound.', '\uD83D\uDD07 Only the faint vibration of your rover\u2019s wheels through the regolith.', '\uD83D\uDD07 The absolute quiet of an airless world.'],
-                          Venus: ['\uD83C\uDF2C\uFE0F A deep, constant roar of wind and pressure.', '\uD83C\uDF0B Distant rumbling from volcanic activity beneath the surface.', '\uD83C\uDF2C\uFE0F Sulfuric acid droplets sizzle on the hull.'],
+                          Venus: ['\uD83C\uDF2C\uFE0F A deep, constant roar of wind and pressure.', '\uD83C\uDF0B Distant rumbling from volcanic activity beneath the surface.', '\uD83C\uDF2C\uFE0F Sulfuric acid rain evaporates far overhead \u2014 it never survives to this scorching surface.'],
                           Earth: ['\uD83C\uDF0A Gentle current hums against the hull. Distant whale song.', '\uD83D\uDCA7 Bubbles rising. The creak of pressure on the hull.', '\uD83D\uDC1F Clicking of shrimp colonies echoes through the water.', '\uD83C\uDF0A Deep groaning of tectonic plates shifting far below.'],
                           Mars: ['\uD83C\uDF2C\uFE0F A thin, eerie whistling of wind through canyon walls.', '\uD83C\uDF2C\uFE0F Sand grains pinging off the rover hull.', '\uD83D\uDD07 Near silence \u2014 Mars\u2019 atmosphere is too thin for most sound.'],
                           Jupiter: ['\u26A1 Crackling static from the magnetic field.', '\uD83C\uDF2C\uFE0F A deafening roar of hypersonic winds at 360 km/h.', '\u26A1 Deep electromagnetic rumbles from the metallic hydrogen core.'],
@@ -11549,6 +11552,19 @@ const d = labToolData.solarSystem || {};
                             '</div>';
                         }
 
+                        // ── Predict → Observe → Explain ──
+                        // After each scan the student can log a prediction about the mode's
+                        // key variable; the next scan tests it against the real measurement.
+                        // Being wrong is framed as model revision, and XP rewards the act of
+                        // testing rather than guessing right.
+                        var pendingPrediction = null;
+                        var predictionStats = { tested: 0, correct: 0 };
+                        function predictionVariableFor(mode) {
+                          return mode === 'ocean' ? { key: 'light', label: 'sunlight level', unit: '%', tolerance: 3 }
+                            : mode === 'gas' ? { key: 'wind', label: 'wind speed', unit: ' km/h', tolerance: 15 }
+                              : { key: 'level', label: 'elevation', unit: ' m', tolerance: 1 };
+                        }
+
                         function doEnvironmentScan() {
                           if (scannerCooldown > 0) return;
                           scannerCooldown = 300; // ~5 sec cooldown
@@ -11635,6 +11651,30 @@ const d = labToolData.solarSystem || {};
                           scanHTML += buildScanHistoryHTML(scanHistory);
                           scanHTML += buildScanPatternHTML(scanPattern);
                           if (scanPattern) scanEvidence += ' Pattern analysis: ' + scanPattern.summary;
+
+                          // Test a pending prediction against this scan's measurement
+                          if (pendingPrediction && pendingPrediction.mode === scanSnapshot.mode) {
+                            var pvActual = Number(scanSnapshot[pendingPrediction.key]) || 0;
+                            var pvDelta = pvActual - pendingPrediction.baselineValue;
+                            var pvDir = Math.abs(pvDelta) <= pendingPrediction.tolerance ? 'about the same' : pvDelta > 0 ? 'higher' : 'lower';
+                            var pvCorrect = pvDir === pendingPrediction.dir;
+                            predictionStats.tested += 1;
+                            if (pvCorrect) predictionStats.correct += 1;
+                            var pvText = 'Predicted ' + pendingPrediction.label + ' would be ' + pendingPrediction.dir + ' than at ' + pendingPrediction.baselineZone + '; measured ' + pendingPrediction.baselineValue + pendingPrediction.unit + ' → ' + pvActual + pendingPrediction.unit + ' (' + pvDir + ').';
+                            var pvLesson = pvCorrect
+                              ? 'Supported — the measurement matched your model of ' + sel.name + '.'
+                              : 'Not supported — revising a model when new evidence disagrees is exactly how science works.';
+                            scanHTML += '<div data-scan-prediction-outcome="true" role="note" aria-label="Prediction result" style="margin-top:7px;padding:6px 7px;border-radius:8px;background:' + (pvCorrect ? 'rgba(52,211,153,0.12)' : 'rgba(251,191,36,0.12)') + ';border:1px solid ' + (pvCorrect ? 'rgba(52,211,153,0.30)' : 'rgba(251,191,36,0.30)') + ';text-align:left">' +
+                              '<div style="color:' + (pvCorrect ? '#6ee7b7' : '#fcd34d') + ';font-weight:800;font-size:11px;margin-bottom:3px">🔮 Prediction ' + (pvCorrect ? 'supported' : 'not supported') + ' (' + predictionStats.correct + '/' + predictionStats.tested + ' supported so far)</div>' +
+                              '<div style="color:#cbd5e1;font-size:11px;line-height:1.4">' + droneEscapeHtml(pvText + ' ' + pvLesson) + '</div>' +
+                              '</div>';
+                            scanEvidence += ' Prediction test: ' + pvText;
+                            recordDroneJournal('Prediction', (pvCorrect ? 'Prediction supported: ' : 'Prediction revised: ') + pendingPrediction.label, pvText, buildDroneCER('prediction', pendingPrediction.label, pvText, pvLesson), true);
+                            if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 8);
+                            if (typeof addToast === 'function') addToast(pvCorrect ? '🔮 Prediction supported! +8 XP for testing it.' : '🔮 Prediction tested — the evidence said otherwise. +8 XP for testing it!', 'success');
+                            pendingPrediction = null;
+                          }
+
                           previousScanSnapshot = scanSnapshot;
                           if (scanActionLabel) scanActionLabel.textContent = 'Compare';
                           if (scanActionButton) {
@@ -11668,7 +11708,50 @@ const d = labToolData.solarSystem || {};
                             '<div><span style="color:#fbbf24;font-weight:800">Evidence</span> ' + scanCer.evidence + '</div>' +
                             '<div><span style="color:#a78bfa;font-weight:800">Reasoning</span> ' + scanCer.reasoning + '</div>' +
                             '</div>';
-                          if (scanBody) scanBody.innerHTML = scanHTML;
+                          // Offer the next prediction: this scan becomes the baseline
+                          var nextPredictVar = predictionVariableFor(scanSnapshot.mode);
+                          var nextPredictBaseline = Number(scanSnapshot[nextPredictVar.key]) || 0;
+                          scanHTML += '<div data-scan-predict="true" style="margin-top:7px;padding:6px 7px;border-radius:8px;background:rgba(167,139,250,0.10);border:1px solid rgba(167,139,250,0.25);text-align:left">' +
+                            '<div style="color:#c4b5fd;font-weight:800;font-size:11px;margin-bottom:4px">🔮 Predict before you move</div>' +
+                            '<div style="color:#cbd5e1;font-size:10px;line-height:1.4;margin-bottom:5px">At your next scan site, will ' + nextPredictVar.label + ' be higher, lower, or about the same as here (' + nextPredictBaseline + nextPredictVar.unit + ')?</div>' +
+                            '<div style="display:flex;gap:6px">' +
+                            ['higher', 'lower', 'about the same'].map(function (dirOpt) {
+                              return '<button type="button" data-predict-dir="' + dirOpt + '" style="flex:1;min-height:26px;padding:3px 6px;border:1px solid rgba(167,139,250,0.4);border-radius:7px;background:rgba(2,6,23,0.7);color:#e2e8f0;font:700 10px system-ui;cursor:pointer">' + dirOpt.charAt(0).toUpperCase() + dirOpt.slice(1) + '</button>';
+                            }).join('') +
+                            '</div></div>';
+
+                          if (scanBody) {
+                            scanBody.innerHTML = scanHTML;
+                            var predictButtons = scanBody.querySelectorAll('[data-predict-dir]');
+                            Array.prototype.forEach.call(predictButtons, function (predictBtn) {
+                              predictBtn.onclick = function () {
+                                pendingPrediction = {
+                                  mode: scanSnapshot.mode,
+                                  key: nextPredictVar.key,
+                                  label: nextPredictVar.label,
+                                  unit: nextPredictVar.unit,
+                                  tolerance: nextPredictVar.tolerance,
+                                  dir: predictBtn.getAttribute('data-predict-dir'),
+                                  baselineValue: nextPredictBaseline,
+                                  baselineZone: scanSnapshot.zone
+                                };
+                                Array.prototype.forEach.call(predictButtons, function (otherBtn) { otherBtn.style.background = 'rgba(2,6,23,0.7)'; otherBtn.style.borderColor = 'rgba(167,139,250,0.4)'; });
+                                predictBtn.style.background = 'rgba(167,139,250,0.35)';
+                                predictBtn.style.borderColor = '#c4b5fd';
+                                // Give the reader a fresh dismiss window after interacting
+                                if (scanDismissTimer) {
+                                  clearTimeout(scanDismissTimer);
+                                  scanDismissTimer = setTimeout(function () {
+                                    scannerOverlay.style.opacity = '0';
+                                    if (scanResult) scanResult.style.opacity = '0';
+                                    if (sweep) sweep.style.left = '0';
+                                    scanDismissTimer = null;
+                                  }, 5000);
+                                }
+                                if (typeof announceToSR === 'function') announceToSR('Prediction logged: ' + nextPredictVar.label + ' will be ' + pendingPrediction.dir + '. Move to a different spot and press G to test it.');
+                              };
+                            });
+                          }
                           if (scanResult) scanResult.style.opacity = '1';
 
                           markMissionStat('scanned');

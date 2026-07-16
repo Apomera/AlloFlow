@@ -274,6 +274,31 @@ describe('solar system main 3D canvas loop', () => {
     });
   });
 
+  it('runs a predict-observe-explain loop through the scanner and keeps science claims calibrated', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      // POE loop: per-mode prediction variable, offer UI, outcome block, journal record.
+      expect(source).toContain('function predictionVariableFor(mode)');
+      expect(source).toContain('data-scan-predict="true"');
+      expect(source).toContain('data-scan-prediction-outcome="true"');
+      expect(source).toContain("recordDroneJournal('Prediction'");
+      // Wrong predictions are framed as model revision, and XP rewards testing, not guessing right.
+      expect(source).toContain('revising a model when new evidence disagrees is exactly how science works');
+      expect(source).toContain('XP for testing it');
+      expect(source).toContain("'A prediction tested against a new measurement shows whether my model of this world works.'");
+      // Science accuracy: apparent sun size ~ 1/AU; hedged diamond rain; Venus acid virga; modern trench depth.
+      expect(source).toContain('Mercury: 2.6');
+      expect(source).toContain('Neptune: 0.033');
+      expect(source).toContain('Lab experiments suggest diamond rain falls inside Uranus and Neptune.');
+      expect(source).toContain('never survives to this scorching surface');
+      expect(source).toContain('about 10,935 m');
+      expect(source).not.toContain('Diamond rain is real');
+      expect(source).not.toContain('11,034 m');
+      expect(source).not.toContain('sizzle on the hull');
+    });
+  });
+
   it('detects mode-specific patterns after three readings and adds them to the evidence', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
