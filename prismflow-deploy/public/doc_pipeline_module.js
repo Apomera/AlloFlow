@@ -32093,25 +32093,25 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-anno-sb-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-radius: 12px 12px 0 0; }
           .alloflow-anno-sb-title { font-size: 12px; font-weight: 700; color: #334155; }
           .alloflow-anno-sb-count { font-weight: 400; color: #6b7280; }
-          .alloflow-anno-sb-close { background: transparent; border: 0; cursor: pointer; padding: 4px 6px; border-radius: 50%; color: #64748b; font-size: 12px; }
+          .alloflow-anno-sb-close { background: transparent; border: 0; cursor: pointer; padding: 4px 6px; border-radius: 50%; color: #64748b; font-size: 12px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
           .alloflow-anno-sb-close:hover { color: #dc2626; background: #ffffff; }
           .alloflow-anno-sb-pills { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
-          .alloflow-anno-pill { padding: 2px 10px; border-radius: 9999px; border: 0; cursor: pointer; font-size: 10px; font-weight: 700; background: #f1f5f9; color: #475569; transition: background 0.15s, color 0.15s; }
+          .alloflow-anno-pill { min-height: 44px; padding: 6px 12px; border-radius: 9999px; border: 0; cursor: pointer; font-size: 12px; font-weight: 700; background: #f1f5f9; color: #475569; transition: background 0.15s, color 0.15s; }
           .alloflow-anno-pill:hover { background: #e2e8f0; }
           .alloflow-anno-pill.active { background: #4f46e5; color: white; }
-          .alloflow-anno-sb-list { overflow-y: auto; flex: 1; padding: 4px; }
+          .alloflow-anno-sb-list { overflow-y: auto; flex: 1; padding: 4px; margin: 0; list-style: none; }
           .alloflow-anno-empty { padding: 20px 12px; text-align: center; font-size: 11px; color: #6b7280; font-style: italic; }
-          .alloflow-anno-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 6px 8px; margin-bottom: 2px; border-radius: 6px; cursor: pointer; transition: background 0.12s; border-left: 2px solid transparent; }
+          .alloflow-anno-item { display: flex; align-items: stretch; justify-content: space-between; gap: 4px; padding: 2px 4px; margin-bottom: 2px; border-radius: 6px; transition: background 0.12s; border-left: 2px solid transparent; }
           .alloflow-anno-item.teacher { background: rgba(238,242,255,0.6); border-left-color: #818cf8; }
           .alloflow-anno-item.teacher:hover { background: #e0e7ff; }
           .alloflow-anno-item.student { background: rgba(254,243,199,0.4); border-left-color: #fbbf24; }
           .alloflow-anno-item.student:hover { background: #fef3c7; }
-          .alloflow-anno-item-body { flex: 1; min-width: 0; }
-          .alloflow-anno-item-text { font-weight: 500; color: #1e293b; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-          .alloflow-anno-item-meta { font-size: 10px; color: #64748b; margin-top: 2px; }
-          .alloflow-anno-item-del { opacity: 0; background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 11px; }
-          .alloflow-anno-item:hover .alloflow-anno-item-del, .alloflow-anno-item-del:focus { opacity: 1; }
+          .alloflow-anno-item-body { appearance: none; flex: 1; min-width: 0; min-height: 44px; width: 100%; border: 0; border-radius: 6px; padding: 6px; background: transparent; color: inherit; cursor: pointer; text-align: left; font: inherit; }
+          .alloflow-anno-item-text { display: block; font-weight: 500; color: #1e293b; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          .alloflow-anno-item-meta { display: block; font-size: 10px; color: #64748b; margin-top: 2px; }
+          .alloflow-anno-item-del { background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 4px; border-radius: 6px; font-size: 11px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
           .alloflow-anno-item-del:hover { color: #dc2626; background: #ffffff; }
+          .alloflow-anno-sb-close:focus-visible, .alloflow-anno-pill:focus-visible, .alloflow-anno-item-body:focus-visible, .alloflow-anno-item-del:focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
           .alloflow-note-popover { position: fixed; z-index: 100000; width: min(340px, calc(100vw - 24px)); max-height: min(420px, calc(100vh - 32px)); overflow: auto; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 14px 34px rgba(15,23,42,0.24); font-family: system-ui,-apple-system,sans-serif; }
           .alloflow-note-popover-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 12px; font-weight: 800; color: #334155; }
           .alloflow-note-popover-body { padding: 12px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -32463,7 +32463,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             <button type="button" class="alloflow-rt-btn" data-rt-anno="voice" aria-pressed="false" title="Voice note: click to start recording (max 60s, stays on your device)">\u{1F3A4} Voice</button>
             <button type="button" class="alloflow-rt-btn" data-rt-anno-undo disabled style="opacity:0.4;cursor:not-allowed;" title="Undo last annotation (Ctrl/Cmd+Z)">\u{21A9} Undo</button>
             <button type="button" class="alloflow-rt-btn" data-rt-anno-clear="mine" title="Clear my notes/highlights (teacher annotations stay)">\u{1F9F9} Mine</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-list aria-pressed="false" title="Show all annotations">\u{1F4CB} List</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-list aria-expanded="false" aria-controls="alloflow-annotation-sidebar" title="Show all annotations">\u{1F4CB} List</button>
             <button type="button" class="alloflow-rt-btn" data-rt-anno-download title="Download my annotations as JSON">\u{2B07} Save mine</button>
           </div>
         </div>
@@ -33804,7 +33804,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               };
               var listHtml = '';
               if (visible.length === 0) {
-                listHtml = '<div class="alloflow-anno-empty">No annotations match this filter.</div>';
+                listHtml = '<li class="alloflow-anno-empty">No annotations match this filter.</li>';
               } else {
                 visible.forEach(function (a) {
                   var isT = a.author === 'teacher';
@@ -33819,31 +33819,36 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     } catch (e) {}
                   }
                   var title = titleParts.join(' • ');
-                  listHtml += '<div class="alloflow-anno-item ' + (isT ? 'teacher' : 'student') + '" data-rt-anno-focus="' + attrEsc(a._focusKey || a.id) + '" role="button" tabindex="0" aria-label="Jump to annotation">' +
-                    '<div class="alloflow-anno-item-body">' +
-                      '<div class="alloflow-anno-item-text">' + annoPreview(a).replace(/</g, '&lt;') + '</div>' +
-                      '<div class="alloflow-anno-item-meta">' + esc(title) + '</div>' +
-                    '</div>' +
-                    (canDelete ? '<button type="button" class="alloflow-anno-item-del" data-rt-anno-del="' + attrEsc(a.id) + '" aria-label="Delete this annotation" title="Delete">✕</button>' : '') +
-                    '</div>';
+                  var preview = annoPreview(a);
+                  listHtml += '<li class="alloflow-anno-item ' + (isT ? 'teacher' : 'student') + '">' +
+                    '<button type="button" class="alloflow-anno-item-body" data-rt-anno-focus="' + attrEsc(a._focusKey || a.id) + '" aria-label="Jump to annotation: ' + attrEsc(preview) + '">' +
+                      '<span class="alloflow-anno-item-text">' + esc(preview) + '</span>' +
+                      '<span class="alloflow-anno-item-meta">' + esc(title) + '</span>' +
+                    '</button>' +
+                    (canDelete ? '<button type="button" class="alloflow-anno-item-del" data-rt-anno-del="' + attrEsc(a.id) + '" aria-label="Delete your annotation: ' + attrEsc(preview) + '" title="Delete">✕</button>' : '') +
+                    '</li>';
                 });
               }
               sidebarEl.innerHTML =
                 '<div class="alloflow-anno-sb-header">' +
-                  '<span class="alloflow-anno-sb-title">📋 Annotations <span class="alloflow-anno-sb-count">(' + counts.total + ')</span></span>' +
+                  '<span class="alloflow-anno-sb-title" id="alloflow-annotation-sidebar-title">📋 Annotations <span class="alloflow-anno-sb-count">(' + counts.total + ')</span></span>' +
                   '<button type="button" class="alloflow-anno-sb-close" data-rt-anno-list-close aria-label="Close annotation list">✕</button>' +
                 '</div>' +
-                '<div class="alloflow-anno-sb-pills">' +
+                '<div class="alloflow-anno-sb-pills" role="group" aria-label="Filter annotations">' +
                   pillBtn('all', 'All', counts.total, sidebarFilter === 'all') +
                   pillBtn('teacher', 'Teacher', counts.teacher, sidebarFilter === 'teacher') +
                   pillBtn('mine', 'Mine', counts.student, sidebarFilter === 'mine') +
                 '</div>' +
-                '<div class="alloflow-anno-sb-list">' + listHtml + '</div>';
+                '<ul class="alloflow-anno-sb-list" aria-label="Annotations">' + listHtml + '</ul>';
             }
             function setSidebarVisible(v) {
+              var shouldRestoreFocus = !v && sidebarEl && sidebarEl.contains(document.activeElement);
               if (v && !sidebarEl) {
                 sidebarEl = document.createElement('div');
                 sidebarEl.className = 'alloflow-anno-sb';
+                sidebarEl.id = 'alloflow-annotation-sidebar';
+                sidebarEl.setAttribute('role', 'region');
+                sidebarEl.setAttribute('aria-labelledby', 'alloflow-annotation-sidebar-title');
                 document.body.appendChild(sidebarEl);
                 renderSidebar();
               } else if (!v && sidebarEl) {
@@ -33851,7 +33856,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 sidebarEl = null;
               }
               var btn = document.querySelector('[data-rt-anno-list]');
-              if (btn) btn.setAttribute('aria-pressed', v ? 'true' : 'false');
+              if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false');
+              if (shouldRestoreFocus && btn && typeof btn.focus === 'function') btn.focus();
             }
             function askAnnotationConfirmation(options) {
               return new Promise(function (resolve) {
