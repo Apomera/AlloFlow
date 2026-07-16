@@ -32116,7 +32116,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-note-popover-meta { padding: 0 12px 12px; font-size: 11px; color: #64748b; }
           .alloflow-note-popover-close { border: 0; background: transparent; color: #64748b; border-radius: 6px; padding: 3px 6px; cursor: pointer; font-weight: 800; }
           .alloflow-note-popover-close:hover, .alloflow-note-popover-close:focus-visible { color: #dc2626; background: #ffffff; outline: 2px solid #6366f1; outline-offset: 1px; }
-          @media print { .alloflow-anno-sb { display: none !important; } }
+          .alloflow-anno-confirm-backdrop { position: fixed; inset: 0; z-index: 100002; background: rgba(15,23,42,0.72); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
+          .alloflow-anno-confirm { box-sizing: border-box; width: min(100%, 480px); max-height: calc(100vh - 32px); overflow: auto; background: #ffffff; color: #0f172a; border: 2px solid #f59e0b; border-radius: 16px; padding: 24px; box-shadow: 0 24px 70px rgba(0,0,0,0.45); font-family: system-ui,-apple-system,sans-serif; }
+          .alloflow-anno-confirm h2 { margin: 0 0 10px; font-size: 20px; line-height: 1.3; color: #0f172a; }
+          .alloflow-anno-confirm p { margin: 0 0 20px; font-size: 15px; line-height: 1.6; color: #334155; }
+          .alloflow-anno-confirm-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
+          .alloflow-anno-confirm-btn { min-height: 44px; padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; }
+          .alloflow-anno-confirm-cancel { background: #ffffff; color: #1e293b; border: 1px solid #64748b; }
+          .alloflow-anno-confirm-delete { background: #b91c1c; color: #ffffff; border: 1px solid #991b1b; }
+          .alloflow-anno-confirm-btn:focus-visible { outline: 3px solid #4338ca; outline-offset: 3px; }
+          @media print { .alloflow-anno-sb, .alloflow-anno-confirm-backdrop { display: none !important; } }
 
           /* ─── Sidebar dark/sepia/HC overrides ─── */
           html[data-alloflow-theme="dark"] .alloflow-anno-sb { background: #1e293b; border-color: #334155; color: #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
@@ -33842,6 +33851,73 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               var btn = document.querySelector('[data-rt-anno-list]');
               if (btn) btn.setAttribute('aria-pressed', v ? 'true' : 'false');
             }
+            function askAnnotationConfirmation(options) {
+              return new Promise(function (resolve) {
+                if (!document.body) { resolve(false); return; }
+                var opener = (options && options.opener) || document.activeElement;
+                var blocked = Array.prototype.slice.call(document.body.children).map(function (el) {
+                  return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
+                });
+                var overlay = document.createElement('div');
+                overlay.className = 'alloflow-anno-confirm-backdrop';
+                overlay.setAttribute('role', 'presentation');
+                var dialog = document.createElement('div');
+                dialog.className = 'alloflow-anno-confirm';
+                dialog.setAttribute('role', 'alertdialog');
+                dialog.setAttribute('aria-modal', 'true');
+                dialog.setAttribute('aria-labelledby', 'alloflow-anno-confirm-title');
+                dialog.setAttribute('aria-describedby', 'alloflow-anno-confirm-description');
+                var title = document.createElement('h2');
+                title.id = 'alloflow-anno-confirm-title';
+                title.textContent = String((options && options.title) || 'Please confirm');
+                var description = document.createElement('p');
+                description.id = 'alloflow-anno-confirm-description';
+                description.textContent = String((options && options.description) || '');
+                var actions = document.createElement('div');
+                actions.className = 'alloflow-anno-confirm-actions';
+                var cancel = document.createElement('button');
+                cancel.type = 'button';
+                cancel.className = 'alloflow-anno-confirm-btn alloflow-anno-confirm-cancel';
+                cancel.textContent = String((options && options.cancelLabel) || 'Cancel');
+                var confirm = document.createElement('button');
+                confirm.type = 'button';
+                confirm.className = 'alloflow-anno-confirm-btn alloflow-anno-confirm-delete';
+                confirm.textContent = String((options && options.confirmLabel) || 'Continue');
+                actions.appendChild(cancel);
+                actions.appendChild(confirm);
+                dialog.appendChild(title);
+                dialog.appendChild(description);
+                dialog.appendChild(actions);
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                blocked.forEach(function (entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+                var settled = false;
+                function finish(accepted) {
+                  if (settled) return;
+                  settled = true;
+                  document.removeEventListener('keydown', onKeyDown, true);
+                  try { overlay.remove(); } catch (e) {}
+                  blocked.forEach(function (entry) {
+                    if (!entry.hadInert) entry.el.removeAttribute('inert');
+                    if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+                  });
+                  try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
+                  resolve(accepted === true);
+                }
+                function onKeyDown(event) {
+                  if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); return; }
+                  if (event.key !== 'Tab') return;
+                  if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+                  if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirm.focus(); }
+                  else if (!event.shiftKey && document.activeElement === confirm) { event.preventDefault(); cancel.focus(); }
+                }
+                cancel.addEventListener('click', function () { finish(false); });
+                confirm.addEventListener('click', function () { finish(true); });
+                overlay.addEventListener('click', function (event) { if (event.target === overlay) finish(false); });
+                document.addEventListener('keydown', onKeyDown, true);
+                cancel.focus();
+              });
+            }
             // Download student annotations as JSON for sharing back to the
             // teacher (manual workflow — student saves, emails/uploads file).
             function downloadStudentAnno() {
@@ -33871,7 +33947,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
 
             // Toolbar button clicks (mode + clear + list + download + voice rec + color swatches).
-            document.addEventListener('click', function (e) {
+            document.addEventListener('click', async function (e) {
               var voiceStopBtn = e.target && e.target.closest && e.target.closest('[data-rt-voice-stop]');
               if (voiceStopBtn) { stopVoiceRecording(); return; }
               var voiceCancelBtn = e.target && e.target.closest && e.target.closest('[data-rt-voice-cancel]');
@@ -33903,7 +33979,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               var clearBtn = e.target && e.target.closest && e.target.closest('[data-rt-anno-clear]');
               if (clearBtn && clearBtn.getAttribute('data-rt-anno-clear') === 'mine') {
                 if (studentAnno.length === 0) return;
-                if (window.confirm('Remove all your notes and highlights? Teacher annotations will stay.')) {
+                var shouldClear = await askAnnotationConfirmation({
+                  opener: clearBtn,
+                  title: 'Remove all of your annotations?',
+                  description: 'This will permanently remove ' + studentAnno.length + (studentAnno.length === 1 ? ' note, highlight, sticker, or voice note. ' : ' notes, highlights, stickers, and voice notes. ') + 'Teacher annotations will stay.',
+                  confirmLabel: 'Remove my annotations'
+                });
+                if (shouldClear) {
                   snapshot();
                   studentAnno = [];
                   saveStudent();
