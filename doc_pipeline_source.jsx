@@ -5010,6 +5010,162 @@ var createDocPipeline = function(deps) {
   // carries every other kind forward from the original run.
   const _RECOMPUTABLE_FIDELITY_KINDS = { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1 };
 
+  // ── #6-full: the FINALIZATION REDUCER (2026-07-16) ─────────────────────────────────────────
+  // One canonical "round evidence → next result" assembly. Extracted VERBATIM from the host's
+  // auto-continue round-commit (AlloFlowANTI runAutoFixLoop), which had grown a hand-rolled copy
+  // of score governance + fidelity merging + verification snapshotting + expert-review base
+  // separation — the drift surface behind the whole "flag wired in data but never rendered"
+  // class. Every consumer (host auto-continue, headless/MCP loops) merges a round through THIS
+  // function, so the app and the connector can never disagree about what a round means.
+  //
+  //   prev  : the current result object (fixAndVerifyPdf's output or a prior round's merge)
+  //   round : {
+  //     html            REQUIRED — the round's accepted output html
+  //     aiAudit         REQUIRED — fresh AI content audit of that html (caller bails on null)
+  //     axeAudit        raw fresh axe result (validity-gated here; pass what you got, incl. null)
+  //     eaAudit         raw fresh Equal Access result (same)
+  //     auditOnly       true for a no-change evidence refresh (C6: prior deterministic evidence
+  //                     still describes these exact bytes and may be inherited; a round that
+  //                     REWROTE the html keeps the replace-not-inherit rule)
+  //     sourceText      ground-truth text for the fidelity recompute (falsy → carry prev fields)
+  //     issueResolution the round's recomputed issue-resolution (caller runs
+  //                     recomputeIssueResolution; falsy → carry prev)
+  //     plainText       optional pre-computed plain text of html (falsy → derived here)
+  //     passes          fix passes consumed this round (default 0)
+  //     chunkState, chunkWeightedScore  optional carriers (falsy → carry prev)
+  //   }
+  // Returns the fully-merged NEXT result (never mutates prev). Async: it creates the SHA-256
+  // verification↔html binding for the accepted bytes. Loop POLICY (commit-or-revert, stall
+  // counting, target checks, toasts) deliberately stays with the caller — this owns only what
+  // a committed round MEANS. The merged result carries _detScore so callers can run the
+  // noise-aware revert check (deterministic regression) AFTER reducing, then simply discard.
+  const _finalizeRemediationRound = async (prev, round) => {
+    const cur = prev || {};
+    const html = String((round && round.html) || '');
+    const aiAudit = round && round.aiAudit;
+    if (!aiAudit || typeof aiAudit.score !== 'number' || !Number.isFinite(aiAudit.score)) {
+      throw new Error('finalizeRemediationRound: a scored aiAudit is required (callers bail on a null re-verification instead of merging).');
+    }
+    const auditOnly = !!(round && round.auditOnly);
+    // Evidence validity: only SCORED fresh audits are retained; empty/error objects replace,
+    // rather than inherit, prior successes — except on an audit-only refresh (C6).
+    const _scored = (a) => !!(a && typeof a.score === 'number' && Number.isFinite(a.score));
+    const _freshAxe = _scored(round && round.axeAudit) ? round.axeAudit
+      : ((auditOnly && _scored(cur.axeAudit)) ? cur.axeAudit : null);
+    const _freshEa = _scored(round && round.eaAudit) ? round.eaAudit
+      : ((auditOnly && _scored(cur.secondEngineAudit)) ? cur.secondEngineAudit : null);
+    let _det = _freshAxe ? _freshAxe.score : null;
+    if (_freshEa) _det = _det !== null ? Math.min(_det, _freshEa.score) : _freshEa.score;
+    // Weakest-layer-governs headline — the same computeHeadline the host's blendAiAxe delegates to.
+    const afterScore = (_det !== null) ? _alloComputeHeadline(aiAudit.score, _det) : aiAudit.score;
+
+    // Fidelity: recompute coverage/placement/numeric/structural against the NEW html; replace
+    // the RECOMPUTABLE note kinds, carry run-scoped kinds forward. Audit-only rounds changed
+    // nothing → keep the prior fields.
+    let _roundFid = null;
+    if (!auditOnly && round && round.sourceText) {
+      try { _roundFid = _recomputeContentFidelity(round.sourceText, html); } catch (_) { _roundFid = null; }
+    }
+    const _roundNotes = _roundFid
+      ? (cur.fidelityNotes || []).filter((n) => !(n && _RECOMPUTABLE_FIDELITY_KINDS[n.kind])).concat(_roundFid.fidelityNotes || [])
+      : (cur.fidelityNotes || []);
+    const _nextIntegrityCoverage = _roundFid ? _roundFid.integrityCoverage : cur.integrityCoverage;
+    const _nextIntegrityWarning = _roundFid
+      ? ([_roundFid.coverageWarning, _roundFid.placementWarn, _roundFid.numericWarn].filter(Boolean).join(' ') || null)
+      : cur.integrityWarning;
+    const _nextFidelityLimited = _roundFid
+      ? ((_roundFid.integrityCoverage != null && _roundFid.integrityCoverage < 90) || _roundNotes.length > 0)
+      : !!cur.fidelityLimited;
+
+    // Verification snapshot: one canonical fresh derive per accepted round. The PDF/UA
+    // self-check only carries over when these are literally the same live-bound bytes.
+    const _sameRoundHtml = html === cur.accessibleHtml && _alloIsLiveVerificationHtmlBound(cur, cur.accessibleHtml);
+    const _roundPdfUaSelfCheck = _sameRoundHtml
+      ? ((cur.verificationCoverage && cur.verificationCoverage.pdfUaSelfCheck) || 'not-run')
+      : 'not-run';
+    let _verification = _alloDeriveVerificationState({
+      ai: aiAudit,
+      axe: _freshAxe,
+      equalAccess: _freshEa,
+      pdfUaSelfCheck: _roundPdfUaSelfCheck,
+    }) || {};
+    // Fresh SHA-256 binding only after all audits ran on this exact accepted html; no digest
+    // means the round remains unverified (fail closed).
+    const _verificationHtmlBinding = await _alloCreateVerificationHtmlBinding(html);
+    _verification = _alloApplyVerificationHtmlBinding(
+      _verification,
+      !!_verificationHtmlBinding,
+      'verification-html-binding-unavailable'
+    ) || _verification;
+    const _verificationCoverage = _verification.coverage || _verification.verificationCoverage || {
+      standard: 'WCAG 2.2 AA', ai: 'unavailable', axe: 'unavailable', equalAccess: 'unavailable',
+      pdfUaSelfCheck: _roundPdfUaSelfCheck,
+    };
+    const _verificationState = _verification.verificationState || 'partial';
+    const _afterScoreVerified = _verification.afterScoreVerified === true && _verificationState === 'complete' && !_verification.requiresManualReview;
+    const _requiresManualReview = !_afterScoreVerified || !!_verification.requiresManualReview;
+    const _verificationReasons = Array.isArray(_verification.reasons) ? _verification.reasons.slice() : [];
+    const _verificationReviewCount = Number.isFinite(_verification.reviewCount)
+      ? Math.max(0, _verification.reviewCount)
+      : 0;
+    const _aiVerificationIncomplete = _verificationCoverage.ai !== 'complete';
+    const _scoreSource = _aiVerificationIncomplete
+      ? (_det !== null ? 'deterministic-only' : 'unverified')
+      : (_det !== null ? 'min' : 'content-only');
+
+    // Expert-review base separation: the verification contribution is recomputed every round;
+    // the stable base persists via the _expertReviewBeforeVerification sentinel (false/null is
+    // a DELIBERATE sentinel so a later complete refresh can clear a verification-only warning).
+    const _storedExpertBase = (cur._expertReviewBeforeVerification && typeof cur._expertReviewBeforeVerification === 'object')
+      ? cur._expertReviewBeforeVerification
+      : null;
+    const _hadVerificationContribution = !!cur._verificationExpertReview;
+    const _rawExpertBase = _storedExpertBase || (_hadVerificationContribution
+      ? { needed: false, reason: null }
+      : { needed: !!cur.needsExpertReview, reason: cur.expertReviewReason || null });
+    const _baseAccessibilityReview = !!(_rawExpertBase.needed && (_rawExpertBase.reason === 'accessibility' || _rawExpertBase.reason === 'both' || !_rawExpertBase.reason));
+    const _freshContentFidelityReview = !!_nextFidelityLimited;
+    const _expertBaseReason = _baseAccessibilityReview
+      ? (_freshContentFidelityReview ? 'both' : 'accessibility')
+      : (_freshContentFidelityReview ? 'content-fidelity' : null);
+
+    const _plain = (round && round.plainText) || htmlToPlainText(html);
+    return Object.assign({}, cur, {
+      accessibleHtml: html,
+      axeAudit: _freshAxe,
+      _detScore: _det,
+      verificationAudit: aiAudit,
+      verificationHtmlBinding: _verificationHtmlBinding,
+      verificationCoverage: _verificationCoverage,
+      verificationState: _verificationState,
+      afterScoreVerified: _afterScoreVerified,
+      requiresManualReview: _requiresManualReview,
+      verificationReviewCount: _verificationReviewCount,
+      verificationReasons: _verificationReasons,
+      issueResolution: (round && round.issueResolution) || cur.issueResolution,
+      integrityCoverage: _nextIntegrityCoverage,
+      integrityWarning: _nextIntegrityWarning,
+      fidelityNotes: _roundNotes,
+      fidelityLimited: _nextFidelityLimited,
+      afterScore,
+      _scoreIsBlended: _det !== null && !_aiVerificationIncomplete,
+      _aiVerificationIncomplete,
+      _scoreSource,
+      axeScore: _freshAxe ? _freshAxe.score : null,
+      axeViolations: _freshAxe && typeof _freshAxe.totalViolations === 'number' ? _freshAxe.totalViolations : null,
+      secondEngineAudit: _freshEa,
+      needsExpertReview: !!_expertBaseReason,
+      expertReviewReason: _expertBaseReason,
+      _verificationExpertReview: false,
+      _expertReviewBeforeVerification: null,
+      finalText: _plain || cur.finalText,
+      autoFixPasses: (cur.autoFixPasses || 0) + ((round && round.passes) || 0),
+      htmlChars: html.length,
+      chunkState: (round && round.chunkState) || cur.chunkState,
+      chunkWeightedScore: (round && round.chunkWeightedScore) || cur.chunkWeightedScore,
+    });
+  };
+
   // acceptFixedHtmlDetailed: strict guard that rejects AI fix outputs that silently shrink
   // the document, returning a structured result with the specific reason. Callers that just
   // need truthy/falsy can use the acceptFixedHtml alias below.
@@ -35028,6 +35184,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // html (auto-continue rounds change accessibleHtml after the primary pass measured fidelity).
     recomputeContentFidelity: _wrap(_recomputeContentFidelity),
     recomputableFidelityKinds: _RECOMPUTABLE_FIDELITY_KINDS, // which note kinds the recompute replaces; the host carries the rest forward
+    // #6-full: THE canonical round-merge — every consumer (host auto-continue, headless/MCP
+    // loops) assembles an accepted round's result through this one reducer.
+    finalizeRemediationRound: _wrap(_finalizeRemediationRound),
     // R1: the one-line "Can I hand this out?" answer — pure fn over the result's honesty signals.
     distributionVerdict: _alloDistributionVerdict,
     remediationOutcome: _alloRemediationOutcome,
