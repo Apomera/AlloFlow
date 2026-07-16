@@ -138,3 +138,61 @@ describe('Free Forms — the AI coach contract', () => {
     expect(P.ffStats(d)).toEqual({ groups: 3, items: 4, notes: 1, sculpted: 1 });
   });
 });
+
+describe('Free Forms — "Make it mine" import (ffDocFromGenerated)', () => {
+  it('converts an AI organizer into a fresh doc with stable uids', () => {
+    const doc = P.ffDocFromGenerated({
+      main: 'Photosynthesis', structureType: 'KWL Chart',
+      branches: [
+        { title: 'Know', items: ['Plants are green', { text: 'Sun helps' }] },
+        { title: 'Want to Know', items: ['Why green?'] },
+        { title: 'Learned', items: [] },
+      ],
+    });
+    expect(doc.scaffold).toBe('KWL Chart');
+    expect(doc.title).toBe('Photosynthesis');
+    expect(doc.groups.map((g) => g.title)).toEqual(['Know', 'Want to Know', 'Learned']);
+    expect(doc.groups[0].items.map((i) => i.text)).toEqual(['Plants are green', 'Sun helps']);
+    const ids = doc.groups.flatMap((g) => [g.id, ...g.items.map((i) => i.id)]);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(doc.arrangement).toBe(null);
+  });
+
+  it('unknown structureTypes land in free space; junk returns null', () => {
+    expect(P.ffDocFromGenerated({ main: 'X', structureType: 'Memory Palace', branches: [{ title: 'A', items: ['x'] }] }).scaffold).toBe('free');
+    expect(P.ffDocFromGenerated(null)).toBe(null);
+    expect(P.ffDocFromGenerated({ main: 'X', branches: [] })).toBe(null);
+  });
+});
+
+describe('Free Forms — recall mode (ffBuildChallenge)', () => {
+  it('strips answers and parks every target in a neutral bottom tray', () => {
+    const ch = P.ffBuildChallenge(vennDoc(), E);
+    expect(ch.targets.sort()).toEqual(['n10', 'n11', 'n12', 'n13']);
+    expect(ch.answerKey.n12).toBe('Set B');
+    expect(ch.strands.sort()).toEqual(['Set A', 'Set B', 'Shared']);
+    ch.targets.forEach((id) => {
+      const n = ch.graph.nodes.find((x) => x.id === id);
+      expect(n.category, id).toBe(null);                    // membership hidden
+      expect(n.axisValues.y, id).toBe(0.97);                // tray row
+      expect(n.axisValues.z, id).toBe(0.5);                 // no cluster x/y leak
+    });
+    // tray order is alphabetical by label, not group order — no positional leak
+    const xOf = (id) => ch.graph.nodes.find((x) => x.id === id).axisValues.x;
+    expect(xOf('n10')).toBeLessThan(xOf('n11'));            // Fur < Live birth
+    // no edges touch a target (branch→item arrows would reveal the answer)
+    ch.graph.edges.forEach((e) => {
+      expect(ch.targets.includes(e.fromId) || ch.targets.includes(e.toId)).toBe(false);
+    });
+    // scoring: engine contract over the collected placements
+    const score = E.scoreStrandChallenge(ch.answerKey, { n10: 'Set A', n12: 'Set A' });
+    expect(score).toMatchObject({ correct: 1, incorrect: 1, unplaced: 2, complete: false });
+  });
+
+  it('refuses under-sized compositions (<4 items or <2 groups)', () => {
+    const small = P.ffNewDoc('T-Chart');
+    small.groups[0].items = [{ id: 'n1', text: 'a', note: '' }];
+    small.groups[1].items = [{ id: 'n2', text: 'b', note: '' }];
+    expect(P.ffBuildChallenge(small, E)).toBe(null);
+  });
+});

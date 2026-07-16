@@ -2025,6 +2025,27 @@ function openConceptMap3D(opts) {
     }
     setHint();
     if (status.parentNode) status.parentNode.removeChild(status);
+    // 📷 Snapshot — capture the WebGL view to a PNG so 3D work isn't trapped
+    // on screen (portfolios, documents, family comms). Renders synchronously
+    // inside handle.snapshot(), so no preserveDrawingBuffer cost.
+    var snapBtn = document.createElement('button');
+    snapBtn.textContent = '📷 ' + (t('concept_map.view_3d_snapshot') || 'Snapshot');
+    snapBtn.setAttribute('aria-label', t('concept_map.view_3d_snapshot_tip') || 'Save a picture of the 3D view');
+    snapBtn.title = t('concept_map.view_3d_snapshot_tip') || 'Save a picture of the 3D view';
+    snapBtn.style.cssText = 'font-size:12px;font-weight:700;padding:6px 12px;min-height:44px;border-radius:8px;border:1px solid #334155;white-space:nowrap;background:transparent;color:#cbd5e1;cursor:pointer;';
+    header.insertBefore(snapBtn, closeBtn);
+    snapBtn.onclick = function () {
+      var url = null;
+      try { url = handle && handle.snapshot ? handle.snapshot() : null; } catch (e) {}
+      if (!url) { addToast(t('concept_map.view_3d_snapshot_failed') || 'Could not capture the 3D view here.', 'error'); return; }
+      try {
+        var a = document.createElement('a');
+        var slug = String(opts.title || 'concept-map').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'concept-map';
+        a.href = url; a.download = slug + '-3d.png';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        addToast('📷 ' + (t('concept_map.view_3d_snapshot_saved') || 'Snapshot saved'), 'success');
+      } catch (e) { addToast(t('concept_map.view_3d_snapshot_failed') || 'Could not capture the 3D view here.', 'error'); }
+    };
     if (canPersist) {
       // Parity with the embedded view: clear the saved arrangement and glide back
       // to the deterministic default layout.

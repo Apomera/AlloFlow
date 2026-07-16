@@ -170,7 +170,25 @@
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50",
     title: t('concept_map.toolbar.view_3d_tooltip') || 'See this organizer as an orbitable 3D view (depth = strand)',
     "aria-label": t('concept_map.toolbar.view_3d_tooltip') || 'View in 3D'
-  }, "🧊 ", t('concept_map.toolbar.view_3d') || 'View in 3D'), isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
+  }, "🧊 ", t('concept_map.toolbar.view_3d') || 'View in 3D'), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && generatedContent?.data?.structureType !== '3D Concept Space' && generatedContent?.data?.structureType !== 'Memory Palace' && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      // gradual release: AI-authored organizer → student remixes it as their own
+      // Free Forms composition. The host (AlloFlowANTI) listens for this event,
+      // stashes the payload in labToolData._ffImport, and opens the tool.
+      try {
+        window.dispatchEvent(new CustomEvent('allo-open-freeforms', {
+          detail: {
+            generated: generatedContent?.data
+          }
+        }));
+      } catch (e) {
+        if (addToast) addToast(t('concept_map.toolbar.remix_failed') || 'Free Forms could not open here.', 'error');
+      }
+    },
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-violet-600 border border-violet-200 hover:bg-violet-50",
+    title: t('concept_map.toolbar.remix_tooltip') || 'Rebuild this organizer yourself in Free Forms — your own words, your own arrangement',
+    "aria-label": t('concept_map.toolbar.remix_tooltip') || 'Make it mine in Free Forms'
+  }, "🏛️ ", t('concept_map.toolbar.remix') || 'Make it mine'), isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.toggle_edit_outline'),
     onClick: handleToggleIsEditingOutline,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`

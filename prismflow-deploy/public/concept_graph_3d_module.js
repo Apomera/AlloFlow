@@ -1376,6 +1376,16 @@
       try { if (live && announce) live.textContent = announce; } catch (e) {}
     };
 
+    // ── Snapshot: one synchronous render → PNG data URL ──
+    // Rendering in the same task as toDataURL means the drawing buffer is still
+    // valid, so no preserveDrawingBuffer (and its perf cost) is needed.
+    state.snapshot = function () {
+      try {
+        if (composer) composer.render(); else renderer.render(root, camera);
+        return renderer.domElement.toDataURL('image/png');
+      } catch (e) { return null; }
+    };
+
     state.cleanup.push(function () {
       el.removeEventListener('pointerdown', onDown); window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp); el.removeEventListener('wheel', onWheel);
@@ -1586,7 +1596,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(t('cg3d.no_webgl') || 'This browser cannot show the 3D view. Showing the reading-order outline instead.');
-      return { destroy: destroy, update: function () {}, fellBack: true, flagNodes: flagNodes, setNodeImage: function () {}, setNodeObject: function () {}, clearNodeArt: function () {}, setConstellation: function () {} };
+      return { destroy: destroy, update: function () {}, fellBack: true, flagNodes: flagNodes, setNodeImage: function () {}, setNodeObject: function () {}, clearNodeArt: function () {}, setConstellation: function () {}, snapshot: function () { return null; } };
     }
 
     var holder = document.createElement('div');
@@ -1608,7 +1618,8 @@
       showFallback(t('cg3d.load_error') || 'The 3D library could not load. Showing the reading-order outline instead.');
     });
 
-    return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes, setNodeImage: artApi.setNodeImage, setNodeObject: artApi.setNodeObject, clearNodeArt: artApi.clearNodeArt, setConstellation: applyConstellation };
+    return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes, setNodeImage: artApi.setNodeImage, setNodeObject: artApi.setNodeObject, clearNodeArt: artApi.clearNodeArt, setConstellation: applyConstellation,
+      snapshot: function () { return state.snapshot ? state.snapshot() : null; } };
   }
 
   // ── Optional React wrapper (lifecycle-managed). React read lazily. ──

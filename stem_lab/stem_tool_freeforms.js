@@ -313,6 +313,56 @@ window.StemLab = window.StemLab || {
     return (out.strengths.length || out.questions.length || out.suggestions.length) ? out : null;
   }
 
+  // "Make it mine" import: an AI-generated organizer {main, branches,
+  // structureType} becomes a Free Forms doc the student can rework — fresh
+  // stable uids, notes empty, no arrangement (the scaffold shapes it).
+  function ffDocFromGenerated(gen) {
+    if (!gen || !Array.isArray(gen.branches) || !gen.branches.length) return null;
+    var scaffold = ffScaffold(gen.structureType) ? gen.structureType : 'free';
+    var nid = 1;
+    var groups = gen.branches.map(function(b) {
+      var gid = 'g' + (nid++);
+      var items = (Array.isArray(b && b.items) ? b.items : []).map(function(it) {
+        var text = (it && typeof it === 'object') ? String(it.text || '') : String(it == null ? '' : it);
+        return { id: 'n' + (nid++), text: text.trim(), note: '' };
+      }).filter(function(it) { return it.text; });
+      return { id: gid, title: (b && b.title != null && String(b.title).trim()) ? String(b.title).trim() : 'Group', items: items };
+    });
+    return {
+      scaffold: scaffold,
+      title: gen.main != null ? String(gen.main) : '',
+      rev: 1, nextId: nid, groups: groups,
+      arrangement: null, nodeArt: {}, assessment: null, _xp: {}
+    };
+  }
+
+  // Recall mode ("Test yourself"): the engine's Strand Challenge run over the
+  // student's OWN composition — items fall out of their groups, the student
+  // puts them back from memory. Build-then-recall = generation + retrieval
+  // practice on self-authored structure. On top of buildStrandChallenge (which
+  // strips item categories/z and answer-leaking edges) we ALSO neutralize the
+  // items' x/y into an alphabetical tray row along the bottom — in shaped
+  // layouts the cluster x/y themselves would leak the grouping.
+  function ffBuildChallenge(doc, E) {
+    if (!doc || !E || !E.buildStrandChallenge) return null;
+    var composed = ffComposeGraph(Object.assign({}, doc, { arrangement: null }), E);
+    var ch = E.buildStrandChallenge(composed);
+    if (!ch || !ch.targets || ch.targets.length < 4 || !ch.strands || ch.strands.length < 2) return null;
+    var labelById = {};
+    composed.nodes.forEach(function(n) { labelById[n.id] = n.label || n.id; });
+    var order = ch.targets.slice().sort(function(a, b) {
+      var la = String(labelById[a] || a).toLowerCase(), lb = String(labelById[b] || b).toLowerCase();
+      return la < lb ? -1 : la > lb ? 1 : 0;
+    });
+    var n = order.length;
+    var nodes = ch.graph.nodes.map(function(nd) {
+      var i = order.indexOf(nd.id);
+      if (i < 0) return nd;
+      return Object.assign({}, nd, { axisValues: { x: n <= 1 ? 0.5 : 0.06 + 0.88 * (i / (n - 1)), y: 0.97, z: 0.5 } });
+    });
+    return { graph: Object.assign({}, ch.graph, { nodes: nodes }), answerKey: ch.answerKey, targets: ch.targets, strands: ch.strands };
+  }
+
   window.StemLab.ffPure = {
     FF_SCAFFOLDS: FF_SCAFFOLDS,
     ffScaffold: ffScaffold,
@@ -323,7 +373,9 @@ window.StemLab = window.StemLab || {
     ffRenameCategory: ffRenameCategory,
     ffStats: ffStats,
     ffBuildAssessPrompt: ffBuildAssessPrompt,
-    ffParseAssessment: ffParseAssessment
+    ffParseAssessment: ffParseAssessment,
+    ffDocFromGenerated: ffDocFromGenerated,
+    ffBuildChallenge: ffBuildChallenge
   };
 
   // ═══ TOOL REGISTRATION ═══════════════════════════════════════════════
@@ -371,6 +423,11 @@ window.StemLab = window.StemLab || {
       var _sb = React.useState(false); var sculptBusy = _sb[0], setSculptBusy = _sb[1];
       var _ab = React.useState(false); var assessBusy = _ab[0], setAssessBusy = _ab[1];
       var _sp = React.useState(''); var sculptText = _sp[0], setSculptText = _sp[1];
+      var _ch = React.useState(null); var challenge = _ch[0], setChallenge = _ch[1];
+      var _pl = React.useState({}); var placed = _pl[0], setPlaced = _pl[1];
+      var _ck = React.useState(null); var checked = _ck[0], setChecked = _ck[1];
+      var _hb = React.useState(false); var hintBusy = _hb[0], setHintBusy = _hb[1];
+      var _ht = React.useState(''); var hintText = _ht[0], setHintText = _ht[1];
       var hostRef = React.useRef(null);
       var handleRef = React.useRef(null);
       var hasAI = typeof ctx.callGemini === 'function';
@@ -381,7 +438,40 @@ window.StemLab = window.StemLab || {
         return function() { alive = false; };
       }, []);
 
-      // ── Mount / remount the 3D view on structural changes only (doc.rev) ──
+      // ── "Make it mine" import handoff (labToolData._ffImport, set by the host
+      // when a Visual Organizer dispatches 'allo-open-freeforms'). Auto-consume
+      // when the current composition is empty; otherwise keep the payload and
+      // render a confirm strip so student work is never silently replaced.
+      var pendingImport = labToolData._ffImport || null;
+      React.useEffect(function() {
+        if (!pendingImport) return;
+        ctx.setToolData(function(prev) {
+          prev = prev || {};
+          var im = prev._ffImport;
+          if (!im) return prev;
+          var cur = prev.freeForms;
+          var hasContent = cur && cur.groups && cur.groups.some(function(g) { return g.items && g.items.length; });
+          if (hasContent) return prev;   // confirm strip decides
+          var p = Object.assign({}, prev); delete p._ffImport;
+          var nd = ffDocFromGenerated(im);
+          if (nd) p.freeForms = nd;
+          return p;
+        });
+      }, [pendingImport]);
+      var consumeImport = function(accept) {
+        ctx.setToolData(function(prev) {
+          prev = prev || {};
+          var p = Object.assign({}, prev); var im = p._ffImport; delete p._ffImport;
+          if (accept && im) { var nd = ffDocFromGenerated(im); if (nd) p.freeForms = nd; }
+          return p;
+        });
+        if (accept) { setChallenge(null); setChecked(null); setPlaced({}); setSelectedId(null); announce(t('stem.freeforms.sr_imported', 'Organizer imported — now make it yours')); }
+      };
+
+      // ── Mount / remount the 3D view on structural changes only (doc.rev) —
+      // or on entering/leaving recall mode (challenge identity). In recall
+      // mode the SAME editable machinery drives placement, but nothing is
+      // ever persisted: onArrangementChange only collects target placements.
       var scaffold = doc && doc.scaffold;
       var rev = (doc && doc.rev) || 0;
       React.useEffect(function() {
@@ -390,23 +480,30 @@ window.StemLab = window.StemLab || {
         var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
         if (!E || !CG3D) return;
         var graph;
-        try { graph = ffComposeGraph(doc, E); } catch (e) { return; }
+        try { graph = challenge ? challenge.graph : ffComposeGraph(doc, E); } catch (e) { return; }
         var handle = null;
         try {
           handle = CG3D.render(hostRef.current, graph, {
             t: ctx.t,
             editable: true,
-            onArrangementChange: function(arr) {
-              setDoc(function(d) {
-                if (!d) return d;
-                var nd = Object.assign({}, d, { arrangement: arr });
-                if (arr && arr.categories) {
-                  var rec = ffReconcileMembership(nd, arr.categories);
-                  if (rec.moved) nd = rec.doc;
+            onArrangementChange: challenge
+              ? function(arr) {
+                  if (!arr || !arr.categories) return;
+                  var np = {};
+                  challenge.targets.forEach(function(id) { if (typeof arr.categories[id] === 'string' && arr.categories[id]) np[id] = arr.categories[id]; });
+                  setPlaced(np);
                 }
-                return nd;
-              });
-            },
+              : function(arr) {
+                  setDoc(function(d) {
+                    if (!d) return d;
+                    var nd = Object.assign({}, d, { arrangement: arr });
+                    if (arr && arr.categories) {
+                      var rec = ffReconcileMembership(nd, arr.categories);
+                      if (rec.moved) nd = rec.doc;
+                    }
+                    return nd;
+                  });
+                },
             onSelectNode: function(id) { setSelectedId(id); },
             initialNodeArt: (doc.nodeArt && Object.keys(doc.nodeArt).length) ? doc.nodeArt : null
           });
@@ -416,7 +513,7 @@ window.StemLab = window.StemLab || {
           try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
           if (handleRef.current === handle) handleRef.current = null;
         };
-      }, [modulesReady, scaffold, rev]);
+      }, [modulesReady, scaffold, rev, challenge]);
 
       // ── Doc mutations (structural ⇒ rev bump ⇒ remount) ──
       var bump = function(mut) {
@@ -571,15 +668,100 @@ window.StemLab = window.StemLab || {
         }).catch(function() { setAssessBusy(false); if (addToast) addToast('⚠️ ' + t('stem.freeforms.assess_failed', 'The coach could not respond — try again.'), 'error'); });
       };
 
+      // ── Recall mode (Test yourself) ──
+      var groupsWithItems = ((doc && doc.groups) || []).filter(function(g) { return (g.items || []).length; }).length;
+      var recallEligible = stats.items >= 4 && groupsWithItems >= 2;
+      var startChallenge = function() {
+        var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        var ch = E ? ffBuildChallenge(doc, E) : null;
+        if (!ch) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.recall_needs_more', 'Add at least 4 ideas across 2 groups first'), 'info'); return; }
+        setSelectedId(null); setPlaced({}); setChecked(null); setHintText('');
+        setChallenge(ch);
+        announce(t('stem.freeforms.sr_recall_started', 'Recall mode: every idea fell into the tray. Put each one back where it belongs.'));
+      };
+      var checkChallenge = function() {
+        var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        if (!challenge || !E) return;
+        var score = E.scoreStrandChallenge(challenge.answerKey, placed);
+        setChecked(score);
+        var srMsg = t('stem.freeforms.sr_recall_score', 'Checked:') + ' ' + score.correct + '/' + score.total;
+        try { if (handleRef.current && handleRef.current.flagNodes) handleRef.current.flagNodes(score.results, srMsg); } catch (e) {}
+        if (score.complete) {
+          announce('🎉 ' + t('stem.freeforms.sr_recall_complete', 'You rebuilt your whole world from memory!'));
+          if (doc && (!doc._xp || !doc._xp.recall) && typeof awardXP === 'function') {
+            awardXP('freeForms', 15, 'Recalled my world');
+            setDoc(function(d) { return d ? Object.assign({}, d, { _xp: Object.assign({}, d._xp || {}, { recall: true }) }) : d; });
+          }
+        }
+      };
+      var retryChallenge = function() {
+        var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        var ch = E ? ffBuildChallenge(doc, E) : null;
+        if (!ch) { setChallenge(null); return; }
+        setPlaced({}); setChecked(null); setHintText(''); setSelectedId(null);
+        setChallenge(ch);   // fresh object → remount → tray restored
+      };
+      var exitChallenge = function() {
+        setChallenge(null); setChecked(null); setPlaced({}); setHintText(''); setSelectedId(null);
+        announce(t('stem.freeforms.sr_recall_exited', 'Back to building.'));
+      };
+      // Post-check hint for the selected misplaced idea. buildStrandHintPrompt
+      // NEVER reveals the correct group (pure engine helper, tested there).
+      var doHint = function() {
+        var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        var id = selectedId;
+        if (!challenge || !checked || !id || !challenge.answerKey[id] || hintBusy || !hasAI || !E || !E.buildStrandHintPrompt) return;
+        if (checked.results && checked.results[id] === 'correct') return;
+        var sel = findItem(id);
+        setHintBusy(true);
+        ctx.callGemini(E.buildStrandHintPrompt({
+          strands: challenge.strands,
+          itemLabel: (sel && sel.item.text) || id,
+          placedStrand: placed[id] || null,
+          topic: (doc && doc.title) || ''
+        }), false, false, 0.7).then(function(resp) {
+          setHintBusy(false);
+          var txt = String(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '').trim();
+          if (txt) { setHintText(txt); announce(t('stem.freeforms.sr_hint', 'Hint:') + ' ' + txt); }
+        }).catch(function() { setHintBusy(false); });
+      };
+
+      // ── Snapshot (📷): capture the live WebGL view to a PNG download ──
+      var doSnapshot = function() {
+        var url = null;
+        try { url = handleRef.current && handleRef.current.snapshot ? handleRef.current.snapshot() : null; } catch (e) {}
+        if (!url) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.snapshot_failed', 'Could not capture the 3D view here.'), 'error'); return; }
+        try {
+          var a = document.createElement('a');
+          var slug = String((doc && doc.title) || 'free-forms').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'free-forms';
+          a.href = url; a.download = slug + '.png';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          if (addToast) addToast('📷 ' + t('stem.freeforms.snapshot_saved', 'Snapshot saved'), 'success');
+        } catch (e) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.snapshot_failed', 'Could not capture the 3D view here.'), 'error'); }
+      };
+
       // ═══ UI ═══
       var BTN = 'min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer';
       var BTN_GHOST = BTN + ' bg-slate-800/70 border-slate-600 text-slate-200 hover:bg-slate-700';
       var BTN_HOT = BTN + ' bg-violet-600 border-violet-500 text-white hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed';
 
+      // Import confirm strip — shown (on either screen) only when an organizer
+      // handoff is pending AND the student already has content to protect.
+      var renderImportStrip = function() {
+        if (!pendingImport) return null;
+        return h('div', { className: 'mb-3 flex flex-wrap items-center gap-2 bg-amber-950/60 border border-amber-600 rounded-xl p-2', role: 'alert' },
+          h('div', { className: 'text-xs text-amber-200 flex-1 min-w-0' },
+            '🏛️ ' + t('stem.freeforms.import_prompt', 'Import the organizer') + ' "' + String(pendingImport.main || '').slice(0, 60) + '"? ' + t('stem.freeforms.import_replaces', 'This replaces your current composition.')),
+          h('button', { className: BTN_HOT, onClick: function() { consumeImport(true); } }, t('stem.freeforms.import_yes', 'Import')),
+          h('button', { className: BTN_GHOST, onClick: function() { consumeImport(false); } }, t('stem.freeforms.import_no', 'Keep mine'))
+        );
+      };
+
       // ── Picker screen ──
       if (!doc || !doc.scaffold) {
         return h('div', { id: 'allo-free-forms', className: 'p-4 md:p-6' },
           h('div', { className: 'max-w-5xl mx-auto' },
+            renderImportStrip(),
             h('h2', { className: 'text-2xl font-black text-violet-200 mb-1' }, '\u{1F3DB}️ ' + t('stem.freeforms.title', 'Free Forms')),
             h('p', { className: 'text-sm text-slate-300 mb-1' }, t('stem.freeforms.tagline', 'Build your own World of Forms: pick an archetypal structure, fill it with YOUR ideas, arrange it in 3D, and sculpt what matters.')),
             h('p', { className: 'text-xs text-slate-400 mb-4' }, t('stem.freeforms.tagline2', 'You are the author here — the AI only coaches, and only when you ask.')),
@@ -608,23 +790,50 @@ window.StemLab = window.StemLab || {
       var selected = selectedId ? findItem(selectedId) : null;
 
       // ── Builder screen ──
+      var inChallenge = !!challenge;
+      var placedCount = Object.keys(placed).length;
       return h('div', { id: 'allo-free-forms', className: 'p-3 md:p-4' },
+        renderImportStrip(),
         // header
         h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
-          h('button', { className: BTN_GHOST, onClick: backToPicker, 'aria-label': t('stem.freeforms.change_form', 'Change form') }, '← ' + t('stem.freeforms.forms', 'Forms')),
-          h('div', { className: 'text-lg font-black text-violet-200' }, sc.icon + ' ' + sc.name),
-          h('div', { className: 'text-[11px] text-slate-400 hidden md:block flex-1 min-w-0 truncate' }, sc.grammar),
-          h('div', { className: 'text-[11px] font-bold text-slate-300 bg-slate-800/70 border border-slate-700 rounded-full px-3 py-1' },
-            stats.groups + ' ' + t('stem.freeforms.groups', 'groups') + ' · ' + stats.items + ' ' + t('stem.freeforms.ideas', 'ideas') + (stats.sculpted ? ' · ' + stats.sculpted + ' ' + t('stem.freeforms.sculpted', 'sculpted') : '')),
-          doc.arrangement ? h('button', { className: BTN_GHOST, onClick: resetArrangement }, '↺ ' + t('stem.freeforms.reset_arrangement', 'Reset arrangement')) : null,
-          hasAI ? h('button', { className: BTN_HOT, onClick: doAssess, disabled: assessBusy || stats.items < 3, 'aria-busy': assessBusy ? 'true' : 'false',
+          !inChallenge ? h('button', { className: BTN_GHOST, onClick: backToPicker, 'aria-label': t('stem.freeforms.change_form', 'Change form') }, '← ' + t('stem.freeforms.forms', 'Forms')) : null,
+          h('div', { className: 'text-lg font-black text-violet-200' }, (inChallenge ? '🎯 ' : sc.icon + ' ') + (inChallenge ? t('stem.freeforms.recall_title', 'Recall: rebuild your world') : sc.name)),
+          !inChallenge ? h('div', { className: 'text-[11px] text-slate-400 hidden md:block flex-1 min-w-0 truncate' }, sc.grammar) : h('div', { className: 'flex-1' }),
+          !inChallenge ? h('div', { className: 'text-[11px] font-bold text-slate-300 bg-slate-800/70 border border-slate-700 rounded-full px-3 py-1' },
+            stats.groups + ' ' + t('stem.freeforms.groups', 'groups') + ' · ' + stats.items + ' ' + t('stem.freeforms.ideas', 'ideas') + (stats.sculpted ? ' · ' + stats.sculpted + ' ' + t('stem.freeforms.sculpted', 'sculpted') : '')) : null,
+          (modulesReady && !modulesFailed) ? h('button', { className: BTN_GHOST, onClick: doSnapshot, title: t('stem.freeforms.snapshot_tip', 'Save a picture of your 3D world') }, '📷 ' + t('stem.freeforms.snapshot', 'Snapshot')) : null,
+          (!inChallenge && doc.arrangement) ? h('button', { className: BTN_GHOST, onClick: resetArrangement }, '↺ ' + t('stem.freeforms.reset_arrangement', 'Reset arrangement')) : null,
+          !inChallenge ? h('button', { className: BTN_GHOST, onClick: startChallenge, disabled: !recallEligible,
+            title: recallEligible ? t('stem.freeforms.recall_tip', 'Your ideas fall into a tray — put them back from memory') : t('stem.freeforms.recall_needs_more', 'Add at least 4 ideas across 2 groups first') },
+            '🎯 ' + t('stem.freeforms.recall', 'Test yourself')) : null,
+          (!inChallenge && hasAI) ? h('button', { className: BTN_HOT, onClick: doAssess, disabled: assessBusy || stats.items < 3, 'aria-busy': assessBusy ? 'true' : 'false',
             title: stats.items < 3 ? t('stem.freeforms.assess_needs_items', 'Add at least 3 ideas first') : t('stem.freeforms.assess_tip', 'Ask the AI coach to look at your whole composition') },
             (assessBusy ? '… ' : '\u{1F9E0} ') + t('stem.freeforms.assess', 'Assess my composition')) : null
         ),
         // split: sidebar + 3D stage
         h('div', { className: 'ff-split flex gap-3 items-stretch' },
-          // ── authoring sidebar (the accessible source of truth) ──
-          h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/70 border border-slate-700 rounded-2xl p-3 overflow-y-auto', style: { maxHeight: '72vh' } },
+          // ── recall panel (challenge) OR authoring sidebar (the accessible source of truth) ──
+          inChallenge ? h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/70 border border-amber-700 rounded-2xl p-3 overflow-y-auto', style: { maxHeight: '72vh' } },
+            h('div', { className: 'text-sm font-black text-amber-200 mb-2' }, '🎯 ' + t('stem.freeforms.recall_heading', 'Rebuild it from memory')),
+            h('p', { className: 'text-xs text-slate-300 leading-snug mb-2' },
+              t('stem.freeforms.recall_instructions', 'Every idea fell out of its place into the tray at the bottom. Select an idea in the space, then use the group chips (or the [ and ] keys) to send it home. Nothing is saved during the game.')),
+            h('div', { className: 'text-xs font-bold text-slate-200 bg-slate-800/70 border border-slate-700 rounded-full px-3 py-1.5 inline-block mb-2', role: 'status' },
+              placedCount + '/' + challenge.targets.length + ' ' + t('stem.freeforms.recall_placed', 'placed')),
+            checked ? h('div', { className: 'text-sm font-black rounded-xl px-3 py-2 mb-2 ' + (checked.complete ? 'bg-emerald-900/60 text-emerald-200 border border-emerald-600' : 'bg-slate-800/70 text-slate-100 border border-slate-600'), role: 'status' },
+              (checked.complete ? '🎉 ' : '') + checked.correct + '/' + checked.total + ' ' + t('stem.freeforms.recall_correct', 'correct') +
+              (checked.complete ? ' — ' + t('stem.freeforms.recall_complete', 'you rebuilt your whole world!') : '')) : null,
+            h('div', { className: 'flex flex-wrap gap-1 mb-2' },
+              h('button', { className: BTN_HOT, onClick: checkChallenge, disabled: !placedCount }, '✓ ' + t('stem.freeforms.recall_check', 'Check')),
+              h('button', { className: BTN_GHOST, onClick: retryChallenge }, '↺ ' + t('stem.freeforms.recall_retry', 'Retry')),
+              h('button', { className: BTN_GHOST, onClick: exitChallenge }, t('stem.freeforms.recall_exit', 'Exit'))
+            ),
+            (hasAI && checked && !checked.complete && selectedId && challenge.answerKey[selectedId] && checked.results && checked.results[selectedId] !== 'correct')
+              ? h('button', { className: BTN_GHOST + ' w-full mb-1', onClick: doHint, disabled: hintBusy, 'aria-busy': hintBusy ? 'true' : 'false' },
+                  (hintBusy ? '… ' : '💡 ') + t('stem.freeforms.recall_hint', 'Hint for the selected idea')) : null,
+            h('div', { 'aria-live': 'polite' },
+              hintText ? h('p', { className: 'text-xs text-amber-200 bg-amber-950/50 border border-amber-800 rounded-lg p-2 leading-snug' }, '💡 ' + hintText) : null)
+          )
+          : h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/70 border border-slate-700 rounded-2xl p-3 overflow-y-auto', style: { maxHeight: '72vh' } },
             h('label', { className: 'block text-[11px] font-bold text-slate-400 mb-1', htmlFor: 'ff-title' }, t('stem.freeforms.composition_title', 'Composition title')),
             h('input', {
               id: 'ff-title', key: 'title-' + rev, defaultValue: doc.title || '',
@@ -697,8 +906,8 @@ window.StemLab = window.StemLab || {
         ),
         // hint line
         h('p', { className: 'text-[11px] text-slate-500 mt-2' }, t('stem.freeforms.stage_hint', 'In the space: drag an idea to place it · drag the background to orbit · scroll to zoom · [ and ] move a selected idea between groups.')),
-        // assessment cards
-        doc.assessment ? h('div', { className: 'mt-3 grid md:grid-cols-3 gap-3', 'aria-label': t('stem.freeforms.coach_heading', 'Coaching feedback') },
+        // assessment cards (hidden during recall so the coach can't spoil answers)
+        (!inChallenge && doc.assessment) ? h('div', { className: 'mt-3 grid md:grid-cols-3 gap-3', 'aria-label': t('stem.freeforms.coach_heading', 'Coaching feedback') },
           [['strengths', '\u{1F4AA}', t('stem.freeforms.strengths', 'What is working')],
            ['questions', '\u{1F914}', t('stem.freeforms.questions', 'Questions to consider')],
            ['suggestions', '\u{1F331}', t('stem.freeforms.suggestions', 'Next build steps')]].map(function(cfg) {

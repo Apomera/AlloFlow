@@ -5359,10 +5359,17 @@
       "return_setup_tooltip": "Volver a la Vista de Configuración",
       "clear_links_tooltip": "Quitar todas las líneas de conexión",
       "view_3d": "Ver en 3D",
-      "view_3d_tooltip": "Ve este organizador como una vista 3D orbitable (profundidad = hilo temático)"
+      "view_3d_tooltip": "Ve este organizador como una vista 3D orbitable (profundidad = hilo temático)",
+      "remix": "Hazlo tuyo",
+      "remix_tooltip": "Reconstruye este organizador tú mismo en Free Forms: tus propias palabras, tu propia disposición",
+      "remix_failed": "Free Forms no se pudo abrir aquí."
     },
     "view_3d": "Mapa conceptual 3D",
     "view_3d_empty": "Primero agrega algunos conceptos.",
+    "view_3d_snapshot": "Captura",
+    "view_3d_snapshot_tip": "Guarda una imagen de la vista 3D",
+    "view_3d_snapshot_saved": "Captura guardada",
+    "view_3d_snapshot_failed": "No se pudo capturar la vista 3D aquí.",
     "view_3d_controls": "Arrastra para orbitar · desplázate para acercar · profundidad = hilo temático",
     "view_3d_controls_edit": "Arrastra un nodo para ubicarlo · arrastra el espacio para orbitar · desplázate para acercar · profundidad = hilo temático",
     "view_3d_controls_shaped": "Arrastra para orbitar · desplázate para acercar · la posición sigue al organizador",

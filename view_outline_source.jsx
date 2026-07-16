@@ -135,6 +135,28 @@ function OutlineView(props) {
                                     🧊 {t('concept_map.toolbar.view_3d') || 'View in 3D'}
                                 </button>
                             )}
+                            {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying
+                                && generatedContent?.data?.structureType !== '3D Concept Space'
+                                && generatedContent?.data?.structureType !== 'Memory Palace'
+                                && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && (
+                                <button
+                                    onClick={() => {
+                                        // gradual release: AI-authored organizer → student remixes it as their own
+                                        // Free Forms composition. The host (AlloFlowANTI) listens for this event,
+                                        // stashes the payload in labToolData._ffImport, and opens the tool.
+                                        try {
+                                            window.dispatchEvent(new CustomEvent('allo-open-freeforms', { detail: { generated: generatedContent?.data } }));
+                                        } catch (e) {
+                                            if (addToast) addToast(t('concept_map.toolbar.remix_failed') || 'Free Forms could not open here.', 'error');
+                                        }
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-violet-600 border border-violet-200 hover:bg-violet-50"
+                                    title={t('concept_map.toolbar.remix_tooltip') || 'Rebuild this organizer yourself in Free Forms — your own words, your own arrangement'}
+                                    aria-label={t('concept_map.toolbar.remix_tooltip') || 'Make it mine in Free Forms'}
+                                >
+                                    🏛️ {t('concept_map.toolbar.remix') || 'Make it mine'}
+                                </button>
+                            )}
                             {isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (
                                 <button
                                     aria-label={t('common.toggle_edit_outline')}

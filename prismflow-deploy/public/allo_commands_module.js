@@ -576,6 +576,10 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openLumen();
       return t("cmd.open_lumen_done", "Lumen opened in the STEM Lab.");
     } },
+    { id: "open_free_forms", opensPanel: "stemLab", icon: "\u{1F3DB}\uFE0F", roles: "all", label: t("cmd.open_free_forms", "Open Free Forms"), aliases: ["free forms", "world of forms", "forms", "build a venn", "story mountain", "3d organizer", "build my own organizer"], hint: t("cmd.open_free_forms_hint", "Build your own 3D World of Forms"), run: (c) => {
+      c.openFreeForms();
+      return t("cmd.open_free_forms_done", "Free Forms opened.");
+    } },
     { id: "open_community_catalog", opensPanel: "communityCatalog", icon: "\u{1F5C2}\uFE0F", roles: "teacher", label: t("cmd.open_community_catalog", "Open the Community Catalog"), aliases: ["community catalog", "catalog", "shared lessons", "browse lessons", "community"], hint: t("cmd.open_community_catalog_hint", "Browse shared community lessons"), run: (c) => {
       c.openCommunityCatalog();
       return t("cmd.open_community_catalog_done", "Community Catalog opened.");
@@ -1267,6 +1271,7 @@ const CMD_GROUP = {
   open_allo_studio: "tools",
   open_accessibility_lab: "tools",
   open_lumen: "tools",
+  open_free_forms: "tools",
   open_community_catalog: "tools",
   open_dynamic_assessment: "tools",
   open_reading_library: "tools",
@@ -1675,6 +1680,6 @@ const AlloCommandPalette = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
   console.log('[CDN] AlloCommands loaded');
 })();
